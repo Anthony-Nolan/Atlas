@@ -28,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Client.Models.Donors
 
     public class SearchableDonorUpdate
     {
-        public DateTimeOffset PublishedDateTime { get; } = DateTimeOffset.UtcNow;
+        public DateTimeOffset PublishedDateTime { get; set; } = DateTimeOffset.UtcNow;
         public int DonorId { get; set; }
         public bool IsAvailableForSearch { get; set; }
         public SearchableDonorInformation SearchableDonorInformation { get; set; }

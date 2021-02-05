@@ -50,7 +50,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
         {
             services.AddScoped<IMatchPredictionAlgorithmValidator, MatchPredictionAlgorithmValidator>();
         }
-        
+
         public static void RegisterHaplotypeFrequenciesReader(
             this IServiceCollection services,
             Func<IServiceProvider, string> fetchMatchPredictionDatabaseConnectionString)
@@ -100,10 +100,10 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
         {
             services.AddScoped<MatchPredictionLoggingContext>();
             services.AddScoped<IMatchPredictionLogger, MatchPredictionLogger>();
-            
+
             services.AddScoped<IMatchPredictionAlgorithm, MatchPredictionAlgorithm>();
             services.AddScoped<IDonorInputBatcher, DonorInputBatcher>();
-            
+
             services.AddScoped<IFrequencySetImporter, FrequencySetImporter>();
             services.AddScoped<IFrequencyFileParser, FrequencyFileParser>();
             services.AddScoped<IFrequencySetValidator, FrequencySetValidator>();

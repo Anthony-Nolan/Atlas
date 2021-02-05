@@ -44,12 +44,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.AddSingleton<IConfiguration>(sp => configuration);
 
             services.RegisterSettings();
-            services.RegisterMatchingAlgorithm(
-                _ => new AzureAuthenticationSettings(),
-                _ => new AzureDatabaseManagementSettings(),
-                OptionsReaderFor<DataRefreshSettings>(),
-                OptionsReaderFor<DonorManagementSettings>(),
-                OptionsReaderFor<ApplicationInsightsSettings>(),
+            services.RegisterSearch(OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 _ => new MacDictionarySettings(),
@@ -58,8 +53,35 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 _ => new MatchingConfigurationSettings {MatchingBatchSize = 250000},
                 ConnectionStringReader(PersistentSqlConnectionStringKey),
                 ConnectionStringReader(TransientASqlConnectionStringKey),
+                ConnectionStringReader(TransientBSqlConnectionStringKey));
+
+            services.RegisterDataRefresh(
+                _ => new AzureAuthenticationSettings(),
+                _ => new AzureDatabaseManagementSettings(),
+                OptionsReaderFor<DataRefreshSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                _ => new MacDictionarySettings(),
+                OptionsReaderFor<MessagingServiceBusSettings>(),
+                _ => new NotificationsServiceBusSettings(),
+                OptionsReaderFor<DonorManagementSettings>(),
+                ConnectionStringReader(PersistentSqlConnectionStringKey),
+                ConnectionStringReader(TransientASqlConnectionStringKey),
                 ConnectionStringReader(TransientBSqlConnectionStringKey),
                 ConnectionStringReader(DonorImportSqlConnectionStringKey));
+            
+            services.RegisterDonorManagement(
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<DonorManagementSettings>(),
+                OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                _ => new MacDictionarySettings(),
+                OptionsReaderFor<MessagingServiceBusSettings>(),
+                _ => new NotificationsServiceBusSettings(),
+                ConnectionStringReader(PersistentSqlConnectionStringKey),
+                ConnectionStringReader(TransientASqlConnectionStringKey),
+                ConnectionStringReader(TransientBSqlConnectionStringKey));
 
             // This call must be made after `RegisterMatchingAlgorithm()`, as it overrides the non-mock dictionary set up in that method
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(

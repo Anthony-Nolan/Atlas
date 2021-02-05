@@ -3,7 +3,7 @@ resource "azurerm_app_service_plan" "atlas-elastic-plan" {
   location                     = local.location
   resource_group_name          = azurerm_resource_group.atlas_resource_group.name
   kind                         = "elastic"
-  maximum_elastic_worker_count = 50
+  maximum_elastic_worker_count = var.SERVICE_PLAN_MAX_SCALE_OUT
 
   sku {
     tier = "ElasticPremium"

@@ -110,6 +110,8 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                     b.HasIndex("DonorId")
                         .IsUnique();
 
+                    b.HasIndex("DonorId", "LastUpdateDateTime");
+
                     b.ToTable("DonorManagementLogs");
                 });
 

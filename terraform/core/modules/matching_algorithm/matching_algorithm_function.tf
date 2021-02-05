@@ -1,5 +1,5 @@
 locals {
-  matching_func_app_settings = {
+  matching_func_app_settings           = {
     // APPINSIGHTS_INSTRUMENTATIONKEY
     //      The azure functions dashboard requires the instrumentation key with this name to integrate with application insights.
     // MessagingServiceBus:ConnectionString & NotificationsServiceBus:ConnectionString
@@ -8,6 +8,8 @@ locals {
     //      (albeit with different permissions).
     "APPINSIGHTS_INSTRUMENTATIONKEY" = var.application_insights.instrumentation_key
     "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
+
+    "AzureFunctionsJobHost__extensions__serviceBus__messageHandlerOptions__maxConcurrentCalls" = var.MAX_CONCURRENT_SERVICEBUS_FUNCTIONS
 
     "AzureManagement:Authentication:ClientId"                   = var.AZURE_CLIENT_ID
     "AzureManagement:Authentication:ClientSecret"               = var.AZURE_CLIENT_SECRET
@@ -19,6 +21,7 @@ locals {
     "AzureStorage:ConnectionString"           = var.azure_storage.primary_connection_string
     "AzureStorage:SearchResultsBlobContainer" = azurerm_storage_container.search_matching_results_blob_container.name
 
+    "DataRefresh:ActiveDatabaseAutoPauseTimeout"                                            = var.DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE
     "DataRefresh:ActiveDatabaseSize"                                                        = var.DATA_REFRESH_DB_SIZE_ACTIVE
     "DataRefresh:RequestsTopic"                                                             = azurerm_servicebus_topic.data-refresh-requests.name
     "DataRefresh:RequestsTopicSubscription"                                                 = azurerm_servicebus_subscription.matching-algorithm-data-refresh-requests.name
@@ -27,14 +30,15 @@ locals {
     "DataRefresh:DatabaseAName"                                                             = azurerm_sql_database.atlas-matching-transient-a.name
     "DataRefresh:DatabaseBName"                                                             = azurerm_sql_database.atlas-matching-transient-b.name
     "DataRefresh:DataRefreshDonorUpdatesShouldBeFullyTransactional"                         = var.DONOR_WRITE_TRANSACTIONALITY__DATA_REFRESH
-    "DataRefresh:DormantDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_DORMANT
-    "DataRefresh:RefreshDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_REFRESH
     "DataRefresh:DonorManagement:BatchSize"                                                 = var.MESSAGING_BUS_DONOR_BATCH_SIZE
     "DataRefresh:DonorManagement:CronSchedule"                                              = "NotActuallyUsedInThisFunction"
     "DataRefresh:DonorManagement:OngoingDifferentialDonorUpdatesShouldBeFullyTransactional" = var.DONOR_WRITE_TRANSACTIONALITY__DONOR_UPDATES
     "DataRefresh:DonorManagement:SubscriptionForDbA"                                        = azurerm_servicebus_subscription.matching_transient_a.name
     "DataRefresh:DonorManagement:SubscriptionForDbB"                                        = azurerm_servicebus_subscription.matching_transient_b.name
     "DataRefresh:DonorManagement:Topic"                                                     = var.servicebus_topics.updated-searchable-donors.name
+    "DataRefresh:DormantDatabaseAutoPauseTimeout"                                           = var.DATA_REFRESH_DB_AUTO_PAUSE_DORMANT
+    "DataRefresh:DormantDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_DORMANT
+    "DataRefresh:RefreshDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_REFRESH
 
     "FUNCTIONS_WORKER_RUNTIME" : "dotnet"
 
@@ -59,8 +63,8 @@ locals {
 
     // maximum running instances of the algorithm = maximum_worker_count * maxConcurrentCalls (in host.json).
     // together these must ensure that the number of allowed concurrent SQL connections to the matching SQL DB is not exceeded.
-    // Note that this is 200 workers for an S3 plan, and that each algorithm invocation can open up to 4 concurrent connections.
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "3"
+    // See README_Integration.md for more details on concurrency configuration.
+    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = var.MAX_SCALE_OUT
     "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
   }
   matching_algorithm_function_app_name = "${var.general.environment}-ATLAS-MATCHING-ALGORITHM-FUNCTIONS"
@@ -78,7 +82,7 @@ resource "azurerm_function_app" "atlas_matching_algorithm_function" {
 
   site_config {
     pre_warmed_instance_count = 1
-    ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
+    ip_restriction            = [for ip in var.IP_RESTRICTION_SETTINGS : {
       ip_address = ip
       subnet_id  = null
     }]

@@ -46,11 +46,7 @@ namespace Atlas.MatchingAlgorithm.Api
         public void ConfigureServices(IServiceCollection services)
         {
             RegisterSettings(services);
-            services.RegisterMatchingAlgorithm(OptionsReaderFor<AzureAuthenticationSettings>(),
-                OptionsReaderFor<AzureDatabaseManagementSettings>(),
-                OptionsReaderFor<DataRefreshSettings>(),
-                OptionsReaderFor<DonorManagementSettings>(),
-                OptionsReaderFor<ApplicationInsightsSettings>(),
+            services.RegisterSearch(OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
@@ -59,8 +55,35 @@ namespace Atlas.MatchingAlgorithm.Api
                 OptionsReaderFor<MatchingConfigurationSettings>(),
                 ConnectionStringReader("PersistentSql"),
                 ConnectionStringReader("SqlA"),
+                ConnectionStringReader("SqlB"));
+            
+            services.RegisterDataRefresh(
+                OptionsReaderFor<AzureAuthenticationSettings>(),
+                OptionsReaderFor<AzureDatabaseManagementSettings>(),
+                OptionsReaderFor<DataRefreshSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                OptionsReaderFor<MacDictionarySettings>(),
+                OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<NotificationsServiceBusSettings>(),
+                OptionsReaderFor<DonorManagementSettings>(),
+                ConnectionStringReader("PersistentSql"),
+                ConnectionStringReader("SqlA"),
                 ConnectionStringReader("SqlB"),
                 ConnectionStringReader("DonorImportSql"));
+            
+            services.RegisterDonorManagement(
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<DonorManagementSettings>(),
+                OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                OptionsReaderFor<MacDictionarySettings>(),
+                OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<NotificationsServiceBusSettings>(),
+                ConnectionStringReader("PersistentSql"),
+                ConnectionStringReader("SqlA"),
+                ConnectionStringReader("SqlB"));
 
             services.ConfigureSwaggerService();
 

@@ -48,15 +48,90 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 {
     public static class ServiceConfiguration
     {
-        public static void RegisterMatchingAlgorithm(
+        /// <summary>
+        /// Register everything needed to perform ongoing donor management of the matching algorithm's data store.
+        /// </summary>
+        public static void RegisterDonorManagement(
             this IServiceCollection services,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
+            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
+            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
+            Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
+            Func<IServiceProvider, string> fetchTransientASqlConnectionString,
+            Func<IServiceProvider, string> fetchTransientBSqlConnectionString
+        )
+        {
+            services.RegisterCommonServices(
+                fetchApplicationInsightsSettings,
+                fetchAzureStorageSettings,
+                fetchMessagingServiceBusSettings,
+                fetchNotificationsServiceBusSettings,
+                fetchPersistentSqlConnectionString,
+                fetchTransientASqlConnectionString,
+                fetchTransientBSqlConnectionString
+            );
 
-            // Data refresh only 
-            // TODO: ATLAS-472: Split registration of data refresh/matching usages
+            services.RegisterCommonImportServices();
+
+            services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
+
+            services.RegisterDonorManagementServices(fetchDonorManagementSettings, fetchMessagingServiceBusSettings);
+        }
+
+        /// <summary>
+        /// Register everything needed to perform a full data refresh of the matching algorithm's data store.
+        /// </summary>
+        public static void RegisterDataRefresh(
+            this IServiceCollection services,
             Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings,
             Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
             Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
+            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
+            Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
+            Func<IServiceProvider, string> fetchTransientASqlConnectionString,
+            Func<IServiceProvider, string> fetchTransientBSqlConnectionString,
+            Func<IServiceProvider, string> fetchDonorImportSqlConnectionString)
+        {
+            services.RegisterCommonServices(
+                fetchApplicationInsightsSettings,
+                fetchAzureStorageSettings,
+                fetchMessagingServiceBusSettings,
+                fetchNotificationsServiceBusSettings,
+                fetchPersistentSqlConnectionString,
+                fetchTransientASqlConnectionString,
+                fetchTransientBSqlConnectionString
+            );
+
+            services.RegisterCommonImportServices();
+
+            services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
+
+            services.RegisterDonorReader(fetchDonorImportSqlConnectionString);
+
+            services.RegisterDataRefreshServices(
+                fetchAzureAuthenticationSettings,
+                fetchAzureDatabaseManagementSettings,
+                fetchDataRefreshSettings,
+                fetchDonorManagementSettings,
+                fetchMessagingServiceBusSettings
+            );
+        }
+
+        /// <summary>
+        /// Register everything needed to perform searches.
+        /// </summary>
+        public static void RegisterSearch(
+            this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
@@ -66,9 +141,38 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
-            Func<IServiceProvider, string> fetchTransientBSqlConnectionString,
-            Func<IServiceProvider, string> fetchDonorImportSqlConnectionString)
+            Func<IServiceProvider, string> fetchTransientBSqlConnectionString)
         {
+            services.RegisterCommonServices(
+                fetchApplicationInsightsSettings,
+                fetchAzureStorageSettings,
+                fetchMessagingServiceBusSettings,
+                fetchNotificationsServiceBusSettings,
+                fetchPersistentSqlConnectionString,
+                fetchTransientASqlConnectionString,
+                fetchTransientBSqlConnectionString
+            );
+
+            services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
+
+            services.RegisterSearchServices(fetchMatchingConfigurationSettings);
+        }
+
+
+        /// <summary>
+        /// Register services only needed for Data Refresh, and not for matching or donor management
+        /// </summary>
+        private static void RegisterDataRefreshServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings,
+            Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
+            Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
+            Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
+        {
+            // The last step of the Data Refresh is applying a backlog of donor updates - so it needs to know how to perform queued donor updates as well. 
+            services.RegisterDonorManagementServices(fetchDonorManagementSettings, fetchMessagingServiceBusSettings);
+
             services.RegisterSettingsForDataRefresh(
                 fetchAzureAuthenticationSettings,
                 fetchAzureDatabaseManagementSettings,
@@ -76,101 +180,14 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchMessagingServiceBusSettings
             );
 
-            services.RegisterMatchingAlgorithmAndDonorManagementOnly(
-                fetchApplicationInsightsSettings,
-                fetchAzureStorageSettings,
-                fetchDonorManagementSettings,
-                fetchHlaMetadataDictionarySettings,
-                fetchMacDictionarySettings,
-                fetchMessagingServiceBusSettings,
-                fetchNotificationsServiceBusSettings,
-                fetchMatchingConfigurationSettings,
-                fetchPersistentSqlConnectionString,
-                fetchTransientASqlConnectionString,
-                fetchTransientBSqlConnectionString
-            );
-
-            services.RegisterDonorReader(fetchDonorImportSqlConnectionString);
-        }
-
-        // TODO: ATLAS-472. This is still kind of a mess. "DonorManagementOnly" registers loads of things that aren't related to Don.Mgmt.
-        // But this is (temporarily) better than the alternative, given that the main registration needs to register everything for Don.Mgmt, in order to do DataRefresh.
-        public static void RegisterMatchingAlgorithmAndDonorManagementOnly(
-            this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
-            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
-            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
-            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
-            Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings,
-            Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
-            Func<IServiceProvider, string> fetchTransientASqlConnectionString,
-            Func<IServiceProvider, string> fetchTransientBSqlConnectionString
-        )
-        {
-            services.RegisterSettingsForMatchingAndDonorManagement(
-                fetchApplicationInsightsSettings,
-                fetchAzureStorageSettings,
-                fetchMessagingServiceBusSettings,
-                fetchNotificationsServiceBusSettings,
-                fetchMatchingConfigurationSettings
-            );
-
-            services.RegisterMatchingAlgorithmServices(
-                fetchPersistentSqlConnectionString,
-                fetchTransientASqlConnectionString,
-                fetchTransientBSqlConnectionString
-            );
-
-            services.RegisterDataServices(fetchPersistentSqlConnectionString);
-            services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
-            services.RegisterDonorManagementServices(fetchDonorManagementSettings, fetchMessagingServiceBusSettings);
-        }
-
-        private static void RegisterMatchingAlgorithmServices(
-            this IServiceCollection services,
-            Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
-            Func<IServiceProvider, string> fetchTransientASqlConnectionString,
-            Func<IServiceProvider, string> fetchTransientBSqlConnectionString
-        )
-        {
-            services.AddScoped(sp => new ConnectionStrings
-            {
-                Persistent = fetchPersistentSqlConnectionString(sp),
-                TransientA = fetchTransientASqlConnectionString(sp),
-                TransientB = fetchTransientBSqlConnectionString(sp),
-            });
-
-            services.AddSingleton<IMemoryCache, MemoryCache>(sp => new MemoryCache(new MemoryCacheOptions()));
-
-            services.AddSingleton(sp => AutomapperConfig.CreateMapper());
-
+            // Azure interaction services
             services.AddScoped<IThreadSleeper, ThreadSleeper>();
-
-            services.AddScoped<MatchingAlgorithmSearchLoggingContext>();
-            services.AddScoped<MatchingAlgorithmImportLoggingContext>();
-            services.AddApplicationInsightsTelemetryWorkerService();
-            services.AddScoped<IMatchingAlgorithmSearchLogger, MatchingAlgorithmSearchLogger>();
-            services.AddScoped<IMatchingAlgorithmImportLogger, MatchingAlgorithmImportLogger>();
-
-            services.RegisterLifeTimeScopedCacheTypes();
-
-            services.AddScoped<ActiveTransientSqlConnectionStringProvider>();
-            services.AddScoped<DormantTransientSqlConnectionStringProvider>();
-            services.AddScoped<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
-            services.AddScoped<IActiveDatabaseProvider, ActiveDatabaseProvider>();
+            services.AddScoped<IAzureDatabaseManagementClient, AzureDatabaseManagementClient>();
+            services.AddScoped<IAzureAuthenticationClient, AzureAuthenticationClient>();
+            services.AddScoped<IAzureDatabaseManager, AzureDatabaseManager>();
             services.AddScoped<IAzureDatabaseNameProvider, AzureDatabaseNameProvider>();
 
-            services.AddScoped<IDonorService, DonorService>();
-            services.AddScoped<IDonorHlaExpanderFactory, DonorHlaExpanderFactory>();
-
-            services.AddScoped<ISearchService, SearchService>();
-            services.AddScoped<IFailedDonorsNotificationSender, FailedDonorsNotificationSender>();
-            services.AddScoped<IDonorInfoConverter, DonorInfoConverter>();
-            services.AddScoped<IDonorImporter, DonorImporter>();
-            services.AddScoped<IHlaProcessor, HlaProcessor>();
+            // Data Refresh services
             services.AddScoped<IDataRefreshRequester, DataRefreshRequester>();
             services.AddScoped<IDataRefreshOrchestrator, DataRefreshOrchestrator>();
             services.AddScoped<IDataRefreshRunner, DataRefreshRunner>();
@@ -179,58 +196,13 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IDataRefreshCleanupService, DataRefreshCleanupService>();
             services.AddScoped<IDataRefreshServiceBusClient, DataRefreshServiceBusClient>();
 
-            // Matching Services
-            services.AddScoped<IMatchingService, MatchingService>();
-            services.AddScoped<IDonorMatchingService, DonorMatchingService>();
-            services.AddScoped<IPerLocusDonorMatchingService, PerLocusDonorMatchingService>();
-            services.AddScoped<IMatchFilteringService, MatchFilteringService>();
-            services.AddScoped<IMatchCriteriaAnalyser, MatchCriteriaAnalyser>();
-            services.AddScoped<IDatabaseFilteringAnalyser, DatabaseFilteringAnalyser>();
-
-            // Scoring Services
-            services.AddScoped<IMatchScoringService, MatchScoringService>();
-            services.AddScoped<IDonorScoringService, DonorScoringService>();
-            services.AddScoped<IGradingService, GradingService>();
-            services.AddScoped<IConfidenceService, ConfidenceService>();
-            services.AddScoped<IConfidenceCalculator, ConfidenceCalculator>();
-            services.AddScoped<IRankingService, RankingService>();
-            services.AddScoped<IMatchScoreCalculator, MatchScoreCalculator>();
-            services.AddScoped<IScoringRequestService, ScoringRequestService>();
-            services.AddScoped<IPermissiveMismatchCalculator, PermissiveMismatchCalculator>();
-            services.AddScoped<IScoreResultAggregator, ScoreResultAggregator>();
-            services.AddScoped<IScoringCache, ScoringCache>();
-
-            services.RegisterCommonGeneticServices();
-            services.RegisterCommonMatchingServices();
-
-            services.AddScoped<IActiveHlaNomenclatureVersionAccessor, ActiveHlaNomenclatureVersionAccessor>();
-
-            services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>();
-            services.AddScoped<ISearchDispatcher, SearchDispatcher>();
-            services.AddScoped<ISearchRunner, SearchRunner>();
-            services.AddScoped<IResultsBlobStorageClient, ResultsBlobStorageClient>();
-
-            services.AddScoped<IAzureDatabaseManagementClient, AzureDatabaseManagementClient>();
-            services.AddScoped<IAzureAuthenticationClient, AzureAuthenticationClient>();
-            services.AddScoped<IAzureDatabaseManager, AzureDatabaseManager>();
-
-            services.RegisterNotificationSender(
-                OptionsReaderFor<NotificationsServiceBusSettings>(),
-                OptionsReaderFor<ApplicationInsightsSettings>()
-            );
+            services.AddScoped<IHlaProcessor, HlaProcessor>();
+            services.AddScoped<IDonorImporter, DonorImporter>();
         }
 
-        private static void RegisterDataServices(this IServiceCollection services, Func<IServiceProvider, string> fetchPersistentSqlConnectionString)
-        {
-            services.AddScoped<IActiveRepositoryFactory, ActiveRepositoryFactory>();
-            services.AddScoped<IDormantRepositoryFactory, DormantRepositoryFactory>();
-            services.AddScoped<IStaticallyChosenDatabaseRepositoryFactory, StaticallyChosenDatabaseRepositoryFactory>();
-            // Persistent storage
-            services.AddScoped(sp => new ContextFactory().Create(fetchPersistentSqlConnectionString(sp)));
-            services.AddScoped<IScoringWeightingRepository, ScoringWeightingRepository>();
-            services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
-        }
-
+        /// <summary>
+        /// Register services only needed for ongoing donor management 
+        /// </summary>
         private static void RegisterDonorManagementServices(
             this IServiceCollection services,
             Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
@@ -284,18 +256,150 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             });
         }
 
-        private static void RegisterSettingsForMatchingAndDonorManagement(
+        /// <summary>
+        /// Register services only needed for running searches
+        /// </summary>
+        private static void RegisterSearchServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings)
+        {
+            services.RegisterSettingsForMatching(
+                fetchMatchingConfigurationSettings
+            );
+
+            services.AddScoped<ISearchService, SearchService>();
+            services.AddScoped<IMatchCriteriaMapper, MatchCriteriaMapper>();
+
+            services.AddApplicationInsightsTelemetryWorkerService();
+            services.AddScoped<MatchingAlgorithmSearchLoggingContext>();
+            services.AddScoped<IMatchingAlgorithmSearchLogger, MatchingAlgorithmSearchLogger>();
+
+            // Matching Services
+            services.AddScoped<IMatchingService, MatchingService>();
+            services.AddScoped<IDonorMatchingService, DonorMatchingService>();
+            services.AddScoped<IPerLocusDonorMatchingService, PerLocusDonorMatchingService>();
+            services.AddScoped<IMatchFilteringService, MatchFilteringService>();
+            services.AddScoped<IMatchCriteriaAnalyser, MatchCriteriaAnalyser>();
+            services.AddScoped<IDatabaseFilteringAnalyser, DatabaseFilteringAnalyser>();
+
+            // Scoring Services
+            services.AddScoped<IMatchScoringService, MatchScoringService>();
+            services.AddScoped<IDonorScoringService, DonorScoringService>();
+            services.AddScoped<IGradingService, GradingService>();
+            services.AddScoped<IConfidenceService, ConfidenceService>();
+            services.AddScoped<IConfidenceCalculator, ConfidenceCalculator>();
+            services.AddScoped<IRankingService, RankingService>();
+            services.AddScoped<IMatchScoreCalculator, MatchScoreCalculator>();
+            services.AddScoped<IScoringRequestService, ScoringRequestService>();
+            services.AddScoped<IPermissiveMismatchCalculator, PermissiveMismatchCalculator>();
+            services.AddScoped<IScoreResultAggregator, ScoreResultAggregator>();
+            services.AddScoped<IScoringCache, ScoringCache>();
+
+            // Also used for dispatching searches, registered independently in ProjectInterfaceOrchestrationConfiguration.cs
+            services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>();
+            services.AddScoped<ISearchDispatcher, SearchDispatcher>();
+            services.AddScoped<ISearchRunner, SearchRunner>();
+            services.AddScoped<IResultsBlobStorageClient, ResultsBlobStorageClient>();
+
+            // Repositories
+            services.AddScoped<IScoringWeightingRepository, ScoringWeightingRepository>();
+        }
+
+        /// <summary>
+        /// Register any services common to both import pathways - i.e. ongoing donor management and full data refresh
+        /// </summary>
+        private static void RegisterCommonImportServices(this IServiceCollection services)
+        {
+            services.AddApplicationInsightsTelemetryWorkerService();
+            services.AddScoped<MatchingAlgorithmImportLoggingContext>();
+            services.AddScoped<IMatchingAlgorithmImportLogger, MatchingAlgorithmImportLogger>();
+
+            services.AddScoped<IDonorService, DonorService>();
+            services.AddScoped<IDonorHlaExpanderFactory, DonorHlaExpanderFactory>();
+
+            services.AddScoped<IFailedDonorsNotificationSender, FailedDonorsNotificationSender>();
+            services.AddScoped<IDonorInfoConverter, DonorInfoConverter>();
+        }
+
+        /// <summary>
+        /// Register services needed in multiple usages of the matching component - across matching, data refresh, and ongoing donor management 
+        /// </summary>
+        private static void RegisterCommonServices(
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
-            Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings)
+            Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
+            Func<IServiceProvider, string> fetchTransientASqlConnectionString,
+            Func<IServiceProvider, string> fetchTransientBSqlConnectionString
+        )
+        {
+            services.RegisterCommonSettings(
+                fetchApplicationInsightsSettings,
+                fetchAzureStorageSettings,
+                fetchMessagingServiceBusSettings,
+                fetchNotificationsServiceBusSettings
+            );
+
+            services.AddScoped(sp => new ConnectionStrings
+            {
+                Persistent = fetchPersistentSqlConnectionString(sp),
+                TransientA = fetchTransientASqlConnectionString(sp),
+                TransientB = fetchTransientBSqlConnectionString(sp),
+            });
+
+            services.AddSingleton<IMemoryCache, MemoryCache>(sp => new MemoryCache(new MemoryCacheOptions()));
+
+            services.AddSingleton(sp => AutomapperConfig.CreateMapper());
+
+            services.AddApplicationInsightsTelemetryWorkerService();
+
+            services.RegisterLifeTimeScopedCacheTypes();
+
+            services.AddScoped<ActiveTransientSqlConnectionStringProvider>();
+            services.AddScoped<DormantTransientSqlConnectionStringProvider>();
+            services.AddScoped<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
+            services.AddScoped<IActiveDatabaseProvider, ActiveDatabaseProvider>();
+
+            services.RegisterCommonGeneticServices();
+            services.RegisterCommonMatchingServices();
+
+            services.AddScoped<IActiveHlaNomenclatureVersionAccessor, ActiveHlaNomenclatureVersionAccessor>();
+
+            services.RegisterNotificationSender(
+                OptionsReaderFor<NotificationsServiceBusSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>()
+            );
+
+            services.AddScoped<IActiveRepositoryFactory, ActiveRepositoryFactory>();
+            services.AddScoped<IDormantRepositoryFactory, DormantRepositoryFactory>();
+            services.AddScoped<IStaticallyChosenDatabaseRepositoryFactory, StaticallyChosenDatabaseRepositoryFactory>();
+
+            // Persistent storage
+            services.AddScoped(sp => new ContextFactory().Create(fetchPersistentSqlConnectionString(sp)));
+            services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
+        }
+
+        #region Settings
+
+        private static void RegisterCommonSettings(
+            this IServiceCollection services,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings)
         {
             services.MakeSettingsAvailableForUse(fetchApplicationInsightsSettings);
             services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
             services.MakeSettingsAvailableForUse(fetchNotificationsServiceBusSettings);
+        }
+
+        private static void RegisterSettingsForMatching(
+            this IServiceCollection services,
+            Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings)
+        {
             services.MakeSettingsAvailableForUse(fetchMatchingConfigurationSettings);
         }
 
@@ -311,5 +415,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.MakeSettingsAvailableForUse(fetchDataRefreshSettings);
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
         }
+
+        #endregion
     }
 }

@@ -38,7 +38,6 @@ resource "azurerm_function_app" "atlas_match_prediction_function" {
     "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:NotificationsTopic" = var.servicebus_topics.notifications.name
 
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "5"
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "1"
     "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
   }

@@ -20,17 +20,26 @@ namespace Atlas.MatchingAlgorithm.Functions
         public override void Configure(IFunctionsHostBuilder builder)
         {
             RegisterSettings(builder.Services);
-            builder.Services.RegisterMatchingAlgorithm(OptionsReaderFor<AzureAuthenticationSettings>(),
-                OptionsReaderFor<AzureDatabaseManagementSettings>(),
-                OptionsReaderFor<DataRefreshSettings>(),
-                OptionsReaderFor<DonorManagementSettings>(),
-                OptionsReaderFor<ApplicationInsightsSettings>(),
+            builder.Services.RegisterSearch(OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<MatchingConfigurationSettings>(),
+                ConnectionStringReader("PersistentSql"),
+                ConnectionStringReader("SqlA"), ConnectionStringReader("SqlB"));
+            
+            builder.Services.RegisterDataRefresh(OptionsReaderFor<AzureAuthenticationSettings>(),
+                OptionsReaderFor<AzureDatabaseManagementSettings>(),
+                OptionsReaderFor<DataRefreshSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                OptionsReaderFor<MacDictionarySettings>(),
+                OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<NotificationsServiceBusSettings>(),
+                OptionsReaderFor<DonorManagementSettings>(),
                 ConnectionStringReader("PersistentSql"),
                 ConnectionStringReader("SqlA"), ConnectionStringReader("SqlB"), ConnectionStringReader("DonorImportSql"));
         }

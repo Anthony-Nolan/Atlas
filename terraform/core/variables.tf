@@ -28,6 +28,12 @@ variable "DATABASE_SERVER_ADMIN_LOGIN_PASSWORD" {
   type = string
 }
 
+variable "DATABASE_SHARED_EDITION" {
+  type        = string
+  default     = "Standard"
+  description = "Database edition. Defaults to 'Standard' for SKU (S0, P1, etc.) pricing model. For VCore (including Serverless) model, must be changed to 'GeneralPurpose'"
+}
+
 variable "DATABASE_SHARED_MAX_SIZE" {
   type        = string
   default     = "32212254720"
@@ -37,7 +43,7 @@ variable "DATABASE_SHARED_MAX_SIZE" {
 variable "DATABASE_SHARED_SKU_SIZE" {
   type        = string
   default     = "S2"
-  description = "This database will be on the Standard tier, so only standard sku sizes are appropriate e.g. S0, S2, S3."
+  description = "Appropriate values determined by DATABASE_SHARED_EDITION. Defaults to 'Standard', where only standard sku sizes are appropriate e.g. S0, S2, S3. Updating to 'GeneralPurpose' instead allows VCore/Serverless tiers, e.g. GP_S_Gen5_2"
 }
 
 variable "DONOR_DATABASE_PASSWORD" {
@@ -118,28 +124,54 @@ variable "MATCHING_BATCH_SIZE" {
   description = "Batch size at which donors will be iterated in the matching algorithm. Larger = quicker, but higher memory footprint."
 }
 
+variable "MATCHING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE" {
+  type = number
+  default = 3
+  description = "The maximum number of concurrent search requests that can run on each instance of the matching algorithm."
+}
+
+variable "MATCHING_MAX_SCALE_OUT" {
+  type = number
+  default = 3
+  description = "The maximum number of instances of the matching algorithm that can be scaled out."
+}
+
 variable "MATCHING_DATABASE_TRANSIENT_TIMEOUT" {
   type        = number
   default     = 1800
   description = "The timeout to be used in the connection string for the transient matching database. The default is half an hour - which may not be enough for particularly large ATLAS installations."
 }
 
+
+variable "MATCHING_DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE" {
+  type = number
+  default = -1
+  description = "The 'auto-pause' duration for the active matching database, in minutes. Only relevant for serverless database tier - will be ignored for other tiers. -1 = auto-pause disabled. Minimum 60."
+}
+
+variable "MATCHING_DATA_REFRESH_DB_AUTO_PAUSE_DORMANT" {
+  type = number
+  default = -1
+  description = "The 'auto-pause' duration for the dormant matching database, in minutes. Only relevant for serverless database tier - will be ignored for other tiers. -1 = auto-pause disabled. Minimum 60."
+}
+
+
 variable "MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE" {
   type        = string
   default     = "S4"
-  description = "Size of Azure Database used for active matching database. Allowed values according to the Azure DTU model service tiers."
+  description = "Size of Azure Database used for active matching database. Allowed values according to the Azure DTU/GeneralPurpose Serverless model service tiers."
 }
 
 variable "MATCHING_DATA_REFRESH_DB_SIZE_DORMANT" {
   type        = string
   default     = "S0"
-  description = "Size of Azure Database used for dormant matching database. Allowed values according to the Azure DTU model service tiers."
+  description = "Size of Azure Database used for dormant matching database. Allowed values according to the Azure DTU/GeneralPurpose Serverless model service tiers."
 }
 
 variable "MATCHING_DATA_REFRESH_DB_SIZE_REFRESH" {
   type        = string
   default     = "P1"
-  description = "Size to temproarily scale the dormant Azure Database to, whilst refreshing the matching database. Allowed values according to the Azure DTU model service tiers. Premium tier is recommended due to a large IO throughput."
+  description = "Size to temporarily scale the dormant Azure Database to, whilst refreshing the matching database. Allowed values according to the Azure DTU model service tiers. Premium tier is recommended due to a large IO throughput."
 }
 
 variable "MATCHING_DATA_REFRESH_CRONTAB" {
@@ -208,6 +240,12 @@ variable "MATCHING_USERNAME_FOR_DONOR_IMPORT_DATABASE" {
   default = "matchingForDonorSchema"
 }
 
+variable "MAX_CONCURRENT_ACTIVITY_FUNCTIONS" {
+  type = number
+  default = 10
+  description = "Maximum number of concurrent activity functions in the top level Atlas functions app. Notably affects match prediction concurrency per-instance."
+}
+
 variable "ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE" {
   type    = number
   default = 10
@@ -220,6 +258,12 @@ variable "REPEAT_SEARCH_DATABASE_PASSWORD" {
 variable "REPEAT_SEARCH_DATABASE_USERNAME" {
   type    = string
   default = "repeat_search"
+}
+
+variable "SERVICE_PLAN_MAX_SCALE_OUT" {
+  type = number
+  default = 50
+  description = "The maximum number of workers that can be scaled out on the service plan. Affects all functions apps - which can be further restricted, but can never exceed this limit."
 }
 
 variable "SERVICE_PLAN_SKU" {

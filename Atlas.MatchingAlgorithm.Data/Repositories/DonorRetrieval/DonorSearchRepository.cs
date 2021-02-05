@@ -35,7 +35,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
         IAsyncEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(
             Locus locus,
             LocusSearchCriteria criteria,
-            MatchingFilteringOptions filteringOptions);
+            MatchingFilteringOptions filteringOptions,
+            DateTime? cutOffDate);
     }
 
     public class DonorSearchRepository : Repository, IDonorSearchRepository
@@ -55,7 +56,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
         public async IAsyncEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(
             Locus locus,
             LocusSearchCriteria criteria,
-            MatchingFilteringOptions filteringOptions
+            MatchingFilteringOptions filteringOptions,
+            DateTime? cutOffDate
         )
         {
             var pGroups = new LocusInfo<IEnumerable<int>>(criteria.PGroupIdsToMatchInPositionOne, criteria.PGroupIdsToMatchInPositionTwo);
@@ -80,7 +82,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                 }
             }
 
-            var typedResults = MatchAtLocus(locus, filteringOptions, pGroups, criteria.MismatchCount == 0);
+            var typedResults = MatchAtLocus(locus, filteringOptions, pGroups, criteria.MismatchCount == 0, cutOffDate);
 
             await foreach (var result in typedResults)
             {
@@ -92,9 +94,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             Locus locus,
             MatchingFilteringOptions filteringOptions,
             LocusInfo<IEnumerable<int>> pGroups,
-            bool mustBeDoubleMatch)
+            bool mustBeDoubleMatch,
+            DateTime? cutOffDate)
         {
-            var sqlMatchResults = MatchAtLocusSql(locus, filteringOptions, pGroups, mustBeDoubleMatch);
+            var sqlMatchResults = MatchAtLocusSql(locus, filteringOptions, pGroups, mustBeDoubleMatch, cutOffDate);
             var relations = sqlMatchResults.SelectMany(x => x.ToPotentialHlaMatchRelations(locus));
             await foreach (var relation in relations)
             {
@@ -120,7 +123,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             Locus locus,
             MatchingFilteringOptions filteringOptions,
             LocusInfo<IEnumerable<int>> pGroups,
-            bool mustBeDoubleMatch)
+            bool mustBeDoubleMatch,
+            DateTime? cutOffDate)
         {
             // Technically this would incorrectly reject empty P-group collections at a single locus only. We assert that this will never happen, as partially typed loci are disallowed,
             // and null expressing alleles (the only way to have a null p group) are handled by copying the expressing allele's P-groups to the null position.
@@ -142,15 +146,34 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 
                     var matchingHlaTableName = MatchingHla.TableName(locus);
                     var hlaPGroupRelationTableName = HlaNamePGroupRelation.TableName(locus);
-                    
+
                     var donorTypeFilteredJoin = filteringOptions.ShouldFilterOnDonorType
                         // ReSharper disable once PossibleInvalidOperationException - implicitly checked via ShouldFilterOnDonorType
                         ? $@"INNER JOIN Donors d ON {selectDonorIdStatement} = d.DonorId AND d.DonorType = {(int) filteringOptions.DonorType}"
                         : "";
 
-                    var donorIdTempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("m", "DonorId", filteringOptions.DonorIds, "DonorIds");
-                    var pGroups1TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("hlaPGroupRelations", "PGroupId", pGroups.Position1, "PGroups1");
-                    var pGroups2TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("hlaPGroupRelations", "PGroupId", pGroups.Position2, "PGroups2");
+                    var donorUpdatedJoin = cutOffDate != null
+                        ? $@"INNER JOIN DonorManagementLogs dml ON m.DonorId = dml.DonorId AND dml.LastUpdateDateTime >= '{cutOffDate}'"
+                        : "";
+
+                    var donorIdTempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering(
+                        "m",
+                        "DonorId",
+                        filteringOptions.DonorIds,
+                        new TempTableFilterConfiguration {TempTableName = "Donors", InsertTimeoutInSeconds = 300}
+                    );
+                    var pGroups1TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering(
+                        "hlaPGroupRelations",
+                        "PGroupId",
+                        pGroups.Position1,
+                        new TempTableFilterConfiguration {TempTableName = "PGroups1", InsertTimeoutInSeconds = 300}
+                    );
+                    var pGroups2TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering(
+                        "hlaPGroupRelations",
+                        "PGroupId",
+                        pGroups.Position2,
+                        new TempTableFilterConfiguration {TempTableName = "PGroups2", InsertTimeoutInSeconds = 300}
+                    );
 
                     var donorIdTempTableJoin = filteringOptions.ShouldFilterOnDonorIds ? donorIdTempTableJoinConfig.FilteredJoinQueryString : "";
 
@@ -159,22 +182,24 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                     var sql = $@"
 SELECT * INTO #Pos1 FROM 
 (
-SELECT m.DonorId as DonorId1, TypePosition as TypePosition1
+SELECT DISTINCT m.DonorId as DonorId1, TypePosition as TypePosition1
 FROM {hlaPGroupRelationTableName} hlaPGroupRelations
 {pGroups1TempTableJoinConfig.FilteredJoinQueryString}
 JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
 {donorIdTempTableJoin}
+{donorUpdatedJoin}
 ) as m_1; 
 
 CREATE INDEX IX_Temp_Position1 ON #Pos1(DonorId1);
 
 SELECT * INTO #Pos2 FROM 
 (
-SELECT m.DonorId as DonorId2, TypePosition as TypePosition2
+SELECT DISTINCT m.DonorId as DonorId2, TypePosition as TypePosition2
 FROM {hlaPGroupRelationTableName} hlaPGroupRelations
 {pGroups2TempTableJoinConfig.FilteredJoinQueryString}
 JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
 {donorIdTempTableJoin}
+{donorUpdatedJoin}
 ) as m_2;
 
 CREATE INDEX IX_Temp_Position2 ON #Pos2(DonorId2);

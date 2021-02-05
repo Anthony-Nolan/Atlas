@@ -8,6 +8,7 @@ using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+using static Atlas.Common.Maths.Combinations;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.ApplicationInsights;
@@ -174,7 +175,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 };
             }
 
-            if (donorGenotypes.Count * patientGenotypes.Count > 40_000_000)
+            if (NumberOfPairsOfCartesianProduct(patientGenotypes, donorGenotypes) > 40_000_000)
             {
                 logger.SendTrace(
                     $"{LoggingPrefix} Calculating the MatchCounts of provided donor patient pairs is expected to take upwards of 1 minute." +
@@ -211,7 +212,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var convertedDonorGenotypes = await ConvertGenotypes(donorGenotypes, "donor", donorGenotypeLikelihoods);
             var allPatientDonorCombinations = CombineGenotypes(convertedPatientGenotypes, convertedDonorGenotypes);
 
-            using (var matchCountLogger = MatchCountLogger(allPatientDonorCombinations.Count))
+            using (var matchCountLogger = MatchCountLogger(NumberOfPairsOfCartesianProduct(convertedDonorGenotypes, convertedPatientGenotypes)))
             {
                 var patientDonorMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, allowedLoci, matchCountLogger);
 
@@ -268,24 +269,23 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             }
         }
 
-        private List<Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>> CombineGenotypes(
+        private IEnumerable<Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>> CombineGenotypes(
             List<GenotypeAtDesiredResolutions> patientGenotypes,
             List<GenotypeAtDesiredResolutions> donorGenotypes)
         {
             using (logger.RunTimed("Combining patient/donor genotypes", LogLevel.Verbose))
             {
                 var combinations = patientGenotypes.SelectMany(patientHla =>
-                        donorGenotypes.Select(donorHla =>
-                            new Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>(patientHla, donorHla)))
-                    .ToList();
+                    donorGenotypes.Select(donorHla =>
+                        new Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>(patientHla, donorHla)));
 
-                logger.SendTrace($"Patient/donor pairs: {combinations.Count:n0}");
+                logger.SendTrace($"Patient/donor pairs: {NumberOfPairsOfCartesianProduct(patientGenotypes, donorGenotypes):n0}");
 
                 return combinations;
             }
         }
 
-        private ILongOperationLoggingStopwatch MatchCountLogger(int patientDonorPairCount) => logger.RunLongOperationWithTimer(
+        private ILongOperationLoggingStopwatch MatchCountLogger(long patientDonorPairCount) => logger.RunLongOperationWithTimer(
             "Calculate match counts.",
             new LongLoggingSettings
             {

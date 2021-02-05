@@ -12,7 +12,8 @@
   },
   "extensions": {
     "durableTask": {
-      "hubName": "AtlasFunctionsHub"
+      "hubName": "AtlasFunctionsHub",
+      "maxConcurrentActivityFunctions": 10
     }
   },
   "functionTimeout": "23:00:00"

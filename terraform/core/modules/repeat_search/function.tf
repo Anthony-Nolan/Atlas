@@ -20,7 +20,26 @@ resource "azurerm_function_app" "atlas_repeat_search_function" {
     "APPINSIGHTS_INSTRUMENTATIONKEY" = var.application_insights.instrumentation_key
     "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
-    "FUNCTIONS_WORKER_RUNTIME" : "dotnet"
+    "AzureStorage:ConnectionString" = var.azure_storage.primary_connection_string 
+
+    "FUNCTIONS_WORKER_RUNTIME" = "dotnet"  
+
+    "HlaMetadataDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string  
+            
+    "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
+    "MacDictionary:TableName"                    = var.mac_import_table.name
+            
+    "MatchingConfiguration:MatchingBatchSize" = var.MATCHING_BATCH_SIZE
+
+    "MessagingServiceBus:ConnectionString"                 = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
+    "MessagingServiceBus:RepeatSearchRequestsSubscription" = azurerm_servicebus_subscription.repeat-search-repeat-search-requests.name
+    "MessagingServiceBus:RepeatSearchRequestsTopic"        = azurerm_servicebus_topic.repeat-search-requests.name
+    "MessagingServiceBus:RepeatSearchResultsTopic"         = azurerm_servicebus_topic.repeat-search-results-ready.name
+
+    "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
+    "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:NotificationsTopic" = var.servicebus_topics.notifications.name
+
     "WEBSITE_RUN_FROM_PACKAGE" = "1"
   }
 
@@ -35,5 +54,23 @@ resource "azurerm_function_app" "atlas_repeat_search_function" {
     name  = "RepeatSearchSql"
     type  = "SQLAzure"
     value = local.repeat_search_database_connection_string
+  }
+
+  connection_string {
+    name  = "MatchingPersistentSql"
+    type  = "SQLAzure"
+    value = var.matching_persistent_database_connection_string
+  }
+
+connection_string {
+    name  = "MatchingSqlA"
+    type  = "SQLAzure"
+    value = var.matching_transient_a_database_connection_string
+  }
+
+connection_string {
+    name  = "MatchingSqlB"
+    type  = "SQLAzure"
+    value = var.matching_transient_b_database_connection_string
   }
 }

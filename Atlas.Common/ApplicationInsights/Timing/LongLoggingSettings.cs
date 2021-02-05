@@ -26,7 +26,7 @@ namespace LoggingStopwatch
         /// it will just lead to the percentage and Completion Time reports
         /// being inaccurate (if used).
         /// </summary>
-        public int? ExpectedNumberOfIterations { get; set; } = null;
+        public long? ExpectedNumberOfIterations { get; set; } = null;
 
         /// <summary>How frequently should the progress of inner operations be logged. default is 1, i.e. after every loop of the inner operation</summary>
         public int InnerOperationLoggingPeriod { get; set; } = 1;

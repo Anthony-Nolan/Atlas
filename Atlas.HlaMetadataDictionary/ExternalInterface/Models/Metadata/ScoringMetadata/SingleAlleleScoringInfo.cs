@@ -12,7 +12,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringM
     /// <summary>
     /// Data needed to score a single allele typing.
     /// </summary>
-    public class SingleAlleleScoringInfo : 
+    public class SingleAlleleScoringInfo :
         IHlaScoringInfo,
         IEquatable<SingleAlleleScoringInfo>
     {
@@ -42,11 +42,17 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringM
         [JsonProperty("ser")]
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }
 
-        [JsonIgnore]
-        public IEnumerable<string> MatchingGGroups => new List<string> { MatchingGGroup };
+        // Newtonsoft.JSON use convention based naming to conditionally serialise: https://stackoverflow.com/questions/11320968/can-newtonsoft-json-net-skip-serializing-empty-lists
+        public bool ShouldSerializeMatchingSerologies()
+        {
+            return MatchingSerologies.Any();
+        }
 
         [JsonIgnore]
-        public IEnumerable<string> MatchingPGroups => new List<string> { MatchingPGroup };
+        public IEnumerable<string> MatchingGGroups => new List<string> {MatchingGGroup};
+
+        [JsonIgnore]
+        public IEnumerable<string> MatchingPGroups => new List<string> {MatchingPGroup};
 
         [JsonIgnore]
         public bool IsNullExpresser { get; }
@@ -90,18 +96,20 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringM
             );
         }
 
-        public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo() => new List<SingleAlleleScoringInfo>{this};
+        public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo() => new List<SingleAlleleScoringInfo> {this};
 
         public AlleleTyping GenerateTypingAtLocus(Locus locus)
         {
             return new AlleleTyping(locus, AlleleName, AlleleTypingStatus);
         }
+
         #region IEquatable
+
         public bool Equals(SingleAlleleScoringInfo other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return 
+            return
                 string.Equals(AlleleName, other.AlleleName) &&
                 AlleleTypingStatus.Equals(other.AlleleTypingStatus) &&
                 string.Equals(MatchingPGroup, other.MatchingPGroup) &&
@@ -129,6 +137,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringM
                 return hashCode;
             }
         }
+
         #endregion
     }
 }

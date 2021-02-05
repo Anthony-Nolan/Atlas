@@ -16,3 +16,7 @@ variable "IP_RESTRICTION_SETTINGS" {
   type    = list(string)
   default = []
 }
+
+variable "MATCHING_BATCH_SIZE" {
+  type = number
+}

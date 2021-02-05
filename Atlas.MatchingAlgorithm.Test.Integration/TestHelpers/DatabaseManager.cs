@@ -92,6 +92,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
                 TRUNCATE TABLE [HlaNames]
                 
                 TRUNCATE TABLE [Donors]
+
+                TRUNCATE TABLE [DonorManagementLogs]
                 ");
             }
 

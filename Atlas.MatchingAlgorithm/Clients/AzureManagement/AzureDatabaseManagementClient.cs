@@ -16,14 +16,18 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
     public interface IAzureDatabaseManagementClient
     {
         /// <returns>The DateTime at which the scaling operation began</returns>
-        Task<DateTime> TriggerDatabaseScaling(string databaseName, AzureDatabaseSize databaseSize);
+        Task<DateTime> TriggerDatabaseScaling(string databaseName, AzureDatabaseSize databaseSize, int? autoPauseDuration);
 
         Task<IEnumerable<DatabaseOperation>> GetDatabaseOperations(string databaseName);
     }
 
+    
+    /// <summary>
+    /// See Azure documentation for this API: https://docs.microsoft.com/en-us/rest/api/sql/databases
+    /// </summary>
     public class AzureDatabaseManagementClient : AzureManagementClientBase, IAzureDatabaseManagementClient
     {
-        protected override string AzureApiVersion => "2017-10-01-preview";
+        protected override string AzureApiVersion => "2019-06-01-preview";
 
         private readonly string databaseServerName;
 
@@ -34,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
             databaseServerName = azureSettings.ServerName;
         }
 
-        public async Task<DateTime> TriggerDatabaseScaling(string databaseName, AzureDatabaseSize databaseSize)
+        public async Task<DateTime> TriggerDatabaseScaling(string databaseName, AzureDatabaseSize databaseSize, int? autoPauseDuration)
         {
             await Authenticate();
 
@@ -42,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
 
             var response = await HttpClient.PatchAsync(
                 updateSizeUrl,
-                new StringContent(databaseSize.ToAzureApiUpdateBody(), Encoding.UTF8, "application/json")
+                new StringContent(databaseSize.ToAzureApiUpdateBody(autoPauseDuration), Encoding.UTF8, "application/json")
             );
 
             if (!response.IsSuccessStatusCode)
