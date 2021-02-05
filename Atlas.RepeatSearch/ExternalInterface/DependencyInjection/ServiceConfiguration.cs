@@ -12,6 +12,7 @@ using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.RepeatSearch.Clients;
+using Atlas.RepeatSearch.Services.Search;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -62,6 +63,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
         private static void RegisterServices(
             this IServiceCollection services)
         {
+            services.AddScoped<IRepeatSearchDispatcher, RepeatSearchDispatcher>();
             services.AddScoped<IRepeatSearchServiceBusClient, RepeatSearchServiceBusClient>();
             services.AddScoped<IResultsBlobStorageClient, ResultsBlobStorageClient>();
         }
