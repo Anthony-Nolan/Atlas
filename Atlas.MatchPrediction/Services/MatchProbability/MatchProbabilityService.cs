@@ -40,11 +40,18 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         public Task<MatchProbabilityResponse> CalculateMatchProbability(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput);
     }
 
+    internal class MutableInt
+    {
+        public int Value { get; set; }
+    }
+
     internal class GenotypeAtDesiredResolutions
     {
         // Dictionary - quick way to check both (a) existence (b) quick lookup of index (vs. index of)
         // Add to it in order so .Keys gives same indexes as values!
         public static readonly Dictionary<LocusInfo<string>, int> LocusIndexes = new Dictionary<LocusInfo<string>, int>();
+
+        public static readonly LociInfo<MutableInt> LocusCounts = new LociInfo<MutableInt>(_ => new MutableInt {Value = 0});
 
         /// <summary>
         /// HLA at the resolution at which they were stored.
@@ -77,7 +84,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             StringMatchableResolution = stringMatchableResolution;
 
             IndexResolution =
-                stringMatchableResolution.Map((l, hla) => hla == null ? null as int? : LocusIndexes.GetOrAdd(hla, () => LocusIndexes.Count));
+                stringMatchableResolution.Map((l, hla) => hla == null
+                    ? null as int?
+                    : LocusIndexes.GetOrAdd(hla, () =>
+                    {
+                        LocusCounts.GetLocus(l).Value++;
+                        return LocusIndexes.Count;
+                    }));
 
             GenotypeLikelihood = genotypeLikelihood;
         }
@@ -234,10 +247,15 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     .Select(locusHlaInner => stringBasedLocusMatchCalculator.MatchCount(locusHlaOuter, locusHlaInner)).ToList()
             ).ToList();
 
+            var locusOrder = GenotypeAtDesiredResolutions.LocusCounts.Map((l, x) => (l, x))
+                .ToEnumerable()
+                .OrderByDescending(x => x.x.Value).Select(l => l.l)
+                .Where(l => allowedLoci.Contains(l))
+                .ToList();
 
             using (var matchCountLogger = MatchCountLogger(NumberOfPairsOfCartesianProduct(convertedDonorGenotypes, convertedPatientGenotypes)))
             {
-                var patientDonorMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, allowedLoci, matchCountLogger, matchCounts);
+                var patientDonorMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, allowedLoci, matchCountLogger, matchCounts, locusOrder);
 
                 // Sum likelihoods outside of loop, so they are not calculated millions of times
                 var sumOfPatientLikelihoods = patientGenotypeLikelihoods.Values.SumDecimals();
@@ -325,7 +343,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             IEnumerable<Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>> allPatientDonorCombinations,
             ISet<Locus> allowedLoci,
             ILongOperationLoggingStopwatch stopwatch,
-            List<List<int>> matchCounts)
+            List<List<int>> matchCounts,
+            List<Locus> locusOrder)
         {
             foreach (var pd in allPatientDonorCombinations)
             {
@@ -335,16 +354,16 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     var comboMatchCounts = new LociInfo<int?>(_ => null);
 
                     var countedMismatches = 0;
-                    foreach (var allowedLocus in allowedLoci)
+                    foreach (var l in locusOrder)
                     {
                         var locusMatch = stringBasedLocusMatchCalculator.IndexBasedMatchCount(
-                            patient.IndexResolution.GetLocus(allowedLocus),
-                            donor.IndexResolution.GetLocus(allowedLocus),
+                            patient.IndexResolution.GetLocus(l),
+                            donor.IndexResolution.GetLocus(l),
                             matchCounts
                         );
 
-                        comboMatchCounts = comboMatchCounts.SetLocus(allowedLocus, locusMatch);
-                        
+                        comboMatchCounts = comboMatchCounts.SetLocus(l, locusMatch);
+
                         countedMismatches += 2 - locusMatch;
                         if (countedMismatches > 2)
                         {
@@ -356,7 +375,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     {
                         continue;
                     }
-                    
+
                     yield return new GenotypeMatchDetails
                     {
                         AvailableLoci = allowedLoci,
