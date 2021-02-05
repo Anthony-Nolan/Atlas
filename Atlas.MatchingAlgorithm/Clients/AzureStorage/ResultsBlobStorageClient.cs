@@ -21,7 +21,7 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureStorage
         public ResultsBlobStorageClient(AzureStorageSettings azureStorageSettings, IMatchingAlgorithmSearchLogger logger)
             : base(azureStorageSettings.ConnectionString, logger)
         {
-            resultsContainerName = azureStorageSettings.SearchResultsBlobContainer;
+            resultsContainerName = azureStorageSettings.MatchingResultsBlobContainer;
         }
 
         public async Task UploadResults(MatchingAlgorithmResultSet searchResultSet)

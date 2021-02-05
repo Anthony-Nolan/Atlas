@@ -4,6 +4,8 @@
     "ApplicationInsights:InstrumentationKey": "dummy-key",
     "ApplicationInsights:LogLevel": "Info",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
+    "AzureStorage:MatchingResultsBlobContainer": "repeat-search-matching-results",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
@@ -12,13 +14,16 @@
     "MessagingServiceBus:ConnectionString": "override-this",
     "MessagingServiceBus:RepeatSearchRequestsTopic": "repeat-search-requests",
     "MessagingServiceBus:RepeatSearchRequestsSubscription": "repeat-search",
-    "MessagingServiceBus:RepeatSearchResultsTopic": "repeat-search-results-ready",
+    "MessagingServiceBus:RepeatSearchMatchingResultsTopic": "repeat-search-matching-results-ready",
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications"
   },
 
   "ConnectionStrings": {
-    "RepeatSearchSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;"
+    "RepeatSearchSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
+    "MatchingPersistentSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
+    "MatchingSqlA": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
+    "MatchingSqlB": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;"
   }
 }

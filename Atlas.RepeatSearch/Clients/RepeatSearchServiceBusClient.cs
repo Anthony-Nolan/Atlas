@@ -26,7 +26,7 @@ namespace Atlas.RepeatSearch.Clients
         {
             connectionString = messagingServiceBusSettings.ConnectionString;
             repeatSearchRequestsTopicName = messagingServiceBusSettings.RepeatSearchRequestsTopic;
-            resultsNotificationTopicName = messagingServiceBusSettings.RepeatSearchResultsTopic;
+            resultsNotificationTopicName = messagingServiceBusSettings.RepeatSearchMatchingResultsTopic;
         }
 
         public async Task PublishToRepeatSearchRequestsTopic(IdentifiedRepeatSearchRequest searchRequest)
