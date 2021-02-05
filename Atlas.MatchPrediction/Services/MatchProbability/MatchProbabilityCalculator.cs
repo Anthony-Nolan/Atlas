@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
@@ -84,6 +85,9 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
     internal class MatchProbabilityCalculator : IMatchProbabilityCalculator
     {
+        public static int numberOfGoodPairs = 0;
+        public static int numberOfBadPairs = 0;
+        
         public MatchProbabilityResponse CalculateMatchProbability(
             decimal sumOfPatientLikelihoods,
             decimal sumOfDonorLikelihoods,
@@ -100,6 +104,10 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             var matchProbabilityNumerators = CalculateEquationNumerators(patientDonorMatchDetails, allowedLoci);
 
+            Console.WriteLine($"Bad Pairs: {numberOfBadPairs}");
+            Console.WriteLine($"Good Pairs: {numberOfGoodPairs}");
+            Console.WriteLine($"Potential Percentage improvement: {(decimal) numberOfBadPairs / (decimal) (numberOfGoodPairs + numberOfBadPairs):P}");
+            
             return new MatchProbabilityResponse
             {
                 MatchProbabilities = new MatchProbabilities
@@ -146,12 +154,18 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             {
                 case 0:
                     numerators.ZeroMismatchProbability += pairLikelihood;
+                    numberOfGoodPairs++;
                     break;
                 case 1:
                     numerators.OneMismatchProbability += pairLikelihood;
+                    numberOfGoodPairs++;
                     break;
                 case 2:
                     numerators.TwoMismatchProbability += pairLikelihood;
+                    numberOfGoodPairs++;
+                    break;
+                default:
+                    numberOfBadPairs++;
                     break;
             }
 
