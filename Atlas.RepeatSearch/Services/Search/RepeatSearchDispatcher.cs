@@ -32,6 +32,7 @@ namespace Atlas.RepeatSearch.Services.Search
 
             var identifiedRepeatSearchRequest = new IdentifiedRepeatSearchRequest
             {
+                OriginalSearchId = matchingRequest.OriginalSearchId,
                 RepeatSearchRequest = matchingRequest,
                 RepeatSearchId = repeatSearchRequestId
             };

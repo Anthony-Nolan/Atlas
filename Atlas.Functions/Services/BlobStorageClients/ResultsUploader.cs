@@ -17,12 +17,14 @@ namespace Atlas.Functions.Services.BlobStorageClients
     internal class ResultsUploader : BlobUploader, IResultsUploader
     {
         private readonly string resultsContainer;
+        private readonly string repeatResultsContainer;
 
         /// <inheritdoc />
         public ResultsUploader(IOptions<AzureStorageSettings> azureStorageSettings, ILogger logger)
             : base(azureStorageSettings.Value.MatchingConnectionString, logger)
         {
             resultsContainer = azureStorageSettings.Value.SearchResultsBlobContainer;
+            repeatResultsContainer = azureStorageSettings.Value.RepeatSearchResultsBlobContainer;
         }
 
         /// <inheritdoc />
@@ -31,7 +33,8 @@ namespace Atlas.Functions.Services.BlobStorageClients
             using (Logger.RunTimed($"Uploading results: {searchResultSet.SearchRequestId}"))
             {
                 var serialisedResults = JsonConvert.SerializeObject(searchResultSet);
-                await Upload(resultsContainer, searchResultSet.ResultsFileName, serialisedResults);
+                var container = searchResultSet.IsRepeatSearchSet ? repeatResultsContainer : resultsContainer;
+                await Upload(container, searchResultSet.ResultsFileName, serialisedResults);
             }
         }
     }

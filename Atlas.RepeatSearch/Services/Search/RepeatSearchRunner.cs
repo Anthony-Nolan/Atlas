@@ -51,7 +51,8 @@ namespace Atlas.RepeatSearch.Services.Search
         {
             await new SearchRequestValidator().ValidateAndThrowAsync(identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest);
 
-            var searchRequestId = identifiedRepeatSearchRequest.RepeatSearchId;
+            var searchRequestId = identifiedRepeatSearchRequest.OriginalSearchId;
+            var repeatSearchId = identifiedRepeatSearchRequest.RepeatSearchId;
             repeatSearchLoggingContext.SearchRequestId = searchRequestId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
@@ -68,6 +69,7 @@ namespace Atlas.RepeatSearch.Services.Search
                 var searchResultSet = new MatchingAlgorithmResultSet
                 {
                     SearchRequestId = searchRequestId,
+                    RepeatSearchId = repeatSearchId,
                     MatchingAlgorithmResults = results,
                     ResultCount = results.Count,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
@@ -99,6 +101,7 @@ namespace Atlas.RepeatSearch.Services.Search
                 {
                     WasSuccessful = false,
                     SearchRequestId = searchRequestId,
+                    RepeatSearchRequestId = repeatSearchId,
                     MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
                     HlaNomenclatureVersion = hlaNomenclatureVersion
                 };

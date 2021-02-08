@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
-using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.DonorImport.ExternalInterface;
@@ -66,7 +65,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             stopwatch.Start();
 
             var matchingResults = await logger.RunTimedAsync("Download matching results", async () =>
-                await matchingResultsDownloader.Download(matchingResultsNotification.BlobStorageResultsFileName)
+                await matchingResultsDownloader.Download(matchingResultsNotification.BlobStorageResultsFileName, matchingResultsNotification.IsRepeatSearch)
             );
 
             var donorInfo = await logger.RunTimedAsync("Fetch donor data", async () =>
@@ -114,7 +113,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             var matchingResultsNotification = persistSearchResultsParameters.MatchingResultsNotification;
 
             var matchingResults = await logger.RunTimedAsync("Download matching results", async () =>
-                await matchingResultsDownloader.Download(matchingResultsNotification.BlobStorageResultsFileName)
+                await matchingResultsDownloader.Download(matchingResultsNotification.BlobStorageResultsFileName, matchingResultsNotification.IsRepeatSearch)
             );
 
             // TODO: ATLAS-856 - can we avoid fetching this twice?
@@ -134,12 +133,13 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [FunctionName(nameof(SendFailureNotification))]
-        public async Task SendFailureNotification([ActivityTrigger] (string, string) failureInfo)
+        public async Task SendFailureNotification([ActivityTrigger] (string, string, string) failureInfo)
         {
-            var (searchRequestId, failedStage) = failureInfo;
+            var (searchRequestId, failedStage, repeatSearchId) = failureInfo;
 
             await searchCompletionMessageSender.PublishFailureMessage(
                 searchRequestId,
+                repeatSearchId,
                 $"Search failed at stage: {failedStage}. See Application Insights for failure details."
             );
         }
