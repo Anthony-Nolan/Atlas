@@ -65,6 +65,7 @@ namespace Atlas.Functions.Services
                     TotalResults = matchingAlgorithmResultSet.ResultCount,
                     HlaNomenclatureVersion = matchingAlgorithmResultSet.HlaNomenclatureVersion,
                     SearchRequestId = matchingAlgorithmResultSet.SearchRequestId,
+                    RepeatSearchId = matchingAlgorithmResultSet.RepeatSearchId,
                     BlobStorageContainerName = resultsContainer,
                     MatchingAlgorithmTime = matchingTime,
                     MatchPredictionTime = matchPredictionResultLocations.ElapsedTime

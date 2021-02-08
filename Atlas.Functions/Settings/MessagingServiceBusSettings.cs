@@ -4,5 +4,6 @@ namespace Atlas.Functions.Settings
     {
         public string ConnectionString { get; set; }
         public string SearchResultsTopic { get; set; }
+        public string RepeatSearchResultsTopic { get; set; }
     }
 }

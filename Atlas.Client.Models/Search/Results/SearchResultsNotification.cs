@@ -8,6 +8,12 @@ namespace Atlas.Client.Models.Search.Results
     public class SearchResultsNotification
     {
         public string SearchRequestId { get; set; }
+        
+        /// <summary>
+        /// If a repeat search, distinguishes this particular run of the repeat search.
+        /// For first time searches, this will be null.
+        /// </summary>
+        public string RepeatSearchId { get; set; }
         public bool WasSuccessful { get; set; }
         public int? NumberOfResults { get; set; }
 
