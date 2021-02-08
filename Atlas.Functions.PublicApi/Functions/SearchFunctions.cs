@@ -75,8 +75,12 @@ namespace Atlas.Functions.PublicApi.Functions
                 return BuildValidationResponse(probabilityValidationResult);
             }
 
-            var id = await repeatSearchDispatcher.DispatchSearch(repeatSearchRequest);
-            return new JsonResult(new SearchInitiationResponse { SearchIdentifier = id });
+            var repeatSearchId = await repeatSearchDispatcher.DispatchSearch(repeatSearchRequest);
+            return new JsonResult(new SearchInitiationResponse
+            {
+                SearchIdentifier = repeatSearchRequest.OriginalSearchId,
+                RepeatSearchIdentifier = repeatSearchId
+            });
         }
 
         private static IActionResult BuildValidationResponse(ValidationResult validationResult) =>

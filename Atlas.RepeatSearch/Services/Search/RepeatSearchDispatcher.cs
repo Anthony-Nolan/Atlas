@@ -1,11 +1,9 @@
 ﻿using Atlas.Client.Models.Search.Requests;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Atlas.RepeatSearch.Clients;
 using Atlas.RepeatSearch.Models;
-using Atlas.MatchingAlgorithm.Validators.SearchRequest;
+using Atlas.RepeatSearch.Validators;
 using FluentValidation;
 
 namespace Atlas.RepeatSearch.Services.Search
@@ -27,7 +25,7 @@ namespace Atlas.RepeatSearch.Services.Search
         /// <returns>A unique identifier for the dispatched search request</returns>
         public async Task<string> DispatchSearch(RepeatSearchRequest matchingRequest)
         {
-            await new SearchRequestValidator().ValidateAndThrowAsync(matchingRequest.SearchRequest);
+            await new RepeatSearchRequestValidator().ValidateAndThrowAsync(matchingRequest);
             var repeatSearchRequestId = Guid.NewGuid().ToString();
 
             var identifiedRepeatSearchRequest = new IdentifiedRepeatSearchRequest
