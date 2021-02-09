@@ -8,7 +8,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
+using Atlas.HlaMetadataDictionary.Services.HlaValidation;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
@@ -209,7 +209,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         private static async Task<bool> ValidateGGroup(Locus locus, string gGroup, IHlaMetadataDictionary hlaMetadataDictionary)
         {
             return !LocusSettings.MatchPredictionLoci.Contains(locus)
-                   || await hlaMetadataDictionary.ValidateHla(locus, gGroup, TargetHlaCategory.GGroup);
+                   || await hlaMetadataDictionary.ValidateHla(locus, gGroup, HlaValidationCategory.GGroup);
         }
     }
 }
