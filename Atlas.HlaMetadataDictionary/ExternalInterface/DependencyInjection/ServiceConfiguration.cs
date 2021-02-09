@@ -15,6 +15,7 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversion;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
+using Atlas.HlaMetadataDictionary.Services.HlaValidation;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
