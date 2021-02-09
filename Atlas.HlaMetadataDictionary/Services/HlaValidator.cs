@@ -15,10 +15,12 @@ namespace Atlas.HlaMetadataDictionary.Services
     internal class HlaValidator : IHlaValidator
     {
         private readonly IHlaScoringMetadataService scoringMetadataService;
+        private readonly ISmallGGroupMetadataService smallGGroupMetadataService;
 
-        public HlaValidator(IHlaScoringMetadataService scoringMetadataService)
+        public HlaValidator(IHlaScoringMetadataService scoringMetadataService, ISmallGGroupMetadataService smallGGroupMetadataService)
         {
             this.scoringMetadataService = scoringMetadataService;
+            this.smallGGroupMetadataService = smallGGroupMetadataService;
         }
 
         public async Task<bool> ValidateHla(Locus locus, string hlaName, HlaConversionBehaviour validationBehaviour)
@@ -42,8 +44,8 @@ namespace Atlas.HlaMetadataDictionary.Services
                 case TargetHlaCategory.GGroup:
                     return (await scoringMetadataService.GetAllGGroups(validationBehaviour.HlaNomenclatureVersion))[locus].Contains(hlaName);
                 case TargetHlaCategory.SmallGGroup:
-                    // TODO: ATLAS-881 Validate small g groups
-                    throw new NotImplementedException();
+                    var allGroups = await smallGGroupMetadataService.GetAllSmallGGroups(validationBehaviour.HlaNomenclatureVersion);
+                    return allGroups[locus].Contains(hlaName);
                 case TargetHlaCategory.PGroup:
                     throw new NotImplementedException();
                 case TargetHlaCategory.Serology:

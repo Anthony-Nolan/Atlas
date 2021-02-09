@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
@@ -13,6 +14,16 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         protected override IEnumerable<IMolecularTypingToPGroupMetadata> GetHlaMetadata(FileBackedHlaMetadataCollection metadataCollection)
         {
             return metadataCollection.SmallGGroupToPGroupMetadata;
+        }
+
+        /// <inheritdoc />
+        public Task<IDictionary<Locus, ISet<string>>> GetAllSmallGGroups(string hlaNomenclatureVersion)
+        {
+            var groups = HlaMetadata[hlaNomenclatureVersion].Values
+                .GroupBy(x => x.Locus)
+                .ToDictionary(x => x.Key, x => x.Select(x => x.LookupName).ToHashSet() as ISet<string>);
+
+            return Task.FromResult((IDictionary<Locus, ISet<string>>) groups);
         }
 
         public Task<IMolecularTypingToPGroupMetadata> GetPGroupBySmallGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
