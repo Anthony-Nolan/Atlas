@@ -29,7 +29,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         private const string CacheKey = nameof(SmallGGroupMetadataService);
 
         public SmallGGroupMetadataService(
-            ISmallGGroupsMetadataRepository smallGGroupsMetadataRepository,
+            IHlaNameToSmallGGroupLookupRepository hlaNameToSmallGGroupLookupRepository,
             ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
             IHlaCategorisationService hlaCategorisationService,
@@ -38,7 +38,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IAlleleGroupExpander alleleGroupExpander,
             IPersistentCacheProvider cacheProvider)
             : base(
-                smallGGroupsMetadataRepository,
+                hlaNameToSmallGGroupLookupRepository,
                 alleleNamesMetadataService,
                 hlaCategorisationService,
                 alleleNamesExtractor,

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 
 namespace Atlas.HlaMetadataDictionary.Services.HlaValidation
@@ -23,7 +24,7 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaValidation
 
         public async Task<bool> ValidateHla(Locus locus, string hlaName, HlaValidationBehaviour validationBehaviour)
         {
-            if (hlaName == null || validationBehaviour == null)
+            if (hlaName.IsNullOrEmpty() || validationBehaviour == null)
             {
                 throw new ArgumentNullException();
             }
