@@ -9,16 +9,16 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
     /// functionality might be expected to be found here, this repository's data is structured based on efficient "hlaName:g-group" lookups,
     /// and using the "g-group:p-group" lookup repository is a much more efficient way of enumerating all small g groups.
     /// </summary>
-    internal interface ISmallGGroupsMetadataRepository : IHlaMetadataRepository
+    internal interface IHlaNameToSmallGGroupLookupRepository : IHlaMetadataRepository
     {
     }
 
-    internal class SmallGGroupsMetadataRepository : HlaMetadataRepositoryBase, ISmallGGroupsMetadataRepository
+    internal class HlaNameToSmallGGroupLookupRepository : HlaMetadataRepositoryBase, IHlaNameToSmallGGroupLookupRepository
     {
         private const string DataTableReferencePrefix = "SmallGGroupsLookupData";
-        private const string CacheKey = nameof(SmallGGroupsMetadataRepository);
+        private const string CacheKey = nameof(HlaNameToSmallGGroupLookupRepository);
 
-        public SmallGGroupsMetadataRepository(
+        public HlaNameToSmallGGroupLookupRepository(
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             IPersistentCacheProvider cacheProvider,

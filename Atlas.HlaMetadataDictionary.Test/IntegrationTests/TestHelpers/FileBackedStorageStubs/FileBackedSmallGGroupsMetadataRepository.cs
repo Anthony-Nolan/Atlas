@@ -4,9 +4,9 @@ using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs
 {
-    internal class FileBackedSmallGroupsMetadataRepository :
+    internal class FileBackedHlaNameToSmallGroupLookupRepository :
         FileBackedHlaMetadataRepositoryBase<ISmallGGroupsMetadata>,
-        ISmallGGroupsMetadataRepository
+        IHlaNameToSmallGGroupLookupRepository
     {
         protected override IEnumerable<ISmallGGroupsMetadata> GetHlaMetadata(FileBackedHlaMetadataCollection metadataCollection)
         {
