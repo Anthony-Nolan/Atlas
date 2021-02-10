@@ -22,14 +22,14 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 
         [TestCase("01:01:01G", Locus.A, true)]       // G group with "G" character
         [TestCase("01:01:02", Locus.A, true)]        // implicit G group from un-grouped single allele
+        [TestCase("01:18N", Locus.A, true)]          // null allele 
+        [TestCase("07:37:01G", Locus.B, true)]       // different locus 
         [TestCase("01:01g", Locus.A, false)]         // small g group
         [TestCase("01:01P", Locus.A, false)]         // P group
         [TestCase("not-hla", Locus.A, false)]        // invalid hla full stop 
-        [TestCase("01:18N", Locus.A, true)]          // null allele 
-        [TestCase("07:37:01G", Locus.B, true)]       // different locus 
         [TestCase("01:XX", Locus.A, false)]          // non-grouped typing 
-        [TestCase("01:01", Locus.A, false)]          // allele that should be in the "01:01G" group 
-        [TestCase("01:01:01:01", Locus.A, false)]    // mult-field-allele that should be in the "01:01G" group 
+        [TestCase("01:01", Locus.A, false)]          // allele that should be in the "01:01:01G" group 
+        [TestCase("01:01:01:01", Locus.A, false)]    // mult-field-allele that should be in the "01:01:01G" group 
         public async Task ValidateHla_ReturnsTrueOnlyForValidGGroups(string hlaName, Locus locus, bool expectedValidity)
         {
             var validity = await hlaMetadataDictionary.ValidateHla(locus, hlaName, HlaValidationCategory.GGroup);
@@ -39,11 +39,11 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 
         [TestCase("01:01g", Locus.A, true)]          // small g group with "g" character
         [TestCase("01:02", Locus.A, true)]           // implicit small g group from un-grouped single allele
-        [TestCase("01:01:01G", Locus.A, false)]         // big G group
-        [TestCase("01:01P", Locus.A, false)]         // P group
-        [TestCase("not-hla", Locus.A, false)]        // invalid hla full stop 
         [TestCase("01:123N", Locus.A, true)]         // null allele 
         [TestCase("15:10g", Locus.B, true)]          // different locus 
+        [TestCase("01:01:01G", Locus.A, false)]      // big G group
+        [TestCase("01:01P", Locus.A, false)]         // P group
+        [TestCase("not-hla", Locus.A, false)]        // invalid hla full stop 
         [TestCase("01:XX", Locus.A, false)]          // non-grouped typing 
         [TestCase("01:01", Locus.A, false)]          // allele that should be in the "01:01g" group 
         [TestCase("01:01:01:01", Locus.A, false)]    // mult-field-allele that should be in the "01:01g" group 
