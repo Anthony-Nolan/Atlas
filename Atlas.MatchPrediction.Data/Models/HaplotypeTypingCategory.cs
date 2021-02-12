@@ -9,7 +9,8 @@ namespace Atlas.MatchPrediction.Data.Models
     public enum HaplotypeTypingCategory
     {
         GGroup,
-        PGroup
+        PGroup,
+        SmallGGroup
     }
 
     public static class Converters
@@ -20,6 +21,7 @@ namespace Atlas.MatchPrediction.Data.Models
             {
                 HaplotypeTypingCategory.GGroup => HlaTypingCategory.GGroup,
                 HaplotypeTypingCategory.PGroup => HlaTypingCategory.PGroup,
+                HaplotypeTypingCategory.SmallGGroup => HlaTypingCategory.SmallGGroup,
                 _ => throw new ArgumentException(nameof(category))
             };
         }

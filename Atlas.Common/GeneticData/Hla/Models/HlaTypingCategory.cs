@@ -15,6 +15,11 @@ namespace Atlas.Common.GeneticData.Hla.Models
         /// Typed as a P-Group
         /// </summary>
         GGroup,
+        
+        /// <summary>
+        /// Typed as a "small g" group
+        /// </summary>
+        SmallGGroup,
 
         /// <summary>
         /// Typed as a G-Group
