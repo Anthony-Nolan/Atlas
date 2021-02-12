@@ -16,7 +16,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
     public interface IMatchingService
     {
-        IAsyncEnumerable<MatchResult> GetMatches(AlleleLevelMatchCriteria criteria, DateTime? cutOffDate);
+        IAsyncEnumerable<MatchResult> GetMatches(AlleleLevelMatchCriteria criteria, DateTimeOffset? cutOffDate);
     }
 
     public class MatchingService : IMatchingService
@@ -43,7 +43,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             this.matchingConfigurationSettings = matchingConfigurationSettings;
         }
 
-        public async IAsyncEnumerable<MatchResult> GetMatches(AlleleLevelMatchCriteria criteria, DateTime? cutOffDate)
+        public async IAsyncEnumerable<MatchResult> GetMatches(AlleleLevelMatchCriteria criteria, DateTimeOffset? cutOffDate)
         {
             using (searchLogger.RunTimed("Matching"))
             {
@@ -71,7 +71,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         /// The first phase of matching performs the bulk of the work - it returns all donors that meet the matching criteria, at all specified loci.
         /// It must return a superset of the final matching donor set - i.e. no matching donors may exist and not be returned in this phase.
         /// </summary>
-        private async IAsyncEnumerable<MatchResult> PerformMatchingPhaseOne(AlleleLevelMatchCriteria criteria, DateTime? cutOffDate)
+        private async IAsyncEnumerable<MatchResult> PerformMatchingPhaseOne(AlleleLevelMatchCriteria criteria, DateTimeOffset? cutOffDate)
         {
             using (searchLogger.RunTimed("Matching timing: Phase 1 complete"))
             {

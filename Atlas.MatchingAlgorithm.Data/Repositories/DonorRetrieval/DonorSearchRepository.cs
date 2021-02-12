@@ -36,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             Locus locus,
             LocusSearchCriteria criteria,
             MatchingFilteringOptions filteringOptions,
-            DateTime? cutOffDate);
+            DateTimeOffset? cutOffDate);
     }
 
     public class DonorSearchRepository : Repository, IDonorSearchRepository
@@ -57,7 +57,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             Locus locus,
             LocusSearchCriteria criteria,
             MatchingFilteringOptions filteringOptions,
-            DateTime? cutOffDate
+            DateTimeOffset? cutOffDate
         )
         {
             var pGroups = new LocusInfo<IEnumerable<int>>(criteria.PGroupIdsToMatchInPositionOne, criteria.PGroupIdsToMatchInPositionTwo);
@@ -95,7 +95,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             MatchingFilteringOptions filteringOptions,
             LocusInfo<IEnumerable<int>> pGroups,
             bool mustBeDoubleMatch,
-            DateTime? cutOffDate)
+            DateTimeOffset? cutOffDate)
         {
             var sqlMatchResults = MatchAtLocusSql(locus, filteringOptions, pGroups, mustBeDoubleMatch, cutOffDate);
             var relations = sqlMatchResults.SelectMany(x => x.ToPotentialHlaMatchRelations(locus));
@@ -124,7 +124,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             MatchingFilteringOptions filteringOptions,
             LocusInfo<IEnumerable<int>> pGroups,
             bool mustBeDoubleMatch,
-            DateTime? cutOffDate)
+            DateTimeOffset? cutOffDate)
         {
             // Technically this would incorrectly reject empty P-group collections at a single locus only. We assert that this will never happen, as partially typed loci are disallowed,
             // and null expressing alleles (the only way to have a null p group) are handled by copying the expressing allele's P-groups to the null position.

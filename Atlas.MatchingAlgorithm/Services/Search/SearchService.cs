@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 {
     public interface ISearchService
     {
-        Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest matchingRequest, DateTime? cutOffDate = null);
+        Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest matchingRequest, DateTimeOffset? cutOffDate = null);
     }
 
     internal class SearchService : ISearchService
@@ -45,7 +45,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.matchCriteriaMapper = matchCriteriaMapper;
         }
 
-        public async Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest matchingRequest, DateTime? cutOffDate)
+        public async Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest matchingRequest, DateTimeOffset? cutOffDate)
         {
             var expansionTimer = searchLogger.RunTimed($"{LoggingPrefix}Expand patient HLA");
             var criteria = await matchCriteriaMapper.MapRequestToAlleleLevelMatchCriteria(matchingRequest);
