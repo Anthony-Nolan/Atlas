@@ -7,23 +7,31 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Models
     // ReSharper disable InconsistentNaming
 
     /// <summary>
-    /// File schema used to add attributes only needed for serialisation in tests
+    /// File schema used to add attributes only needed for serialisation in tests.
+    /// Will be deserialised to <see cref="FrequencySetFileSchema"/>
     /// </summary>
     internal class SerialisableFrequencySetFileContents 
     {
-        [JsonProperty(Order = 1)]
+        /// <see cref="FrequencySetFileSchema.HlaNomenclatureVersion"/>
         public string nomenclatureVersion { get; set; }
 
+        /// <see cref="FrequencySetFileSchema.RegistryCodes"/>
         [JsonProperty(Order = 2)]
         public string[] donPool { get; set; }
 
+        /// <see cref="FrequencySetFileSchema.EthnicityCodes"/>
         [JsonProperty(Order = 3)]
         public string[] ethn { get; set; }
 
+        /// <see cref="FrequencySetFileSchema.PopulationId"/>
         [JsonProperty(Order = 4)]
         public int populationId { get; set; }
 
+        /// <see cref="FrequencySetFileSchema.Frequencies"/>
         [JsonProperty(Order = 5)]
         public IEnumerable<FrequencyRecord> frequencies { get; set; }
+
+        /// <see cref="FrequencySetFileSchema.TypingCategory"/>
+        public ImportTypingCategory? TypingCategory { get; set; } = ImportTypingCategory.LargeGGroup;
     }
 }

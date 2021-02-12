@@ -8,6 +8,7 @@ using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
@@ -184,6 +185,29 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
+        public async Task Import_WithSmallGGroupTypedHaplotypes_StoresDataAsSmallGTypingCategory()
+        {
+            var hla = new LociInfo<string>(valueA: "01:01g", valueB: "13:01g", valueC: "04:01g", valueDqb1: "06:02g", valueDrb1: "01:01g");
+            using var file = FrequencySetFileBuilder
+                .New(new List<HaplotypeFrequency>
+                {
+                    new HaplotypeFrequency
+                    {
+                        Hla = hla,
+                        Frequency = 0.5m
+                    }
+                }, typingCategory: ImportTypingCategory.SmallGGroup).Build();
+
+            await service.ImportFrequencySet(file);
+
+            var activeSet = await setRepository.GetActiveSet(null, null);
+            var importedFrequency = await inspectionRepository.GetFirstHaplotypeFrequency(activeSet.Id);
+
+            importedFrequency.TypingCategory.Should().Be(HaplotypeTypingCategory.SmallGGroup);
+            importedFrequency.Hla.Should().BeEquivalentTo(hla);
+        }
+
+        [Test]
         public async Task Import_ForHaplotypeWithoutNullAlleles_ConvertsToPGroups()
         {
             using var file = FrequencySetFileBuilder
@@ -250,6 +274,29 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
+        public async Task Import_WhenPGroupConversionEnabled_ButInputTypingCategoryIsNotLargeG_DoesNotConvertToPGroups()
+        {
+            var hla = new LociInfo<string>(valueA: "01:01g", valueB: "13:01g", valueC: "04:01g", valueDqb1: "06:02g", valueDrb1: "01:01g");
+            using var file = FrequencySetFileBuilder
+                .New(new List<HaplotypeFrequency>
+                {
+                    new HaplotypeFrequency
+                    {
+                        Hla = hla,
+                        Frequency = 0.5m
+                    }
+                }, typingCategory: ImportTypingCategory.SmallGGroup).Build();
+
+            await service.ImportFrequencySet(file, true);
+
+            var activeSet = await setRepository.GetActiveSet(null, null);
+            var importedFrequency = await inspectionRepository.GetFirstHaplotypeFrequency(activeSet.Id);
+
+            importedFrequency.TypingCategory.Should().NotBe(HaplotypeTypingCategory.PGroup);
+            importedFrequency.Hla.Should().BeEquivalentTo(hla);
+        }
+
+        [Test]
         public async Task Import_ForHaplotypeWithNullAllele_DoesNotConvertToPGroups()
         {
             var hla = new LociInfo<string>
@@ -274,7 +321,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
             importedFrequency.TypingCategory.Should().Be(HaplotypeTypingCategory.GGroup);
             importedFrequency.Hla.Should().BeEquivalentTo(hla);
         }
-        
+
         [Test]
         public async Task Import_WhenMultipleHaplotypesConvertToSamePGroups_ConsolidatesFrequencies()
         {
@@ -284,7 +331,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 .WithDataAt(Locus.C, "04:01:01G")
                 .WithDataAt(Locus.Dqb1, "06:02:01G")
                 .WithDataAt(Locus.Drb1, "03:02:01G");
-            
+
             using var file = FrequencySetFileBuilder
                 .New(new List<HaplotypeFrequency>
                 {
@@ -372,9 +419,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 .Build();
 
             await service.ImportFrequencySet(file);
-          
+
             await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
-            
         }
 
         [Test]
@@ -404,9 +450,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 .Build();
 
             await service.ImportFrequencySet(file);
-      
+
             await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
-            
         }
 
         [TestCase("01:XX")]
@@ -415,7 +460,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         [TestCase("01:01")]
         // Is a valid G group at locus B but not at locus A.
         [TestCase("13:01:01G")]
-        public async Task Import_WhenHlaIsNotOfTypeGGroup_SendsAlert(string invalidHla)
+        public async Task Import_WithLargeGGroupHaplotypes_WhenHlaIsNotOfTypeGGroup_SendsAlert(string invalidHla)
         {
             var hla = new LociInfo<string>
             (
@@ -424,6 +469,34 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 valueC: "04:01:01G",
                 valueDqb1: "06:02:01G",
                 valueDrb1: "03:07:01G"
+            );
+            using var file = FrequencySetFileBuilder
+                .New(new List<HaplotypeFrequency>
+                {
+                    new HaplotypeFrequency {Hla = hla, Frequency = 0.1m}
+                })
+                .Build();
+
+            await service.ImportFrequencySet(file);
+
+            await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
+        }
+
+        [TestCase("01:XX")]
+        // A single allele can be a valid G-Group, if it doesn't share a G group with any other alleles.
+        // In this case we are using one that does so it should be an invalid G group.
+        [TestCase("01:01")]
+        // Is a valid G group at locus B but not at locus A.
+        [TestCase("13:01g")]
+        public async Task Import_WithSmallGGroupHaplotypes_WhenHlaIsNotOfTypeGGroup_SendsAlert(string invalidHla)
+        {
+            var hla = new LociInfo<string>
+            (
+                valueA: invalidHla,
+                valueB: invalidHla,
+                valueC: "04:01g",
+                valueDqb1: "06:02g",
+                valueDrb1: "01:01g"
             );
             using var file = FrequencySetFileBuilder
                 .New(new List<HaplotypeFrequency>
