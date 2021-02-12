@@ -29,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             Locus locus,
             AlleleLevelLocusMatchCriteria criteria,
             DonorType searchType,
-            DateTime? cutOffDate,
+            DateTimeOffset? cutOffDate,
             HashSet<int> donorIds = null);
     }
 
@@ -51,7 +51,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             Locus locus,
             AlleleLevelLocusMatchCriteria criteria,
             DonorType searchType,
-            DateTime? cutOffDate,
+            DateTimeOffset? cutOffDate,
             HashSet<int> donorIds = null)
         {
             var repoCriteria = new LocusSearchCriteria
