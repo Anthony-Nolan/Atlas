@@ -32,15 +32,16 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         /// <param name="convertToPGroups">
         /// When set, the import process will convert haplotypes to PGroup typing where possible (i.e. when haplotype has no null expressing GGroups).
         /// For any haplotypes that are different at G-Group level, but the same at P-Group, frequency values will be consolidated.
-        ///
+        /// 
         /// Defaults to true, as this yields a significantly faster algorithm.
-        ///
+        /// 
         /// When set to false, all frequencies will be imported at the original G-Group resolutions.
         /// This is only expected to be used in test code, where it is much easier to keep track of a single set of frequencies,
         /// than of GGroup typed haplotypes *and* their corresponding P-Group typed ones.  
         /// </param>
+        /// <param name="bypassHlaValidation"></param>
         /// <returns></returns>
-        public Task ImportFrequencySet(FrequencySetFile file, bool convertToPGroups = true);
+        public Task ImportFrequencySet(FrequencySetFile file, bool convertToPGroups = true, bool bypassHlaValidation = false);
 
         public Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(FrequencySetMetadata donorInfo, FrequencySetMetadata patientInfo);
         public Task<HaplotypeFrequencySet> GetSingleHaplotypeFrequencySet(FrequencySetMetadata setMetaData);
@@ -94,11 +95,11 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             cache = persistentCacheProvider.Cache;
         }
 
-        public async Task ImportFrequencySet(FrequencySetFile file, bool convertToPGroups)
+        public async Task ImportFrequencySet(FrequencySetFile file, bool convertToPGroups, bool bypassHlaValidation)
         {
             try
             {
-                await frequencySetImporter.Import(file, convertToPGroups);
+                await frequencySetImporter.Import(file, convertToPGroups, bypassHlaValidation);
                 file.ImportedDateTime = DateTimeOffset.UtcNow;
 
                 await SendSuccessNotification(file);

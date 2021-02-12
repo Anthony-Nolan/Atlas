@@ -29,11 +29,12 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         /// <param name="convertToPGroups">
         /// When set, any haplotypes not containing references to null alleles will be converted from Large G group typings to P group typing, and
         /// frequencies consolidated - this allows shrinking of the frequency sets, and an improvement to match prediction performance.
-        ///
+        /// 
         /// This is only applied to inputs of the <see cref="ImportTypingCategory.LargeGGroup"/> resolution.
         /// </param>
+        /// <param name="bypassHlaValidation"></param>
         /// <returns></returns>
-        Task Import(FrequencySetFile file, bool convertToPGroups = true);
+        Task Import(FrequencySetFile file, bool convertToPGroups = true, bool bypassHlaValidation = false);
     }
 
     internal class FrequencySetImporter : IFrequencySetImporter
@@ -61,7 +62,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             this.logger = logger;
         }
 
-        public async Task Import(FrequencySetFile file, bool convertToPGroups)
+        public async Task Import(FrequencySetFile file, bool convertToPGroups, bool bypassHlaValidation)
         {
             if (file.Contents == null)
             {
@@ -87,7 +88,13 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 TypingCategory = frequencySet.TypingCategory.ToDatabaseTypingCategory()
             }).ToList();
 
-            await StoreFrequencies(inputHaplotypes, frequencySet.HlaNomenclatureVersion, setIds, convertToPGroups, frequencySet.TypingCategory);
+            await StoreFrequencies(
+                inputHaplotypes,
+                frequencySet.HlaNomenclatureVersion,
+                setIds,
+                convertToPGroups,
+                frequencySet.TypingCategory,
+                bypassHlaValidation);
 
             foreach (var setId in setIds)
             {
@@ -130,7 +137,8 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             string hlaNomenclatureVersion,
             IEnumerable<int> setIds,
             bool convertToPGroups,
-            ImportTypingCategory typingCategory)
+            ImportTypingCategory typingCategory,
+            bool bypassHlaValidation)
         {
             var haplotypes = inputHaplotypes.Select(r => r.Hla).ToList();
 
@@ -146,8 +154,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
 
-
-            if (!await ValidateHaplotypes(inputHaplotypes, hlaMetadataDictionary, typingCategory))
+            if (!bypassHlaValidation && !await ValidateHaplotypes(inputHaplotypes, hlaMetadataDictionary, typingCategory))
             {
                 throw new MalformedHaplotypeFileException(
                     $"Invalid Hla. Expected all provided frequencies to be valid hla of typing resolution: {typingCategory}");

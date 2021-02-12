@@ -100,7 +100,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     .Build()
                 )
                 {
-                    await importer.ImportFrequencySet(file);
+                    await importer.ImportFrequencySet(file, bypassHlaValidation: true);
                 }
             }
         }
