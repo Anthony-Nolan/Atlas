@@ -4,6 +4,7 @@ using System.Linq;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 using FluentAssertions;
@@ -31,29 +32,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
 
             foreach (var expectedLocus in expectedLoci)
             {
-                switch (expectedLocus)
-                {
-                    case Locus.A:
-                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.ScoringResultsByLocus.A, validMatchGrades);
-                        break;
-                    case Locus.B:
-                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.ScoringResultsByLocus.B, validMatchGrades);
-                        break;
-                    case Locus.C:
-                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.ScoringResultsByLocus.C, validMatchGrades);
-                        break;
-                    case Locus.Dpb1:
-                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.ScoringResultsByLocus.Dpb1, validMatchGrades);
-                        break;
-                    case Locus.Dqb1:
-                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.ScoringResultsByLocus.Dqb1, validMatchGrades);
-                        break;
-                    case Locus.Drb1:
-                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.ScoringResultsByLocus.Drb1, validMatchGrades);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                AssertMatchGrade(
+                    expectedPosition,
+                    donorResult.ScoringResult.ScoringResultsByLocus.ToLociInfo().GetLocus(expectedLocus),
+                    validMatchGrades
+                );
             }
         }
 
@@ -155,6 +138,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                     return new[] {MatchGrade.PermissiveMismatch};
                 case "mismatch":
                     return new[] {MatchGrade.Mismatch};
+                case "unknown":
+                    return new[] {MatchGrade.Unknown};
                 default:
                     scenarioContext.Pending();
                     return new List<MatchGrade>();

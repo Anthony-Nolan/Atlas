@@ -45,7 +45,18 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
             }
         }
 
-        private const MatchGrade DefaultMatchGradeForUntypedLocus = MatchGrade.PGroup;
+        private readonly LociInfo<MatchGrade> defaultMatchGradeForUntypedLocus =
+            new LociInfo<MatchGrade>(
+                MatchGrade.PGroup,
+                MatchGrade.PGroup,
+                MatchGrade.PGroup,
+                // Due to the unique nature of DPB1 allowing permissive mismatches, it is configured to treat untyped loci as "unknown".
+                // All other loci consider untyped loci as "potential matches", as the HLA has the possibility of being a match.
+                MatchGrade.Unknown,
+                MatchGrade.PGroup,
+                MatchGrade.PGroup
+            );
+
         private readonly IPermissiveMismatchCalculator permissiveMismatchCalculator;
 
         public GradingService(IPermissiveMismatchCalculator permissiveMismatchCalculator, IScoringCache scoringCache)
@@ -76,7 +87,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
             {
                 var donorMetadataAtLocus = donorMetadata.GetLocus(locus);
 
-                var locusGradeResults = GetLocusGradeResults(patientMetadataAtLocus, donorMetadataAtLocus);
+                var locusGradeResults = GetLocusGradeResults(patientMetadataAtLocus, donorMetadataAtLocus, locus);
 
                 gradeResults = gradeResults
                     .SetPosition(locus, LocusPosition.One, locusGradeResults.Result1)
@@ -88,41 +99,45 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
 
         private LocusMatchGradeResults GetLocusGradeResults(
             LocusInfo<IHlaScoringMetadata> patientMetadata,
-            LocusInfo<IHlaScoringMetadata> donorMetadata)
+            LocusInfo<IHlaScoringMetadata> donorMetadata,
+            Locus locus)
         {
-            var directGrades = GetMatchGradesForDirectOrientation(patientMetadata, donorMetadata);
-            var crossGrades = GetMatchGradesForCrossOrientation(patientMetadata, donorMetadata);
+            var directGrades = GetMatchGradesForDirectOrientation(patientMetadata, donorMetadata, locus);
+            var crossGrades = GetMatchGradesForCrossOrientation(patientMetadata, donorMetadata, locus);
 
             return GetGradeResultsInBestOrientations(directGrades, crossGrades);
         }
 
         private LocusMatchGrades GetMatchGradesForDirectOrientation(
             LocusInfo<IHlaScoringMetadata> patientMetadata,
-            LocusInfo<IHlaScoringMetadata> donorMetadata)
+            LocusInfo<IHlaScoringMetadata> donorMetadata,
+            Locus locus)
         {
-            var grade1 = CalculateMatchGrade(patientMetadata.Position1, donorMetadata.Position1);
-            var grade2 = CalculateMatchGrade(patientMetadata.Position2, donorMetadata.Position2);
+            var grade1 = CalculateMatchGrade(patientMetadata.Position1, donorMetadata.Position1, locus);
+            var grade2 = CalculateMatchGrade(patientMetadata.Position2, donorMetadata.Position2, locus);
 
             return new LocusMatchGrades(grade1, grade2);
         }
 
         private LocusMatchGrades GetMatchGradesForCrossOrientation(
             LocusInfo<IHlaScoringMetadata> patientMetadata,
-            LocusInfo<IHlaScoringMetadata> donorMetadata)
+            LocusInfo<IHlaScoringMetadata> donorMetadata,
+            Locus locus)
         {
-            var grade1 = CalculateMatchGrade(patientMetadata.Position1, donorMetadata.Position2);
-            var grade2 = CalculateMatchGrade(patientMetadata.Position2, donorMetadata.Position1);
+            var grade1 = CalculateMatchGrade(patientMetadata.Position1, donorMetadata.Position2, locus);
+            var grade2 = CalculateMatchGrade(patientMetadata.Position2, donorMetadata.Position1, locus);
 
             return new LocusMatchGrades(grade1, grade2);
         }
 
         private MatchGrade CalculateMatchGrade(
             IHlaScoringMetadata patientMetadata,
-            IHlaScoringMetadata donorMetadata)
+            IHlaScoringMetadata donorMetadata,
+            Locus locus)
         {
             if (patientMetadata == null || donorMetadata == null)
             {
-                return DefaultMatchGradeForUntypedLocus;
+                return defaultMatchGradeForUntypedLocus.GetLocus(locus);
             }
 
             return scoringCache.GetOrAddMatchGrade(patientMetadata.Locus, patientMetadata.LookupName, donorMetadata.LookupName,

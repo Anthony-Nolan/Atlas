@@ -323,7 +323,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
+            var result = results.Single(d => d.AtlasDonorId == testDonor.DonorId);
 
             // Should be 2x potential P group matches at C
             result.ScoringResult.ScoringResultsByLocus.C.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PGroup);
@@ -332,19 +332,34 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             result.ScoringResult.ScoringResultsByLocus.C.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.PGroup);
             result.ScoringResult.ScoringResultsByLocus.C.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
-            // Should be 2x potential P group matches at DPB1
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PGroup);
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
-
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.PGroup);
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
-
             // Should be 2x potential P group matches at DQB1
             result.ScoringResult.ScoringResultsByLocus.Dqb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PGroup);
             result.ScoringResult.ScoringResultsByLocus.Dqb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
             result.ScoringResult.ScoringResultsByLocus.Dqb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.PGroup);
             result.ScoringResult.ScoringResultsByLocus.Dqb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
+        }
+        
+        [Test]
+        public async Task Search_SixOutOfSix_Dpb1LocusWithMissingTyping_IsAssignedUnknownMatchGrade()
+        {
+            // search is missing typings at DPB1
+            var searchRequest = new SearchRequestFromHlasBuilder(
+                    defaultHlaSet.ThreeLocus_SingleExpressingAlleles,
+                    mismatchHlaSet.ThreeLocus_SingleExpressingAlleles)
+                .SixOutOfSix()
+                .WithAllLociScored()
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.Single(d => d.AtlasDonorId == testDonor.DonorId);
+
+            // Should be 2x potential(confidence)/unknown(grade) matches at DPB1
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Unknown);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.Unknown);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
         }
 
         [Test]

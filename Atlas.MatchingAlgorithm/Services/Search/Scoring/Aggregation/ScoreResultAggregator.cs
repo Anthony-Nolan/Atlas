@@ -33,7 +33,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
         public AggregateScoreDetails AggregateScoreDetails(ScoreResultAggregatorParameters parameters)
         {
             var locusScoreDetails = NonExcludedLocusScoreDetails(parameters).ToList();
-            
+
             return new AggregateScoreDetails
             {
                 ConfidenceScore = AggregateConfidenceScore(locusScoreDetails),
@@ -64,21 +64,19 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
                 locusScoreDetails.ScoreDetailsAtPosition1.MatchGrade,
                 locusScoreDetails.ScoreDetailsAtPosition2.MatchGrade
             });
-            
-            switch (overallMatchConfidence)
+
+            return overallMatchConfidence switch
             {
-                case MatchConfidence.Mismatch:
+                MatchConfidence.Mismatch =>
                     // The only way to have an overall confidence of mismatch with no per-position mismatch is for all mismatches to be permissive.
-                    return allGrades.All(g => g != MatchGrade.Mismatch) ? MatchCategory.PermissiveMismatch : MatchCategory.Mismatch;
-                case MatchConfidence.Potential:
-                    return MatchCategory.Potential;
-                case MatchConfidence.Exact:
-                    return MatchCategory.Exact;
-                case MatchConfidence.Definite:
-                    return MatchCategory.Definite;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(overallMatchConfidence), overallMatchConfidence, null);
-            }
+                    allGrades.All(g => g == MatchGrade.PermissiveMismatch || !MatchGradeConstants.MismatchGrades.Contains(g))
+                        ? MatchCategory.PermissiveMismatch
+                        : MatchCategory.Mismatch,
+                MatchConfidence.Potential => MatchCategory.Potential,
+                MatchConfidence.Exact => MatchCategory.Exact,
+                MatchConfidence.Definite => MatchCategory.Definite,
+                _ => throw new ArgumentOutOfRangeException(nameof(overallMatchConfidence), overallMatchConfidence, null)
+            };
         }
 
         private static int CountMatches(IEnumerable<LocusScoreDetails> locusScoreResults)
