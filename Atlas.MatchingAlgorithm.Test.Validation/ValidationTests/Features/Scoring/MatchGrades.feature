@@ -117,3 +117,17 @@
     And scoring is enabled at locus DPB1
     When I run a 6/6 search
     Then the match grade should be mismatch at DPB1 at both positions
+    
+  Scenario: Unknown match - donor untyped at DPB1
+    Given a patient has a match
+    And the matching donor is untyped at locus DPB1
+    And scoring is enabled at locus DPB1
+    When I run a 6/6 search
+    Then the match grade should be unknown at DPB1 at both positions
+
+  Scenario: Unknown match - patient untyped at DPB1
+    Given a patient has a match
+    And the patient is untyped at locus DPB1
+    And scoring is enabled at locus DPB1
+    When I run a 6/6 search
+    Then the match grade should be unknown at DPB1 at both positions
