@@ -55,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
 
             var parameters = ScoreResultAggregatorParametersBuilder.New
                 .With(x => x.ScoreResult, scoreResult)
-                .With(x => x.LociToExclude, new List<Locus> { Locus.Dpb1 })
+                .With(x => x.LociToExclude, new List<Locus> {Locus.Dpb1})
                 .Build();
 
             var aggregate = resultAggregator.AggregateScoreDetails(parameters);
@@ -77,7 +77,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
 
             var parameters = ScoreResultAggregatorParametersBuilder.New
                 .With(x => x.ScoreResult, scoreResult)
-                .With(x => x.LociToExclude, new List<Locus> { Locus.C, Locus.Dpb1, Locus.Dqb1 })
+                .With(x => x.LociToExclude, new List<Locus> {Locus.C, Locus.Dpb1, Locus.Dqb1})
                 .Build();
 
             var aggregate = resultAggregator.AggregateScoreDetails(parameters);
@@ -147,7 +147,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
 
             var parameters = ScoreResultAggregatorParametersBuilder.New
                 .With(x => x.ScoreResult, scoreResult)
-                .With(x => x.LociToExclude, new List<Locus> { Locus.Dpb1 })
+                .With(x => x.LociToExclude, new List<Locus> {Locus.Dpb1})
                 .Build();
 
             var aggregate = resultAggregator.AggregateScoreDetails(parameters);
@@ -190,7 +190,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
 
             var parameters = ScoreResultAggregatorParametersBuilder.New
                 .With(x => x.ScoreResult, scoreResult)
-                .With(x => x.LociToExclude, new List<Locus> { Locus.Dpb1 })
+                .With(x => x.LociToExclude, new List<Locus> {Locus.Dpb1})
                 .Build();
 
             var aggregate = resultAggregator.AggregateScoreDetails(parameters);
@@ -233,7 +233,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
 
             var parameters = ScoreResultAggregatorParametersBuilder.New
                 .With(x => x.ScoreResult, scoreResult)
-                .With(x => x.LociToExclude, new List<Locus> { Locus.Dpb1 })
+                .With(x => x.LociToExclude, new List<Locus> {Locus.Dpb1})
                 .Build();
 
             var aggregate = resultAggregator.AggregateScoreDetails(parameters);
@@ -324,7 +324,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
 
             var parameters = ScoreResultAggregatorParametersBuilder.New
                 .With(x => x.ScoreResult, scoreResult)
-                .With(x => x.LociToExclude, new List<Locus> { Locus.Dpb1 })
+                .With(x => x.LociToExclude, new List<Locus> {Locus.Dpb1})
                 .Build();
 
             var aggregate = resultAggregator.AggregateScoreDetails(parameters);
@@ -351,7 +351,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
 
             var parameters = ScoreResultAggregatorParametersBuilder.New
                 .With(x => x.ScoreResult, scoreResult)
-                .With(x => x.LociToExclude, new List<Locus> { Locus.Dpb1 })
+                .With(x => x.LociToExclude, new List<Locus> {Locus.Dpb1})
                 .Build();
 
             var aggregate = resultAggregator.AggregateScoreDetails(parameters);
@@ -424,7 +424,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
 
             var parameters = ScoreResultAggregatorParametersBuilder.New
                 .With(x => x.ScoreResult, scoreResult)
-                .With(x => x.LociToExclude, new List<Locus> { Locus.Dpb1 })
+                .With(x => x.LociToExclude, new List<Locus> {Locus.Dpb1})
                 .Build();
 
             var aggregate = resultAggregator.AggregateScoreDetails(parameters);
@@ -477,14 +477,20 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
             aggregate.MatchCategory.Should().Be(MatchCategory.Mismatch);
         }
 
-        [Test]
-        public void AggregateScoreDetails_MatchCategory_WithOnePermissiveMismatchAtDpb1_ReturnsPermissiveMismatch()
+        // It is not possible to have only one match grade be unknown - as Unknown is only possible for untyped loci, and loci cannot be half typed.
+        [TestCase(MatchGrade.Mismatch, MatchGrade.PermissiveMismatch, MatchCategory.Mismatch)]
+        [TestCase(MatchGrade.PermissiveMismatch, MatchGrade.PermissiveMismatch, MatchCategory.PermissiveMismatch)]
+        public void AggregateScoreDetails_MatchCategory_WithMismatchConfidenceAtDpb1_WithDpb1Grades(
+            MatchGrade dpb1Grade1,
+            MatchGrade dpb1Grade2,
+            MatchCategory expectedMatchCategory)
         {
             var scoreResult = new ScoreResultBuilder()
                 .WithMatchConfidenceAtAllLoci(MatchConfidence.Definite)
                 .WithMatchGradeAtAllLoci(MatchGrade.GDna)
                 .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, LocusPosition.One, MatchConfidence.Mismatch)
-                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.One, MatchGrade.PermissiveMismatch)
+                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.One, dpb1Grade1)
+                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.Two, dpb1Grade2)
                 .Build();
 
             var parameters = ScoreResultAggregatorParametersBuilder.New
@@ -492,7 +498,33 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
                 .Build();
 
             var aggregate = resultAggregator.AggregateScoreDetails(parameters);
-            aggregate.MatchCategory.Should().Be(MatchCategory.PermissiveMismatch);
+            aggregate.MatchCategory.Should().Be(expectedMatchCategory);
+        }
+
+        [TestCase(MatchGrade.Unknown, MatchGrade.Unknown)]
+        [TestCase(MatchGrade.PermissiveMismatch, MatchGrade.PermissiveMismatch)]
+        [TestCase(MatchGrade.Mismatch, MatchGrade.Mismatch)]
+        [TestCase(MatchGrade.Mismatch, MatchGrade.PermissiveMismatch)]
+        public void AggregateScoreDetails_MatchCategory_WithMismatchAtAnotherLocus_WithDpb1Grades_ReturnsMismatch(
+            MatchGrade dpb1Grade1,
+            MatchGrade dpb1Grade2)
+        {
+            var scoreResult = new ScoreResultBuilder()
+                .WithMatchConfidenceAtAllLoci(MatchConfidence.Definite)
+                .WithMatchGradeAtAllLoci(MatchGrade.GDna)
+                .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, LocusPosition.One, MatchConfidence.Mismatch)
+                .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Mismatch)
+                .WithMatchGradeAtLocus(Locus.A, MatchGrade.Mismatch)
+                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.One, dpb1Grade1)
+                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.Two, dpb1Grade2)
+                .Build();
+
+            var parameters = ScoreResultAggregatorParametersBuilder.New
+                .With(x => x.ScoreResult, scoreResult)
+                .Build();
+
+            var aggregate = resultAggregator.AggregateScoreDetails(parameters);
+            aggregate.MatchCategory.Should().Be(MatchCategory.Mismatch);
         }
 
         [Test]
@@ -507,49 +539,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
 
             var parameters = ScoreResultAggregatorParametersBuilder.New
                 .With(x => x.ScoreResult, scoreResult)
-                .With(x => x.LociToExclude, new List<Locus> { Locus.Dpb1 })
+                .With(x => x.LociToExclude, new List<Locus> {Locus.Dpb1})
                 .Build();
 
             var aggregate = resultAggregator.AggregateScoreDetails(parameters);
             aggregate.MatchCategory.Should().Be(MatchCategory.Definite);
-        }
-
-        [Test]
-        public void AggregateScoreDetails_MatchCategory_WithTwoPermissiveMismatchesAtDpb1_ReturnsPermissiveMismatch()
-        {
-            var scoreResult = new ScoreResultBuilder()
-                .WithMatchConfidenceAtAllLoci(MatchConfidence.Definite)
-                .WithMatchGradeAtAllLoci(MatchGrade.GDna)
-                .WithMatchConfidenceAtLocus(Locus.Dpb1, MatchConfidence.Mismatch)
-                .WithMatchGradeAtLocus(Locus.Dpb1, MatchGrade.PermissiveMismatch)
-                .Build();
-
-            var parameters = ScoreResultAggregatorParametersBuilder.New
-                .With(x => x.ScoreResult, scoreResult)
-                .Build();
-
-            var aggregate = resultAggregator.AggregateScoreDetails(parameters);
-            aggregate.MatchCategory.Should().Be(MatchCategory.PermissiveMismatch);
-        }
-
-        [Test]
-        public void AggregateScoreDetails_MatchCategory_WithOnePermissiveMismatchAndOneNonPermissiveMismatchAtDpb1_ReturnsMismatch()
-        {
-            var scoreResult = new ScoreResultBuilder()
-                .WithMatchConfidenceAtAllLoci(MatchConfidence.Definite)
-                .WithMatchGradeAtAllLoci(MatchGrade.GDna)
-                .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, LocusPosition.One, MatchConfidence.Mismatch)
-                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.One, MatchGrade.PermissiveMismatch)
-                .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, LocusPosition.Two, MatchConfidence.Mismatch)
-                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.Two, MatchGrade.Mismatch)
-                .Build();
-
-            var parameters = ScoreResultAggregatorParametersBuilder.New
-                .With(x => x.ScoreResult, scoreResult)
-                .Build();
-
-            var aggregate = resultAggregator.AggregateScoreDetails(parameters);
-            aggregate.MatchCategory.Should().Be(MatchCategory.Mismatch);
         }
     }
 }

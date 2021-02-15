@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 
 namespace Atlas.MatchingAlgorithm.Data.Persistent.Models.ScoringWeightings
 {
@@ -8,7 +9,8 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models.ScoringWeightings
         public int Id { get; set; }
         
         /// <summary>
-        /// The name corresponding to an enum value (e.g. Grade, Confidence) in the codebase
+        /// The name corresponding to an enum value (e.g. Grade, Confidence) in the codebase.
+        /// This must match the values represented by the appropriate enum, of <see cref="MatchGrade"/> and <see cref="MatchConfidence"/>
         /// </summary>
         [StringLength(100)]
         public string Name { get; set; }
