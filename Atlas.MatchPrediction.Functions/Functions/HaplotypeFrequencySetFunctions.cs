@@ -13,6 +13,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 
 namespace Atlas.MatchPrediction.Functions.Functions
 {

@@ -14,6 +14,11 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
     {
         public void Validate(FrequencySetFileSchema frequencySetFile) 
         {
+            if (frequencySetFile.TypingCategory == null)
+            {
+                throw new MalformedHaplotypeFileException("Cannot import set: Typing Category must be specified");
+            }
+            
             if (!frequencySetFile.EthnicityCodes.IsNullOrEmpty())
             {
                 if (frequencySetFile.RegistryCodes.IsNullOrEmpty())
