@@ -8,6 +8,7 @@ using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedSt
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
@@ -70,7 +71,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             await TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage_Async(async () => { await ImportHaplotypeFrequencies(); });
         }
 
-        
+
         [Test]
         // Confirm that a search with all the default builder values runs successfully
         public async Task Control()
@@ -100,7 +101,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     .Build()
                 )
                 {
-                    await importer.ImportFrequencySet(file, bypassHlaValidation: true);
+                    await importer.ImportFrequencySet(file, new FrequencySetImportBehaviour {ShouldBypassHlaValidation = true});
                 }
             }
         }

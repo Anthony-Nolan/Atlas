@@ -8,6 +8,7 @@ using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 using FluentAssertions;
@@ -205,7 +206,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             using var file = FrequencySetFileBuilder.New(haplotypes, new[] {registryCode}, new[] {ethnicityCode})
                 .Build();
-            await importService.ImportFrequencySet(file, false);
+            await importService.ImportFrequencySet(file, new FrequencySetImportBehaviour{ ShouldConvertLargeGGroupsToPGroups = false});
 
             var individualInfo = new FrequencySetMetadata
             {

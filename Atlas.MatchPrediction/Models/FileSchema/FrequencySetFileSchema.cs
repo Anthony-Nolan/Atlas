@@ -23,8 +23,7 @@ namespace Atlas.MatchPrediction.Models.FileSchema
 
         /// <summary>
         /// Haplotype frequency sets are support at multiple resolutions - the resolutions within a given set must be consistent.
-        /// Defaults to <see cref="ImportTypingCategory.LargeGGroup"/> 
         /// </summary>
-        public ImportTypingCategory TypingCategory { get; set; } = ImportTypingCategory.LargeGGroup;
+        public ImportTypingCategory? TypingCategory { get; set; }
     }
 }

@@ -10,9 +10,10 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Models
     /// File schema used to add attributes only needed for serialisation in tests.
     /// Will be deserialised to <see cref="FrequencySetFileSchema"/>
     /// </summary>
-    internal class SerialisableFrequencySetFileContents 
+    internal class SerialisableFrequencySetFileContents
     {
         /// <see cref="FrequencySetFileSchema.HlaNomenclatureVersion"/>
+        [JsonProperty(Order = 1)]
         public string nomenclatureVersion { get; set; }
 
         /// <see cref="FrequencySetFileSchema.RegistryCodes"/>
@@ -27,11 +28,12 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Models
         [JsonProperty(Order = 4)]
         public int populationId { get; set; }
 
-        /// <see cref="FrequencySetFileSchema.Frequencies"/>
-        [JsonProperty(Order = 5)]
-        public IEnumerable<FrequencyRecord> frequencies { get; set; }
-
         /// <see cref="FrequencySetFileSchema.TypingCategory"/>
+        [JsonProperty(Order = 5)]
         public ImportTypingCategory? TypingCategory { get; set; } = ImportTypingCategory.LargeGGroup;
+
+        /// <see cref="FrequencySetFileSchema.Frequencies"/>
+        [JsonProperty(Order = 6)]
+        public IEnumerable<FrequencyRecord> frequencies { get; set; }
     }
 }

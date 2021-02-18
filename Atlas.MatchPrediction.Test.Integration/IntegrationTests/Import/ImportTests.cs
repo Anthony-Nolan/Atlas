@@ -10,6 +10,7 @@ using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 using FluentAssertions;
@@ -264,7 +265,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                     }
                 }).Build();
 
-            await service.ImportFrequencySet(file, false);
+            await service.ImportFrequencySet(file, new FrequencySetImportBehaviour {ShouldConvertLargeGGroupsToPGroups = false});
 
             var activeSet = await setRepository.GetActiveSet(null, null);
             var importedFrequency = await inspectionRepository.GetFirstHaplotypeFrequency(activeSet.Id);
@@ -287,7 +288,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                     }
                 }, typingCategory: ImportTypingCategory.SmallGGroup).Build();
 
-            await service.ImportFrequencySet(file, true);
+            await service.ImportFrequencySet(file);
 
             var activeSet = await setRepository.GetActiveSet(null, null);
             var importedFrequency = await inspectionRepository.GetFirstHaplotypeFrequency(activeSet.Id);
@@ -455,7 +456,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         }
 
         [TestCase("01:XX")]
-        // A single allele can be a valid G-Group, if it doesn't share a G group with any other alleles.
+        // A single allele can be a valid G-Group, if it doesn't share its ABD sequence with any other alleles.
         // In this case we are using one that does so it should be an invalid G group.
         [TestCase("01:01")]
         // Is a valid G group at locus B but not at locus A.
@@ -483,7 +484,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         }
 
         [TestCase("01:XX")]
-        // A single allele can be a valid G-Group, if it doesn't share a G group with any other alleles.
+        // A single allele can be a valid G-Group, if it doesn't share its ABD sequence with any other alleles.
         // In this case we are using one that does so it should be an invalid G group.
         [TestCase("01:01")]
         // Is a valid G group at locus B but not at locus A.
@@ -529,7 +530,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 })
                 .Build();
 
-            await service.ImportFrequencySet(file, false);
+            await service.ImportFrequencySet(file, new FrequencySetImportBehaviour {ShouldConvertLargeGGroupsToPGroups = false});
 
             await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
         }
