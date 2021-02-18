@@ -8,7 +8,6 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.HlaMetadataDictionary.Services.HlaValidation;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
@@ -20,21 +19,29 @@ using TaskExtensions = Atlas.Common.Utils.Tasks.TaskExtensions;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 {
-    public interface IFrequencySetImporter
+    public class FrequencySetImportBehaviour
     {
         /// <summary>
+        /// When set, the import process will convert haplotypes to PGroup typing where possible (i.e. when haplotype has no null expressing GGroups).
+        /// For any haplotypes that are different at G-Group level, but the same at P-Group, frequency values will be consolidated.
         /// 
+        /// Defaults to true, as this yields a significantly faster algorithm.
+        /// 
+        /// When set to false, all frequencies will be imported at the original G-Group resolutions.
+        /// This is only expected to be used in test code, where it is much easier to keep track of a single set of frequencies,
+        /// than of GGroup typed haplotypes *and* their corresponding P-Group typed ones.
         /// </summary>
-        /// <param name="file"></param>
-        /// <param name="convertToPGroups">
-        /// When set, any haplotypes not containing references to null alleles will be converted from Large G group typings to P group typing, and
-        /// frequencies consolidated - this allows shrinking of the frequency sets, and an improvement to match prediction performance.
-        /// 
-        /// This is only applied to inputs of the <see cref="ImportTypingCategory.LargeGGroup"/> resolution.
-        /// </param>
-        /// <param name="bypassHlaValidation"></param>
-        /// <returns></returns>
-        Task Import(FrequencySetFile file, bool convertToPGroups = true, bool bypassHlaValidation = false);
+        public bool ShouldConvertLargeGGroupsToPGroups { get; set; } = true;
+
+        /// <summary>
+        /// Allows conditional bypass of validation of input frequency values. Useful for testing, as this is the slowest part of the import process.
+        /// </summary>
+        public bool ShouldBypassHlaValidation { get; set; } = false;
+    }
+    
+    internal interface IFrequencySetImporter
+    {
+        Task Import(FrequencySetFile file, FrequencySetImportBehaviour importBehaviour);
     }
 
     internal class FrequencySetImporter : IFrequencySetImporter
@@ -62,7 +69,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             this.logger = logger;
         }
 
-        public async Task Import(FrequencySetFile file, bool convertToPGroups, bool bypassHlaValidation)
+        public async Task Import(FrequencySetFile file, FrequencySetImportBehaviour importBehaviour)
         {
             if (file.Contents == null)
             {
@@ -76,7 +83,10 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             frequencySetValidator.Validate(frequencySet);
 
             var setIds = await AddNewInactiveSets(frequencySet, file.FileName);
-
+            
+            // ReSharper disable once PossibleInvalidOperationException - non null, enforced by Validator
+            var frequencySetTypingCategory = frequencySet.TypingCategory.Value;
+            
             var inputHaplotypes = frequencySet.Frequencies.Select(f => new HaplotypeFrequency
             {
                 A = f.A,
@@ -85,16 +95,15 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 DQB1 = f.Dqb1,
                 DRB1 = f.Drb1,
                 Frequency = f.Frequency,
-                TypingCategory = frequencySet.TypingCategory.ToDatabaseTypingCategory()
+                TypingCategory = frequencySetTypingCategory.ToDatabaseTypingCategory()
             }).ToList();
 
             await StoreFrequencies(
                 inputHaplotypes,
                 frequencySet.HlaNomenclatureVersion,
                 setIds,
-                convertToPGroups,
-                frequencySet.TypingCategory,
-                bypassHlaValidation);
+                frequencySetTypingCategory,
+                importBehaviour);
 
             foreach (var setId in setIds)
             {
@@ -136,9 +145,8 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             IReadOnlyCollection<HaplotypeFrequency> inputHaplotypes,
             string hlaNomenclatureVersion,
             IEnumerable<int> setIds,
-            bool convertToPGroups,
             ImportTypingCategory typingCategory,
-            bool bypassHlaValidation)
+            FrequencySetImportBehaviour importBehaviour)
         {
             var haplotypes = inputHaplotypes.Select(r => r.Hla).ToList();
 
@@ -154,13 +162,13 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
 
-            if (!bypassHlaValidation && !await ValidateHaplotypes(inputHaplotypes, hlaMetadataDictionary, typingCategory))
+            if (!importBehaviour.ShouldBypassHlaValidation && !await AreAllHaplotypesValid(inputHaplotypes, hlaMetadataDictionary, typingCategory))
             {
                 throw new MalformedHaplotypeFileException(
                     $"Invalid Hla. Expected all provided frequencies to be valid hla of typing resolution: {typingCategory}");
             }
 
-            var haplotypesToStore = (convertToPGroups && typingCategory == ImportTypingCategory.LargeGGroup
+            var haplotypesToStore = (importBehaviour.ShouldConvertLargeGGroupsToPGroups && typingCategory == ImportTypingCategory.LargeGGroup
                 ? await ConvertHaplotypesToPGroupResolutionAndConsolidate(inputHaplotypes, hlaMetadataDictionary)
                 : inputHaplotypes).ToList();
 
@@ -208,7 +216,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             }
         }
 
-        private static async Task<bool> ValidateHaplotypes(
+        private static async Task<bool> AreAllHaplotypesValid(
             IEnumerable<HaplotypeFrequency> frequencies,
             IHlaMetadataDictionary hlaMetadataDictionary,
             ImportTypingCategory importTypingCategory)
