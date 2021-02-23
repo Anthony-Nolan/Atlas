@@ -89,7 +89,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     ConfidenceScore = result.ScoreResult?.AggregateScoreDetails.ConfidenceScore,
                     GradeScore = result.ScoreResult?.AggregateScoreDetails.GradeScore,
                     TypedLociCountAtScoredLoci = result.ScoreResult?.AggregateScoreDetails.TypedLociCount,
-                    PotentialMatchCount = result.PotentialMatchCount,
+                    PotentialMatchCount = result.ScoreResult?.AggregateScoreDetails.PotentialMatchCount ?? 0,
                     ScoringResultsByLocus = new LociInfo<LocusSearchResult>().Map((l, _) => MapSearchResultToApiLocusSearchResult(result, l))
                         .ToLociInfoTransfer(),
                 },
