@@ -6,6 +6,7 @@ using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
+using Atlas.HlaMetadataDictionary.Services.HlaValidation;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using NSubstitute;
 using NUnit.Framework;

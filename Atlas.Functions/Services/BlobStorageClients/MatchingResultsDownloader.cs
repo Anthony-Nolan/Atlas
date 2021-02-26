@@ -10,7 +10,7 @@ namespace Atlas.Functions.Services.BlobStorageClients
 {
     public interface IMatchingResultsDownloader
     {
-        public Task<MatchingAlgorithmResultSet> Download(string blobName);
+        public Task<MatchingAlgorithmResultSet> Download(string blobName, bool isRepeatSearch);
     }
 
     internal class MatchingResultsDownloader : IMatchingResultsDownloader
@@ -27,11 +27,14 @@ namespace Atlas.Functions.Services.BlobStorageClients
         }
 
         /// <inheritdoc />
-        public async Task<MatchingAlgorithmResultSet> Download(string blobName)
+        public async Task<MatchingAlgorithmResultSet> Download(string blobName, bool isRepeatSearch)
         {
             using (logger.RunTimed($"Downloading matching results: {blobName}"))
             {
-                return await blobDownloader.Download<MatchingAlgorithmResultSet>(messagingServiceBusSettings.MatchingResultsBlobContainer, blobName);
+                var matchingResultsBlobContainer = isRepeatSearch
+                    ? messagingServiceBusSettings.RepeatSearchMatchingResultsBlobContainer
+                    : messagingServiceBusSettings.MatchingResultsBlobContainer;
+                return await blobDownloader.Download<MatchingAlgorithmResultSet>(matchingResultsBlobContainer, blobName);
             }
         }
     }

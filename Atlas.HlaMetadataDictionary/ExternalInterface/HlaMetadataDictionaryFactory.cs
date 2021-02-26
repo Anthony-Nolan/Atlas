@@ -6,6 +6,7 @@ using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
+using Atlas.HlaMetadataDictionary.Services.HlaValidation;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using LazyCache;
 
@@ -57,7 +58,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IHlaScoringMetadataRepository scoringMetadataRepository;
         private readonly IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository;
         private readonly IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository;
-        private readonly ISmallGGroupsMetadataRepository smallGGroupsMetadataRepository;
+        private readonly IHlaNameToSmallGGroupLookupRepository hlaNameToSmallGGroupLookupRepository;
         private readonly ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository;
 
         public HlaMetadataDictionaryFactory(
@@ -83,7 +84,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IHlaScoringMetadataRepository scoringMetadataRepository,
             IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository,
             IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository,
-            ISmallGGroupsMetadataRepository smallGGroupsMetadataRepository,
+            IHlaNameToSmallGGroupLookupRepository hlaNameToSmallGGroupLookupRepository,
             ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository)
         {
             this.cache = cacheProvider.Cache;
@@ -108,7 +109,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.scoringMetadataRepository = scoringMetadataRepository;
             this.dpb1TceGroupsMetadataRepository = dpb1TceGroupsMetadataRepository;
             this.gGroupToPGroupMetadataRepository = gGroupToPGroupMetadataRepository;
-            this.smallGGroupsMetadataRepository = smallGGroupsMetadataRepository;
+            this.hlaNameToSmallGGroupLookupRepository = hlaNameToSmallGGroupLookupRepository;
             this.smallGGroupToPGroupMetadataRepository = smallGGroupToPGroupMetadataRepository;
         }
 
@@ -178,7 +179,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 scoringMetadataRepository,
                 dpb1TceGroupsMetadataRepository,
                 gGroupToPGroupMetadataRepository,
-                smallGGroupsMetadataRepository,
+                hlaNameToSmallGGroupLookupRepository,
                 smallGGroupToPGroupMetadataRepository);
         }
     }

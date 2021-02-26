@@ -15,7 +15,7 @@ namespace Atlas.Functions.Services
     public interface ISearchCompletionMessageSender
     {
         Task PublishResultsMessage(SearchResultSet searchResultSet, DateTime searchInitiationTime);
-        Task PublishFailureMessage(string searchId, string failureMessage);
+        Task PublishFailureMessage(string searchId, string repeatSearchId, string failureMessage);
     }
 
     internal class SearchCompletionMessageSender : ISearchCompletionMessageSender
@@ -23,12 +23,14 @@ namespace Atlas.Functions.Services
         private readonly ILogger logger;
         private readonly string connectionString;
         private readonly string resultsNotificationTopicName;
+        private readonly string repeatResultsNotificationTopicName;
 
         public SearchCompletionMessageSender(IOptions<MessagingServiceBusSettings> messagingServiceBusSettings, ILogger logger)
         {
             this.logger = logger;
             connectionString = messagingServiceBusSettings.Value.ConnectionString;
             resultsNotificationTopicName = messagingServiceBusSettings.Value.SearchResultsTopic;
+            repeatResultsNotificationTopicName = messagingServiceBusSettings.Value.RepeatSearchResultsTopic;
         }
 
         /// <inheritdoc />
@@ -48,9 +50,10 @@ namespace Atlas.Functions.Services
                     LogLevel.Info,
                     new Dictionary<string, string>
                     {
-                        {"SearchRequestId", searchResultSet.SearchRequestId},
+                        {nameof(searchResultSet.SearchRequestId), searchResultSet.SearchRequestId},
+                        {nameof(searchResultSet.RepeatSearchId), searchResultSet.RepeatSearchId},
                         {"Donors", searchResultSet.TotalResults.ToString()},
-                        {"Milliseconds", searchTime.Milliseconds.ToString()},
+                        {nameof(searchTime.Milliseconds), searchTime.Milliseconds.ToString()},
                     });
                 var searchResultsNotification = new SearchResultsNotification
                 {
@@ -59,6 +62,7 @@ namespace Atlas.Functions.Services
                     NumberOfResults = searchResultSet.TotalResults,
                     ResultsFileName = searchResultSet.ResultsFileName,
                     SearchRequestId = searchResultSet.SearchRequestId,
+                    RepeatSearchId = searchResultSet.RepeatSearchId,
                     BlobStorageContainerName = searchResultSet.BlobStorageContainerName,
                     MatchingAlgorithmTime = searchResultSet.MatchingAlgorithmTime,
                     MatchPredictionTime = searchResultSet.MatchPredictionTime,
@@ -69,12 +73,13 @@ namespace Atlas.Functions.Services
         }
 
         /// <inheritdoc />
-        public async Task PublishFailureMessage(string searchId, string failureMessage)
+        public async Task PublishFailureMessage(string searchId, string repeatSearchId, string failureMessage)
         {
             var searchResultsNotification = new SearchResultsNotification
             {
                 WasSuccessful = false,
                 SearchRequestId = searchId,
+                RepeatSearchId = repeatSearchId,
                 FailureMessage = failureMessage
             };
 
@@ -89,6 +94,7 @@ namespace Atlas.Functions.Services
                 UserProperties =
                 {
                     {nameof(SearchResultsNotification.SearchRequestId), searchResultsNotification.SearchRequestId},
+                    {nameof(SearchResultsNotification.RepeatSearchId), searchResultsNotification.RepeatSearchId},
                     {nameof(SearchResultsNotification.WasSuccessful), searchResultsNotification.WasSuccessful},
                     {nameof(SearchResultsNotification.NumberOfResults), searchResultsNotification.NumberOfResults},
                     {nameof(SearchResultsNotification.HlaNomenclatureVersion), searchResultsNotification.HlaNomenclatureVersion},
@@ -96,7 +102,11 @@ namespace Atlas.Functions.Services
                 }
             };
 
-            var client = new TopicClient(connectionString, resultsNotificationTopicName);
+            var notificationTopicName = searchResultsNotification.RepeatSearchId != null
+                ? repeatResultsNotificationTopicName
+                : resultsNotificationTopicName;
+            
+            var client = new TopicClient(connectionString, notificationTopicName);
             await client.SendAsync(message);
         }
     }

@@ -18,6 +18,8 @@ namespace Atlas.Client.Models.Search.Results.Matching
         ///     In the case of an original search this ID will be null
         /// </summary>
         public string RepeatSearchRequestId { get; set; }
+
+        public bool IsRepeatSearch => RepeatSearchRequestId != null;
         public bool WasSuccessful { get; set; }
         public int? NumberOfResults { get; set; }
 

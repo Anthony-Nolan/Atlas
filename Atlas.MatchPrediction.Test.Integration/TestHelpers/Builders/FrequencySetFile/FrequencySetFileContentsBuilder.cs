@@ -18,25 +18,39 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
         private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
 
         internal static Builder Default => Builder.New
-                .With(f => f.nomenclatureVersion, HlaNomenclatureVersion)
-                .With(f => f.populationId, DefaultPopulationId);
+            .With(f => f.nomenclatureVersion, HlaNomenclatureVersion)
+            .With(f => f.populationId, DefaultPopulationId);
 
 
-        internal static Builder NewWithFrequencyCount(string[] ethnicity = null, string[] registries = null, int haplotypeCount = 1, decimal frequencyValue = 0.00001m)
+        internal static Builder NewWithFrequencyCount(
+            string[] ethnicity = null,
+            string[] registries = null,
+            int haplotypeCount = 1,
+            decimal frequencyValue = 0.00001m,
+            ImportTypingCategory typingCategory = default)
         {
             return Default
                 .With(f => f.ethn, ethnicity)
                 .With(f => f.donPool, registries)
+                .With(f => f.TypingCategory, typingCategory)
                 .With(x => x.frequencies, CreateFrequencyRecords(haplotypeCount, frequencyValue));
         }
 
-        internal static Builder NewWithFrequencies(IEnumerable<HaplotypeFrequency> haplotypeFrequencies, string[] ethnicity = null, string[] registries = null)
+        internal static Builder NewWithFrequencies(
+            IEnumerable<HaplotypeFrequency> haplotypeFrequencies,
+            string[] ethnicity = null,
+            string[] registries = null,
+            ImportTypingCategory typingCategory = default)
         {
             return Default
                 .With(f => f.ethn, ethnicity)
                 .With(f => f.donPool, registries)
+                .With(f => f.TypingCategory, typingCategory)
                 .With(x => x.frequencies, CreateFrequencyRecords(haplotypeFrequencies));
         }
+
+        internal static Builder WithTypingCategory(this Builder builder, ImportTypingCategory typingCategory) =>
+            builder.With(f => f.TypingCategory, typingCategory);
 
         private static IEnumerable<FrequencyRecord> CreateFrequencyRecords(IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
         {

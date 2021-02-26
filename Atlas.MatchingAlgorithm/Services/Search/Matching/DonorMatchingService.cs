@@ -28,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         /// A dictionary of PotentialSearchResults, keyed by donor id.
         /// MatchDetails will be populated only for the specified loci.
         /// </returns>
-        Task<IAsyncEnumerable<MatchResult>> FindMatchingDonors(AlleleLevelMatchCriteria criteria, DateTime? cutOffDate);
+        Task<IAsyncEnumerable<MatchResult>> FindMatchingDonors(AlleleLevelMatchCriteria criteria, DateTimeOffset? cutOffDate);
     }
 
     internal class DonorMatchingService : IDonorMatchingService
@@ -54,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             this.matchingConfigurationSettings = matchingConfigurationSettings;
         }
 
-        public async Task<IAsyncEnumerable<MatchResult>> FindMatchingDonors(AlleleLevelMatchCriteria criteria, DateTime? cutOffDate)
+        public async Task<IAsyncEnumerable<MatchResult>> FindMatchingDonors(AlleleLevelMatchCriteria criteria, DateTimeOffset? cutOffDate)
         {
             var orderedLoci = matchCriteriaAnalyser.LociInMatchingOrder(criteria);
             searchLogger.SendTrace($"Will match loci in the following order: {orderedLoci.Select(l => l.ToString()).StringJoin(", ")}");
@@ -92,7 +92,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             AlleleLevelMatchCriteria criteria,
             Locus locus,
             ICollection<Locus> matchedLoci,
-            DateTime? cutOffDate,
+            DateTimeOffset? cutOffDate,
             IAsyncEnumerable<MatchResult> previousLociResultStream = null)
         {
             using (searchLogger.RunTimed($"Matching at Locus {locus}. (Timing cumulative across loci.)"))

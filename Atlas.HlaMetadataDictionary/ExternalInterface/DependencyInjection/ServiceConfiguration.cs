@@ -15,6 +15,7 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversion;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
+using Atlas.HlaMetadataDictionary.Services.HlaValidation;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
@@ -55,7 +56,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.AddScoped<IAlleleNamesMetadataRepository, AlleleNamesMetadataRepository>();
             services.AddScoped<IDpb1TceGroupsMetadataRepository, Dpb1TceGroupsMetadataRepository>();
             services.AddScoped<IAlleleGroupsMetadataRepository, AlleleGroupsMetadataRepository>();
-            services.AddScoped<ISmallGGroupsMetadataRepository, SmallGGroupsMetadataRepository>();
+            services.AddScoped<IHlaNameToSmallGGroupLookupRepository, HlaNameToSmallGGroupLookupRepository>();
             services.AddScoped<ISmallGGroupToPGroupMetadataRepository, SmallGGroupToPGroupMetadataRepository>();
         }
 

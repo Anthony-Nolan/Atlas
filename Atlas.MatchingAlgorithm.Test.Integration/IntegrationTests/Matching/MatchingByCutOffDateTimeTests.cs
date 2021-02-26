@@ -69,8 +69,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             var donorId = await CreateDonorInActiveDatabase(MatchingDonorHla, CutOffDateTime);
             var matchCriteria = await GetSixOutOfSixMatchCriteria();
 
-            // TODO: ATLAS-843>ATLAS-917 change cut-off arg type to datetimeoffset
-            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime.DateTime).ToListAsync();
+            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
             matches.ShouldContainDonor(donorId);
         }
 
@@ -88,8 +87,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             var donorId = await CreateDonorInActiveDatabase(MatchingDonorHla, donorModifiedDateTime);
             var matchCriteria = await GetSixOutOfSixMatchCriteria();
 
-            // TODO: ATLAS-843>ATLAS-917 change cut-off arg type to datetimeoffset
-            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime.DateTime).ToListAsync();
+            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
             matches.ShouldContainDonor(donorId);
         }
 
@@ -107,8 +105,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             var donorId = await CreateDonorInActiveDatabase(MatchingDonorHla, donorModifiedDateTime);
             var matchCriteria = await GetSixOutOfSixMatchCriteria();
 
-            // TODO: ATLAS-843>ATLAS-917 change cut-off arg type to datetimeoffset
-            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime.DateTime).ToListAsync();
+            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
             matches.ShouldNotContainDonor(donorId);
         }
 
@@ -128,8 +125,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             var donorId = await CreateDonorInActiveDatabase(NonMatchingDonorHla, CutOffDateTime);
             var matchCriteria = await GetSixOutOfSixMatchCriteria();
 
-            // TODO: ATLAS-843>ATLAS-917 change cut-off arg type to datetimeoffset
-            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime.DateTime).ToListAsync();
+            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
             matches.ShouldNotContainDonor(donorId);
         }
 
@@ -147,8 +143,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             var donorId = await CreateDonorInActiveDatabase(NonMatchingDonorHla, donorModifiedDateTime);
             var matchCriteria = await GetSixOutOfSixMatchCriteria();
 
-            // TODO: ATLAS-843>ATLAS-917 change cut-off arg type to datetimeoffset
-            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime.DateTime).ToListAsync();
+            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
             matches.ShouldNotContainDonor(donorId);
         }
 
@@ -166,8 +161,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             var donorId = await CreateDonorInActiveDatabase(NonMatchingDonorHla, donorModifiedDateTime);
             var matchCriteria = await GetSixOutOfSixMatchCriteria();
 
-            // TODO: ATLAS-843>ATLAS-917 change cut-off arg type to datetimeoffset
-            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime.DateTime).ToListAsync();
+            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
             matches.ShouldNotContainDonor(donorId);
         }
 

@@ -8,7 +8,6 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
@@ -20,9 +19,29 @@ using TaskExtensions = Atlas.Common.Utils.Tasks.TaskExtensions;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 {
-    public interface IFrequencySetImporter
+    public class FrequencySetImportBehaviour
     {
-        Task Import(FrequencySetFile file, bool convertToPGroups = true);
+        /// <summary>
+        /// When set, the import process will convert haplotypes to PGroup typing where possible (i.e. when haplotype has no null expressing GGroups).
+        /// For any haplotypes that are different at G-Group level, but the same at P-Group, frequency values will be consolidated.
+        /// 
+        /// Defaults to true, as this yields a significantly faster algorithm.
+        /// 
+        /// When set to false, all frequencies will be imported at the original G-Group resolutions.
+        /// This is only expected to be used in test code, where it is much easier to keep track of a single set of frequencies,
+        /// than of GGroup typed haplotypes *and* their corresponding P-Group typed ones.
+        /// </summary>
+        public bool ShouldConvertLargeGGroupsToPGroups { get; set; } = true;
+
+        /// <summary>
+        /// Allows conditional bypass of validation of input frequency values. Useful for testing, as this is the slowest part of the import process.
+        /// </summary>
+        public bool ShouldBypassHlaValidation { get; set; } = false;
+    }
+    
+    internal interface IFrequencySetImporter
+    {
+        Task Import(FrequencySetFile file, FrequencySetImportBehaviour importBehaviour);
     }
 
     internal class FrequencySetImporter : IFrequencySetImporter
@@ -50,7 +69,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             this.logger = logger;
         }
 
-        public async Task Import(FrequencySetFile file, bool convertToPGroups)
+        public async Task Import(FrequencySetFile file, FrequencySetImportBehaviour importBehaviour)
         {
             if (file.Contents == null)
             {
@@ -64,8 +83,11 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             frequencySetValidator.Validate(frequencySet);
 
             var setIds = await AddNewInactiveSets(frequencySet, file.FileName);
-
-            var gGroupHaplotypes = frequencySet.Frequencies.Select(f => new HaplotypeFrequency
+            
+            // ReSharper disable once PossibleInvalidOperationException - non null, enforced by Validator
+            var frequencySetTypingCategory = frequencySet.TypingCategory.Value;
+            
+            var inputHaplotypes = frequencySet.Frequencies.Select(f => new HaplotypeFrequency
             {
                 A = f.A,
                 B = f.B,
@@ -73,10 +95,15 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 DQB1 = f.Dqb1,
                 DRB1 = f.Drb1,
                 Frequency = f.Frequency,
-                TypingCategory = HaplotypeTypingCategory.GGroup
+                TypingCategory = frequencySetTypingCategory.ToDatabaseTypingCategory()
             }).ToList();
 
-            await StoreFrequencies(gGroupHaplotypes, frequencySet.HlaNomenclatureVersion, setIds, convertToPGroups);
+            await StoreFrequencies(
+                inputHaplotypes,
+                frequencySet.HlaNomenclatureVersion,
+                setIds,
+                frequencySetTypingCategory,
+                importBehaviour);
 
             foreach (var setId in setIds)
             {
@@ -115,38 +142,35 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         }
 
         private async Task StoreFrequencies(
-            IReadOnlyCollection<HaplotypeFrequency> gGroupHaplotypes,
+            IReadOnlyCollection<HaplotypeFrequency> inputHaplotypes,
             string hlaNomenclatureVersion,
             IEnumerable<int> setIds,
-            bool convertToPGroups)
+            ImportTypingCategory typingCategory,
+            FrequencySetImportBehaviour importBehaviour)
         {
-            var haplotypes = gGroupHaplotypes.Select(r => r.Hla).ToList();
+            var haplotypes = inputHaplotypes.Select(r => r.Hla).ToList();
 
             if (haplotypes.Count != haplotypes.Distinct().Count())
             {
                 throw new DuplicateHaplotypeImportException();
             }
 
-            if (!gGroupHaplotypes.Any())
+            if (!inputHaplotypes.Any())
             {
                 throw new EmptyHaplotypeFileException();
             }
 
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
 
-            var haplotypesToStore = (convertToPGroups
-                ? await ConvertHaplotypesToPGroupResolutionAndConsolidate(gGroupHaplotypes, hlaMetadataDictionary)
-                : gGroupHaplotypes).ToList();
-
-            if (!convertToPGroups)
+            if (!importBehaviour.ShouldBypassHlaValidation && !await AreAllHaplotypesValid(inputHaplotypes, hlaMetadataDictionary, typingCategory))
             {
-                var areAllGGroupsValid = await ValidateHaplotypes(gGroupHaplotypes, hlaMetadataDictionary);
-
-                if (!areAllGGroupsValid)
-                {
-                    throw new MalformedHaplotypeFileException("Invalid Hla.");
-                }
+                throw new MalformedHaplotypeFileException(
+                    $"Invalid Hla. Expected all provided frequencies to be valid hla of typing resolution: {typingCategory}");
             }
+
+            var haplotypesToStore = (importBehaviour.ShouldConvertLargeGGroupsToPGroups && typingCategory == ImportTypingCategory.LargeGGroup
+                ? await ConvertHaplotypesToPGroupResolutionAndConsolidate(inputHaplotypes, hlaMetadataDictionary)
+                : inputHaplotypes).ToList();
 
             foreach (var setId in setIds)
             {
@@ -192,24 +216,27 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             }
         }
 
-        private static async Task<bool> ValidateHaplotypes(IEnumerable<HaplotypeFrequency> frequencies, IHlaMetadataDictionary hlaMetadataDictionary)
+        private static async Task<bool> AreAllHaplotypesValid(
+            IEnumerable<HaplotypeFrequency> frequencies,
+            IHlaMetadataDictionary hlaMetadataDictionary,
+            ImportTypingCategory importTypingCategory)
         {
+            var targetValidationCategory = importTypingCategory.ToHlaValidationCategory();
+
             var haplotypes = frequencies.Select(hf => hf.Hla).ToList();
 
-            var gGroupsPerLocus = new LociInfo<int>().Map((locus, _) => haplotypes.Select(h => h.GetLocus(locus)).ToHashSet());
+            var hlaNamesPerLocus = new LociInfo<int>().Map((locus, _) => haplotypes.Select(h => h.GetLocus(locus)).ToHashSet());
 
-            var validationResults = await gGroupsPerLocus.MapAsync(async (locus, gGroups) =>
+            async Task<bool> ValidateHlaAtLocus(Locus locus, string hla)
             {
-                return await Task.WhenAll(gGroups.Select(gGroup => ValidateGGroup(locus, gGroup, hlaMetadataDictionary)));
-            });
+                return !LocusSettings.MatchPredictionLoci.Contains(locus) ||
+                       await hlaMetadataDictionary.ValidateHla(locus, hla, targetValidationCategory);
+            }
+
+            var validationResults = await hlaNamesPerLocus.MapAsync(async (locus, hlaSet) =>
+                await Task.WhenAll(hlaSet.Select(hlaName => ValidateHlaAtLocus(locus, hlaName))));
 
             return validationResults.AllAtLoci(results => results.All(x => x));
-        }
-
-        private static async Task<bool> ValidateGGroup(Locus locus, string gGroup, IHlaMetadataDictionary hlaMetadataDictionary)
-        {
-            return !LocusSettings.MatchPredictionLoci.Contains(locus)
-                   || await hlaMetadataDictionary.ValidateHla(locus, gGroup, TargetHlaCategory.GGroup);
         }
     }
 }

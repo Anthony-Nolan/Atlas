@@ -242,6 +242,12 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
                             Id = 14,
                             Name = "GDna",
                             Weight = 0
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Name = "Unknown",
+                            Weight = 0
                         });
                 });
 #pragma warning restore 612, 618

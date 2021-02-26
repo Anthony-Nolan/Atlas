@@ -14,8 +14,4 @@
       <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Validators\RepeatSearchRequest\" />
-    </ItemGroup>
-
 </Project>

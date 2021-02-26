@@ -20,5 +20,10 @@ namespace Atlas.MatchPrediction.Models.FileSchema
 
         [JsonProperty(Required = Required.Always)]
         public IEnumerable<FrequencyRecord> Frequencies { get; set; }
+
+        /// <summary>
+        /// Haplotype frequency sets are support at multiple resolutions - the resolutions within a given set must be consistent.
+        /// </summary>
+        public ImportTypingCategory? TypingCategory { get; set; }
     }
 }

@@ -62,6 +62,39 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             }
         }
 
+        [FunctionName(nameof(RepeatSearch))]
+        public async Task RepeatSearch(
+            [ServiceBusTrigger(
+                "%AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic%",
+                "%AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsSubscription%",
+                Connection = "AtlasFunction:MessagingServiceBus:ConnectionString"
+            )]
+            MatchingResultsNotification resultsNotification,
+            [DurableClient] IDurableOrchestrationClient starter)
+        {
+            var repeatSearchId = resultsNotification.RepeatSearchRequestId;
+            if (!resultsNotification.SearchRequest?.RunMatchPrediction ?? false)
+            {
+                logger.SendTrace($"Match prediction for repeat search request '{repeatSearchId}' was not requested, so will not be run.");
+                // TODO: ATLAS-493: Make the matching only results usable. 
+                return;
+            }
+
+            var instanceId = await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.RepeatSearchOrchestrator), resultsNotification);
+
+            try
+            {
+                logger.SendTrace($"Started match prediction orchestration with Repeat Search ID = '{repeatSearchId}'. Orchestration Instance: {instanceId}");
+                var statusCheck = await GetStatusCheckEndpoints(starter, instanceId);
+                logger.SendTrace(statusCheck.StatusQueryGetUri);
+            }
+            catch (Exception)
+            {
+                // This function cannot be allowed to fail post-orchestration scheduling, as it would then retry, and we cannot schedule more than one orchestrator with the same id.
+                // We are only doing logging past this point, so if it fails we just swallow exceptions.
+            }
+        }
+
         private static async Task<StatusCheckEndpoints> GetStatusCheckEndpoints(IDurableOrchestrationClient orchestrationClient, string instanceId)
         {
             // Log status check endpoints for convenience of debugging long search requests

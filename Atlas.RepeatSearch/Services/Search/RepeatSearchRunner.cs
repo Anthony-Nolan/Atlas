@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
-using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using Atlas.RepeatSearch.Clients;
 using Atlas.RepeatSearch.Clients.AzureStorage;
 using Atlas.RepeatSearch.Models;
+using Atlas.RepeatSearch.Validators;
 using FluentValidation;
 
 namespace Atlas.RepeatSearch.Services.Search
@@ -49,9 +49,10 @@ namespace Atlas.RepeatSearch.Services.Search
 
         public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
         {
-            await new SearchRequestValidator().ValidateAndThrowAsync(identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest);
+            await new RepeatSearchRequestValidator().ValidateAndThrowAsync(identifiedRepeatSearchRequest.RepeatSearchRequest);
 
-            var searchRequestId = identifiedRepeatSearchRequest.RepeatSearchId;
+            var searchRequestId = identifiedRepeatSearchRequest.OriginalSearchId;
+            var repeatSearchId = identifiedRepeatSearchRequest.RepeatSearchId;
             repeatSearchLoggingContext.SearchRequestId = searchRequestId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
@@ -68,6 +69,7 @@ namespace Atlas.RepeatSearch.Services.Search
                 var searchResultSet = new MatchingAlgorithmResultSet
                 {
                     SearchRequestId = searchRequestId,
+                    RepeatSearchId = repeatSearchId,
                     MatchingAlgorithmResults = results,
                     ResultCount = results.Count,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
@@ -99,6 +101,7 @@ namespace Atlas.RepeatSearch.Services.Search
                 {
                     WasSuccessful = false,
                     SearchRequestId = searchRequestId,
+                    RepeatSearchRequestId = repeatSearchId,
                     MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
                     HlaNomenclatureVersion = hlaNomenclatureVersion
                 };

@@ -216,13 +216,10 @@ First we must consider how many concurrent processes can run on each worker.
 
 This is configured by `maxConcurrentCalls` for regular functions (e.g. matching), and `maxConcurrentActivityFunctions` for durable functions (e.g. match prediction).
 
-TODO: ATLAS-903: Make these values configurable via terraform variables.
-
 Next we must consider how many horizontal instances can be spun out.
 
 This is configured by the minimum of `WEBSITE_MAX_DYNAMIC_SCALE_OUT` (sets it per-functions app), and `maximum elastic worker count` (sets it per service plan).
 These can both be set via terraform configuration values.  
-
 
 ### Database Connection Limit
 

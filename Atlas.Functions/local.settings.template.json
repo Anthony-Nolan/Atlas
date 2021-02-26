@@ -5,6 +5,8 @@
 
     "AtlasFunction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AtlasFunction:AzureStorage:MatchingResultsBlobContainer": "matching-algorithm-results",
+    "AtlasFunction:AzureStorage:RepeatSearchMatchingResultsBlobContainer": "repeat-search-matching-results",
+    "AtlasFunction:AzureStorage:RepeatSearchResultsBlobContainer": "repeat-search-results",
     "AtlasFunction:AzureStorage:SearchResultsBlobContainer": "atlas-search-results",
     "AtlasFunction:AzureStorage:MatchPredictionConnectionString": "UseDevelopmentStorage=true",
     "AtlasFunction:AzureStorage:MatchPredictionRequestsBlobContainer": "match-prediction-requests",
@@ -12,7 +14,10 @@
 
     "AtlasFunction:MessagingServiceBus:ConnectionString": "override-this",
     "AtlasFunction:MessagingServiceBus:MatchingResultsSubscription": "match-prediction-orchestration",
-    "AtlasFunction:MessagingServiceBus:MatchingResultsTopic": "matching-results-ready",
+    "AtlasFunction:MessagingServiceBus:MatchingResultsTopic": "repeat-search-matching-results-ready",
+    "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsSubscription": "match-prediction-orchestration",
+    "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic": "matching-results-ready",
+    "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic": "search-results-ready",
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic": "search-results-ready",
 
     "AtlasFunction:Orchestration:MatchPredictionBatchSize": 100,

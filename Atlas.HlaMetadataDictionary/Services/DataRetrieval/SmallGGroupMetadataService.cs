@@ -17,16 +17,20 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         ///  Consolidates small g group assignments for a given <paramref name="hlaName"/>.
         /// </summary>
         Task<IEnumerable<string>> GetSmallGGroups(Locus locus, string hlaName, string hlaNomenclatureVersion);
+
+        Task<IDictionary<Locus, ISet<string>>> GetAllSmallGGroups(string hlaNomenclatureVersion);
     }
 
     internal class SmallGGroupMetadataService : 
         SearchRelatedMetadataServiceBase<ISmallGGroupsMetadata>, 
         ISmallGGroupMetadataService
     {
+        private readonly ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository;
         private const string CacheKey = nameof(SmallGGroupMetadataService);
 
         public SmallGGroupMetadataService(
-            ISmallGGroupsMetadataRepository smallGGroupsMetadataRepository,
+            IHlaNameToSmallGGroupLookupRepository hlaNameToSmallGGroupLookupRepository,
+            ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
             IHlaCategorisationService hlaCategorisationService,
             IAlleleNamesExtractor alleleNamesExtractor,
@@ -34,7 +38,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IAlleleGroupExpander alleleGroupExpander,
             IPersistentCacheProvider cacheProvider)
             : base(
-                smallGGroupsMetadataRepository,
+                hlaNameToSmallGGroupLookupRepository,
                 alleleNamesMetadataService,
                 hlaCategorisationService,
                 alleleNamesExtractor,
@@ -43,12 +47,18 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 CacheKey,
                 cacheProvider)
         {
+            this.smallGGroupToPGroupMetadataRepository = smallGGroupToPGroupMetadataRepository;
         }
 
-        public async Task<IEnumerable<string>> GetSmallGGroups(Locus locus,  string hlaName, string hlaNomenclatureVersion)
+        public async Task<IEnumerable<string>> GetSmallGGroups(Locus locus, string hlaName, string hlaNomenclatureVersion)
         {
             var metadata = await GetHlaMetadata(locus, hlaName, hlaNomenclatureVersion);
             return metadata.SmallGGroups;
+        }
+
+        public async Task<IDictionary<Locus, ISet<string>>> GetAllSmallGGroups(string hlaNomenclatureVersion)
+        {
+            return await smallGGroupToPGroupMetadataRepository.GetAllSmallGGroups(hlaNomenclatureVersion);
         }
 
         protected override IEnumerable<ISmallGGroupsMetadata> ConvertMetadataRowsToMetadata(

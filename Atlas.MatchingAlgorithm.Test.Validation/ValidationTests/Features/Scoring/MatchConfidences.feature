@@ -114,3 +114,11 @@
     And scoring is enabled at locus B
     When I run a 9/10 search at locus B
     Then the match confidence should be Mismatch at B at position 1
+
+  Scenario: Potential match - patient and donor untyped at Dpb1
+    Given a patient has a match
+    And the patient is untyped at locus DPB1
+    And the matching donor is untyped at locus DPB1
+    And scoring is enabled at locus DPB1
+    When I run a 10/10 search
+    Then the match confidence should be Potential at Dpb1 at both positions

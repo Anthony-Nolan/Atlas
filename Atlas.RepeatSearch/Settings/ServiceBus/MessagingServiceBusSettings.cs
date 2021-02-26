@@ -9,6 +9,6 @@ namespace Atlas.RepeatSearch.Settings.ServiceBus
         public string ConnectionString { get; set; }
         public string RepeatSearchRequestsTopic { get; set; }
         public string RepeatSearchRequestsSubscription { get; set; }
-        public string RepeatSearchResultsTopic { get; set; }
+        public string RepeatSearchMatchingResultsTopic { get; set; }
     }
 }

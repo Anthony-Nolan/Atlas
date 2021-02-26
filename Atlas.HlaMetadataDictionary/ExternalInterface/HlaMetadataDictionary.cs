@@ -7,10 +7,10 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
+using Atlas.HlaMetadataDictionary.Services.HlaValidation;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
@@ -19,6 +19,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
     {
         Task<string> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour);
         Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory);
+
         /// <summary>
         /// Validate whether HLA is a type of the the target HLA category.
         /// </summary>
@@ -26,7 +27,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         /// <param name="hlaName">The hla you want to validate the type of.</param>
         /// <param name="targetHlaCategory">The hla category you want to see if the hla is a part of.</param>
         /// <returns></returns>
-        Task<bool> ValidateHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory);
+        Task<bool> ValidateHla(Locus locus, string hlaName, HlaValidationCategory targetHlaCategory);
 
         /// <summary>
         /// Functionally the same as calling ConvertHla on GGroup typed hla, with a target type of PGroup.
@@ -141,10 +142,9 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             return version;
         }
 
-        /// <inheritdoc />
-        public async Task<bool> ValidateHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory)
+        public async Task<bool> ValidateHla(Locus locus, string hlaName, HlaValidationCategory targetHlaCategory)
         {
-            return await hlaValidator.ValidateHla(locus, hlaName, new HlaConversionBehaviour
+            return await hlaValidator.ValidateHla(locus, hlaName, new HlaValidationBehaviour
             {
                 HlaNomenclatureVersion = ActiveHlaNomenclatureVersion,
                 TargetHlaCategory = targetHlaCategory

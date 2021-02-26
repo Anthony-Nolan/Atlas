@@ -20,7 +20,8 @@ resource "azurerm_function_app" "atlas_repeat_search_function" {
     "APPINSIGHTS_INSTRUMENTATIONKEY" = var.application_insights.instrumentation_key
     "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
-    "AzureStorage:ConnectionString" = var.azure_storage.primary_connection_string 
+    "AzureStorage:ConnectionString"             = var.azure_storage.primary_connection_string
+    "AzureStorage:MatchingResultsBlobContainer" = azurerm_storage_container.repeat_search_matching_results_container.name
 
     "FUNCTIONS_WORKER_RUNTIME" = "dotnet"  
 
@@ -34,7 +35,7 @@ resource "azurerm_function_app" "atlas_repeat_search_function" {
     "MessagingServiceBus:ConnectionString"                 = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
     "MessagingServiceBus:RepeatSearchRequestsSubscription" = azurerm_servicebus_subscription.repeat-search-repeat-search-requests.name
     "MessagingServiceBus:RepeatSearchRequestsTopic"        = azurerm_servicebus_topic.repeat-search-requests.name
-    "MessagingServiceBus:RepeatSearchResultsTopic"         = azurerm_servicebus_topic.repeat-search-results-ready.name
+    "MessagingServiceBus:RepeatSearchMatchingResultsTopic" = azurerm_servicebus_topic.repeat-search-matching-results-ready.name
 
     "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string

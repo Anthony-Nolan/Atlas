@@ -6,6 +6,7 @@ using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.RepeatSearch.Services.Search;
+using Atlas.RepeatSearch.Validators;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
@@ -62,7 +63,7 @@ namespace Atlas.Functions.PublicApi.Functions
         {
             var repeatSearchRequest = JsonConvert.DeserializeObject<RepeatSearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
 
-            var matchingValidationResult = await new SearchRequestValidator().ValidateAsync(repeatSearchRequest.SearchRequest);
+            var matchingValidationResult = await new RepeatSearchRequestValidator().ValidateAsync(repeatSearchRequest);
             if (!matchingValidationResult.IsValid)
             {
                 return BuildValidationResponse(matchingValidationResult);
@@ -75,8 +76,12 @@ namespace Atlas.Functions.PublicApi.Functions
                 return BuildValidationResponse(probabilityValidationResult);
             }
 
-            var id = await repeatSearchDispatcher.DispatchSearch(repeatSearchRequest);
-            return new JsonResult(new SearchInitiationResponse { SearchIdentifier = id });
+            var repeatSearchId = await repeatSearchDispatcher.DispatchSearch(repeatSearchRequest);
+            return new JsonResult(new SearchInitiationResponse
+            {
+                SearchIdentifier = repeatSearchRequest.OriginalSearchId,
+                RepeatSearchIdentifier = repeatSearchId
+            });
         }
 
         private static IActionResult BuildValidationResponse(ValidationResult validationResult) =>

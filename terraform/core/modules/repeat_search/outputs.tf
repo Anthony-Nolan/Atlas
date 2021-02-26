@@ -8,14 +8,17 @@ output "function_app" {
 
 output "service_bus" {
   value = {
-    repeat_search_requests_topic = azurerm_servicebus_topic.repeat-search-requests.name
-    repeat_search_results_topic  = azurerm_servicebus_topic.repeat-search-results-ready.name
+    repeat_search_matching_results_subscription = azurerm_servicebus_subscription.match-prediction-orchestration-repeat-search-results-ready.name
+    repeat_search_matching_results_topic        = azurerm_servicebus_topic.repeat-search-matching-results-ready.name
+    repeat_search_requests_topic                = azurerm_servicebus_topic.repeat-search-requests.name
+    repeat_search_results_topic                 = azurerm_servicebus_topic.repeat-search-results-ready.name
   }
 }
 
 output "storage" {
   value = {
-    repeat_search_results_container_name = azurerm_storage_container.repeat_search_results_container.name
+    repeat_search_matching_results_container_name = azurerm_storage_container.repeat_search_matching_results_container.name
+    repeat_search_results_container_name          = azurerm_storage_container.repeat_search_results_container.name
   }
 }
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Data.Models;
+using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Models;
 using LochNessBuilder;
 using Newtonsoft.Json;
@@ -25,9 +26,16 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
                 .With(t => t.UploadedDateTime, DateTime.Now);
         }
 
-        internal static Builder New(string[] registries = null, string[] ethnicity = null, int haplotypeCount = 1, decimal frequencyValue = 0.00001m)
+        internal static Builder New(
+            string[] registries = null,
+            string[] ethnicity = null,
+            int haplotypeCount = 1,
+            decimal frequencyValue = 0.00001m,
+            ImportTypingCategory typingCategory = ImportTypingCategory.LargeGGroup)
         {
-            var frequencySetFile = FrequencySetFileContentsBuilder.NewWithFrequencyCount(ethnicity, registries, haplotypeCount, frequencyValue).Build();
+            var frequencySetFile = FrequencySetFileContentsBuilder
+                .NewWithFrequencyCount(ethnicity, registries, haplotypeCount, frequencyValue, typingCategory)
+                .Build();
 
             return FileWithoutContents().With(x => x.Contents, GetStream(frequencySetFile));
         }
@@ -36,10 +44,11 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
             IEnumerable<HaplotypeFrequency> haplotypeFrequencies,
             string[] registries = null,
             string[] ethnicity = null,
+            ImportTypingCategory typingCategory = default,
             string nomenclatureVersion = HlaNomenclatureVersion)
         {
             var frequencySetFile = FrequencySetFileContentsBuilder
-                .NewWithFrequencies(haplotypeFrequencies, ethnicity, registries)
+                .NewWithFrequencies(haplotypeFrequencies, ethnicity, registries, typingCategory)
                 .With(f => f.nomenclatureVersion, nomenclatureVersion).Build();
 
             return FileWithoutContents().With(x => x.Contents, GetStream(frequencySetFile));

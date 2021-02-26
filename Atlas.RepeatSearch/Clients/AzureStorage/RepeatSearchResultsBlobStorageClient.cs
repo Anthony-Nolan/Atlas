@@ -21,7 +21,7 @@ namespace Atlas.RepeatSearch.Clients.AzureStorage
         public RepeatSearchResultsBlobStorageClient(AzureStorageSettings azureStorageSettings, IMatchingAlgorithmSearchLogger logger)
             : base(azureStorageSettings.ConnectionString, logger)
         {
-            resultsContainerName = azureStorageSettings.RepeatSearchResultsBlobContainer;
+            resultsContainerName = azureStorageSettings.MatchingResultsBlobContainer;
         }
 
         public async Task UploadResults(MatchingAlgorithmResultSet repeatSearchResultSet)
