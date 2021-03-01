@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Atlas.RepeatSearch.Data.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.RepeatSearch.Data.Context
 {
@@ -14,7 +15,11 @@ namespace Atlas.RepeatSearch.Data.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasDefaultSchema(Schema);
+            modelBuilder.Entity<CanonicalResultSet>().SetUpResultSetModel();
+            modelBuilder.Entity<SearchResult>().SetUpSearchResultModel();
             base.OnModelCreating(modelBuilder);
         }
+        
+        public DbSet<CanonicalResultSet> CanonicalResultSets { get; set; }
     }
 }
