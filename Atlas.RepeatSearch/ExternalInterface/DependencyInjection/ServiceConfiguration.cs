@@ -13,6 +13,7 @@ using Atlas.RepeatSearch.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.RepeatSearch.Data.Context;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
 using ConnectionStrings = Atlas.RepeatSearch.Data.Settings.ConnectionStrings;
@@ -40,7 +41,8 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
                 fetchAzureStorageSettings,
                 fetchMessagingServiceBusSettings,
                 fetchRepeatSqlConnectionString);
-            services.RegisterServices();
+            
+            services.RegisterServices(fetchRepeatSqlConnectionString);
 
             services.RegisterSearch(
                 fetchApplicationInsightsSettings,
@@ -71,7 +73,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             services.AddSingleton(sp => new ConnectionStrings {RepeatSearchSqlConnectionString = fetchRepeatSqlConnectionString(sp)});
         }
 
-        private static void RegisterServices(this IServiceCollection services)
+        private static void RegisterServices(this IServiceCollection services, Func<IServiceProvider, string> fetchRepeatSqlConnectionString)
         {
             services.AddScoped<IOriginalSearchResultsListener, OriginalSearchResultsListener>();
             services.AddSingleton<IBlobDownloader>(sp =>
@@ -81,7 +83,9 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
                 return new BlobDownloader(storageSettings.ConnectionString, logger);
             });
 
+            services.AddScoped(sp => new ContextFactory().Create(fetchRepeatSqlConnectionString(sp)));
             services.AddScoped<ICanonicalResultSetRepository, CanonicalResultSetRepository>();
+            services.AddScoped<IRepeatSearchHistoryRepository, RepeatSearchHistoryRepository>();
 
             services.AddScoped<IRepeatSearchDispatcher, RepeatSearchDispatcher>();
             services.AddScoped<IRepeatSearchRunner, RepeatSearchRunner>();
