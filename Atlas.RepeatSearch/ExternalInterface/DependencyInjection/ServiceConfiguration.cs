@@ -13,6 +13,7 @@ using Atlas.RepeatSearch.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.RepeatSearch.Data.Context;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
 
@@ -73,7 +74,9 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
                 return new BlobDownloader(storageSettings.ConnectionString, logger);
             });
 
+            services.AddScoped(sp => new ContextFactory().Create(fetchRepeatSqlConnectionString(sp)));
             services.AddScoped<ICanonicalResultSetRepository>(sp => new CanonicalResultSetRepository(fetchRepeatSqlConnectionString(sp)));
+            services.AddScoped<IRepeatSearchHistoryRepository, RepeatSearchHistoryRepository>();
             
             services.AddScoped<IRepeatSearchDispatcher, RepeatSearchDispatcher>();
             services.AddScoped<IRepeatSearchRunner, RepeatSearchRunner>();
