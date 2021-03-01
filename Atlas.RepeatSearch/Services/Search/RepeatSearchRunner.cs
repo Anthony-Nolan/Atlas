@@ -10,6 +10,8 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.RepeatSearch.Clients;
 using Atlas.RepeatSearch.Clients.AzureStorage;
+using Atlas.RepeatSearch.Data.Models;
+using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Models;
 using Atlas.RepeatSearch.Validators;
 using FluentValidation;
@@ -29,6 +31,7 @@ namespace Atlas.RepeatSearch.Services.Search
         private readonly ILogger repeatSearchLogger;
         private readonly MatchingAlgorithmSearchLoggingContext repeatSearchLoggingContext;
         private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
+        private readonly IRepeatSearchHistoryRepository repeatSearchHistoryRepository;
 
         public RepeatSearchRunner(
             IRepeatSearchServiceBusClient repeatSearchServiceBusClient,
@@ -37,7 +40,8 @@ namespace Atlas.RepeatSearch.Services.Search
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchingAlgorithmSearchLogger repeatSearchLogger,
             MatchingAlgorithmSearchLoggingContext repeatSearchLoggingContext,
-            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
+            IRepeatSearchHistoryRepository repeatSearchHistoryRepository)
         {
             this.repeatSearchServiceBusClient = repeatSearchServiceBusClient;
             this.searchService = searchService;
@@ -45,6 +49,7 @@ namespace Atlas.RepeatSearch.Services.Search
             this.repeatSearchLogger = repeatSearchLogger;
             this.repeatSearchLoggingContext = repeatSearchLoggingContext;
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
+            this.repeatSearchHistoryRepository = repeatSearchHistoryRepository;
         }
 
         public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
@@ -59,9 +64,12 @@ namespace Atlas.RepeatSearch.Services.Search
             repeatSearchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
             try
             {
+                await RecordRepeatSearch(identifiedRepeatSearchRequest);
+                
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
-                var results = (await searchService.Search(identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest, identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate)).ToList();
+                var results = (await searchService.Search(identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest,
+                    identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate)).ToList();
                 stopwatch.Stop();
 
                 var blobContainerName = repeatResultsBlobStorageClient.GetResultsContainerName();
@@ -108,6 +116,20 @@ namespace Atlas.RepeatSearch.Services.Search
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
                 throw;
             }
+        }
+
+        private async Task RecordRepeatSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
+        {
+            var historyRecord = new RepeatSearchHistoryRecord
+            {
+                DateCreated = DateTimeOffset.UtcNow,
+                // ReSharper disable once PossibleInvalidOperationException - validation should have caught nulls by now
+                SearchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value,
+                OriginalSearchRequestId = identifiedRepeatSearchRequest.OriginalSearchId,
+                RepeatSearchRequestId = identifiedRepeatSearchRequest.RepeatSearchId
+            };
+            
+            await repeatSearchHistoryRepository.RecordRepeatSearchRequest(historyRecord);
         }
     }
 }
