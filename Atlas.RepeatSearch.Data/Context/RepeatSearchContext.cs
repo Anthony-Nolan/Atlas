@@ -21,5 +21,6 @@ namespace Atlas.RepeatSearch.Data.Context
         }
         
         public DbSet<CanonicalResultSet> CanonicalResultSets { get; set; }
+        public DbSet<RepeatSearchHistoryRecord> RepeatSearchHistoryRecords { get; set; }
     }
 }
