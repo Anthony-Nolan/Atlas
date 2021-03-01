@@ -201,6 +201,7 @@ module "repeat_search" {
   matching_persistent_database_connection_string  = module.matching_algorithm.sql_database.persistent_database_connection_string
   matching_transient_a_database_connection_string = module.matching_algorithm.sql_database.transient_a_database_connection_string
   matching_transient_b_database_connection_string = module.matching_algorithm.sql_database.transient_b_database_connection_string
+  original-search-matching-results-topic-name     = module.matching_algorithm.service_bus.matching_results_topic
   servicebus_namespace                            = azurerm_servicebus_namespace.general
   servicebus_namespace_authorization_rules        = {
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
