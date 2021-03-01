@@ -15,13 +15,13 @@ namespace Atlas.Functions.Services.BlobStorageClients
 
     internal class MatchingResultsDownloader : IMatchingResultsDownloader
     {
-        private readonly AzureStorageSettings messagingServiceBusSettings;
+        private readonly AzureStorageSettings azureStorageSettings;
         private readonly IBlobDownloader blobDownloader;
         private readonly ILogger logger;
 
-        public MatchingResultsDownloader(IOptions<AzureStorageSettings> messagingServiceBusSettings, IBlobDownloader blobDownloader, ILogger logger)
+        public MatchingResultsDownloader(IOptions<AzureStorageSettings> azureStorageSettings, IBlobDownloader blobDownloader, ILogger logger)
         {
-            this.messagingServiceBusSettings = messagingServiceBusSettings.Value;
+            this.azureStorageSettings = azureStorageSettings.Value;
             this.blobDownloader = blobDownloader;
             this.logger = logger;
         }
@@ -32,8 +32,8 @@ namespace Atlas.Functions.Services.BlobStorageClients
             using (logger.RunTimed($"Downloading matching results: {blobName}"))
             {
                 var matchingResultsBlobContainer = isRepeatSearch
-                    ? messagingServiceBusSettings.RepeatSearchMatchingResultsBlobContainer
-                    : messagingServiceBusSettings.MatchingResultsBlobContainer;
+                    ? azureStorageSettings.RepeatSearchMatchingResultsBlobContainer
+                    : azureStorageSettings.MatchingResultsBlobContainer;
                 return await blobDownloader.Download<MatchingAlgorithmResultSet>(matchingResultsBlobContainer, blobName);
             }
         }

@@ -12,6 +12,7 @@
       <ProjectReference Include="..\Atlas.Client.Models\Atlas.Client.Models.csproj" />
       <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
+      <ProjectReference Include="..\Atlas.RepeatSearch.Data\Atlas.RepeatSearch.Data.csproj" />
     </ItemGroup>
 
 </Project>
