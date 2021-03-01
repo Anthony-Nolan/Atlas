@@ -24,25 +24,25 @@ namespace Atlas.RepeatSearch.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SearchResult",
+                name: "SearchResults",
                 schema: "RepeatSearch",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    AtlasDonorId = table.Column<int>(nullable: false),
-                    CanonicalResultSetId = table.Column<int>(nullable: true)
+                    CanonicalResultSetId = table.Column<int>(nullable: false),
+                    AtlasDonorId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SearchResult", x => x.Id);
+                    table.PrimaryKey("PK_SearchResults", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SearchResult_CanonicalResultSets_CanonicalResultSetId",
+                        name: "FK_SearchResults_CanonicalResultSets_CanonicalResultSetId",
                         column: x => x.CanonicalResultSetId,
                         principalSchema: "RepeatSearch",
                         principalTable: "CanonicalResultSets",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -53,23 +53,23 @@ namespace Atlas.RepeatSearch.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_SearchResult_AtlasDonorId",
+                name: "IX_SearchResults_CanonicalResultSetId",
                 schema: "RepeatSearch",
-                table: "SearchResult",
-                column: "AtlasDonorId",
-                unique: true);
+                table: "SearchResults",
+                column: "CanonicalResultSetId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SearchResult_CanonicalResultSetId",
+                name: "IX_SearchResults_AtlasDonorId_CanonicalResultSetId",
                 schema: "RepeatSearch",
-                table: "SearchResult",
-                column: "CanonicalResultSetId");
+                table: "SearchResults",
+                columns: new[] { "AtlasDonorId", "CanonicalResultSetId" },
+                unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "SearchResult",
+                name: "SearchResults",
                 schema: "RepeatSearch");
 
             migrationBuilder.DropTable(

@@ -12,6 +12,9 @@ using Atlas.RepeatSearch.Services.Search;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Atlas.Common.AzureStorage.Blob;
+using Atlas.RepeatSearch.Data.Repositories;
+using Atlas.RepeatSearch.Services.ResultSetTracking;
 
 namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
 {
@@ -32,7 +35,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             Func<IServiceProvider, string> fetchTransientBSqlConnectionString)
         {
             services.RegisterSettings(fetchApplicationInsightsSettings, fetchAzureStorageSettings, fetchMessagingServiceBusSettings);
-            services.RegisterServices();
+            services.RegisterServices(fetchRepeatSqlConnectionString);
 
             services.RegisterSearch(
                 fetchApplicationInsightsSettings,
@@ -60,8 +63,18 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
         }
 
-        private static void RegisterServices(this IServiceCollection services)
+        private static void RegisterServices(this IServiceCollection services, Func<IServiceProvider, string> fetchRepeatSqlConnectionString)
         {
+            services.AddScoped<IOriginalSearchResultsListener, OriginalSearchResultsListener>();
+            services.AddSingleton<IBlobDownloader>(sp =>
+            {
+                var storageSettings = sp.GetService<RepeatSearch.Settings.Azure.AzureStorageSettings>();
+                var logger = sp.GetService<ILogger>();
+                return new BlobDownloader(storageSettings.ConnectionString, logger);
+            });
+
+            services.AddScoped<ICanonicalResultSetRepository>(sp => new CanonicalResultSetRepository(fetchRepeatSqlConnectionString(sp)));
+            
             services.AddScoped<IRepeatSearchDispatcher, RepeatSearchDispatcher>();
             services.AddScoped<IRepeatSearchRunner, RepeatSearchRunner>();
             services.AddScoped<IRepeatSearchResultsBlobStorageClient, RepeatSearchResultsBlobStorageClient>();
