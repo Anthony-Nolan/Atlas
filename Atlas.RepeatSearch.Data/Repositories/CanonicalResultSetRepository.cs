@@ -3,6 +3,7 @@ using System.Data;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
 using Atlas.RepeatSearch.Data.Models;
+using Atlas.RepeatSearch.Data.Settings;
 using Dapper;
 using Microsoft.Data.SqlClient;
 
@@ -17,9 +18,9 @@ namespace Atlas.RepeatSearch.Data.Repositories
     {
         private readonly string connectionString;
 
-        public CanonicalResultSetRepository(string connectionString)
+        public CanonicalResultSetRepository(ConnectionStrings connectionStrings)
         {
-            this.connectionString = connectionString;
+            connectionString = connectionStrings.RepeatSearchSqlConnectionString;
         }
 
         public async Task CreateCanonicalResultSet(string searchRequestId, IReadOnlyCollection<int> donorIds)

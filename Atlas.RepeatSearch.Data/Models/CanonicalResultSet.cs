@@ -24,7 +24,7 @@ namespace Atlas.RepeatSearch.Data.Models
         public string OriginalSearchRequestId { get; set; }
         
         /// <summary>
-        /// Atlas Ids (NOT external donor codes) of donors in the canonical result set.
+        /// Donors in the canonical result set.
         /// </summary>
         public ICollection<SearchResult> SearchResults { get; set; }
     }

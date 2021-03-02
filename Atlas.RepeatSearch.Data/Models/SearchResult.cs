@@ -14,6 +14,9 @@ namespace Atlas.RepeatSearch.Data.Models
 
         public int Id { get; set; }
 
+        /// <summary>
+        /// Note that this is the internal Atlas donor id, and not the external donor code - and as such should not be directly reported to consumers
+        /// </summary>
         public int AtlasDonorId { get; set; }
     }
 
