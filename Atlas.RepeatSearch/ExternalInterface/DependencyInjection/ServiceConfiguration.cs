@@ -15,6 +15,7 @@ using System;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
+using ConnectionStrings = Atlas.RepeatSearch.Data.Settings.ConnectionStrings;
 
 namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
 {
@@ -34,8 +35,12 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
             Func<IServiceProvider, string> fetchTransientBSqlConnectionString)
         {
-            services.RegisterSettings(fetchApplicationInsightsSettings, fetchAzureStorageSettings, fetchMessagingServiceBusSettings);
-            services.RegisterServices(fetchRepeatSqlConnectionString);
+            services.RegisterSettings(
+                fetchApplicationInsightsSettings,
+                fetchAzureStorageSettings,
+                fetchMessagingServiceBusSettings,
+                fetchRepeatSqlConnectionString);
+            services.RegisterServices();
 
             services.RegisterSearch(
                 fetchApplicationInsightsSettings,
@@ -56,14 +61,17 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, RepeatSearch.Settings.Azure.AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, string> fetchRepeatSqlConnectionString)
         {
             services.MakeSettingsAvailableForUse(fetchApplicationInsightsSettings);
             services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
+
+            services.AddSingleton(sp => new ConnectionStrings {RepeatSearchSqlConnectionString = fetchRepeatSqlConnectionString(sp)});
         }
 
-        private static void RegisterServices(this IServiceCollection services, Func<IServiceProvider, string> fetchRepeatSqlConnectionString)
+        private static void RegisterServices(this IServiceCollection services)
         {
             services.AddScoped<IOriginalSearchResultsListener, OriginalSearchResultsListener>();
             services.AddSingleton<IBlobDownloader>(sp =>
@@ -73,8 +81,8 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
                 return new BlobDownloader(storageSettings.ConnectionString, logger);
             });
 
-            services.AddScoped<ICanonicalResultSetRepository>(sp => new CanonicalResultSetRepository(fetchRepeatSqlConnectionString(sp)));
-            
+            services.AddScoped<ICanonicalResultSetRepository, CanonicalResultSetRepository>();
+
             services.AddScoped<IRepeatSearchDispatcher, RepeatSearchDispatcher>();
             services.AddScoped<IRepeatSearchRunner, RepeatSearchRunner>();
             services.AddScoped<IRepeatSearchResultsBlobStorageClient, RepeatSearchResultsBlobStorageClient>();
