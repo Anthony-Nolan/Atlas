@@ -124,6 +124,12 @@ variable "MATCHING_BATCH_SIZE" {
   description = "Batch size at which donors will be iterated in the matching algorithm. Larger = quicker, but higher memory footprint."
 }
 
+variable "MATCHING_DATA_REFRESH_AUTO_RUN" {
+  type = bool
+  default = true
+  description = "When set, the data refresh job to update processed donor data will automatically run when a new nomenclature version is detected. Otherwise, it will be manual only."
+}
+
 variable "MATCHING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE" {
   type = number
   default = 3
