@@ -59,6 +59,17 @@ It may be desirable to manually delete older sets, to free up database space and
 
 ## Data Refresh 
 
+## Manual Trigger
+
+Atlas can be configured to automatically re-run the data refresh process as soon as it detects a new HLA nomenclature version. There are some cases when it may be preferable to run the job manually: 
+
+(a) If the same nomenclature version is re-uploaded to the source, e.g. to fix any errors
+(b) If this installation of Atlas has opted to disable the auto-run refresh - in this case manual will be the only way to trigger this job
+    - An example reason to maintain manual control would be to ensure that haplotype frequency nomenclature and matching nomenclature are updated simultaneously
+    
+To manually trigger the Job, call the `SubmitDataRefreshRequestManual` HTTP Azure function, on the Matching Algorithm Functions App.
+Configuration options are available as per the model `DataRefreshRequest`
+
 ### In the case of the refresh job server dying
 
 The data refresh function is set up such that if it *fails* for any reason, the algorithm/infrastructure will be left in a reasonable state.
