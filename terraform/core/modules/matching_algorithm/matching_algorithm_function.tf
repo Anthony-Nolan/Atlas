@@ -23,6 +23,7 @@ locals {
 
     "DataRefresh:ActiveDatabaseAutoPauseTimeout"                                            = var.DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE
     "DataRefresh:ActiveDatabaseSize"                                                        = var.DATA_REFRESH_DB_SIZE_ACTIVE
+    "DataRefresh:AutoRunDataRefresh"                                                        = var.DATA_REFRESH_AUTO_RUN
     "DataRefresh:RequestsTopic"                                                             = azurerm_servicebus_topic.data-refresh-requests.name
     "DataRefresh:RequestsTopicSubscription"                                                 = azurerm_servicebus_subscription.matching-algorithm-data-refresh-requests.name
     "DataRefresh:CompletionTopic"                                                           = azurerm_servicebus_topic.completed-data-refresh-jobs.name

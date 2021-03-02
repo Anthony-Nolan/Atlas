@@ -12,6 +12,10 @@ variable "AZURE_CLIENT_SECRET" {
   type = string
 }
 
+variable "DATA_REFRESH_AUTO_RUN" {
+  type = bool
+}
+
 variable "DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE" {
   type = number
 }

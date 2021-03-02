@@ -12,6 +12,7 @@
     "AzureStorage:SearchResultsBlobContainer": "matching-algorithm-results",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "DataRefresh:ActiveDatabaseSize": "S3",
+    "DataRefresh:AutoRunDataRefresh": "false",
     "DataRefresh:RequestsTopic": "data-refresh-requests",
     "DataRefresh:RequestsTopicSubscription": "matching-algorithm",
     "DataRefresh:CompletionTopic": "completed-data-refresh-jobs",

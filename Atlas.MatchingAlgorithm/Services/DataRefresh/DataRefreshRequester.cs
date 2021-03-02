@@ -9,6 +9,7 @@ using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
+using Atlas.MatchingAlgorithm.Settings;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 {
@@ -18,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// Validates the request to refresh the database and queues it if valid.
         /// </summary>
         /// <returns>Record ID, if request was accepted. Else exception thrown with failure details.</returns>
-        Task<DataRefreshResponse> RequestDataRefresh(DataRefreshRequest request);
+        Task<DataRefreshResponse> RequestDataRefresh(DataRefreshRequest request, bool wasManuallyRequested);
     }
 
     internal class DataRefreshRequester : IDataRefreshRequester
@@ -28,6 +29,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IDataRefreshServiceBusClient serviceBusClient;
         private readonly IDataRefreshSupportNotificationSender supportNotificationSender;
+        private readonly bool shouldAllowAutoRefresh;
 
         public DataRefreshRequester(
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
@@ -35,20 +37,28 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IActiveDatabaseProvider activeDatabaseProvider,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
             IDataRefreshServiceBusClient serviceBusClient,
-            IDataRefreshSupportNotificationSender supportNotificationSender)
+            IDataRefreshSupportNotificationSender supportNotificationSender,
+            DataRefreshSettings dataRefreshSettings)
         {
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
             this.serviceBusClient = serviceBusClient;
             this.supportNotificationSender = supportNotificationSender;
 
+            shouldAllowAutoRefresh = dataRefreshSettings.AutoRunDataRefresh;
+
             activeVersionHlaMetadataDictionary = hlaNomenclatureVersionAccessor.DoesActiveHlaNomenclatureVersionExist()
                 ? hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion())
                 : null;
         }
 
-        public async Task<DataRefreshResponse> RequestDataRefresh(DataRefreshRequest request)
+        public async Task<DataRefreshResponse> RequestDataRefresh(DataRefreshRequest request, bool wasManuallyRequested)
         {
+            if (!shouldAllowAutoRefresh && !wasManuallyRequested)
+            {
+                return new DataRefreshResponse {WasRefreshRun = false};
+            }
+
             if (dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Any())
             {
                 throw new InvalidDataRefreshRequestHttpException("Data refresh seems to already be in progress. Data Refresh not started.");
@@ -57,13 +67,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             if (NoNeedToRecreateActiveHlaMetaDictionary() && !request.ForceDataRefresh)
             {
                 throw new InvalidDataRefreshRequestHttpException("Active HLA metadata dictionary is already on the " +
-                                                             "latest version of the WMDA HLA nomenclature and refresh " +
-                                                             "was not run in 'Forced' mode.");
+                                                                 "latest version of the WMDA HLA nomenclature and refresh " +
+                                                                 "was not run in 'Forced' mode.");
             }
 
             var recordId = await CreateNewDataRefreshRecord();
 
-            await serviceBusClient.PublishToRequestTopic(new ValidatedDataRefreshRequest { DataRefreshRecordId = recordId });
+            await serviceBusClient.PublishToRequestTopic(new ValidatedDataRefreshRequest {DataRefreshRecordId = recordId});
             await supportNotificationSender.SendInitialisationNotification(recordId);
 
             return new DataRefreshResponse
