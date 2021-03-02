@@ -33,7 +33,7 @@ resource "azurerm_function_app" "atlas_repeat_search_function" {
     "MatchingConfiguration:MatchingBatchSize" = var.MATCHING_BATCH_SIZE
 
     "MessagingServiceBus:ConnectionString"                   = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
-    "MessagingServiceBus:OriginalSearchRequestsSubscription" = azurerm_servicebus_subscription.original-search-results-ready-repeat-search-listener
+    "MessagingServiceBus:OriginalSearchRequestsSubscription" = azurerm_servicebus_subscription.original-search-results-ready-repeat-search-listener.name
     "MessagingServiceBus:OriginalSearchRequestsTopic"        = var.original-search-matching-results-topic-name
     "MessagingServiceBus:RepeatSearchRequestsSubscription"   = azurerm_servicebus_subscription.repeat-search-repeat-search-requests.name
     "MessagingServiceBus:RepeatSearchRequestsTopic"          = azurerm_servicebus_topic.repeat-search-requests.name
