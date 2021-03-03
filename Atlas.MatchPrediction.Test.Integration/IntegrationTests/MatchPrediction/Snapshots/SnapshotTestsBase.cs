@@ -34,12 +34,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
     {
         private IMatchProbabilityService MatchProbabilityService { get; set; }
 
-        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
+        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
 
         // Registry and ethnicity values must match those used in test HF set files.
         private const string Registry1 = "reg-1";
         private const string Registry2 = "reg-2";
         private const string Registry3 = "reg-3";
+        private const string RegistrySmallG = "reg-small-g";
         private const string Ethnicity1 = "eth-1";
         private const string Ethnicity2 = "eth-2";
 
@@ -91,6 +92,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 "Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.reg-1-2-eth-1.json",
                 "Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.reg-2-3.json",
                 "Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.reg-2-3-eth-2.json",
+                "Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.small-g.json",
             };
 
             foreach (var filePath in filePaths)

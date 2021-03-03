@@ -6,6 +6,7 @@ using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedSt
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
+using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
@@ -26,6 +27,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
         protected static readonly PhenotypeInfo<string> DefaultGGroups = Alleles.UnambiguousAlleleDetails.GGroups();
+        protected static readonly PhenotypeInfo<string> DefaultSmallGGroups = Alleles.UnambiguousAlleleDetails.SmallGGroups();
 
         protected const string DefaultRegistryCode = "default-registry-code";
         protected const string DefaultEthnicityCode = "default-ethnicity-code";
@@ -41,12 +43,15 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             IEnumerable<HaplotypeFrequency> haplotypes,
             string registryCode = DefaultRegistryCode,
             string ethnicityCode = DefaultEthnicityCode,
-            string nomenclatureVersion = HlaNomenclatureVersion)
+            string nomenclatureVersion = HlaNomenclatureVersion,
+            ImportTypingCategory typingCategory = ImportTypingCategory.LargeGGroup)
         {
             var registry = registryCode == null ? null : new[] {registryCode};
             var ethnicity = ethnicityCode == null ? null : new[] {ethnicityCode};
 
-            using var file = FrequencySetFileBuilder.New(haplotypes, registry, ethnicity, nomenclatureVersion: nomenclatureVersion).Build();
+            using var file = FrequencySetFileBuilder
+                .New(haplotypes, registry, ethnicity, nomenclatureVersion: nomenclatureVersion, typingCategory: typingCategory)
+                .Build();
             await ImportService.ImportFrequencySet(file);
         }
 
@@ -55,6 +60,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         protected static Builder<HaplotypeFrequency> DefaultHaplotypeFrequency2 => Builder<HaplotypeFrequency>.New
             .WithHaplotype(Alleles.UnambiguousAlleleDetails.GGroups().Split().Item2);
+
+        protected static Builder<HaplotypeFrequency> DefaultSmallGGroupHaplotypeFrequency1 => HaplotypeFrequencyBuilder.New
+            .WithHaplotype(Alleles.UnambiguousAlleleDetails.SmallGGroups().Split().Item1);
+
+        protected static Builder<HaplotypeFrequency> DefaultSmallGGroupHaplotypeFrequency2 => Builder<HaplotypeFrequency>.New
+            .WithHaplotype(Alleles.UnambiguousAlleleDetails.SmallGGroups().Split().Item2);
 
         protected static PhenotypeInfoBuilder<string> DefaultUnambiguousAllelesBuilder =>
             new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles());

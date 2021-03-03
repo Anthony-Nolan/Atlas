@@ -39,5 +39,6 @@
         <EmbeddedResource Include="Resources\HaplotypeFrequencySets\reg-1-2-eth-1.json" />
         <EmbeddedResource Include="Resources\HaplotypeFrequencySets\reg-2-3-eth-2.json" />
         <EmbeddedResource Include="Resources\HaplotypeFrequencySets\reg-2-3.json" />
+        <EmbeddedResource Include="Resources\HaplotypeFrequencySets\small-g.json" />
     </ItemGroup>
 </Project>
