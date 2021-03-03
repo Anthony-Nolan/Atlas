@@ -18,47 +18,6 @@ using Atlas.MatchPrediction.Utils;
 
 namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 {
-    /// <summary>
-    /// In a few places we separate frequencies by resolution, at both P group and G group resolution -
-    /// as each needs to be processed slightly differently.
-    ///
-    /// This class is a wrapper of such a pair of data for convenience.
-    /// </summary>
-    internal class DataByResolution<T>
-    {
-        public T PGroup { get; set; }
-        public T GGroup { get; set; }
-
-        public T GetByCategory(HaplotypeTypingCategory haplotypeTypingCategory)
-        {
-            return haplotypeTypingCategory switch
-            {
-                HaplotypeTypingCategory.GGroup => GGroup,
-                HaplotypeTypingCategory.PGroup => PGroup,
-                _ => throw new ArgumentOutOfRangeException(nameof(haplotypeTypingCategory))
-            };
-        }
-
-        public DataByResolution<TResult> Map<TResult>(Func<T, TResult> mapping)
-        {
-            return Map((_, value) => mapping(value));
-        }
-
-        public DataByResolution<TResult> Map<TResult>(Func<HaplotypeTypingCategory, T, TResult> mapping)
-        {
-            return MapAsync((category, value) => Task.FromResult(mapping(category, value))).Result;
-        }
-
-        public async Task<DataByResolution<TResult>> MapAsync<TResult>(Func<HaplotypeTypingCategory, T, Task<TResult>> mapping)
-        {
-            return new DataByResolution<TResult>
-            {
-                GGroup = await mapping(HaplotypeTypingCategory.GGroup, GGroup),
-                PGroup = await mapping(HaplotypeTypingCategory.PGroup, PGroup),
-            };
-        }
-    }
-
     internal class ExpandCompressedPhenotypeInput
     {
         /// <summary>
@@ -113,7 +72,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             var hlaNomenclatureVersion = input.HlaNomenclatureVersion;
             var allowedLoci = input.AllowedLoci;
 
-            if (input.AllHaplotypes?.GGroup == null || input.AllHaplotypes?.PGroup == null)
+            if (input.AllHaplotypes?.GGroup == null || input.AllHaplotypes?.PGroup == null || input.AllHaplotypes?.SmallGGroup == null)
             {
                 throw new ArgumentException("Haplotypes must be provided for phenotype expansion to complete in a reasonable timeframe.");
             }
@@ -155,7 +114,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
                     .ToList();
             });
 
-            return allowedHaplotypes.GGroup.Concat(allowedHaplotypes.PGroup);
+            return allowedHaplotypes.GGroup.Concat(allowedHaplotypes.PGroup).Concat(allowedHaplotypes.SmallGGroup);
         }
 
         /// <summary>

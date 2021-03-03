@@ -84,6 +84,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 {
                     HaplotypeTypingCategory.GGroup => await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, hla.Hla),
                     HaplotypeTypingCategory.PGroup => hla.Hla,
+                    HaplotypeTypingCategory.SmallGGroup => await hlaMetadataDictionary.ConvertSmallGGroupToPGroup(locus, hla.Hla),
                     _ => throw new ArgumentOutOfRangeException(nameof(hla.TypingCategory))
                 };
             })).CopyExpressingAllelesToNullPositions();
@@ -261,6 +262,10 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                                 .ToList(),
                             PGroup = haplotypeFrequencies
                                 .Where(h => h.Value.TypingCategory == HaplotypeTypingCategory.PGroup)
+                                .Select(h => h.Value.Hla)
+                                .ToList(),
+                            SmallGGroup = haplotypeFrequencies
+                                .Where(h => h.Value.TypingCategory == HaplotypeTypingCategory.SmallGGroup)
                                 .Select(h => h.Value.Hla)
                                 .ToList()
                         }
