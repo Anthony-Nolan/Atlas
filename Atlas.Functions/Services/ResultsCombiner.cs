@@ -68,7 +68,8 @@ namespace Atlas.Functions.Services
                     RepeatSearchId = matchingAlgorithmResultSet.RepeatSearchId,
                     BlobStorageContainerName = resultsContainer,
                     MatchingAlgorithmTime = matchingTime,
-                    MatchPredictionTime = matchPredictionResultLocations.ElapsedTime
+                    MatchPredictionTime = matchPredictionResultLocations.ElapsedTime,
+                    SearchedHla = matchingAlgorithmResultSet.SearchedHla
                 };
             }
         }
