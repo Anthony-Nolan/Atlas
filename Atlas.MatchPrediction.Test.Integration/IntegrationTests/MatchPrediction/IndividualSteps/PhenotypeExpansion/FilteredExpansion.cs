@@ -45,7 +45,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 Phenotype = phenotype,
                 AllowedLoci = DefaultLoci,
                 HlaNomenclatureVersion = HlaNomenclatureVersion,
-                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>> {GGroup = haplotypes, PGroup = haplotypes}
+                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
+                {
+                    GGroup = haplotypes, PGroup = haplotypes, SmallGGroup = haplotypes
+                }
             });
 
             // Expect (a,b) to only be returned once - homozygous correction factor takes care of this.
@@ -64,7 +67,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 Phenotype = phenotype,
                 AllowedLoci = DefaultLoci,
                 HlaNomenclatureVersion = HlaNomenclatureVersion,
-                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>> {GGroup = haplotypes, PGroup = haplotypes}
+                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
+                    {GGroup = haplotypes, PGroup = haplotypes, SmallGGroup = haplotypes}
             });
 
             // Expect (a,a) not to be duplicated
@@ -89,7 +93,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 Phenotype = phenotype,
                 AllowedLoci = DefaultLoci,
                 HlaNomenclatureVersion = HlaNomenclatureVersion,
-                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>> {GGroup = haplotypes, PGroup = haplotypes}
+                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
+                    {GGroup = haplotypes, PGroup = haplotypes, SmallGGroup = haplotypes}
             });
 
             // This G Group is represented by the patient HLA (01:XX), but is not present in the HF set 
@@ -114,7 +119,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 Phenotype = phenotype,
                 AllowedLoci = DefaultLoci,
                 HlaNomenclatureVersion = HlaNomenclatureVersion,
-                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>> {GGroup = haplotypes, PGroup = haplotypes}
+                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
+                    {GGroup = haplotypes, PGroup = haplotypes, SmallGGroup = haplotypes}
             });
 
             genotypes.Count.Should().Be(1);
@@ -156,10 +162,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var genotypes = await expander.ExpandCompressedPhenotype(new ExpandCompressedPhenotypeInput
             {
-                Phenotype = phenotype, 
+                Phenotype = phenotype,
                 AllowedLoci = DefaultLoci,
                 HlaNomenclatureVersion = HlaNomenclatureVersion,
-                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>> {GGroup = haplotypes, PGroup = haplotypes}
+                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
+                    {GGroup = haplotypes, PGroup = haplotypes, SmallGGroup = haplotypes}
             });
 
             // Of two matching haplotypes, four possible combinations as diplotypes: x & y => (xx)/(xy)/(yy)
@@ -227,11 +234,109 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 Phenotype = phenotype,
                 AllowedLoci = DefaultLoci,
                 HlaNomenclatureVersion = HlaNomenclatureVersion,
-                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>> {GGroup = gGroupHaplotypes, PGroup = pGroupHaplotypes}
+                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
+                {
+                    GGroup = gGroupHaplotypes, PGroup = pGroupHaplotypes, SmallGGroup = new List<LociInfo<string>>()
+                }
             });
 
             // Of four matching haplotypes (at 2 resolutions) - nCr (including self-pairs) = 10 possibilities
             genotypes.Count.Should().Be(10);
+        }
+
+        [Test]
+        public async Task ExpandCompressedPhenotype_WhenRepresentedByAllResolutionsOfHaplotypes_ExpandsCorrectly()
+        {
+            var phenotype = new PhenotypeInfoBuilder<string>(UnambiguousAlleleDetails.Alleles())
+                .WithDataAt(Locus.A, "01:XX")
+                .WithDataAt(Locus.B, "08:XX")
+                .WithDataAt(Locus.C, "07:XX")
+                .WithDataAt(Locus.Dqb1, "02:XX")
+                .WithDataAt(Locus.Drb1, "03:XX")
+                .Build();
+
+            var gGroupHaplotypes = new List<LociInfo<string>>
+            {
+                // Two haplotypes matching phenotype
+                new LociInfoBuilder<string>()
+                    .WithDataAt(Locus.A, "01:01:01G")
+                    .WithDataAt(Locus.B, "08:01:01G")
+                    .WithDataAt(Locus.C, "07:01:01G")
+                    .WithDataAt(Locus.Dqb1, "02:01:01G")
+                    .WithDataAt(Locus.Drb1, "03:01:01G")
+                    .Build(),
+                new LociInfoBuilder<string>()
+                    .WithDataAt(Locus.A, "01:09:01G")
+                    .WithDataAt(Locus.B, "08:01:01G")
+                    .WithDataAt(Locus.C, "07:01:01G")
+                    .WithDataAt(Locus.Dqb1, "02:01:01G")
+                    .WithDataAt(Locus.Drb1, "03:01:01G")
+                    .Build(),
+
+                // Two haplotypes that do not match genotype
+                HaplotypeBuilder1.Build(),
+                HaplotypeBuilder2.Build()
+            };
+            var pGroupHaplotypes = new List<LociInfo<string>>
+            {
+                // Two haplotypes matching phenotype
+                new LociInfoBuilder<string>()
+                    .WithDataAt(Locus.A, "01:01P")
+                    .WithDataAt(Locus.B, "08:01P")
+                    .WithDataAt(Locus.C, "07:01P")
+                    .WithDataAt(Locus.Dqb1, "02:01P")
+                    .WithDataAt(Locus.Drb1, "03:01P")
+                    .Build(),
+                new LociInfoBuilder<string>()
+                    .WithDataAt(Locus.A, "01:09P")
+                    .WithDataAt(Locus.B, "08:01P")
+                    .WithDataAt(Locus.C, "07:01P")
+                    .WithDataAt(Locus.Dqb1, "02:01P")
+                    .WithDataAt(Locus.Drb1, "03:01P")
+                    .Build(),
+
+                // Two haplotypes that do not match genotype
+                HaplotypeBuilder1.Build(),
+                HaplotypeBuilder2.Build()
+            };
+            var smallGGroupHaplotypes = new List<LociInfo<string>>
+            {
+                // Two haplotypes matching phenotype
+                new LociInfoBuilder<string>()
+                    .WithDataAt(Locus.A, "01:01g")
+                    .WithDataAt(Locus.B, "08:01g")
+                    .WithDataAt(Locus.C, "07:01g")
+                    .WithDataAt(Locus.Dqb1, "02:01g")
+                    .WithDataAt(Locus.Drb1, "03:01g")
+                    .Build(),
+                new LociInfoBuilder<string>()
+                    .WithDataAt(Locus.A, "01:09")
+                    .WithDataAt(Locus.B, "08:01g")
+                    .WithDataAt(Locus.C, "07:01g")
+                    .WithDataAt(Locus.Dqb1, "02:01g")
+                    .WithDataAt(Locus.Drb1, "03:01g")
+                    .Build(),
+
+                // Two haplotypes that do not match genotype
+                HaplotypeBuilder1.Build(),
+                HaplotypeBuilder2.Build()
+            };
+
+            var genotypes = await expander.ExpandCompressedPhenotype(new ExpandCompressedPhenotypeInput
+            {
+                Phenotype = phenotype,
+                AllowedLoci = DefaultLoci,
+                HlaNomenclatureVersion = HlaNomenclatureVersion,
+                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
+                {
+                    GGroup = gGroupHaplotypes,
+                    PGroup = pGroupHaplotypes,
+                    SmallGGroup = smallGGroupHaplotypes
+                }
+            });
+
+            // Of 6 matching haplotypes (at 3 resolutions) - nCr (including self-pairs) = 21 possibilities
+            genotypes.Count.Should().Be(21);
         }
 
         [Test]
@@ -257,7 +362,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 Phenotype = phenotype,
                 AllowedLoci = DefaultLoci.Except(new List<Locus> {excludedLocus}).ToHashSet(),
                 HlaNomenclatureVersion = HlaNomenclatureVersion,
-                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>> {GGroup = haplotypes, PGroup = haplotypes}
+                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
+                    {GGroup = haplotypes, PGroup = haplotypes, SmallGGroup = haplotypes}
             });
 
             genotypes.Count.Should().Be(1);
@@ -275,7 +381,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .Build();
 
             var phenotypeWithoutMissingLoci = new PhenotypeInfo<string>(UnambiguousAlleleDetails.Alleles());
-            
+
             var haplotypes = new List<LociInfo<string>>
             {
                 HaplotypeBuilder1.Build(),
@@ -289,19 +395,21 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 Phenotype = phenotype,
                 AllowedLoci = DefaultLoci,
                 HlaNomenclatureVersion = HlaNomenclatureVersion,
-                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>> {GGroup = haplotypes, PGroup = haplotypes}
+                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
+                    {GGroup = haplotypes, PGroup = haplotypes, SmallGGroup = haplotypes}
             });
-            
+
             var genotypesWithoutMissingLoci = await expander.ExpandCompressedPhenotype(new ExpandCompressedPhenotypeInput
             {
                 Phenotype = phenotypeWithoutMissingLoci,
                 AllowedLoci = DefaultLoci,
                 HlaNomenclatureVersion = HlaNomenclatureVersion,
-                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>> {GGroup = haplotypes, PGroup = haplotypes}
+                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
+                    {GGroup = haplotypes, PGroup = haplotypes, SmallGGroup = haplotypes}
             });
 
             genotypes.Count.Should().Be(4);
-            
+
             // Strictly this assertion is not necessary, but it could be useful for people reading this test to understand what is being tested here,
             // rather than blindly trusting the snapshot of 4 matching genotypes.
             genotypesWithoutMissingLoci.Count().Should().BeLessThan(genotypes.Count);
