@@ -62,6 +62,17 @@ namespace Atlas.Common.Test.Hla.Services
             actualAllele.Should().Be(expectedAllele);
         }
 
+        [TestCase("Field1:Field2:Field3:Field4N", "Field1:Field2N")]
+        [TestCase("Field1:Field2:Field3N", "Field1:Field2N")]
+        [TestCase("Field1:Field2N", "Field1:Field2N")]
+        [TestCase("Field1:Field2", "Field1:Field2")]
+        public void FirstTwoFieldsWithExpressionSuffixAsString_ReturnsFirstTwoFieldsWithExpressionSuffix(string allele, string expectedAllele)
+        {
+            var actualAllele = AlleleSplitter.FirstTwoFieldsWithExpressionSuffixAsString(allele);
+
+            actualAllele.Should().Be(expectedAllele);
+        }
+
         [TestCase("Field:Field", "Field")]
         [TestCase("Field:Field:Field", "Field:Field")]
         [TestCase("Field:Field:Field:Field", "Field:Field:Field")]

@@ -318,11 +318,13 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
             smallG.Alleles.Count.Should().Be(1);
         }
 
-        [Test]
-        public void BuildSmallGGroups_SmallGGroupOnlyHasOneAllele_Null_NamesWithAlleleName()
+        [TestCase("01:01N", "01:01N")]
+        [TestCase("01:01:01N", "01:01N")]
+        [TestCase("01:01:01:01N", "01:01N")]
+        public void BuildSmallGGroups_SmallGGroupOnlyHasOneAllele_Null_NamesWithFirst2FieldsAndExpressionSuffix(
+            string nullAllele,
+            string expectedName)
         {
-            const string nullAllele = "01:01N";
-
             var dataset = WmdaDatasetBuilder.New.AddGGroup(LocusName, nullAllele, nullAllele);
 
             wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
@@ -330,7 +332,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
             var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
             var smallG = result.Single();
 
-            smallG.Name.Should().Be(nullAllele);
+            smallG.Name.Should().Be(expectedName);
 
             smallG.Locus.Should().Be(ExpectedLocus);
             smallG.Alleles.Count.Should().Be(1);
