@@ -65,6 +65,9 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [TestCase(Locus.A, "01:52",
             new object[] { "01:52:01N", "01:52:02N" },
             Description = "All Null alleles within small g group")]
+        [TestCase(Locus.Drb1, "04:94N",
+            new object[] { "04:94:01N" },
+            Description = "Single null allele with more than 2 fields")]
         [TestCase(Locus.A, "02:04g",
             new object[] { "02:04", "02:664", "02:710N" },
             Description = "One Null allele within small g group")]

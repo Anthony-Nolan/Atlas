@@ -22,6 +22,11 @@ namespace Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils
 
         public static string FirstTwoFieldsAsString(string allele) => FirstTwoFields(allele).StringJoin(MolecularTypingNameConstants.FieldDelimiter);
 
+        public static string FirstTwoFieldsWithExpressionSuffixAsString(string allele) =>
+            NumberOfFields(allele) > 2
+                ? FirstTwoFields(allele).StringJoin(MolecularTypingNameConstants.FieldDelimiter) + GetExpressionSuffix(allele)
+                : allele;
+
         public static string RemoveLastField(string allele)
         {
             var splitAllele = SplitToFields(allele).ToList();

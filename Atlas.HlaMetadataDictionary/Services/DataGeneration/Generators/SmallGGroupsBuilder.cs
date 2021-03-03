@@ -108,7 +108,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators
                 .Select(groupedAlleles => new SmallGGroup
                 {
                     Locus = GetLocus(locus),
-                    Name = groupedAlleles.Count() == 1 ? groupedAlleles.Single() : groupedAlleles.Key,
+                    Name = groupedAlleles.Count() == 1
+                        ? AlleleSplitter.FirstTwoFieldsWithExpressionSuffixAsString(groupedAlleles.Single())
+                        : groupedAlleles.Key,
                     Alleles = groupedAlleles.ToList()
                 });
         }
