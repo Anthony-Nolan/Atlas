@@ -22,7 +22,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models
     {
         public static TargetHlaCategory ToTargetHlaCategory(this HlaTypingCategory hlaTypingCategory)
         {
-            // TODO: ATLAS-838 - add case for small g group
             return hlaTypingCategory switch
             {
                 HlaTypingCategory.Allele => throw new NotSupportedException(),
@@ -33,6 +32,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models
                 HlaTypingCategory.NmdpCode => throw new NotSupportedException(),
                 HlaTypingCategory.XxCode => throw new NotSupportedException(),
                 HlaTypingCategory.Serology => TargetHlaCategory.Serology,
+                HlaTypingCategory.SmallGGroup => TargetHlaCategory.SmallGGroup,
                 _ => throw new ArgumentException(nameof(hlaTypingCategory))
             };
         }
