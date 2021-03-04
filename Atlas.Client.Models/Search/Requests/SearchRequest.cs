@@ -67,6 +67,17 @@ namespace Atlas.Client.Models.Search.Requests
         /// Loci A, B, DRB1 are required. 
         /// </summary>
         public LociInfoTransfer<int?> LocusMismatchCriteria { get; set; }
+
+        /// <summary>
+        /// When set, the <see cref="DonorMismatchCount"/> will be treated as a minimum requirement for matches.
+        /// e.g. When running a 9/10 search, allowing a single mismatch: any donors with no mismatches (10/10) will also be returned.
+        ///
+        /// Otherwise, <see cref="DonorMismatchCount"/> will be treated as an *exact* requirement.
+        /// e.g. When running a 9/10 search, allowing a single mismatch: any donors with no mismatches (10/10) will *not* be returned.
+        ///
+        /// Defaults to true. 
+        /// </summary>
+        public bool IncludeBetterMatches { get; set; } = true;
     }
     
     public class ScoringCriteria

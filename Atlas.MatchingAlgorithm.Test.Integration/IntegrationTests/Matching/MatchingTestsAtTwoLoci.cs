@@ -222,6 +222,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private AlleleLevelMatchCriteriaBuilder GetDefaultCriteriaBuilder()
         {
             return new AlleleLevelMatchCriteriaBuilder()
+                .WithShouldIncludeBetterMatches(true)
                 .WithLocusMatchCriteria(locus1, new AlleleLevelLocusMatchCriteria
                 {
                     MismatchCount = 0,

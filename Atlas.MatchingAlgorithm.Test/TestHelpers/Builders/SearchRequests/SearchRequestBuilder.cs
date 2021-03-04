@@ -138,6 +138,12 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             return this;
         }
 
+        public SearchRequestBuilder WithBetterMatchesConfig(bool shouldBetterMatchesBeAllowed)
+        {
+            searchRequest.MatchCriteria.IncludeBetterMatches = shouldBetterMatchesBeAllowed;
+            return this;
+        }
+
         public SearchRequest Build()
         {
             searchRequest.SearchHlaData = searchHla.ToPhenotypeInfoTransfer();

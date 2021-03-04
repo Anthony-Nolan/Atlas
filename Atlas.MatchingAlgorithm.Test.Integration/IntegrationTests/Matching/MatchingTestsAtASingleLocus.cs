@@ -265,6 +265,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         /// <returns> A criteria builder pre-populated with default criteria data of an exact search. </returns>
         private AlleleLevelMatchCriteriaBuilder GetDefaultCriteriaBuilder() =>
             new AlleleLevelMatchCriteriaBuilder()
+                .WithShouldIncludeBetterMatches(true)
                 .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().Build())
                 .WithDefaultLocusMatchCriteria(DefaultMatchingCriteriaBuilder().Build())
                 .WithSearchType(DefaultDonorType)
