@@ -42,6 +42,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 SearchType = searchRequest.SearchDonorType.ToMatchingAlgorithmDonorType(),
                 DonorMismatchCount = matchCriteria.DonorMismatchCount,
+                ShouldIncludeBetterMatches = matchCriteria.IncludeBetterMatches,
                 LocusCriteria = new LociInfo<AlleleLevelLocusMatchCriteria>(
                     criteriaMappings[0],
                     criteriaMappings[1],

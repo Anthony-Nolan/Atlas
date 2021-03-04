@@ -117,7 +117,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
             match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch());
             match.SetMatchDetailsForLocus(Locus.B, LocusMatchDetailsBuilder.New.WithSingleMatch());
             match.SetMatchDetailsForLocus(Locus.Drb1, LocusMatchDetailsBuilder.New.WithSingleMatch());
-            
+
             var criteria = new AlleleLevelMatchCriteriaBuilder()
                 .WithDonorMismatchCount(2)
                 .WithLocusMatchCriteria(Locus.A, new AlleleLevelLocusMatchCriteria {MismatchCount = 1})
@@ -139,7 +139,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
             match.SetMatchDetailsForLocus(Locus.Drb1, LocusMatchDetailsBuilder.New.WithSingleMatch());
             match.SetMatchDetailsForLocus(Locus.C, LocusMatchDetailsBuilder.New.WithSingleMatch());
             match.SetMatchDetailsForLocus(Locus.Dqb1, LocusMatchDetailsBuilder.New.WithSingleMatch());
-            
+
             var criteria = new AlleleLevelMatchCriteriaBuilder()
                 .WithDonorMismatchCount(2)
                 .WithLocusMatchCriteria(Locus.A, new AlleleLevelLocusMatchCriteria {MismatchCount = 1})
@@ -214,72 +214,68 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         }
 
         [Test]
-        public void FulfilsSearchTypeSpecificCriteria_ForAdultSearch_WithExactTotalMismatchCount_ReturnsTrue()
+        public void FulfilsConfigurableMatchCountCriteria_WithBetterMatchesAllowed_WithExactTotalMismatchCount_ReturnsTrue()
         {
-            const DonorType searchType = DonorType.Adult;
             const Locus locus = Locus.A;
-            var match = new MatchResult(default) {DonorInfo = new DonorInfo {DonorType = searchType}};
+            var match = new MatchResult(default) {DonorInfo = new DonorInfo()};
             match.SetMatchDetailsForLocus(locus, LocusMatchDetailsBuilder.New.WithSingleMatch());
             var criteria = new AlleleLevelMatchCriteriaBuilder()
-                .WithSearchType(searchType)
+                .WithShouldIncludeBetterMatches(true)
                 .WithDonorMismatchCount(1)
                 .WithLocusMismatchCount(locus, 1)
                 .Build();
 
-            var result = matchFilteringService.FulfilsSearchTypeSpecificCriteria(match, criteria);
+            var result = matchFilteringService.FulfilsConfigurableMatchCountCriteria(match, criteria);
 
             result.Should().BeTrue();
         }
 
         [Test]
-        public void FulfilsSearchTypeSpecificCriteria_ForAdultSearch_WithFewerMismatchesThanTotalMismatchCount_ReturnsFalse()
+        public void FulfilsConfigurableMatchCountCriteria_WithBetterMatchesAllowed_WithFewerMismatchesThanTotalMismatchCount_ReturnsTrue()
         {
-            const DonorType searchType = DonorType.Adult;
-            var match = new MatchResult(default) {DonorInfo = new DonorInfo {DonorType = searchType}};
+            var match = new MatchResult(default) {DonorInfo = new DonorInfo()};
             match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.Build());
-            var criteria = new AlleleLevelMatchCriteria
-            {
-                SearchType = searchType,
-                DonorMismatchCount = 1
-            };
+            var criteria = new AlleleLevelMatchCriteriaBuilder()
+                .WithShouldIncludeBetterMatches(true)
+                .WithDonorMismatchCount(1)
+                .WithLocusMismatchCount(Locus.A, 1)
+                .Build();
 
-            var result = matchFilteringService.FulfilsSearchTypeSpecificCriteria(match, criteria);
+            var result = matchFilteringService.FulfilsConfigurableMatchCountCriteria(match, criteria);
+
+            result.Should().BeTrue();
+        }
+
+        [Test]
+        public void FulfilsConfigurableMatchCountCriteria_WithBetterMatchesDisallowed_WithExactTotalMismatchCount_ReturnsTrue()
+        {
+            var match = new MatchResult(default) {DonorInfo = new DonorInfo()};
+            match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch());
+            var criteria = new AlleleLevelMatchCriteriaBuilder()
+                .WithShouldIncludeBetterMatches(false)
+                .WithDonorMismatchCount(1)
+                .WithLocusMismatchCount(Locus.A, 1)
+                .Build();
+
+            var result = matchFilteringService.FulfilsConfigurableMatchCountCriteria(match, criteria);
+
+            result.Should().BeTrue();
+        }
+
+        [Test]
+        public void FulfilsConfigurableMatchCountCriteria_WithBetterMatchesDisallowed_WithFewerMismatchesThanTotalMismatchCount_ReturnsFalse()
+        {
+            var match = new MatchResult(default) {DonorInfo = new DonorInfo()};
+            match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.Build());
+            var criteria = new AlleleLevelMatchCriteriaBuilder()
+                .WithShouldIncludeBetterMatches(false)
+                .WithDonorMismatchCount(1)
+                .WithLocusMismatchCount(Locus.A, 1)
+                .Build();
+
+            var result = matchFilteringService.FulfilsConfigurableMatchCountCriteria(match, criteria);
 
             result.Should().BeFalse();
-        }
-
-        [Test]
-        public void FulfilsSearchTypeSpecificCriteria_ForCordSearch_WithExactTotalMismatchCount_ReturnsTrue()
-        {
-            const DonorType searchType = DonorType.Cord;
-            var match = new MatchResult(default) {DonorInfo = new DonorInfo {DonorType = searchType}};
-            match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch());
-            var criteria = new AlleleLevelMatchCriteria
-            {
-                SearchType = searchType,
-                DonorMismatchCount = 1
-            };
-
-            var result = matchFilteringService.FulfilsSearchTypeSpecificCriteria(match, criteria);
-
-            result.Should().BeTrue();
-        }
-
-        [Test]
-        public void FulfilsSearchTypeSpecificCriteria_ForCordSearch_WithFewerMismatchesThanTotalMismatchCount_ReturnsTrue()
-        {
-            const DonorType searchType = DonorType.Cord;
-            var match = new MatchResult(default) {DonorInfo = new DonorInfo {DonorType = searchType}};
-            match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.Build());
-            var criteria = new AlleleLevelMatchCriteria
-            {
-                SearchType = searchType,
-                DonorMismatchCount = 1
-            };
-
-            var result = matchFilteringService.FulfilsSearchTypeSpecificCriteria(match, criteria);
-
-            result.Should().BeTrue();
         }
     }
 }
