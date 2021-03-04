@@ -97,13 +97,13 @@ Feature: Nine Out Of Ten Search - mismatches
     Given a patient and a donor
     And the donor has a single mismatch at locus DPB1
     When I run a 9/10 search at locus A
-    Then the results should not contain the specified donor
+    Then the results should contain the specified donor
     
   Scenario: 9/10 Search at A with a doubly mismatched donor at DPB1
     Given a patient and a donor
     And the donor has a double mismatch at locus DPB1
     When I run a 9/10 search at locus A
-    Then the results should not contain the specified donor
+    Then the results should contain the specified donor
     
   Scenario: 9/10 Search at A with mismatches at A and DPB1
     Given a patient and a donor

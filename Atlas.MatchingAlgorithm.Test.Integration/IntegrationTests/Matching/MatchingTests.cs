@@ -177,10 +177,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task GetMatches_ForAdultDonors_DoesNotMatchDonorsWithFewerMismatchesThanSpecified()
+        public async Task GetMatches_WhenBetterMatchesDisallowed_DoesNotMatchDonorsWithFewerMismatchesThanSpecified()
         {
             var searchCriteria = GetDefaultCriteriaBuilder()
-                .WithSearchType(DonorType.Adult)
+                .WithShouldIncludeBetterMatches(false)
                 .WithDonorMismatchCount(1)
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria, null).ToListAsync();
@@ -188,10 +188,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task GetMatches_ForCordDonors_MatchesDonorsWithFewerMismatchesThanSpecified()
+        public async Task GetMatches_WhenBetterMatchesAllowed_MatchesDonorsWithFewerMismatchesThanSpecified()
         {
             var searchCriteria = GetDefaultCriteriaBuilder()
-                .WithSearchType(DonorType.Cord)
                 .WithDonorMismatchCount(1)
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria, null).ToListAsync();
@@ -215,6 +214,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             return new AlleleLevelMatchCriteriaBuilder()
                 .WithSearchType(DefaultDonorType)
+                .WithShouldIncludeBetterMatches(true)
                 .WithDonorMismatchCount(0)
                 .WithLocusMatchCriteria(Locus.A, new AlleleLevelLocusMatchCriteria
                 {
