@@ -7,6 +7,7 @@ using Atlas.Common.Utils;
 using Atlas.MatchingAlgorithm.Helpers;
 using Atlas.RepeatSearch.Models;
 using Atlas.RepeatSearch.Services.Search;
+using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -32,6 +33,7 @@ namespace Atlas.RepeatSearch.Functions.Functions
         [FunctionName(nameof(InitiateRepeatSearch))]
         public async Task<IActionResult> InitiateRepeatSearch(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(RepeatSearchRequest), nameof(RepeatSearchRequest))]
             HttpRequest request)
         {
             var repeatSearchRequest = JsonConvert.DeserializeObject<RepeatSearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
