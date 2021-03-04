@@ -47,8 +47,17 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             PreComputedHash = CalculateHashCode();
         }
 
+        public LocusInfo(Func<LocusPosition, T> initialValueFactory)
+        {
+            Position1 = initialValueFactory(LocusPosition.One);
+            Position2 = initialValueFactory(LocusPosition.Two);
+            PreComputedHash = CalculateHashCode();
+        }
+
         #endregion
 
+        public IEnumerable<T> ToEnumerable() => new[] {Position1, Position2};
+        
         internal LocusInfo<T> ShallowCopy()
         {
             return (LocusInfo<T>) MemberwiseClone();

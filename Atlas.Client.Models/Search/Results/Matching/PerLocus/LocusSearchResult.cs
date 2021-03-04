@@ -8,7 +8,12 @@
         ///     and these match grades will not be included in the total Match Count in the api response
         /// </summary>
         public bool IsLocusMatchCountIncludedInTotal { get; set; }
-
+        
+        /// <summary>
+        /// The overall, aggregated, match category for this locus.
+        /// </summary>
+        public LocusMatchCategory? MatchCategory { get; set; }
+        
         /// <summary>
         ///     The number of matches within this locus.
         ///     Either 0, 1 or 2 if the locus is typed.

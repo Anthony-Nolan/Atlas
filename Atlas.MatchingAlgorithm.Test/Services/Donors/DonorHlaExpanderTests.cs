@@ -84,7 +84,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 
             hlaMetadataDictionary
                 .GetLocusHlaMatchingMetadata(default, default)
-                .ReturnsForAnyArgs(new LocusInfo<INullHandledHlaMatchingMetadata>(null));
+                .ReturnsForAnyArgs(new LocusInfo<INullHandledHlaMatchingMetadata>(null as INullHandledHlaMatchingMetadata));
                 
             var result = await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<DonorInfo>
             {
