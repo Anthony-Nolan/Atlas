@@ -160,6 +160,34 @@ This endpoint will:
 - (c) Synchronously return a unique search identifier, which you should store, to cross reference search results to when they complete.
 
 
+#### Search Request Validation
+
+Validation rules are implemented in the following files: [Matching](Atlas.MatchingAlgorithm/Validators/SearchRequest/SearchRequestValidator.cs), 
+[Match Prediction](Atlas.MatchPrediction/Validators/MatchProbabilityInputValidator.cs), [Repeat Search](Atlas.RepeatSearch/Validators/RepeatSearchRequestValidator.cs)
+
+Slightly more human-readable documentation of the rules is as follows:
+
+##### Initial Search 
+
+- `DonorType` must be present, and an allowed value - 'Adult' or 'Cord'
+- `SearchHlaData` must be present. If match criteria have been provided for a locus, then it must have non-null HLA values
+- `MatchCriteria`
+  - A, B, DRB1 criteria must always be present
+  - When present, per locus allowed mismatch count must be between 0-2 (inclusive) 
+  - DPB1 may never be specified - as the algorithm is not capable of matching on this locus. Instead information from "scoring" should be used
+  - Overall mismatch count may not be higher than 5. (Note that higher mismatch counts will lead to exponentially slower searches!)
+- `ScoringCriteria`
+  - List of loci to score must be provided - but this list may be empty!
+  - List of loci to exclude from scoring aggregation must be provided - again, it may be empty!
+ 
+##### Repeat Search
+
+- `SearchRequest` must follow all validation rules described above
+  - In addition, this is expected to be identical to the search request detail used for the initial version of the search. If any of this data (e.g. patient hla, match criteria) changes, then a brand new search should be run, 
+  not a repeat search. If the provided data differs to the original search, behaviour of the algorithm is undefined
+- `OriginalSearchId` must be provided 
+- `SearchCutoffDate` must be provided
+
 ### Receiving search results
 
 When a search is complete, a message will be sent to the `search-results-ready` subscription on the ATLAS service bus.
