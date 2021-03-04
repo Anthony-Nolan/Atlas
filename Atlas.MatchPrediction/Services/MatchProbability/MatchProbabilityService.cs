@@ -248,6 +248,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var haplotypeFrequencies = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySetId);
             using (logger.RunTimed($"{LoggingPrefix}Expand {subjectLogDescription} phenotype", LogLevel.Verbose))
             {
+                var groupedFrequencies = haplotypeFrequencies
+                    .GroupBy(f => f.Value.TypingCategory)
+                    .Select(g =>
+                        new KeyValuePair<HaplotypeTypingCategory, IReadOnlyCollection<LociInfo<string>>>(g.Key, g.Select(f => f.Value.Hla).ToList())
+                    )
+                    .ToDictionary();
+
                 return await compressedPhenotypeExpander.ExpandCompressedPhenotype(
                     new ExpandCompressedPhenotypeInput
                     {
@@ -256,18 +263,9 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                         HlaNomenclatureVersion = hlaNomenclatureVersion,
                         AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
                         {
-                            GGroup = haplotypeFrequencies
-                                .Where(h => h.Value.TypingCategory == HaplotypeTypingCategory.GGroup)
-                                .Select(h => h.Value.Hla)
-                                .ToList(),
-                            PGroup = haplotypeFrequencies
-                                .Where(h => h.Value.TypingCategory == HaplotypeTypingCategory.PGroup)
-                                .Select(h => h.Value.Hla)
-                                .ToList(),
-                            SmallGGroup = haplotypeFrequencies
-                                .Where(h => h.Value.TypingCategory == HaplotypeTypingCategory.SmallGGroup)
-                                .Select(h => h.Value.Hla)
-                                .ToList()
+                            GGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.GGroup, new List<LociInfo<string>>()),
+                            PGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.PGroup, new List<LociInfo<string>>()),
+                            SmallGGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.SmallGGroup, new List<LociInfo<string>>()),
                         }
                     }
                 );

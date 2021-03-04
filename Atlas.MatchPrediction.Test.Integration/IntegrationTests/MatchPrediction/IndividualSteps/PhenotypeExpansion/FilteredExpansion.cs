@@ -245,7 +245,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        public async Task ExpandCompressedPhenotype_WhenRepresentedByAllResolutionsOfHaplotypes_ExpandsCorrectly()
+        public async Task ExpandCompressedPhenotype_WhenRepresentedBySmallGResolutionHaplotypes_ExpandsCorrectly()
         {
             var phenotype = new PhenotypeInfoBuilder<string>(UnambiguousAlleleDetails.Alleles())
                 .WithDataAt(Locus.A, "01:XX")
@@ -254,51 +254,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDataAt(Locus.Dqb1, "02:XX")
                 .WithDataAt(Locus.Drb1, "03:XX")
                 .Build();
-
-            var gGroupHaplotypes = new List<LociInfo<string>>
-            {
-                // Two haplotypes matching phenotype
-                new LociInfoBuilder<string>()
-                    .WithDataAt(Locus.A, "01:01:01G")
-                    .WithDataAt(Locus.B, "08:01:01G")
-                    .WithDataAt(Locus.C, "07:01:01G")
-                    .WithDataAt(Locus.Dqb1, "02:01:01G")
-                    .WithDataAt(Locus.Drb1, "03:01:01G")
-                    .Build(),
-                new LociInfoBuilder<string>()
-                    .WithDataAt(Locus.A, "01:09:01G")
-                    .WithDataAt(Locus.B, "08:01:01G")
-                    .WithDataAt(Locus.C, "07:01:01G")
-                    .WithDataAt(Locus.Dqb1, "02:01:01G")
-                    .WithDataAt(Locus.Drb1, "03:01:01G")
-                    .Build(),
-
-                // Two haplotypes that do not match genotype
-                HaplotypeBuilder1.Build(),
-                HaplotypeBuilder2.Build()
-            };
-            var pGroupHaplotypes = new List<LociInfo<string>>
-            {
-                // Two haplotypes matching phenotype
-                new LociInfoBuilder<string>()
-                    .WithDataAt(Locus.A, "01:01P")
-                    .WithDataAt(Locus.B, "08:01P")
-                    .WithDataAt(Locus.C, "07:01P")
-                    .WithDataAt(Locus.Dqb1, "02:01P")
-                    .WithDataAt(Locus.Drb1, "03:01P")
-                    .Build(),
-                new LociInfoBuilder<string>()
-                    .WithDataAt(Locus.A, "01:09P")
-                    .WithDataAt(Locus.B, "08:01P")
-                    .WithDataAt(Locus.C, "07:01P")
-                    .WithDataAt(Locus.Dqb1, "02:01P")
-                    .WithDataAt(Locus.Drb1, "03:01P")
-                    .Build(),
-
-                // Two haplotypes that do not match genotype
-                HaplotypeBuilder1.Build(),
-                HaplotypeBuilder2.Build()
-            };
+            
             var smallGGroupHaplotypes = new List<LociInfo<string>>
             {
                 // Two haplotypes matching phenotype
@@ -329,14 +285,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 HlaNomenclatureVersion = HlaNomenclatureVersion,
                 AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
                 {
-                    GGroup = gGroupHaplotypes,
-                    PGroup = pGroupHaplotypes,
+                    PGroup = new List<LociInfo<string>>(),
+                    GGroup = new List<LociInfo<string>>(),
                     SmallGGroup = smallGGroupHaplotypes
                 }
             });
 
-            // Of 6 matching haplotypes (at 3 resolutions) - nCr (including self-pairs) = 21 possibilities
-            genotypes.Count.Should().Be(21);
+            genotypes.Count.Should().Be(3);
         }
 
         [Test]
