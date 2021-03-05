@@ -91,6 +91,8 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             services.AddScoped<IRepeatSearchRunner, RepeatSearchRunner>();
             services.AddScoped<IRepeatSearchResultsBlobStorageClient, RepeatSearchResultsBlobStorageClient>();
             services.AddScoped<IRepeatSearchServiceBusClient, RepeatSearchServiceBusClient>();
+
+            services.AddScoped<IRepeatSearchValidator, RepeatSearchValidator>();
         }
     }
 }

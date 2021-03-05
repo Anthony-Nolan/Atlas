@@ -13,8 +13,6 @@ using Atlas.RepeatSearch.Clients.AzureStorage;
 using Atlas.RepeatSearch.Data.Models;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Models;
-using Atlas.RepeatSearch.Validators;
-using FluentValidation;
 
 namespace Atlas.RepeatSearch.Services.Search
 {
@@ -32,6 +30,7 @@ namespace Atlas.RepeatSearch.Services.Search
         private readonly MatchingAlgorithmSearchLoggingContext repeatSearchLoggingContext;
         private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
         private readonly IRepeatSearchHistoryRepository repeatSearchHistoryRepository;
+        private readonly IRepeatSearchValidator repeatSearchValidator;
 
         public RepeatSearchRunner(
             IRepeatSearchServiceBusClient repeatSearchServiceBusClient,
@@ -41,7 +40,8 @@ namespace Atlas.RepeatSearch.Services.Search
             IMatchingAlgorithmSearchLogger repeatSearchLogger,
             MatchingAlgorithmSearchLoggingContext repeatSearchLoggingContext,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
-            IRepeatSearchHistoryRepository repeatSearchHistoryRepository)
+            IRepeatSearchHistoryRepository repeatSearchHistoryRepository,
+            IRepeatSearchValidator repeatSearchValidator)
         {
             this.repeatSearchServiceBusClient = repeatSearchServiceBusClient;
             this.searchService = searchService;
@@ -50,11 +50,12 @@ namespace Atlas.RepeatSearch.Services.Search
             this.repeatSearchLoggingContext = repeatSearchLoggingContext;
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
             this.repeatSearchHistoryRepository = repeatSearchHistoryRepository;
+            this.repeatSearchValidator = repeatSearchValidator;
         }
 
         public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
         {
-            await new RepeatSearchRequestValidator().ValidateAndThrowAsync(identifiedRepeatSearchRequest.RepeatSearchRequest);
+            await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
 
             var searchRequestId = identifiedRepeatSearchRequest.OriginalSearchId;
             var repeatSearchId = identifiedRepeatSearchRequest.RepeatSearchId;

@@ -18,5 +18,11 @@
         </PackageReference>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Atlas.MatchingAlgorithm.Test\Atlas.MatchingAlgorithm.Test.csproj" />
+      <ProjectReference Include="..\Atlas.RepeatSearch.Data\Atlas.RepeatSearch.Data.csproj" />
+      <ProjectReference Include="..\Atlas.RepeatSearch\Atlas.RepeatSearch.csproj" />
+    </ItemGroup>
     
 </Project>
