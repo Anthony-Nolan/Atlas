@@ -118,7 +118,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 MatchGradeScore = scoreDetailsForLocus?.MatchGradeScore,
                 MatchConfidenceScore = scoreDetailsForLocus?.MatchConfidenceScore,
                 ScoreDetailsAtPositionOne = scoreDetailsForLocus?.ScoreDetailsAtPosition1,
-                ScoreDetailsAtPositionTwo = scoreDetailsForLocus?.ScoreDetailsAtPosition2
+                ScoreDetailsAtPositionTwo = scoreDetailsForLocus?.ScoreDetailsAtPosition2,
+                MatchCategory = scoreDetailsForLocus?.MatchCategory
             };
         }
     }
