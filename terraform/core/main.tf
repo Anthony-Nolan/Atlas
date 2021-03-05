@@ -198,6 +198,7 @@ module "repeat_search" {
   application_insights                            = azurerm_application_insights.atlas
   app_service_plan                                = azurerm_app_service_plan.atlas-elastic-plan
   azure_storage                                   = azurerm_storage_account.azure_storage
+  donor_database_connection_string                = module.donor_import.sql_database.connection_string
   mac_import_table                                = module.multiple_allele_code_lookup.storage_table
   matching_persistent_database_connection_string  = module.matching_algorithm.sql_database.persistent_database_connection_string
   matching_transient_a_database_connection_string = module.matching_algorithm.sql_database.transient_a_database_connection_string
