@@ -13,6 +13,7 @@ using Atlas.RepeatSearch.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.RepeatSearch.Data.Context;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
@@ -34,7 +35,8 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             Func<IServiceProvider, string> fetchRepeatSqlConnectionString,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
-            Func<IServiceProvider, string> fetchTransientBSqlConnectionString)
+            Func<IServiceProvider, string> fetchTransientBSqlConnectionString,
+            Func<IServiceProvider, string> fetchDonorSqlConnectionString)
         {
             services.RegisterSettings(
                 fetchApplicationInsightsSettings,
@@ -57,6 +59,8 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
                 fetchPersistentSqlConnectionString,
                 fetchTransientASqlConnectionString,
                 fetchTransientBSqlConnectionString);
+            
+            services.RegisterDonorReader(fetchDonorSqlConnectionString);
         }
 
         private static void RegisterSettings(

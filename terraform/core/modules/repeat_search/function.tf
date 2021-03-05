@@ -82,4 +82,10 @@ resource "azurerm_function_app" "atlas_repeat_search_function" {
     type  = "SQLAzure"
     value = var.matching_transient_b_database_connection_string
   }
+
+  connection_string {
+    name  = "DonorSql"
+    type  = "SQLAzure"
+    value = var.donor_database_connection_string
+  }
 }
