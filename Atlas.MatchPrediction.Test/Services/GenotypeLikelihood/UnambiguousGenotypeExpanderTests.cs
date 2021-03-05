@@ -219,7 +219,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         {
             var genotype = FullyHeterozygousGenotypeBuilder
                 .Build()
-                .SetLocus(emptyLocus, new LocusInfo<string>(null))
+                .SetLocus(emptyLocus, new LocusInfo<string>(null as string))
                 .ToPhenotypeInfo();
 
             var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype, allLoci);

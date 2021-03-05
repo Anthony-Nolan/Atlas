@@ -9,7 +9,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
     {
         private readonly LocusScoreDetails locusScore;
 
-        public LocusScoreDetailsBuilder()
+        internal LocusScoreDetailsBuilder()
         {
             locusScore = new LocusScoreDetails
             {
@@ -31,7 +31,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
             };
         }
 
-        public LocusScoreDetailsBuilder WithMatchGradeScoreAtPosition(LocusPosition position, int? matchGradeScore)
+        internal LocusScoreDetailsBuilder WithMatchGradeScoreAtPosition(LocusPosition position, int? matchGradeScore)
         {
             var scoreDetails = GetScoreDetailsAtPosition(position);
             scoreDetails.MatchGradeScore = matchGradeScore;
@@ -40,7 +40,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
             return this;
         }
 
-        public LocusScoreDetailsBuilder WithMatchConfidenceScoreAtPosition(LocusPosition position, int? matchConfidenceScore)
+        internal LocusScoreDetailsBuilder WithMatchConfidenceScoreAtPosition(LocusPosition position, int? matchConfidenceScore)
         {
             var scoreDetails = GetScoreDetailsAtPosition(position);
             scoreDetails.MatchConfidenceScore = matchConfidenceScore;
@@ -49,7 +49,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
             return this;
         }
 
-        public LocusScoreDetailsBuilder WithMatchConfidenceAtPosition(LocusPosition position, MatchConfidence matchConfidence)
+        internal LocusScoreDetailsBuilder WithMatchConfidenceAtPosition(LocusPosition position, MatchConfidence matchConfidence)
         {
             var scoreDetails = GetScoreDetailsAtPosition(position);
             scoreDetails.MatchConfidence = matchConfidence;
@@ -57,8 +57,17 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
 
             return this;
         }
+        
+        internal LocusScoreDetailsBuilder WithMatchGradeAtPosition(LocusPosition position, MatchGrade matchGrade)
+        {
+            var scoreDetails = GetScoreDetailsAtPosition(position);
+            scoreDetails.MatchGrade = matchGrade;
+            SetScoreDetailsAtPosition(position, scoreDetails);
 
-        public LocusScoreDetails Build()
+            return this;
+        }
+
+        internal LocusScoreDetails Build()
         {
             return locusScore;
         }

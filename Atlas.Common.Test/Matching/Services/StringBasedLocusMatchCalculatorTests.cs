@@ -63,7 +63,7 @@ namespace Atlas.Common.Test.Matching.Services
         [Test]
         public void MatchCount_WhenInputUntyped_ReturnsTwo()
         {
-            var untypedLocus = new LocusInfo<string>(null);
+            var untypedLocus = new LocusInfo<string>(null as string);
             var patientHla = new LocusInfo<string>("p1", "p2");
             var donorHla = new LocusInfo<string>("p3", "p4");
 
@@ -77,7 +77,7 @@ namespace Atlas.Common.Test.Matching.Services
         {
             const UntypedLocusBehaviour untypedLocusBehaviour = UntypedLocusBehaviour.TreatAsMismatch;
 
-            var untypedLocus = new LocusInfo<string>(null);
+            var untypedLocus = new LocusInfo<string>(null as string);
             var patientHla = new LocusInfo<string>("p1", "p2");
             var donorHla = new LocusInfo<string>("p3", "p4");
 
@@ -91,7 +91,7 @@ namespace Atlas.Common.Test.Matching.Services
         {
             const UntypedLocusBehaviour untypedLocusBehaviour = UntypedLocusBehaviour.Throw;
 
-            var untypedLocus = new LocusInfo<string>(null);
+            var untypedLocus = new LocusInfo<string>(null as string);
             var patientHla = new LocusInfo<string>("p1", "p2");
             var donorHla = new LocusInfo<string>("p3", "p4");
 

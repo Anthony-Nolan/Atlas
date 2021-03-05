@@ -11,6 +11,11 @@ namespace Atlas.MatchingAlgorithm.Common.Models.SearchResults
         public LocusPositionScoreDetails ScoreDetailsAtPosition2 { get; set; }
         
         /// <summary>
+        /// The aggregate overall match category for this locus, calculated from the individual position match grades
+        /// </summary>
+        public LocusMatchCategory MatchCategory { get; set; }
+        
+        /// <summary>
         /// A numeric value representing the relative match grade at this locus, according to the scoring algorithm
         /// </summary>
         public int MatchGradeScore

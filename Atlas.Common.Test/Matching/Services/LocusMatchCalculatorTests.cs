@@ -84,7 +84,7 @@ namespace Atlas.Common.Test.Matching.Services
         [Test]
         public void MatchCount_WhenDonorNotTypedAtLocus_ReturnsMatchCountOfTwo()
         {
-            var donorHla = new LocusInfo<IEnumerable<string>>(null);
+            var donorHla = new LocusInfo<IEnumerable<string>>(null as IEnumerable<string>);
 
             var matchDetails = locusMatchCalculator.MatchCount(defaultHla, donorHla);
 
