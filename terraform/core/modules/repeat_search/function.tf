@@ -49,7 +49,7 @@ resource "azurerm_function_app" "atlas_repeat_search_function" {
     // together, alongside the non-repeat matching processes, these must ensure that the number of allowed concurrent SQL connections to the matching SQL DB is not exceeded.
     // See README_Integration.md for more details on concurrency configuration.
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = var.MAX_SCALE_OUT
-    "WEBSITE_RUN_FROM_PACKAGE" = "1"
+    "WEBSITE_RUN_FROM_PACKAGE"                  = "1"
   }
 
   site_config {
