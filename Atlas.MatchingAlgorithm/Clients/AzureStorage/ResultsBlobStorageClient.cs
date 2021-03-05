@@ -3,6 +3,7 @@ using Atlas.MatchingAlgorithm.Settings.Azure;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 
 namespace Atlas.MatchingAlgorithm.Clients.AzureStorage

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
@@ -77,7 +78,7 @@ namespace Atlas.RepeatSearch.Services.Search
 
                 var blobContainerName = repeatResultsBlobStorageClient.GetResultsContainerName();
 
-                var searchResultSet = new MatchingAlgorithmResultSet
+                var searchResultSet = new RepeatMatchingAlgorithmResultSet
                 {
                     SearchRequestId = searchRequestId,
                     RepeatSearchId = repeatSearchId,

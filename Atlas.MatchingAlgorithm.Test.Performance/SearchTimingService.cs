@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Test.Performance.Models;
 using Newtonsoft.Json;
