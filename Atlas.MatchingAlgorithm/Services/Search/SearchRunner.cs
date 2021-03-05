@@ -48,8 +48,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
         public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
         {
-            await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.SearchRequest);
-            
             var searchRequestId = identifiedSearchRequest.Id;
             searchLoggingContext.SearchRequestId = searchRequestId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
@@ -58,6 +56,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             try
             {
+                await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.SearchRequest);
+
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
                 var results = (await searchService.Search(identifiedSearchRequest.SearchRequest, null)).ToList();
