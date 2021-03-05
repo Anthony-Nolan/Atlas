@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
@@ -65,7 +66,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 var blobContainerName = resultsBlobStorageClient.GetResultsContainerName();
 
-                var searchResultSet = new MatchingAlgorithmResultSet
+                var searchResultSet = new OriginalMatchingAlgorithmResultSet
                 {
                     SearchRequestId = searchRequestId,
                     MatchingAlgorithmResults = results,

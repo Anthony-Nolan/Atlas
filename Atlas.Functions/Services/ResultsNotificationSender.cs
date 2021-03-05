@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
+using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Functions.Settings;
@@ -14,7 +15,7 @@ namespace Atlas.Functions.Services
 {
     public interface ISearchCompletionMessageSender
     {
-        Task PublishResultsMessage(SearchResultSet searchResultSet, DateTime searchInitiationTime);
+        Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime) where T : SearchResultSet;
         Task PublishFailureMessage(string searchId, string repeatSearchId, string failureMessage);
     }
 
@@ -33,8 +34,7 @@ namespace Atlas.Functions.Services
             repeatResultsNotificationTopicName = messagingServiceBusSettings.Value.RepeatSearchResultsTopic;
         }
 
-        /// <inheritdoc />
-        public async Task PublishResultsMessage(SearchResultSet searchResultSet, DateTime searchInitiationTime)
+        public async Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime) where T : SearchResultSet
         {
             using (logger.RunTimed($"Publishing results message: {searchResultSet.SearchRequestId}"))
             {
@@ -45,16 +45,19 @@ namespace Atlas.Functions.Services
                 // This means we don't track the queue time, on either the matching or orchestration queue - so user observed search time may be
                 // slightly longer than this reported time. This should only be noticeably different under high load. 
                 var searchTime = searchResultSet.MatchingAlgorithmTime + orchestrationSearchTime;
+                var repeatSearchId = searchResultSet is RepeatSearchResultSet repeatSet ? repeatSet.RepeatSearchId : null;
+                
                 logger.SendTrace(
                     $"Search Request: {searchResultSet.SearchRequestId} finished. Matched {searchResultSet.TotalResults} donors in {searchTime} total.",
                     LogLevel.Info,
                     new Dictionary<string, string>
                     {
                         {nameof(searchResultSet.SearchRequestId), searchResultSet.SearchRequestId},
-                        {nameof(searchResultSet.RepeatSearchId), searchResultSet.RepeatSearchId},
+                        {nameof(RepeatSearchResultSet.RepeatSearchId), repeatSearchId},
                         {"Donors", searchResultSet.TotalResults.ToString()},
                         {nameof(searchTime.Milliseconds), searchTime.Milliseconds.ToString()},
                     });
+                
                 var searchResultsNotification = new SearchResultsNotification
                 {
                     WasSuccessful = true,
@@ -62,7 +65,7 @@ namespace Atlas.Functions.Services
                     NumberOfResults = searchResultSet.TotalResults,
                     ResultsFileName = searchResultSet.ResultsFileName,
                     SearchRequestId = searchResultSet.SearchRequestId,
-                    RepeatSearchId = searchResultSet.RepeatSearchId,
+                    RepeatSearchId = repeatSearchId,
                     BlobStorageContainerName = searchResultSet.BlobStorageContainerName,
                     MatchingAlgorithmTime = searchResultSet.MatchingAlgorithmTime,
                     MatchPredictionTime = searchResultSet.MatchPredictionTime,

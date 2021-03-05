@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
-using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
+using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.DonorImport.ExternalInterface.Models;
@@ -54,23 +55,26 @@ namespace Atlas.Functions.Services
             {
                 var matchPredictionResults = await DownloadMatchPredictionResults(matchPredictionResultLocations.ResultSet);
 
-                return new SearchResultSet
+                var resultSet = matchingAlgorithmResultSet is RepeatMatchingAlgorithmResultSet repeatSet
+                    ? new RepeatSearchResultSet {RepeatSearchId = repeatSet.RepeatSearchId} as SearchResultSet
+                    : new OriginalSearchResultSet();
+
+
+                resultSet.SearchResults = matchingAlgorithmResultSet.MatchingAlgorithmResults.Select(r => new SearchResult
                 {
-                    SearchResults = matchingAlgorithmResultSet.MatchingAlgorithmResults.Select(r => new SearchResult
-                    {
-                        DonorCode = donorInformation[r.AtlasDonorId].ExternalDonorCode,
-                        MatchingResult = r,
-                        MatchPredictionResult = matchPredictionResults[r.AtlasDonorId]
-                    }),
-                    TotalResults = matchingAlgorithmResultSet.ResultCount,
-                    HlaNomenclatureVersion = matchingAlgorithmResultSet.HlaNomenclatureVersion,
-                    SearchRequestId = matchingAlgorithmResultSet.SearchRequestId,
-                    RepeatSearchId = matchingAlgorithmResultSet.RepeatSearchId,
-                    BlobStorageContainerName = resultsContainer,
-                    MatchingAlgorithmTime = matchingTime,
-                    MatchPredictionTime = matchPredictionResultLocations.ElapsedTime,
-                    SearchedHla = matchingAlgorithmResultSet.SearchedHla
-                };
+                    DonorCode = donorInformation[r.AtlasDonorId].ExternalDonorCode,
+                    MatchingResult = r,
+                    MatchPredictionResult = matchPredictionResults[r.AtlasDonorId]
+                });
+                resultSet.TotalResults = matchingAlgorithmResultSet.ResultCount;
+                resultSet.HlaNomenclatureVersion = matchingAlgorithmResultSet.HlaNomenclatureVersion;
+                resultSet.SearchRequestId = matchingAlgorithmResultSet.SearchRequestId;
+                resultSet.BlobStorageContainerName = resultsContainer;
+                resultSet.MatchingAlgorithmTime = matchingTime;
+                resultSet.MatchPredictionTime = matchPredictionResultLocations.ElapsedTime;
+                resultSet.SearchedHla = matchingAlgorithmResultSet.SearchedHla;
+
+                return resultSet;
             }
         }
 
