@@ -249,6 +249,17 @@ Next we must consider how many horizontal instances can be spun out.
 This is configured by the minimum of `WEBSITE_MAX_DYNAMIC_SCALE_OUT` (sets it per-functions app), and `maximum elastic worker count` (sets it per service plan).
 These can both be set via terraform configuration values.  
 
+#### Repeat Search
+
+Two different functions apps will be making calls to the matching database - the matching functions app (running initial searches), and the repeat search app (running repeat searches).
+
+The vast majority of the time, repeat searches are expected to be much quicker and less resource intensive, so can afford lower concurrency.
+
+The above considerations of (scaled instances * max concurrent calls) applies for both functions apps - so the database connection limit in practice is:
+
+`(<concurrent matching calls per instance> * <number of matching instances>) + (<concurrent repeat matching calls per instance> * <number of repeat search instances>)`
+
+
 ### Database Connection Limit
 
 Within a single process, multiple database connections may be concurrently opened.
