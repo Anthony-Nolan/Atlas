@@ -55,18 +55,20 @@ namespace Atlas.RepeatSearch.Services.Search
 
         public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
         {
-            await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
-
             var searchRequestId = identifiedRepeatSearchRequest.OriginalSearchId;
             var repeatSearchId = identifiedRepeatSearchRequest.RepeatSearchId;
             repeatSearchLoggingContext.SearchRequestId = searchRequestId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
             repeatSearchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
+
             try
             {
+                await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
+
+
                 await RecordRepeatSearch(identifiedRepeatSearchRequest);
-                
+
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
                 var results = (await searchService.Search(identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest,
@@ -129,7 +131,7 @@ namespace Atlas.RepeatSearch.Services.Search
                 OriginalSearchRequestId = identifiedRepeatSearchRequest.OriginalSearchId,
                 RepeatSearchRequestId = identifiedRepeatSearchRequest.RepeatSearchId
             };
-            
+
             await repeatSearchHistoryRepository.RecordRepeatSearchRequest(historyRecord);
         }
     }
