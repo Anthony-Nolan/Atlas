@@ -171,6 +171,8 @@ Slightly more human-readable documentation of the rules is as follows:
 
 - `DonorType` must be present, and an allowed value - 'Adult' or 'Cord'
 - `SearchHlaData` must be present. If match criteria have been provided for a locus, then it must have non-null HLA values
+  - All HLA provided must be recognised as valid HLA typings
+    - If the HLA is not recognised, a failure notification will be sent asynchronously via the atlas repeat results topic
 - `MatchCriteria`
   - A, B, DRB1 criteria must always be present
   - When present, per locus allowed mismatch count must be between 0-2 (inclusive) 
@@ -185,7 +187,8 @@ Slightly more human-readable documentation of the rules is as follows:
 - `SearchRequest` must follow all validation rules described above
   - In addition, this is expected to be identical to the search request detail used for the initial version of the search. If any of this data (e.g. patient hla, match criteria) changes, then a brand new search should be run, 
   not a repeat search. If the provided data differs to the original search, behaviour of the algorithm is undefined
-- `OriginalSearchId` must be provided 
+- `OriginalSearchId` must be provided, and must match a search request ID previously run through the initial search process
+  - If the search request id is not recognised, a failure notification will be sent asynchronously via the atlas repeat results topic
 - `SearchCutoffDate` must be provided
 
 ### Receiving search results
