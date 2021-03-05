@@ -49,7 +49,7 @@ namespace Atlas.DonorImport.Data.Models
         /// Used for reading data from this entity in SQL queries.
         /// Can be re-ordered as desired.
         /// </summary>
-        public static readonly string[] ColumnNamesForRead =
+        internal static readonly string[] ColumnNamesForRead =
         {
             nameof(AtlasId),
             nameof(ExternalDonorCode),
@@ -139,7 +139,7 @@ namespace Atlas.DonorImport.Data.Models
         }
     }
 
-    public static class DonorModelBuilder
+    internal static class DonorModelBuilder
     {
         public static void SetUpDonorModel(this EntityTypeBuilder<Donor> donorModel)
         {
@@ -147,6 +147,7 @@ namespace Atlas.DonorImport.Data.Models
             donorModel.Property(p => p.AtlasId).ValueGeneratedOnAdd();
             donorModel.HasIndex(d => d.ExternalDonorCode).IsUnique();
             donorModel.HasIndex(d => d.Hash);
+            donorModel.HasIndex(d => d.LastUpdated);
         }
     }
 }
