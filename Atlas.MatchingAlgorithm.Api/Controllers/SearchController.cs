@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Services.Search;
@@ -27,9 +28,9 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
             {
                 var results = (await searchService.Search(searchRequest, null)).ToList();
 
-                return new MatchingAlgorithmResultSet
+                return new OriginalMatchingAlgorithmResultSet
                 {
-                    ResultCount = results.Count(),
+                    ResultCount = results.Count,
                     MatchingAlgorithmResults = results
                 };
             }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Atlas.Client.Models.Search.Results;
+using Atlas.Client.Models.Search.Results.ResultSet;
 using LochNessBuilder;
 
 namespace Atlas.MatchPrediction.Test.Verification.Test.TestHelpers
@@ -7,12 +8,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.TestHelpers
     [Builder]
     internal static class SearchResultSetBuilder
     {
-        public static Builder<SearchResultSet> New => Builder<SearchResultSet>.New;
+        public static Builder<OriginalSearchResultSet> New => Builder<OriginalSearchResultSet>.New;
 
-        public static Builder<SearchResultSet> Empty => New
+        public static Builder<OriginalSearchResultSet> Empty => New
             .With(x => x.SearchResults, new List<SearchResult>());
 
-        public static Builder<SearchResultSet> WithSearchResult(this Builder<SearchResultSet> builder, int donorId)
+        public static Builder<OriginalSearchResultSet> WithSearchResult(this Builder<OriginalSearchResultSet> builder, int donorId)
         {
             return builder.With(x => x.SearchResults, new[] { BuildSearchResult(donorId) });
         }

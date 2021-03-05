@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
