@@ -3,12 +3,12 @@ using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData;
-using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System.Collections.Generic;
 using Atlas.Client.Models.Search.Requests;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 {

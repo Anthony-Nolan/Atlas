@@ -12,6 +12,11 @@ namespace Atlas.RepeatSearch.Data.Repositories
     public interface ICanonicalResultSetRepository
     {
         Task CreateCanonicalResultSet(string searchRequestId, IReadOnlyCollection<int> donorIds);
+
+        /// <returns>
+        /// A <see cref="CanonicalResultSet"/> with no search results populated.
+        /// </returns>
+        Task<CanonicalResultSet> GetCanonicalResultSetSummary(string searchRequestId);
     }
 
     public class CanonicalResultSetRepository : ICanonicalResultSetRepository
@@ -33,7 +38,20 @@ namespace Atlas.RepeatSearch.Data.Repositories
                 {
                     await sqlBulk.WriteToServerAsync(resultEntryDataTable);
                 }
+
                 transactionScope.Complete();
+            }
+        }
+
+        public async Task<CanonicalResultSet> GetCanonicalResultSetSummary(string searchRequestId)
+        {
+            var sql = @$"
+SELECT * FROM {CanonicalResultSet.QualifiedTableName} 
+WHERE {nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequestId)}";
+
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                return await conn.QuerySingleOrDefaultAsync<CanonicalResultSet>(sql, new {searchRequestId});
             }
         }
 
