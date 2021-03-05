@@ -11,7 +11,7 @@ namespace Atlas.Common.Test.SharedTestHelpers.Builders
 
         public PhenotypeInfoBuilder()
         {
-            phenotypeInfo = new PhenotypeInfo<T>(new LocusInfo<T>(default));
+            phenotypeInfo = new PhenotypeInfo<T>(new LocusInfo<T>((T) default));
         }
 
         public PhenotypeInfoBuilder(T initialValue)

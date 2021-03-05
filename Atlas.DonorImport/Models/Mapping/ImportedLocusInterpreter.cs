@@ -84,7 +84,7 @@ namespace Atlas.DonorImport.Models.Mapping
             return new LocusInfo<string>(field1, field2);
         }
 
-        private LocusInfo<string> NewNullLocusInfo() => new LocusInfo<string>(null);
+        private LocusInfo<string> NewNullLocusInfo() => new LocusInfo<string>(null as string);
         private bool IsBlank(TwoFieldStringData input) => input == null || (IsBlank(input.Field1) && IsBlank(input.Field2));
         private bool IsBlank(string input) => string.IsNullOrEmpty(input);
         private string NullIfBlank(string input) => IsBlank(input) ? null : input;

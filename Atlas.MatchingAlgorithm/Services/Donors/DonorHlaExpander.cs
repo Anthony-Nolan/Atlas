@@ -64,7 +64,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
         {
             if (string.IsNullOrEmpty(hla.Position1) || string.IsNullOrEmpty(hla.Position2))
             {
-                return new LocusInfo<INullHandledHlaMatchingMetadata>(null);
+                return new LocusInfo<INullHandledHlaMatchingMetadata>(null as INullHandledHlaMatchingMetadata);
             }
 
             return await hlaMetadataDictionary.GetLocusHlaMatchingMetadata(locus, hla);

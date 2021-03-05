@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
 {
@@ -61,5 +62,31 @@ namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
             MatchGrade.PermissiveMismatch,
             MatchGrade.Mismatch
         };
+    }
+    
+    public static class MatchGradeExtensions
+    {
+        public static LocusMatchCategory ToLocusMatchCategory(this MatchGrade matchGrade)
+        {
+            return matchGrade switch
+            {
+                MatchGrade.GDna => LocusMatchCategory.Match,
+                MatchGrade.CDna => LocusMatchCategory.Match,
+                MatchGrade.Protein => LocusMatchCategory.Match,
+                MatchGrade.GGroup => LocusMatchCategory.Match,
+                MatchGrade.PGroup => LocusMatchCategory.Match,
+                MatchGrade.NullGDna => LocusMatchCategory.Match,
+                MatchGrade.NullCDna => LocusMatchCategory.Match,
+                MatchGrade.NullPartial => LocusMatchCategory.Match,
+                MatchGrade.Associated => LocusMatchCategory.Match,
+                MatchGrade.Broad => LocusMatchCategory.Match,
+                MatchGrade.Split => LocusMatchCategory.Match,
+                MatchGrade.PermissiveMismatch => LocusMatchCategory.PermissiveMismatch,
+                MatchGrade.Mismatch => LocusMatchCategory.Mismatch,
+                MatchGrade.NullMismatch => LocusMatchCategory.Mismatch,
+                MatchGrade.Unknown => LocusMatchCategory.Unknown,
+                _ => throw new ArgumentOutOfRangeException($"Cannot convert MatchGrade {matchGrade} to a LocusMatchCategory")
+            };
+        }
     }
 }
