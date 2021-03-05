@@ -15,6 +15,7 @@ namespace Atlas.DonorImport.Data.Repositories
         public Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(ICollection<string> externalDonorCodes);
         public Task<Dictionary<int, Donor>> GetDonorsByIds(ICollection<int> donorIds);
         public Task<Dictionary<string, int>> GetDonorIdsByExternalDonorCodes(ICollection<string> externalDonorCodes);
+        public Task<Dictionary<string, int>> GetDonorIdsUpdatedSince(DateTimeOffset cutoffDate);
     }
 
     public class DonorReadRepository : DonorRepositoryBase, IDonorReadRepository
@@ -100,6 +101,20 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
                     throw new Exception($"External Donor Codes {notFoundDonors.StringJoin(",")} not found in database.");
                 }
                 return donors.ToDictionary(d => d.Item2, d => d.Item1.Value);
+            }
+        }
+
+        public async Task<Dictionary<string, int>> GetDonorIdsUpdatedSince(DateTimeOffset cutoffDate)
+        {
+            var sql = $@"
+SELECT {nameof(Donor.AtlasId)}, {nameof(Donor.ExternalDonorCode)} FROM {Donor.QualifiedTableName}
+WHERE LastUpdated >= @{nameof(cutoffDate)}
+";
+
+            await using (var connection = NewConnection())
+            {
+                var donors = await connection.QueryAsync<Donor>(sql, new {cutoffDate});
+                return donors.ToDictionary(d => d.ExternalDonorCode, d => d.AtlasId);
             }
         }
     }

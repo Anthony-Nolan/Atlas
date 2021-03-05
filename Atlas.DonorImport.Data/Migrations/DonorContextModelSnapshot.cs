@@ -96,6 +96,8 @@ namespace Atlas.DonorImport.Data.Migrations
 
                     b.HasIndex("Hash");
 
+                    b.HasIndex("LastUpdated");
+
                     b.ToTable("Donors");
                 });
 
