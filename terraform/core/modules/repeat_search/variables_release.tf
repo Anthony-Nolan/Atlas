@@ -20,3 +20,7 @@ variable "IP_RESTRICTION_SETTINGS" {
 variable "MATCHING_BATCH_SIZE" {
   type = number
 }
+
+variable MAX_CONCURRENT_SERVICEBUS_FUNCTIONS {
+  type = number
+}

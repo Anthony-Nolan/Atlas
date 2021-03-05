@@ -266,6 +266,12 @@ variable "REPEAT_SEARCH_DATABASE_USERNAME" {
   default = "repeat_search"
 }
 
+variable "REPEAT_SEARCH_MATCHING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE" {
+  type = number
+  default = 1
+  description = "The maximum number of concurrent repeat search requests that can run on each instance of the matching algorithm."
+}
+
 variable "SERVICE_PLAN_MAX_SCALE_OUT" {
   type = number
   default = 50
