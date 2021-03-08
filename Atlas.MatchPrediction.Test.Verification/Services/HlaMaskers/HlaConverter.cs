@@ -11,6 +11,12 @@ using MoreLinq.Extensions;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
 {
+    public enum HlaConversionCategory
+    {
+        PGroup,
+        Serology
+    }
+
     internal interface IHlaConverter
     {
         /// <summary>
@@ -105,12 +111,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
                 _ => throw new ArgumentOutOfRangeException(nameof(hlaConversionCategory), hlaConversionCategory, null)
             };
         }
-    }
-
-    public enum HlaConversionCategory
-    {
-        PGroup,
-        Serology
     }
 
     internal static class Converters
