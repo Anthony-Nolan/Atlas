@@ -110,7 +110,7 @@ resource "azurerm_function_app" "atlas_matching_algorithm_function" {
   }
 
   connection_string {
-    name  = "DonorImportSql"
+    name  = "DonorSql"
     type  = "SQLAzure"
     value = "Server=tcp:${var.sql_server.fully_qualified_domain_name},1433;Initial Catalog=${var.donor_import_sql_database.name};Persist Security Info=False;User ID=${var.DONOR_IMPORT_DATABASE_USERNAME};Password=${var.DONOR_IMPORT_DATABASE_PASSWORD};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
   }

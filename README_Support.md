@@ -107,6 +107,20 @@ If a refresh stalls locally, you can likely ignore the infrastructure part of th
 
 ## Search
 
+### Search error - "donor id not found"
+
+The matching algorithm uses internal donor ids for search, and will look up external donor codes on completion of a search request. It assumes that all donors matched will be present in the master Atlas donor store.
+
+If this assumption is broken, an exception will be thrown and the search will fail. (This will manifest as a `KeyNotFoundException` in [SearchService.cs](Atlas.MatchingAlgorithm/Services/Search/SearchService.cs)) 
+
+There is an edge case in which this situation is possible - if a donor is removed from the Atlas system, and shows up in a search result set before the matching algorithm has applied the deletion to its donor store - 
+this window is configurable, but expected to be in the order of a low number of minutes.
+
+Automatic retry logic should take care of this edge case, but if a search repeatedly fails with such an error:
+
+- If the search was very quick, wait a few minutes to give the matching donor processor a chance to apply the deletion
+- If the issue still persists, it implies that the master donor store and the matching store have drifted out of sync. This is not expected and will require investigation.
+
 ### Searches not returning results
 
 Searches should post a notification to the `search-results-ready` topic - either for success, containing information about the results, or notifying of an algorithm failure. 

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
@@ -7,6 +9,7 @@ using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.ExternalInterface;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
@@ -26,7 +29,7 @@ using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 {
-    public static class ServiceConfiguration
+    internal static class ServiceConfiguration
     {
         private const string PersistentSqlConnectionStringKey = "PersistentSql";
         private const string TransientASqlConnectionStringKey = "SqlA";
@@ -53,7 +56,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 _ => new MatchingConfigurationSettings {MatchingBatchSize = 250000},
                 ConnectionStringReader(PersistentSqlConnectionStringKey),
                 ConnectionStringReader(TransientASqlConnectionStringKey),
-                ConnectionStringReader(TransientBSqlConnectionStringKey));
+                ConnectionStringReader(TransientBSqlConnectionStringKey),
+                ConnectionStringReader(DonorImportSqlConnectionStringKey));
 
             services.RegisterDataRefresh(
                 _ => new AzureAuthenticationSettings(),
@@ -70,7 +74,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 ConnectionStringReader(TransientASqlConnectionStringKey),
                 ConnectionStringReader(TransientBSqlConnectionStringKey),
                 ConnectionStringReader(DonorImportSqlConnectionStringKey));
-            
+
             services.RegisterDonorManagement(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
@@ -119,10 +123,17 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 .Returns(Task.CompletedTask);
             services.AddScoped(sp => mockSearchServiceBusClient);
 
-            services.AddScoped(sp => Substitute.For<IDonorReader>());
             services.AddScoped(sp => Substitute.For<IMessageReceiverFactory>());
             services.AddScoped(sp => Substitute.For<INotificationSender>());
             services.AddScoped(sp => Substitute.For<IAzureDatabaseManager>());
+
+            var mockDonorReader = Substitute.For<IDonorReader>();
+            mockDonorReader.GetDonors(default).ReturnsForAnyArgs(callInfo =>
+            {
+                var ids = callInfo.Arg<IEnumerable<int>>();
+                return ids.ToDictionary(id => id, id => new Donor {AtlasDonorId = id, ExternalDonorCode = id.ToString()});
+            });
+            services.AddScoped(_ => mockDonorReader);
 
             // Log to file, not to ApplicationInsights!
             services.AddSingleton<ILogger, FileBasedLogger>();
