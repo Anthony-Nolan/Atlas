@@ -116,7 +116,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 await matchingResultsDownloader.Download(matchingResultsNotification.BlobStorageResultsFileName, matchingResultsNotification.IsRepeatSearch)
             );
 
-            // TODO: ATLAS-856 - can we avoid fetching this twice?
+            // TODO: ATLAS-965 - use the lookup in matching to populate this and avoid a second SQL fetch
             var donorInfo = await logger.RunTimedAsync("Fetch donor data", async () =>
                 await donorReader.GetDonors(matchingResults.MatchingAlgorithmResults.Select(r => r.AtlasDonorId))
             );
