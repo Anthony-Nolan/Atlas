@@ -51,7 +51,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
                 .PostAsync();
 
             var content = await result.Content.ReadAsStringAsync();
-            var deserializedContent = JsonConvert.DeserializeObject<MatchingAlgorithmResultSet>(content);
+            var deserializedContent = JsonConvert.DeserializeObject<OriginalMatchingAlgorithmResultSet>(content);
             return new SearchAlgorithmApiResult
             {
                 IsSuccess = result.IsSuccessStatusCode,
