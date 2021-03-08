@@ -52,6 +52,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                     TestIndividualCategory = category
                 },
                 new MaskingRequests(),
+                default,
                 default);
 
             await simulantsRepository.Received().GetGenotypeSimulants(testHarnessId, category.ToString());
@@ -68,6 +69,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                 .Invoking(async x => await x.GenerateSimulants(
                     new GenerateSimulantsRequest { SimulantCount = simulantCount },
                     new MaskingRequests(),
+                    default,
                     default))
                 .Should().Throw<Exception>();
         }
@@ -82,6 +84,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             await simulantsGenerator.GenerateSimulants(
                 new GenerateSimulantsRequest { SimulantCount = genotypeCount },
                 new MaskingRequests(),
+                default,
                 default);
 
             await locusHlaMasker.Received(1).MaskHlaForSingleLocus(
@@ -121,6 +124,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             await simulantsGenerator.GenerateSimulants(
                 new GenerateSimulantsRequest { SimulantCount = genotypes.Count },
                 new MaskingRequests(),
+                default,
                 default);
 
             await locusHlaMasker.Received(5).MaskHlaForSingleLocus(
@@ -141,7 +145,7 @@ BuildHlaFor(Locus.B),
                 BuildHlaFor(Locus.Drb1)
                 );
 
-            await simulantsGenerator.GenerateSimulants(new GenerateSimulantsRequest(), new MaskingRequests(), default);
+            await simulantsGenerator.GenerateSimulants(new GenerateSimulantsRequest(), new MaskingRequests(), default, default);
 
             await simulantsRepository.Received().BulkInsertSimulants(Arg.Is<IReadOnlyCollection<Simulant>>(x =>
                 x.First().A_1.Equals("A-1") &&
@@ -177,6 +181,7 @@ BuildHlaFor(Locus.B),
                     TestIndividualCategory = testIndividualCategory
                 },
                 new MaskingRequests(),
+                default,
                 default);
 
             await simulantsRepository.Received().BulkInsertSimulants(Arg.Is<IReadOnlyCollection<Simulant>>(x =>

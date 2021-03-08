@@ -82,7 +82,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
             MaskingRequests maskingRequests)
         {
             await genotypesGenerator.GenerateSimulants(request, pool);
-            await maskedGenerator.GenerateSimulants(request, maskingRequests, pool.HlaNomenclatureVersion);
+            await maskedGenerator.GenerateSimulants(request, maskingRequests, pool.HlaNomenclatureVersion, pool.TypingCategory);
         }
     }
 }

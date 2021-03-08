@@ -73,7 +73,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
 
             var poolId = await AddPoolToDatabase(sourceData, poolMembers);
 
-            return new NormalisedHaplotypePool(poolId, sourceData.HlaNomenclatureVersion, poolMembers);
+            return new NormalisedHaplotypePool(poolId, sourceData.HlaNomenclatureVersion, sourceData.TypingCategory, poolMembers);
         }
 
         private static decimal LowestFrequency(IEnumerable<FrequencyRecord> haplotypeFrequencies)

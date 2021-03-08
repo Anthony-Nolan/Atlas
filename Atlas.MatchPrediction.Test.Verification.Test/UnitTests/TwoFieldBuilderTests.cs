@@ -24,6 +24,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
         [TestCase("01:01:01")]
         [TestCase("01:01:01N")]
         [TestCase("01:01:01G")]
+        [TestCase("01:01g")]
         public async Task ConvertRandomLocusHlaToTwoField_ConvertsHlaToTwoFields(string hla)
         {
             const int simulantCount = 1;

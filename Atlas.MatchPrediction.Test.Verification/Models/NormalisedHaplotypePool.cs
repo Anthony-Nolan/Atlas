@@ -9,13 +9,19 @@ namespace Atlas.MatchPrediction.Test.Verification.Models
     {
         public int Id { get; }
         public string HlaNomenclatureVersion { get; }
+        public ImportTypingCategory TypingCategory { get; }
         public IReadOnlyCollection<NormalisedPoolMember> PoolMembers { get; }
         public int TotalCopyNumber { get; }
 
-        public NormalisedHaplotypePool(int poolId, string hlaNomenclatureVersion, IReadOnlyCollection<NormalisedPoolMember> poolMembers)
+        public NormalisedHaplotypePool(
+            int poolId,
+            string hlaNomenclatureVersion,
+            ImportTypingCategory typingCategory,
+            IReadOnlyCollection<NormalisedPoolMember> poolMembers)
         {
             Id = poolId;
             HlaNomenclatureVersion = hlaNomenclatureVersion;
+            TypingCategory = typingCategory;
             PoolMembers = poolMembers;
             TotalCopyNumber = poolMembers.Sum(h => h.CopyNumber);
         }
