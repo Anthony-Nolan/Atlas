@@ -12,7 +12,7 @@ namespace Atlas.RepeatSearch.Data.Repositories
 {
     public interface ICanonicalResultSetRepository
     {
-        Task CreateCanonicalResultSet(string searchRequestId, IReadOnlyCollection<int> donorIds);
+        Task CreateCanonicalResultSet(string searchRequestId, IReadOnlyCollection<string> externalDonorCodes);
 
         /// <returns>
         /// A <see cref="CanonicalResultSet"/> with no search results populated.
@@ -31,12 +31,12 @@ namespace Atlas.RepeatSearch.Data.Repositories
             connectionString = connectionStrings.RepeatSearchSqlConnectionString;
         }
 
-        public async Task CreateCanonicalResultSet(string searchRequestId, IReadOnlyCollection<int> donorIds)
+        public async Task CreateCanonicalResultSet(string searchRequestId, IReadOnlyCollection<string> externalDonorCodes)
         {
             using (var transactionScope = new AsyncTransactionScope())
             {
                 var resultSetId = await CreateResultSetEntity(searchRequestId);
-                var resultEntryDataTable = BuildResultsInsertDataTable(resultSetId, donorIds);
+                var resultEntryDataTable = BuildResultsInsertDataTable(resultSetId, externalDonorCodes);
                 using (var sqlBulk = BuildResultsBulkCopy())
                 {
                     await sqlBulk.WriteToServerAsync(resultEntryDataTable);
@@ -91,19 +91,19 @@ SELECT CAST(SCOPE_IDENTITY() as int);
         {
             var sqlBulk = new SqlBulkCopy(connectionString) {BatchSize = 10000, DestinationTableName = SearchResult.QualifiedTableName};
             sqlBulk.ColumnMappings.Add(nameof(SearchResult.Id), nameof(SearchResult.Id));
-            sqlBulk.ColumnMappings.Add(nameof(SearchResult.AtlasDonorId), nameof(SearchResult.AtlasDonorId));
+            sqlBulk.ColumnMappings.Add(nameof(SearchResult.ExternalDonorCode), nameof(SearchResult.ExternalDonorCode));
             sqlBulk.ColumnMappings.Add(nameof(SearchResult.CanonicalResultSetId), nameof(SearchResult.CanonicalResultSetId));
             return sqlBulk;
         }
 
-        private DataTable BuildResultsInsertDataTable(int canonicalResultSetId, IEnumerable<int> donorIds)
+        private DataTable BuildResultsInsertDataTable(int canonicalResultSetId, IEnumerable<string> externalDonorCodes)
         {
             var dataTable = new DataTable();
             dataTable.Columns.Add(nameof(SearchResult.Id));
-            dataTable.Columns.Add(nameof(SearchResult.AtlasDonorId));
+            dataTable.Columns.Add(nameof(SearchResult.ExternalDonorCode));
             dataTable.Columns.Add(nameof(SearchResult.CanonicalResultSetId));
 
-            foreach (var donorId in donorIds)
+            foreach (var donorId in externalDonorCodes)
             {
                 dataTable.Rows.Add(0, donorId, canonicalResultSetId);
             }

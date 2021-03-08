@@ -29,7 +29,7 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
                 notification.BlobStorageContainerName,
                 notification.BlobStorageResultsFileName);
 
-            var donorIds = resultSet.MatchingAlgorithmResults.Select(r => r.AtlasDonorId).ToList();
+            var donorIds = resultSet.MatchingAlgorithmResults.Select(r => r.ExternalDonorCode).ToList();
             await canonicalResultSetRepository.CreateCanonicalResultSet(resultSet.SearchRequestId, donorIds);
         }
     }
