@@ -55,7 +55,8 @@ namespace Atlas.MatchingAlgorithm.Api
                 OptionsReaderFor<MatchingConfigurationSettings>(),
                 ConnectionStringReader("PersistentSql"),
                 ConnectionStringReader("SqlA"),
-                ConnectionStringReader("SqlB"));
+                ConnectionStringReader("SqlB"),
+                ConnectionStringReader("DonorImportSql"));
             
             services.RegisterDataRefresh(
                 OptionsReaderFor<AzureAuthenticationSettings>(),

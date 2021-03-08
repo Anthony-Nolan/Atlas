@@ -58,7 +58,8 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
                 fetchMatchingConfigurationSettings,
                 fetchPersistentSqlConnectionString,
                 fetchTransientASqlConnectionString,
-                fetchTransientBSqlConnectionString);
+                fetchTransientBSqlConnectionString,
+                fetchDonorSqlConnectionString);
             
             services.RegisterDonorReader(fetchDonorSqlConnectionString);
         }

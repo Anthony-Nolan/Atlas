@@ -26,7 +26,7 @@ using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 {
-    public static class ServiceConfiguration
+    internal static class ServiceConfiguration
     {
         private const string PersistentSqlConnectionStringKey = "PersistentSql";
         private const string TransientASqlConnectionStringKey = "SqlA";
@@ -53,7 +53,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 _ => new MatchingConfigurationSettings {MatchingBatchSize = 250000},
                 ConnectionStringReader(PersistentSqlConnectionStringKey),
                 ConnectionStringReader(TransientASqlConnectionStringKey),
-                ConnectionStringReader(TransientBSqlConnectionStringKey));
+                ConnectionStringReader(TransientBSqlConnectionStringKey),
+                ConnectionStringReader(DonorImportSqlConnectionStringKey));
 
             services.RegisterDataRefresh(
                 _ => new AzureAuthenticationSettings(),
@@ -70,7 +71,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 ConnectionStringReader(TransientASqlConnectionStringKey),
                 ConnectionStringReader(TransientBSqlConnectionStringKey),
                 ConnectionStringReader(DonorImportSqlConnectionStringKey));
-            
+
             services.RegisterDonorManagement(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
