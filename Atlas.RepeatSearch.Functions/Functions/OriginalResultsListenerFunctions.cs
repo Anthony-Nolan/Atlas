@@ -12,11 +12,11 @@ namespace Atlas.RepeatSearch.Functions.Functions
 {
     public class OriginalResultsListenerFunctions
     {
-        private readonly IOriginalSearchResultsListener originalSearchResultsListener;
+        private readonly IOriginalSearchResultSetTracker originalSearchResultSetTracker;
 
-        public OriginalResultsListenerFunctions(IOriginalSearchResultsListener originalSearchResultsListener)
+        public OriginalResultsListenerFunctions(IOriginalSearchResultSetTracker originalSearchResultSetTracker)
         {
-            this.originalSearchResultsListener = originalSearchResultsListener;
+            this.originalSearchResultSetTracker = originalSearchResultSetTracker;
         }
         
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -31,7 +31,7 @@ namespace Atlas.RepeatSearch.Functions.Functions
             var serialisedData = Encoding.UTF8.GetString(message.Body);
             var resultsNotification = JsonConvert.DeserializeObject<MatchingResultsNotification>(serialisedData);
 
-            await originalSearchResultsListener.StoreOriginalSearchResults(resultsNotification);
+            await originalSearchResultSetTracker.StoreOriginalSearchResults(resultsNotification);
         }
     }
 }
