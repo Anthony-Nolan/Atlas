@@ -40,26 +40,28 @@ namespace Atlas.Common.Test.Hla.Services
             actualAllele.Should().Be(expectedAllele);
         }
 
-        [Test]
-        public void FirstTwoFields_ReturnExpectedTwoFields()
+        [TestCase("Field1:Field2:Field3:Field4N", new[]{"Field1","Field2"})]
+        [TestCase("Field1:Field2:Field3N", new[]{"Field1","Field2"})]
+        [TestCase("Field1:Field2P", new[]{"Field1","Field2P"})]
+        [TestCase("Field1:Field2N", new[]{"Field1","Field2N"})]
+        [TestCase("Field1:Field2", new[]{"Field1","Field2"})]
+        public void FirstTwoFields_ReturnExpectedTwoFields(string hla, string[] expected)
         {
-            const string allele = "Field1:Field2:Field3:Field4";
-            var expectedListOfAlleles = new List<string> { "Field1", "Field2" };
+            var actual = AlleleSplitter.FirstTwoFields(hla);
 
-            var actualListOfAlleles = AlleleSplitter.FirstTwoFields(allele);
-
-            actualListOfAlleles.Should().BeEquivalentTo(expectedListOfAlleles);
+            actual.Should().BeEquivalentTo(expected);
         }
 
-        [Test]
-        public void FirstTwoFieldsAsString_ReturnExpectedTwoFields()
+        [TestCase("Field1:Field2:Field3:Field4N", "Field1:Field2")]
+        [TestCase("Field1:Field2:Field3N", "Field1:Field2")]
+        [TestCase("Field1:Field2P", "Field1:Field2P")]
+        [TestCase("Field1:Field2N", "Field1:Field2N")]
+        [TestCase("Field1:Field2", "Field1:Field2")]
+        public void FirstTwoFieldsAsString_ReturnExpectedTwoFields(string hla, string expected)
         {
-            const string allele = "Field1:Field2:Field3:Field4";
-            const string expectedAllele = "Field1:Field2";
+            var actual = AlleleSplitter.FirstTwoFieldsAsString(hla);
 
-            var actualAllele = AlleleSplitter.FirstTwoFieldsAsString(allele);
-
-            actualAllele.Should().Be(expectedAllele);
+            actual.Should().Be(expected);
         }
 
         [TestCase("Field1:Field2:Field3:Field4N", "Field1:Field2N")]
@@ -71,6 +73,19 @@ namespace Atlas.Common.Test.Hla.Services
             var actualAllele = AlleleSplitter.FirstTwoFieldsWithExpressionSuffixAsString(allele);
 
             actualAllele.Should().Be(expectedAllele);
+        }
+
+        [TestCase("Field1:Field2:Field3:Field4N", "Field1:Field2")]
+        [TestCase("Field1:Field2:Field3N", "Field1:Field2")]
+        [TestCase("Field1:Field2g", "Field1:Field2")]
+        [TestCase("Field1:Field2N", "Field1:Field2")]
+        [TestCase("Field1:Field2P", "Field1:Field2")]
+        [TestCase("Field1:Field2", "Field1:Field2")]
+        public void FirstTwoFieldsAsStringWithSuffixRemoved_ReturnsFirstTwoFieldsWithNoSuffix(string allele, string expected)
+        {
+            var actual = AlleleSplitter.FirstTwoFieldsAsStringWithSuffixRemoved(allele);
+
+            actual.Should().Be(expected);
         }
 
         [TestCase("Field:Field", "Field")]
@@ -93,14 +108,26 @@ namespace Atlas.Common.Test.Hla.Services
             actualAllele.Should().Be(expectedAllele);
         }
 
-        [TestCase("Field1:Field2")]
-        [TestCase("Field1:Field2:Field3")]
-        [TestCase("Field1:Field2:Field3:Field4")]
-        public void SecondField_ReturnsSecondField(string allele)
+        [TestCase("Field1:Field2", "Field2")]
+        [TestCase("Field1:Field2g", "Field2g")]
+        [TestCase("Field1:Field2N", "Field2N")]
+        [TestCase("Field1:Field2:Field3", "Field2")]
+        [TestCase("Field1:Field2:Field3:Field4", "Field2")]
+        public void SecondField_ReturnsSecondField(string hla, string expected)
         {
-            const string expectedAllele = "Field2";
-            var actualAllele = AlleleSplitter.SecondField(allele);
-            actualAllele.Should().Be(expectedAllele);
+            var actual = AlleleSplitter.SecondField(hla);
+            actual.Should().Be(expected);
+        }
+
+        [TestCase("Field1:Field2", "Field2")]
+        [TestCase("Field1:Field2g", "Field2")]
+        [TestCase("Field1:Field2N", "Field2")]
+        [TestCase("Field1:Field2:Field3", "Field2")]
+        [TestCase("Field1:Field2:Field3:Field4", "Field2")]
+        public void SecondFieldWithSuffixRemoved_ReturnsSecondFieldWithSuffixRemoved(string hla, string expected)
+        {
+            var actual = AlleleSplitter.SecondFieldWithSuffixRemoved(hla);
+            actual.Should().Be(expected);
         }
     }
 }

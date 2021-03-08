@@ -35,9 +35,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
 
         [TestCase("99:01")]
         [TestCase("99:01N")]
+        [TestCase("99:01g")]
         [TestCase("99:01:99")]
         [TestCase("99:01:99G")]
-        [TestCase("99:01g")]
         public async Task ConvertRandomLocusHla_SelectsPotentialMacsBySecondFieldOfHla(string hlaName)
         {
             const int simulantCount = 1;
