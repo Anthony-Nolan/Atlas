@@ -141,7 +141,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
-            Func<IServiceProvider, string> fetchTransientBSqlConnectionString)
+            Func<IServiceProvider, string> fetchTransientBSqlConnectionString,
+            Func<IServiceProvider, string> fetchDonorImportSqlConnectionString)
         {
             services.RegisterCommonServices(
                 fetchApplicationInsightsSettings,
@@ -152,6 +153,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchTransientASqlConnectionString,
                 fetchTransientBSqlConnectionString
             );
+
+            services.RegisterDonorReader(fetchDonorImportSqlConnectionString);
 
             services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
 

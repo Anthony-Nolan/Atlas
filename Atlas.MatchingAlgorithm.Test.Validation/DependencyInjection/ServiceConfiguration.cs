@@ -1,4 +1,8 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using Atlas.DonorImport.ExternalInterface;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources;
@@ -8,6 +12,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelec
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.StaticDataSelection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
@@ -16,7 +21,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
     /// Used to set up dependency injection for the validation test framework itself.
     /// Note that the injected configuration is for the validation project - for the in memory api the configuration is set up elsewhere
     /// </summary>
-    public static class ServiceConfiguration
+    internal static class ServiceConfiguration
     {
         public static ServiceProvider CreateProvider()
         {
@@ -55,12 +60,24 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
             services.AddTransient<IDatabaseDonorSelector, DatabaseDonorSelector>();
             services.AddTransient<IPatientHlaSelector, PatientHlaSelector>();
 
-            RegisterDataServices(services);
+            services.RegisterDataServices();
+            services.RegisterMockServices();
 
             return services.BuildServiceProvider();
         }
 
-        private static void RegisterDataServices(IServiceCollection services)
+        private static void RegisterMockServices(this ServiceCollection services)
+        {
+            var mockDonorReader = Substitute.For<IDonorReader>();
+            mockDonorReader.GetDonors(default).ReturnsForAnyArgs(c =>
+            {
+                var ids = c.Arg<IEnumerable<int>>();
+                return ids.ToDictionary(id => id, id => new Donor {AtlasDonorId = id, ExternalDonorCode = id.ToString()});
+            });
+            services.AddScoped(_ => mockDonorReader);
+        }
+
+        private static void RegisterDataServices(this IServiceCollection services)
         {
             services.AddScoped(sp =>
                 new ContextFactory().Create(ConnectionStringReader("SqlA")(sp))
