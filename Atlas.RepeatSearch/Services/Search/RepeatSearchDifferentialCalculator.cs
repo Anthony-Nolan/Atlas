@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
-using Atlas.DonorImport.Data.Repositories;
+using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.RepeatSearch.Data.Repositories;
 
@@ -30,14 +30,14 @@ namespace Atlas.RepeatSearch.Services.Search
 
     internal class RepeatSearchDifferentialCalculator : IRepeatSearchDifferentialCalculator
     {
-        private readonly IDonorReadRepository donorReadRepository;
+        private readonly IDonorReader donorReader;
         private readonly ICanonicalResultSetRepository canonicalResultSetRepository;
 
         public RepeatSearchDifferentialCalculator(
-            IDonorReadRepository donorReadRepository,
+            IDonorReader donorReader,
             ICanonicalResultSetRepository canonicalResultSetRepository)
         {
-            this.donorReadRepository = donorReadRepository;
+            this.donorReader = donorReader;
             this.canonicalResultSetRepository = canonicalResultSetRepository;
         }
 
@@ -48,28 +48,25 @@ namespace Atlas.RepeatSearch.Services.Search
         {
             var returnedDonorCodes = results.Select(r => r.ExternalDonorCode).ToList();
 
-            // (a) 
-            var allDonorsUpdatedSinceCutoff = await donorReadRepository.GetDonorIdsUpdatedSince(searchCutoffDate);
+            var allDonorsUpdatedSinceCutoff = await donorReader.GetDonorIdsUpdatedSince(searchCutoffDate);
 
-            // (b) = results
-
-            // (c) = (a) - (b)
             var nonMatchingDonors = allDonorsUpdatedSinceCutoff.Keys.Except(returnedDonorCodes);
 
-            // (d) 
             var previousCanonicalDonors = (await canonicalResultSetRepository.GetCanonicalResults(originalSearchRequestId))
                 .Select(r => r.ExternalDonorCode).ToList();
 
             var newDonors = returnedDonorCodes.Except(previousCanonicalDonors).ToList();
             var updatedDonors = returnedDonorCodes.Except(newDonors).ToList();
-            var removedDonors = previousCanonicalDonors.Intersect(nonMatchingDonors).ToList();
+            var noLongerMatchingDonors = previousCanonicalDonors.Intersect(nonMatchingDonors).ToList();
 
-            // TODO: ATLAS-861: calculate which donors have been deleted and therefore don't show in (a) but still shouldn't be in the canonical set
+            var allPreviouslyMatchingDonors = await donorReader.GetDonorsByExternalDonorCodes(previousCanonicalDonors);
+            var deletedDonors = previousCanonicalDonors.Where(d => !allPreviouslyMatchingDonors.ContainsKey(d)).ToList();
+
             return new SearchResultDifferential
             {
                 NewResults = newDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, allDonorsUpdatedSinceCutoff)).ToList(),
                 UpdatedResults = updatedDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, allDonorsUpdatedSinceCutoff)).ToList(),
-                RemovedResults = removedDonors.ToList()
+                RemovedResults = noLongerMatchingDonors.Concat(deletedDonors).ToList()
             };
         }
 
