@@ -97,7 +97,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     ResultCount = results.Count,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
                     BlobStorageContainerName = blobContainerName,
-                    NoLongerMatchingDonors = diff.RemovedDonors.Select(d => d.ExternalDonorCode).ToList()
+                    NoLongerMatchingDonors = diff.RemovedResults.ToList()
                 };
 
                 await repeatResultsBlobStorageClient.UploadResults(searchResultSet);
