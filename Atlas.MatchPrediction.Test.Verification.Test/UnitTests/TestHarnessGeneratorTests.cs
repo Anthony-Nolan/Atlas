@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
@@ -32,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                 poolGenerator, testHarnessRepository, genotypesGenerator, maskedGenerator);
 
             poolGenerator.GenerateNormalisedHaplotypeFrequencyPool().ReturnsForAnyArgs(
-                new NormalisedHaplotypePool(default, default, new List<NormalisedPoolMember>()));
+                new NormalisedHaplotypePool(default, default, default, new List<NormalisedPoolMember>()));
         }
 
         [Test]
@@ -49,7 +50,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             const int poolId = 1;
 
             poolGenerator.GenerateNormalisedHaplotypeFrequencyPool().ReturnsForAnyArgs(
-                new NormalisedHaplotypePool(poolId, default, new List<NormalisedPoolMember>()));
+                new NormalisedHaplotypePool(poolId, default, default, new List<NormalisedPoolMember>()));
 
             await testHarnessGenerator.GenerateTestHarness(new GenerateTestHarnessRequest());
 
@@ -78,7 +79,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                     x.SimulantCount == 1000 &&
                     x.TestIndividualCategory == TestIndividualCategory.Patient),
                 Arg.Any<MaskingRequests>(),
-                Arg.Any<string>());
+                Arg.Any<string>(),
+                Arg.Any<ImportTypingCategory>());
         }
 
         [Test]
@@ -94,7 +96,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                 await maskedGenerator.GenerateSimulants(
                     Arg.Is<GenerateSimulantsRequest>(x => x.TestIndividualCategory == TestIndividualCategory.Patient),
                     Arg.Any<MaskingRequests>(),
-                    Arg.Any<string>());
+                    Arg.Any<string>(),
+                    Arg.Any<ImportTypingCategory>());
             });
         }
 
@@ -120,7 +123,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                     x.SimulantCount == 10000 &&
                     x.TestIndividualCategory == TestIndividualCategory.Donor),
                 Arg.Any<MaskingRequests>(),
-                Arg.Any<string>());
+                Arg.Any<string>(),
+                Arg.Any<ImportTypingCategory>());
         }
 
         [Test]
@@ -136,7 +140,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                 await maskedGenerator.GenerateSimulants(
                     Arg.Is<GenerateSimulantsRequest>(x => x.TestIndividualCategory == TestIndividualCategory.Donor),
                     Arg.Any<MaskingRequests>(),
-                    Arg.Any<string>());
+                    Arg.Any<string>(),
+                    Arg.Any<ImportTypingCategory>());
             });
         }
     }

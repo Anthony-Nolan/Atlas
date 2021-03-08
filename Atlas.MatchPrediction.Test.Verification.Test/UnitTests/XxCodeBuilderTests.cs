@@ -21,8 +21,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
         }
 
         [TestCase(":01")]
+        [TestCase(":01N")]
         [TestCase(":01:01")]
         [TestCase(":01:01G")]
+        [TestCase(":01g")]
         public async Task ConvertRandomLocusHlaToXxCodes_ConvertsHlaToXxCodes(string hlaSuffix)
         {
             const string firstField = "01";

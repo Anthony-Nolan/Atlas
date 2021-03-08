@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using MaskedHla =
     Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<
@@ -22,7 +23,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
         /// <summary>
         /// Generates (and stores) phenotypes by masking simulated genotypes.
         /// </summary>
-        Task GenerateSimulants(GenerateSimulantsRequest request, MaskingRequests maskingRequests, string hlaNomenclatureVersion);
+        Task GenerateSimulants(
+            GenerateSimulantsRequest request,
+            MaskingRequests maskingRequests,
+            string hlaNomenclatureVersion,
+            ImportTypingCategory typingCategory);
     }
 
     internal class MaskedSimulantsGenerator : SimulantsGeneratorBase, IMaskedSimulantsGenerator
@@ -43,11 +48,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
         public async Task GenerateSimulants(
             GenerateSimulantsRequest request,
             MaskingRequests maskingRequests,
-            string hlaNomenclatureVersion)
+            string hlaNomenclatureVersion,
+            ImportTypingCategory typingCategory)
         {
             Debug.WriteLine($"Masking {request.TestIndividualCategory} genotypes.");
 
-            var maskedLoci = await MaskGenotypesByLocus(request, maskingRequests, hlaNomenclatureVersion);
+            var maskedLoci = await MaskGenotypesByLocus(request, maskingRequests, hlaNomenclatureVersion, typingCategory);
             var maskedSimulants = BuildSimulantsFromMaskedLoci(maskedLoci, request);
 
             await StoreSimulants(maskedSimulants);
@@ -57,7 +63,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
         private async Task<MaskedHla> MaskGenotypesByLocus(
             GenerateSimulantsRequest request,
             MaskingRequests maskingRequests,
-            string hlaNomenclatureVersion)
+            string hlaNomenclatureVersion,
+            ImportTypingCategory typingCategory)
         {
             var genotypeSimulants = (await ReadGenotypeSimulants(request.TestHarnessId, request.TestIndividualCategory))
                 .Select(s => new { GenotypeId = s.Id, HlaInfo = s.ToPhenotypeInfo() })
@@ -81,6 +88,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
                     Locus = locus,
                     MaskingRequests = requests,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
+                    TypingCategory = typingCategory,
                     TotalSimulantCount = request.SimulantCount
                 };
 

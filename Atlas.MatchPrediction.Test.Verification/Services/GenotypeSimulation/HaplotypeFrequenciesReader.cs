@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
@@ -37,13 +38,16 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
             var set = await setReader.GetActiveGlobalHaplotypeFrequencySet();
             var frequencies = await ReadHaplotypeFrequenciesFromFile(set);
 
+            if (frequencies.TypingCategory == null)
+            {
+                throw new Exception("Could not determine the typing category of the haplotype frequency set.");
+            }
+
             return new HaplotypeFrequenciesReaderResult
             {
                 HaplotypeFrequencySetId = set.Id,
-
-                // All frequencies in a set use the same nomenclature version, so we pick an arbitrary value
                 HlaNomenclatureVersion = frequencies.HlaNomenclatureVersion,
-
+                TypingCategory = frequencies.TypingCategory.Value,
                 HaplotypeFrequencies = frequencies.Frequencies
             };
         }
@@ -60,6 +64,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
     {
         public int? HaplotypeFrequencySetId { get; set; }
         public string HlaNomenclatureVersion { get; set; }
+        public ImportTypingCategory TypingCategory { get; set; }
         public IEnumerable<FrequencyRecord> HaplotypeFrequencies { get; set; }
     }
 }

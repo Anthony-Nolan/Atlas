@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
+using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers;
 using Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
@@ -36,31 +36,32 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
 
             locusHlaMasker = new LocusHlaMasker(twoFieldBuilder, hlaConverter, macBuilder, xxCodeBuilder, hlaDeleter);
 
-            twoFieldBuilder.ConvertRandomLocusHlaToTwoField(default).ReturnsForAnyArgs(new TransformationResult()
+            twoFieldBuilder.ConvertRandomLocusHlaToTwoField(default).ReturnsForAnyArgs(new TransformationResult
             {
                 SelectedTypings = new List<SimulantLocusHla>(),
                 RemainingTypings = new List<SimulantLocusHla>()
             });
 
-            hlaConverter.ConvertRandomLocusHla(default, default, default).ReturnsForAnyArgs(new TransformationResult()
+            hlaConverter.ConvertRandomLocusHla(default, default, default, default).ReturnsForAnyArgs(
+                new TransformationResult
+                {
+                    SelectedTypings = new List<SimulantLocusHla>(),
+                    RemainingTypings = new List<SimulantLocusHla>()
+                });
+
+            macBuilder.ConvertRandomHlaToMacs(default, default).ReturnsForAnyArgs(new TransformationResult
             {
                 SelectedTypings = new List<SimulantLocusHla>(),
                 RemainingTypings = new List<SimulantLocusHla>()
             });
 
-            macBuilder.ConvertRandomHlaToMacs(default, default).ReturnsForAnyArgs(new TransformationResult()
+            xxCodeBuilder.ConvertRandomLocusHlaToXxCodes(default).ReturnsForAnyArgs(new TransformationResult
             {
                 SelectedTypings = new List<SimulantLocusHla>(),
                 RemainingTypings = new List<SimulantLocusHla>()
             });
 
-            xxCodeBuilder.ConvertRandomLocusHlaToXxCodes(default).ReturnsForAnyArgs(new TransformationResult()
-            {
-                SelectedTypings = new List<SimulantLocusHla>(),
-                RemainingTypings = new List<SimulantLocusHla>()
-            });
-
-            hlaDeleter.DeleteRandomLocusHla(default).ReturnsForAnyArgs(new TransformationResult()
+            hlaDeleter.DeleteRandomLocusHla(default).ReturnsForAnyArgs(new TransformationResult
             {
                 SelectedTypings = new List<SimulantLocusHla>(),
                 RemainingTypings = new List<SimulantLocusHla>()
@@ -149,7 +150,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
         {
             var typings = new List<SimulantLocusHla> {SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A)};
 
-            var categories = EnumStringValues.EnumExtensions.EnumerateValues<MaskingCategory>().ToList();
+            var categories = EnumExtensions.EnumerateValues<MaskingCategory>().ToList();
             var requests = new LocusMaskingRequests
             {
                 TotalSimulantCount = typings.Count,
@@ -214,11 +215,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
         [Test]
         public async Task MaskHla_PGroupRequest_ConvertsHlaToRequestedProportions()
         {
-            const MaskingCategory category = MaskingCategory.PGroup;
+            const MaskingCategory maskingCategory = MaskingCategory.PGroup;
 
             const int maskingProportion = 5;
             const int simulantCount = 100;
             const string hlaVersion = "version";
+            const ImportTypingCategory importCategory = ImportTypingCategory.LargeGGroup;
 
             var typings = SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A).Build(100).ToList();
 
@@ -226,9 +228,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             {
                 MaskingRequests = MaskingRequestBuilder.New
                     .WithProportion(maskingProportion)
-                    .WithCategory(category)
+                    .WithCategory(maskingCategory)
                     .Build(1),
                 HlaNomenclatureVersion = hlaVersion,
+                TypingCategory = importCategory,
                 TotalSimulantCount = simulantCount
             };
 
@@ -239,7 +242,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                     x.ProportionToTransform == maskingProportion &&
                     x.TotalSimulantCount == simulantCount),
                 hlaVersion,
-                TargetHlaCategory.PGroup);
+                importCategory,
+                HlaConversionCategory.PGroup);
         }
 
         [Test]
@@ -250,6 +254,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             const int maskingProportion = 5;
             const int simulantCount = 100;
             const string hlaVersion = "version";
+            const ImportTypingCategory importCategory = ImportTypingCategory.LargeGGroup;
 
             var typings = SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A).Build(100).ToList();
 
@@ -260,6 +265,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                     .WithCategory(category)
                     .Build(1),
                 HlaNomenclatureVersion = hlaVersion,
+                TypingCategory = importCategory,
                 TotalSimulantCount = simulantCount
             };
 
@@ -270,7 +276,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                     x.ProportionToTransform == maskingProportion &&
                     x.TotalSimulantCount == simulantCount),
                 hlaVersion,
-                TargetHlaCategory.Serology);
+                importCategory,
+                HlaConversionCategory.Serology);
         }
 
         [Test]
