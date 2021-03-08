@@ -56,9 +56,12 @@ namespace Atlas.Functions.Services
                 var matchPredictionResults = await DownloadMatchPredictionResults(matchPredictionResultLocations.ResultSet);
 
                 var resultSet = matchingAlgorithmResultSet is RepeatMatchingAlgorithmResultSet repeatSet
-                    ? new RepeatSearchResultSet {RepeatSearchId = repeatSet.RepeatSearchId} as SearchResultSet
+                    ? new RepeatSearchResultSet
+                    {
+                        RepeatSearchId = repeatSet.RepeatSearchId,
+                        NoLongerMatchingDonorCodes = repeatSet.NoLongerMatchingDonors
+                    } as SearchResultSet
                     : new OriginalSearchResultSet();
-
 
                 resultSet.SearchResults = matchingAlgorithmResultSet.MatchingAlgorithmResults.Select(r => new SearchResult
                 {

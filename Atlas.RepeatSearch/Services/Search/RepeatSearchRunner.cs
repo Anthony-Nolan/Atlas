@@ -32,6 +32,7 @@ namespace Atlas.RepeatSearch.Services.Search
         private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
         private readonly IRepeatSearchHistoryRepository repeatSearchHistoryRepository;
         private readonly IRepeatSearchValidator repeatSearchValidator;
+        private readonly IRepeatSearchDifferentialCalculator repeatSearchDifferentialCalculator;
 
         public RepeatSearchRunner(
             IRepeatSearchServiceBusClient repeatSearchServiceBusClient,
@@ -42,7 +43,8 @@ namespace Atlas.RepeatSearch.Services.Search
             MatchingAlgorithmSearchLoggingContext repeatSearchLoggingContext,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IRepeatSearchHistoryRepository repeatSearchHistoryRepository,
-            IRepeatSearchValidator repeatSearchValidator)
+            IRepeatSearchValidator repeatSearchValidator,
+            IRepeatSearchDifferentialCalculator repeatSearchDifferentialCalculator)
         {
             this.repeatSearchServiceBusClient = repeatSearchServiceBusClient;
             this.searchService = searchService;
@@ -52,12 +54,14 @@ namespace Atlas.RepeatSearch.Services.Search
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
             this.repeatSearchHistoryRepository = repeatSearchHistoryRepository;
             this.repeatSearchValidator = repeatSearchValidator;
+            this.repeatSearchDifferentialCalculator = repeatSearchDifferentialCalculator;
         }
 
         public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
         {
             var searchRequestId = identifiedRepeatSearchRequest.OriginalSearchId;
             var repeatSearchId = identifiedRepeatSearchRequest.RepeatSearchId;
+
             repeatSearchLoggingContext.SearchRequestId = searchRequestId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
@@ -65,15 +69,22 @@ namespace Atlas.RepeatSearch.Services.Search
 
             try
             {
+                // ReSharper disable once PossibleInvalidOperationException - validation has ensured this is not null.
+                var searchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value;
+
                 await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
-
-
+                
                 await RecordRepeatSearch(identifiedRepeatSearchRequest);
 
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
                 var results = (await searchService.Search(identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest,
-                    identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate)).ToList();
+                    searchCutoffDate)).ToList();
+
+                var diff = await repeatSearchDifferentialCalculator.CalculateDifferential(searchRequestId, results, searchCutoffDate);
+                
+                // TODO: ATLAS-861: Update the canonical set!
+
                 stopwatch.Stop();
 
                 var blobContainerName = repeatResultsBlobStorageClient.GetResultsContainerName();
@@ -86,6 +97,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     ResultCount = results.Count,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
                     BlobStorageContainerName = blobContainerName,
+                    NoLongerMatchingDonors = diff.RemovedDonors.Select(d => d.ExternalDonorCode).ToList()
                 };
 
                 await repeatResultsBlobStorageClient.UploadResults(searchResultSet);
