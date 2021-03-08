@@ -31,7 +31,9 @@ namespace Atlas.RepeatSearch.Functions
                 ConnectionStringReader("RepeatSearchSql"),
                 ConnectionStringReader("MatchingPersistentSql"),
                 ConnectionStringReader("MatchingSqlA"), 
-                ConnectionStringReader("MatchingSqlB"));
+                ConnectionStringReader("MatchingSqlB"),
+                ConnectionStringReader("DonorSql")
+                );
         }
 
         private static void RegisterSettings(IServiceCollection services)

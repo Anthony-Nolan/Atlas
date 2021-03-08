@@ -34,7 +34,8 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             Func<IServiceProvider, string> fetchRepeatSqlConnectionString,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
-            Func<IServiceProvider, string> fetchTransientBSqlConnectionString)
+            Func<IServiceProvider, string> fetchTransientBSqlConnectionString,
+            Func<IServiceProvider, string> fetchDonorSqlConnectionString)
         {
             services.RegisterSettings(
                 fetchApplicationInsightsSettings,
@@ -56,7 +57,8 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
                 fetchMatchingConfigurationSettings,
                 fetchPersistentSqlConnectionString,
                 fetchTransientASqlConnectionString,
-                fetchTransientBSqlConnectionString);
+                fetchTransientBSqlConnectionString,
+                fetchDonorSqlConnectionString);
         }
 
         private static void RegisterSettings(
