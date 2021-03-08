@@ -10,7 +10,7 @@ using FluentValidation;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.RepeatSearch.Test.Services
+namespace Atlas.RepeatSearch.Test.Services.Search
 {
     [TestFixture]
     public class RepeatSearchValidatorTests
