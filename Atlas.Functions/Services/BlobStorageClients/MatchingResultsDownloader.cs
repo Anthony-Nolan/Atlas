@@ -35,7 +35,11 @@ namespace Atlas.Functions.Services.BlobStorageClients
                 var matchingResultsBlobContainer = isRepeatSearch
                     ? azureStorageSettings.RepeatSearchMatchingResultsBlobContainer
                     : azureStorageSettings.MatchingResultsBlobContainer;
-                return await blobDownloader.Download<MatchingAlgorithmResultSet>(matchingResultsBlobContainer, blobName);
+                var matchingResults = isRepeatSearch
+                    ? await blobDownloader.Download<RepeatMatchingAlgorithmResultSet>(matchingResultsBlobContainer, blobName) as MatchingAlgorithmResultSet
+                    : await blobDownloader.Download<OriginalMatchingAlgorithmResultSet>(matchingResultsBlobContainer, blobName);
+
+                return matchingResults;
             }
         }
     }

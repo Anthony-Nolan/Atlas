@@ -25,7 +25,7 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
 
         public async Task StoreOriginalSearchResults(MatchingResultsNotification notification)
         {
-            var resultSet = await blobDownloader.Download<MatchingAlgorithmResultSet>(
+            var resultSet = await blobDownloader.Download<OriginalMatchingAlgorithmResultSet>(
                 notification.BlobStorageContainerName,
                 notification.BlobStorageResultsFileName);
 

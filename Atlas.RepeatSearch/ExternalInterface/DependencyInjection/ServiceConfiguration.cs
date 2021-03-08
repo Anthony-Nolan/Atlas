@@ -97,6 +97,8 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             services.AddScoped<IRepeatSearchServiceBusClient, RepeatSearchServiceBusClient>();
 
             services.AddScoped<IRepeatSearchValidator, RepeatSearchValidator>();
+            
+            services.AddScoped<IRepeatSearchDifferentialCalculator, RepeatSearchDifferentialCalculator>();
         }
     }
 }

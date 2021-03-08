@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
 using Atlas.RepeatSearch.Data.Models;
@@ -17,6 +18,8 @@ namespace Atlas.RepeatSearch.Data.Repositories
         /// A <see cref="CanonicalResultSet"/> with no search results populated.
         /// </returns>
         Task<CanonicalResultSet> GetCanonicalResultSetSummary(string searchRequestId);
+
+        Task<ICollection<SearchResult>> GetCanonicalResults(string searchRequestId);
     }
 
     public class CanonicalResultSetRepository : ICanonicalResultSetRepository
@@ -52,6 +55,19 @@ WHERE {nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequ
             await using (var conn = new SqlConnection(connectionString))
             {
                 return await conn.QuerySingleOrDefaultAsync<CanonicalResultSet>(sql, new {searchRequestId});
+            }
+        }
+
+        public async Task<ICollection<SearchResult>> GetCanonicalResults(string searchRequestId)
+        {
+            var sql = @$"
+SELECT * FROM {SearchResult.QualifiedTableName} result
+JOIN {CanonicalResultSet.QualifiedTableName} rs on rs.{nameof(CanonicalResultSet.Id)} = result.{nameof(SearchResult.CanonicalResultSetId)} 
+WHERE rs.{nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequestId)}";
+
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                return (await conn.QueryAsync<SearchResult>(sql, new {searchRequestId})).ToList();
             }
         }
 
