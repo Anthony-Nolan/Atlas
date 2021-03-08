@@ -18,7 +18,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
 
             return await TransformRandomlySelectedTypings(
                 request,
-                hlaName => Task.FromResult(AlleleSplitter.FirstTwoFieldsAsString(hlaName)));
+                hlaName => Task.FromResult(AlleleSplitter.FirstTwoFieldsAsStringWithSuffixRemoved(hlaName)));
         }
     }
 }

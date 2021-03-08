@@ -51,7 +51,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
         private async Task<string> BuildMac(Locus locus, string hlaName, IHlaMetadataDictionary hmd)
         {
             var relatedSecondFields = await GetSecondFieldsOfRelatedAlleles(locus, hlaName, hmd);
-            var potentialMacs = await cache.GetCodesBySecondField(AlleleSplitter.SecondField(hlaName));
+            var potentialMacs = await cache.GetCodesBySecondField(AlleleSplitter.SecondFieldWithSuffixRemoved(hlaName));
 
             foreach (var mac in potentialMacs.Shuffle())
             {
@@ -78,7 +78,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
                 await hmd.ConvertHla(locus, gGroup, TargetHlaCategory.TwoFieldAlleleExcludingExpressionSuffix)));
 
             return Enumerable.ToHashSet(alleles.SelectMany(a => a)
-                .Select(AlleleSplitter.SecondField)
+                .Select(AlleleSplitter.SecondFieldWithSuffixRemoved)
                 .Distinct()
                 .OrderBy(x => x));
         }
