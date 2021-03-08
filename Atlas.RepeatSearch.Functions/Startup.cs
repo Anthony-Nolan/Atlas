@@ -2,7 +2,6 @@
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.Settings;
-using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.RepeatSearch.ExternalInterface.DependencyInjection;
 using Atlas.RepeatSearch.Functions;
@@ -32,7 +31,8 @@ namespace Atlas.RepeatSearch.Functions
                 ConnectionStringReader("MatchingPersistentSql"),
                 ConnectionStringReader("MatchingSqlA"), 
                 ConnectionStringReader("MatchingSqlB"),
-                ConnectionStringReader("DonorSql"));
+                ConnectionStringReader("DonorSql")
+                );
         }
 
         private static void RegisterSettings(IServiceCollection services)

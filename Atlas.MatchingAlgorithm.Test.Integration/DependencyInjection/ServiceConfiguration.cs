@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
@@ -7,6 +9,7 @@ using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.ExternalInterface;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
@@ -120,10 +123,17 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 .Returns(Task.CompletedTask);
             services.AddScoped(sp => mockSearchServiceBusClient);
 
-            services.AddScoped(sp => Substitute.For<IDonorReader>());
             services.AddScoped(sp => Substitute.For<IMessageReceiverFactory>());
             services.AddScoped(sp => Substitute.For<INotificationSender>());
             services.AddScoped(sp => Substitute.For<IAzureDatabaseManager>());
+
+            var mockDonorReader = Substitute.For<IDonorReader>();
+            mockDonorReader.GetDonors(default).ReturnsForAnyArgs(c =>
+            {
+                var ids = c.Arg<IEnumerable<int>>();
+                return ids.ToDictionary(id => id, id => new Donor {AtlasDonorId = id, ExternalDonorCode = id.ToString()});
+            });
+            services.AddScoped(_ => mockDonorReader);
 
             // Log to file, not to ApplicationInsights!
             services.AddSingleton<ILogger, FileBasedLogger>();
