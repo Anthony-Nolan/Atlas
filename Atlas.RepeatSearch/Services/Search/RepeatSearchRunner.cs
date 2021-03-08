@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
@@ -14,6 +16,7 @@ using Atlas.RepeatSearch.Clients.AzureStorage;
 using Atlas.RepeatSearch.Data.Models;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Models;
+using Atlas.RepeatSearch.Services.ResultSetTracking;
 
 namespace Atlas.RepeatSearch.Services.Search
 {
@@ -33,6 +36,7 @@ namespace Atlas.RepeatSearch.Services.Search
         private readonly IRepeatSearchHistoryRepository repeatSearchHistoryRepository;
         private readonly IRepeatSearchValidator repeatSearchValidator;
         private readonly IRepeatSearchDifferentialCalculator repeatSearchDifferentialCalculator;
+        private readonly IOriginalSearchResultSetTracker originalSearchResultSetTracker;
 
         public RepeatSearchRunner(
             IRepeatSearchServiceBusClient repeatSearchServiceBusClient,
@@ -44,7 +48,8 @@ namespace Atlas.RepeatSearch.Services.Search
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IRepeatSearchHistoryRepository repeatSearchHistoryRepository,
             IRepeatSearchValidator repeatSearchValidator,
-            IRepeatSearchDifferentialCalculator repeatSearchDifferentialCalculator)
+            IRepeatSearchDifferentialCalculator repeatSearchDifferentialCalculator,
+            IOriginalSearchResultSetTracker originalSearchResultSetTracker)
         {
             this.repeatSearchServiceBusClient = repeatSearchServiceBusClient;
             this.searchService = searchService;
@@ -55,6 +60,7 @@ namespace Atlas.RepeatSearch.Services.Search
             this.repeatSearchHistoryRepository = repeatSearchHistoryRepository;
             this.repeatSearchValidator = repeatSearchValidator;
             this.repeatSearchDifferentialCalculator = repeatSearchDifferentialCalculator;
+            this.originalSearchResultSetTracker = originalSearchResultSetTracker;
         }
 
         public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
@@ -78,12 +84,10 @@ namespace Atlas.RepeatSearch.Services.Search
 
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
-                var results = (await searchService.Search(identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest,
-                    searchCutoffDate)).ToList();
+                var results = (await searchService.Search(identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest, searchCutoffDate))
+                    .ToList();
 
-                var diff = await repeatSearchDifferentialCalculator.CalculateDifferential(searchRequestId, results, searchCutoffDate);
-                
-                // TODO: ATLAS-861: Update the canonical set!
+                var diff = await CalculateAndStoreResultsDiff(searchRequestId, results, searchCutoffDate);
 
                 stopwatch.Stop();
 
@@ -131,6 +135,24 @@ namespace Atlas.RepeatSearch.Services.Search
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
                 throw;
+            }
+        }
+
+        private async Task<SearchResultDifferential> CalculateAndStoreResultsDiff(
+            string searchRequestId,
+            List<MatchingAlgorithmResult> results,
+            DateTimeOffset searchCutoffDate)
+        {
+            using (repeatSearchLogger.RunTimed("Calculate and apply result diff to canonical result set"))
+            {
+                var diff = await repeatSearchDifferentialCalculator.CalculateDifferential(searchRequestId, results, searchCutoffDate);
+                await originalSearchResultSetTracker.ApplySearchResultDiff(searchRequestId, diff);
+
+                repeatSearchLogger.SendTrace(
+                    $"Donor Result Diff Calculated. {diff.NewResults.Count} new results. {diff.UpdatedResults.Count} updated results. {diff.RemovedResults.Count} removed results."
+                );
+
+                return diff;
             }
         }
 

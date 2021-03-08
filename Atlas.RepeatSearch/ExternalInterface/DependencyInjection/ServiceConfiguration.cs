@@ -80,7 +80,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
 
         private static void RegisterServices(this IServiceCollection services, Func<IServiceProvider, string> fetchRepeatSqlConnectionString)
         {
-            services.AddScoped<IOriginalSearchResultsListener, OriginalSearchResultsListener>();
+            services.AddScoped<IOriginalSearchResultSetTracker, OriginalSearchResultSetTracker>();
             services.AddSingleton<IBlobDownloader>(sp =>
             {
                 var storageSettings = sp.GetService<RepeatSearch.Settings.Azure.AzureStorageSettings>();
