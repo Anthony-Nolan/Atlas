@@ -226,7 +226,7 @@ namespace Atlas.DonorImport.Services
             return deletedAtlasDonorIds.Values.Select(MapToDeletionUpdateMessage).ToList();
         }
 
-        private static int GetAtlasIdFromCode(string donorCode, Dictionary<string, int> codesToIdsDictionary)
+        private static int GetAtlasIdFromCode(string donorCode, IReadOnlyDictionary<string, int> codesToIdsDictionary)
         {
             if (!codesToIdsDictionary.TryGetValue(donorCode, out var atlasDonorId))
             {
