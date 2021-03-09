@@ -29,7 +29,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         /// Fetches all donors and stores their data in the donor table
         /// Does not perform analysis of donor p-groups
         /// </summary>
-        Task ImportDonors();
+        /// <param name="shouldMarkDonorsAsUpdated">
+        /// When set, all donors will have corresponding entries added to the donor management log table.
+        /// </param>
+        Task ImportDonors(bool shouldMarkDonorsAsUpdated = false);
     }
 
     public class DonorImporter : IDonorImporter
@@ -57,8 +60,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             this.donorReader = donorReader;
         }
 
-        public async Task ImportDonors()
+        public async Task ImportDonors(bool shouldMarkDonorsAsUpdated)
         {
+            if (shouldMarkDonorsAsUpdated)
+            {
+                throw new NotImplementedException("TODO: ATLAS-908: Implement!");
+            }
+            
             try
             {
                 var allFailedDonors = new List<FailedDonorInfo>();

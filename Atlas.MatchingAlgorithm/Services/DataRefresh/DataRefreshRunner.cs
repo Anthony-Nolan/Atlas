@@ -280,7 +280,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                         await donorImportRepository.RemoveAllDonorInformation();
                     }
 
-                    await donorImporter.ImportDonors();
+                    await donorImporter.ImportDonors(refreshRecord.ShouldMarkAllDonorsAsUpdated);
                     break;
                 case DataRefreshStage.DonorHlaProcessing:
                     var isContinuation = (executionMode == DataRefreshStageExecutionMode.Continuation);
@@ -298,7 +298,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
                 case DataRefreshStage.DatabaseScalingTearDown:
                     await ScaleDatabase(
-                        dataRefreshSettings.ActiveDatabaseSize.ParseToEnum<AzureDatabaseSize>(), 
+                        dataRefreshSettings.ActiveDatabaseSize.ParseToEnum<AzureDatabaseSize>(),
                         dataRefreshSettings.ActiveDatabaseAutoPauseTimeout);
                     break;
                 case DataRefreshStage.QueuedDonorUpdateProcessing:

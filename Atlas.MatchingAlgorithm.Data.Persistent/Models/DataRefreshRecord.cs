@@ -52,6 +52,13 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         // ReSharper disable once UnusedMember.Global This is for manual Support Team use only. Neither written nor read anywhere in the code.
         public string SupportComments { get; set; }
 
+        /// <summary>
+        /// If set, all donors will be marked as updated as part of the refresh process, meaning any repeat searches will return all donors on first run after the refresh.
+        /// This has a significant impact on repeat search performance, so if it can be avoided (e.g. if a refresh is run on the same nomenclature version again), it can
+        /// be disabled via this configuration option
+        /// </summary>
+        public bool ShouldMarkAllDonorsAsUpdated { get; set; }
+
         public bool IsStageComplete(DataRefreshStage stage) => GetStageCompletionTime(stage) != null;
 
         internal DateTime? GetStageCompletionTime(DataRefreshStage stage) =>

@@ -93,7 +93,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             {
                 Database = activeDatabaseProvider.GetDormantDatabase().ToString(),
                 RefreshRequestedUtc = DateTime.UtcNow,
-                HlaNomenclatureVersion = null, //We don't know the version when initially creating the record.
+                HlaNomenclatureVersion = null, //We don't know the version when initially creating the record.,
+                ShouldMarkAllDonorsAsUpdated = activeVersionHlaMetadataDictionary?.IsActiveVersionDifferentFromLatestVersion() ?? true
             };
 
             return await dataRefreshHistoryRepository.Create(dataRefreshRecord);
