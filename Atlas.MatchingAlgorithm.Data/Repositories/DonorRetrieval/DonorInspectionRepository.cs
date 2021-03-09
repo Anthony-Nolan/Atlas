@@ -57,7 +57,6 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                 .ToList();
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                // TODO NOVA-1427: Do not fetch PGroups for loci that have already been matched at the DB level
                 foreach (var locus in LocusSettings.MatchingOnlyLoci)
                 {
                     var sql = $@"
