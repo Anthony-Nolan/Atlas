@@ -1,6 +1,6 @@
 # Atlas
 
-Atlas is a "search algorithm as a service", built from Anthony Nolan's matching algorithm. 
+Atlas is a "search algorithm as a service", extended from Anthony Nolan's matching algorithm. 
 
 For deployment instructions, see [README_Deployment](README_Deployment.md)
 

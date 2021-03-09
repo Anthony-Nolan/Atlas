@@ -138,7 +138,7 @@ This process is expected to be run:
 - Every three months, when new HLA nomenclature is published.
 
 The process is expected to take several hours - and will increase with both the number of donors, and the ambiguity of their HLA. 
-For Anthony Nolan's dataset (~2 million donors), the process takes 3-4 hours.
+For a dataset with ~2 million donors, the process takes 1-2 hours.
 
  
 ## Running Searches
