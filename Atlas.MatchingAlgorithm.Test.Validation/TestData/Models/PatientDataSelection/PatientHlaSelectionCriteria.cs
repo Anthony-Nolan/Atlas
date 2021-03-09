@@ -5,7 +5,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSel
 {
     public class PatientHlaSelectionCriteria
     {
-        // TODO: NOVA-1642 - patient typing resolutions to be set by step; currently defaulting to TGS
         public PhenotypeInfo<HlaTypingResolution> PatientTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Tgs);
         
         /// <summary>

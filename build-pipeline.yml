@@ -1,6 +1,5 @@
 trigger:
   - master
-  - azure-pipelines-nova
 
 variables:
   - group: Terraform

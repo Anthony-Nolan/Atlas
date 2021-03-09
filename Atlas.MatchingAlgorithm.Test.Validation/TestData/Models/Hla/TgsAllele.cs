@@ -177,7 +177,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
 
         private string RandomTypingResolution()
         {
-            // TODO: NOVA-1665: Weight this such that NMDP codes / XX codes are less frequent, to reduce time spent running hla update
+            // TODO: ATLAS-969: Weight this such that NMDP codes / XX codes are less frequent, to reduce time spent running hla update
             var options = new List<string>
             {
                 FourFieldAllele,
