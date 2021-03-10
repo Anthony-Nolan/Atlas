@@ -16,6 +16,7 @@ namespace Atlas.RepeatSearch.Data.Models
         public int Id { get; set; }
 
         [MaxLength(64)]
+        [Required]
         public string ExternalDonorCode { get; set; }
     }
 

@@ -13,6 +13,7 @@ namespace Atlas.RepeatSearch.Services.Search
     {
         public List<DonorIdPair> NewResults { get; set; }
         public List<DonorIdPair> UpdatedResults { get; set; }
+
         /// <summary>
         /// Returns External Donor IDs only.
         /// Atlas ID will not be needed for Match Prediction for removed donors, and in the case of deleted donors, the code will no longer have an associated Atlas donor id!  
@@ -59,8 +60,8 @@ namespace Atlas.RepeatSearch.Services.Search
             var updatedDonors = returnedDonorCodes.Except(newDonors).ToList();
             var noLongerMatchingDonors = previousCanonicalDonors.Intersect(nonMatchingDonors).ToList();
 
-            var allPreviouslyMatchingDonors = await donorReader.GetDonorsByExternalDonorCodes(previousCanonicalDonors);
-            var deletedDonors = previousCanonicalDonors.Where(d => !allPreviouslyMatchingDonors.ContainsKey(d)).ToList();
+            var previousCanonicalDonorsInDonorStore = await donorReader.GetDonorsByExternalDonorCodes(previousCanonicalDonors);
+            var deletedDonors = previousCanonicalDonors.Where(d => !previousCanonicalDonorsInDonorStore.ContainsKey(d)).ToList();
 
             return new SearchResultDifferential
             {

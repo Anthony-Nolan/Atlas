@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Atlas.DonorImport.Data.Migrations
 {
@@ -10,7 +11,8 @@ namespace Atlas.DonorImport.Data.Migrations
                 name: "IX_Donors_LastUpdated",
                 schema: "Donors",
                 table: "Donors",
-                column: "LastUpdated");
+                column: "LastUpdated")
+                .Annotation("SqlServer:Include", new[] { "ExternalDonorCode" });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
