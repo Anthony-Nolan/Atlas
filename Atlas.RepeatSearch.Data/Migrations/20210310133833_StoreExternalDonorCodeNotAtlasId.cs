@@ -21,15 +21,15 @@ namespace Atlas.RepeatSearch.Data.Migrations
                 schema: "RepeatSearch",
                 table: "SearchResults",
                 maxLength: 64,
-                nullable: true);
+                nullable: false,
+                defaultValue: "");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SearchResults_ExternalDonorCode_CanonicalResultSetId",
                 schema: "RepeatSearch",
                 table: "SearchResults",
                 columns: new[] { "ExternalDonorCode", "CanonicalResultSetId" },
-                unique: true,
-                filter: "[ExternalDonorCode] IS NOT NULL");
+                unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

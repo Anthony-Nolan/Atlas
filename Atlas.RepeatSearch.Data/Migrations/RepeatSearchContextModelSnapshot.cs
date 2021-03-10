@@ -79,6 +79,7 @@ namespace Atlas.RepeatSearch.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ExternalDonorCode")
+                        .IsRequired()
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
@@ -87,8 +88,7 @@ namespace Atlas.RepeatSearch.Data.Migrations
                     b.HasIndex("CanonicalResultSetId");
 
                     b.HasIndex("ExternalDonorCode", "CanonicalResultSetId")
-                        .IsUnique()
-                        .HasFilter("[ExternalDonorCode] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("SearchResults");
                 });

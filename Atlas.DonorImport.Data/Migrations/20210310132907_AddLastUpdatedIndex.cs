@@ -7,16 +7,16 @@ namespace Atlas.DonorImport.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateIndex(
-                name: "IX_Donors_LastUpdated",
+                name: "IX_Donors_LastUpdated_ExternalDonorCode",
                 schema: "Donors",
                 table: "Donors",
-                column: "LastUpdated");
+                columns: new[] { "LastUpdated", "ExternalDonorCode" });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropIndex(
-                name: "IX_Donors_LastUpdated",
+                name: "IX_Donors_LastUpdated_ExternalDonorCode",
                 schema: "Donors",
                 table: "Donors");
         }
