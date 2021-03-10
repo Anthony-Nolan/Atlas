@@ -65,6 +65,8 @@ namespace Atlas.RepeatSearch.Services.Search
 
         public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
         {
+            await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
+
             var searchRequestId = identifiedRepeatSearchRequest.OriginalSearchId;
             var repeatSearchId = identifiedRepeatSearchRequest.RepeatSearchId;
 
@@ -78,16 +80,14 @@ namespace Atlas.RepeatSearch.Services.Search
                 // ReSharper disable once PossibleInvalidOperationException - validation has ensured this is not null.
                 var searchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value;
 
-                await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
-                
-                await RecordRepeatSearch(identifiedRepeatSearchRequest);
-
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
                 var results = (await searchService.Search(identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest, searchCutoffDate))
                     .ToList();
 
                 var diff = await CalculateAndStoreResultsDiff(searchRequestId, results, searchCutoffDate);
+
+                await RecordRepeatSearch(identifiedRepeatSearchRequest, diff);
 
                 stopwatch.Stop();
 
@@ -156,7 +156,9 @@ namespace Atlas.RepeatSearch.Services.Search
             }
         }
 
-        private async Task RecordRepeatSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
+        private async Task RecordRepeatSearch(
+            IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest,
+            SearchResultDifferential searchResultDifferential)
         {
             var historyRecord = new RepeatSearchHistoryRecord
             {
@@ -164,7 +166,10 @@ namespace Atlas.RepeatSearch.Services.Search
                 // ReSharper disable once PossibleInvalidOperationException - validation should have caught nulls by now
                 SearchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value,
                 OriginalSearchRequestId = identifiedRepeatSearchRequest.OriginalSearchId,
-                RepeatSearchRequestId = identifiedRepeatSearchRequest.RepeatSearchId
+                RepeatSearchRequestId = identifiedRepeatSearchRequest.RepeatSearchId,
+                AddedResultCount = searchResultDifferential.NewResults.Count,
+                UpdatedResultCount = searchResultDifferential.UpdatedResults.Count,
+                RemovedResultCount = searchResultDifferential.RemovedResults.Count,
             };
 
             await repeatSearchHistoryRepository.RecordRepeatSearchRequest(historyRecord);
