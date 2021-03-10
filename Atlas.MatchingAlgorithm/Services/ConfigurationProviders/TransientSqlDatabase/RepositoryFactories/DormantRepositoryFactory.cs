@@ -10,6 +10,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
     {
         IDonorImportRepository GetDonorImportRepository();
         IDataRefreshRepository GetDataRefreshRepository();
+        IDonorManagementLogRepository GetDonorManagementLogRepository();
     }
 
     public class DormantRepositoryFactory : TransientRepositoryFactoryBase, IDormantRepositoryFactory
@@ -31,6 +32,12 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         public IDataRefreshRepository GetDataRefreshRepository()
         {
             return new DataRefreshRepository(ConnectionStringProvider);
+        }
+
+        /// <inheritdoc />
+        public IDonorManagementLogRepository GetDonorManagementLogRepository()
+        {
+            return new DonorManagementLogRepository(ConnectionStringProvider);
         }
     }
 }

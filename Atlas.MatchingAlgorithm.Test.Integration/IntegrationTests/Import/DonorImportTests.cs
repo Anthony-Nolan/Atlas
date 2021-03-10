@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
+using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
@@ -19,11 +22,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
     {
         private IDonorImporter donorImporter;
         private IDonorInspectionRepository inspectionRepo;
+        private IDonorManagementLogRepository importLogRepository;
 
         private IDonorReader MockDonorReader { get; set; }
 
         private Builder<Donor> IncrementingDonorBuilder => DonorBuilder.New.With(d => d.AtlasDonorId, DonorIdGenerator.NextId());
-        
+
         [SetUp]
         public void SetUp()
         {
@@ -31,6 +35,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 
             // We want to inspect the dormant database, as this is what the import will have run on
             inspectionRepo = repositoryFactory.GetDonorInspectionRepository();
+            importLogRepository = repositoryFactory.GetDonorManagementLogRepository();
             donorImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImporter>();
 
             MockDonorReader = DependencyInjection.DependencyInjection.Provider.GetService<IDonorReader>();
@@ -91,6 +96,32 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             var donor = await inspectionRepo.GetDonor(donorInfo.AtlasDonorId);
 
             donor.Should().NotBeNull();
+        }
+        
+        [Test]
+        public async Task DonorImport_WhenDonorsShouldBeMarkedAsUpdated_AddsNewDonorLogsToDatabase()
+        {
+            var donorInfo = IncrementingDonorBuilder.Build();
+
+            MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
+
+            await donorImporter.ImportDonors(true);
+
+            var log = (await importLogRepository.GetDonorManagementLogBatch(new[] {donorInfo.AtlasDonorId})).SingleOrDefault();
+            log.Should().NotBeNull();
+        }
+        
+        [Test]
+        public async Task DonorImport_WhenDonorsShouldNotBeMarkedAsUpdated_DoesNotAddNewDonorLogsToDatabase()
+        {
+            var donorInfo = IncrementingDonorBuilder.Build();
+
+            MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
+
+            await donorImporter.ImportDonors(false);
+
+            var log = (await importLogRepository.GetDonorManagementLogBatch(new[] {donorInfo.AtlasDonorId})).SingleOrDefault();
+            log.Should().BeNull();
         }
     }
 }

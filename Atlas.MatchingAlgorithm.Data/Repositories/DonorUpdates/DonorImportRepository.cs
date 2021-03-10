@@ -92,6 +92,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         private static readonly string[] AllHlaTables = MatchingHlaTables.Concat(HlaRelationTables).ToArray(); 
 
         private const string DropAllDonorsSql = @"TRUNCATE TABLE [Donors]";
+        private const string DropAllDonorManagementLogsSql = @"TRUNCATE TABLE [DonorManagementLogs]";
 
         private static string BuildDropAllPreProcessedDonorHlaSql() =>
             AllHlaTables.Select(table => $"TRUNCATE TABLE [{table}];").StringJoinWithNewline();
@@ -210,6 +211,7 @@ END
             {
                 await conn.ExecuteAsync(BuildDropAllPreProcessedDonorHlaSql(), commandTimeout: 300);
                 await conn.ExecuteAsync(DropAllDonorsSql, commandTimeout: 300);
+                await conn.ExecuteAsync(DropAllDonorManagementLogsSql, commandTimeout: 300);
             }
         }
 
