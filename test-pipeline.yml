@@ -136,6 +136,13 @@ jobs:
     displayName: 'Update connection string ''SqlA'''
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
+      keyname: DonorSql
+      connectionstringvalue: '$(matching_algorithm_validation_db_connection_string)'
+      
+  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
+    displayName: 'Update connection string ''SqlA'''
+    inputs:
+      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
       keyname: SqlA
       connectionstringvalue: '$(matching_algorithm_validation_db_connection_string)'
 
