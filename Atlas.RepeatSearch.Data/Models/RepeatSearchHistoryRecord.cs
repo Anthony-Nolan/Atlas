@@ -22,5 +22,9 @@ namespace Atlas.RepeatSearch.Data.Models
         public DateTimeOffset SearchCutoffDate { get; set; }
         
         public DateTimeOffset DateCreated { get; set; } 
+        
+        public int UpdatedResultCount { get; set; }
+        public int AddedResultCount { get; set; }
+        public int RemovedResultCount { get; set; }
     }
 }
