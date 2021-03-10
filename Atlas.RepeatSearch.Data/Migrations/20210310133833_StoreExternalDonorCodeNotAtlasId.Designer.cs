@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.RepeatSearch.Data.Migrations
 {
     [DbContext(typeof(RepeatSearchContext))]
-    [Migration("20210308112034_StoreExternalDonorCodeNotAtlasId")]
+    [Migration("20210310133833_StoreExternalDonorCodeNotAtlasId")]
     partial class StoreExternalDonorCodeNotAtlasId
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -81,6 +81,7 @@ namespace Atlas.RepeatSearch.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ExternalDonorCode")
+                        .IsRequired()
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
@@ -89,8 +90,7 @@ namespace Atlas.RepeatSearch.Data.Migrations
                     b.HasIndex("CanonicalResultSetId");
 
                     b.HasIndex("ExternalDonorCode", "CanonicalResultSetId")
-                        .IsUnique()
-                        .HasFilter("[ExternalDonorCode] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("SearchResults");
                 });
