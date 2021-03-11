@@ -21,8 +21,9 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
 
         public void SetupTestData()
         {
-            testDataRepository.SetupPersistentDatabase();
-            testDataRepository.SetupDatabase();
+            testDataRepository.SetupPersistentMatchingDatabase();
+            testDataRepository.SetupTransientMatchingDatabase();
+            testDataRepository.SetUpDonorDatabase();
             testDataRepository.AddTestDonors(metaDonorRepository.AllMetaDonors().ToList().SelectMany(md => md.GetDatabaseDonors()));
         }
     }

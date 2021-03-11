@@ -1,8 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using Atlas.DonorImport.ExternalInterface;
-using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources;
@@ -12,7 +8,6 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelec
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.StaticDataSelection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
@@ -23,6 +18,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
     /// </summary>
     internal static class ServiceConfiguration
     {
+        private static ServiceProvider provider;
+
         public static ServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
@@ -61,21 +58,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
             services.AddTransient<IPatientHlaSelector, PatientHlaSelector>();
 
             services.RegisterDataServices();
-            services.RegisterMockServices();
 
             return services.BuildServiceProvider();
         }
 
-        private static void RegisterMockServices(this ServiceCollection services)
-        {
-            var mockDonorReader = Substitute.For<IDonorReader>();
-            mockDonorReader.GetDonors(default).ReturnsForAnyArgs(c =>
-            {
-                var ids = c.Arg<IEnumerable<int>>();
-                return ids.ToDictionary(id => id, id => new Donor {AtlasDonorId = id, ExternalDonorCode = id.ToString()});
-            });
-            services.AddScoped(_ => mockDonorReader);
-        }
+        public static ServiceProvider Provider => provider ??= CreateProvider();
 
         private static void RegisterDataServices(this IServiceCollection services)
         {
@@ -85,6 +72,10 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
 
             services.AddScoped(sp =>
                 new Data.Persistent.Context.ContextFactory().Create(ConnectionStringReader("PersistentSql")(sp))
+            );
+
+            services.AddScoped(sp =>
+                new DonorImport.Data.Context.ContextFactory().Create(ConnectionStringReader("DonorSql")(sp))
             );
 
             services.AddScoped<ITestDataRepository, TestDataRepository>();
