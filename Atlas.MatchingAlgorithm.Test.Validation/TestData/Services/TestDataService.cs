@@ -22,8 +22,9 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
         public void SetupTestData()
         {
             // This must happen before the transient database, as the databases are shared and both contain a `Donors` table.
-            // This should be allowed, but EF refuses to run migrations adding `Donors.Donors` if `dbo.Donors` already exists.
-            // Adding `Donors.Donors` THEN `dbo.Donors` is apparently fine.
+            // This should be allowed, but EF cannot run migrations adding `Donors.Donors` if `dbo.Donors` already exists.
+            // This is because the `Donors` schema was added mid way through the project - so the initial migration still tries to add the table as `dbo.Donors`
+            // Adding `Donors.Donors` THEN `dbo.Donors` is fine - as the temporary `dbo.Donors` table will have been replaced with `Donors.Donors` once all migrations are run.
             testDataRepository.SetUpDonorDatabase();
             
             testDataRepository.SetupPersistentMatchingDatabase();
