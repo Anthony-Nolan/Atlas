@@ -133,7 +133,7 @@ jobs:
       vstsFeed: '47b810d9-ad1c-410b-b5e5-45a100bcf88a'
 
   - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-    displayName: 'Update connection string ''SqlA'''
+    displayName: 'Update connection string ''DonorSql'''
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
       keyname: DonorSql
