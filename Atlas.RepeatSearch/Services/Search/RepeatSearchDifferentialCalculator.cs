@@ -6,12 +6,14 @@ using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.RepeatSearch.Data.Repositories;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.RepeatSearch.Services.Search
 {
     public class SearchResultDifferential
     {
         public List<DonorIdPair> NewResults { get; set; }
+
         public List<DonorIdPair> UpdatedResults { get; set; }
 
         /// <summary>
@@ -63,15 +65,18 @@ namespace Atlas.RepeatSearch.Services.Search
             var previousCanonicalDonorsInDonorStore = await donorReader.GetDonorsByExternalDonorCodes(previousCanonicalDonors);
             var deletedDonors = previousCanonicalDonors.Where(d => !previousCanonicalDonorsInDonorStore.ContainsKey(d)).ToList();
 
+            var donorLookup =
+                allDonorsUpdatedSinceCutoff.Merge(previousCanonicalDonorsInDonorStore.ToDictionary(d => d.Key, d => d.Value.AtlasDonorId));
+
             return new SearchResultDifferential
             {
-                NewResults = newDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, allDonorsUpdatedSinceCutoff)).ToList(),
-                UpdatedResults = updatedDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, allDonorsUpdatedSinceCutoff)).ToList(),
+                NewResults = newDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, donorLookup)).ToList(),
+                UpdatedResults = updatedDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, donorLookup)).ToList(),
                 RemovedResults = noLongerMatchingDonors.Concat(deletedDonors).ToList()
             };
         }
 
-        private static DonorIdPair LookupDonorIdFromCode(string externalDonorCode, IReadOnlyDictionary<string, int> allDonorsUpdatedSinceCutoff)
+        private static DonorIdPair LookupDonorIdFromCode(string externalDonorCode, IDictionary<string, int> allDonorsUpdatedSinceCutoff)
         {
             return new DonorIdPair {ExternalDonorCode = externalDonorCode, AtlasId = allDonorsUpdatedSinceCutoff[externalDonorCode]};
         }

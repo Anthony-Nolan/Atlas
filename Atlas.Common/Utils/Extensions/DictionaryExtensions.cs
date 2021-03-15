@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Atlas.Common.Utils.Extensions
@@ -45,7 +46,10 @@ namespace Atlas.Common.Utils.Extensions
         /// <summary>
         /// Async version of <see cref="GetOrAdd{TKey,TValue}"/>.
         /// </summary>
-        public static async Task<TValue> GetOrAddAsync<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<Task<TValue>> valueFactoryAsync)
+        public static async Task<TValue> GetOrAddAsync<TKey, TValue>(
+            this IDictionary<TKey, TValue> dictionary,
+            TKey key,
+            Func<Task<TValue>> valueFactoryAsync)
         {
             if (!dictionary.TryGetValue(key, out var value))
             {
@@ -54,6 +58,22 @@ namespace Atlas.Common.Utils.Extensions
             }
 
             return value;
+        }
+
+        /// <summary>
+        /// Merges two dictionaries into one.
+        /// Any unique values will be preserved.
+        /// Any duplicate key/value pairs will be de-duplicated and returned once.
+        /// Any duplicate keys with differing values make the merge invalid - <see cref="ArgumentException"/> will be thrown.
+        /// </summary>
+        public static IDictionary<TKey, TValue> Merge<TKey, TValue>(
+            this IReadOnlyDictionary<TKey, TValue> dictionary,
+            IReadOnlyDictionary<TKey, TValue> otherDictionary)
+        {
+            return dictionary.ToList()
+                .Concat(otherDictionary.ToList())
+                .ToHashSet()
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
     }
 }

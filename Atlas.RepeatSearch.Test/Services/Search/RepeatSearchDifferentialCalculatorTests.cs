@@ -34,7 +34,7 @@ namespace Atlas.RepeatSearch.Test.Services.Search
 
             // By default, no donors have been deleted - can be overridden test-by-test
             donorReader.GetDonorsByExternalDonorCodes(default)
-                .ReturnsForAnyArgs(c => c.Arg<IEnumerable<string>>().ToDictionary(x => x, x => new Donor {ExternalDonorCode = x}));
+                .ReturnsForAnyArgs(c => c.Arg<IEnumerable<string>>()?.ToDictionary(x => x, x => new Donor {ExternalDonorCode = x}));
 
             differentialCalculator = new RepeatSearchDifferentialCalculator(donorReader, canonicalResultSetRepository);
         }
@@ -69,8 +69,12 @@ namespace Atlas.RepeatSearch.Test.Services.Search
         public async Task CalculateDifferential_WithNoChangesToResults_OnlyPopulatesUpdatedDonors()
         {
             var changedDonorCodes = new[] {"donor1", "donor2"};
+            var donorIds = changedDonorCodes.ToDictionary(id => id, id => IncrementingIdGenerator.NextIntId());
+
             donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
-                .Returns(changedDonorCodes.ToDictionary(code => code, _ => IncrementingIdGenerator.NextIntId()));
+                .Returns(changedDonorCodes.ToDictionary(code => code, d => donorIds[d]));
+            donorReader.GetDonorsByExternalDonorCodes(default)
+                .ReturnsForAnyArgs(changedDonorCodes.ToDictionary(code => code, code => new Donor {AtlasDonorId = donorIds[code]}));
             canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
                 .Returns(changedDonorCodes.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
 
@@ -87,8 +91,12 @@ namespace Atlas.RepeatSearch.Test.Services.Search
         public async Task CalculateDifferential_WithDonorsNoLongerMatching_PopulatesRemovedResults()
         {
             var newlyInvalidDonors = new[] {"donor1", "donor2"};
+            var donorIds = newlyInvalidDonors.ToDictionary(id => id, id => IncrementingIdGenerator.NextIntId());
+
             donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
-                .Returns(newlyInvalidDonors.ToDictionary(code => code, _ => IncrementingIdGenerator.NextIntId()));
+                .Returns(newlyInvalidDonors.ToDictionary(code => code, code => donorIds[code]));
+            donorReader.GetDonorsByExternalDonorCodes(default)
+                .ReturnsForAnyArgs(newlyInvalidDonors.ToDictionary(code => code, code => new Donor {AtlasDonorId = donorIds[code]}));
             canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
                 .Returns(newlyInvalidDonors.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
 
@@ -126,11 +134,21 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             const string noLongerMatchingDonor = "no-longer-matching-donor-code";
 
             var bothDonors = new[] {removedDonor, noLongerMatchingDonor};
+            var donorIds = bothDonors.ToDictionary(id => id, id => IncrementingIdGenerator.NextIntId());
 
             donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
-                .Returns(new Dictionary<string, int> {{noLongerMatchingDonor, IncrementingIdGenerator.NextIntId()}});
+                .Returns(new Dictionary<string, int> {{noLongerMatchingDonor, donorIds[noLongerMatchingDonor]}});
             donorReader.GetDonorsByExternalDonorCodes(bothDonors)
-                .ReturnsForAnyArgs(new Dictionary<string, Donor> {{noLongerMatchingDonor, new Donor {ExternalDonorCode = noLongerMatchingDonor}}});
+                .ReturnsForAnyArgs(new Dictionary<string, Donor>
+                {
+                    {
+                        noLongerMatchingDonor, new Donor
+                        {
+                            ExternalDonorCode = noLongerMatchingDonor,
+                            AtlasDonorId = donorIds[noLongerMatchingDonor]
+                        }
+                    }
+                });
             canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
                 .Returns(bothDonors.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
 
@@ -141,6 +159,25 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             diff.NewResults.Should().BeEmpty();
             diff.UpdatedResults.Should().BeEmpty();
             diff.RemovedResults.Should().BeEquivalentTo(bothDonors);
+        }
+
+
+        [Test]
+        public async Task CalculateDifferential_WhenDonorsMarkedAsUpdatedInMatchingStoreButNotDonorStore_PopulatesUpdatedDonors()
+        {
+            var changedDonorCodes = new[] {"donor1", "donor2"};
+            donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
+                .Returns(new Dictionary<string, int>());
+            canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
+                .Returns(changedDonorCodes.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
+
+            var matchingResults = changedDonorCodes.Select(code => new MatchingAlgorithmResult {ExternalDonorCode = code}).ToList();
+
+            var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
+
+            diff.NewResults.Should().BeEmpty();
+            diff.UpdatedResults.Select(x => x.ExternalDonorCode).Should().BeEquivalentTo(changedDonorCodes);
+            diff.RemovedResults.Should().BeEmpty();
         }
 
         [Test]
@@ -162,14 +199,20 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             };
             var repeatSearchResults = new[] {updatedButStillMatchingDonor, newDonor, newlyMatchingDonor};
 
+            var donorLookup = stillExistingDonors.ToDictionary(d => d, d => new Donor
+            {
+                ExternalDonorCode = d,
+                AtlasDonorId = IncrementingIdGenerator.NextIntId()
+            });
+
             donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
-                .Returns(updatedDonors.ToDictionary(d => d, _ => IncrementingIdGenerator.NextIntId()));
+                .Returns(updatedDonors.ToDictionary(d => d, d => donorLookup[d].AtlasDonorId));
 
             canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
                 .Returns(previouslyReturnedDonors.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
 
             donorReader.GetDonorsByExternalDonorCodes(previouslyReturnedDonors)
-                .ReturnsForAnyArgs(stillExistingDonors.ToDictionary(d => d, d => new Donor {ExternalDonorCode = d}));
+                .ReturnsForAnyArgs(donorLookup);
 
             var matchingResults = repeatSearchResults.Select(code => new MatchingAlgorithmResult {ExternalDonorCode = code}).ToList();
 
