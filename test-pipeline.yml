@@ -6,6 +6,11 @@ schedules:
     branches:
       include:
       - master
+  - cron: "0 */30 * * * *"
+    displayName: Half hourly build and run System Tests
+    branches:
+      include:
+      - atlas-740-test-2
 
 pr: none
 
