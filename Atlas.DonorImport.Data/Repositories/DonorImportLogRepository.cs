@@ -97,7 +97,7 @@ namespace Atlas.DonorImport.Data.Repositories
             }
 
             using (var sqlBulk = new SqlBulkCopy(connection)
-                {BulkCopyTimeout = 3600, BatchSize = 10000, DestinationTableName = DonorLog.QualifiedTableName})
+                {BulkCopyTimeout = 300, BatchSize = 10000, DestinationTableName = DonorLog.QualifiedTableName})
             {
                 sqlBulk.ColumnMappings.Add(ExternalDonorCodeColumnName, ExternalDonorCodeColumnName);
                 sqlBulk.ColumnMappings.Add(LastUpdatedColumnName, LastUpdatedColumnName);
