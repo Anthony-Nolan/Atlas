@@ -80,7 +80,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             // Largest known HF set is ~300,000 entries, which is reasonable to load into memory here.
             var frequencySet = frequencyFileParser.GetFrequencies(file.Contents);
 
-            frequencySetValidator.Validate(frequencySet);
+            frequencySetValidator.ValidateNonHlaDataAndThrow(frequencySet);
 
             var setIds = await AddNewInactiveSets(frequencySet, file.FileName);
             
@@ -160,14 +160,12 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 throw new EmptyHaplotypeFileException();
             }
 
-            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
-
-            if (!importBehaviour.ShouldBypassHlaValidation && !await AreAllHaplotypesValid(inputHaplotypes, hlaMetadataDictionary, typingCategory))
+            if (!importBehaviour.ShouldBypassHlaValidation)
             {
-                throw new MalformedHaplotypeFileException(
-                    $"Invalid Hla. Expected all provided frequencies to be valid hla of typing resolution: {typingCategory}");
+                await frequencySetValidator.ValidateHlaDataAndThrow(inputHaplotypes, hlaNomenclatureVersion, typingCategory);
             }
 
+            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
             var haplotypesToStore = (importBehaviour.ShouldConvertLargeGGroupsToPGroups && typingCategory == ImportTypingCategory.LargeGGroup
                 ? await ConvertHaplotypesToPGroupResolutionAndConsolidate(inputHaplotypes, hlaMetadataDictionary)
                 : inputHaplotypes).ToList();
@@ -214,29 +212,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                         return frequency;
                     });
             }
-        }
-
-        private static async Task<bool> AreAllHaplotypesValid(
-            IEnumerable<HaplotypeFrequency> frequencies,
-            IHlaMetadataDictionary hlaMetadataDictionary,
-            ImportTypingCategory importTypingCategory)
-        {
-            var targetValidationCategory = importTypingCategory.ToHlaValidationCategory();
-
-            var haplotypes = frequencies.Select(hf => hf.Hla).ToList();
-
-            var hlaNamesPerLocus = new LociInfo<int>().Map((locus, _) => haplotypes.Select(h => h.GetLocus(locus)).ToHashSet());
-
-            async Task<bool> ValidateHlaAtLocus(Locus locus, string hla)
-            {
-                return !LocusSettings.MatchPredictionLoci.Contains(locus) ||
-                       await hlaMetadataDictionary.ValidateHla(locus, hla, targetValidationCategory);
-            }
-
-            var validationResults = await hlaNamesPerLocus.MapAsync(async (locus, hlaSet) =>
-                await Task.WhenAll(hlaSet.Select(hlaName => ValidateHlaAtLocus(locus, hlaName))));
-
-            return validationResults.AllAtLoci(results => results.All(x => x));
         }
     }
 }
