@@ -95,7 +95,7 @@ namespace Atlas.DonorImport.Data.Repositories
         private SqlBulkCopy BuildDonorSqlBulkCopy()
         {
             var sqlBulk = new SqlBulkCopy(ConnectionString)
-                {BulkCopyTimeout = 3600, BatchSize = 10000, DestinationTableName = Donor.QualifiedTableName};
+                {BulkCopyTimeout = 300, BatchSize = 10000, DestinationTableName = Donor.QualifiedTableName};
 
             foreach (var columnName in Donor.DataTableColumnNamesForInsertion)
             {
