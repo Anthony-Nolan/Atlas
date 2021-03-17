@@ -83,6 +83,14 @@ namespace Atlas.Common.Test.Hla.Services
             Assert.AreEqual(hlaCategorisationService.GetHlaTypingCategory(hlaName), HlaTypingCategory.PGroup);
         }
 
+        [TestCase("*01:01g")]
+        [TestCase("01:01g")]
+        [TestCase("999:999g")]
+        public void GetHlaTypingCategory_WhenHlaNameFitsSmallGGroupPattern_ReturnsSmallGGroup(string hlaName)
+        {
+            Assert.AreEqual(hlaCategorisationService.GetHlaTypingCategory(hlaName), HlaTypingCategory.SmallGGroup);
+        }
+
         [TestCase("1")]
         [TestCase("123")]
         [TestCase("9999")]

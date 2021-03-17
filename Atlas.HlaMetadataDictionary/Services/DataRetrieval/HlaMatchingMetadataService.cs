@@ -33,6 +33,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IAlleleNamesExtractor alleleNamesExtractor,
             IMacDictionary macDictionary,
             IAlleleGroupExpander alleleGroupExpander,
+            ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService,
             IPersistentCacheProvider cacheProvider)
             : base(
                 hlaMatchingMetadataRepository,
@@ -41,6 +42,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 alleleNamesExtractor,
                 macDictionary,
                 alleleGroupExpander,
+                smallGGroupToPGroupMetadataService,
                 CacheKey,
                 cacheProvider)
         {
