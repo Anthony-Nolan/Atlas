@@ -183,7 +183,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //New Invalid Donor.
-            var donorInfo0B = new DonorInfoBuilder().WithHlaAtLocus(A, One, "invalid-hla-name").Build();
+            var donorInfo0B = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*9999:9999").Build();
             await Import(donorInfo0B);
             //expectedDonorIds unchanged
             Debug_ExpectDonorsToBe(expectedDonorIds);
@@ -220,7 +220,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
 
             //New Donor, later updated with different type but with an Invalid hla
             var donorInfo4 = new DonorInfoBuilder().WithDonorType(Adult).Build();
-            var updatedDonor4 = new DonorInfoBuilder(donorInfo4.DonorId).WithDonorType(Cord).WithHlaAtLocus(A, One, "invalid-hla-name").Build();
+            var updatedDonor4 = new DonorInfoBuilder(donorInfo4.DonorId).WithDonorType(Cord).WithHlaAtLocus(A, One, "*9999:9999").Build();
             await Import(donorInfo4);
             await Import(updatedDonor4);
             expectedDonorIds.Add(donorInfo4.DonorId);
@@ -228,7 +228,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
 
             //New Donor, later updated with invalid HLA.
             var donorInfo5 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02").Build();
-            var updatedDonor5 = new DonorInfoBuilder(donorInfo5.DonorId).WithHlaAtLocus(A, One, "invalid-hla-name").Build();
+            var updatedDonor5 = new DonorInfoBuilder(donorInfo5.DonorId).WithHlaAtLocus(A, One, "*9999:9999").Build();
             await Import(donorInfo5);
             await Import(updatedDonor5);
             expectedDonorIds.Add(donorInfo5.DonorId);
@@ -346,7 +346,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             expectedDonorIds.Add(donorInfo0.DonorId);
 
             //New Invalid Donor.
-            var donorInfo0B = new DonorInfoBuilder().WithHlaAtLocus(A, One, "invalid-hla-name").Build();
+            var donorInfo0B = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*9999:9999").Build();
             //expectedDonorIds unchanged
 
             //New Donor with the same message delivered 3 times, in a single batch. (will be added to batch repeatedly, below)
@@ -365,12 +365,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
 
             //New Donor, then updated with different type but with an Invalid hla
             var donorInfo4 = new DonorInfoBuilder().WithDonorType(Adult).Build();
-            var updatedDonor4 = new DonorInfoBuilder(donorInfo4.DonorId).WithDonorType(Cord).WithHlaAtLocus(A, One, "invalid-hla-name").Build();
+            var updatedDonor4 = new DonorInfoBuilder(donorInfo4.DonorId).WithDonorType(Cord).WithHlaAtLocus(A, One, "*9999:9999").Build();
             //expectedDonorIds unchanged. The 2nd record supercedes the first, but isn't valid.
 
             //New Donor, then updated with invalid HLA.
             var donorInfo5 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02").Build();
-            var updatedDonor5 = new DonorInfoBuilder(donorInfo5.DonorId).WithHlaAtLocus(A, One, "invalid-hla-name").Build();
+            var updatedDonor5 = new DonorInfoBuilder(donorInfo5.DonorId).WithHlaAtLocus(A, One, "*9999:9999").Build();
             //expectedDonorIds unchanged. The 2nd record supercedes the first, but isn't valid.
 
             //Multiple new donors in a single batch
@@ -588,11 +588,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
 
         private IEnumerable<DonorAvailabilityUpdate> Ensure_CreateOrUpdateDonorBatch_FindInvalidHla_IsExercised(Queue<DonorWithLog> existingDonors)
         {
-            var invalidNewHlaDonor = new DonorInfoBuilder().WithHlaAtLocus(A, One, "invalid-hla-name").Build().ToUpdate();
+            var invalidNewHlaDonor = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*9999:9999").Build().ToUpdate();
             yield return invalidNewHlaDonor;
 
             var existing = existingDonors.First().Donor;
-            var invalidHlaDonorUpdate = new DonorInfoBuilder(existing.DonorId).WithHlaAtLocus(A, One, "invalid-hla-name-2").Build().ToUpdate();
+            var invalidHlaDonorUpdate = new DonorInfoBuilder(existing.DonorId).WithHlaAtLocus(A, One, "*9999:9998").Build().ToUpdate();
             yield return invalidHlaDonorUpdate;
         }
 

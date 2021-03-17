@@ -1,12 +1,14 @@
 ﻿using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using FluentAssertions;
 using NSubstitute;
+using NSubstitute.ReceivedExtensions;
 using NUnit.Framework;
 using static Atlas.Common.GeneticData.Hla.Models.TypingMethod;
 
@@ -18,12 +20,17 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
         private const Locus MatchedLocus = Locus.A;
         private IHlaMatchingMetadataService matchingMetadataService;
         private ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
+        private IHlaCategorisationService hlaCategorisationService;
+        private ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService;
 
         [SetUp]
         public void LocusHlaMatchingMetadataServiceTest_SetUpBeforeEachTest()
         {
             matchingMetadataService = Substitute.For<IHlaMatchingMetadataService>();
-            locusHlaMatchingMetadataService = new LocusHlaMatchingMetadataService(matchingMetadataService);
+            hlaCategorisationService = Substitute.For<IHlaCategorisationService>();
+            smallGGroupToPGroupMetadataService = Substitute.For<ISmallGGroupToPGroupMetadataService>();
+            locusHlaMatchingMetadataService =
+                new LocusHlaMatchingMetadataService(matchingMetadataService, hlaCategorisationService, smallGGroupToPGroupMetadataService);
         }
 
         [TestCase(Molecular, Molecular)]
@@ -40,13 +47,16 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
             const string pGroup2 = "p-group-2";
 
             var metadata1 =
-                new HlaMatchingMetadata(MatchedLocus, hlaString1, typingMethod1, new[] {pGroup1});
+                new HlaMatchingMetadata(MatchedLocus, hlaString1, typingMethod1, new[] { pGroup1 });
             var metadata2 =
-                new HlaMatchingMetadata(MatchedLocus, hlaString2, typingMethod2, new[] {pGroup2});
+                new HlaMatchingMetadata(MatchedLocus, hlaString2, typingMethod2, new[] { pGroup2 });
 
             matchingMetadataService
                 .GetHlaMetadata(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
                 .Returns(metadata1, metadata2);
+            hlaCategorisationService
+                .GetHlaTypingCategory(Arg.Any<string>())
+                .Returns(HlaTypingCategory.PGroup);
 
             var actualResults = await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(
                 MatchedLocus,
@@ -69,13 +79,16 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
             const string pGroup = "expressed-hla-p-group";
 
             var expressedHlaResult =
-                new HlaMatchingMetadata(MatchedLocus, expressingPosition1, expressedHlaTypingMethod, new[] {pGroup});
+                new HlaMatchingMetadata(MatchedLocus, expressingPosition1, expressedHlaTypingMethod, new[] { pGroup });
             var nullAlleleResult =
                 new HlaMatchingMetadata(MatchedLocus, nullExpressingPosition2, Molecular, new string[] { });
 
             matchingMetadataService
                 .GetHlaMetadata(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
                 .Returns(expressedHlaResult, nullAlleleResult);
+            hlaCategorisationService
+                .GetHlaTypingCategory(Arg.Any<string>())
+                .Returns(HlaTypingCategory.PGroup);
 
             var actualResults = await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(
                 MatchedLocus,
@@ -101,11 +114,14 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
             var nullAlleleResult =
                 new HlaMatchingMetadata(MatchedLocus, nullExpressionPosition1, Molecular, new string[] { });
             var expressedHlaResult =
-                new HlaMatchingMetadata(MatchedLocus, expressingPosition2, expressedHlaTypingMethod, new[] {pGroup});
+                new HlaMatchingMetadata(MatchedLocus, expressingPosition2, expressedHlaTypingMethod, new[] { pGroup });
 
             matchingMetadataService
                 .GetHlaMetadata(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
                 .Returns(nullAlleleResult, expressedHlaResult);
+            hlaCategorisationService
+                .GetHlaTypingCategory(Arg.Any<string>())
+                .Returns(HlaTypingCategory.PGroup);
 
             var actualResults = await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(
                 MatchedLocus,
@@ -118,6 +134,28 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
 
             actualResults.Position1.LookupName.Should().Be(expectedMergedName);
             actualResults.Position1.MatchingPGroups.Should().BeEquivalentTo(pGroup);
+        }
+
+        [Test]
+        public async Task GetHlaMatchingMetadataForLocus_WhenBothPositionsAreSmallGGroups_ConvertSmallGGroupToPGroupCalledTwice()
+        {
+            const string smallGHla = "01:01g";
+            const string hlaNomenclatureVersion = "hla-db-version";
+
+            hlaCategorisationService
+                .GetHlaTypingCategory(Arg.Any<string>())
+                .Returns(HlaTypingCategory.SmallGGroup);
+
+
+            await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(
+                 MatchedLocus,
+                 new LocusInfo<string>(smallGHla, smallGHla),
+                 hlaNomenclatureVersion);
+
+            await smallGGroupToPGroupMetadataService.Received(2).ConvertSmallGGroupToPGroup(
+                MatchedLocus,
+                smallGHla,
+                hlaNomenclatureVersion);
         }
     }
 }
