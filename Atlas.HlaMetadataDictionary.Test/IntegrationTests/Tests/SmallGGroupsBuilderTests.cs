@@ -89,8 +89,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [TestCase(Locus.Drb1, "01:03",
             new object[] { "01:03:01", "01:03:02" },
             Description = "Returned small g group is locus specific")]
-        public void BuildSmallGGroups_SmallGGroupIsAsExpected(
-            Locus locus, string name, object[] expectedAlleles)
+        public void BuildSmallGGroups_SmallGGroupIsAsExpected(Locus locus, string name, object[] expectedAlleles)
         {
             var smallGGroup = GetSmallGGroup(locus, name);
 
@@ -111,14 +110,13 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             Description = "Changes in fourth field typing within small g group")]
         [TestCase(Locus.Dpb1, "02:02g", "02:02P",
             Description = "Changes allele family within small g group")]
-        public void BuildSmallGGroups_PGroupIsAsExpected(
-            Locus locus, string name, string expectedPGroup)
+        public void BuildSmallGGroups_PGroupIsAsExpected(Locus locus, string name, string expectedPGroup)
         {
             var smallGGroup = GetSmallGGroup(locus, name);
 
             smallGGroup.PGroup.Should().Be(expectedPGroup);
         }
-
+        
         private SmallGGroup GetSmallGGroup(Locus locus, string lookupName)
         {
             return allSmallGGroups.Single(name => name.Locus.Equals(locus) && name.Name.Equals(lookupName));
