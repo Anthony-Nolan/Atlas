@@ -50,6 +50,10 @@ namespace Atlas.Common.GeneticData.Hla.Services
                 HlaTypingCategory.PGroup
             ),
             (
+                CompiledRegex($"^{MolecularFirstFieldPattern}:{SingleFieldPattern}g$"),
+                HlaTypingCategory.SmallGGroup
+            ),
+            (
                 CompiledRegex($"^(?!0){SingleFieldPattern}$"),
                 HlaTypingCategory.Serology
             ),
@@ -69,7 +73,7 @@ namespace Atlas.Common.GeneticData.Hla.Services
 
         public bool TryGetHlaTypingCategory(string hlaDescriptor, [NotNullWhen(true)]out HlaTypingCategory? category)
         {
-            var name = hlaDescriptor.Trim().ToUpper();
+            var name = hlaDescriptor.Trim();
 
             foreach (var (regex, hlaCategory) in TypingCategoryRegexes)
             {
@@ -91,7 +95,7 @@ namespace Atlas.Common.GeneticData.Hla.Services
                 return category.Value;
             }
 
-            throw new AtlasHttpException(HttpStatusCode.BadRequest, $"Typing category of HLA name: {hlaDescriptor} could not be determined.");
+            throw new AtlasHttpException(HttpStatusCode.BadRequest, $"Typing category of HLA name: {hlaDescriptor} could not be determined. Note: Categoriser is case-sensitive. Please check the case of the HLA typing before submitting again");
         }
 
         /// <inheritdoc/>
