@@ -54,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         public async Task CreateOrUpdateDonorBatch_DonorDoesNotExist_AndInvalidHlaName_DoesNotCreateDonorInDatabase()
         {
             var donorInfo = new DonorInfoBuilder()
-                .WithHlaAtLocus(Locus.A, LocusPosition.One, "invalid-hla-name")
+                .WithHlaAtLocus(Locus.A, LocusPosition.One, "9999:9999")
                 .Build();
 
             await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo }, default, tokenHlaVersion, false);
@@ -136,7 +136,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo }, default, tokenHlaVersion, false);
 
             var updatedDonor = new DonorInfoBuilder(donorId).WithDonorType(newDonorType)
-                .WithHlaAtLocus(Locus.A, LocusPosition.One, "invalid-hla-name")
+                .WithHlaAtLocus(Locus.A, LocusPosition.One, "*9999:9999")
                 .Build();
             await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor }, default, tokenHlaVersion, false);
 
@@ -159,7 +159,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var initialPGroupsCount = await GetPGroupCount(donorId, locus, position);
 
             var updatedDonor = new DonorInfoBuilder(donorId)
-                .WithHlaAtLocus(locus, position, "invalid-hla-name")
+                .WithHlaAtLocus(locus, position, "*9999:9999")
                 .Build();
             await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor }, default, tokenHlaVersion, false);
             var updatedPGroupsCount = await GetPGroupCount(donorId, locus, position);
