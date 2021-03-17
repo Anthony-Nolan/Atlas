@@ -15,14 +15,14 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.Metadata
         public List<string> SmallGGroups { get; }
         public override object HlaInfoToSerialise => SmallGGroups;
 
-        public SmallGGroupsMetadata(Locus locus, string alleleName, string smallGGroup)
-            : base(locus, alleleName, TypingMethod.Molecular)
+        public SmallGGroupsMetadata(Locus locus, string alleleName, TypingMethod typingMethod, string smallGGroup)
+            : base(locus, alleleName, typingMethod)
         {
             SmallGGroups = new List<string> {smallGGroup};
         }
 
-        public SmallGGroupsMetadata(Locus locus, string alleleName, List<string> smallGGroups)
-            : base(locus, alleleName, TypingMethod.Molecular)
+        public SmallGGroupsMetadata(Locus locus, string alleleName, TypingMethod typingMethod, List<string> smallGGroups)
+            : base(locus, alleleName, typingMethod)
         {
             SmallGGroups = smallGGroups;
         }

@@ -66,6 +66,18 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
+        public async Task GetSmallGGroups_WhenSerology_ReturnsSmallGGroup()
+        {
+            const string serology = "1";
+            const string smallGGroup = "01:01g";
+
+            var result = (await metadataService.GetSmallGGroups(DefaultLocus, serology, HlaVersion)).ToList();
+
+            result.Should().Contain(smallGGroup);
+            result.Count().Should().Be(213);
+        }
+
+        [Test]
         public async Task GetSmallGGroups_WhenGGroup_ReturnsSmallGGroup()
         {
             const string pGroup = "01:01:01G";
