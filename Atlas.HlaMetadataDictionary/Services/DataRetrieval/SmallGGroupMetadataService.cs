@@ -21,8 +21,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         Task<IDictionary<Locus, ISet<string>>> GetAllSmallGGroups(string hlaNomenclatureVersion);
     }
 
-    internal class SmallGGroupMetadataService : 
-        SearchRelatedMetadataServiceBase<ISmallGGroupsMetadata>, 
+    internal class SmallGGroupMetadataService :
+        SearchRelatedMetadataServiceBase<ISmallGGroupsMetadata>,
         ISmallGGroupMetadataService
     {
         private readonly ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository;
@@ -72,12 +72,14 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             string lookupName,
             List<ISmallGGroupsMetadata> metadata)
         {
+            var typingMethod = metadata.Select(m => m.TypingMethod).Distinct().Single();
+
             var groups = metadata
                 .SelectMany(data => data.SmallGGroups)
                 .Distinct()
                 .ToList();
 
-            return new SmallGGroupsMetadata(locus, lookupName, groups);
+            return new SmallGGroupsMetadata(locus, lookupName, typingMethod, groups);
         }
     }
 }
