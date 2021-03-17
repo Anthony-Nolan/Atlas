@@ -14,7 +14,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
             IAlleleNamesMetadataService alleleNamesMetadataService,
             IAlleleNamesExtractor alleleNamesExtractor,
             IMacDictionary macDictionary,
-            IAlleleGroupExpander alleleGroupExpander)
+            IAlleleGroupExpander alleleGroupExpander,
+            ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService)
         {
             return category switch
             {
@@ -26,6 +27,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
                 HlaTypingCategory.AlleleStringOfSubtypes => new AlleleStringLookup(hlaMetadataRepository, alleleNamesMetadataService, alleleNamesExtractor),
                 HlaTypingCategory.PGroup => new AlleleGroupLookup(hlaMetadataRepository, alleleNamesMetadataService, alleleGroupExpander),
                 HlaTypingCategory.GGroup => new AlleleGroupLookup(hlaMetadataRepository, alleleNamesMetadataService, alleleGroupExpander),
+                HlaTypingCategory.SmallGGroup => new SmallGGroupLookup(hlaMetadataRepository, alleleNamesMetadataService, alleleGroupExpander, smallGGroupToPGroupMetadataService),
                 _ => throw new ArgumentException(
                     $"Dictionary lookup cannot be performed for HLA typing category: {category}.")
             };
