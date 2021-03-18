@@ -5,6 +5,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.4" />
     </ItemGroup>
 
@@ -12,6 +16,13 @@
       <ProjectReference Include="..\Atlas.Client.Models\Atlas.Client.Models.csproj" />
       <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
+      <ProjectReference Include="..\Atlas.RepeatSearch.Data\Atlas.RepeatSearch.Data.csproj" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Atlas.RepeatSearch.Test" />
+        <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     </ItemGroup>
 
 </Project>

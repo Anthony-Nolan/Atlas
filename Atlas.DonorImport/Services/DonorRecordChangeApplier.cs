@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Notifications;
 using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Clients;
+using Atlas.DonorImport.Config;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
@@ -35,6 +37,7 @@ namespace Atlas.DonorImport.Services
         private readonly IImportedLocusInterpreter locusInterpreter;
         private readonly IDonorImportLogService donorImportLogService;
         private readonly IDonorImportFileHistoryService donorImportHistoryService;
+        private readonly INotificationSender notificationSender;
 
         public DonorRecordChangeApplier(
             IMessagingServiceBusClient messagingServiceBusClient,
@@ -42,7 +45,8 @@ namespace Atlas.DonorImport.Services
             IDonorReadRepository donorInspectionRepository,
             IImportedLocusInterpreter locusInterpreter,
             IDonorImportLogService donorImportLogService,
-            IDonorImportFileHistoryService donorImportHistoryService)
+            IDonorImportFileHistoryService donorImportHistoryService,
+            INotificationSender notificationSender)
         {
             this.donorImportRepository = donorImportRepository;
             this.messagingServiceBusClient = messagingServiceBusClient;
@@ -50,6 +54,7 @@ namespace Atlas.DonorImport.Services
             this.locusInterpreter = locusInterpreter;
             this.donorImportLogService = donorImportLogService;
             this.donorImportHistoryService = donorImportHistoryService;
+            this.notificationSender = notificationSender;
         }
 
         public async Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, DonorImportFile file, int skippedDonors)
@@ -206,12 +211,22 @@ namespace Atlas.DonorImport.Services
         {
             var deletedAtlasDonorIds = await donorInspectionRepository.GetDonorIdsByExternalDonorCodes(deletedExternalCodes);
 
+            var nonExistentAtlasDonors = deletedExternalCodes.Except(deletedAtlasDonorIds.Keys).ToList();
+            if (nonExistentAtlasDonors.Any())
+            {
+                await notificationSender.SendNotification(
+                    "Attempted to delete donors that were not found in the Atlas database",
+                    $"This does not violate the data integrity of Atlas directly, but does imply a stray between Atlas and consumer's donor collection. Donor ids: {nonExistentAtlasDonors.StringJoin(",")}.",
+                    NotificationConstants.OriginatorName
+                );
+            }
+            
             await donorImportRepository.DeleteDonorBatch(deletedAtlasDonorIds.Values.ToList());
 
             return deletedAtlasDonorIds.Values.Select(MapToDeletionUpdateMessage).ToList();
         }
 
-        private static int GetAtlasIdFromCode(string donorCode, Dictionary<string, int> codesToIdsDictionary)
+        private static int GetAtlasIdFromCode(string donorCode, IReadOnlyDictionary<string, int> codesToIdsDictionary)
         {
             if (!codesToIdsDictionary.TryGetValue(donorCode, out var atlasDonorId))
             {

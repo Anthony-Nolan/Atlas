@@ -59,6 +59,17 @@ It may be desirable to manually delete older sets, to free up database space and
 
 ## Data Refresh 
 
+## Manual Trigger
+
+Atlas can be configured to automatically re-run the data refresh process as soon as it detects a new HLA nomenclature version. There are some cases when it may be preferable to run the job manually: 
+
+(a) If the same nomenclature version is re-uploaded to the source, e.g. to fix any errors
+(b) If this installation of Atlas has opted to disable the auto-run refresh - in this case manual will be the only way to trigger this job
+    - An example reason to maintain manual control would be to ensure that haplotype frequency nomenclature and matching nomenclature are updated simultaneously
+    
+To manually trigger the Job, call the `SubmitDataRefreshRequestManual` HTTP Azure function, on the Matching Algorithm Functions App.
+Configuration options are available as per the model `DataRefreshRequest`
+
 ### In the case of the refresh job server dying
 
 The data refresh function is set up such that if it *fails* for any reason, the algorithm/infrastructure will be left in a reasonable state.
@@ -95,6 +106,20 @@ If a refresh stalls locally, you can likely ignore the infrastructure part of th
 
 
 ## Search
+
+### Search error - "donor id not found"
+
+The matching algorithm uses internal donor ids for search, and will look up external donor codes on completion of a search request. It assumes that all donors matched will be present in the master Atlas donor store.
+
+If this assumption is broken, an exception will be thrown and the search will fail. (This will manifest as a `KeyNotFoundException` in [SearchService.cs](Atlas.MatchingAlgorithm/Services/Search/SearchService.cs)) 
+
+There is an edge case in which this situation is possible - if a donor is removed from the Atlas system, and shows up in a search result set before the matching algorithm has applied the deletion to its donor store - 
+this window is configurable, but expected to be in the order of a low number of minutes.
+
+Automatic retry logic should take care of this edge case, but if a search repeatedly fails with such an error:
+
+- If the search was very quick, wait a few minutes to give the matching donor processor a chance to apply the deletion
+- If the issue still persists, it implies that the master donor store and the matching store have drifted out of sync. This is not expected and will require investigation.
 
 ### Searches not returning results
 

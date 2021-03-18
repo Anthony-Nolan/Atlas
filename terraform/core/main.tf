@@ -111,6 +111,7 @@ module "matching_algorithm" {
   APPLICATION_INSIGHTS_LOG_LEVEL                   = var.APPLICATION_INSIGHTS_LOG_LEVEL
   AZURE_CLIENT_ID                                  = var.AZURE_CLIENT_ID
   AZURE_CLIENT_SECRET                              = var.AZURE_CLIENT_SECRET
+  DATA_REFRESH_AUTO_RUN                            = var.MATCHING_DATA_REFRESH_AUTO_RUN
   DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE                = var.MATCHING_DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE
   DATA_REFRESH_DB_AUTO_PAUSE_DORMANT               = var.MATCHING_DATA_REFRESH_DB_AUTO_PAUSE_DORMANT
   DATA_REFRESH_DB_SIZE_ACTIVE                      = var.MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE
@@ -197,10 +198,12 @@ module "repeat_search" {
   application_insights                            = azurerm_application_insights.atlas
   app_service_plan                                = azurerm_app_service_plan.atlas-elastic-plan
   azure_storage                                   = azurerm_storage_account.azure_storage
+  donor_database_connection_string                = module.donor_import.sql_database.connection_string
   mac_import_table                                = module.multiple_allele_code_lookup.storage_table
   matching_persistent_database_connection_string  = module.matching_algorithm.sql_database.persistent_database_connection_string
   matching_transient_a_database_connection_string = module.matching_algorithm.sql_database.transient_a_database_connection_string
   matching_transient_b_database_connection_string = module.matching_algorithm.sql_database.transient_b_database_connection_string
+  original-search-matching-results-topic-name     = module.matching_algorithm.service_bus.matching_results_topic
   servicebus_namespace                            = azurerm_servicebus_namespace.general
   servicebus_namespace_authorization_rules        = {
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
@@ -217,11 +220,13 @@ module "repeat_search" {
 
 
   // Release variables
-  APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
-  DATABASE_PASSWORD              = var.REPEAT_SEARCH_DATABASE_PASSWORD
-  DATABASE_USERNAME              = var.REPEAT_SEARCH_DATABASE_USERNAME
-  IP_RESTRICTION_SETTINGS        = var.IP_RESTRICTION_SETTINGS
-  MATCHING_BATCH_SIZE            = var.MATCHING_BATCH_SIZE
+  APPLICATION_INSIGHTS_LOG_LEVEL      = var.APPLICATION_INSIGHTS_LOG_LEVEL
+  DATABASE_PASSWORD                   = var.REPEAT_SEARCH_DATABASE_PASSWORD
+  DATABASE_USERNAME                   = var.REPEAT_SEARCH_DATABASE_USERNAME
+  IP_RESTRICTION_SETTINGS             = var.IP_RESTRICTION_SETTINGS
+  MATCHING_BATCH_SIZE                 = var.MATCHING_BATCH_SIZE
+  MAX_CONCURRENT_SERVICEBUS_FUNCTIONS = var.REPEAT_SEARCH_MATCHING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE
+  MAX_SCALE_OUT                       = var.REPEAT_SEARCH_MATCHING_MAX_SCALE_OUT
 }
 
 module "support" {

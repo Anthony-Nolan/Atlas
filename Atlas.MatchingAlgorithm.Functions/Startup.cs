@@ -29,7 +29,8 @@ namespace Atlas.MatchingAlgorithm.Functions
                 OptionsReaderFor<MatchingConfigurationSettings>(),
                 ConnectionStringReader("PersistentSql"),
                 ConnectionStringReader("SqlA"), 
-                ConnectionStringReader("SqlB"));
+                ConnectionStringReader("SqlB"),
+                ConnectionStringReader("DonorSql"));
             
             builder.Services.RegisterDataRefresh(OptionsReaderFor<AzureAuthenticationSettings>(),
                 OptionsReaderFor<AzureDatabaseManagementSettings>(),
@@ -44,7 +45,7 @@ namespace Atlas.MatchingAlgorithm.Functions
                 ConnectionStringReader("PersistentSql"),
                 ConnectionStringReader("SqlA"),
                 ConnectionStringReader("SqlB"), 
-                ConnectionStringReader("DonorImportSql"));
+                ConnectionStringReader("DonorSql"));
         }
 
         private static void RegisterSettings(IServiceCollection services)

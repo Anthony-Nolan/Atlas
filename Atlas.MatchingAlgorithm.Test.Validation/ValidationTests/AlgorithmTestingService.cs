@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.MatchingAlgorithm.Api;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -50,7 +51,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
                 .PostAsync();
 
             var content = await result.Content.ReadAsStringAsync();
-            var deserializedContent = JsonConvert.DeserializeObject<MatchingAlgorithmResultSet>(content);
+            var deserializedContent = JsonConvert.DeserializeObject<OriginalMatchingAlgorithmResultSet>(content);
             return new SearchAlgorithmApiResult
             {
                 IsSuccess = result.IsSuccessStatusCode,

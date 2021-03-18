@@ -12,8 +12,10 @@
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
     "MatchingConfiguration:MatchingBatchSize": 250000,
     "MessagingServiceBus:ConnectionString": "override-this",
-    "MessagingServiceBus:RepeatSearchRequestsTopic": "repeat-search-requests",
+    "MessagingServiceBus:OriginalSearchRequestsSubscription": "repeat-search",
+    "MessagingServiceBus:OriginalSearchRequestsTopic": "matching-results-ready",
     "MessagingServiceBus:RepeatSearchRequestsSubscription": "repeat-search",
+    "MessagingServiceBus:RepeatSearchRequestsTopic": "repeat-search-requests",
     "MessagingServiceBus:RepeatSearchMatchingResultsTopic": "repeat-search-matching-results-ready",
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
@@ -21,7 +23,9 @@
   },
 
   "ConnectionStrings": {
+    "DonorSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
     "RepeatSearchSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
+    "DonorSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
     "MatchingPersistentSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
     "MatchingSqlA": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
     "MatchingSqlB": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;"

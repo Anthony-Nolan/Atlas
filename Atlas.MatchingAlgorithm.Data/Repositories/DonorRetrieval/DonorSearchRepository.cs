@@ -2,7 +2,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.Matching;
-using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
@@ -153,7 +152,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                         : "";
 
                     var donorUpdatedJoin = cutOffDate != null
-                        ? $@"INNER JOIN DonorManagementLogs dml ON m.DonorId = dml.DonorId AND dml.LastUpdateDateTime >= '{cutOffDate}'"
+                        ? $@"INNER JOIN DonorManagementLogs dml ON m.DonorId = dml.DonorId AND dml.LastUpdateDateTime >= @{nameof(cutOffDate)}"
                         : "";
 
                     var donorIdTempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering(
@@ -222,7 +221,12 @@ ORDER BY DonorId
 
                         // This is streamed from the database via disabling buffering (the default CommandFlags value = `Buffered`).
                         // This allows us to minimise our memory footprint, by not loading all donors into memory at once, and filtering as we go. 
-                        var commandDefinition = new CommandDefinition(sql, commandTimeout: 3600, flags: CommandFlags.None);
+                        var commandDefinition = new CommandDefinition(
+                            sql,
+                            commandTimeout: 3600,
+                            flags: CommandFlags.None,
+                            parameters: new {cutOffDate}
+                        );
 
                         var matches = await conn.QueryAsync<DonorLocusMatch>(commandDefinition);
                         foreach (var match in matches)

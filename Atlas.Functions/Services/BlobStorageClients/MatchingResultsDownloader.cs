@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
@@ -15,13 +16,13 @@ namespace Atlas.Functions.Services.BlobStorageClients
 
     internal class MatchingResultsDownloader : IMatchingResultsDownloader
     {
-        private readonly AzureStorageSettings messagingServiceBusSettings;
+        private readonly AzureStorageSettings azureStorageSettings;
         private readonly IBlobDownloader blobDownloader;
         private readonly ILogger logger;
 
-        public MatchingResultsDownloader(IOptions<AzureStorageSettings> messagingServiceBusSettings, IBlobDownloader blobDownloader, ILogger logger)
+        public MatchingResultsDownloader(IOptions<AzureStorageSettings> azureStorageSettings, IBlobDownloader blobDownloader, ILogger logger)
         {
-            this.messagingServiceBusSettings = messagingServiceBusSettings.Value;
+            this.azureStorageSettings = azureStorageSettings.Value;
             this.blobDownloader = blobDownloader;
             this.logger = logger;
         }
@@ -32,9 +33,13 @@ namespace Atlas.Functions.Services.BlobStorageClients
             using (logger.RunTimed($"Downloading matching results: {blobName}"))
             {
                 var matchingResultsBlobContainer = isRepeatSearch
-                    ? messagingServiceBusSettings.RepeatSearchMatchingResultsBlobContainer
-                    : messagingServiceBusSettings.MatchingResultsBlobContainer;
-                return await blobDownloader.Download<MatchingAlgorithmResultSet>(matchingResultsBlobContainer, blobName);
+                    ? azureStorageSettings.RepeatSearchMatchingResultsBlobContainer
+                    : azureStorageSettings.MatchingResultsBlobContainer;
+                var matchingResults = isRepeatSearch
+                    ? await blobDownloader.Download<RepeatMatchingAlgorithmResultSet>(matchingResultsBlobContainer, blobName) as MatchingAlgorithmResultSet
+                    : await blobDownloader.Download<OriginalMatchingAlgorithmResultSet>(matchingResultsBlobContainer, blobName);
+
+                return matchingResults;
             }
         }
     }

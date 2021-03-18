@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
+using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Test.Verification.Models;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
@@ -83,7 +83,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
                 };
 
                 var masked = await MaskHla(
-                    maskingRequest.MaskingCategory, transformationRequest, request.HlaNomenclatureVersion);
+                    maskingRequest.MaskingCategory,
+                    transformationRequest,
+                    request.HlaNomenclatureVersion,
+                    request.TypingCategory);
 
                 allTransformationResults.Add(masked);
                 remainingTypings = masked.RemainingTypings.ToList();
@@ -96,13 +99,14 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
         private Task<TransformationResult> MaskHla(
             MaskingCategory category,
             TransformationRequest request,
-            string hlaNomenclatureVersion)
+            string hlaNomenclatureVersion,
+            ImportTypingCategory typingCategory)
         {
             return category switch
             {
                 MaskingCategory.TwoField => twoFieldBuilder.ConvertRandomLocusHlaToTwoField(request),
-                MaskingCategory.PGroup => hlaConverter.ConvertRandomLocusHla(request, hlaNomenclatureVersion, TargetHlaCategory.PGroup),
-                MaskingCategory.Serology => hlaConverter.ConvertRandomLocusHla(request, hlaNomenclatureVersion, TargetHlaCategory.Serology),
+                MaskingCategory.PGroup => hlaConverter.ConvertRandomLocusHla(request, hlaNomenclatureVersion, typingCategory, HlaConversionCategory.PGroup),
+                MaskingCategory.Serology => hlaConverter.ConvertRandomLocusHla(request, hlaNomenclatureVersion, typingCategory, HlaConversionCategory.Serology),
                 MaskingCategory.MultipleAlleleCode => macBuilder.ConvertRandomHlaToMacs(request, hlaNomenclatureVersion),
                 MaskingCategory.XxCode => xxCodeBuilder.ConvertRandomLocusHlaToXxCodes(request),
                 MaskingCategory.Delete => hlaDeleter.DeleteRandomLocusHla(request),
@@ -116,6 +120,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
         public Locus Locus { get; set; }
         public IEnumerable<MaskingRequest> MaskingRequests { get; set; }
         public string HlaNomenclatureVersion { get; set; }
+        public ImportTypingCategory TypingCategory { get; set; }
         public int TotalSimulantCount { get; set; }
     }
 }

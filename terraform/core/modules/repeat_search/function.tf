@@ -20,28 +20,36 @@ resource "azurerm_function_app" "atlas_repeat_search_function" {
     "APPINSIGHTS_INSTRUMENTATIONKEY" = var.application_insights.instrumentation_key
     "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
+    "AzureFunctionsJobHost__extensions__serviceBus__messageHandlerOptions__maxConcurrentCalls" = var.MAX_CONCURRENT_SERVICEBUS_FUNCTIONS
+
     "AzureStorage:ConnectionString"             = var.azure_storage.primary_connection_string
     "AzureStorage:MatchingResultsBlobContainer" = azurerm_storage_container.repeat_search_matching_results_container.name
 
-    "FUNCTIONS_WORKER_RUNTIME" = "dotnet"  
+    "FUNCTIONS_WORKER_RUNTIME" = "dotnet"
 
-    "HlaMetadataDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string  
-            
+    "HlaMetadataDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
+
     "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
     "MacDictionary:TableName"                    = var.mac_import_table.name
-            
+
     "MatchingConfiguration:MatchingBatchSize" = var.MATCHING_BATCH_SIZE
 
-    "MessagingServiceBus:ConnectionString"                 = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
-    "MessagingServiceBus:RepeatSearchRequestsSubscription" = azurerm_servicebus_subscription.repeat-search-repeat-search-requests.name
-    "MessagingServiceBus:RepeatSearchRequestsTopic"        = azurerm_servicebus_topic.repeat-search-requests.name
-    "MessagingServiceBus:RepeatSearchMatchingResultsTopic" = azurerm_servicebus_topic.repeat-search-matching-results-ready.name
+    "MessagingServiceBus:ConnectionString"                   = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
+    "MessagingServiceBus:OriginalSearchRequestsSubscription" = azurerm_servicebus_subscription.original-search-results-ready-repeat-search-listener.name
+    "MessagingServiceBus:OriginalSearchRequestsTopic"        = var.original-search-matching-results-topic-name
+    "MessagingServiceBus:RepeatSearchRequestsSubscription"   = azurerm_servicebus_subscription.repeat-search-repeat-search-requests.name
+    "MessagingServiceBus:RepeatSearchRequestsTopic"          = azurerm_servicebus_topic.repeat-search-requests.name
+    "MessagingServiceBus:RepeatSearchMatchingResultsTopic"   = azurerm_servicebus_topic.repeat-search-matching-results-ready.name
 
     "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:NotificationsTopic" = var.servicebus_topics.notifications.name
 
-    "WEBSITE_RUN_FROM_PACKAGE" = "1"
+    // maximum running instances of the algorithm = maximum_worker_count * maxConcurrentCalls (in host.json).
+    // together, alongside the non-repeat matching processes, these must ensure that the number of allowed concurrent SQL connections to the matching SQL DB is not exceeded.
+    // See README_Integration.md for more details on concurrency configuration.
+    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = var.MAX_SCALE_OUT
+    "WEBSITE_RUN_FROM_PACKAGE"                  = "1"
   }
 
   site_config {
@@ -63,15 +71,21 @@ resource "azurerm_function_app" "atlas_repeat_search_function" {
     value = var.matching_persistent_database_connection_string
   }
 
-connection_string {
+  connection_string {
     name  = "MatchingSqlA"
     type  = "SQLAzure"
     value = var.matching_transient_a_database_connection_string
   }
 
-connection_string {
+  connection_string {
     name  = "MatchingSqlB"
     type  = "SQLAzure"
     value = var.matching_transient_b_database_connection_string
+  }
+
+  connection_string {
+    name  = "DonorSql"
+    type  = "SQLAzure"
+    value = var.donor_database_connection_string
   }
 }

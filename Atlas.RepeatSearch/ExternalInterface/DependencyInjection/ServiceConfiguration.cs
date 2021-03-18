@@ -12,6 +12,12 @@ using Atlas.RepeatSearch.Services.Search;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Atlas.Common.AzureStorage.Blob;
+using Atlas.DonorImport.ExternalInterface.DependencyInjection;
+using Atlas.RepeatSearch.Data.Context;
+using Atlas.RepeatSearch.Data.Repositories;
+using Atlas.RepeatSearch.Services.ResultSetTracking;
+using ConnectionStrings = Atlas.RepeatSearch.Data.Settings.ConnectionStrings;
 
 namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
 {
@@ -29,10 +35,16 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             Func<IServiceProvider, string> fetchRepeatSqlConnectionString,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
-            Func<IServiceProvider, string> fetchTransientBSqlConnectionString)
+            Func<IServiceProvider, string> fetchTransientBSqlConnectionString,
+            Func<IServiceProvider, string> fetchDonorSqlConnectionString)
         {
-            services.RegisterSettings(fetchApplicationInsightsSettings, fetchAzureStorageSettings, fetchMessagingServiceBusSettings);
-            services.RegisterServices();
+            services.RegisterSettings(
+                fetchApplicationInsightsSettings,
+                fetchAzureStorageSettings,
+                fetchMessagingServiceBusSettings,
+                fetchRepeatSqlConnectionString);
+            
+            services.RegisterServices(fetchRepeatSqlConnectionString);
 
             services.RegisterSearch(
                 fetchApplicationInsightsSettings,
@@ -46,26 +58,48 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
                 fetchMatchingConfigurationSettings,
                 fetchPersistentSqlConnectionString,
                 fetchTransientASqlConnectionString,
-                fetchTransientBSqlConnectionString);
+                fetchTransientBSqlConnectionString,
+                fetchDonorSqlConnectionString);
+            
+            services.RegisterDonorReader(fetchDonorSqlConnectionString);
         }
 
         private static void RegisterSettings(
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, RepeatSearch.Settings.Azure.AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, string> fetchRepeatSqlConnectionString)
         {
             services.MakeSettingsAvailableForUse(fetchApplicationInsightsSettings);
             services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
+
+            services.AddSingleton(sp => new ConnectionStrings {RepeatSearchSqlConnectionString = fetchRepeatSqlConnectionString(sp)});
         }
 
-        private static void RegisterServices(this IServiceCollection services)
+        private static void RegisterServices(this IServiceCollection services, Func<IServiceProvider, string> fetchRepeatSqlConnectionString)
         {
+            services.AddScoped<IOriginalSearchResultSetTracker, OriginalSearchResultSetTracker>();
+            services.AddSingleton<IBlobDownloader>(sp =>
+            {
+                var storageSettings = sp.GetService<RepeatSearch.Settings.Azure.AzureStorageSettings>();
+                var logger = sp.GetService<ILogger>();
+                return new BlobDownloader(storageSettings.ConnectionString, logger);
+            });
+
+            services.AddScoped(sp => new ContextFactory().Create(fetchRepeatSqlConnectionString(sp)));
+            services.AddScoped<ICanonicalResultSetRepository, CanonicalResultSetRepository>();
+            services.AddScoped<IRepeatSearchHistoryRepository, RepeatSearchHistoryRepository>();
+
             services.AddScoped<IRepeatSearchDispatcher, RepeatSearchDispatcher>();
             services.AddScoped<IRepeatSearchRunner, RepeatSearchRunner>();
             services.AddScoped<IRepeatSearchResultsBlobStorageClient, RepeatSearchResultsBlobStorageClient>();
             services.AddScoped<IRepeatSearchServiceBusClient, RepeatSearchServiceBusClient>();
+
+            services.AddScoped<IRepeatSearchValidator, RepeatSearchValidator>();
+            
+            services.AddScoped<IRepeatSearchDifferentialCalculator, RepeatSearchDifferentialCalculator>();
         }
     }
 }

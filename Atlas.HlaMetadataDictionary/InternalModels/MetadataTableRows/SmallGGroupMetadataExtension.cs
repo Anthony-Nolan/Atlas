@@ -12,6 +12,7 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows
             return new SmallGGroupsMetadata(
                 row.Locus,
                 row.LookupName,
+                row.TypingMethod,
                 smallGGroups);
         }
     }

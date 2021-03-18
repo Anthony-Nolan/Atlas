@@ -45,7 +45,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             try
             {
                 var request = await ReadRequestBody<DataRefreshRequest>(httpRequest);
-                var recordId = await dataRefreshRequester.RequestDataRefresh(request);
+                var recordId = await dataRefreshRequester.RequestDataRefresh(request, true);
                 return new JsonResult(recordId);
             }
             catch (Exception ex)
@@ -62,7 +62,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         public async Task SubmitDataRefreshRequest([TimerTrigger("%DataRefresh:CronTab%")] TimerInfo timerInfo)
         {
             var request = new DataRefreshRequest { ForceDataRefresh = false };
-            await dataRefreshRequester.RequestDataRefresh(request);
+            await dataRefreshRequester.RequestDataRefresh(request, false);
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]

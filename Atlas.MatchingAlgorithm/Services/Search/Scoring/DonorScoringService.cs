@@ -101,16 +101,19 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
             foreach (var locus in criteria.LociToScore)
             {
-                var gradeResultAtPosition1 = donorScoringInfo.Grades.GetPosition(locus, LocusPosition.One).GradeResult;
-                var confidenceAtPosition1 = donorScoringInfo.Confidences.GetPosition(locus, LocusPosition.One);
-                var gradeResultAtPosition2 = donorScoringInfo.Grades.GetPosition(locus, LocusPosition.Two).GradeResult;
-                var confidenceAtPosition2 = donorScoringInfo.Confidences.GetPosition(locus, LocusPosition.Two);
+                var gradeResults = donorScoringInfo.Grades.GetLocus(locus).Map(x => x.GradeResult);
+                var confidences = donorScoringInfo.Confidences.GetLocus(locus);
+
+                var scoreDetailsPerPosition = new LocusInfo<LocusPositionScoreDetails>(p =>
+                    BuildScoreDetailsForPosition(gradeResults.GetAtPosition(p), confidences.GetAtPosition(p))
+                );
 
                 var scoreDetails = new LocusScoreDetails
                 {
                     IsLocusTyped = donorScoringInfo.DonorHla.GetLocus(locus).Position1And2NotNull(),
-                    ScoreDetailsAtPosition1 = BuildScoreDetailsForPosition(gradeResultAtPosition1, confidenceAtPosition1),
-                    ScoreDetailsAtPosition2 = BuildScoreDetailsForPosition(gradeResultAtPosition2, confidenceAtPosition2)
+                    ScoreDetailsAtPosition1 = scoreDetailsPerPosition.Position1,
+                    ScoreDetailsAtPosition2 = scoreDetailsPerPosition.Position2,
+                    MatchCategory = LocusMatchCategoryAggregator.LocusMatchCategoryFromPositionScores(scoreDetailsPerPosition)
                 };
                 scoreResult.SetScoreDetailsForLocus(locus, scoreDetails);
             }

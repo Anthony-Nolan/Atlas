@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Notifications;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
@@ -27,6 +28,7 @@ namespace Atlas.DonorImport.Test.Services
         private IDonorReadRepository donorInspectionRepository;
         private IDonorImportLogService donorImportLogService;
         private IDonorImportFileHistoryService donorImportHistoryService;
+        private INotificationSender notificationSender;
 
         private IDonorRecordChangeApplier donorOperationApplier;
         private IImportedLocusInterpreter naiveDnaLocusInterpreter;
@@ -41,6 +43,7 @@ namespace Atlas.DonorImport.Test.Services
             donorInspectionRepository = Substitute.For<IDonorReadRepository>();
             donorImportLogService = Substitute.For<IDonorImportLogService>();
             donorImportHistoryService = Substitute.For<IDonorImportFileHistoryService>();
+            notificationSender = Substitute.For<INotificationSender>();
             naiveDnaLocusInterpreter = Substitute.For<IImportedLocusInterpreter>();
             naiveDnaLocusInterpreter.Interpret(default, default).ReturnsForAnyArgs((call) =>
             {
@@ -56,7 +59,8 @@ namespace Atlas.DonorImport.Test.Services
                 donorInspectionRepository,
                 naiveDnaLocusInterpreter,
                 donorImportLogService,
-                donorImportHistoryService
+                donorImportHistoryService,
+                notificationSender
             );
         }
 
@@ -174,6 +178,30 @@ namespace Atlas.DonorImport.Test.Services
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
 
             await messagingServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
+        }
+
+        [Test]
+        public async Task ApplyDonorOperationBatch_ForDifferentialUpdate_WithDeletesForDonorsThatDoNotExist_SendsNotification()
+        {
+            var donorUpdates = DonorUpdateBuilder.New
+                .With(d => d.UpdateMode, UpdateMode.Differential)
+                .With(d => d.ChangeType, ImportDonorChangeType.Delete)
+                .Build(2)
+                .ToList();
+
+            donorInspectionRepository.GetDonorIdsByExternalDonorCodes(default).ReturnsForAnyArgs(new Dictionary<string, int>());
+            
+            donorInspectionRepository.GetDonorsByExternalDonorCodes(default).ReturnsForAnyArgs(new Dictionary<string, Donor>
+            {
+                {donorUpdates[0].RecordId, new Donor {AtlasId = 1, ExternalDonorCode = donorUpdates[0].RegistryCode}},
+            });
+
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
+
+            await notificationSender.Received().SendNotification(
+                Arg.Any<string>(),
+                Arg.Is<string>(m => donorUpdates.All(d => m.Contains(d.RecordId))),
+                Arg.Any<string>());
         }
     }
 }

@@ -60,6 +60,12 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             return this;
         }
 
+        public AlleleLevelMatchCriteriaBuilder WithShouldIncludeBetterMatches(bool shouldIncludeBetterMatches)
+        {
+            criteria.ShouldIncludeBetterMatches = shouldIncludeBetterMatches;
+            return this;
+        }
+
         public AlleleLevelMatchCriteria Build()
         {
             return criteria;

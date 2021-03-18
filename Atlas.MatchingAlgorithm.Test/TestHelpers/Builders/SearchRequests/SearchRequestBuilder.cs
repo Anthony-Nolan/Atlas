@@ -7,7 +7,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 
-namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
+namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests
 {
     public class SearchRequestBuilder
     {
@@ -135,6 +135,12 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         public SearchRequestBuilder WithSearchType(DonorType donorType)
         {
             searchRequest.SearchDonorType = donorType.ToAtlasClientModel();
+            return this;
+        }
+
+        public SearchRequestBuilder WithBetterMatchesConfig(bool shouldBetterMatchesBeAllowed)
+        {
+            searchRequest.MatchCriteria.IncludeBetterMatches = shouldBetterMatchesBeAllowed;
             return this;
         }
 

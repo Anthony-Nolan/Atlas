@@ -76,6 +76,9 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
                     b.Property<DateTime>("RefreshRequestedUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("ShouldMarkAllDonorsAsUpdated")
+                        .HasColumnType("bit");
+
                     b.Property<string>("SupportComments")
                         .HasColumnType("nvarchar(max)");
 

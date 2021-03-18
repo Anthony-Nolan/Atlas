@@ -1,6 +1,8 @@
-# Anthony Nolan Search Algorithm Technical Validation 
+# Atlas Donor Matching Algorithm Technical Validation 
 
 This README is intended to give an overview of the technical validation framework at a non-technical level.
+
+This validation suite only covers "matching" and "scoring" logic performed by the Atlas matching algorithm - it does not cover match prediction capabilities.
 
 _Note for developers: It should remain situated in the `Features` folder, such that all non technical aspects of the framework are co-located._
 

@@ -8,7 +8,8 @@ using Atlas.Common.Notifications;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
-using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
+using Atlas.MatchingAlgorithm.Data.Models;
+using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Mapping;
 using Atlas.MatchingAlgorithm.Models;
@@ -16,6 +17,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using MoreLinq;
+using IDonorImportRepository = Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates.IDonorImportRepository;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
 {
@@ -29,7 +31,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         /// Fetches all donors and stores their data in the donor table
         /// Does not perform analysis of donor p-groups
         /// </summary>
-        Task ImportDonors();
+        /// <param name="shouldMarkDonorsAsUpdated">
+        /// When set, all donors will have corresponding entries added to the donor management log table.
+        /// </param>
+        Task ImportDonors(bool shouldMarkDonorsAsUpdated = false);
     }
 
     public class DonorImporter : IDonorImporter
@@ -38,6 +43,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         private const string ImportFailureEventName = "Donor Import Failure(s) in the Matching Algorithm's DataRefresh";
 
         private readonly IDonorImportRepository matchingDonorImportRepository;
+        private readonly IDonorManagementLogRepository donorManagementLogRepository;
         private readonly IDonorInfoConverter donorInfoConverter;
         private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
         private readonly IMatchingAlgorithmImportLogger logger;
@@ -51,13 +57,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             IDonorReader donorReader)
         {
             matchingDonorImportRepository = repositoryFactory.GetDonorImportRepository();
+            donorManagementLogRepository = repositoryFactory.GetDonorManagementLogRepository();
             this.donorInfoConverter = donorInfoConverter;
             this.failedDonorsNotificationSender = failedDonorsNotificationSender;
             this.logger = logger;
             this.donorReader = donorReader;
         }
 
-        public async Task ImportDonors()
+        public async Task ImportDonors(bool shouldMarkDonorsAsUpdated)
         {
             try
             {
@@ -66,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
                 foreach (var streamedDonorBatch in donorsStream.Batch(BatchSize))
                 {
                     var reifiedDonorBatch = streamedDonorBatch.ToList();
-                    var failedDonors = await InsertDonorBatch(reifiedDonorBatch);
+                    var failedDonors = await InsertDonorBatch(reifiedDonorBatch, shouldMarkDonorsAsUpdated, DateTimeOffset.UtcNow);
                     allFailedDonors.AddRange(failedDonors);
                 }
 
@@ -80,14 +87,37 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             }
         }
 
-
+        /// <param name="donors">Batch of donors to insert into the matching database.</param>
+        /// <param name="shouldMarkDonorsAsUpdated"></param>
+        /// <param name="batchFetchTime">
+        ///     Time at which this batch were fetched from the master donor store, to be used as the "last updated" time of these donors.
+        ///     It is slightly more correct to use the fetch time than the insert time, in the case of a race condition where a new update is published between
+        ///     fetching a batch from the donor store, and inserting it into the donor management log table.
+        /// </param>
         /// <returns>Details of donors in the batch that failed import</returns>
-        private async Task<IEnumerable<FailedDonorInfo>> InsertDonorBatch(List<SearchableDonorInformation> donors)
+        private async Task<IEnumerable<FailedDonorInfo>> InsertDonorBatch(
+            List<SearchableDonorInformation> donors,
+            bool shouldMarkDonorsAsUpdated,
+            DateTimeOffset batchFetchTime)
         {
             using (logger.RunTimed($"Import donor batch (BatchSize: {BatchSize})", LogLevel.Verbose))
             {
                 var donorInfoConversionResult = await donorInfoConverter.ConvertDonorInfoAsync(donors, ImportFailureEventName);
                 await matchingDonorImportRepository.InsertBatchOfDonors(donorInfoConversionResult.ProcessingResults);
+
+                if (shouldMarkDonorsAsUpdated)
+                {
+                    await donorManagementLogRepository.CreateOrUpdateDonorManagementLogBatch(donors.Select(d => new DonorManagementInfo
+                        {
+                            DonorId = d.DonorId,
+                            UpdateDateTime = batchFetchTime,
+                            // This assumes that all updates come from a service bus message, which is incorrect for the initial donor import
+                            // TODO: ATLAS-972: Confirm this is unused and remove
+                            UpdateSequenceNumber = -1
+                        }
+                    ));
+                }
+
                 return donorInfoConversionResult.FailedDonors;
             }
         }

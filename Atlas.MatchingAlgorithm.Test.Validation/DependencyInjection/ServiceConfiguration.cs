@@ -16,8 +16,10 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
     /// Used to set up dependency injection for the validation test framework itself.
     /// Note that the injected configuration is for the validation project - for the in memory api the configuration is set up elsewhere
     /// </summary>
-    public static class ServiceConfiguration
+    internal static class ServiceConfiguration
     {
+        private static ServiceProvider provider;
+
         public static ServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
@@ -55,12 +57,14 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
             services.AddTransient<IDatabaseDonorSelector, DatabaseDonorSelector>();
             services.AddTransient<IPatientHlaSelector, PatientHlaSelector>();
 
-            RegisterDataServices(services);
+            services.RegisterDataServices();
 
             return services.BuildServiceProvider();
         }
 
-        private static void RegisterDataServices(IServiceCollection services)
+        public static ServiceProvider Provider => provider ??= CreateProvider();
+
+        private static void RegisterDataServices(this IServiceCollection services)
         {
             services.AddScoped(sp =>
                 new ContextFactory().Create(ConnectionStringReader("SqlA")(sp))
@@ -68,6 +72,10 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
 
             services.AddScoped(sp =>
                 new Data.Persistent.Context.ContextFactory().Create(ConnectionStringReader("PersistentSql")(sp))
+            );
+
+            services.AddScoped(sp =>
+                new DonorImport.Data.Context.ContextFactory().Create(ConnectionStringReader("DonorSql")(sp))
             );
 
             services.AddScoped<ITestDataRepository, TestDataRepository>();

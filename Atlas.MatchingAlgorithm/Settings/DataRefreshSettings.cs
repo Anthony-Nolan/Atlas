@@ -2,6 +2,11 @@ namespace Atlas.MatchingAlgorithm.Settings
 {
     public class DataRefreshSettings
     {
+        /// <summary>
+        /// When false, automatic running of the data refresh will be disabled
+        /// </summary>
+        public bool AutoRunDataRefresh { get; set; }
+        
         public string ActiveDatabaseSize { get; set; }
         public string DormantDatabaseSize { get; set; }
         public string RefreshDatabaseSize { get; set; }

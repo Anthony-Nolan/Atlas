@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
+using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing

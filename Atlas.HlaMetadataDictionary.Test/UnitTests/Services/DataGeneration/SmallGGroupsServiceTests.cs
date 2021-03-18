@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
+using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using FluentAssertions;
@@ -40,17 +42,17 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
         {
             const string hlaNomenclatureVersion = "version";
 
-            service.GetAlleleLookupNameToSmallGGroupsMetadata(hlaNomenclatureVersion);
+            service.GetSmallGGroupsMetadata(hlaNomenclatureVersion, new List<IHlaMetadataSource<SerologyTyping>>());
 
             builder.Received(1).BuildSmallGGroups(hlaNomenclatureVersion);
         }
 
-        [TestCase("01:01", new object[] { "01:01", "01:XX" })]
-        [TestCase("01:01N", new object[] { "01:01N", "01:01", "01:XX" })]
-        [TestCase("01:01:01", new object[] { "01:01:01", "01:01", "01:XX" })]
-        [TestCase("01:01:01Q", new object[] { "01:01:01Q", "01:01", "01:01Q", "01:XX" })]
-        [TestCase("01:01:01:01", new object[] { "01:01:01:01", "01:01", "01:XX" })]
-        [TestCase("01:01:01:01L", new object[] { "01:01:01:01L", "01:01", "01:01L", "01:XX" })]
+        [TestCase("01:01", new object[] {"01:01", "01:XX"})]
+        [TestCase("01:01N", new object[] {"01:01N", "01:01", "01:XX"})]
+        [TestCase("01:01:01", new object[] {"01:01:01", "01:01", "01:XX"})]
+        [TestCase("01:01:01Q", new object[] {"01:01:01Q", "01:01", "01:01Q", "01:XX"})]
+        [TestCase("01:01:01:01", new object[] {"01:01:01:01", "01:01", "01:XX"})]
+        [TestCase("01:01:01:01L", new object[] {"01:01:01:01L", "01:01", "01:01L", "01:XX"})]
         public void GetSmallGGroupMetadata_ReturnsMetadataForEachPossibleLookupName(string alleleName, object[] expectedLookupNames)
         {
             var smallGGroup = SmallGGroupBuilder.Default
@@ -59,7 +61,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             builder.BuildSmallGGroups(default).ReturnsForAnyArgs(smallGGroup);
 
-            var result = service.GetAlleleLookupNameToSmallGGroupsMetadata(default).ToList();
+            var result = service.GetSmallGGroupsMetadata(default, new List<IHlaMetadataSource<SerologyTyping>>()).ToList();
 
             result.Select(r => r.LookupName).Should().BeEquivalentTo(expectedLookupNames);
             result.Count.Should().Be(expectedLookupNames.Length);
@@ -87,14 +89,34 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
                 .WithAllele(allele2)
                 .Build();
 
-            builder.BuildSmallGGroups(default).ReturnsForAnyArgs(new[] { smallGGroup1, smallGGroup2 });
+            builder.BuildSmallGGroups(default).ReturnsForAnyArgs(new[] {smallGGroup1, smallGGroup2});
 
-            var result = service.GetAlleleLookupNameToSmallGGroupsMetadata(default).ToList();
+            var result = service.GetSmallGGroupsMetadata(default, new List<IHlaMetadataSource<SerologyTyping>>()).ToList();
 
             // both alleles should result in the same XX code lookup name
             var xxCodeMetadata = result.Single(r => r.LookupName == firstField + ":XX");
             xxCodeMetadata.Locus.Should().Be(locus);
             xxCodeMetadata.SmallGGroups.Should().BeEquivalentTo(gGroup1, gGroup2);
+        }
+
+        [Test]
+        public void GetSmallGGroupMetadata_IncludesSerologyTypings()
+        {
+            const string pGroup = "p-group";
+
+            var serology = Substitute.For<IHlaMetadataSource<SerologyTyping>>();
+            const string serologyName = "1";
+
+            var serologyTyping = new SerologyTyping("A", serologyName, SerologySubtype.Broad);
+
+            serology.TypingForHlaMetadata.Returns(serologyTyping);
+            serology.MatchingPGroups.Returns(new List<string> {pGroup});
+
+            builder.BuildSmallGGroups(default).ReturnsForAnyArgs(new[] {SmallGGroupBuilder.Default.With(x => x.PGroup, pGroup).Build()});
+
+            var result = service.GetSmallGGroupsMetadata(default, new[] {serology}).ToList();
+
+            result.Single().LookupName.Should().Be(serologyName);
         }
     }
 }

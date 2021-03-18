@@ -4,6 +4,7 @@ using System.Linq;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.InternalExceptions;
+using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators;
@@ -80,8 +81,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
                 logger.SendTrace("HlaMetadataDictionary: GGroup to PGroup");
                 var gGroupToPGroupMetadata = GetGGroupToPGroupMetadata(hlaNomenclatureVersion).ToList();
 
+                var preCalculatedSerology = preCalculatedMatchedHla.OfType<IHlaMetadataSource<SerologyTyping>>();
                 logger.SendTrace("HlaMetadataDictionary: Building small g groups");
-                var smallGGroupsMetadata = GetSmallGGroupsMetadata(hlaNomenclatureVersion).ToList();
+                var smallGGroupsMetadata = GetSmallGGroupsMetadata(hlaNomenclatureVersion, preCalculatedSerology).ToList();
                 var smallGToPGroupMetadata = GetSmallGGroupToPGroupMetadata(hlaNomenclatureVersion).ToList();
 
                 return new HlaMetadataCollection
@@ -137,9 +139,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             return gGroupToPGroupService.GetGGroupToPGroupMetadata(hlaNomenclatureVersion);
         }
 
-        private IEnumerable<ISmallGGroupsMetadata> GetSmallGGroupsMetadata(string hlaNomenclatureVersion)
+        private IEnumerable<ISmallGGroupsMetadata> GetSmallGGroupsMetadata(
+            string hlaNomenclatureVersion,
+            IEnumerable<IHlaMetadataSource<SerologyTyping>> serologyTypings)
         {
-            return smallGGroupsService.GetAlleleLookupNameToSmallGGroupsMetadata(hlaNomenclatureVersion);
+            return smallGGroupsService.GetSmallGGroupsMetadata(hlaNomenclatureVersion, serologyTypings);
         }
 
         private IEnumerable<IMolecularTypingToPGroupMetadata> GetSmallGGroupToPGroupMetadata(string hlaNomenclatureVersion)

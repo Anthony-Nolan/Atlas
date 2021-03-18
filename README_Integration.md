@@ -138,7 +138,7 @@ This process is expected to be run:
 - Every three months, when new HLA nomenclature is published.
 
 The process is expected to take several hours - and will increase with both the number of donors, and the ambiguity of their HLA. 
-For Anthony Nolan's dataset (~2 million donors), the process takes 3-4 hours.
+For a dataset with ~2 million donors, the process takes 1-2 hours.
 
  
 ## Running Searches
@@ -159,6 +159,37 @@ This endpoint will:
 - (b) Trigger an asynchronous search process
 - (c) Synchronously return a unique search identifier, which you should store, to cross reference search results to when they complete.
 
+
+#### Search Request Validation
+
+Validation rules are implemented in the following files: [Matching](Atlas.MatchingAlgorithm/Validators/SearchRequest/SearchRequestValidator.cs), 
+[Match Prediction](Atlas.MatchPrediction/Validators/MatchProbabilityInputValidator.cs), [Repeat Search](Atlas.RepeatSearch/Validators/RepeatSearchRequestValidator.cs)
+
+Slightly more human-readable documentation of the rules is as follows:
+
+##### Initial Search 
+
+- `DonorType` must be present, and an allowed value - 'Adult' or 'Cord'
+- `SearchHlaData` must be present. If match criteria have been provided for a locus, then it must have non-null HLA values
+  - All HLA provided must be recognised as valid HLA typings
+    - If the HLA is not recognised, a failure notification will be sent asynchronously via the atlas repeat results topic
+- `MatchCriteria`
+  - A, B, DRB1 criteria must always be present
+  - When present, per locus allowed mismatch count must be between 0-2 (inclusive) 
+  - DPB1 may never be specified - as the algorithm is not capable of matching on this locus. Instead information from "scoring" should be used
+  - Overall mismatch count may not be higher than 5. (Note that higher mismatch counts will lead to exponentially slower searches!)
+- `ScoringCriteria`
+  - List of loci to score must be provided - but this list may be empty!
+  - List of loci to exclude from scoring aggregation must be provided - again, it may be empty!
+ 
+##### Repeat Search
+
+- `SearchRequest` must follow all validation rules described above
+  - In addition, this is expected to be identical to the search request detail used for the initial version of the search. If any of this data (e.g. patient hla, match criteria) changes, then a brand new search should be run, 
+  not a repeat search. If the provided data differs to the original search, behaviour of the algorithm is undefined
+- `OriginalSearchId` must be provided, and must match a search request ID previously run through the initial search process
+  - If the search request id is not recognised, a failure notification will be sent asynchronously via the atlas repeat results topic
+- `SearchCutoffDate` must be provided
 
 ### Receiving search results
 
@@ -220,6 +251,17 @@ Next we must consider how many horizontal instances can be spun out.
 
 This is configured by the minimum of `WEBSITE_MAX_DYNAMIC_SCALE_OUT` (sets it per-functions app), and `maximum elastic worker count` (sets it per service plan).
 These can both be set via terraform configuration values.  
+
+#### Repeat Search
+
+Two different functions apps will be making calls to the matching database - the matching functions app (running initial searches), and the repeat search app (running repeat searches).
+
+The vast majority of the time, repeat searches are expected to be much quicker and less resource intensive, so can afford lower concurrency.
+
+The above considerations of (scaled instances * max concurrent calls) applies for both functions apps - so the database connection limit in practice is:
+
+`(<concurrent matching calls per instance> * <number of matching instances>) + (<concurrent repeat matching calls per instance> * <number of repeat search instances>)`
+
 
 ### Database Connection Limit
 

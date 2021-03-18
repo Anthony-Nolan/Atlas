@@ -1,7 +1,5 @@
-using System;
 using System.Linq;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 
@@ -13,7 +11,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         bool FulfilsPerLocusMatchCriteria(MatchResult match, AlleleLevelMatchCriteria criteria, Locus locus);
         bool FulfilsTotalMatchCriteria(MatchResult match, AlleleLevelMatchCriteria criteria);
         bool FulfilsSearchTypeCriteria(MatchResult match, AlleleLevelMatchCriteria criteria);
-        bool FulfilsSearchTypeSpecificCriteria(MatchResult match, AlleleLevelMatchCriteria criteria);
+        bool FulfilsConfigurableMatchCountCriteria(MatchResult match, AlleleLevelMatchCriteria criteria);
     }
     
     public class MatchFilteringService: IMatchFilteringService
@@ -42,35 +40,15 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             return match.DonorInfo.DonorType == criteria.SearchType;
         }
 
-        /// <summary>
-        /// The matching rules are subtly different for adult and cord searches.
-        /// This method will apply any search type specific matching rules
-        /// </summary>
-        public bool FulfilsSearchTypeSpecificCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
+        /// <inheritdoc />
+        public bool FulfilsConfigurableMatchCountCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
         {
-            switch (criteria.SearchType)
+            if (!criteria.ShouldIncludeBetterMatches)
             {
-                case DonorType.Adult:
-                    return FulfilsAdultSpecificCriteria(match, criteria);
-                case DonorType.Cord:
-                    return FulfilsCordSpecificCriteria(match, criteria);
-                default:
-                    throw new ArgumentOutOfRangeException();
+                return match.TotalMatchCount == DesiredMatchCount(criteria);
             }
-        }
 
-        // ReSharper disable twice UnusedParameter.Local
-        private static bool FulfilsCordSpecificCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
-        {
-            // There are no cord specific matching rules.
-            // Cord searches should return matches with mismatch count <= TotalMismatchCount, which is the default shared behaviour
             return true;
-        }
-
-        private static bool FulfilsAdultSpecificCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
-        {
-            // Adult searches should return matches only where the mismatch count equals exactly the requested mismatch count
-            return match.TotalMatchCount == DesiredMatchCount(criteria);
         }
 
         private static int DesiredMatchCount(AlleleLevelMatchCriteria criteria)

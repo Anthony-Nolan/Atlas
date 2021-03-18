@@ -12,9 +12,10 @@ namespace Atlas.DonorImport.Data.Repositories
     public interface IDonorReadRepository
     {
         public IEnumerable<Donor> StreamAllDonors();
-        public Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(ICollection<string> externalDonorCodes);
-        public Task<Dictionary<int, Donor>> GetDonorsByIds(ICollection<int> donorIds);
-        public Task<Dictionary<string, int>> GetDonorIdsByExternalDonorCodes(ICollection<string> externalDonorCodes);
+        public Task<IReadOnlyDictionary<string, Donor>> GetDonorsByExternalDonorCodes(ICollection<string> externalDonorCodes);
+        public Task<IReadOnlyDictionary<int, Donor>> GetDonorsByIds(ICollection<int> donorIds);
+        public Task<IReadOnlyDictionary<string, int>> GetDonorIdsByExternalDonorCodes(ICollection<string> externalDonorCodes);
+        public Task<IReadOnlyDictionary<string, int>> GetDonorIdsUpdatedSince(DateTimeOffset cutoffDate);
     }
 
     public class DonorReadRepository : DonorRepositoryBase, IDonorReadRepository
@@ -47,7 +48,7 @@ namespace Atlas.DonorImport.Data.Repositories
             }
         }
 
-        public async Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(ICollection<string> externalDonorCodes)
+        public async Task<IReadOnlyDictionary<string, Donor>> GetDonorsByExternalDonorCodes(ICollection<string> externalDonorCodes)
         {
             var sql = @$"
 SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM {Donor.QualifiedTableName}
@@ -65,7 +66,7 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
         }
 
         /// <inheritdoc />
-        public async Task<Dictionary<int, Donor>> GetDonorsByIds(ICollection<int> donorIds)
+        public async Task<IReadOnlyDictionary<int, Donor>> GetDonorsByIds(ICollection<int> donorIds)
         {
             var sql = @$"
 SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM {Donor.QualifiedTableName}
@@ -82,7 +83,7 @@ WHERE {nameof(Donor.AtlasId)} IN @ids
             }
         }
 
-        public async Task<Dictionary<string, int>> GetDonorIdsByExternalDonorCodes(ICollection<string> externalDonorCodes)
+        public async Task<IReadOnlyDictionary<string, int>> GetDonorIdsByExternalDonorCodes(ICollection<string> externalDonorCodes)
         {
             var sql = @$"
 SELECT {nameof(Donor.AtlasId)}, {nameof(Donor.ExternalDonorCode)} FROM {Donor.QualifiedTableName}
@@ -100,6 +101,20 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
                     throw new Exception($"External Donor Codes {notFoundDonors.StringJoin(",")} not found in database.");
                 }
                 return donors.ToDictionary(d => d.Item2, d => d.Item1.Value);
+            }
+        }
+
+        public async Task<IReadOnlyDictionary<string, int>> GetDonorIdsUpdatedSince(DateTimeOffset cutoffDate)
+        {
+            var sql = $@"
+SELECT {nameof(Donor.AtlasId)}, {nameof(Donor.ExternalDonorCode)} FROM {Donor.QualifiedTableName}
+WHERE LastUpdated >= @{nameof(cutoffDate)}
+";
+
+            await using (var connection = NewConnection())
+            {
+                var donors = await connection.QueryAsync<Donor>(sql, new {cutoffDate});
+                return donors.ToDictionary(d => d.ExternalDonorCode, d => d.AtlasId);
             }
         }
     }

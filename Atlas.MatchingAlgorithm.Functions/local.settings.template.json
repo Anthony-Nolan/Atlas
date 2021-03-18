@@ -12,6 +12,7 @@
     "AzureStorage:SearchResultsBlobContainer": "matching-algorithm-results",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "DataRefresh:ActiveDatabaseSize": "S3",
+    "DataRefresh:AutoRunDataRefresh": "false",
     "DataRefresh:RequestsTopic": "data-refresh-requests",
     "DataRefresh:RequestsTopicSubscription": "matching-algorithm",
     "DataRefresh:CompletionTopic": "completed-data-refresh-jobs",
@@ -42,7 +43,7 @@
     "FUNCTIONS.WORKER.RUNTIME": "dotnet"
   },
   "ConnectionStrings": {
-    "DonorImportSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
+    "DonorSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
     "PersistentSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
     "SqlA": "Data Source=(local);Initial Catalog=AtlasMatchingA;Integrated Security=True;MultipleActiveResultSets=True;",
     "SqlB": "Data Source=(local);Initial Catalog=AtlasMatchingB;Integrated Security=True;MultipleActiveResultSets=True;"

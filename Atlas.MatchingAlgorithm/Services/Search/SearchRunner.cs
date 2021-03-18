@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
@@ -48,8 +49,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
         public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
         {
-            await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.SearchRequest);
-            
             var searchRequestId = identifiedSearchRequest.Id;
             searchLoggingContext.SearchRequestId = searchRequestId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
@@ -58,6 +57,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             try
             {
+                await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.SearchRequest);
+
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
                 var results = (await searchService.Search(identifiedSearchRequest.SearchRequest, null)).ToList();
@@ -65,13 +66,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 var blobContainerName = resultsBlobStorageClient.GetResultsContainerName();
 
-                var searchResultSet = new MatchingAlgorithmResultSet
+                var searchResultSet = new OriginalMatchingAlgorithmResultSet
                 {
                     SearchRequestId = searchRequestId,
                     MatchingAlgorithmResults = results,
                     ResultCount = results.Count,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
                     BlobStorageContainerName = blobContainerName,
+                    SearchedHla = identifiedSearchRequest.SearchRequest.SearchHlaData
                 };
 
                 await resultsBlobStorageClient.UploadResults(searchResultSet);

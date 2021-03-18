@@ -61,17 +61,15 @@ The Parameters are all of the form: `Func<IServiceProvider, T>`. They will be pa
 
 ### Config Parameters
 
-* `fetchAzureStorageConnectionString` (`string`)
-  * A Connection string to the Azure CloudStorage account that the HMD should use to write its data when regenerating the Dictionary, and thus to read from when using the data.
-* `fetchWmdaHlaNomenclatureFilesUri` (`string`)
-  * The Base URI of the WMDA data source, to be used when regenerating data.
-* `fetchHlaClientApiKey` (`string`)
-  * Needed, in order to pass it to the MacDictionary, so that the MacDictionary can contact Nova.
-* `fetchHlaClientBaseUrl` (`string`)
-  * Needed, in order to pass it to the MacDictionary, so that the MacDictionary can contact Nova.
+* `fetchHlaMetadataDictionarySettings` (`HlaMetadataDictionarySettings`)
+  * Settings needed to run the HMD. Values include:
+    * A Connection string to the Azure CloudStorage account that the HMD should use to write its data when regenerating the Dictionary, and thus to read from when using the data.
+    * The Base URI of the WMDA data source, to be used when regenerating data.
 * `fetchApplicationInsightsSettings` (`ApplicationInsightsSettings`)
-  * Details of the Logging Settings.
+  * Settings needed to log to application insights 
   * The HMD assumes that it is being run in Azure with an ApplicationInsight system attached. It will identify that system automatically, but you must provide the default LoggingLevel. Likely "Info".
+* `fetchHlaClientBaseUrl` (`MacDictionarySettings`)
+  * Settings needed to talk to the MacDictionary, used to expand MACs (multiple allele codes)
     
 ### Long directories
 

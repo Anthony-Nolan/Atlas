@@ -96,6 +96,9 @@ namespace Atlas.DonorImport.Data.Migrations
 
                     b.HasIndex("Hash");
 
+                    b.HasIndex("LastUpdated")
+                        .HasAnnotation("SqlServer:Include", new[] { "ExternalDonorCode" });
+
                     b.ToTable("Donors");
                 });
 

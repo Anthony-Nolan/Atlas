@@ -1,6 +1,8 @@
 # Atlas
 
-Atlas is a "search algorithm as a service", built from Anthony Nolan's matching algorithm. 
+**Atlas is licensed under the GNU GPL-v3.0 (or later) license. For details see the [license file](LICENSE).**
+
+Atlas is a "search algorithm as a service", extended from Anthony Nolan's matching algorithm. 
 
 For deployment instructions, see [README_Deployment](README_Deployment.md)
 

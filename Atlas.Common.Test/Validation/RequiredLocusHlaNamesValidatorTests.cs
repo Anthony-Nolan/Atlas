@@ -76,7 +76,7 @@ namespace Atlas.Common.Test.Validation
         [Test]
         public void Validator_WhenBothHlaStringsNull_ShouldHaveValidationError()
         {
-            var locusHlaNames = new LocusInfo<string>(null).ToLocusInfoTransfer();
+            var locusHlaNames = new LocusInfo<string>(null as string).ToLocusInfoTransfer();
             var result = validator.Validate(locusHlaNames);
             result.IsValid.Should().BeFalse();
         }

@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Test.TestHelpers;
-using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
@@ -40,6 +41,21 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             var loci = LocusParser.ParseLoci(locusString).ToList();
             var searchRequest = scenarioContext.Get<SearchRequestBuilder>();
             scenarioContext.Set(searchRequest.WithLociToScore(loci));
+        }
+
+        [Given(@"better matches are (.*)")]
+        public void GivenBetterMatchesConfig(string areBetterMatchesAllowed)
+        {
+            var betterMatches = areBetterMatchesAllowed switch
+            {
+                "allowed" => true,
+                "disallowed" => false,
+                _ => throw new ArgumentException(nameof(areBetterMatchesAllowed),
+                    $"{areBetterMatchesAllowed} not recognised as input to {nameof(GivenBetterMatchesConfig)}")
+            };
+            
+            var searchRequest = scenarioContext.Get<SearchRequestBuilder>();
+            scenarioContext.Set(searchRequest.WithBetterMatchesConfig(betterMatches));
         }
 
         [Given(@"locus (.*) is excluded from aggregate scoring")]

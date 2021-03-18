@@ -21,6 +21,10 @@ variable "azure_storage" {
   })
 }
 
+variable "donor_database_connection_string" {
+  type = string
+}
+
 variable "mac_import_table" {
   type = object({
     name = string
@@ -36,6 +40,10 @@ variable "matching_transient_a_database_connection_string" {
 }
 
 variable "matching_transient_b_database_connection_string" {
+  type = string
+}
+
+variable "original-search-matching-results-topic-name" {
   type = string
 }
 

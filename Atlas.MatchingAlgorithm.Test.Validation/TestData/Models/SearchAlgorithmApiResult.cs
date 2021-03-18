@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models
 {

@@ -32,6 +32,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             var pool = new NormalisedHaplotypePool(
                 default,
                 default,
+                default,
                 new[]
                 {
                     NormalisedPoolMemberBuilder.New
@@ -57,6 +58,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             const int indexBoundary = 0;
 
             var pool = new NormalisedHaplotypePool(
+                default,
                 default,
                 default,
                 new[]
@@ -98,6 +100,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                 .Build();
 
             var pool = new NormalisedHaplotypePool(
+                default,
                 default,
                 default,
                 new[]
@@ -150,7 +153,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                 .With(x => x.PoolIndexLowerBoundary, firstMember.PoolIndexUpperBoundary + 1)
                 .Build();
 
-            var pool = new NormalisedHaplotypePool(default, default, new[] {firstMember, secondMember});
+            var pool = new NormalisedHaplotypePool(default, default, default, new[] {firstMember, secondMember});
 
             // use implemented random number pair generator to generate return object
             var request = new GenerateRandomNumberRequest

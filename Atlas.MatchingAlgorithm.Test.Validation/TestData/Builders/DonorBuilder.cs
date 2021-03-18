@@ -57,6 +57,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
             donor.DQB1_2 = GetHla(Locus.Dqb1, LocusPosition.Two);
             donor.DRB1_1 = GetHla(Locus.Drb1, LocusPosition.One);
             donor.DRB1_2 = GetHla(Locus.Drb1, LocusPosition.Two);
+
+            // TODO: ATLAS-964: Resolve this situation more elegantly
+            if (donor.DPB1_1 == null ^ donor.DPB1_2 == null)
+            {
+                // There are some scenarios for which we just don't have any DPB1 data available to fulfil the specified donor resolution. 
+                // As a donor with a partially typed locus will be rejected by the algorithm, in these cases it is better to completely remove DPB1 typing for such donors. 
+                donor.DPB1_1 = null;
+                donor.DPB1_2 = null;
+            }
+            
             return donor;
         }
 

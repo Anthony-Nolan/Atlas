@@ -124,6 +124,12 @@ variable "MATCHING_BATCH_SIZE" {
   description = "Batch size at which donors will be iterated in the matching algorithm. Larger = quicker, but higher memory footprint."
 }
 
+variable "MATCHING_DATA_REFRESH_AUTO_RUN" {
+  type = bool
+  default = true
+  description = "When set, the data refresh job to update processed donor data will automatically run when a new nomenclature version is detected. Otherwise, it will be manual only."
+}
+
 variable "MATCHING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE" {
   type = number
   default = 3
@@ -258,6 +264,18 @@ variable "REPEAT_SEARCH_DATABASE_PASSWORD" {
 variable "REPEAT_SEARCH_DATABASE_USERNAME" {
   type    = string
   default = "repeat_search"
+}
+
+variable "REPEAT_SEARCH_MATCHING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE" {
+  type = number
+  default = 1
+  description = "The maximum number of concurrent repeat search requests that can run on each instance of the matching algorithm."
+}
+
+variable "REPEAT_SEARCH_MATCHING_MAX_SCALE_OUT" {
+  type = number
+  default = 1
+  description = "The maximum number of instances of the repeat search's matching algorithm that can be scaled out."
 }
 
 variable "SERVICE_PLAN_MAX_SCALE_OUT" {

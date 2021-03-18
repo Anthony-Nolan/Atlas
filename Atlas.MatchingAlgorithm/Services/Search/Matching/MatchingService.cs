@@ -104,7 +104,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                     var filteredMatchesByDonorInformation = matchesWithDonorInfoPopulated
                         .Where(m => matchFilteringService.IsAvailableForSearch(m.Value))
                         .Where(m => matchFilteringService.FulfilsSearchTypeCriteria(m.Value, criteria))
-                        .Where(m => matchFilteringService.FulfilsSearchTypeSpecificCriteria(m.Value, criteria))
+                        .Where(m => matchFilteringService.FulfilsConfigurableMatchCountCriteria(m.Value, criteria))
                         .ToList();
                     // Once finished populating match data, mark data as populated (so that null locus match data can be accessed for mapping to the api model)
                     filteredMatchesByDonorInformation.ForEach(m => m.Value.MarkMatchingDataFullyPopulated());
