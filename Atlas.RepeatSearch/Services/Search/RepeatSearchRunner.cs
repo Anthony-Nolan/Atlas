@@ -97,8 +97,8 @@ namespace Atlas.RepeatSearch.Services.Search
                 {
                     SearchRequestId = searchRequestId,
                     RepeatSearchId = repeatSearchId,
-                    MatchingAlgorithmResults = results,
-                    ResultCount = results.Count,
+                    Results = results,
+                    TotalResults = results.Count,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
                     BlobStorageContainerName = blobContainerName,
                     NoLongerMatchingDonors = diff.RemovedResults.ToList()
@@ -116,7 +116,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     WasSuccessful = true,
                     NumberOfResults = results.Count,
                     BlobStorageContainerName = blobContainerName,
-                    BlobStorageResultsFileName = searchResultSet.ResultsFileName,
+                    ResultsFileName = searchResultSet.ResultsFileName,
                     ElapsedTime = stopwatch.Elapsed
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);

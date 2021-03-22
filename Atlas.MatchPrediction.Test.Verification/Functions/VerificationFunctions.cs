@@ -15,21 +15,25 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Results.Matching;
 
 namespace Atlas.MatchPrediction.Test.Verification.Functions
 {
     public class VerificationFunctions
     {
         private readonly IVerificationRunner verificationRunner;
-        private readonly ISearchResultSetProcessor searchResultSetProcessor;
+        private readonly IResultSetProcessor<MatchingResultsNotification> matchingGenotypesProcessor;
+        private readonly IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor;
         private readonly IVerificationResultsWriter resultsWriter;
 
         public VerificationFunctions(
             IVerificationRunner verificationRunner,
-            ISearchResultSetProcessor searchResultSetProcessor,
+            IResultSetProcessor<MatchingResultsNotification> matchingGenotypesProcessor,
+            IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor,
             IVerificationResultsWriter resultsWriter)
         {
             this.verificationRunner = verificationRunner;
+            this.matchingGenotypesProcessor = matchingGenotypesProcessor;
             this.searchResultSetProcessor = searchResultSetProcessor;
             this.resultsWriter = resultsWriter;
         }
@@ -49,6 +53,29 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
+        [FunctionName(nameof(FetchMatchingResults))]
+        public async Task FetchMatchingResults(
+            [ServiceBusTrigger(
+                "%Matching:ResultsTopic%",
+                "%Matching:ResultsTopicSubscription%",
+                Connection = "MessagingServiceBus:ConnectionString")]
+            Message message)
+        {
+            var serialisedData = Encoding.UTF8.GetString(message.Body);
+            var notification = JsonConvert.DeserializeObject<MatchingResultsNotification>(serialisedData);
+
+            try
+            {
+                await matchingGenotypesProcessor.ProcessAndStoreResultSet(notification);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.WriteLine($"Error while downloading results for {notification.SearchRequestId}: {ex.GetBaseException()}");
+                throw;
+            }
+        }
+
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(FetchSearchResults))]
         public async Task FetchSearchResults(
             [ServiceBusTrigger(
@@ -62,7 +89,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
 
             try
             {
-                await searchResultSetProcessor.ProcessAndStoreSearchResultSet(notification);
+                await searchResultSetProcessor.ProcessAndStoreResultSet(notification);
             }
             catch (System.Exception ex)
             {

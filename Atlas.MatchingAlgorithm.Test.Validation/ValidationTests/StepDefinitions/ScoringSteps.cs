@@ -90,7 +90,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             var apiResult = scenarioContext.Get<SearchAlgorithmApiResult>();
             apiResult.IsSuccess.Should().BeTrue();
 
-            var results = apiResult.Results.MatchingAlgorithmResults.ToList();
+            var results = apiResult.Results.Results.ToList();
 
             var higherResult = ParseResultType(results, higherResultType)?.AtlasDonorId;
             var lowerResult = ParseResultType(results, lowerResultType)?.AtlasDonorId;
@@ -149,7 +149,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
 
             return apiResult
                 .Results
-                .MatchingAlgorithmResults
+                .Results
                 .Single(r => r.AtlasDonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
         }
 

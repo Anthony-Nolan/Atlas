@@ -124,44 +124,39 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
         {
             const string failedSearchId = "FAILED-SEARCH";
             var retryPolicy = Policy.Handle<Exception>().RetryAsync(10);
-            var searchRequests = BuildFiveLocusMismatchSearchRequests(patient);
+            var searchRequest = BuildFiveLocusMismatchSearchRequest(patient);
 
-            foreach (var searchRequest in searchRequests)
+            var requestResponse = await retryPolicy.ExecuteAndCaptureAsync(
+                    async () => await SubmitSearchRequest(searchRequest, patient.Id));
+
+            var searchFailed = requestResponse.Outcome == OutcomeType.Failure;
+
+            await searchRequestsRepository.AddSearchRequest(new SearchRequestRecord
             {
-                var requestResponse = await retryPolicy.ExecuteAndCaptureAsync(
-                    async () => await SubmitSingleSearch(searchRequest, patient.Id));
-
-                await searchRequestsRepository.AddSearchRequest(new SearchRequestRecord
-                {
-                    VerificationRun_Id = verificationRunId,
-                    PatientSimulant_Id = patient.Id,
-                    DonorMismatchCount = searchRequest.MatchCriteria.DonorMismatchCount,
-                    AtlasSearchIdentifier = requestResponse.Outcome == OutcomeType.Failure ? failedSearchId : requestResponse.Result,
-                    WasSuccessful = requestResponse.Outcome == OutcomeType.Failure ? false : (bool?)null
-                });
-            }
+                VerificationRun_Id = verificationRunId,
+                PatientSimulant_Id = patient.Id,
+                DonorMismatchCount = searchRequest.MatchCriteria.DonorMismatchCount,
+                AtlasSearchIdentifier = searchFailed ? failedSearchId : requestResponse.Result,
+                WasSuccessful = searchFailed ? false : (bool?)null
+            });
         }
 
         /// <returns>
-        /// When patient is <see cref="SimulatedHlaTypingCategory.Genotype"/>: 5+/10 search request; else: 8+/10 search requests.
+        /// When patient is <see cref="SimulatedHlaTypingCategory.Genotype"/>: 5+/10 matching-only request; else: 8+/10 search request.
         /// </returns>
-        private static IEnumerable<SearchRequest> BuildFiveLocusMismatchSearchRequests(Simulant patient)
+        private static SearchRequest BuildFiveLocusMismatchSearchRequest(Simulant patient)
         {
             const int locusMismatchCount = 2;
 
-            // TODO ATLAS-340: Refactor this to a single int after Adult searches can be run as "exact or better".
-            // I.e., mismatch count will be either '5' for Genotype, or '2' for Masked.
-            var donorMismatchCounts = patient.SimulatedHlaTypingCategory == SimulatedHlaTypingCategory.Genotype
-                ? new[] { 5 }
-                : new[] { 0, 1, 2 };
+            var isMasked = patient.SimulatedHlaTypingCategory == SimulatedHlaTypingCategory.Masked;
 
-            return donorMismatchCounts.Select(mm => new SearchRequest
+            return new SearchRequest
             {
                 SearchHlaData = patient.ToPhenotypeInfo().ToPhenotypeInfoTransfer(),
                 SearchDonorType = patient.SimulatedHlaTypingCategory.ToDonorType(),
                 MatchCriteria = new MismatchCriteria
                 {
-                    DonorMismatchCount = mm,
+                    DonorMismatchCount = isMasked ? 2 : 5,
                     LocusMismatchCriteria = new LociInfoTransfer<int?>
                     {
                         A = locusMismatchCount,
@@ -169,7 +164,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
                         C = locusMismatchCount,
                         Dqb1 = locusMismatchCount,
                         Drb1 = locusMismatchCount
-                    }
+                    },
+                    IncludeBetterMatches = true
                 },
                 // no scoring requested
                 ScoringCriteria = new ScoringCriteria
@@ -179,11 +175,13 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
                 },
                 // ensure global HF set is selected
                 PatientEthnicityCode = null,
-                PatientRegistryCode = null
-            });
+                PatientRegistryCode = null,
+
+                RunMatchPrediction = isMasked
+            };
         }
 
-        private async Task<string> SubmitSingleSearch(SearchRequest searchRequest, int patientId)
+        private async Task<string> SubmitSearchRequest(SearchRequest searchRequest, int patientId)
         {
             try
             {

@@ -10,7 +10,7 @@ using Dapper;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {
-    public class MatchProbabilitiesRepository : IProcessedSearchResultsRepository<MatchProbability>
+    public class MatchProbabilitiesRepository : IProcessedResultsRepository<MatchProbability>
     {
         private readonly string connectionString;
 

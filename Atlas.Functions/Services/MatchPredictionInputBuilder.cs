@@ -64,7 +64,7 @@ namespace Atlas.Functions.Services
                     searchRequest,
                     matchingAlgorithmResultSet.HlaNomenclatureVersion
                 );
-                var donorInputs = matchingAlgorithmResultSet.MatchingAlgorithmResults.Select(matchingResult => BuildPerDonorMatchPredictionInput(
+                var donorInputs = matchingAlgorithmResultSet.Results.Select(matchingResult => BuildPerDonorMatchPredictionInput(
                         matchingResult,
                         donorDictionary
                     ))

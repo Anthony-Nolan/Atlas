@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Atlas.MatchPrediction.Test.Verification.Data.Models
+﻿namespace Atlas.MatchPrediction.Test.Verification.Data.Models
 {
     public class SuccessfulSearchRequestInfo
     {

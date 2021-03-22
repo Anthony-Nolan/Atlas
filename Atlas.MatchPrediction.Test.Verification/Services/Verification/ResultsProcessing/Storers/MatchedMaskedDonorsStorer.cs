@@ -4,13 +4,14 @@ using Atlas.Client.Models.Search.Results;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Newtonsoft.Json;
+
 #pragma warning disable 1998
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing
+namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers
 {
-    internal class MatchedDonorsProcessor : ResultsProcessor<MatchedDonor>
+    internal class MatchedMaskedDonorsStorer : ResultsStorer<SearchResult, MatchedDonor>
     {
-        public MatchedDonorsProcessor(IProcessedSearchResultsRepository<MatchedDonor> resultsRepository)
+        public MatchedMaskedDonorsStorer(IProcessedResultsRepository<MatchedDonor> resultsRepository)
             : base(resultsRepository)
         {
         }
@@ -26,7 +27,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
                     TypedLociCount = result.MatchingResult.MatchingResult.TypedLociCount ?? 0,
                     WasPatientRepresented = !result.MatchPredictionResult.IsPatientPhenotypeUnrepresented,
                     WasDonorRepresented = !result.MatchPredictionResult.IsDonorPhenotypeUnrepresented,
-                    SearchResult = JsonConvert.SerializeObject(result)
+                    MatchingResult = JsonConvert.SerializeObject(result.MatchingResult),
+                    MatchPredictionResult = JsonConvert.SerializeObject(result.MatchPredictionResult)
                 }
             };
         }

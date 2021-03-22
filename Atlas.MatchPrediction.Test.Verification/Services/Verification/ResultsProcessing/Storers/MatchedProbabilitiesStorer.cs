@@ -10,14 +10,14 @@ using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing
+namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers
 {
-    internal class MatchedProbabilitiesProcessor : ResultsProcessor<MatchProbability>
+    internal class MatchedProbabilitiesStorer : ResultsStorer<SearchResult, MatchProbability>
     {
         private readonly IMatchedDonorsRepository matchedDonorsRepository;
 
-        public MatchedProbabilitiesProcessor(
-            IProcessedSearchResultsRepository<MatchProbability> resultsRepository,
+        public MatchedProbabilitiesStorer(
+            IProcessedResultsRepository<MatchProbability> resultsRepository,
             IMatchedDonorsRepository matchedDonorsRepository)
                 : base(resultsRepository)
         {

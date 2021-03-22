@@ -15,15 +15,21 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
         public int MatchedDonorSimulant_Id { get; set; }
         public int TotalMatchCount { get; set; }
         public int TypedLociCount { get; set; }
-        public bool WasPatientRepresented { get; set; }
-        public bool WasDonorRepresented { get; set; }
+        public bool? WasPatientRepresented { get; set; }
+        public bool? WasDonorRepresented { get; set; }
 
         /// <summary>
-        /// Serialised copy of the <see cref="Client.Models.Search.Results.SearchResult"/>.
+        /// Serialised copy of the <see cref="Client.Models.Search.Results.Matching.MatchingAlgorithmResult"/>.
         /// </summary>
         [Required]
         [Column(TypeName = "nvarchar(max)")]
-        public string SearchResult { get; set; }
+        public string MatchingResult { get; set; }
+
+        /// <summary>
+        /// Serialised copy of the <see cref="Client.Models.Search.Results.MatchPrediction.MatchProbabilityResponse"/>.
+        /// </summary>
+        [Column(TypeName = "nvarchar(max)")]
+        public string MatchPredictionResult { get; set; }
     }
 
     internal static class MatchedDonorBuilder

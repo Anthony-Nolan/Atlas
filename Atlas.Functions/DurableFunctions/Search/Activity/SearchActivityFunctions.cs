@@ -65,11 +65,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             stopwatch.Start();
 
             var matchingResults = await logger.RunTimedAsync("Download matching results", async () =>
-                await matchingResultsDownloader.Download(matchingResultsNotification.BlobStorageResultsFileName, matchingResultsNotification.IsRepeatSearch)
+                await matchingResultsDownloader.Download(matchingResultsNotification.ResultsFileName, matchingResultsNotification.IsRepeatSearch)
             );
 
             var donorInfo = await logger.RunTimedAsync("Fetch donor data", async () =>
-                await donorReader.GetDonors(matchingResults.MatchingAlgorithmResults.Select(r => r.AtlasDonorId))
+                await donorReader.GetDonors(matchingResults.Results.Select(r => r.AtlasDonorId))
             );
 
             var matchPredictionInputs = logger.RunTimed("Build Match Prediction Inputs", () =>
@@ -113,12 +113,12 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             var matchingResultsNotification = persistSearchResultsParameters.MatchingResultsNotification;
 
             var matchingResults = await logger.RunTimedAsync("Download matching results", async () =>
-                await matchingResultsDownloader.Download(matchingResultsNotification.BlobStorageResultsFileName, matchingResultsNotification.IsRepeatSearch)
+                await matchingResultsDownloader.Download(matchingResultsNotification.ResultsFileName, matchingResultsNotification.IsRepeatSearch)
             );
 
             // TODO: ATLAS-965 - use the lookup in matching to populate this and avoid a second SQL fetch
             var donorInfo = await logger.RunTimedAsync("Fetch donor data", async () =>
-                await donorReader.GetDonors(matchingResults.MatchingAlgorithmResults.Select(r => r.AtlasDonorId))
+                await donorReader.GetDonors(matchingResults.Results.Select(r => r.AtlasDonorId))
             );
 
             var resultSet = await resultsCombiner.CombineResults(

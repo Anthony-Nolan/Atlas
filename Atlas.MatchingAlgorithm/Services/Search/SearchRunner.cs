@@ -69,8 +69,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 var searchResultSet = new OriginalMatchingAlgorithmResultSet
                 {
                     SearchRequestId = searchRequestId,
-                    MatchingAlgorithmResults = results,
-                    ResultCount = results.Count,
+                    Results = results,
+                    TotalResults = results.Count,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
                     BlobStorageContainerName = blobContainerName,
                     SearchedHla = identifiedSearchRequest.SearchRequest.SearchHlaData
@@ -87,7 +87,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     WasSuccessful = true,
                     NumberOfResults = results.Count,
                     BlobStorageContainerName = blobContainerName,
-                    BlobStorageResultsFileName = searchResultSet.ResultsFileName,
+                    ResultsFileName = searchResultSet.ResultsFileName,
                     ElapsedTime = stopwatch.Elapsed
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
