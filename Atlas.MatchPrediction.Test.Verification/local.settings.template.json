@@ -19,6 +19,9 @@
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
     "MacDictionary:Download:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
 
+    "Matching:ResultsTopic": "matching-results-ready",
+    "Matching:ResultsTopicSubscription": "override-this",
+
     "MessagingServiceBus:ConnectionString": "override-this",
 
     "Search:RequestUrl": "override-this",

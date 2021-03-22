@@ -42,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
                 return new SearchMetrics
                 {
                     ElapsedMilliseconds = stopwatch.ElapsedMilliseconds,
-                    DonorsReturned = deserialisedContent.ResultCount,
+                    DonorsReturned = deserialisedContent.TotalResults,
                 };
             }
             catch (OperationCanceledException)

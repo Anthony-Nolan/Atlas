@@ -5,7 +5,7 @@ using Atlas.Client.Models.Search.Requests;
 
 namespace Atlas.Client.Models.Search.Results.Matching
 {
-    public class MatchingResultsNotification
+    public class MatchingResultsNotification : IResultsNotification
     {
         /// <summary>
         /// Include full search request details in results notification, as match prediction will need it to run,
@@ -41,7 +41,7 @@ namespace Atlas.Client.Models.Search.Results.Matching
         /// <summary>
         /// Name of the file in which results are stored in blob storage. 
         /// </summary>
-        public string BlobStorageResultsFileName { get; set; }
+        public string ResultsFileName { get; set; }
         
         public TimeSpan ElapsedTime { get; set; }
     }

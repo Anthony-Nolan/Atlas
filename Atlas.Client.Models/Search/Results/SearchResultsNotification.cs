@@ -5,7 +5,7 @@ using System;
 
 namespace Atlas.Client.Models.Search.Results
 {
-    public class SearchResultsNotification
+    public class SearchResultsNotification : IResultsNotification
     {
         public string SearchRequestId { get; set; }
         

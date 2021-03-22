@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
-using Atlas.Client.Models.Search.Results;
-using Atlas.Client.Models.Search.Results.ResultSet;
+using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
@@ -18,9 +17,9 @@ using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using DonorScores = System.Collections.Generic.Dictionary<int, Atlas.MatchingAlgorithm.Data.Models.SearchResults.ScoreResult>;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing
+namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers
 {
-    internal interface IMismatchedDonorsProcessor
+    internal interface IMismatchedDonorsStorer
     {
         /// <summary>
         /// If patient typing was of category <see cref="SimulatedHlaTypingCategory.Genotype"/>,
@@ -28,23 +27,23 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         /// returned in the search results due to having too many mismatches, by creating records with appropriate values.
         /// Note: 0/10 donors and 0/2 loci match counts will not be stored to reduce number of rows added to the database.
         /// </summary>
-        Task CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequestRecord searchRequest, SearchResultSet resultSet);
+        Task CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequestRecord searchRequest, OriginalMatchingAlgorithmResultSet resultSet);
     }
 
-    internal class MismatchedDonorsProcessor : IMismatchedDonorsProcessor
+    internal class MismatchedDonorsStorer : IMismatchedDonorsStorer
     {
         private readonly IGenotypeSimulantsInfoCache cache;
         private readonly IDonorScoringService scoringService;
-        private readonly IProcessedSearchResultsRepository<MatchedDonor> bulkInsertDonorRepository;
+        private readonly IProcessedResultsRepository<MatchedDonor> bulkInsertDonorRepository;
         private readonly IMatchedDonorsRepository matchedDonorsRepository;
-        private readonly IProcessedSearchResultsRepository<LocusMatchCount> matchCountsRepository;
+        private readonly IProcessedResultsRepository<LocusMatchCount> matchCountsRepository;
 
-        public MismatchedDonorsProcessor(
+        public MismatchedDonorsStorer(
             IGenotypeSimulantsInfoCache cache,
             IDonorScoringService scoringService,
-            IProcessedSearchResultsRepository<MatchedDonor> bulkInsertDonorRepository,
+            IProcessedResultsRepository<MatchedDonor> bulkInsertDonorRepository,
             IMatchedDonorsRepository matchedDonorsRepository,
-            IProcessedSearchResultsRepository<LocusMatchCount> matchCountsRepository)
+            IProcessedResultsRepository<LocusMatchCount> matchCountsRepository)
         {
             this.scoringService = scoringService;
             this.bulkInsertDonorRepository = bulkInsertDonorRepository;
@@ -53,7 +52,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             this.cache = cache;
         }
 
-        public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequestRecord searchRequest, SearchResultSet resultSet)
+        public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequestRecord searchRequest, OriginalMatchingAlgorithmResultSet resultSet)
         {
             var info = await cache.GetOrAddGenotypeSimulantsInfo(searchRequest.VerificationRun_Id);
 
@@ -62,7 +61,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
                 return;
             }
 
-            var searchResultDonorIds = resultSet.SearchResults.Select(r => int.Parse(r.DonorCode));
+            var searchResultDonorIds = resultSet.Results.Select(r => int.Parse(r.ExternalDonorCode));
             var missingDonorIds = info.Donors.Ids.Except(searchResultDonorIds).ToList();
 
             if (!missingDonorIds.Any())

@@ -63,13 +63,13 @@ namespace Atlas.Functions.Services
                     } as SearchResultSet
                     : new OriginalSearchResultSet();
 
-                resultSet.SearchResults = matchingAlgorithmResultSet.MatchingAlgorithmResults.Select(r => new SearchResult
+                resultSet.Results = matchingAlgorithmResultSet.Results.Select(r => new SearchResult
                 {
                     DonorCode = donorInformation[r.AtlasDonorId].ExternalDonorCode,
                     MatchingResult = r,
                     MatchPredictionResult = matchPredictionResults[r.AtlasDonorId]
                 });
-                resultSet.TotalResults = matchingAlgorithmResultSet.ResultCount;
+                resultSet.TotalResults = matchingAlgorithmResultSet.TotalResults;
                 resultSet.HlaNomenclatureVersion = matchingAlgorithmResultSet.HlaNomenclatureVersion;
                 resultSet.SearchRequestId = matchingAlgorithmResultSet.SearchRequestId;
                 resultSet.BlobStorageContainerName = resultsContainer;

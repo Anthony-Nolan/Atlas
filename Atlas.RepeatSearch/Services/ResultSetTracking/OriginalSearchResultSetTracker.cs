@@ -29,9 +29,9 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
         {
             var resultSet = await blobDownloader.Download<OriginalMatchingAlgorithmResultSet>(
                 notification.BlobStorageContainerName,
-                notification.BlobStorageResultsFileName);
+                notification.ResultsFileName);
 
-            var donorIds = resultSet.MatchingAlgorithmResults.Select(r => r.ExternalDonorCode).ToList();
+            var donorIds = resultSet.Results.Select(r => r.ExternalDonorCode).ToList();
             await canonicalResultSetRepository.CreateCanonicalResultSet(resultSet.SearchRequestId, donorIds);
         }
 

@@ -21,6 +21,9 @@ using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Atlas.Client.Models.Search.Results;
+using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers;
 
 namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 {
@@ -72,11 +75,11 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
                 new SearchRequestsRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<IMatchedDonorsRepository, MatchedDonorsRepository>(sp =>
                 new MatchedDonorsRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<IProcessedSearchResultsRepository<MatchedDonor>, MatchedDonorsRepository>(sp =>
+            services.AddScoped<IProcessedResultsRepository<MatchedDonor>, MatchedDonorsRepository>(sp =>
                 new MatchedDonorsRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<IProcessedSearchResultsRepository<LocusMatchCount>, MatchCountsRepository>(sp =>
+            services.AddScoped<IProcessedResultsRepository<LocusMatchCount>, MatchCountsRepository>(sp =>
                 new MatchCountsRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<IProcessedSearchResultsRepository<MatchProbability>, MatchProbabilitiesRepository>(sp =>
+            services.AddScoped<IProcessedResultsRepository<MatchProbability>, MatchProbabilitiesRepository>(sp =>
                 new MatchProbabilitiesRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<IVerificationResultsRepository, VerificationResultsRepository>(sp =>
                 new VerificationResultsRepository(fetchSqlConnectionString(sp)));
@@ -120,11 +123,15 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 
             services.AddScoped<IVerificationRunner, VerificationRunner>();
             services.AddScoped<IGenotypeSimulantsInfoCache, GenotypeSimulantsInfoCache>();
-            services.AddScoped<ISearchResultSetProcessor, SearchResultSetSetProcessor>();
-            services.AddScoped<IResultsProcessor<MatchedDonor>, MatchedDonorsProcessor>();
-            services.AddScoped<IResultsProcessor<LocusMatchCount>, MatchCountsProcessor>();
-            services.AddScoped<IResultsProcessor<MatchProbability>, MatchedProbabilitiesProcessor>();
-            services.AddScoped<IMismatchedDonorsProcessor, MismatchedDonorsProcessor>();
+            services.AddScoped<ISimulantChecker, SimulantChecker>();
+            services.AddScoped<IResultSetProcessor<MatchingResultsNotification>, MatchingGenotypesProcessor>();
+            services.AddScoped<IResultSetProcessor<SearchResultsNotification>, MatchingMaskedPhenotypesProcessor>();
+            services.AddScoped<IResultsStorer<MatchingAlgorithmResult, MatchedDonor>, MatchedGenotypeDonorsStorer>();
+            services.AddScoped<IResultsStorer<SearchResult, MatchedDonor>, MatchedMaskedDonorsStorer>();
+            services.AddScoped<IResultsStorer<MatchingAlgorithmResult, LocusMatchCount>, GenotypeMatchCountsStorer>();
+            services.AddScoped<IResultsStorer<SearchResult, LocusMatchCount>, MaskedMatchCountsStorer>();
+            services.AddScoped<IResultsStorer<SearchResult, MatchProbability>, MatchedProbabilitiesStorer>();
+            services.AddScoped<IMismatchedDonorsStorer, MismatchedDonorsStorer>();
             services.AddScoped<ISearchResultsStreamer, SearchResultsStreamer>();
             services.AddScoped<IVerificationResultsWriter, VerificationResultsWriter>();
             services.AddScoped<IVerificationResultsCompiler, VerificationResultsCompiler>();

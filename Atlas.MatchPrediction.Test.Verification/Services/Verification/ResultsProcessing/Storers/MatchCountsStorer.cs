@@ -3,19 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
+using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing
+namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers
 {
-    internal class MatchCountsProcessor : ResultsProcessor<LocusMatchCount>
+    internal abstract class MatchCountsStorer<TResult> : ResultsStorer<TResult, LocusMatchCount> where TResult : IResult
     {
         private readonly IMatchedDonorsRepository matchedDonorsRepository;
 
-        public MatchCountsProcessor(
-            IProcessedSearchResultsRepository<LocusMatchCount> resultsRepository,
+        protected MatchCountsStorer(
+            IProcessedResultsRepository<LocusMatchCount> resultsRepository,
             IMatchedDonorsRepository matchedDonorsRepository)
             : base(resultsRepository)
         {
@@ -23,17 +24,19 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         }
 
         /// <returns>Locus match counts greater than zero.</returns>
-        protected override async Task<IEnumerable<LocusMatchCount>> ProcessSingleSearchResult(int searchRequestRecordId, SearchResult result)
+        protected override async Task<IEnumerable<LocusMatchCount>> ProcessSingleSearchResult(int searchRequestRecordId, TResult result)
         {
+            var donorCode = GetDonorCode(result);
+
             var matchedDonorId = await matchedDonorsRepository.GetMatchedDonorId(
-                searchRequestRecordId, int.Parse(result.DonorCode));
+                searchRequestRecordId, int.Parse(donorCode));
             
             if (matchedDonorId == null)
             {
-                throw new Exception($"Could not find matched donor record for donor code {result.DonorCode}.");
+                throw new Exception($"Could not find matched donor record for donor code {donorCode}.");
             }
 
-            var lociResults = result.MatchingResult.ScoringResult.ScoringResultsByLocus.ToLociInfo();
+            var lociResults = GetScoringResult(result).ScoringResultsByLocus.ToLociInfo();
 
             return MatchPredictionStaticData.MatchPredictionLoci
                 .Select(l => new LocusMatchCount
@@ -44,5 +47,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
                 })
                 .Where(m => m.MatchCount > 0);
         }
+
+        protected abstract string GetDonorCode(TResult result);
+        protected abstract ScoringResult GetScoringResult(TResult result);
     }
 }

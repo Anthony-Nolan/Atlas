@@ -7,7 +7,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 
 namespace Atlas.Client.Models.Search.Results.ResultSet
 {
-    public abstract class SearchResultSet
+    public abstract class SearchResultSet : IResultSet<SearchResult>
     {
         public string SearchRequestId { get; set; }
 
@@ -15,7 +15,7 @@ namespace Atlas.Client.Models.Search.Results.ResultSet
 
         public int TotalResults { get; set; }
 
-        public IEnumerable<SearchResult> SearchResults { get; set; }
+        public IEnumerable<SearchResult> Results { get; set; }
 
         public string HlaNomenclatureVersion { get; set; }
         public string BlobStorageContainerName { get; set; }

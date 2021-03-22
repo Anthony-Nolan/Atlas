@@ -3,7 +3,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 
 namespace Atlas.Client.Models.Search.Results.Matching
 {
-    public class MatchingAlgorithmResult
+    public class MatchingAlgorithmResult : IResult
     {
         public MatchingResult MatchingResult { get; set; }
 

@@ -2,9 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
-using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
-using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Microsoft.AspNetCore.Mvc;
@@ -30,8 +28,8 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
 
                 return new OriginalMatchingAlgorithmResultSet
                 {
-                    ResultCount = results.Count,
-                    MatchingAlgorithmResults = results
+                    TotalResults = results.Count,
+                    Results = results
                 };
             }
             catch (Exception e)

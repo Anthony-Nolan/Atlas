@@ -82,6 +82,8 @@ This code is designed to be run locally; it is not production quality and cannot
           ...
           "HlaMetadataDictionary:AzureStorageConnectionString": "remote-connection-string"
           ...
+          "Matching:ResultsTopicSubscription": "subscription-name",
+
           "MessagingServiceBus:ConnectionString": "remote-connection-string",
           
           "Search:RequestUrl": "url-to-search-function",
@@ -177,6 +179,15 @@ The following steps must be completed prior to generating the test harness.
 ### Searching
 Note: at present, the framework is hard-coded to only run five locus (A,B,C,DQB1,DRB1) search requests.
 
+#### Small g groups
+- Atlas does _not_ officially support patients or donors typed with small g groups within end-to-end search.
+  - However, to allow the calculation of matching PDPs for verification, small g support has been added to matching
+    and donor import only.
+- If the source HF set is encoded to small g typing resolution, then the masking proportions of the Test Harness should be 
+  manipulated in such a way to ensure no small g groups remain in the masked patient and donor typings. 
+- The verification framework automatically sends the simulated patient and donor genotypes to Atlas search
+  as matching-only requests, i.e., search requests with scoring and MPA disabled.
+
 #### Send Search Requests
 - The last part of verification data generation involves sending search requests to the test environment
   for each test patient within the specified test harness.
@@ -191,9 +202,10 @@ Note: at present, the framework is hard-coded to only run five locus (A,B,C,DQB1
   - Check the Debug window for progress.
 
 #### Retrieve Search Results
-- As search is an async process, a second service-bus triggered function, `FetchSearchResults`, is used to retrieve
+- As search is an async process, service-bus triggered functions, `FetchMatchingResults` and `FetchSearchResults`, are used to retrieve
   the results when they are ready to download from blob storage.
-  - Ensure `Search:ResultsTopicSubscription` has been overriden in `local.settings.json` with the remote environment value.
+  - Ensure `Matching:ResultsTopicSubscription` and `Search:ResultsTopicSubscription` has been overriden in `local.settings.json`
+    with the remote environment value.
   - The property `serviceBus:"messageHandlerOptions:maxConcurrentCalls` determines how many results are processed at a time.
     - This can be changed to a count that is optimal for the local environment.
     - Note: the first batch of messages will take the longest to run, due to the loading of in-memory caches.
