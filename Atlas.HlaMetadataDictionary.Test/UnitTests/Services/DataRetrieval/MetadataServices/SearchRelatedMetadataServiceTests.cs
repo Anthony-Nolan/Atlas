@@ -33,6 +33,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
         private IAlleleNamesExtractor alleleNamesExtractor;
         private IMacDictionary macDictionary;
         private IAlleleGroupExpander alleleGroupExpander;
+        private ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService;
         private IAppCache cache;
 
         [SetUp]
@@ -44,6 +45,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
             alleleNamesExtractor = Substitute.For<IAlleleNamesExtractor>();
             macDictionary = Substitute.For<IMacDictionary>();
             alleleGroupExpander = Substitute.For<IAlleleGroupExpander>();
+            smallGGroupToPGroupMetadataService = Substitute.For<ISmallGGroupToPGroupMetadataService>();
 
             cache = AppCacheBuilder.NewDefaultCache();
             var cacheProvider = Substitute.For<IPersistentCacheProvider>();
@@ -56,6 +58,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
                 alleleNamesExtractor,
                 macDictionary,
                 alleleGroupExpander,
+                smallGGroupToPGroupMetadataService,
                 cacheProvider);
 
             #region Set up to prevent exceptions that would incorrectly fail tests
@@ -118,10 +121,12 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
 
         [TestCase(HlaTypingCategory.PGroup)]
         [TestCase(HlaTypingCategory.GGroup)]
+        [TestCase(HlaTypingCategory.SmallGGroup)]
         public async Task GetHlaMetadata_WhenAlleleGroup_ExpandsAlleleGroup(HlaTypingCategory typingCategory)
         {
             const string alleleGroupName = "group";
             hlaCategorisationService.GetHlaTypingCategory(default).ReturnsForAnyArgs(typingCategory);
+            smallGGroupToPGroupMetadataService.ConvertSmallGGroupToPGroup(DefaultLocus, Arg.Any<string>(), Arg.Any<string>()).Returns(alleleGroupName);
 
             await metadataService.GetHlaMetadata(DefaultLocus, alleleGroupName, "hla-db-version");
 
@@ -131,6 +136,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
 
         [TestCase(HlaTypingCategory.PGroup)]
         [TestCase(HlaTypingCategory.GGroup)]
+        [TestCase(HlaTypingCategory.SmallGGroup)]
         public async Task GetHlaMetadata_WhenAlleleGroup_GetsMetadataForAllelesInGroup(HlaTypingCategory typingCategory)
         {
             const string alleleInGroup = "allele";

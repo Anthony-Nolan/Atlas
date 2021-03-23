@@ -40,6 +40,41 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             }
         }
 
+        [Then("the locus match category should be (.*) at (.*)")]
+        public void ThenTheLocusMatchCategoryShouldBe(string category, string locus)
+        {
+            var donorResult = GetSearchResultForSingleDonor();
+            var expectedLocusMatchCategory = ParseExpectedLocusMatchCategory(category);
+            var expectedLoci = ParseExpectedLoci(locus);
+
+            foreach (var expectedLocus in expectedLoci)
+            {
+                switch (expectedLocus)
+                {
+                    case Locus.A:
+                        donorResult.ScoringResult.ScoringResultsByLocus.A.MatchCategory.Should().Be(expectedLocusMatchCategory);
+                        break;
+                    case Locus.B:
+                        donorResult.ScoringResult.ScoringResultsByLocus.B.MatchCategory.Should().Be(expectedLocusMatchCategory);
+                        break;
+                    case Locus.C:
+                        donorResult.ScoringResult.ScoringResultsByLocus.C.MatchCategory.Should().Be(expectedLocusMatchCategory);
+                        break;
+                    case Locus.Dpb1:
+                        donorResult.ScoringResult.ScoringResultsByLocus.Dpb1.MatchCategory.Should().Be(expectedLocusMatchCategory);
+                        break;
+                    case Locus.Dqb1:
+                        donorResult.ScoringResult.ScoringResultsByLocus.Dqb1.MatchCategory.Should().Be(expectedLocusMatchCategory);
+                        break;
+                    case Locus.Drb1:
+                        donorResult.ScoringResult.ScoringResultsByLocus.Drb1.MatchCategory.Should().Be(expectedLocusMatchCategory);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
+
         [Then("the match category should be (.*)")]
         public void ThenTheMatchCategoryShouldBe(string category)
         {
@@ -389,6 +424,25 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             if (expectedPosition.Contains(LocusPosition.Two))
             {
                 validMatchConfidence.Should().Be(locusSearchResult.ScoreDetailsAtPositionTwo.MatchConfidence);
+            }
+        }
+
+        private LocusMatchCategory? ParseExpectedLocusMatchCategory(string category)
+        {
+            switch (category)
+            {
+                case "Match":
+                    return LocusMatchCategory.Match;
+                case "Mismatch":
+                    return LocusMatchCategory.Mismatch;
+                case "Unknown":
+                    return LocusMatchCategory.Unknown;
+                case "PermissiveMismatch":
+                case "Permissive Mismatch":
+                    return LocusMatchCategory.PermissiveMismatch;
+                default:
+                    scenarioContext.Pending();
+                    return null;
             }
         }
     }
