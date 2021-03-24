@@ -33,7 +33,6 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         private readonly IAlleleNamesExtractor alleleNamesExtractor;
         private readonly IMacDictionary macDictionary;
         private readonly IAlleleGroupExpander alleleGroupExpander;
-        private readonly ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService;
 
         protected SearchRelatedMetadataServiceBase(
             IHlaMetadataRepository hlaMetadataRepository,
@@ -42,7 +41,6 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IAlleleNamesExtractor alleleNamesExtractor,
             IMacDictionary macDictionary,
             IAlleleGroupExpander alleleGroupExpander,
-            ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService,
             string perTypeCacheKey,
             IPersistentCacheProvider cacheProvider)
             : base(perTypeCacheKey, cacheProvider)
@@ -53,7 +51,6 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             this.alleleNamesExtractor = alleleNamesExtractor;
             this.macDictionary = macDictionary;
             this.alleleGroupExpander = alleleGroupExpander;
-            this.smallGGroupToPGroupMetadataService = smallGGroupToPGroupMetadataService;
         }
 
         public async Task<THlaMetadata> GetHlaMetadata(Locus locus, string hlaName, string hlaNomenclatureVersion)
@@ -86,8 +83,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                     alleleNamesMetadataService,
                     alleleNamesExtractor,
                     macDictionary,
-                    alleleGroupExpander,
-                    smallGGroupToPGroupMetadataService);
+                    alleleGroupExpander);
         }
 
         protected abstract IEnumerable<THlaMetadata> ConvertMetadataRowsToMetadata(IEnumerable<HlaMetadataTableRow> rows);

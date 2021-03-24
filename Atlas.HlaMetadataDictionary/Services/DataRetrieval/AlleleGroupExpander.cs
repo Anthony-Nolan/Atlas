@@ -58,7 +58,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         private bool IsAlleleGroup(string lookupName)
         {
             var category = hlaCategorisationService.GetHlaTypingCategory(lookupName);
-            return category == HlaTypingCategory.GGroup || category == HlaTypingCategory.PGroup;
+            return new[]{HlaTypingCategory.GGroup, HlaTypingCategory.PGroup, HlaTypingCategory.SmallGGroup}.Contains(category);
         }
     }
 }
