@@ -1,13 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
-using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
-using Polly.Fallback;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
@@ -27,16 +22,10 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     internal class LocusHlaMatchingMetadataService : ILocusHlaMatchingMetadataService
     {
         private readonly IHlaMatchingMetadataService singleHlaMetadataService;
-        private readonly IHlaCategorisationService hlaCategorisationService;
-        private readonly ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService;
 
-        public LocusHlaMatchingMetadataService(IHlaMatchingMetadataService singleHlaMetadataService,
-            IHlaCategorisationService hlaCategorisationService,
-            ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService)
+        public LocusHlaMatchingMetadataService(IHlaMatchingMetadataService singleHlaMetadataService)
         {
             this.singleHlaMetadataService = singleHlaMetadataService;
-            this.hlaCategorisationService = hlaCategorisationService;
-            this.smallGGroupToPGroupMetadataService = smallGGroupToPGroupMetadataService;
         }
 
         public async Task<LocusInfo<INullHandledHlaMatchingMetadata>> GetHlaMatchingMetadata(
@@ -82,14 +71,6 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             string locusHlaTyping,
             string hlaNomenclatureVersion)
         {
-            if (hlaCategorisationService.GetHlaTypingCategory(locusHlaTyping) == HlaTypingCategory.SmallGGroup)
-            {
-                var pGroup =
-                    await smallGGroupToPGroupMetadataService.ConvertSmallGGroupToPGroup(locus, locusHlaTyping, hlaNomenclatureVersion);
-
-                return new HlaMatchingMetadata(locus, locusHlaTyping, TypingMethod.Molecular, new List<string>() { pGroup });
-            }
-
             return await singleHlaMetadataService.GetHlaMetadata(locus, locusHlaTyping, hlaNomenclatureVersion);
         }
     }
