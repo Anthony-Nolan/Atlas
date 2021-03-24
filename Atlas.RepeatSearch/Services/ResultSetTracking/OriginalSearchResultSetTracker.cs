@@ -31,7 +31,7 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
                 notification.BlobStorageContainerName,
                 notification.ResultsFileName);
 
-            var donorIds = resultSet.Results.Select(r => r.ExternalDonorCode).ToList();
+            var donorIds = resultSet.Results.Select(r => r.DonorCode).ToList();
             await canonicalResultSetRepository.CreateCanonicalResultSet(resultSet.SearchRequestId, donorIds);
         }
 

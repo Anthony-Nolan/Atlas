@@ -9,9 +9,9 @@ using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers
 {
-    internal class MatchedGenotypeDonorsStorer : ResultsStorer<MatchingAlgorithmResult, MatchedDonor>
+    internal class MatchingResultDonorStorer : ResultsStorer<MatchingAlgorithmResult, MatchedDonor>
     {
-        public MatchedGenotypeDonorsStorer(IProcessedResultsRepository<MatchedDonor> resultsRepository)
+        public MatchingResultDonorStorer(IProcessedResultsRepository<MatchedDonor> resultsRepository)
             : base(resultsRepository)
         {
         }
@@ -22,7 +22,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
                 new MatchedDonor
                 {
                     SearchRequestRecord_Id = searchRequestRecordId,
-                    MatchedDonorSimulant_Id = int.Parse(result.ExternalDonorCode),
+                    MatchedDonorSimulant_Id = int.Parse(result.DonorCode),
                     TotalMatchCount = result.MatchingResult.TotalMatchCount,
                     TypedLociCount = result.MatchingResult.TypedLociCount ?? 0,
                     MatchingResult = JsonConvert.SerializeObject(result)

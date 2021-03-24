@@ -33,6 +33,7 @@ This code is designed to be run locally; it is not production quality and cannot
   * [Generating the Test Harness](#generating-the-test-harness)
 - [Prepare Atlas to receive Search Requests](#prepare-atlas-to-receive-search-requests)
 - [Searching](#searching)
+  * [Small g groups](#small-g-groups)
   * [Send Search Requests](#send-search-requests)
   * [Retrieve Search Results](#retrieve-search-results)
 - [Verification Results](#verification-results)
@@ -180,13 +181,14 @@ The following steps must be completed prior to generating the test harness.
 Note: at present, the framework is hard-coded to only run five locus (A,B,C,DQB1,DRB1) search requests.
 
 #### Small g groups
-- Atlas does _not_ officially support patients or donors typed with small g groups within end-to-end search.
-  - However, to allow the calculation of matching PDPs for verification, small g support has been added to matching
-    and donor import only.
+- Atlas does not _officially_ support patients or donors typed with small g groups within end-to-end search.
+  - However, to allow the calculation of matching PDPs for verification, minimal small g support has been added to various components.
 - If the source HF set is encoded to small g typing resolution, then the masking proportions of the Test Harness should be 
   manipulated in such a way to ensure no small g groups remain in the masked patient and donor typings. 
 - The verification framework automatically sends the simulated patient and donor genotypes to Atlas search
   as matching-only requests, i.e., search requests with scoring and MPA disabled.
+- As MPA is not run on such genotypes, the "positive control" query included in
+  `\MiscTestingAndDebuggingResources\ManualTesting\MatchPredictionVerification\VerificationResultsSQLQueries.sql` will not work.
 
 #### Send Search Requests
 - The last part of verification data generation involves sending search requests to the test environment

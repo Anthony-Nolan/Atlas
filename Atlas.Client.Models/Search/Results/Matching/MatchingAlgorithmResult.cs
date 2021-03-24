@@ -18,7 +18,7 @@ namespace Atlas.Client.Models.Search.Results.Matching
         /// The External Donor Code (possibly referred to as an ID) of the donor.
         /// This will match the id for a donor provided by a consumer at the time of donor import.
         /// </summary>
-        public string ExternalDonorCode { get; set; }
+        public string DonorCode { get; set; }
 
         /// <summary>
         ///     The type of donor, for example Adult or Cord.

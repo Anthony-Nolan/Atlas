@@ -2,6 +2,7 @@
 using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
@@ -13,6 +14,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
         Task MarkAsCompleted(int id);
         Task<bool> WasTestHarnessCompleted(int id);
         Task<int> GetHaplotypeFrequencySetIdOfTestHarness(int id);
+        Task<ImportTypingCategory> GetTypingCategoryOfGenotypesInTestHarness(int id);
     }
 
     public class TestHarnessRepository : ITestHarnessRepository
@@ -74,6 +76,13 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             var harness = await GetTestHarness(id);
             var pool = await context.NormalisedPool.FindAsync(harness.NormalisedPool_Id);
             return pool.HaplotypeFrequencySetId;
+        }
+
+        public async Task<ImportTypingCategory> GetTypingCategoryOfGenotypesInTestHarness(int id)
+        {
+            var harness = await GetTestHarness(id);
+            var pool = await context.NormalisedPool.FindAsync(harness.NormalisedPool_Id);
+            return pool.TypingCategory;
         }
 
         private async Task<TestHarness> GetTestHarness(int id)

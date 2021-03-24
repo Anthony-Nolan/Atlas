@@ -31,13 +31,15 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
                 PatientSimulant_Id,
                 AtlasSearchIdentifier,
                 DonorMismatchCount,
-                WasSuccessful)
+                WasSuccessful,
+                WasMatchPredictionRun)
                 VALUES(
                     @{nameof(request.VerificationRun_Id)},
                     @{nameof(request.PatientSimulant_Id)},
                     @{nameof(request.AtlasSearchIdentifier)},
                     @{nameof(request.DonorMismatchCount)},
-                    @{nameof(request.WasSuccessful)}
+                    @{nameof(request.WasSuccessful)},
+                    @{nameof(request.WasMatchPredictionRun)}
                 )";
 
             await using (var connection = new SqlConnection(connectionString))
@@ -48,7 +50,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
                     request.PatientSimulant_Id,
                     request.AtlasSearchIdentifier,
                     request.DonorMismatchCount,
-                    request.WasSuccessful
+                    request.WasSuccessful,
+                    request.WasMatchPredictionRun
                 });
             }
         }
