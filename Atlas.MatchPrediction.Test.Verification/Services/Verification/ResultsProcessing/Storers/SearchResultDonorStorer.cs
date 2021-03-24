@@ -9,9 +9,9 @@ using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers
 {
-    internal class MatchedMaskedDonorsStorer : ResultsStorer<SearchResult, MatchedDonor>
+    internal class SearchResultDonorStorer : ResultsStorer<SearchResult, MatchedDonor>
     {
-        public MatchedMaskedDonorsStorer(IProcessedResultsRepository<MatchedDonor> resultsRepository)
+        public SearchResultDonorStorer(IProcessedResultsRepository<MatchedDonor> resultsRepository)
             : base(resultsRepository)
         {
         }

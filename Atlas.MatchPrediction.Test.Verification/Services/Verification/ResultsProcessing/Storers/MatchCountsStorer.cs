@@ -11,6 +11,26 @@ using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers
 {
+    internal class MatchingResultCountsStorer : MatchCountsStorer<MatchingAlgorithmResult>
+    {
+        public MatchingResultCountsStorer(
+            IProcessedResultsRepository<LocusMatchCount> resultsRepository,
+            IMatchedDonorsRepository matchedDonorsRepository)
+            : base(resultsRepository, matchedDonorsRepository)
+        {
+        }
+    }
+
+    internal class SearchResultCountsStorer : MatchCountsStorer<SearchResult>
+    {
+        public SearchResultCountsStorer(
+            IProcessedResultsRepository<LocusMatchCount> resultsRepository,
+            IMatchedDonorsRepository matchedDonorsRepository)
+            : base(resultsRepository, matchedDonorsRepository)
+        {
+        }
+    }
+
     internal abstract class MatchCountsStorer<TResult> : ResultsStorer<TResult, LocusMatchCount> where TResult : IResult
     {
         private readonly IMatchedDonorsRepository matchedDonorsRepository;
@@ -26,17 +46,15 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         /// <returns>Locus match counts greater than zero.</returns>
         protected override async Task<IEnumerable<LocusMatchCount>> ProcessSingleSearchResult(int searchRequestRecordId, TResult result)
         {
-            var donorCode = GetDonorCode(result);
-
             var matchedDonorId = await matchedDonorsRepository.GetMatchedDonorId(
-                searchRequestRecordId, int.Parse(donorCode));
+                searchRequestRecordId, int.Parse(result.DonorCode));
             
             if (matchedDonorId == null)
             {
-                throw new Exception($"Could not find matched donor record for donor code {donorCode}.");
+                throw new Exception($"Could not find matched donor record for donor code {result.DonorCode}.");
             }
 
-            var lociResults = GetScoringResult(result).ScoringResultsByLocus.ToLociInfo();
+            var lociResults = result.ScoringResult.ScoringResultsByLocus.ToLociInfo();
 
             return MatchPredictionStaticData.MatchPredictionLoci
                 .Select(l => new LocusMatchCount
@@ -47,8 +65,5 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
                 })
                 .Where(m => m.MatchCount > 0);
         }
-
-        protected abstract string GetDonorCode(TResult result);
-        protected abstract ScoringResult GetScoringResult(TResult result);
     }
 }

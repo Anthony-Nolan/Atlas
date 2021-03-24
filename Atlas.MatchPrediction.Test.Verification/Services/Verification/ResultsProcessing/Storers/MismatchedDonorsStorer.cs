@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
-using Atlas.Client.Models.Search.Results.Matching.ResultSet;
+using Atlas.Client.Models.Search.Results;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
@@ -19,7 +19,7 @@ using DonorScores = System.Collections.Generic.Dictionary<int, Atlas.MatchingAlg
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers
 {
-    internal interface IMismatchedDonorsStorer
+    internal interface IMismatchedDonorsStorer<TResult> where TResult : IResult
     {
         /// <summary>
         /// If patient typing was of category <see cref="SimulatedHlaTypingCategory.Genotype"/>,
@@ -27,10 +27,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         /// returned in the search results due to having too many mismatches, by creating records with appropriate values.
         /// Note: 0/10 donors and 0/2 loci match counts will not be stored to reduce number of rows added to the database.
         /// </summary>
-        Task CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequestRecord searchRequest, OriginalMatchingAlgorithmResultSet resultSet);
+        Task CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequestRecord searchRequest, IResultSet<TResult> resultSet);
     }
 
-    internal class MismatchedDonorsStorer : IMismatchedDonorsStorer
+    internal class MismatchedDonorsStorer<TResult> : IMismatchedDonorsStorer<TResult> where TResult : IResult
     {
         private readonly IGenotypeSimulantsInfoCache cache;
         private readonly IDonorScoringService scoringService;
@@ -52,7 +52,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             this.cache = cache;
         }
 
-        public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequestRecord searchRequest, OriginalMatchingAlgorithmResultSet resultSet)
+        public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequestRecord searchRequest, IResultSet<TResult> resultSet)
         {
             var info = await cache.GetOrAddGenotypeSimulantsInfo(searchRequest.VerificationRun_Id);
 
@@ -61,7 +61,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
                 return;
             }
 
-            var searchResultDonorIds = resultSet.Results.Select(r => int.Parse(r.ExternalDonorCode));
+            var searchResultDonorIds = resultSet.Results.Select(r => int.Parse(r.DonorCode));
             var missingDonorIds = info.Donors.Ids.Except(searchResultDonorIds).ToList();
 
             if (!missingDonorIds.Any())

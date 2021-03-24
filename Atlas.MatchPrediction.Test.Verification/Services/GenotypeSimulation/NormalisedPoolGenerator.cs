@@ -97,7 +97,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
                 throw new ArgumentNullException();
             }
 
-            var poolId = await poolRepository.AddNormalisedPool(sourceData.HaplotypeFrequencySetId.Value, haplotypeFrequenciesDataSource);
+            var poolId = await poolRepository.AddNormalisedPool(
+                sourceData.HaplotypeFrequencySetId.Value, haplotypeFrequenciesDataSource, sourceData.TypingCategory);
 
             // presently for logging purposes only
             await OverwritePoolInDatabase(poolId, poolMembers);

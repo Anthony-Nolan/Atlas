@@ -8,41 +8,38 @@ using Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProce
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing
 {
-    internal class MatchingGenotypesProcessor : ResultSetProcessor<MatchingResultsNotification, OriginalMatchingAlgorithmResultSet, MatchingAlgorithmResult>
+    internal class MatchingResultSetProcessor : ResultSetProcessor<MatchingResultsNotification, OriginalMatchingAlgorithmResultSet, MatchingAlgorithmResult>
     {
-        private readonly ISimulantChecker simulantChecker;
         private readonly IResultsStorer<MatchingAlgorithmResult, MatchedDonor> donorsStorer;
         private readonly IResultsStorer<MatchingAlgorithmResult, LocusMatchCount> countsStorer;
-        private readonly IMismatchedDonorsStorer mismatchedDonorsStorer;
+        private readonly IMismatchedDonorsStorer<MatchingAlgorithmResult> mismatchedDonorsStorer;
 
-        public MatchingGenotypesProcessor(
+        public MatchingResultSetProcessor(
             ISearchRequestsRepository searchRequestsRepository,
             ISearchResultsStreamer resultsStreamer,
-            ISimulantChecker simulantChecker,
             IResultsStorer<MatchingAlgorithmResult,MatchedDonor> donorsStorer,
             IResultsStorer<MatchingAlgorithmResult,LocusMatchCount> countsStorer,
-            IMismatchedDonorsStorer mismatchedDonorsStorer)
+            IMismatchedDonorsStorer<MatchingAlgorithmResult> mismatchedDonorsStorer)
         : base(searchRequestsRepository, resultsStreamer)
         {
-            this.simulantChecker = simulantChecker;
             this.donorsStorer = donorsStorer;
             this.countsStorer = countsStorer;
             this.mismatchedDonorsStorer = mismatchedDonorsStorer;
         }
 
-        /// <returns>`true` if result was for a Genotype simulant, else `false`</returns>
-        protected override async Task<bool> ProcessAndStoreResults(SearchRequestRecord searchRequest, OriginalMatchingAlgorithmResultSet resultSet)
+        /// <summary>
+        /// Only store Matching result if no match prediction was run.
+        /// </summary>
+        protected override bool ShouldProcessResult(SearchRequestRecord searchRequest)
         {
-            if (!await simulantChecker.IsPatientAGenotypeSimulant(searchRequest.VerificationRun_Id, searchRequest.PatientSimulant_Id))
-            {
-                return false;
-            }
+            return !searchRequest.WasMatchPredictionRun;
+        }
 
+        protected override async Task ProcessAndStoreResults(SearchRequestRecord searchRequest, OriginalMatchingAlgorithmResultSet resultSet)
+        {
             await donorsStorer.ProcessAndStoreResults(searchRequest.Id, resultSet);
             await countsStorer.ProcessAndStoreResults(searchRequest.Id, resultSet);
             await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(searchRequest, resultSet);
-
-            return true;
         }
 
         protected override SuccessfulSearchRequestInfo GetSuccessInfo(int searchRequestRecordId, MatchingResultsNotification notification)

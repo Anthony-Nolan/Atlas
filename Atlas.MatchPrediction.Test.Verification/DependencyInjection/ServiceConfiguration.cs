@@ -123,15 +123,14 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 
             services.AddScoped<IVerificationRunner, VerificationRunner>();
             services.AddScoped<IGenotypeSimulantsInfoCache, GenotypeSimulantsInfoCache>();
-            services.AddScoped<ISimulantChecker, SimulantChecker>();
-            services.AddScoped<IResultSetProcessor<MatchingResultsNotification>, MatchingGenotypesProcessor>();
-            services.AddScoped<IResultSetProcessor<SearchResultsNotification>, MatchingMaskedPhenotypesProcessor>();
-            services.AddScoped<IResultsStorer<MatchingAlgorithmResult, MatchedDonor>, MatchedGenotypeDonorsStorer>();
-            services.AddScoped<IResultsStorer<SearchResult, MatchedDonor>, MatchedMaskedDonorsStorer>();
-            services.AddScoped<IResultsStorer<MatchingAlgorithmResult, LocusMatchCount>, GenotypeMatchCountsStorer>();
-            services.AddScoped<IResultsStorer<SearchResult, LocusMatchCount>, MaskedMatchCountsStorer>();
+            services.AddScoped<IResultSetProcessor<MatchingResultsNotification>, MatchingResultSetProcessor>();
+            services.AddScoped<IResultSetProcessor<SearchResultsNotification>, SearchResultSetProcessor>();
+            services.AddScoped<IResultsStorer<MatchingAlgorithmResult, MatchedDonor>, MatchingResultDonorStorer>();
+            services.AddScoped<IResultsStorer<SearchResult, MatchedDonor>, SearchResultDonorStorer>();
+            services.AddScoped<IResultsStorer<MatchingAlgorithmResult, LocusMatchCount>, MatchingResultCountsStorer>();
+            services.AddScoped<IResultsStorer<SearchResult, LocusMatchCount>, SearchResultCountsStorer>();
+            services.AddScoped(typeof(IMismatchedDonorsStorer<>), typeof(MismatchedDonorsStorer<>));
             services.AddScoped<IResultsStorer<SearchResult, MatchProbability>, MatchedProbabilitiesStorer>();
-            services.AddScoped<IMismatchedDonorsStorer, MismatchedDonorsStorer>();
             services.AddScoped<ISearchResultsStreamer, SearchResultsStreamer>();
             services.AddScoped<IVerificationResultsWriter, VerificationResultsWriter>();
             services.AddScoped<IVerificationResultsCompiler, VerificationResultsCompiler>();

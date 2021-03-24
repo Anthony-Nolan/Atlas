@@ -22,7 +22,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.TestHelpers
         {
             return new MatchingAlgorithmResult
             {
-                ExternalDonorCode = donorId.ToString()
+                DonorCode = donorId.ToString()
             };
         }
     }

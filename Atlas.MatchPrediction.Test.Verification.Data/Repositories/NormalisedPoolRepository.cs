@@ -1,11 +1,11 @@
 ﻿using Atlas.MatchPrediction.Test.Verification.Data.Context;
-using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 
@@ -13,7 +13,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {
     public interface INormalisedPoolRepository
     {
-        Task<int> AddNormalisedPool(int haplotypeFrequencySetId, string dataSource);
+        Task<int> AddNormalisedPool(int haplotypeFrequencySetId, string dataSource, ImportTypingCategory typingCategory);
         Task TruncateNormalisedHaplotypeFrequencies();
         Task BulkInsertNormalisedHaplotypeFrequencies(IReadOnlyCollection<NormalisedHaplotypeFrequency> haplotypeFrequencies);
     }
@@ -27,17 +27,22 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             this.connectionString = connectionString;
         }
 
-        public async Task<int> AddNormalisedPool(int haplotypeFrequencySetId, string dataSource)
+        public async Task<int> AddNormalisedPool(int haplotypeFrequencySetId, string dataSource, ImportTypingCategory typingCategory)
         {
+            var category = typingCategory.ToString();
+
             var sql = @$"
-                INSERT INTO {nameof(MatchPredictionVerificationContext.NormalisedPool)}
-                    ({nameof(NormalisedPool.HaplotypeFrequencySetId)}, {nameof(NormalisedPool.HaplotypeFrequenciesDataSource)})
-                    VALUES(@{nameof(haplotypeFrequencySetId)}, @{nameof(dataSource)});
+                INSERT INTO {nameof(MatchPredictionVerificationContext.NormalisedPool)}(
+                    {nameof(NormalisedPool.HaplotypeFrequencySetId)},
+                    {nameof(NormalisedPool.HaplotypeFrequenciesDataSource)},
+                    {nameof(NormalisedPool.TypingCategory)}
+                    )
+                    VALUES(@{nameof(haplotypeFrequencySetId)}, @{nameof(dataSource)}, @{nameof(category)});
                 SELECT CAST(SCOPE_IDENTITY() as int);";
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                return (await conn.QueryAsync<int>(sql, new { haplotypeFrequencySetId, dataSource })).Single();
+                return (await conn.QueryAsync<int>(sql, new { haplotypeFrequencySetId, dataSource, category })).Single();
             }
         }
 
