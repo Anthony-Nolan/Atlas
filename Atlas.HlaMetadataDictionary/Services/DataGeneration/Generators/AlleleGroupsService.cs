@@ -12,8 +12,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators
     internal interface IAlleleGroupsService
     {
         /// <summary>
-        /// Retrieves metadata for P and G groups from the HLA nomenclature repository.
-        /// Note: Excludes single alleles listed in the hla_nom_p/g files, that do not map to an allele group.
+        /// Retrieves metadata for P, G and small g groups from the HLA nomenclature repository.
+        /// Note: Excludes single alleles that do not map to an allele group.
         /// </summary>
         IEnumerable<IAlleleGroupMetadata> GetAlleleGroupsMetadata(string hlaNomenclatureVersion);
     }
@@ -21,11 +21,16 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators
     internal class AlleleGroupsService : IAlleleGroupsService
     {
         private readonly IWmdaDataRepository wmdaDataRepository;
+        private readonly ISmallGGroupsBuilder smallGGroupsBuilder;
         private readonly IHlaCategorisationService hlaCategorisationService;
 
-        public AlleleGroupsService(IWmdaDataRepository wmdaDataRepository, IHlaCategorisationService hlaCategorisationService)
+        public AlleleGroupsService(
+            IWmdaDataRepository wmdaDataRepository,
+            ISmallGGroupsBuilder smallGGroupsBuilder,
+            IHlaCategorisationService hlaCategorisationService)
         {
             this.wmdaDataRepository = wmdaDataRepository;
+            this.smallGGroupsBuilder = smallGGroupsBuilder;
             this.hlaCategorisationService = hlaCategorisationService;
         }
 
@@ -34,8 +39,10 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators
             var dataset = wmdaDataRepository.GetWmdaDataset(hlaNomenclatureVersion);
             var pGroups = dataset.PGroups.Select(GetMetadataFromAlleleGroup);
             var gGroups = dataset.GGroups.Select(GetMetadataFromAlleleGroup);
-            
-            return pGroups.Concat(gGroups).Where(IsAlleleGroup);
+            var smallGGroups = smallGGroupsBuilder.BuildSmallGGroups(hlaNomenclatureVersion)
+                .Select(g => new AlleleGroupMetadata(g.Locus, g.Name, g.Alleles));
+
+            return pGroups.Concat(gGroups).Concat(smallGGroups).Where(IsAlleleGroup);
         }
 
         private static IAlleleGroupMetadata GetMetadataFromAlleleGroup(IWmdaAlleleGroup alleleGroup)
@@ -47,7 +54,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators
         private bool IsAlleleGroup(IAlleleGroupMetadata metadata)
         {
             var category = hlaCategorisationService.GetHlaTypingCategory(metadata.LookupName);
-            return category == HlaTypingCategory.GGroup || category == HlaTypingCategory.PGroup;
+            return new[]{HlaTypingCategory.GGroup, HlaTypingCategory.PGroup, HlaTypingCategory.SmallGGroup}.Contains(category);
         }
     }
 }
