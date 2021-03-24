@@ -49,7 +49,7 @@ namespace Atlas.RepeatSearch.Services.Search
             List<MatchingAlgorithmResult> results,
             DateTimeOffset searchCutoffDate)
         {
-            var returnedDonorCodes = results.Select(r => r.ExternalDonorCode).ToList();
+            var returnedDonorCodes = results.Select(r => r.DonorCode).ToList();
 
             var allDonorsUpdatedSinceCutoff = await donorReader.GetDonorIdsUpdatedSince(searchCutoffDate);
 

@@ -40,6 +40,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
                 return;
             }
 
+            if (!ShouldProcessResult(record))
+            {
+                return;
+            }
+
             if (!notification.WasSuccessful)
             {
                 await searchRequestsRepository.MarkSearchResultsAsFailed(record.Id);
@@ -53,13 +58,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         private async Task FetchAndPersistResults(SearchRequestRecord searchRequest, TNotification notification)
         {
             var resultSet = JsonConvert.DeserializeObject<TResultSet>(await DownloadResults(notification));
-            var wasProcessed = await ProcessAndStoreResults(searchRequest, resultSet);
-
-            if (!wasProcessed)
-            {
-                return;
-            }
-
+            await ProcessAndStoreResults(searchRequest, resultSet);
             await searchRequestsRepository.MarkSearchResultsAsSuccessful(GetSuccessInfo(searchRequest.Id, notification));
             Debug.WriteLine($"Search request {searchRequest.Id} was successful - {resultSet.TotalResults} matched donors found.");
         }
@@ -71,8 +70,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             return await new StreamReader(blobStream).ReadToEndAsync();
         }
 
-        /// <returns>`true` if result was processed; `false` if result was skipped.</returns>
-        protected abstract Task<bool> ProcessAndStoreResults(SearchRequestRecord searchRequest, TResultSet resultSet);
+        protected abstract bool ShouldProcessResult(SearchRequestRecord searchRequest);
+
+        protected abstract Task ProcessAndStoreResults(SearchRequestRecord searchRequest, TResultSet resultSet);
 
         protected abstract SuccessfulSearchRequestInfo GetSuccessInfo(int searchRequestRecordId, TNotification notification);
     }

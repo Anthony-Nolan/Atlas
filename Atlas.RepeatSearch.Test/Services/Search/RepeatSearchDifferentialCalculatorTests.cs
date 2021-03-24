@@ -56,7 +56,7 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
                 .Returns(changedDonorCodes.ToDictionary(code => code, _ => IncrementingIdGenerator.NextIntId()));
 
-            var matchingResults = changedDonorCodes.Select(code => new MatchingAlgorithmResult {ExternalDonorCode = code}).ToList();
+            var matchingResults = changedDonorCodes.Select(code => new MatchingAlgorithmResult {DonorCode = code}).ToList();
 
             var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
 
@@ -78,7 +78,7 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
                 .Returns(changedDonorCodes.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
 
-            var matchingResults = changedDonorCodes.Select(code => new MatchingAlgorithmResult {ExternalDonorCode = code}).ToList();
+            var matchingResults = changedDonorCodes.Select(code => new MatchingAlgorithmResult {DonorCode = code}).ToList();
 
             var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
 
@@ -171,7 +171,7 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
                 .Returns(changedDonorCodes.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
 
-            var matchingResults = changedDonorCodes.Select(code => new MatchingAlgorithmResult {ExternalDonorCode = code}).ToList();
+            var matchingResults = changedDonorCodes.Select(code => new MatchingAlgorithmResult {DonorCode = code}).ToList();
 
             var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
 
@@ -214,7 +214,7 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             donorReader.GetDonorsByExternalDonorCodes(previouslyReturnedDonors)
                 .ReturnsForAnyArgs(donorLookup);
 
-            var matchingResults = repeatSearchResults.Select(code => new MatchingAlgorithmResult {ExternalDonorCode = code}).ToList();
+            var matchingResults = repeatSearchResults.Select(code => new MatchingAlgorithmResult {DonorCode = code}).ToList();
 
             var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
 

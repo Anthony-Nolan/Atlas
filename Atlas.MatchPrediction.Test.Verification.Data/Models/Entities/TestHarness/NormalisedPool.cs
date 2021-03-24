@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Atlas.MatchPrediction.Models.FileSchema;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -18,6 +20,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarne
         /// Id of the haplotype frequency set that was used to generate the normalised pool.
         /// </summary>
         public int HaplotypeFrequencySetId { get; set; }
+
+        [Column(TypeName = "nvarchar(20)")]
+        public ImportTypingCategory TypingCategory { get; set; }
     }
 
     internal static class NormalisedPoolBuilder
@@ -25,8 +30,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarne
         public static void SetUpModel(this EntityTypeBuilder<NormalisedPool> modelBuilder)
         {
             modelBuilder
-                .Property(t => t.CreatedDateTime)
+                .Property(p => p.CreatedDateTime)
                 .HasDefaultValueSql("GETUTCDATE()");
+
+            modelBuilder
+                .Property(p => p.TypingCategory)
+                .HasConversion<string>();
         }
     }
 }
