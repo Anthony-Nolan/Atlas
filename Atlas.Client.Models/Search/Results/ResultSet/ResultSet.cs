@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 
-namespace Atlas.Client.Models.Search.Results
+namespace Atlas.Client.Models.Search.Results.ResultSet
 {
     public abstract class ResultSet<TResult> where TResult : Result
     {

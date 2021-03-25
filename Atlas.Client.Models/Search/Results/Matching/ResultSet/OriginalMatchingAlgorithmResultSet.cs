@@ -1,4 +1,6 @@
-﻿namespace Atlas.Client.Models.Search.Results.Matching.ResultSet
+﻿using Atlas.Client.Models.Search.Results.ResultSet;
+
+namespace Atlas.Client.Models.Search.Results.Matching.ResultSet
 {
     public class OriginalMatchingAlgorithmResultSet : ResultSet<MatchingAlgorithmResult>
     {
