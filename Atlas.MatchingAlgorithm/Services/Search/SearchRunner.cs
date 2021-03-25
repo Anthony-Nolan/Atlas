@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.ApplicationInsights;
@@ -18,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 {
     public interface ISearchRunner
     {
-        Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedSearchRequest identifiedSearchRequest);
+        Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedSearchRequest identifiedSearchRequest);
     }
 
     public class SearchRunner : ISearchRunner
@@ -47,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
         }
 
-        public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
+        public async Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
         {
             var searchRequestId = identifiedSearchRequest.Id;
             searchLoggingContext.SearchRequestId = searchRequestId;

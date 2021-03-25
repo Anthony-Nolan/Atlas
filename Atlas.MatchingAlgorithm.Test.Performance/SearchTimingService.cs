@@ -6,9 +6,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.Matching;
-using Atlas.Client.Models.Search.Results.Matching.ResultSet;
-using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Test.Performance.Models;
 using Newtonsoft.Json;
 
@@ -37,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
                     throw new Exception($"Search request failed: {content}");
                 }
             
-                var deserialisedContent = JsonConvert.DeserializeObject<MatchingAlgorithmResultSet>(content);
+                var deserialisedContent = JsonConvert.DeserializeObject<ResultSet<MatchingAlgorithmResult>>(content);
 
                 return new SearchMetrics
                 {

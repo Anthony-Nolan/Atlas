@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.Matching;
-using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
@@ -25,7 +24,7 @@ namespace Atlas.Functions.Services
     public class MatchPredictionInputParameters
     {
         public SearchRequest SearchRequest { get; set; }
-        public MatchingAlgorithmResultSet MatchingAlgorithmResults { get; set; }
+        public ResultSet<MatchingAlgorithmResult> MatchingAlgorithmResults { get; set; }
         public IReadOnlyDictionary<int, Donor> DonorDictionary { get; set; }
     }
 
