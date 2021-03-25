@@ -31,7 +31,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         }
     }
 
-    internal abstract class MatchCountsStorer<TResult> : ResultsStorer<TResult, LocusMatchCount> where TResult : IResult
+    internal abstract class MatchCountsStorer<TResult> : ResultsStorer<TResult, LocusMatchCount> where TResult : Result
     {
         private readonly IMatchedDonorsRepository matchedDonorsRepository;
 

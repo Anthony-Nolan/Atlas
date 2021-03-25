@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 
 // ReSharper disable MemberCanBeInternal
@@ -7,15 +6,11 @@ using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 
 namespace Atlas.Client.Models.Search.Results.ResultSet
 {
-    public abstract class SearchResultSet : IResultSet<SearchResult>
+    public abstract class SearchResultSet : ResultSet<SearchResult>
     {
         public string SearchRequestId { get; set; }
 
         public abstract bool IsRepeatSearchSet { get; }
-
-        public int TotalResults { get; set; }
-
-        public IEnumerable<SearchResult> Results { get; set; }
 
         public string HlaNomenclatureVersion { get; set; }
         public string BlobStorageContainerName { get; set; }
