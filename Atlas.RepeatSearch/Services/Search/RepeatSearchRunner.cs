@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.ApplicationInsights;
@@ -22,7 +23,7 @@ namespace Atlas.RepeatSearch.Services.Search
 {
     public interface IRepeatSearchRunner
     {
-        Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest);
+        Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest);
     }
 
     public class RepeatSearchRunner : IRepeatSearchRunner
@@ -63,7 +64,7 @@ namespace Atlas.RepeatSearch.Services.Search
             this.originalSearchResultSetTracker = originalSearchResultSetTracker;
         }
 
-        public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
+        public async Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
         {
             await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
 
