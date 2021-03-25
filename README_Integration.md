@@ -223,7 +223,7 @@ as soon as it's complete.
 
 This could be useful for e.g. showing users how many results are expected as soon as we know, so they are not surprised when a large result set takes a long time to fully complete.
 
-These results follow the same pattern as the full search result sets. The service bus topic used is `matching-results-ready`, and the [following format is used](Atlas.Client.Models/Search/Results/ResultSet<MatchingAlgorithmResult>.cs) 
+These results follow the same pattern as the full search result sets. The service bus topic used is `matching-results-ready`, and the [following format is used](Atlas.Client.Models/Search/Results/ResultSet/ResultSet<MatchingAlgorithmResult>.cs) 
 
 
 ## Running results analysis only
