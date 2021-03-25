@@ -5,7 +5,7 @@ using Atlas.Client.Models.Search.Requests;
 
 namespace Atlas.Client.Models.Search.Results.Matching
 {
-    public class MatchingResultsNotification : IResultsNotification
+    public class MatchingResultsNotification : ResultsNotification
     {
         /// <summary>
         /// Include full search request details in results notification, as match prediction will need it to run,
@@ -13,15 +13,12 @@ namespace Atlas.Client.Models.Search.Results.Matching
         /// </summary>
         public SearchRequest SearchRequest { get; set; }
 
-        public string SearchRequestId { get; set; }
         /// <summary>
         ///     In the case of an original search this ID will be null
         /// </summary>
         public string RepeatSearchRequestId { get; set; }
 
         public bool IsRepeatSearch => RepeatSearchRequestId != null;
-        public bool WasSuccessful { get; set; }
-        public int? NumberOfResults { get; set; }
 
         /// <summary>
         ///     The version of the deployed matching algorithm that ran the search request
@@ -33,16 +30,6 @@ namespace Atlas.Client.Models.Search.Results.Matching
         /// </summary>
         public string HlaNomenclatureVersion { get; set; }
 
-        /// <summary>
-        /// Name of the container in blob storage where matching results can be found.
-        /// </summary>
-        public string BlobStorageContainerName { get; set; }
-
-        /// <summary>
-        /// Name of the file in which results are stored in blob storage. 
-        /// </summary>
-        public string ResultsFileName { get; set; }
-        
         public TimeSpan ElapsedTime { get; set; }
     }
 }

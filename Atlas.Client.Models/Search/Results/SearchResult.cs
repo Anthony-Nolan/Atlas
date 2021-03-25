@@ -5,12 +5,11 @@ using Atlas.Client.Models.Search.Results.MatchPrediction;
 
 namespace Atlas.Client.Models.Search.Results
 {
-    public class SearchResult : IResult
+    public class SearchResult : Result
     {
-        public string DonorCode { get; set; }
         public MatchingAlgorithmResult MatchingResult { get; set; }
         public MatchProbabilityResponse MatchPredictionResult { get; set; }
 
-        public ScoringResult ScoringResult => MatchingResult.ScoringResult;
+        public override ScoringResult ScoringResult => MatchingResult.ScoringResult;
     }
 }

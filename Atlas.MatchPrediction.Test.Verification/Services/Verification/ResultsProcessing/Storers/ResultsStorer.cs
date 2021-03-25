@@ -5,12 +5,12 @@ using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers
 {
-    internal interface IResultsStorer<TResult, TDbModel> where TResult : IResult
+    internal interface IResultsStorer<TResult, TDbModel> where TResult : Result
     {
-        Task ProcessAndStoreResults(int searchRequestRecordId, IResultSet<TResult> resultSet);
+        Task ProcessAndStoreResults(int searchRequestRecordId, ResultSet<TResult> resultSet);
     }
 
-    internal abstract class ResultsStorer<TResult, TDbModel> : IResultsStorer<TResult, TDbModel> where TResult : IResult
+    internal abstract class ResultsStorer<TResult, TDbModel> : IResultsStorer<TResult, TDbModel> where TResult : Result
     {
         private readonly IProcessedResultsRepository<TDbModel> resultsRepository;
 
@@ -19,7 +19,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             this.resultsRepository = resultsRepository;
         }
 
-        public async Task ProcessAndStoreResults(int searchRequestRecordId, IResultSet<TResult> resultSet)
+        public async Task ProcessAndStoreResults(int searchRequestRecordId, ResultSet<TResult> resultSet)
         {
             if (resultSet.TotalResults == 0)
             {

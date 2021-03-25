@@ -9,15 +9,15 @@ using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing
 {
-    public interface IResultSetProcessor<in TNotification> where TNotification : IResultsNotification
+    public interface IResultSetProcessor<in TNotification> where TNotification : ResultsNotification
     {
         Task ProcessAndStoreResultSet(TNotification notification);
     }
 
     internal abstract class ResultSetProcessor<TNotification, TResultSet, TResult> : IResultSetProcessor<TNotification>
-        where TNotification : IResultsNotification
-        where TResultSet : IResultSet<TResult>
-        where TResult : IResult
+        where TNotification : ResultsNotification
+        where TResultSet : ResultSet<TResult>
+        where TResult : Result
     {
         private readonly ISearchRequestsRepository searchRequestsRepository;
         private readonly ISearchResultsStreamer resultsStreamer;
