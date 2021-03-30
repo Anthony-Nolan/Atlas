@@ -17,7 +17,6 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
 
     public class AzureAuthenticationClient : IAzureAuthenticationClient
     {
-        private const string OAuthBaseUrl = "https://login.microsoftonline.com/ukmarrow.org/oauth2/v2.0/token";
         private readonly HttpClient httpClient;
         private readonly AzureAuthenticationSettings settings;
 
@@ -25,7 +24,7 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
         {
             settings = azureFunctionOptions;
 
-            httpClient = new HttpClient {BaseAddress = new Uri(OAuthBaseUrl)};
+            httpClient = new HttpClient {BaseAddress = new Uri(azureFunctionOptions.OAuthBaseUrl)};
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/x-www-form-urlencoded"));
         }
 

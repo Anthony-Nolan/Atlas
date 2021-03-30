@@ -87,7 +87,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             return new MatchingAlgorithmResult
             {
                 AtlasDonorId = atlasDonorId,
-                ExternalDonorCode = donorLookup[atlasDonorId].ExternalDonorCode,
+                DonorCode = donorLookup[atlasDonorId].ExternalDonorCode,
                 DonorType = result.MatchResult.DonorInfo.DonorType.ToAtlasClientModel(),
 
                 MatchingResult = new MatchingResult

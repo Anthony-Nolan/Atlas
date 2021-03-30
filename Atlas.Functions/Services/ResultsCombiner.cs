@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
+using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Client.Models.Search.Results.ResultSet;
@@ -20,7 +21,7 @@ namespace Atlas.Functions.Services
     public interface IResultsCombiner
     {
         Task<SearchResultSet> CombineResults(
-            MatchingAlgorithmResultSet matchingAlgorithmResultSet,
+            ResultSet<MatchingAlgorithmResult> matchingAlgorithmResultSet,
             IReadOnlyDictionary<int, Donor> donorInformation,
             TimedResultSet<IReadOnlyDictionary<int, string>> matchPredictionResultLocations,
             TimeSpan matchingTime
@@ -45,7 +46,7 @@ namespace Atlas.Functions.Services
 
         /// <inheritdoc />
         public async Task<SearchResultSet> CombineResults(
-            MatchingAlgorithmResultSet matchingAlgorithmResultSet,
+            ResultSet<MatchingAlgorithmResult> matchingAlgorithmResultSet,
             IReadOnlyDictionary<int, Donor> donorInformation,
             TimedResultSet<IReadOnlyDictionary<int, string>> matchPredictionResultLocations,
             TimeSpan matchingTime
@@ -63,13 +64,13 @@ namespace Atlas.Functions.Services
                     } as SearchResultSet
                     : new OriginalSearchResultSet();
 
-                resultSet.SearchResults = matchingAlgorithmResultSet.MatchingAlgorithmResults.Select(r => new SearchResult
+                resultSet.Results = matchingAlgorithmResultSet.Results.Select(r => new SearchResult
                 {
                     DonorCode = donorInformation[r.AtlasDonorId].ExternalDonorCode,
                     MatchingResult = r,
                     MatchPredictionResult = matchPredictionResults[r.AtlasDonorId]
                 });
-                resultSet.TotalResults = matchingAlgorithmResultSet.ResultCount;
+                resultSet.TotalResults = matchingAlgorithmResultSet.TotalResults;
                 resultSet.HlaNomenclatureVersion = matchingAlgorithmResultSet.HlaNomenclatureVersion;
                 resultSet.SearchRequestId = matchingAlgorithmResultSet.SearchRequestId;
                 resultSet.BlobStorageContainerName = resultsContainer;

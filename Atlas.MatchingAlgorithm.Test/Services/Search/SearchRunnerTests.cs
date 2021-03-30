@@ -2,7 +2,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
-using Atlas.Client.Models.Search.Results.Matching.ResultSet;
+using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.Utils.Http;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
@@ -65,7 +65,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = id, SearchRequest = DefaultMatchingRequest});
 
-            await resultsBlobStorageClient.Received().UploadResults(Arg.Any<MatchingAlgorithmResultSet>());
+            await resultsBlobStorageClient.Received().UploadResults(Arg.Any<ResultSet<MatchingAlgorithmResult>>());
         }
 
         [Test]

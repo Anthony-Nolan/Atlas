@@ -141,6 +141,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
                     b.Property<int>("HaplotypeFrequencySetId")
                         .HasColumnType("int");
 
+                    b.Property<string>("TypingCategory")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(20)");
+
                     b.HasKey("Id");
 
                     b.ToTable("NormalisedPool");
@@ -339,15 +343,18 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("MatchPredictionResult")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("MatchedDonorSimulant_Id")
                         .HasColumnType("int");
 
-                    b.Property<int>("SearchRequestRecord_Id")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SearchResult")
+                    b.Property<string>("MatchingResult")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SearchRequestRecord_Id")
+                        .HasColumnType("int");
 
                     b.Property<int>("TotalMatchCount")
                         .HasColumnType("int");
@@ -355,10 +362,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
                     b.Property<int>("TypedLociCount")
                         .HasColumnType("int");
 
-                    b.Property<bool>("WasDonorRepresented")
+                    b.Property<bool?>("WasDonorRepresented")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("WasPatientRepresented")
+                    b.Property<bool?>("WasPatientRepresented")
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
@@ -404,6 +411,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
 
                     b.Property<int>("VerificationRun_Id")
                         .HasColumnType("int");
+
+                    b.Property<bool>("WasMatchPredictionRun")
+                        .HasColumnType("bit");
 
                     b.Property<bool?>("WasSuccessful")
                         .HasColumnType("bit");

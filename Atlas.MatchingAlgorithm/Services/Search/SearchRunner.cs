@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
+using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
@@ -18,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 {
     public interface ISearchRunner
     {
-        Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedSearchRequest identifiedSearchRequest);
+        Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedSearchRequest identifiedSearchRequest);
     }
 
     public class SearchRunner : ISearchRunner
@@ -47,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
         }
 
-        public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
+        public async Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
         {
             var searchRequestId = identifiedSearchRequest.Id;
             searchLoggingContext.SearchRequestId = searchRequestId;
@@ -69,8 +70,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 var searchResultSet = new OriginalMatchingAlgorithmResultSet
                 {
                     SearchRequestId = searchRequestId,
-                    MatchingAlgorithmResults = results,
-                    ResultCount = results.Count,
+                    Results = results,
+                    TotalResults = results.Count,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
                     BlobStorageContainerName = blobContainerName,
                     SearchedHla = identifiedSearchRequest.SearchRequest.SearchHlaData
@@ -87,7 +88,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     WasSuccessful = true,
                     NumberOfResults = results.Count,
                     BlobStorageContainerName = blobContainerName,
-                    BlobStorageResultsFileName = searchResultSet.ResultsFileName,
+                    ResultsFileName = searchResultSet.ResultsFileName,
                     ElapsedTime = stopwatch.Elapsed
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);

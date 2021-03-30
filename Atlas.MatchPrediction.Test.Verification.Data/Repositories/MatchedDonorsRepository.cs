@@ -15,7 +15,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
         Task<int?> GetMatchedDonorId(int searchRequestRecordId, int simulantId);
     }
 
-    public class MatchedDonorsRepository : IMatchedDonorsRepository, IProcessedSearchResultsRepository<MatchedDonor>
+    public class MatchedDonorsRepository : IMatchedDonorsRepository, IProcessedResultsRepository<MatchedDonor>
     {
         private readonly string connectionString;
 
@@ -79,7 +79,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
                     donor.TypedLociCount,
                     donor.WasPatientRepresented,
                     donor.WasDonorRepresented,
-                    donor.SearchResult);
+                    donor.MatchingResult);
             }
 
             return dataTable;

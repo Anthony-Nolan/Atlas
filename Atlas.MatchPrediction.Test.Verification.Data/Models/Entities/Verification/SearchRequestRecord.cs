@@ -14,6 +14,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
         public int VerificationRun_Id { get; set; }
         public int PatientSimulant_Id { get; set; }
         public int DonorMismatchCount { get; set; }
+        public bool WasMatchPredictionRun { get; set; }
 
         [Required]
         [Column(TypeName = "nvarchar(50)")]

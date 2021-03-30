@@ -53,6 +53,17 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             alleles.Should().BeEquivalentTo(expectedAlleles);
         }
 
+        [Test]
+        public async Task ExpandAlleleGroup_WhenSmallGGroup_ReturnsExpectedAlleles()
+        {
+            const string gGroup = "02:04g";
+            var expectedAlleles = new List<string> { "02:04", "02:664", "02:710N" };
+
+            var alleles = await alleleGroupExpander.ExpandAlleleGroup(DefaultLocus, gGroup, HlaVersion);
+
+            alleles.Should().BeEquivalentTo(expectedAlleles);
+        }
+
         [TestCase("1")]
         [TestCase("01:01")]
         [TestCase("01:01:01")]

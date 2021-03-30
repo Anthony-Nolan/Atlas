@@ -65,7 +65,7 @@ namespace Atlas.Functions.Services
                     NumberOfResults = searchResultSet.TotalResults,
                     ResultsFileName = searchResultSet.ResultsFileName,
                     SearchRequestId = searchResultSet.SearchRequestId,
-                    RepeatSearchId = repeatSearchId,
+                    RepeatSearchRequestId = repeatSearchId,
                     BlobStorageContainerName = searchResultSet.BlobStorageContainerName,
                     MatchingAlgorithmTime = searchResultSet.MatchingAlgorithmTime,
                     MatchPredictionTime = searchResultSet.MatchPredictionTime,
@@ -82,7 +82,7 @@ namespace Atlas.Functions.Services
             {
                 WasSuccessful = false,
                 SearchRequestId = searchId,
-                RepeatSearchId = repeatSearchId,
+                RepeatSearchRequestId = repeatSearchId,
                 FailureMessage = failureMessage
             };
 
@@ -97,7 +97,7 @@ namespace Atlas.Functions.Services
                 UserProperties =
                 {
                     {nameof(SearchResultsNotification.SearchRequestId), searchResultsNotification.SearchRequestId},
-                    {nameof(SearchResultsNotification.RepeatSearchId), searchResultsNotification.RepeatSearchId},
+                    {nameof(SearchResultsNotification.RepeatSearchRequestId), searchResultsNotification.RepeatSearchRequestId},
                     {nameof(SearchResultsNotification.WasSuccessful), searchResultsNotification.WasSuccessful},
                     {nameof(SearchResultsNotification.NumberOfResults), searchResultsNotification.NumberOfResults},
                     {nameof(SearchResultsNotification.HlaNomenclatureVersion), searchResultsNotification.HlaNomenclatureVersion},
@@ -105,7 +105,7 @@ namespace Atlas.Functions.Services
                 }
             };
 
-            var notificationTopicName = searchResultsNotification.RepeatSearchId != null
+            var notificationTopicName = searchResultsNotification.RepeatSearchRequestId != null
                 ? repeatResultsNotificationTopicName
                 : resultsNotificationTopicName;
             

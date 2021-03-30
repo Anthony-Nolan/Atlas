@@ -38,7 +38,6 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IAlleleNamesExtractor alleleNamesExtractor,
             IMacDictionary macDictionary,
             IAlleleGroupExpander alleleGroupExpander,
-            ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService,
             IPersistentCacheProvider cacheProvider
             ) : base(
                 hlaScoringMetadataRepository,
@@ -47,7 +46,6 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 alleleNamesExtractor,
                 macDictionary,
                 alleleGroupExpander,
-                smallGGroupToPGroupMetadataService,
                 CacheKey,
                 cacheProvider)
         {
@@ -79,11 +77,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                         ? metadata.Single()
                         : GetMultipleAlleleMetadata(locus, lookupName, scoringInfos);
 
-                // TODO: ATLAS-454 - Confirm lookup strategy for scoring of P/G group HLA.
+                // TODO: ATLAS-454 - Confirm lookup strategy for scoring of P/G/small g group HLA.
                 // I.e., return each allele's metadata or consolidated metadata.
 
                 case HlaTypingCategory.PGroup:
                 case HlaTypingCategory.GGroup:
+                case HlaTypingCategory.SmallGGroup:
                 case HlaTypingCategory.AlleleStringOfNames:
                 case HlaTypingCategory.AlleleStringOfSubtypes:
                 case HlaTypingCategory.NmdpCode:

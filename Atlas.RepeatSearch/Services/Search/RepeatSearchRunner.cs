@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
+using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
@@ -22,7 +23,7 @@ namespace Atlas.RepeatSearch.Services.Search
 {
     public interface IRepeatSearchRunner
     {
-        Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest);
+        Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest);
     }
 
     public class RepeatSearchRunner : IRepeatSearchRunner
@@ -63,7 +64,7 @@ namespace Atlas.RepeatSearch.Services.Search
             this.originalSearchResultSetTracker = originalSearchResultSetTracker;
         }
 
-        public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
+        public async Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
         {
             await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
 
@@ -97,8 +98,8 @@ namespace Atlas.RepeatSearch.Services.Search
                 {
                     SearchRequestId = searchRequestId,
                     RepeatSearchId = repeatSearchId,
-                    MatchingAlgorithmResults = results,
-                    ResultCount = results.Count,
+                    Results = results,
+                    TotalResults = results.Count,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
                     BlobStorageContainerName = blobContainerName,
                     NoLongerMatchingDonors = diff.RemovedResults.ToList()
@@ -116,7 +117,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     WasSuccessful = true,
                     NumberOfResults = results.Count,
                     BlobStorageContainerName = blobContainerName,
-                    BlobStorageResultsFileName = searchResultSet.ResultsFileName,
+                    ResultsFileName = searchResultSet.ResultsFileName,
                     ElapsedTime = stopwatch.Elapsed
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
