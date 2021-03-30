@@ -13,6 +13,7 @@ locals {
 
     "AzureManagement:Authentication:ClientId"                   = var.AZURE_CLIENT_ID
     "AzureManagement:Authentication:ClientSecret"               = var.AZURE_CLIENT_SECRET
+    "AzureManagement:Authentication:OAuthBaseUrl"               = var.AZURE_OAUTH_BASEURL
     "AzureManagement:Database:ServerName"                       = var.sql_server.name
     "AzureManagement:Database:PollingRetryIntervalMilliseconds" = var.DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS
     "AzureManagement:Database:ResourceGroupName"                = var.resource_group.name

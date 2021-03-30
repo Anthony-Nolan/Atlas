@@ -4,6 +4,7 @@ namespace Atlas.MatchingAlgorithm.Settings.Azure
     {
         public string ClientId { get; set; }
         public string ClientSecret { get; set; }
+        public string OAuthBaseUrl { get; set; }
     }
     
     public class AzureManagementSettings

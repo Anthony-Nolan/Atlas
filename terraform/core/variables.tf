@@ -14,6 +14,11 @@ variable "AZURE_CLIENT_SECRET" {
   description = "Client secret used for authenticating to manage Azure resources from code."
 }
 
+variable "AZURE_OAUTH_BASEURL" {
+  type        = string
+  description = "Base Url used for authenticating with Azure via OAuth, when managing Azure resources from code. Expected to be of form: 'https://login.microsoftonline.com/<domain>/oauth2/v2.0/token'"
+}
+
 variable "AZURE_SUBSCRIPTION_ID" {
   type        = string
   description = "ID of the Azure subscription into which the system will be deployed."

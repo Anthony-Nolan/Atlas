@@ -111,6 +111,7 @@ module "matching_algorithm" {
   APPLICATION_INSIGHTS_LOG_LEVEL                   = var.APPLICATION_INSIGHTS_LOG_LEVEL
   AZURE_CLIENT_ID                                  = var.AZURE_CLIENT_ID
   AZURE_CLIENT_SECRET                              = var.AZURE_CLIENT_SECRET
+  AZURE_OAUTH_BASEURL                              = var.AZURE_OAUTH_BASEURL
   DATA_REFRESH_AUTO_RUN                            = var.MATCHING_DATA_REFRESH_AUTO_RUN
   DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE                = var.MATCHING_DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE
   DATA_REFRESH_DB_AUTO_PAUSE_DORMANT               = var.MATCHING_DATA_REFRESH_DB_AUTO_PAUSE_DORMANT
