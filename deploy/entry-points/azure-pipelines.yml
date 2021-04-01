@@ -22,7 +22,7 @@ stages:
         runOnce:
           deploy:
             steps:
-            - template: set_variables.yml
+            - template: ../templates/helpers/set_variables.yml
               parameters:
                 terraform_storage_account_name: testingterraforms
                 env: testing
@@ -30,19 +30,19 @@ stages:
                 azure_subscription_id: $(azureSubscriptionId-testing)
                 azure_client_secret: $(azureClientSecret-testing)
                   
-            - template: templates/build_terraform.yml
+            - template: ../templates/build_terraform.yml
             
-            - template: templates/add_db_users.yml
+            - template: ../templates/add_db_users.yml
 
-            - template: templates/functions/deploy_matching_algorithm.yml
+            - template: ../templates/functions/deploy_matching_algorithm.yml
 
-            - template: templates/functions/deploy_match_prediction_algorithm.yml
+            - template: ../templates/functions/deploy_match_prediction_algorithm.yml
             
-            - template: templates/functions/deploy_donor_import.yml
+            - template: ../templates/functions/deploy_donor_import.yml
             
-            - template: templates/functions/deploy_repeat_search.yml
+            - template: ../templates/functions/deploy_repeat_search.yml
 
-            - template: templates/functions/deploy_atlas_functions.yml
+            - template: ../templates/functions/deploy_atlas_functions.yml
             
-            - template: templates/functions/deploy_atlas_public_api.yml
+            - template: ../templates/functions/deploy_atlas_public_api.yml
 
