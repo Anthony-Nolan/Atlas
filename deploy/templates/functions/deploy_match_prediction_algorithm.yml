@@ -1,0 +1,14 @@
+steps:
+- template: ../helpers/sql_deployment.yml
+  parameters:
+    database_name: $(TERRAFORM.match-prediction-database-name)
+    sql_file_location: $(System.ArtifactsDirectory)/sql/MatchPredictionMigrationScript.sql
+    display_name: Migrate Match Prediction SQL
+
+- task: AzureRmWebAppDeployment@4
+  displayName: Deploy Match Prediction Functions App
+  inputs:
+    azureSubscription: Azure DevOps - WMDA-SPOKE-ATLAS
+    WebAppName: $(TERRAFORM.match-prediction-function-name)
+    packageForLinux: $(System.ArtifactsDirectory)/functions/MatchPredictionFunctions-*.zip
+

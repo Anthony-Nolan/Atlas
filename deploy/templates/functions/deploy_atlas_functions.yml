@@ -1,0 +1,8 @@
+steps:
+
+- task: AzureRmWebAppDeployment@4
+  displayName: Deploy Atlas Functions App
+  inputs:
+    azureSubscription: Azure DevOps - WMDA-SPOKE-ATLAS
+    WebAppName: $(TERRAFORM.function-app-name)
+    packageForLinux: $(System.ArtifactsDirectory)/functions/AtlasFunctions-*.zip

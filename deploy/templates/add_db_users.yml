@@ -1,0 +1,27 @@
+steps:
+- task: PowerShell@2
+  displayName: 'Add DB Users'
+  inputs:
+    targetType: filePath
+    filePath: '$(System.ArtifactsDirectory)/terraform-atlas-core/scripts/migrate_users.ps1'
+    workingDirectory: '$(System.ArtifactsDirectory)/terraform-atlas-core'
+  env:
+    matchingPassword: $(TF_VAR_MATCHING_DATABASE_PASSWORD)
+    matchPredictionPassword: $(TF_VAR_MATCH_PREDICTION_DATABASE_PASSWORD)
+    donorImportPassword: $(TF_VAR_DONOR_DATABASE_PASSWORD)
+    sqlServer: $(TERRAFORM.sql-server)
+    matchPredictionDatabaseName: $(TERRAFORM.match-prediction-database-name)
+    matchingAlgorithmDatabaseTransientAName: $(TERRAFORM.matching-algorithm-database-transient-a-name)
+    matchingAlgorithmDatabaseTransientBName: $(TERRAFORM.matching-algorithm-database-transient-b-name)
+    matchingAlgorithmDatabasePersistentName: $(TERRAFORM.matching-algorithm-database-persistent-name)
+    donorImportDatabase: $(TERRAFORM.donor-import-database-name)
+    sqlServerLogin: $(TERRAFORM.sql-server-admin-login)
+    sqlServerLoginPassword: $(TERRAFORM.sql-server-admin-login-password)
+    matchingUser: $(TERRAFORM.matching-database-username)
+    matchPredictionUser: $(TERRAFORM.match-prediction-database-username)
+    donorImportUser: $(TERRAFORM.donor-database-username)
+    matchingUsernameForDonorDB: $(TERRAFORM.matching-username-for-donor-import-database)
+    matchingPasswordForDonorDB: $(TF_VAR_MATCHING_PASSWORD_FOR_DONOR_IMPORT_DATABASE)
+    repeatSearchUsername: $(TERRAFORM.repeat-search-username)
+    repeatSearchPassword: $(TF_VAR_REPEAT_SEARCH_DATABASE_PASSWORD)
+    repeatSearchDatabase: $(TERRAFORM.repeat-search-database-name)

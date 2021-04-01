@@ -1,0 +1,158 @@
+parameters:
+- name: terraform_storage_account_name
+  type: string
+- name: env
+  type: string
+- name: azure_subscription_id
+  type: string
+- name: azure_client_id
+  type: string
+- name: azure_client_secret
+  type: string
+
+steps:
+- task: VariableSetTask@1
+  displayName: 'Setting Database Server Admin Login Password'
+  inputs:
+    VariableName: 'TF_VAR_DATABASE_SERVER_ADMIN_LOGIN_PASSWORD'
+    Value: '$(databaseServerAdminLoginPassword)'
+    IsSecret: false
+
+- task: VariableSetTask@1
+  displayName: 'Setting Repeat Search Database Password'
+  inputs:
+    VariableName: 'TF_VAR_REPEAT_SEARCH_DATABASE_PASSWORD'
+    Value: '$(repeatSearchDatabasePassword)'
+    IsSecret: false
+
+- task: VariableSetTask@1
+  displayName: 'Setting Match Prediction Database Password'
+  inputs:
+    VariableName: 'TF_VAR_MATCH_PREDICTION_DATABASE_PASSWORD'
+    Value: '$(matchPredictionDatabasePassword)'
+    IsSecret: false
+
+- task: VariableSetTask@1
+  displayName: 'Setting Matching Donor Import Database Password'
+  inputs:
+    VariableName: 'TF_VAR_MATCHING_PASSWORD_FOR_DONOR_IMPORT_DATABASE'
+    Value: '$(matchingPasswordForDonorImportDatabase)'
+    IsSecret: false
+
+- task: VariableSetTask@1
+  displayName: 'Setting Matching Database Password'
+  inputs:
+    VariableName: 'TF_VAR_MATCHING_DATABASE_PASSWORD'
+    Value: '$(matchingDatabasePassword)'
+    IsSecret: false 
+
+- task: VariableSetTask@1
+  displayName: 'Setting Donor Database Password'
+  inputs:
+    VariableName: 'TF_VAR_DONOR_DATABASE_PASSWORD'
+    Value: '$(donorDatabasePassword)'
+    IsSecret: false       
+
+- task: VariableSetTask@1
+  displayName: 'Setting Terraform Container Name'
+  inputs:
+    VariableName: 'TF_VAR_TERRAFORM_STORAGE_CONTAINER_NAME'
+    Value: 'terraformbackend'
+    IsSecret: false       
+
+- task: VariableSetTask@1
+  displayName: 'Setting Terraform Storage Account Name'
+  inputs:
+    VariableName: 'TF_VAR_TERRAFORM_STORAGE_ACCOUNT_NAME'
+    Value: ${{parameters.terraform_storage_account_name}}
+    IsSecret: false       
+
+- task: VariableSetTask@1
+  displayName: 'Setting Terraform Resource Group Name'
+  inputs:
+    VariableName: 'TF_VAR_TERRAFORM_RESOURCE_GROUP_NAME'
+    Value: terraform-weu-rg
+    IsSecret: false       
+
+- task: VariableSetTask@1
+  displayName: 'Setting Service Plan SKU'
+  inputs:
+    VariableName: 'TF_VAR_SERVICE_PLAN_SKU'
+    Value: '{ tier = "Standard", size = "S2" }' 
+    IsSecret: false       
+
+- task: VariableSetTask@1
+  displayName: 'Setting Message Bus Donor Batch Size'
+  inputs:
+    VariableName: 'TF_VAR_MESSAGING_BUS_DONOR_BATCH_SIZE'
+    Value: 1000 
+    IsSecret: false       
+
+- task: VariableSetTask@1
+  displayName: 'Setting Matching Database Max Size'
+  inputs:
+    VariableName: 'TF_VAR_MATCHING_DATABASE_MAX_SIZE'
+    Value: 1099511627776
+    IsSecret: false       
+
+- task: VariableSetTask@1
+  displayName: 'Setting Matching Data Refresh Database Size Refresh'
+  inputs:
+    VariableName: 'TF_VAR_MATCHING_DATA_REFRESH_DB_SIZE_REFRESH'
+    Value: 'P4' 
+    IsSecret: false       
+
+- task: VariableSetTask@1
+  displayName: 'Setting Matching Data Refresh Database Size Active'
+  inputs:
+    VariableName: 'TF_VAR_MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE'
+    Value: 'S3' 
+    IsSecret: false       
+
+- task: VariableSetTask@1
+  displayName: 'Setting Location'
+  inputs:
+    VariableName: 'TF_VAR_LOCATION'
+    Value: 'west europe' 
+    IsSecret: false       
+
+- task: VariableSetTask@1
+  displayName: 'Setting Environment Name'
+  inputs:
+    VariableName: 'TF_VAR_ENVIRONMENT'
+    Value: '${{parameters.env}}' 
+    IsSecret: false       
+
+- task: VariableSetTask@1
+  displayName: 'Setting Azure Subscription Id'
+  inputs:
+    VariableName: 'TF_VAR_AZURE_SUBSCRIPTION_ID'
+    Value: '${{parameters.azure_subscription_id}}' 
+    IsSecret: false       
+
+
+- task: VariableSetTask@1
+  displayName: 'Setting Azure Client Id'
+  inputs:
+    VariableName: 'TF_VAR_AZURE_CLIENT_ID'
+    Value: '${{parameters.azure_client_id}}' 
+    IsSecret: false       
+
+- task: VariableSetTask@1
+  displayName: 'Setting Azure Client Secret'
+  inputs:
+    VariableName: 'TF_VAR_AZURE_CLIENT_SECRET'
+    Value: '${{parameters.azure_client_secret}}' 
+    IsSecret: false       
+    
+- task: VariableSetTask@1
+  displayName: 'Setting Azure OAuth Base Url'
+  inputs:
+    VariableName: 'TF_VAR_AZURE_OAUTH_BASEURL'
+    Value: 'https://login.microsoftonline.com/wmda.info/oauth2/v2.0/token' 
+    IsSecret: false       
+
+
+
+
+

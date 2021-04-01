@@ -1,0 +1,56 @@
+steps:
+- task: DownloadBuildArtifacts@0
+  inputs:
+    buildType: 'specific'
+    project: '$(System.TeamProjectId)'
+    pipeline: 16
+    buildVersionToDownload: 'latest'
+    branchName: 'refs/heads/master' 
+    downloadType: 'specific'
+    downloadPath: '$(System.ArtifactsDirectory)' 
+
+- task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
+  displayName: 'Use Terraform 0.12.24'
+  inputs:
+    terraformVersion: 0.12.24
+
+- script: terraform init -reconfigure -backend-config="storage_account_name=$(BACKEND_STORAGE_ACCOUNT_NAME)" -backend-config="container_name=$(BACKEND_STORAGE_CONTAINER_NAME)" -backend-config="resource_group_name=$(BACKEND_RESOURCE_GROUP_NAME)"
+  workingDirectory: '$(System.ArtifactsDirectory)/terraform-atlas-core'
+  displayName: 'terraform init'
+  env:
+    ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)         
+
+
+- bash: terraform workspace select $(TerraformWorkspace) || terraform workspace new $(TerraformWorkspace)
+  workingDirectory: '$(System.ArtifactsDirectory)/terraform-atlas-core'
+  displayName: 'select terraform workspace (and create if not exists)'
+  env:
+    ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+    
+- script: 'terraform apply -auto-approve -input=false'
+  workingDirectory: '$(System.ArtifactsDirectory)/terraform-atlas-core'
+  displayName: 'apply terraform'
+  env:
+    ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+    ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+  
+- task: PowerShell@2
+  name: TERRAFORM
+  displayName: 'Make Terraform Output Variables Available to Azure'
+  env:
+    ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+  
+  inputs:
+    targetType: 'inline'
+    script: |
+      $output = terraform output -json
+      
+      $json = $output | ConvertFrom-Json
+      
+      Write-Host $json
+      
+      foreach($prop in $json.psobject.properties) {
+      Write-Host("##vso[task.setvariable variable=$($prop.Name);isOutput=true;]$($prop.Value.value)")
+      Write-Host(“Setting {0} to {1}” –f $($prop.Name), $prop.Value.value)
+      }
+    workingDirectory: '$(System.ArtifactsDirectory)/terraform-atlas-core'
