@@ -1,0 +1,48 @@
+trigger:
+  - master
+
+pool:
+  vmImage: 'windows-latest'
+
+
+stages:
+- stage: Testing
+  displayName: 'Release Atlas Test'
+  variables:
+  - group: 'atlas-keyvault-testing'
+  - group: 'terraform'
+  - name: TerraformWorkspace
+    value: testing
+            
+  jobs:
+    - deployment: 'ReleaseAtlasToTest'
+      continueOnError: false
+      environment: 'release_atlas_test'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - template: set_variables.yml
+              parameters:
+                terraform_storage_account_name: testingterraforms
+                env: testing
+                azure_client_id: $(azureClientId-testing)
+                azure_subscription_id: $(azureSubscriptionId-testing)
+                azure_client_secret: $(azureClientSecret-testing)
+                  
+            - template: templates/build_terraform.yml
+            
+            - template: templates/add_db_users.yml
+
+            - template: templates/functions/deploy_matching_algorithm.yml
+
+            - template: templates/functions/deploy_match_prediction_algorithm.yml
+            
+            - template: templates/functions/deploy_donor_import.yml
+            
+            - template: templates/functions/deploy_repeat_search.yml
+
+            - template: templates/functions/deploy_atlas_functions.yml
+            
+            - template: templates/functions/deploy_atlas_public_api.yml
+

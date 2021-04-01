@@ -1,0 +1,20 @@
+parameters:
+- name: database_name
+  type: string
+- name: sql_file_location
+  type: string
+- name: display_name
+  type: string
+  default: Running Sql Task
+
+steps:
+- task: SqlAzureDacpacDeployment@1
+  displayName:  ${{parameters.display_name}}
+  inputs:
+    azureSubscription: 'Azure DevOps - WMDA-SPOKE-ATLAS'
+    ServerName: '$(TERRAFORM.sql-server)'
+    DatabaseName: ${{parameters.database_name}}
+    SqlUsername: '$(TERRAFORM.sql-server-admin-login)'
+    SqlPassword: '$(TERRAFORM.sql-server-admin-login-password)'
+    deployType: SqlTask
+    SqlFile:  ${{parameters.sql_file_location}}

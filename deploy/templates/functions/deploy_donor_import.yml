@@ -1,0 +1,14 @@
+steps:
+- template: ../helpers/sql_deployment.yml
+  parameters:
+    database_name: $(TERRAFORM.donor-import-database-name)
+    sql_file_location: $(System.ArtifactsDirectory)/sql/DonorImportMigrationScript.sql
+    display_name: Migrate Donor Import Storage
+
+- task: AzureRmWebAppDeployment@4
+  displayName: Deploy Donor Import Functions App
+  inputs:
+    azureSubscription: Azure DevOps - WMDA-SPOKE-ATLAS
+    WebAppName: $(TERRAFORM.donor-import-function-name)
+    packageForLinux: $(System.ArtifactsDirectory)/functions/DonorImportFunctions-*.zip
+

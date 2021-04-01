@@ -1,0 +1,32 @@
+steps:
+- template: ../helpers/sql_deployment.yml
+  parameters:
+    database_name: $(TERRAFORM.matching-algorithm-database-transient-a-name)
+    sql_file_location: $(System.ArtifactsDirectory)/sql/SearchAlgorithmTransientMigrationScript.sql
+    display_name: Migrate Transient Storage A
+
+- template: ../helpers/sql_deployment.yml
+  parameters:
+    database_name: $(TERRAFORM.matching-algorithm-database-transient-b-name)
+    sql_file_location: $(System.ArtifactsDirectory)/sql/SearchAlgorithmTransientMigrationScript.sql
+    display_name: Migrate Transient Storage B
+
+- template: ../helpers/sql_deployment.yml
+  parameters:
+    database_name: $(TERRAFORM.matching-algorithm-database-persistent-name)
+    sql_file_location: $(System.ArtifactsDirectory)/sql/SearchAlgorithmPersistentMigrationScript.sql
+    display_name: Migrate Persistent Storage
+
+- task: AzureRmWebAppDeployment@4
+  displayName: Deploy Matching Algorithm Functions App
+  inputs:
+    azureSubscription: Azure DevOps - WMDA-SPOKE-ATLAS
+    WebAppName: $(TERRAFORM.matching-algorithm-function-name)
+    packageForLinux: $(System.ArtifactsDirectory)/functions/MatchingFunctions-*.zip
+
+- task: AzureRmWebAppDeployment@4
+  displayName: Deploy Donor Matching Functions App
+  inputs:
+    azureSubscription: Azure DevOps - WMDA-SPOKE-ATLAS
+    WebAppName: $(TERRAFORM.donor-matching-function-name)
+    packageForLinux: '$(System.ArtifactsDirectory)/functions/MatchingDonorFunctions-*.zip'
