@@ -68,7 +68,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             List<IHlaScoringMetadata> metadata)
         {
             var hlaTypingCategory = HlaCategorisationService.GetHlaTypingCategory(lookupName);
-            var scoringInfos = metadata.Select(result => result.HlaScoringInfo);
+            var scoringInfos = metadata.Select(result => result.HlaScoringInfo).ToList();
 
             switch (hlaTypingCategory)
             {
@@ -100,10 +100,10 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         private static IHlaScoringMetadata GetMultipleAlleleMetadata(
             Locus locus,
             string lookupName,
-            IEnumerable<IHlaScoringInfo> scoringInfos)
+            IReadOnlyCollection<IHlaScoringInfo> scoringInfos)
         {
             var alleleScoringInfos = GetSingleAlleleScoringInfos(scoringInfos).ToList();
-            var matchingSerologies = GetMatchingSerologies(alleleScoringInfos);
+            var matchingSerologies = GetMatchingSerologies(scoringInfos);
 
             var multipleAlleleScoringInfo = new MultipleAlleleScoringInfo(
                 alleleScoringInfos,
@@ -120,13 +120,13 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         private static IHlaScoringMetadata GetConsolidatedMolecularMetadata(
             Locus locus,
             string lookupName,
-            IEnumerable<IHlaScoringInfo> scoringInfos)
+            IReadOnlyCollection<IHlaScoringInfo> scoringInfos)
         {
             var singleAlleleScoringInfos = GetSingleAlleleScoringInfos(scoringInfos).ToList();
 
             var matchingPGroups = GetMatchingPGroups(singleAlleleScoringInfos);
             var matchingGGroups = GetMatchingGGroups(singleAlleleScoringInfos);
-            var matchingSerologies = GetMatchingSerologies(singleAlleleScoringInfos);
+            var matchingSerologies = GetMatchingSerologies(scoringInfos);
 
             var consolidatedMolecularScoringInfo = new ConsolidatedMolecularScoringInfo(
                 matchingPGroups,
@@ -166,9 +166,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 .Distinct();
         }
 
-        private static IEnumerable<SerologyEntry> GetMatchingSerologies(IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
+        private static IEnumerable<SerologyEntry> GetMatchingSerologies(IEnumerable<IHlaScoringInfo> scoringInfos)
         {
-            return singleAlleleScoringInfos
+            return scoringInfos
                 .SelectMany(info => info.MatchingSerologies)
                 .Distinct();
         }
