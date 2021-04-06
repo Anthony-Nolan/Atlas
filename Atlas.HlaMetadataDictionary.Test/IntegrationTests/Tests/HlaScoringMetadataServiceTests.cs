@@ -115,15 +115,14 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [Test]
         public async Task GetHlaMetadata_WhenMac_ReturnsConsolidatedScoringInfo()
         {
-            // each allele maps to a G and P group of the same name
-            const string firstAllele = "01:133";
-            const string secondAllele = "01:158";
-
-            var alleles = new[] { firstAllele, secondAllele };
-            const string expectedSerology = "1";
-
             // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories.LargeMacDictionary.csv
+            // XYZ => 133/158
             const string macWithFirstField = "01:XYZ";
+
+            // each allele maps to a G and P group of the same name
+            var alleles = new[] { "01:133", "01:158" };
+
+            const string expectedSerology = "1";
 
             var result = await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, HlaVersion);
 
@@ -135,18 +134,14 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
-        public async Task GetHlaMetadata_WhenNmdpCodeIncludesNullAllele_OnlyReturnsScoringInfoForExpressingAlleles()
+        public async Task GetHlaMetadata_WhenMacIncludesNullAllele_OnlyReturnsScoringInfoForExpressingAlleles()
         {
-            // expressing alleles maps to a G and P group of the same name
-            const string firstAllele = "01:133";
-            const string secondAllele = "01:158";
-            const string nullAllele = "01:04:01:01N";
-
-            var expressingAlleles = new[] { firstAllele, secondAllele };
-            var allAlleles = new List<string>(expressingAlleles) { nullAllele };
-
             // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories.LargeMacDictionary.csv
-            const string macWithFirstField = "01:XYZ";
+            // ZZZ => 04N/133/158
+            const string macWithFirstField = "01:ZZZ";
+
+            // expressing alleles maps to a G and P group of the same name
+            var expressingAlleles = new[] { "01:133", "01:158" };
 
             var result = await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, HlaVersion);
 
