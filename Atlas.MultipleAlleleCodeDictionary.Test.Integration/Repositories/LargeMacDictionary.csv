@@ -6,8 +6,9 @@ Code,Code@type,HLA,HLA@type,IsGeneric,IsGeneric@type,PartitionKey,RowKey,Timesta
 #
 ABC,Edm.String,01/02,Edm.String,true,Edm.Boolean,3,ABC,2020-07-11T06:43:49.031Z
 DEF,Edm.String,02:01/03:01,Edm.String,false,Edm.Boolean,3,DEF,2020-07-11T06:43:49.031Z
+TCE,Edm.String,13:01/548:01,Edm.String,false,Edm.Boolean,3,TCE,2020-07-11T06:43:49.031Z
 XYZ,Edm.String,133/158,Edm.String,true,Edm.Boolean,3,XYZ,2020-07-11T06:43:49.031Z
-ZZZ,Edm.String,04N/133/158,Edm.String,true,Edm.Boolean,3,XYZ,2020-07-11T06:43:49.031Z
+ZZZ,Edm.String,04N/133/158,Edm.String,true,Edm.Boolean,3,ZZZ,2020-07-11T06:43:49.031Z
 FAKE,Edm.String,9999:9999,Edm.String,false,Edm.Boolean,4,FAKE,2020-07-11T06:43:49.031Z
 #
 # The rest of these records are used by the DonorUpdate Import smoke tests,
