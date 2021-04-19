@@ -15,15 +15,15 @@ const config = {
 // The easiest way to use is to copy these columns directly from a `SELECT * FROM DONORS` query of the matching donor store, then edit loci as appropriate
 // The output is the JSON upload to the donor import component.
 const donorsHla = [
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*02:01:01:05\t*33:01:01:01\t*40:06:01:02\t*35:08:01:01\t*02:10:01:02\t*03:05\t*02:01:04\t*01:01:01\t*03:01:04\t*02:02:01:01\t*04:01:01:01\t*15:01:01:02",
+    "*03:XX\t*11:XX\t*07:XX\t*35:XX\t*04:XX\t*07:XX\tnull\tnull\tnull\tnull\t*04:XX\t*04:XX",
+    "*02:XX\t*33:XX\t*40:06:01:02\t*35:XX\t*02:XX\t*03:XX\t*02:XX\t*01:XX\t*03:XX\t*02:XX\t*04:XX\t*15:XX",
     "1\t29\t7\t7\tNULL\tNULL\tNULL\tNULL\t1\t1\t2\t13",
     "*24:ASBT	*30:GSH	*37:JTB	*40:JMM	*03:DGKG	*06:CZZH	NULL	NULL	*05:03	*03:02	*04:AFRG	*14:BYZJ",
     "*02:XX\t*68:BNN\t*44:02\t*40:JV\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\t*01:MV\t*11:DBB",
     "*02:XX\t*29:02\t*44:XX\t*44:XX\t*05:01\t*16:01\tNULL\tNULL\t*05:01\t*03:01\t*01:03\t*04:FX",
     "*02:XX\t*03:01\t*35:XX\t*35:XX\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\t*14:MR\t*07:01",
-    "*03:01:01:01\t*30:04:01:01\t*35:01:01\t*35:01:01\t*04:01:01\t*04:01:01\t*04:01:01\t*04:01:01\t*03:ADAJH\t*05:03:01\t*04:02:01\t*14:54:01",
-    "*01:01:01\t*03:01:01:01\t*51:01:01\t*52:01:01\t*01:02:01\t*12:02:02\t*02:01:02\t*03:01:01\t*03:BJJBW\t*06:01\t*15:BFBXD\t*11:01:01"
+    "*03:XX\t*30:XX\t*35:XX\t*35:XX\t*04:XX\t*04:XX\t*04:XX\t*04:XX\t*03:ADAJH\t*05:XX\t*04:XX\t*14:XX",
+    "*01:XX\t*03:XX\t*51:XX\t*52:XX\t*01:XX\t*12:XX\t*02:XX\t*03:XX\t*03:BJJBW\t*06:XX\t*15:BFBXD\t*11:XX"
 ];
 
 writeFile("atlas-95-1-inserts", donorsHla, "full", "N", 2);
