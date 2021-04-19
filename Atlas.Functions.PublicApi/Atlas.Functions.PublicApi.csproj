@@ -25,6 +25,9 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Update="ApplicationInsights.config">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
         <None Update="host.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
