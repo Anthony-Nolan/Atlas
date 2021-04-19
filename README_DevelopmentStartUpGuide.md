@@ -61,17 +61,18 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
 - Upload the json file `<gitRoot>/MiscTestingAndDebuggingResources/DonorImport/initial-donors.json` to your `donors` container.
     - This should take < 1 second to run.
 - Open up Service Bus Explorer and connect to your local development Service Bus. (Make sure your local settings are set up accordingly)
-- Create the topic `donor-import-file-uploads`, right-click and select `Send Message`.
+- Create the topic `donor-import-file-uploads` with subscription `donor-import`, right-click the topic and select `Send Message`.
     - Copy the content of the json file `<gitRoot>/MiscTestingAndDebuggingResources/DonorImport/initial-donors-metadata.json` into the `Message Text` text box and click `Start`.
 - When you now run `DonorImport.Functions` your local Donors table should now be populated.
     - This should take < 5 minute to run.
 - Monitor the `notifications` topic to ensure the import succeeded; a failure will be reported via `alerts` topic.
-- Once that's been run you should now run `MatchingAlgorithm.Functions.DonorManagement` to allow the active transient database to be populated.
-    - This should take < 1 minute to run.
 
 #### Run an Initial Data Refresh
-- Run `MatchingAlgorithm.Functions` and in Swagger UI (or any other API development environment) trigger the `ForceDataRefresh` endpoint.
-    - This should take < 15 minute to run.
+- Open up Service Bus Explorer and connect to your local development Service Bus.
+- Create the topic, `data-refresh-requests` with subscription `matching-algorithm`.
+- Run `MatchingAlgorithm.Functions` and in Swagger UI (or any other API development environment) trigger the `SubmitDataRefreshRequestManual` endpoint.
+  - Set `forceDataRefresh` to `true`.
+  - You should get a 200 Success response almost immediately but the refresh itself will take ~15 minute to run (do NOT close the function app down until it's complete!).
 - Monitor the `notifications` topic to ensure the refresh succeeded; a failure will be reported via `alerts` topic.
 
 #### Importing Haplotype Frequency Sets
@@ -81,7 +82,7 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
 - Upload the json file `initial-hf-set.json` to your `haplotype-frequency-set-import` container.
     - This should take < 1 second to run.
 - Open up Service Bus Explorer and connect to your local development Service Bus.
-- Create the topic, `haplotype-frequency-set-import`, right-click and select `Send Message`.
+- Create the topic, `haplotype-frequency-set-import` with subscription `haplotype-frequency-import`, right-click and select `Send Message`.
     - Copy the content of the json file `<gitRoot>/MiscTestingAndDebuggingResources/DonorImport/initial-donors-hf-set-metadata.json` into the `Message Text` text box and click `Start`.
 - When you now run `MatchPrediction.Functions` your local HaplotypeFrequencies and HaplotypeFrequencySets tables should now be populated.
     - This should take < 5 minute to run.
@@ -91,10 +92,13 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
 
 ### Run a search (whilst avoiding MAC lookups)
 - In Storage Explorer, open your local emulator and create two new blob storage containers called `atlas-search-results` and `matching-algorithm-results`.
-- Run `Atlas.Functions.PublicApi`, `Atlas.Functions`, and `Atlas.MatchingAlgorithm.Functions` all in parallel.
+- Open up Service Bus Explorer and connect to your local development Service Bus.
+  - Create the topic, `matching-requests` with subscription `matching-algorithm`.
+  - Create the topic, `matching-results-ready` with subscription `match-prediction-orchestration`.
+- Run `Atlas.Functions.PublicApi`, `Atlas.Functions`, `Atlas.MatchPrediction.Functions`, and `Atlas.MatchingAlgorithm.Functions` all in parallel.
   - To do this in VisualStudio first set your default project to `Atlas.Functions.PublicApi` and then run it.
-  - Then in solution explorer right click on both `Atlas.Functions`, and `Atlas.MatchingAlgorithm.Functions` and select `Debug -> Start New Instance`.
-  - Alternatively you can right click on your solution in Solution Explorer go to properties and under multiple start up projects select the three functions.
+  - Then in solution explorer right click on `Atlas.Functions`, `Atlas.MatchPrediction.Functions`, and `Atlas.MatchingAlgorithm.Functions` and select `Debug -> Start New Instance`.
+  - Alternatively you can right click on your solution in Solution Explorer go to properties and under multiple start up projects select all the functions.
   - *You will want to make sure all the local settings for these functions are up to date*
 - Then hit the `Search` endpoint within `Atlas.Functions.PublicApi` with the content of `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\initial-search.json` as the requests body.
   - You should get a 200 Success response.
