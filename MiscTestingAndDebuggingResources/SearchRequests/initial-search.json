@@ -17,14 +17,14 @@
   "SearchHlaData": {
     "A": {
       "Position1":"*02:XX",
-      "Position2": "*33:XX"
+      "Position2": "*02:XX"
     },
     "B": {
       "Position1": "*40:XX",
-      "Position2": "*35:XX"
+      "Position2": "*40:XX"
     },
     "C": {
-      "Position1": "*02:XX",
+      "Position1": "*03:XX",
       "Position2": "*03:XX"
     },
     "Dpb1": {
@@ -33,11 +33,11 @@
     },
     "Dqb1": {
       "Position1": "*03:XX",
-      "Position2": "*02:XX"
+      "Position2": "*03:XX"
     },
     "Drb1": {
       "Position1": "*04:XX",
-      "Position2": "*15:XX"
+      "Position2": "*04:XX"
     }
   }
 }
