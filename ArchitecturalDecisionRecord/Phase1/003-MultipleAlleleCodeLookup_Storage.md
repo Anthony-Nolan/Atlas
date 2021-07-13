@@ -43,7 +43,7 @@ instead relying on per-allele lookups rejecting any invalid expanded allele.
 - MAC Expansion is independent of HLA nomenclature. 
     - It is theoretically possible for a generic MAC to expand to an allele (for a given first field/locus), which is invalid in one HLA nomenclature 
     version, and valid in a different one.
-        - In this case, the MAC expansion will expand to teh same alleles regardless - and it is up to the consumer to decide whether it cares that some alleles 
+        - In this case, the MAC expansion will expand to the same alleles regardless - and it is up to the consumer to decide whether it cares that some alleles 
         may be invalid, and to validate them (using the HMD) against the appropriate nomenclature
     - This decision ensures that the MAC expansion service does not require an input of a nomenclature version to expand against, and will always expand 
     to the same values.
