@@ -99,7 +99,7 @@ namespace Atlas.Functions.Services
                     EthnicityCode = searchRequest.PatientEthnicityCode,
                     RegistryCode = searchRequest.PatientRegistryCode
                 },
-                HlaNomenclatureVersion = hlaNomenclatureVersion
+                MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion
             };
         }
 
