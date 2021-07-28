@@ -40,7 +40,7 @@ namespace Atlas.MatchPrediction.Test.Services
             batchedInput.ExcludedLoci.Should().BeEquivalentTo(requestInput.ExcludedLoci);
             batchedInput.PatientHla.Should().BeEquivalentTo(requestInput.PatientHla);
             batchedInput.PatientFrequencySetMetadata.Should().BeEquivalentTo(requestInput.PatientFrequencySetMetadata);
-            batchedInput.HlaNomenclatureVersion.Should().BeEquivalentTo(requestInput.HlaNomenclatureVersion);
+            batchedInput.MatchingAlgorithmHlaNomenclatureVersion.Should().BeEquivalentTo(requestInput.MatchingAlgorithmHlaNomenclatureVersion);
             batchedInput.SearchRequestId.Should().BeEquivalentTo(requestInput.SearchRequestId);
         }
 

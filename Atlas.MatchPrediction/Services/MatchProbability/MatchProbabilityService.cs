@@ -134,7 +134,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             matchPredictionLoggingContext.Initialise(singleDonorMatchProbabilityInput);
 
             var allowedLoci = LocusSettings.MatchPredictionLoci.Except(singleDonorMatchProbabilityInput.ExcludedLoci).ToHashSet();
-            var hlaNomenclatureVersion = singleDonorMatchProbabilityInput.HlaNomenclatureVersion;
+            var hlaNomenclatureVersion = singleDonorMatchProbabilityInput.MatchingAlgorithmHlaNomenclatureVersion;
 
             var frequencySets = await haplotypeFrequencyService.GetHaplotypeFrequencySets(
                 singleDonorMatchProbabilityInput.DonorInput.DonorFrequencySetMetadata,
