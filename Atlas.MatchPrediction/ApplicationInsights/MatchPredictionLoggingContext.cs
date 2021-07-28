@@ -13,14 +13,14 @@ namespace Atlas.MatchPrediction.ApplicationInsights
         public void Initialise(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput)
         {
             SearchRequestId = singleDonorMatchProbabilityInput.SearchRequestId;
-            HlaNomenclatureVersion = singleDonorMatchProbabilityInput.HlaNomenclatureVersion;
+            MatchingAlgorithmHlaNomenclatureVersion = singleDonorMatchProbabilityInput.MatchingAlgorithmHlaNomenclatureVersion;
             DonorIds = singleDonorMatchProbabilityInput.DonorInput?.DonorIds?.Select(id => id.ToString()).StringJoin(",");
             DonorHla = singleDonorMatchProbabilityInput.DonorInput?.DonorHla?.ToPhenotypeInfo();
             PatientHla = singleDonorMatchProbabilityInput.PatientHla?.ToPhenotypeInfo();
         }
 
         public string SearchRequestId { get; set; }
-        public string HlaNomenclatureVersion { get; set; }
+        public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
         public string DonorIds { get; set; }
         public PhenotypeInfo<string> DonorHla { get; set; }
         public PhenotypeInfo<string> PatientHla { get; set; }
@@ -31,7 +31,7 @@ namespace Atlas.MatchPrediction.ApplicationInsights
             return new Dictionary<string, string>
             {
                 {nameof(SearchRequestId), SearchRequestId},
-                {nameof(HlaNomenclatureVersion), HlaNomenclatureVersion},
+                {nameof(MatchingAlgorithmHlaNomenclatureVersion), MatchingAlgorithmHlaNomenclatureVersion},
                 {nameof(DonorIds), DonorIds},
                 {nameof(DonorHla), DonorHla?.PrettyPrint()},
                 {nameof(PatientHla), PatientHla?.PrettyPrint()}
