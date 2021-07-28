@@ -38,7 +38,7 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs
             builder.With(i => i.PatientFrequencySetMetadata, frequencySetMetadata);
 
         public static Builder WithHlaNomenclature(this Builder builder, string nomenclatureVersion) =>
-            builder.With(i => i.HlaNomenclatureVersion, nomenclatureVersion);
+            builder.With(i => i.MatchingAlgorithmHlaNomenclatureVersion, nomenclatureVersion);
 
         public static Builder WithExcludedLoci(this Builder builder, params Locus[] loci) => builder.With(i => i.ExcludedLoci, loci);
     }
