@@ -26,6 +26,6 @@
         /// <summary>
         /// The version of the HLA Nomenclature used by the matching algorithm component - used for analysing both donor and patient hla.
         /// </summary>
-        public string HlaNomenclatureVersion { get; set; }
+        public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
     }
 }
