@@ -33,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             expander = DependencyInjection.DependencyInjection.Provider.GetService<ICompressedPhenotypeExpander>();
         }
-
+        
         [Test]
         public async Task ExpandCompressedPhenotype_DoesNotIncludesSwappedGenotypes()
         {
@@ -368,6 +368,34 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             // Strictly this assertion is not necessary, but it could be useful for people reading this test to understand what is being tested here,
             // rather than blindly trusting the snapshot of 4 matching genotypes.
             genotypesWithoutMissingLoci.Count().Should().BeLessThan(genotypes.Count);
+        }
+
+        // TODO: #637 - this test is expected to fail once a strategy is in place to handle valid alleles that are missing from
+        // the HMD version being referenced during expansion; for now, such alleles will be deemed unrepresented in the HF set
+        // even if they map to the G group listed in the haplotype.
+        [Test]
+        public async Task ExpandCompressedPhenotype_ContainsAlleleFromLaterHlaVersion_ReturnsEmptySet()
+        {
+            // this allele was introduced in a later nomenclature version (v3440) but maps to the same G group found in the test haplotype (A*02:01:01G)
+            const string alleleFromLaterHlaVersion = "02:01:01:170";
+            var phenotype = new PhenotypeInfoBuilder<string>(UnambiguousAlleleDetails.Alleles())
+                .WithDataAt(Locus.A, LocusPosition.One, alleleFromLaterHlaVersion)
+                .Build();
+
+            var haplotypes = new List<LociInfo<string>> {HaplotypeBuilder1.Build(), HaplotypeBuilder2.Build()};
+
+            var genotypes = await expander.ExpandCompressedPhenotype(new ExpandCompressedPhenotypeInput
+            {
+                Phenotype = phenotype,
+                AllowedLoci = DefaultLoci,
+                HlaNomenclatureVersion = HlaNomenclatureVersion,
+                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
+                {
+                    GGroup = haplotypes, PGroup = haplotypes, SmallGGroup = haplotypes
+                }
+            });
+
+            genotypes.Should().BeEmpty();
         }
     }
 }
