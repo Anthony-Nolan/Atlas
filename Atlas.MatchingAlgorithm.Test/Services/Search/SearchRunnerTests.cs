@@ -89,7 +89,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = "id", SearchRequest = DefaultMatchingRequest});
 
             await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
-                r.HlaNomenclatureVersion == hlaNomenclatureVersion
+                r.MatchingAlgorithmHlaNomenclatureVersion == hlaNomenclatureVersion
             ));
         }
 

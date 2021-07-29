@@ -72,7 +72,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     SearchRequestId = searchRequestId,
                     Results = results,
                     TotalResults = results.Count,
-                    HlaNomenclatureVersion = hlaNomenclatureVersion,
+                    MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
                     BlobStorageContainerName = blobContainerName,
                     SearchedHla = identifiedSearchRequest.SearchRequest.SearchHlaData
                 };
@@ -84,7 +84,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     SearchRequest = identifiedSearchRequest.SearchRequest,
                     SearchRequestId = searchRequestId,
                     MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
-                    HlaNomenclatureVersion = hlaNomenclatureVersion,
+                    MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
                     WasSuccessful = true,
                     NumberOfResults = results.Count,
                     BlobStorageContainerName = blobContainerName,
@@ -102,7 +102,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     WasSuccessful = false,
                     SearchRequestId = searchRequestId,
                     MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
-                    HlaNomenclatureVersion = hlaNomenclatureVersion
+                    MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
                 throw;

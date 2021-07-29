@@ -9,7 +9,7 @@ namespace Atlas.Client.Models.Search.Results.ResultSet
 
         public abstract bool IsRepeatSearchSet { get; }
 
-        public string HlaNomenclatureVersion { get; set; }
+        public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
         public string BlobStorageContainerName { get; set; }
         public abstract string ResultsFileName { get; }
 

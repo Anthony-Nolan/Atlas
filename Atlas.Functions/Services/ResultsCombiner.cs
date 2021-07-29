@@ -71,7 +71,7 @@ namespace Atlas.Functions.Services
                     MatchPredictionResult = matchPredictionResults[r.AtlasDonorId]
                 });
                 resultSet.TotalResults = matchingAlgorithmResultSet.TotalResults;
-                resultSet.HlaNomenclatureVersion = matchingAlgorithmResultSet.HlaNomenclatureVersion;
+                resultSet.MatchingAlgorithmHlaNomenclatureVersion = matchingAlgorithmResultSet.MatchingAlgorithmHlaNomenclatureVersion;
                 resultSet.SearchRequestId = matchingAlgorithmResultSet.SearchRequestId;
                 resultSet.BlobStorageContainerName = resultsContainer;
                 resultSet.MatchingAlgorithmTime = matchingTime;

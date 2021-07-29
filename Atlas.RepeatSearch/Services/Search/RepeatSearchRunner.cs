@@ -100,7 +100,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     RepeatSearchId = repeatSearchId,
                     Results = results,
                     TotalResults = results.Count,
-                    HlaNomenclatureVersion = hlaNomenclatureVersion,
+                    MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
                     BlobStorageContainerName = blobContainerName,
                     NoLongerMatchingDonors = diff.RemovedResults.ToList()
                 };
@@ -113,7 +113,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     RepeatSearchRequestId = identifiedRepeatSearchRequest.RepeatSearchId,
                     SearchRequestId = searchRequestId,
                     MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
-                    HlaNomenclatureVersion = hlaNomenclatureVersion,
+                    MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
                     WasSuccessful = true,
                     NumberOfResults = results.Count,
                     BlobStorageContainerName = blobContainerName,
@@ -132,7 +132,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     SearchRequestId = searchRequestId,
                     RepeatSearchRequestId = repeatSearchId,
                     MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
-                    HlaNomenclatureVersion = hlaNomenclatureVersion
+                    MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
                 throw;
