@@ -46,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
                     {nameof(MatchingResultsNotification.SearchRequestId), matchingResultsNotification.SearchRequestId},
                     {nameof(MatchingResultsNotification.WasSuccessful), matchingResultsNotification.WasSuccessful},
                     {nameof(MatchingResultsNotification.NumberOfResults), matchingResultsNotification.NumberOfResults},
-                    {nameof(MatchingResultsNotification.HlaNomenclatureVersion), matchingResultsNotification.HlaNomenclatureVersion},
+                    {nameof(MatchingResultsNotification.MatchingAlgorithmHlaNomenclatureVersion), matchingResultsNotification.MatchingAlgorithmHlaNomenclatureVersion},
                     {nameof(MatchingResultsNotification.ElapsedTime), matchingResultsNotification.ElapsedTime},
                 }
             };

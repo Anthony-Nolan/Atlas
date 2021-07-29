@@ -61,7 +61,7 @@ namespace Atlas.Functions.Services
                 var nonDonorInput = BuildSearchRequestMatchPredictionInput(
                     matchingAlgorithmResultSet.SearchRequestId,
                     searchRequest,
-                    matchingAlgorithmResultSet.HlaNomenclatureVersion
+                    matchingAlgorithmResultSet.MatchingAlgorithmHlaNomenclatureVersion
                 );
                 var donorInputs = matchingAlgorithmResultSet.Results.Select(matchingResult => BuildPerDonorMatchPredictionInput(
                         matchingResult,
