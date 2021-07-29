@@ -188,7 +188,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var patientStringGenotypes = patientGenotypes.Select(g => g.ToHlaNames()).ToHashSet();
             var donorStringGenotypes = donorGenotypes.Select(g => g.ToHlaNames()).ToHashSet();
             
-            // TODO: ATLAS-233: Re-introduce hardcoded 100% probability for guaranteed match but no represented genotypes
             var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientStringGenotypes, frequencySets.PatientSet, allowedLoci);
             var donorGenotypeLikelihoods = await CalculateGenotypeLikelihoods(donorStringGenotypes, frequencySets.DonorSet, allowedLoci);
 

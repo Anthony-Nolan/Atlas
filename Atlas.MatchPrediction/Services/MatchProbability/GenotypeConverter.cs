@@ -42,7 +42,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         {
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
 
-            using (logger.RunTimed($"Convert genotypes for matching: {subjectLogDescription}", LogLevel.Verbose))
+            using (logger.RunTimed($"Convert genotypes for match calculation: {subjectLogDescription}", LogLevel.Verbose))
             {
                 return (await Task.WhenAll(genotypes.Select(async g => await GenotypeAtDesiredResolutions.FromHaplotypeResolutions(
                     g,
