@@ -13,7 +13,6 @@ namespace Atlas.MatchPrediction.ApplicationInsights
         public void Initialise(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput)
         {
             SearchRequestId = singleDonorMatchProbabilityInput.SearchRequestId;
-            MatchingAlgorithmHlaNomenclatureVersion = singleDonorMatchProbabilityInput.MatchingAlgorithmHlaNomenclatureVersion;
             DonorIds = singleDonorMatchProbabilityInput.DonorInput?.DonorIds?.Select(id => id.ToString()).StringJoin(",");
             DonorHla = singleDonorMatchProbabilityInput.DonorInput?.DonorHla?.ToPhenotypeInfo();
             PatientHla = singleDonorMatchProbabilityInput.PatientHla?.ToPhenotypeInfo();

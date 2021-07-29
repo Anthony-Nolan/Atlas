@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
-using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -34,8 +33,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
     {
         private IMatchProbabilityService MatchProbabilityService { get; set; }
 
-        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
-
         // Registry and ethnicity values must match those used in test HF set files.
         private const string Registry1 = "reg-1";
         private const string Registry2 = "reg-2";
@@ -54,7 +51,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDataAt(Locus.Drb1, "11:XX", "16:XX");
 
         private static Builder<SingleDonorMatchProbabilityInput> DefaultInputBuilder => SingleDonorMatchProbabilityInputBuilder.Default
-            .WithHlaNomenclature(HlaNomenclatureVersion)
             .WithPatientHla(DefaultPhenotypeBuilder.Build())
             .WithDonorHla(DefaultPhenotypeBuilder.Build())
             .WithDonorMetadata(new FrequencySetMetadata())
