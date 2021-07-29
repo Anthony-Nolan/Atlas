@@ -68,7 +68,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
                     logger.SendEvent(new HlaConversionFailureEventModel(
                         locus,
                         hla,
-                        hlaMetadataDictionary.ActiveHlaNomenclatureVersion,
+                        hlaMetadataDictionary.HlaNomenclatureVersion,
                         targetHlaCategory, 
                         "Conversion of compressed phenotype to target HLA category",
                         exception));
