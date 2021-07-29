@@ -86,7 +86,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         [Test]
         public async Task CalculateMatchProbability_ExpandsPhenotypesUsingHFSetNomenclatureVersions()
         {
-            const string patientHfSetVersion = "3400", donorHfSetVersion = "3410", matchingAlgorithmVersion = "3450";
+            const string patientHfSetVersion = "3400", donorHfSetVersion = "3410";
 
             haplotypeFrequencyService.GetHaplotypeFrequencySets(default, default).ReturnsForAnyArgs(
                 new HaplotypeFrequencySetResponse
@@ -96,9 +96,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 }
             );
 
-            var input = SingleDonorMatchProbabilityInputBuilder.Default
-                .WithHlaNomenclature(matchingAlgorithmVersion)
-                .Build();
+            var input = SingleDonorMatchProbabilityInputBuilder.Default.Build();
             await matchProbabilityService.CalculateMatchProbability(input);
 
 
@@ -107,15 +105,12 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             await compressedPhenotypeExpander.Received(1).ExpandCompressedPhenotype(Arg.Is<ExpandCompressedPhenotypeInput>(x =>
                 x.HlaNomenclatureVersion == patientHfSetVersion));
-
-            await compressedPhenotypeExpander.DidNotReceive().ExpandCompressedPhenotype(Arg.Is<ExpandCompressedPhenotypeInput>(x =>
-                x.HlaNomenclatureVersion == matchingAlgorithmVersion));
         }
 
         [Test]
         public async Task CalculateMatchProbability_ConvertsGenotypesUsingHFSetNomenclatureVersions()
         {
-            const string patientHfSetVersion = "3400", donorHfSetVersion = "3410", matchingAlgorithmVersion = "3450";
+            const string patientHfSetVersion = "3400", donorHfSetVersion = "3410";
 
             haplotypeFrequencyService.GetHaplotypeFrequencySets(default, default).ReturnsForAnyArgs(
                 new HaplotypeFrequencySetResponse
@@ -125,9 +120,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 }
             );
 
-            var input = SingleDonorMatchProbabilityInputBuilder.Default
-                .WithHlaNomenclature(matchingAlgorithmVersion)
-                .Build();
+            var input = SingleDonorMatchProbabilityInputBuilder.Default.Build();
             await matchProbabilityService.CalculateMatchProbability(input);
 
 
@@ -143,13 +136,6 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 "donor", 
                 Arg.Any<IReadOnlyDictionary<PhenotypeInfo<string>, decimal>>(),
                 donorHfSetVersion
-            );
-
-            await genotypeConverter.DidNotReceive().ConvertGenotypes(
-                Arg.Any<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>>(),
-                Arg.Any<string>(),
-                Arg.Any<IReadOnlyDictionary<PhenotypeInfo<string>, decimal>>(),
-                matchingAlgorithmVersion
             );
         }
     }
