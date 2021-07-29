@@ -31,7 +31,6 @@ namespace Atlas.MatchPrediction.Test.Services
                 .WithPatientHla(new PhenotypeInfo<string>("hla"))
                 .WithPatientMetadata(FrequencySetMetadataBuilder.New.ForEthnicity("eth").ForRegistry("reg").Build())
                 .WithExcludedLoci(Locus.A)
-                .WithHlaNomenclature("hla-nomenclature-version")
                 .WithSearchRequestId("request-id")
                 .Build();
 
@@ -40,7 +39,6 @@ namespace Atlas.MatchPrediction.Test.Services
             batchedInput.ExcludedLoci.Should().BeEquivalentTo(requestInput.ExcludedLoci);
             batchedInput.PatientHla.Should().BeEquivalentTo(requestInput.PatientHla);
             batchedInput.PatientFrequencySetMetadata.Should().BeEquivalentTo(requestInput.PatientFrequencySetMetadata);
-            batchedInput.MatchingAlgorithmHlaNomenclatureVersion.Should().BeEquivalentTo(requestInput.MatchingAlgorithmHlaNomenclatureVersion);
             batchedInput.SearchRequestId.Should().BeEquivalentTo(requestInput.SearchRequestId);
         }
 
