@@ -99,6 +99,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
         private readonly ICompressedPhenotypeExpander compressedPhenotypeExpander;
         private readonly IGenotypeLikelihoodService genotypeLikelihoodService;
+        private readonly IGenotypeConverter genotypeConverter;
         private readonly IMatchCalculationService matchCalculationService;
         private readonly IMatchProbabilityCalculator matchProbabilityCalculator;
         private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
@@ -109,6 +110,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         public MatchProbabilityService(
             ICompressedPhenotypeExpander compressedPhenotypeExpander,
             IGenotypeLikelihoodService genotypeLikelihoodService,
+            IGenotypeConverter genotypeConverter,
             IMatchCalculationService matchCalculationService,
             IMatchProbabilityCalculator matchProbabilityCalculator,
             IHaplotypeFrequencyService haplotypeFrequencyService,
@@ -119,6 +121,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         {
             this.compressedPhenotypeExpander = compressedPhenotypeExpander;
             this.genotypeLikelihoodService = genotypeLikelihoodService;
+            this.genotypeConverter = genotypeConverter;
             this.matchCalculationService = matchCalculationService;
             this.matchProbabilityCalculator = matchProbabilityCalculator;
             this.haplotypeFrequencyService = haplotypeFrequencyService;
@@ -192,26 +195,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientStringGenotypes, frequencySets.PatientSet, allowedLoci);
             var donorGenotypeLikelihoods = await CalculateGenotypeLikelihoods(donorStringGenotypes, frequencySets.DonorSet, allowedLoci);
 
-            async Task<List<GenotypeAtDesiredResolutions>> ConvertGenotypes(
-                ISet<TypedGenotype> genotypes,
-                string subjectLogDescription,
-                IReadOnlyDictionary<PhenotypeInfo<string>, decimal> genotypeLikelihoods,
-                string hlaNomenclatureVersion)
-            {
-                var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
-
-                using (logger.RunTimed($"Convert genotypes for matching: {subjectLogDescription}", LogLevel.Verbose))
-                {
-                    return (await Task.WhenAll(genotypes.Select(async g => await GenotypeAtDesiredResolutions.FromHaplotypeResolutions(
-                        g,
-                        hlaMetadataDictionary,
-                        genotypeLikelihoods[g.ToHlaNames()]
-                    )))).ToList();
-                }
-            }
-
-            var convertedPatientGenotypes = await ConvertGenotypes(patientGenotypes, "patient", patientGenotypeLikelihoods, patientHlaVersion);
-            var convertedDonorGenotypes = await ConvertGenotypes(donorGenotypes, "donor", donorGenotypeLikelihoods, donorHlaVersion);
+            var convertedPatientGenotypes = await genotypeConverter.ConvertGenotypes(patientGenotypes, "patient", patientGenotypeLikelihoods, patientHlaVersion);
+            var convertedDonorGenotypes = await genotypeConverter.ConvertGenotypes(donorGenotypes, "donor", donorGenotypeLikelihoods, donorHlaVersion);
             var allPatientDonorCombinations = CombineGenotypes(convertedPatientGenotypes, convertedDonorGenotypes);
 
             using (var matchCountLogger = MatchCountLogger(NumberOfPairsOfCartesianProduct(convertedDonorGenotypes, convertedPatientGenotypes)))
@@ -274,8 +259,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         }
 
         private IEnumerable<Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>> CombineGenotypes(
-            List<GenotypeAtDesiredResolutions> patientGenotypes,
-            List<GenotypeAtDesiredResolutions> donorGenotypes)
+            ICollection<GenotypeAtDesiredResolutions> patientGenotypes,
+            ICollection<GenotypeAtDesiredResolutions> donorGenotypes)
         {
             using (logger.RunTimed("Combining patient/donor genotypes", LogLevel.Verbose))
             {
