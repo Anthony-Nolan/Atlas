@@ -59,6 +59,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         /// </summary>
         /// <returns>True if the versions are different, otherwise false.</returns>
         bool IsActiveVersionDifferentFromLatestVersion();
+
+        string ActiveHlaNomenclatureVersion { get; }
     }
 
     internal class HlaMetadataDictionary : IHlaMetadataDictionary
@@ -111,7 +113,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.logger = logger;
         }
 
-        private string ActiveHlaNomenclatureVersion => activeHlaNomenclatureVersionOrDefault == HlaMetadataDictionaryConstants.NoActiveVersionValue
+        public string ActiveHlaNomenclatureVersion => activeHlaNomenclatureVersionOrDefault == HlaMetadataDictionaryConstants.NoActiveVersionValue
             ? throw new Exception(
                 "HLA Metadata Dictionary with no HLA nomenclature version cannot be used for anything but regenerating a new dictionary.")
             : activeHlaNomenclatureVersionOrDefault;
