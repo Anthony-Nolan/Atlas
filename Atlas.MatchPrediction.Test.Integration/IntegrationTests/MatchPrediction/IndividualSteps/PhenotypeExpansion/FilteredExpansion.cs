@@ -6,7 +6,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Config;
-using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
+using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
