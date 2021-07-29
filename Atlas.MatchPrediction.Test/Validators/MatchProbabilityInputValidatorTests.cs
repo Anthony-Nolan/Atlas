@@ -39,16 +39,6 @@ namespace Atlas.MatchPrediction.Test.Validators
             result.IsValid.Should().BeFalse();
         }
 
-        [Test]
-        public void Validator_WhenHlaNomenclatureNotProvided_ValidationFails()
-        {
-            var input = SingleDonorMatchProbabilityInputBuilder.Default.WithHlaNomenclature(null).Build();
-
-            var result = new MatchProbabilityInputValidator().Validate(input);
-
-            result.IsValid.Should().BeFalse();
-        }
-
         [TestCase(new []{ Locus.A})]
         [TestCase(new []{ Locus.B})]
         [TestCase(new []{ Locus.Drb1})]

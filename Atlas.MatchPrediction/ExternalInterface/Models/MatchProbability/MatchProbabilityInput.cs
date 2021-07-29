@@ -80,7 +80,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
             ExcludedLoci = initial.ExcludedLoci;
             PatientHla = initial.PatientHla;
             PatientFrequencySetMetadata = initial.PatientFrequencySetMetadata;
-            MatchingAlgorithmHlaNomenclatureVersion = initial.MatchingAlgorithmHlaNomenclatureVersion;
         }
 
         /// <summary>
@@ -101,7 +100,5 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 
         public PhenotypeInfoTransfer<string> PatientHla { get; set; }
         public FrequencySetMetadata PatientFrequencySetMetadata { get; set; }
-
-        public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
     }
 }

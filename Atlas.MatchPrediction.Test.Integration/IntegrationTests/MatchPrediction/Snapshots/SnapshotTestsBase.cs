@@ -54,7 +54,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDataAt(Locus.Drb1, "11:XX", "16:XX");
 
         private static Builder<SingleDonorMatchProbabilityInput> DefaultInputBuilder => SingleDonorMatchProbabilityInputBuilder.Default
-            .WithHlaNomenclature(HlaNomenclatureVersion)
             .WithPatientHla(DefaultPhenotypeBuilder.Build())
             .WithDonorHla(DefaultPhenotypeBuilder.Build())
             .WithDonorMetadata(new FrequencySetMetadata())
