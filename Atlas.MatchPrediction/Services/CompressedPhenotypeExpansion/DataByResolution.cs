@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.Data.Models;
 
-namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
+namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
 {
     /// <summary>
     /// In a few places we separate frequencies by resolution, at P group, G group, and g-group resolutions;

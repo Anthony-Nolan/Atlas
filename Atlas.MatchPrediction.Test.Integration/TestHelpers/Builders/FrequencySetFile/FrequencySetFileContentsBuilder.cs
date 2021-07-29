@@ -4,7 +4,6 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Models.FileSchema;
-using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using LochNessBuilder;
 using Builder = LochNessBuilder.Builder<Atlas.MatchPrediction.Test.Integration.TestHelpers.Models.SerialisableFrequencySetFileContents>;

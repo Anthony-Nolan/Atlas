@@ -7,7 +7,6 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Maths;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Data.Models;
@@ -16,7 +15,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models;
 // ReSharper disable SuggestBaseTypeForParameter
 // ReSharper disable ParameterTypeCanBeEnumerable.Local
 
-namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
+namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
 {
     internal class ExpandCompressedPhenotypeInput
     {
@@ -55,14 +54,17 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
     {
         private readonly ILogger logger;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
+        private readonly ICompressedPhenotypeConverter converter;
 
         public CompressedPhenotypeExpander(
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchPredictionLogger logger,
-            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory)
+            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
+            ICompressedPhenotypeConverter converter)
         {
             this.logger = logger;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
+            this.converter = converter;
         }
 
         /// <inheritdoc />
@@ -78,7 +80,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(input.HlaNomenclatureVersion);
 
             var groupsPerPosition = await new DataByResolution<bool>().MapAsync(async (category, _) =>
-                await ConvertAllHla(hlaMetadataDictionary, input.Phenotype, category.ToHlaTypingCategory().ToTargetHlaCategory(), allowedLoci)
+                await converter.ConvertPhenotype(hlaMetadataDictionary, input.Phenotype, category.ToHlaTypingCategory().ToTargetHlaCategory(), allowedLoci)
             );
 
             var groupsPerLocus = groupsPerPosition.Map(CombineSetsAtLoci);
@@ -94,57 +96,6 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 
             logger.SendTrace($"Filtered expanded genotypes: {filteredDiplotypes.Count}");
             return filteredDiplotypes.Select(dp => new PhenotypeInfo<HlaAtKnownTypingCategory>(dp.Item1, dp.Item2)).ToHashSet();
-        }
-
-        /// <summary>
-        /// Runs <see cref="IHlaMetadataDictionary.ConvertHla"/> for each HLA in a PhenotypeInfo, at selected loci.
-        /// Excluded loci will not be converted, and will be set to `null`.
-        /// Provided `null`s will be preserved.
-        /// Any HLA that cannot be converted, e.g., an allele could not be found in the HMD due to being renamed in a later HLA version,
-        /// will be assigned a default placeholder value to avoid issues in subsequent haplotype/diplotype filtering steps, as `null` has a special meaning.
-        /// </summary>
-        private async Task<PhenotypeInfo<IReadOnlyCollection<string>>> ConvertAllHla(
-            IHlaMetadataDictionary hlaMetadataDictionary,
-            PhenotypeInfo<string> hlaInfo,
-            TargetHlaCategory targetHlaCategory,
-            ISet<Locus> allowedLoci
-        )
-        {
-            // placeholder text should not conform to any possible HLA naming pattern
-            const string hlaConversionFailurePlaceholderText = "unconverted-HLA-typing";
-
-            return await hlaInfo.MapAsync(async (locus, _, hla) =>
-            {
-                if (!allowedLoci.Contains(locus) || hla == null)
-                {
-                    return null;
-                }
-
-                try
-                {
-                    return await hlaMetadataDictionary.ConvertHla(locus, hla, targetHlaCategory);
-                }
-                // All HMD exceptions are being caught and suppressed here, under the assumption that the subject's HLA has already been
-                // validated by the matching algorithm component, and the only reason the typing is missing
-                // from the HMD is due to the matching algorithm and HF set being on different nomenclature versions.
-                // See https://github.com/Anthony-Nolan/Atlas/issues/636 for more info.
-                // Note: if the MPA endpoint is ever added to the Public API to allow it to be run independently of matching,
-                // then the above assumption no longer stands; the possibility of invalid HLA being submitted to the MPA directly must be handled.
-                catch (HlaMetadataDictionaryException exception)
-                {
-                    logger.SendEvent(new HlaConversionFailureEventModel(
-                        locus,
-                        hla,
-                        hlaMetadataDictionary.ActiveHlaNomenclatureVersion,
-                        targetHlaCategory, 
-                        "Expansion of phenotype to HLA category of the HF set.",
-                        exception));
-
-                    //TODO issue #637 - re-attempt HLA conversion using other approaches
-
-                    return new List<string> {hlaConversionFailurePlaceholderText};
-                }
-            });
         }
 
         private static IEnumerable<LociInfo<HlaAtKnownTypingCategory>> GetAllowedHaplotypes(
