@@ -60,15 +60,15 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         /// <returns>True if the versions are different, otherwise false.</returns>
         bool IsActiveVersionDifferentFromLatestVersion();
 
-        string ActiveHlaNomenclatureVersion { get; }
+        string HlaNomenclatureVersion { get; }
     }
 
     internal class HlaMetadataDictionary : IHlaMetadataDictionary
     {
         /// <summary>
-        /// The active HLA Nomenclature version, or <see cref="HlaMetadataDictionaryConstants.NoActiveVersionValue"/> in the case when no refresh has been run.
+        /// The HLA Nomenclature version represented by this dictionary, or <see cref="HlaMetadataDictionaryConstants.NoActiveVersionValue"/> in the case when no refresh has been run.
         /// </summary>
-        private readonly string activeHlaNomenclatureVersionOrDefault;
+        private readonly string hlaNomenclatureVersionOrDefault;
 
         private readonly IRecreateHlaMetadataService recreateMetadataService;
         private readonly IHlaConverter hlaConverter;
@@ -84,7 +84,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly ILogger logger;
 
         public HlaMetadataDictionary(
-            string activeHlaNomenclatureVersionOrDefault,
+            string hlaNomenclatureVersionOrDefault,
             IRecreateHlaMetadataService recreateMetadataService,
             IHlaConverter hlaConverter,
             IHlaValidator hlaValidator,
@@ -98,7 +98,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger)
         {
-            this.activeHlaNomenclatureVersionOrDefault = activeHlaNomenclatureVersionOrDefault;
+            this.hlaNomenclatureVersionOrDefault = hlaNomenclatureVersionOrDefault;
             this.recreateMetadataService = recreateMetadataService;
             this.hlaConverter = hlaConverter;
             this.hlaValidator = hlaValidator;
@@ -113,14 +113,14 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.logger = logger;
         }
 
-        public string ActiveHlaNomenclatureVersion => activeHlaNomenclatureVersionOrDefault == HlaMetadataDictionaryConstants.NoActiveVersionValue
+        public string HlaNomenclatureVersion => hlaNomenclatureVersionOrDefault == HlaMetadataDictionaryConstants.NoActiveVersionValue
             ? throw new Exception(
                 "HLA Metadata Dictionary with no HLA nomenclature version cannot be used for anything but regenerating a new dictionary.")
-            : activeHlaNomenclatureVersionOrDefault;
+            : hlaNomenclatureVersionOrDefault;
 
         public bool IsActiveVersionDifferentFromLatestVersion()
         {
-            var active = activeHlaNomenclatureVersionOrDefault;
+            var active = hlaNomenclatureVersionOrDefault;
             var latest = wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion();
             return active != latest;
         }
@@ -148,7 +148,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         {
             return await hlaValidator.ValidateHla(locus, hlaName, new HlaValidationBehaviour
             {
-                HlaNomenclatureVersion = ActiveHlaNomenclatureVersion,
+                HlaNomenclatureVersion = HlaNomenclatureVersion,
                 TargetHlaCategory = targetHlaCategory
             });
         }
@@ -169,7 +169,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             return creationConfig.CreationMode switch
             {
                 CreationBehaviour.Mode.Specific => creationConfig.SpecificVersion,
-                CreationBehaviour.Mode.Active => ActiveHlaNomenclatureVersion,
+                CreationBehaviour.Mode.Active => HlaNomenclatureVersion,
                 CreationBehaviour.Mode.Latest => wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion(),
                 _ => throw new ArgumentOutOfRangeException(nameof(creationConfig.CreationMode), creationConfig.CreationMode, "Unexpected enum value")
             };
@@ -179,44 +179,44 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         {
             return await hlaConverter.ConvertHla(locus, hlaName, new HlaConversionBehaviour
             {
-                HlaNomenclatureVersion = ActiveHlaNomenclatureVersion,
+                HlaNomenclatureVersion = HlaNomenclatureVersion,
                 TargetHlaCategory = targetHlaCategory
             });
         }
 
         public async Task<LocusInfo<INullHandledHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping)
         {
-            return await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(locus, locusTyping, ActiveHlaNomenclatureVersion);
+            return await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(locus, locusTyping, HlaNomenclatureVersion);
         }
 
         public async Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName)
         {
-            return await hlaScoringMetadataService.GetHlaMetadata(locus, hlaName, ActiveHlaNomenclatureVersion);
+            return await hlaScoringMetadataService.GetHlaMetadata(locus, hlaName, HlaNomenclatureVersion);
         }
 
         public async Task<string> GetDpb1TceGroup(string dpb1HlaName)
         {
-            return await dpb1TceGroupMetadataService.GetDpb1TceGroup(dpb1HlaName, ActiveHlaNomenclatureVersion);
+            return await dpb1TceGroupMetadataService.GetDpb1TceGroup(dpb1HlaName, HlaNomenclatureVersion);
         }
 
         public async Task<string> ConvertGGroupToPGroup(Locus locus, string gGroup)
         {
-            return await gGroupToPGroupMetadataService.ConvertGGroupToPGroup(locus, gGroup, ActiveHlaNomenclatureVersion);
+            return await gGroupToPGroupMetadataService.ConvertGGroupToPGroup(locus, gGroup, HlaNomenclatureVersion);
         }
 
         public async Task<string> ConvertSmallGGroupToPGroup(Locus locus, string smallGGroup)
         {
-            return await smallGGroupToPGroupMetadataService.ConvertSmallGGroupToPGroup(locus, smallGGroup, ActiveHlaNomenclatureVersion);
+            return await smallGGroupToPGroupMetadataService.ConvertSmallGGroupToPGroup(locus, smallGGroup, HlaNomenclatureVersion);
         }
 
         public async Task<IEnumerable<string>> GetAllPGroups()
         {
-            return await hlaMatchingMetadataService.GetAllPGroups(ActiveHlaNomenclatureVersion);
+            return await hlaMatchingMetadataService.GetAllPGroups(HlaNomenclatureVersion);
         }
 
         public async Task<IDictionary<Locus, List<string>>> GetAllGGroups()
         {
-            return await hlaScoringMetadataService.GetAllGGroups(ActiveHlaNomenclatureVersion);
+            return await hlaScoringMetadataService.GetAllGGroups(HlaNomenclatureVersion);
         }
 
         public HlaMetadataCollection GenerateAllHlaMetadata(string version)
