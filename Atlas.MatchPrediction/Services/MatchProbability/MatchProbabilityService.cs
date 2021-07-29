@@ -133,19 +133,20 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             matchPredictionLoggingContext.Initialise(singleDonorMatchProbabilityInput);
 
-            var allowedLoci = LocusSettings.MatchPredictionLoci.Except(singleDonorMatchProbabilityInput.ExcludedLoci).ToHashSet();
-            var hlaNomenclatureVersion = singleDonorMatchProbabilityInput.MatchingAlgorithmHlaNomenclatureVersion;
-
             var frequencySets = await haplotypeFrequencyService.GetHaplotypeFrequencySets(
                 singleDonorMatchProbabilityInput.DonorInput.DonorFrequencySetMetadata,
                 singleDonorMatchProbabilityInput.PatientFrequencySetMetadata
             );
 
+            var allowedLoci = LocusSettings.MatchPredictionLoci.Except(singleDonorMatchProbabilityInput.ExcludedLoci).ToHashSet();
+            var patientHlaVersion = frequencySets.PatientSet.HlaNomenclatureVersion;
+            var donorHlaVersion = frequencySets.DonorSet.HlaNomenclatureVersion;
+
             var patientGenotypes = await ExpandToGenotypes(
                 singleDonorMatchProbabilityInput.PatientHla.ToPhenotypeInfo(),
                 frequencySets.PatientSet.Id,
                 allowedLoci,
-                hlaNomenclatureVersion,
+                patientHlaVersion,
                 "patient"
             );
 
@@ -153,7 +154,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 singleDonorMatchProbabilityInput.DonorInput.DonorHla.ToPhenotypeInfo(),
                 frequencySets.DonorSet.Id,
                 allowedLoci,
-                hlaNomenclatureVersion,
+                donorHlaVersion,
                 "donor"
             );
 
@@ -184,12 +185,9 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     , LogLevel.Warn);
             }
 
-            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
-
             var patientStringGenotypes = patientGenotypes.Select(g => g.ToHlaNames()).ToHashSet();
             var donorStringGenotypes = donorGenotypes.Select(g => g.ToHlaNames()).ToHashSet();
-
-
+            
             // TODO: ATLAS-233: Re-introduce hardcoded 100% probability for guaranteed match but no represented genotypes
             var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientStringGenotypes, frequencySets.PatientSet, allowedLoci);
             var donorGenotypeLikelihoods = await CalculateGenotypeLikelihoods(donorStringGenotypes, frequencySets.DonorSet, allowedLoci);
@@ -197,8 +195,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             async Task<List<GenotypeAtDesiredResolutions>> ConvertGenotypes(
                 ISet<TypedGenotype> genotypes,
                 string subjectLogDescription,
-                IReadOnlyDictionary<PhenotypeInfo<string>, decimal> genotypeLikelihoods)
+                IReadOnlyDictionary<PhenotypeInfo<string>, decimal> genotypeLikelihoods,
+                string hlaNomenclatureVersion)
             {
+                var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
+
                 using (logger.RunTimed($"Convert genotypes for matching: {subjectLogDescription}", LogLevel.Verbose))
                 {
                     return (await Task.WhenAll(genotypes.Select(async g => await GenotypeAtDesiredResolutions.FromHaplotypeResolutions(
@@ -209,8 +210,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 }
             }
 
-            var convertedPatientGenotypes = await ConvertGenotypes(patientGenotypes, "patient", patientGenotypeLikelihoods);
-            var convertedDonorGenotypes = await ConvertGenotypes(donorGenotypes, "donor", donorGenotypeLikelihoods);
+            var convertedPatientGenotypes = await ConvertGenotypes(patientGenotypes, "patient", patientGenotypeLikelihoods, patientHlaVersion);
+            var convertedDonorGenotypes = await ConvertGenotypes(donorGenotypes, "donor", donorGenotypeLikelihoods, donorHlaVersion);
             var allPatientDonorCombinations = CombineGenotypes(convertedPatientGenotypes, convertedDonorGenotypes);
 
             using (var matchCountLogger = MatchCountLogger(NumberOfPairsOfCartesianProduct(convertedDonorGenotypes, convertedPatientGenotypes)))
