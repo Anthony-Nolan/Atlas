@@ -10,6 +10,13 @@ The project version will be appropriately incremented with each change to the pr
 
 ## Versions
 
+### 1.1.0
+
+#### Changed
+- Matching and Match Prediction algorithms are now able to run at different HLA nomenclature versions.
+  - MPA will now use the HLA versions of the haplotype frequency sets referenced during match probability calculations.
+  - Matching will continue to use the HLA version that was set at the time of the last successful data refresh.
+
 ### 1.0.1
 
 #### Fixed
