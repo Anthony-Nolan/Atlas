@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Versions
 
+### 1.0.1
+
+#### Fixed
+- Fix for bug that was preventing HLA metadata dictionary refresh to v3.44.0 of HLA nomenclature.
+
 ### 1.0.0
 
 - First stable release of Atlas Public API.
