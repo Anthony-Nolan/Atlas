@@ -6,7 +6,6 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
-using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
@@ -16,6 +15,7 @@ using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
+using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Services.ResultsUpload;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
@@ -114,14 +114,15 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.AddScoped<IUnambiguousGenotypeExpander, UnambiguousGenotypeExpander>();
             services.AddScoped<IGenotypeLikelihoodCalculator, GenotypeLikelihoodCalculator>();
             services.AddScoped<IGenotypeAlleleTruncater, GenotypeAlleleTruncater>();
-
-            services.AddScoped<IAmbiguousPhenotypeExpander, AmbiguousPhenotypeExpander>();
+            
             services.AddScoped<ICompressedPhenotypeExpander, CompressedPhenotypeExpander>();
+            services.AddScoped<ICompressedPhenotypeConverter, CompressedPhenotypeConverter>();
 
             services.AddScoped<IMatchCalculationService, MatchCalculationService>();
 
             services.AddScoped<IMatchProbabilityService, MatchProbabilityService>();
             services.AddScoped<IMatchProbabilityCalculator, MatchProbabilityCalculator>();
+            services.AddScoped<IGenotypeConverter, GenotypeConverter>();
 
             services.AddScoped<IResultUploader, ResultUploader>();
         }

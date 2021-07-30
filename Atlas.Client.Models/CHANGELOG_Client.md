@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Versions
 
+### 1.1.0
+
+#### Changed
+- Renamed `HlaNomenclatureVersion` to `MatchingAlgorithmHlaNomenclatureVersion` on both result set and notification models,
+  now that Matching and Match Prediction are able to use two different HLA versions.
+
 ### 1.0.0
 
 - First stable release of Atlas client.
