@@ -10,6 +10,11 @@ The project version will be appropriately incremented with each change to the pr
 
 ## Versions
 
+### 1.0.1
+
+#### Fixed
+- Fix for bug that was preventing HLA metadata dictionary refresh to v3.44.0 of HLA nomenclature.
+
 ### 1.0.0
 
 - First stable release of the Atlas product.
