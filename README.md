@@ -6,6 +6,37 @@ Atlas is a "search algorithm as a service", extended from Anthony Nolan's matchi
 
 For deployment instructions, see [README_Deployment](README_Deployment.md)
 
+## README Index
+
+Due to the size and complexity of the project, the README has been split into various small chunks. Other READMEs have been linked where appropriate, but here is a 
+comprehensive list:
+
+- [Core README (You Are Here)](README.md)
+- [Development Start Up Guide ("Zero To Hero")](README_DevelopmentStartUpGuide.md)
+- Guide for Installation and usage of the ATLAS system 
+    - [Deployment](README_Deployment.md)
+    - [Integration](README_Integration.md)
+    - [Support](README_Support.md)
+- Components 
+    - [Donor Import](README_DonorImport.md) 
+    - [HLA Metadata Dictionary](README_HlaMetadataDictionary.md) 
+    - [Matching Algorithm](README_MatchingAlgorithm.md)
+        - [Validation Test (Non-Technical BDD Testing)](Atlas.MatchingAlgorithm.Test.Validation/ValidationTests/Features/README_MatchingValidationTests.md)
+    - [Match Prediction Algorithm](README_MatchPredictionAlgorithm.md) 
+    - [MAC Dictionary](README_MultipleAlleleCodeDictionary.md)
+- [Manual Testing](README_ManualTesting.md)
+- [Test and Debug Resources](MiscTestingAndDebuggingResources/README_TestAndDebug.md)
+- [Architectural Decision Record](ArchitecturalDecisionRecord/README_ArchitecturalDecisionRecord.md)
+
+
+## Versioning & CHANGELOGs
+- TODO: #640 - add ADR explaining Atlas versioning and tagging of stable releases.
+
+### CHANGELOG Index
+- [Client](Atlas.Client.Models/CHANGELOG_Client.md)
+- [PublicApi](Atlas.Functions.PublicApi/CHANGELOG_PublicApi.md)
+
+
 ## Components
 
 ### [Donor Import](README_DonorImport.md)
@@ -138,26 +169,3 @@ The service uses two storage methods for different data, SQL and Azure Cloud Tab
     are found within the `Atlas.*.Data` (and for the matching component, also `Atlas.MatchingAlgorithm.Data.Persistent`) projects.
   - Before running the app, migrations must be run using `dotnet ef database update -p <projectName>` from a terminal (or `Update-Database` from the nuget package manager)
   - After changing any data models, a migration must be created with `dotnet ef migrations add -p <projectName>` (or `Add-Migration <migration-name>` in nuget package manager), then run as above
-
-
-# README Index
-
-Due to the size and complexity of the project, the README has been split into various small chunks. Other READMEs have been linked where appropriate, but here is a 
-comprehensive list:
-
-- [Core README (You Are Here)](README.md)
-- [Development Start Up Guide ("Zero To Hero")](README_DevelopmentStartUpGuide.md)
-- Guide for Installation and usage of the ATLAS system 
-    - [Deployment](README_Deployment.md)
-    - [Integration](README_Integration.md)
-    - [Support](README_Support.md)
-- Components 
-    - [Donor Import](README_DonorImport.md) 
-    - [HLA Metadata Dictionary](README_HlaMetadataDictionary.md) 
-    - [Matching Algorithm](README_MatchingAlgorithm.md)
-        - [Validation Test (Non-Technical BDD Testing)](Atlas.MatchingAlgorithm.Test.Validation/ValidationTests/Features/README_MatchingValidationTests.md)
-    - [Match Prediction Algorithm](README_MatchPredictionAlgorithm.md) 
-    - [MAC Dictionary](README_MultipleAlleleCodeDictionary.md)
-- [Manual Testing](README_ManualTesting.md)
-- [Test and Debug Resources](MiscTestingAndDebuggingResources/README_TestAndDebug.md)
-- [Architectural Decision Record](ArchitecturalDecisionRecord/README_ArchitecturalDecisionRecord.md)
