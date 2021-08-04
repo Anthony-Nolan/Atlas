@@ -3,6 +3,10 @@
 As much as possible of deployment of the ATLAS system has been scripted, via a combination of Terraform (using the Azure Resource Manager provider), and Azure Devops .yml scripts.
 Atlas is supported in an Azure environment, built and deployed using Azure Devops - to change either would require some custom changes to the codebase.
 
+## What code to deploy?
+
+See [Versioning ADR](./ArchitecturalDecisionRecord/Phase2/005-Versioning.md) for details on what constitutes a "stable" copy of the Atlas codebase.
+
 ## Manual Steps
 
 The following are the steps that are required to be taken manually when deploying ATLAS to a new environment.
