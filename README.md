@@ -30,7 +30,7 @@ comprehensive list:
 
 
 ## Versioning & CHANGELOGs
-- TODO: #640 - add ADR explaining Atlas versioning and tagging of stable releases.
+- See [Version ADR](ArchitecturalDecisionRecord/Phase2/005-Versioning.md) for an explanation of Atlas versioning.
 
 ### CHANGELOG Index
 - [Client](Atlas.Client.Models/CHANGELOG_Client.md)
