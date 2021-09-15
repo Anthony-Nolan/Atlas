@@ -32,10 +32,6 @@ jobs:
           organization: 'wmda'
           scannerMode: 'MSBuild'
           projectKey: 'ATLAS'
-      - task: UseDotNet@2
-        inputs:
-          packageType: 'sdk'
-          version: '3.1.x'
       - task: DotNetCoreCLI@2
         displayName: 'Build Projects'
         inputs:
@@ -71,19 +67,11 @@ jobs:
             bin/**
             *.config
           TargetFolder: 'atlasFunctionsBuild'
-      - task: DotNetCoreInstaller@0
-        displayName: 'Use .NET Core SDK 2.2.103 For Sonar Cloud'
-        inputs:
-          version: '2.2.103'
       - task: SonarCloudAnalyze@1
         displayName: 'Run SonarCloud analysis'
       - task: SonarCloudPublish@1
         inputs:
           pollingTimeoutSec: '300'
-      - task: UseDotNet@2
-        inputs:
-          packageType: 'sdk'
-          version: '3.1.x'
       - task: ArchiveFiles@2
         displayName: 'Archive Atlas Functions Build'
         inputs:
