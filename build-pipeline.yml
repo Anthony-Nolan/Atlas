@@ -26,10 +26,6 @@ jobs:
         inputs:
           command: 'restore'
           feedsToUse: 'select'
-      - task: DotNetCoreInstaller@0
-        displayName: 'Use .NET Core SDK 2.2.103 For Sonar Cloud'
-        inputs:
-          version: '2.2.103'
       - task: SonarCloudPrepare@1
         inputs:
           SonarCloud: 'sonarcloud'
