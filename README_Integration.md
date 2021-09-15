@@ -122,7 +122,7 @@ the order of updates before they make it to ATLAS.
 
 The "data refresh" is a manually triggered job in the matching algorithm. 
 
-> It can be triggered via the `RunDataRefreshManual` function in the `ATLAS-MATCHING-ALGORITHM-FUNCTIONS` function app
+> It can be triggered via the `SubmitDataRefreshRequestManual` function in the `ATLAS-MATCHING-ALGORITHM-FUNCTIONS` function app
 
 The data refresh performs several operations: 
 

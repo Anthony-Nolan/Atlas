@@ -3,7 +3,7 @@
   "Values": {
     "ApplicationInsights:LogLevel": "Info",
 
-    "AtlasFunction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
+    "AtlasFunction:AzureStorage:MatchingConnectionString": "UseDevelopmentStorage=true",
     "AtlasFunction:AzureStorage:MatchingResultsBlobContainer": "matching-algorithm-results",
     "AtlasFunction:AzureStorage:RepeatSearchMatchingResultsBlobContainer": "repeat-search-matching-results",
     "AtlasFunction:AzureStorage:RepeatSearchResultsBlobContainer": "repeat-search-results",
@@ -19,7 +19,7 @@
     "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic": "matching-results-ready",
     "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic": "search-results-ready",
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic": "search-results-ready",
-
+    
     "AtlasFunction:Orchestration:MatchPredictionBatchSize": 100,
 
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
@@ -36,12 +36,12 @@
     "Matching:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "Matching:AzureStorage:SearchResultsBlobContainer": "search-algorithm-results",
     "Matching:MessagingServiceBus:ConnectionString": "override-this",
-    "Matching:MessagingServiceBus:SearchRequestsQueue": "matching-requests",
+    "Matching:MessagingServiceBus:SearchRequestsTopic": "matching-requests",
     "Matching:MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
 
     "MatchPrediction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer": "match-prediction-results",
-    
+
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications"

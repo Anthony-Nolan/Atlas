@@ -61,7 +61,7 @@ namespace Atlas.Functions.Services
                 var searchResultsNotification = new SearchResultsNotification
                 {
                     WasSuccessful = true,
-                    HlaNomenclatureVersion = searchResultSet.HlaNomenclatureVersion,
+                    MatchingAlgorithmHlaNomenclatureVersion = searchResultSet.MatchingAlgorithmHlaNomenclatureVersion,
                     NumberOfResults = searchResultSet.TotalResults,
                     ResultsFileName = searchResultSet.ResultsFileName,
                     SearchRequestId = searchResultSet.SearchRequestId,
@@ -100,7 +100,7 @@ namespace Atlas.Functions.Services
                     {nameof(SearchResultsNotification.RepeatSearchRequestId), searchResultsNotification.RepeatSearchRequestId},
                     {nameof(SearchResultsNotification.WasSuccessful), searchResultsNotification.WasSuccessful},
                     {nameof(SearchResultsNotification.NumberOfResults), searchResultsNotification.NumberOfResults},
-                    {nameof(SearchResultsNotification.HlaNomenclatureVersion), searchResultsNotification.HlaNomenclatureVersion},
+                    {nameof(SearchResultsNotification.MatchingAlgorithmHlaNomenclatureVersion), searchResultsNotification.MatchingAlgorithmHlaNomenclatureVersion},
                     {nameof(SearchResultsNotification.OverallSearchTime), searchResultsNotification.OverallSearchTime},
                 }
             };

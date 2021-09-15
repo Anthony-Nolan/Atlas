@@ -92,7 +92,7 @@
     Given a patient has a match
     And the matching donor is untyped at locus C
     And the patient is untyped at locus C
-    And scoring is enabled locus C
+    And scoring is enabled at locus C
     When I run a 6/6 search
     Then the match confidence should be Potential at C at both positions
 
@@ -122,3 +122,27 @@
     And scoring is enabled at locus DPB1
     When I run a 10/10 search
     Then the match confidence should be Potential at Dpb1 at both positions
+
+  Scenario: Potential match - Patient has serology and Donor has MAC that only expands to 3+ field alleles
+    Given a patient has a match
+    And the matching donor has the following HLA:
+    |A_1    |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |
+    |*01:AC |*66:01 |*57:01 |*41:01 |*13:XX |*07:01 |
+    And the patient has the following HLA:
+    |A_1 |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |
+    |1   |*66:01 |*57:01 |*41:01 |*13:XX |*07:01 |
+    And scoring is enabled at locus A
+    When I run a 6/6 search
+    Then the match confidence should be Potential at A at position 1
+
+  Scenario: Potential match - Patient has serology and Donor has allele string that only expands to 3+ field alleles
+    Given a patient has a match
+    And the matching donor has the following HLA:
+    |A_1       |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |
+    |*01:01/03 |*66:01 |*57:01 |*41:01 |*13:XX |*07:01 |
+    And the patient has the following HLA:
+    |A_1 |A_2     |B_1    |B_2    |DRB1_1 |DRB1_2 |
+    |1   |*66:01  |*57:01 |*41:01 |*13:XX |*07:01 |
+    And scoring is enabled at locus A
+    When I run a 6/6 search
+    Then the match confidence should be Potential at A at position 1

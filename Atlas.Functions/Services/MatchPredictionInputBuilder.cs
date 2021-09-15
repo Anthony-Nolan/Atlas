@@ -60,8 +60,7 @@ namespace Atlas.Functions.Services
                 var donorDictionary = matchPredictionInputParameters.DonorDictionary;
                 var nonDonorInput = BuildSearchRequestMatchPredictionInput(
                     matchingAlgorithmResultSet.SearchRequestId,
-                    searchRequest,
-                    matchingAlgorithmResultSet.HlaNomenclatureVersion
+                    searchRequest
                 );
                 var donorInputs = matchingAlgorithmResultSet.Results.Select(matchingResult => BuildPerDonorMatchPredictionInput(
                         matchingResult,
@@ -75,18 +74,16 @@ namespace Atlas.Functions.Services
 
         /// <summary>
         /// Builds all non-donor information required to run the match prediction algorithm for a search request.
-        /// e.g. patient info, hla nomenclature, matching preferences
+        /// e.g. patient info, matching preferences
         /// 
         /// This will remain constant for all donors in the request, so only needs to be calculated once.
         /// </summary>
         /// <param name="searchRequestId"></param>
         /// <param name="searchRequest"></param>
-        /// <param name="hlaNomenclatureVersion"></param>
         /// <returns></returns>
         private static MatchProbabilityRequestInput BuildSearchRequestMatchPredictionInput(
             string searchRequestId,
-            SearchRequest searchRequest,
-            string hlaNomenclatureVersion
+            SearchRequest searchRequest
         )
         {
             return new MatchProbabilityRequestInput
@@ -98,8 +95,7 @@ namespace Atlas.Functions.Services
                 {
                     EthnicityCode = searchRequest.PatientEthnicityCode,
                     RegistryCode = searchRequest.PatientRegistryCode
-                },
-                HlaNomenclatureVersion = hlaNomenclatureVersion
+                }
             };
         }
 

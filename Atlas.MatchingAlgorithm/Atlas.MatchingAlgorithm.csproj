@@ -3,8 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
         <RootNamespace>Atlas.MatchingAlgorithm</RootNamespace>
-        <Version>1.0.0</Version>
-        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+      <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <OutputPath>bin/</OutputPath>
         <LangVersion>latest</LangVersion>
     </PropertyGroup>

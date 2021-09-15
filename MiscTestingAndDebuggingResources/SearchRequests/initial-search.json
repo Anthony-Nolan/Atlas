@@ -16,28 +16,28 @@
   },
   "SearchHlaData": {
     "A": {
-      "Position1":"*01:01:01",
-      "Position2": "*25:01:01"
+      "Position1":"*02:XX",
+      "Position2": "*02:XX"
     },
     "B": {
-      "Position1": "*08:01:01",
-      "Position2": "*18:01:01"
+      "Position1": "*40:XX",
+      "Position2": "*40:XX"
     },
     "C": {
-      "Position1": "*07:01:01",
-      "Position2": "*12:03:01"
+      "Position1": "*03:XX",
+      "Position2": "*03:XX"
     },
     "Dpb1": {
-      "Position1": "01:01:01",
-      "Position2": "04:01:01"
+      "Position1": "*02:XX",
+      "Position2": "*01:XX"
     },
     "Dqb1": {
-      "Position1": "*02:01:01",
-      "Position2": "*03:03:02"
+      "Position1": "*03:XX",
+      "Position2": "*03:XX"
     },
     "Drb1": {
-      "Position1": "*03:01:01",
-      "Position2": "*07:01:01"
+      "Position1": "*04:XX",
+      "Position2": "*04:XX"
     }
   }
 }

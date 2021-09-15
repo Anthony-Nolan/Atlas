@@ -85,7 +85,7 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows
                     .Where(p => p != nameof(SerialisedHlaInfoType))
                     .OrderBy(p => p.Split(nameof(SerialisedHlaInfo))[1]))
                 {
-                    sb.Append(properties[splitSerialisedPropertyKey]);
+                    sb.Append(properties[splitSerialisedPropertyKey].StringValue);
                 }
 
                 SerialisedHlaInfo = sb.ToString();
