@@ -92,7 +92,7 @@ steps:
   displayName: 'Setting Matching Database Max Size'
   inputs:
     VariableName: 'TF_VAR_MATCHING_DATABASE_MAX_SIZE'
-    Value: 1099511627776
+    Value: 268435456000
     IsSecret: false       
 
 - task: VariableSetTask@1
@@ -106,7 +106,7 @@ steps:
   displayName: 'Setting Matching Data Refresh Database Size Active'
   inputs:
     VariableName: 'TF_VAR_MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE'
-    Value: 'S3' 
+    Value: 'GP_S_Gen5_2' 
     IsSecret: false       
 
 - task: VariableSetTask@1
