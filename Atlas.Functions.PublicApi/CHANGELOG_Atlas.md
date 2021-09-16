@@ -10,6 +10,10 @@ The project version will be appropriately incremented with each change to the pr
 
 ## Versions
 
+### 1.1.1
+
+- All enum values will now be serialised to strings, to allow ease of parsing the serialised results files / http responses for external consumers, and for human-readability.
+
 ### 1.1.0
 
 #### Changed

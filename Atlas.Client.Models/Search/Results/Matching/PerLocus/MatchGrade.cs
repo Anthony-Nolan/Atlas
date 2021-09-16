@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
 {
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum MatchGrade
     {
         /// Mismatch grades
