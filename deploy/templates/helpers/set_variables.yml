@@ -106,7 +106,7 @@ steps:
   displayName: 'Setting Matching Data Refresh Database Size Active'
   inputs:
     VariableName: 'TF_VAR_MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE'
-    Value: 'GP_S_Gen5_2' 
+    Value: 'GP_S_Gen5_4' 
     IsSecret: false       
 
 - task: VariableSetTask@1
