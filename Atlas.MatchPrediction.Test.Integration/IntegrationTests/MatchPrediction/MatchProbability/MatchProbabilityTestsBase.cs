@@ -74,7 +74,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             new PhenotypeInfoBuilder<string>(Alleles.AmbiguousAlleleDetails.Alleles());
 
         protected static Builder<SingleDonorMatchProbabilityInput> DefaultInputBuilder => SingleDonorMatchProbabilityInputBuilder.Default
-            .WithHlaNomenclature(HlaNomenclatureVersion)
             .WithPatientHla(DefaultUnambiguousAllelesBuilder.Build())
             .WithDonorHla(DefaultUnambiguousAllelesBuilder.Build())
             .WithDonorMetadata(new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode})

@@ -8,6 +8,7 @@ using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
@@ -65,6 +66,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         {
             var tceGroups = metadata
                 .Select(data => data.TceGroup)
+                .Where(tce => !tce.IsNullOrEmpty())
                 .Distinct()
                 .ToList();
 

@@ -16,7 +16,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
     [TestFixture]
     public class Dpb1TceGroupMetadataServiceTests
     {
-        private const string CacheKey = "NmdpCodeLookup_Dpb1";
+        private const string CacheKey = "MacLookup_Dpb1";
         private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
         private IDpb1TceGroupMetadataService metadataService;
@@ -62,29 +62,46 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
-        public async Task GetDpb1TceGroup_WhenNmdpCodeMapsToSingleTceGroup_ReturnsTceGroup()
+        public async Task GetDpb1TceGroup_WhenMacMapsToSingleTceGroup_ReturnsTceGroup()
         {
             // both alleles map to same TCE group
             const string tceGroup = "3";
 
             // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Resources.Mac.csv
-            const string macWithFirstField = "02:ABC";
+            const string mac = "02:ABC";
 
-            var result = await metadataService.GetDpb1TceGroup(macWithFirstField, HlaVersion);
+            var result = await metadataService.GetDpb1TceGroup(mac, HlaVersion);
 
             result.Should().Be(tceGroup);
         }
 
         [Test]
-        public async Task GetDpb1TceGroup_WhenNmdpCodeMapsToMoreThanOneTceGroup_DoesNotReturnTceGroup()
+        public async Task GetDpb1TceGroup_WhenMacMapsToMoreThanOneTceGroup_DoesNotReturnTceGroup()
         {
             // alleles map to different TCE groups
             // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Resources.Mac.csv
-            const string macWithFirstField = "02:DEF";
+            const string mac = "02:DEF";
 
-            var result = await metadataService.GetDpb1TceGroup(macWithFirstField, HlaVersion);
+            var result = await metadataService.GetDpb1TceGroup(mac, HlaVersion);
 
             result.Should().BeNullOrEmpty();
+        }
+
+        /// <summary>
+        /// Regression test
+        /// </summary>
+        [Test]
+        public async Task GetDpb1TceGroup_WhenMacMapsToSingleTceGroup_ButAlsoHasAlleleWithNoTceGroup_ReturnsTceGroup()
+        {
+            // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories.LargeMacDictionary.csv
+            // TCE => 13:01/548:01
+            // 13:01 = tce group 3; 548:01 = no tce group assigned
+            const string mac = "13:TCE";
+            const string tceGroup = "3";
+
+            var result = await metadataService.GetDpb1TceGroup(mac, HlaVersion);
+
+            result.Should().Be(tceGroup);
         }
 
         [Test]
@@ -124,6 +141,21 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             var result = await metadataService.GetDpb1TceGroup(alleleString, HlaVersion);
 
             result.Should().BeNullOrEmpty();
+        }
+
+        /// <summary>
+        /// Regression test
+        /// </summary>
+        [Test]
+        public async Task GetDpb1TceGroup_WhenAlleleStringMapsToSingleTceGroup_ButAlsoHasAlleleWithNoTceGroup_ReturnsTceGroup()
+        {
+            // 13:01 = tce group 3; 548:01 = no tce group assigned
+            const string alleleString = "13:01/548:01";
+            const string tceGroup = "3";
+
+            var result = await metadataService.GetDpb1TceGroup(alleleString, HlaVersion);
+
+            result.Should().Be(tceGroup);
         }
     }
 }

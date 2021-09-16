@@ -139,3 +139,39 @@
     And scoring is enabled at locus DPB1
     When I run a 6/6 search
     Then the match grade should be unknown at DPB1 at both positions
+
+  Scenario: Serology match - Patient has serology and Donor has MAC that only expands to 3+ field alleles
+    Given a patient has a match
+    And the matching donor has the following HLA:
+    |A_1    |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |
+    |*01:AC |*66:01 |*57:01 |*41:01 |*13:XX |*07:01 |
+    And the patient has the following HLA:
+    |A_1 |A_2     |B_1    |B_2    |DRB1_1 |DRB1_2 |
+    |1   |*66:01  |*57:01 |*41:01 |*13:XX |*07:01 |
+    And scoring is enabled at locus A
+    When I run a 6/6 search
+    Then the match grade should be serology at A at position 1
+
+  Scenario: Serology match - Patient has serology and Donor has allele string that only expands to 3+ field alleles
+    Given a patient has a match
+    And the matching donor has the following HLA:
+    |A_1       |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |
+    |*01:01/03 |*66:01 |*57:01 |*41:01 |*13:XX |*07:01 |
+    And the patient has the following HLA:
+    |A_1 |A_2     |B_1    |B_2    |DRB1_1 |DRB1_2 |
+    |1   |*66:01  |*57:01 |*41:01 |*13:XX |*07:01 |
+    And scoring is enabled at locus A
+    When I run a 6/6 search
+    Then the match grade should be serology at A at position 1
+
+  Scenario: Permissive mismatch - Donor has DPB1 allele string wherein one allele has a matching TCE assignment, but other has no TCE assignment
+    Given a patient has a match
+    And the matching donor has the following HLA:
+    |A_1    |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |DPB1_1 |DPB1_2         |
+    |*01:01 |*66:01 |*57:01 |*41:01 |*13:XX |*07:01 |*01:01 |*191:01/192:01 |
+    And the patient has the following HLA:
+    |A_1    |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |DPB1_1 |DPB1_2 |
+    |*01:01 |*66:01 |*57:01 |*41:01 |*13:XX |*07:01 |*01:01 |*02:01 |
+    And scoring is enabled at locus DPB1
+    When I run a 6/6 search
+    Then the match grade should be permissive mismatch at DPB1 at position 2

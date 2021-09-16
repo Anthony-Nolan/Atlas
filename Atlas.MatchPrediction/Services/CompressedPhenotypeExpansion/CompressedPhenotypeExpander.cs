@@ -11,12 +11,11 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
-using Atlas.MatchPrediction.Utils;
 
 // ReSharper disable SuggestBaseTypeForParameter
 // ReSharper disable ParameterTypeCanBeEnumerable.Local
 
-namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
+namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
 {
     internal class ExpandCompressedPhenotypeInput
     {
@@ -55,21 +54,22 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
     {
         private readonly ILogger logger;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
+        private readonly ICompressedPhenotypeConverter converter;
 
         public CompressedPhenotypeExpander(
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchPredictionLogger logger,
-            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory)
+            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
+            ICompressedPhenotypeConverter converter)
         {
             this.logger = logger;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
+            this.converter = converter;
         }
 
         /// <inheritdoc />
         public async Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandCompressedPhenotype(ExpandCompressedPhenotypeInput input)
         {
-            var phenotype = input.Phenotype;
-            var hlaNomenclatureVersion = input.HlaNomenclatureVersion;
             var allowedLoci = input.AllowedLoci;
 
             if (input.AllHaplotypes?.GGroup == null || input.AllHaplotypes?.PGroup == null || input.AllHaplotypes?.SmallGGroup == null)
@@ -77,10 +77,10 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
                 throw new ArgumentException("Haplotypes must be provided for phenotype expansion to complete in a reasonable timeframe.");
             }
 
-            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
+            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(input.HlaNomenclatureVersion);
 
             var groupsPerPosition = await new DataByResolution<bool>().MapAsync(async (category, _) =>
-                await hlaMetadataDictionary.ConvertAllHla(phenotype, category.ToHlaTypingCategory().ToTargetHlaCategory(), allowedLoci)
+                await converter.ConvertPhenotype(hlaMetadataDictionary, input.Phenotype, category.ToHlaTypingCategory().ToTargetHlaCategory(), allowedLoci)
             );
 
             var groupsPerLocus = groupsPerPosition.Map(CombineSetsAtLoci);
@@ -159,7 +159,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         private static LociInfo<ISet<string>> CombineSetsAtLoci(PhenotypeInfo<IReadOnlyCollection<string>> phenotypeInfo)
         {
             return phenotypeInfo.ToLociInfo((_, values1, values2)
-                => values1 != null && values2 != null ? (ISet<string>) new HashSet<string>(values1.Concat(values2)) : null
+                => values1 != null && values2 != null ? (ISet<string>)new HashSet<string>(values1.Concat(values2)) : null
             );
         }
     }

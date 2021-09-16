@@ -14,8 +14,7 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs
         public static Builder Default => Builder.New
             .With(i => i.DonorInput, new DonorInput())
             .WithPatientHla(new PhenotypeInfo<string>("hla"))
-            .WithDonorHla(new PhenotypeInfo<string>("hla"))
-            .WithHlaNomenclature("nomenclature-version");
+            .WithDonorHla(new PhenotypeInfo<string>("hla"));
 
         public static Builder WithDonorHla(this Builder builder, PhenotypeInfo<string> donorHla)
         {
@@ -36,9 +35,6 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs
 
         public static Builder WithPatientMetadata(this Builder builder, FrequencySetMetadata frequencySetMetadata) =>
             builder.With(i => i.PatientFrequencySetMetadata, frequencySetMetadata);
-
-        public static Builder WithHlaNomenclature(this Builder builder, string nomenclatureVersion) =>
-            builder.With(i => i.HlaNomenclatureVersion, nomenclatureVersion);
 
         public static Builder WithExcludedLoci(this Builder builder, params Locus[] loci) => builder.With(i => i.ExcludedLoci, loci);
     }

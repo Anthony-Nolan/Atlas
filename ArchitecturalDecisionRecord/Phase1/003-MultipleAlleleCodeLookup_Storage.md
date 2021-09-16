@@ -32,7 +32,18 @@ instead relying on per-allele lookups rejecting any invalid expanded allele.
     - Generic MACs only contain information about the alleles' second fields, and are applicable to any first field. 
     At time of lookup, the given first field will need to be added to all expanded second fields before individual alleles can be 
     processed.
+    - This means that it is possible to expand a MAC to invalid alleles - these will not be validated by the MAC component, but
+     each individually expanded allele should be validated by the appropriate nomenclature HLA Metadata Dictionary
     - This is expected to have a minor negative impact on search/pre-processing performance
   
 [Risk]  
 - No manipulation / lazy caching of the raw MAC data means there will be less to develop and test during project development.
+
+[Decoupling]
+- MAC Expansion is independent of HLA nomenclature. 
+    - It is theoretically possible for a generic MAC to expand to an allele (for a given first field/locus), which is invalid in one HLA nomenclature 
+    version, and valid in a different one.
+        - In this case, the MAC expansion will expand to the same alleles regardless - and it is up to the consumer to decide whether it cares that some alleles 
+        may be invalid, and to validate them (using the HMD) against the appropriate nomenclature
+    - This decision ensures that the MAC expansion service does not require an input of a nomenclature version to expand against, and will always expand 
+    to the same values.

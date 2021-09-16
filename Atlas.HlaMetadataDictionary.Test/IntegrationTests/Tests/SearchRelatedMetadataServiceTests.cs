@@ -56,13 +56,14 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
-        public void GetHlaMetadata_WhenNmdpCodeContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
+        public void GetHlaMetadata_WhenMacContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
         {
-            // MAC value does not matter, but does need to conform to the expected pattern
-            const string macWithFirstField = "9999:FAKE";
+            // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories.LargeMacDictionary.csv
+            // YYY => 9999:9999, i.e., an invalid allele not in the HMD
+            const string mac = "9999:YYY";
 
             Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () => 
-                await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, HlaVersion));
+                await metadataService.GetHlaMetadata(DefaultLocus, mac, HlaVersion));
         }
 
         [Test]
