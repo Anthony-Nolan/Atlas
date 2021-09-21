@@ -64,7 +64,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
                 rankingService,
                 matchScoreCalculator,
                 scoreResultAggregator,
-                Substitute.For<IMatchingAlgorithmSearchLogger>()
+                Substitute.For<IMatchingAlgorithmSearchLogger>(),
+                Substitute.For<IDpb1TceGroupMatchCalculator>()
             );
         }
 

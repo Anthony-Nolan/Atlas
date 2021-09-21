@@ -1,4 +1,5 @@
-﻿using Atlas.Common.GeneticData;
+﻿using System.Collections.Generic;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -13,8 +14,13 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.MatchingAlgorithm.Client.Models.Scoring;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring;
+using NUnit.Framework.Constraints;
 
 // ReSharper disable InconsistentNaming
 
@@ -25,18 +31,31 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
     /// </summary>
     public class Dpb1ScoringTests
     {
-        private const string DefaultDpb1Hla = "01:01:01:01";
-        private const string MismatchedDpb1HlaWithSameTceGroup = "02:01:02:01";
-        private const string MismatchedDpb1HlaWithDifferentTceGroup = "03:01:01:01";
-        private const string MismatchedDpb1HlaWithNoTceGroup = "679:01";
+        private const string AlleleInTceGroup3 = "01:01:01:01";
+        private const string AlleleInTceGroup3_Other = "02:01:02:01";
+        private const string AlleleInTceGroup2 = "03:01:01:01";
+        private const string AlleleInTceGroup2_Other = "08:01";
+        private const string AlleleInTceGroup1 = "10:01:01:01";
+        private const string AlleleInTceGroup1_Other = "09:01:01";
+        private const string AlleleWithoutTceGroup = "679:01";
+        private const string AlleleWithoutTceGroup_Other = "1029:01";
 
-        private readonly MatchGrade[] dpb1MismatchGrades =
+        private readonly Dictionary<int?, string> PatientDpb1Hla = new Dictionary<int?, string>
         {
-            MatchGrade.Mismatch,
-            MatchGrade.PermissiveMismatch
+            {1, AlleleInTceGroup1},
+            {2, AlleleInTceGroup2},
+            {3, AlleleInTceGroup3},
+        };
+
+        private readonly Dictionary<int?, string> DonorDpb1Hla = new Dictionary<int?, string>
+        {
+            {1, AlleleInTceGroup1_Other},
+            {2, AlleleInTceGroup2_Other},
+            {3, AlleleInTceGroup3_Other},
         };
 
         private ISearchService searchService;
+        private IScoringRequestService scoringRequestService;
         private PhenotypeInfo<string> defaultPhenotype;
         private int testDonorId;
 
@@ -51,108 +70,101 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [SetUp]
-        public void ResolveSearchService()
+        public void SetUp()
         {
+            scoringRequestService = DependencyInjection.DependencyInjection.Provider.GetService<IScoringRequestService>();
             searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
         }
 
-        [Test]
-        public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMatchingDpb1Typings_MatchCountIs2AtDpb1()
+        /// <summary>
+        /// Integers used in tandem with <see cref="PatientDpb1Hla"/> and <see cref="DonorDpb1Hla"/> to allow the test cases here to be
+        /// very easily compared to the TCE group functional specification, which uses the group integers
+        /// </summary>
+        // Donor 11
+        [TestCase(1, 1, 1, 1, LocusMatchCategory.PermissiveMismatch)]
+        [TestCase(1, 2, 1, 1, LocusMatchCategory.PermissiveMismatch)]
+        [TestCase(1, 3, 1, 1, LocusMatchCategory.PermissiveMismatch)]
+        [TestCase(2, 2, 1, 1, LocusMatchCategory.Mismatch)]
+        [TestCase(2, 3, 1, 1, LocusMatchCategory.Mismatch)]
+        [TestCase(3, 3, 1, 1, LocusMatchCategory.Mismatch)]
+        // Donor 12
+        [TestCase(1, 1, 1, 2, LocusMatchCategory.PermissiveMismatch)]
+        [TestCase(1, 2, 1, 2, LocusMatchCategory.PermissiveMismatch)]
+        [TestCase(1, 3, 1, 2, LocusMatchCategory.PermissiveMismatch)]
+        [TestCase(2, 2, 1, 2, LocusMatchCategory.Mismatch)]
+        [TestCase(2, 3, 1, 2, LocusMatchCategory.Mismatch)]
+        [TestCase(3, 3, 1, 2, LocusMatchCategory.Mismatch)]
+        // Donor 13
+        [TestCase(1, 1, 1, 3, LocusMatchCategory.PermissiveMismatch)]
+        [TestCase(1, 2, 1, 3, LocusMatchCategory.PermissiveMismatch)]
+        [TestCase(1, 3, 1, 3, LocusMatchCategory.PermissiveMismatch)]
+        [TestCase(2, 2, 1, 3, LocusMatchCategory.Mismatch)]
+        [TestCase(2, 3, 1, 3, LocusMatchCategory.Mismatch)]
+        [TestCase(3, 3, 1, 3, LocusMatchCategory.Mismatch)]
+        // Donor 22
+        [TestCase(1, 1, 2, 2, LocusMatchCategory.Mismatch)]
+        [TestCase(1, 2, 2, 2, LocusMatchCategory.Mismatch)]
+        [TestCase(1, 3, 2, 2, LocusMatchCategory.Mismatch)]
+        [TestCase(2, 2, 2, 2, LocusMatchCategory.PermissiveMismatch)]
+        [TestCase(2, 3, 2, 2, LocusMatchCategory.PermissiveMismatch)]
+        [TestCase(3, 3, 2, 2, LocusMatchCategory.Mismatch)]
+        // Donor 23
+        [TestCase(1, 1, 2, 3, LocusMatchCategory.Mismatch)]
+        [TestCase(1, 2, 2, 3, LocusMatchCategory.Mismatch)]
+        [TestCase(1, 3, 2, 3, LocusMatchCategory.Mismatch)]
+        [TestCase(2, 2, 2, 3, LocusMatchCategory.PermissiveMismatch)]
+        [TestCase(2, 3, 2, 3, LocusMatchCategory.PermissiveMismatch)]
+        [TestCase(3, 3, 2, 3, LocusMatchCategory.Mismatch)]
+        // Donor 33
+        [TestCase(1, 1, 3, 3, LocusMatchCategory.Mismatch)]
+        [TestCase(1, 2, 3, 3, LocusMatchCategory.Mismatch)]
+        [TestCase(1, 3, 3, 3, LocusMatchCategory.Mismatch)]
+        [TestCase(2, 2, 3, 3, LocusMatchCategory.Mismatch)]
+        [TestCase(2, 3, 3, 3, LocusMatchCategory.Mismatch)]
+        [TestCase(3, 3, 3, 3, LocusMatchCategory.PermissiveMismatch)]
+        public async Task Dpb1Scoring_AssignsCorrectPerLocusMatchCategory(
+            int patientTceGroup1,
+            int patientTceGroup2,
+            int donorTceGroup1,
+            int donorTceGroup2,
+            LocusMatchCategory expectedMatchCategory
+        )
         {
-            var result = await RunSixOutOfSixSearchWithAllLociScored(defaultPhenotype);
+            var donorPhenotype = GetDefaultPhenotype()
+                .SetPosition(Locus.Dpb1, LocusPosition.One, DonorDpb1Hla[donorTceGroup1])
+                .SetPosition(Locus.Dpb1, LocusPosition.Two, DonorDpb1Hla[donorTceGroup2]);
 
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.MatchCount.Should().Be(2);
+            var patientPhenotype = GetDefaultPhenotype()
+                .SetPosition(Locus.Dpb1, LocusPosition.One, PatientDpb1Hla[patientTceGroup1])
+                .SetPosition(Locus.Dpb1, LocusPosition.Two, PatientDpb1Hla[patientTceGroup2]);
+
+            var scoringResult = await scoringRequestService.Score(new DonorHlaScoringRequest
+            {
+                DonorHla = donorPhenotype.ToPhenotypeInfoTransfer(),
+                PatientHla = patientPhenotype.ToPhenotypeInfoTransfer(),
+                ScoringCriteria = new ScoringCriteria
+                {
+                    LociToScore = new List<Locus> {Locus.Dpb1},
+                    LociToExcludeFromAggregateScore = new List<Locus>()
+                }
+            });
+
+            scoringResult.SearchResultAtLocusDpb1.MatchCategory.Should().Be(expectedMatchCategory);
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMatchingDpb1Typings_NoMismatchGradesAtDpb1()
+        public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButPatientHasNoTceGroupAssignments_MatchCategoryIsUnknown()
         {
-            var result = await RunSixOutOfSixSearchWithAllLociScored(defaultPhenotype);
-
-            dpb1MismatchGrades.Should().NotContain(result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchGrade);
-            dpb1MismatchGrades.Should().NotContain(result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchGrade);
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMatchingDpb1Typings_NoMismatchConfidencesAtDpb1()
-        {
-            var result = await RunSixOutOfSixSearchWithAllLociScored(defaultPhenotype);
-
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_PatientAndDonorDpb1TypingsAreMismatched_ButHaveSameTceGroup_MatchCountIs0AtDpb1()
-        {
-            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
+            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(AlleleWithoutTceGroup);
             var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.MatchCount.Should().Be(0);
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_PatientAndDonorDpb1TypingsAreMismatched_ButHaveSameTceGroup_TwoPermissiveMismatchGradesAtDpb1()
-        {
-            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
-            var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
-
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PermissiveMismatch);
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.PermissiveMismatch);
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_PatientAndDonorDpb1TypingsAreMismatched_ButHaveSameTceGroup_TwoMismatchConfidencesAtDpb1()
-        {
-            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
-            var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
-
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButHaveDifferentTceGroups_MatchCountIs0AtDpb1()
-        {
-            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
-            var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
-
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.MatchCount.Should().Be(0);
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButHaveDifferentTceGroups_TwoMismatchGradesAtDpb1()
-        {
-            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithDifferentTceGroup);
-            var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
-
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.Mismatch);
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButHaveDifferentTceGroups_TwoMismatchConfidencesAtDpb1()
-        {
-            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithDifferentTceGroup);
-            var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
-
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButPatientHasNoTceGroupAssignments_MatchCountIs0AtDpb1()
-        {
-            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
-            var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
-
-            result.ScoringResult.ScoringResultsByLocus.Dpb1.MatchCount.Should().Be(0);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.MatchCategory.Should().Be(LocusMatchCategory.Unknown);
         }
 
         [Test]
         public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButPatientHasNoTceGroupAssignments_TwoMismatchGradesAtDpb1()
         {
-            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
+            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(AlleleInTceGroup1);
             var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
             result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
@@ -163,7 +175,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         public async Task
             Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButPatientHasNoTceGroupAssignments_TwoMismatchConfidencesAtDpb1()
         {
-            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
+            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(AlleleWithoutTceGroup);
             var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
             result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
@@ -173,7 +185,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_WhenDpb1IsExcludedFromAggregateScoring_AndResultMismatchedAtDpb1Only_TotalScoreIsNotMismatch()
         {
-            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
+            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(AlleleWithoutTceGroup);
             var searchRequest = new SearchRequestFromHlasBuilder(patientPhenotype)
                 .SixOutOfSix()
                 .WithAllLociScored()
@@ -189,7 +201,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_WhenDpb1IsNotExcludedFromAggregateScoring_AndResultMismatchedAtDpb1Only_TotalScoreIsMismatch()
         {
-            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
+            var patientPhenotype = GetPhenotypeWithDpb1HlaOf(AlleleWithoutTceGroup);
             var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
             result.ScoringResult.MatchCategory.Should().Be(MatchCategory.Mismatch);
@@ -198,7 +210,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         private static PhenotypeInfo<string> GetDefaultPhenotype()
         {
             var defaultHlaSet = new SampleTestHlas.HeterozygousSet1();
-            return defaultHlaSet.SixLocus_SingleExpressingAlleles.SetLocus(Locus.Dpb1, DefaultDpb1Hla);
+            return defaultHlaSet.SixLocus_SingleExpressingAlleles.SetLocus(Locus.Dpb1, AlleleInTceGroup3);
         }
 
         private static int SetupTestDonor(PhenotypeInfo<string> testDonorPhenotype)

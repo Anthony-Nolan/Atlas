@@ -36,8 +36,16 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             IRankingService rankingService,
             IMatchScoreCalculator matchScoreCalculator,
             IScoreResultAggregator scoreResultAggregator,
-            IMatchingAlgorithmSearchLogger searchLogger) 
-            : base(factory, hlaNomenclatureVersionAccessor, gradingService, confidenceService, matchScoreCalculator, scoreResultAggregator)
+            IMatchingAlgorithmSearchLogger searchLogger,
+            IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator)
+            : base(
+                factory,
+                hlaNomenclatureVersionAccessor,
+                gradingService,
+                confidenceService,
+                matchScoreCalculator,
+                scoreResultAggregator,
+                dpb1TceGroupMatchCalculator)
         {
             this.rankingService = rankingService;
             this.searchLogger = searchLogger;
@@ -80,7 +88,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         {
             if (request.ScoringCriteria.LociToScore.IsNullOrEmpty())
             {
-                await foreach (var result in request.MatchResults.SelectAsync(m => new MatchAndScoreResult { MatchResult = m }))
+                await foreach (var result in request.MatchResults.SelectAsync(m => new MatchAndScoreResult {MatchResult = m}))
                 {
                     yield return result;
                 }
