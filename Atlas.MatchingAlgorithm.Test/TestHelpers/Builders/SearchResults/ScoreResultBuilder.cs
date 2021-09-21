@@ -104,7 +104,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
             scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
             return this;
         }
-        
+
         public ScoreResultBuilder WithMatchGradeAtLocusPosition(Locus locus, LocusPosition position, MatchGrade matchGrade)
         {
             var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
@@ -119,10 +119,11 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), position, null);
             }
+
             scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
             return this;
         }
-        
+
         public ScoreResultBuilder WithMatchGradeScoreAtLocus(Locus locus, int matchGradeScore)
         {
             var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
@@ -153,7 +154,17 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
                 .WithMatchGradeAtLocus(Locus.Dqb1, matchGrade)
                 .WithMatchGradeAtLocus(Locus.Drb1, matchGrade);
         }
-        
+        public ScoreResultBuilder WithMatchCategoryAtAllLoci(LocusMatchCategory matchCategory)
+        {
+            return this
+                .WithMatchCategoryAtLocus(Locus.A, matchCategory)
+                .WithMatchCategoryAtLocus(Locus.B, matchCategory)
+                .WithMatchCategoryAtLocus(Locus.C, matchCategory)
+                .WithMatchCategoryAtLocus(Locus.Dpb1, matchCategory)
+                .WithMatchCategoryAtLocus(Locus.Dqb1, matchCategory)
+                .WithMatchCategoryAtLocus(Locus.Drb1, matchCategory);
+        }
+
         public ScoreResultBuilder WithMatchConfidenceAtLocus(Locus locus, MatchConfidence matchConfidence)
         {
             var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
@@ -162,7 +173,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
             scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
             return this;
         }
-        
+
         public ScoreResultBuilder WithMatchConfidenceAtLocusPosition(Locus locus, LocusPosition position, MatchConfidence matchConfidence)
         {
             var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
@@ -177,6 +188,15 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), position, null);
             }
+
+            scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
+            return this;
+        }
+
+        public ScoreResultBuilder WithMatchCategoryAtLocus(Locus locus, LocusMatchCategory matchCategory)
+        {
+            var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
+            locusScoreDetails.MatchCategory = matchCategory;
             scoreResult.SetScoreDetailsForLocus(locus, locusScoreDetails);
             return this;
         }
@@ -217,7 +237,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
             locusScoreDetails.IsLocusTyped = isTyped;
             return this;
         }
-        
+
         public ScoreResultBuilder WithAggregateScoringData(AggregateScoreDetails aggregateScoreDetails)
         {
             scoreResult.AggregateScoreDetails = aggregateScoreDetails;

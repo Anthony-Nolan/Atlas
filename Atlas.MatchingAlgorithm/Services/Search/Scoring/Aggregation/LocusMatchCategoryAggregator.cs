@@ -16,7 +16,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
         /// </summary>
         public static LocusMatchCategory LocusMatchCategoryFromPositionScores(LocusInfo<LocusPositionScoreDetails> positionScores)
         {
-            var matchGradeRanking = new Dictionary<LocusMatchCategory, int>
+            var matchCategoryRanking = new Dictionary<LocusMatchCategory, int>
             {
                 {LocusMatchCategory.Unknown, 0},
                 {LocusMatchCategory.Mismatch, 1},
@@ -32,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
                 throw new ArgumentException("If one position has match grade 'unknown', the other should too");
             }
 
-            return categories.ToEnumerable().OrderBy(x => matchGradeRanking[x]).First();
+            return categories.ToEnumerable().OrderBy(x => matchCategoryRanking[x]).First();
         }
 
         public static LocusMatchCategory Dpb1MatchCategoryFromPositionScores(

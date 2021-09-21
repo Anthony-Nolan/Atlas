@@ -169,8 +169,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                     return new[] {MatchGrade.Protein};
                 case "serology":
                     return new[] {MatchGrade.Associated, MatchGrade.Broad, MatchGrade.Split};
-                case "permissive mismatch":
-                    return new[] {MatchGrade.PermissiveMismatch};
                 case "mismatch":
                     return new[] {MatchGrade.Mismatch};
                 case "unknown":

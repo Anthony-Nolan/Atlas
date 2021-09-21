@@ -29,12 +29,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         [SetUp]
         public void SetUpBeforeEachTest()
         {
-            var permissiveMismatchCalculator = Substitute.For<IPermissiveMismatchCalculator>();
             var scoringCache = new ScoringCache(
                 new PersistentCacheProvider(AppCacheBuilder.NewDefaultCache()),
                 Substitute.For<IActiveHlaNomenclatureVersionAccessor>());
 
-            gradingService = new GradingService(permissiveMismatchCalculator, scoringCache);
+            gradingService = new GradingService(scoringCache);
 
             defaultSerologyResult =
                 new HlaScoringMetadataBuilder()

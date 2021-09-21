@@ -14,13 +14,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
     {
         [TestCase(MatchGrade.CDna, MatchGrade.CDna, LocusMatchCategory.Match)]
         [TestCase(MatchGrade.GDna, MatchGrade.GGroup, LocusMatchCategory.Match)]
-        [TestCase(MatchGrade.PermissiveMismatch, MatchGrade.CDna, LocusMatchCategory.PermissiveMismatch)]
-        [TestCase(MatchGrade.CDna, MatchGrade.PermissiveMismatch, LocusMatchCategory.PermissiveMismatch)]
-        [TestCase(MatchGrade.PermissiveMismatch, MatchGrade.PermissiveMismatch, LocusMatchCategory.PermissiveMismatch)]
         [TestCase(MatchGrade.CDna, MatchGrade.Mismatch, LocusMatchCategory.Mismatch)]
         [TestCase(MatchGrade.Mismatch, MatchGrade.CDna, LocusMatchCategory.Mismatch)]
-        [TestCase(MatchGrade.PermissiveMismatch, MatchGrade.Mismatch, LocusMatchCategory.Mismatch)]
-        [TestCase(MatchGrade.Mismatch, MatchGrade.PermissiveMismatch, LocusMatchCategory.Mismatch)]
         [TestCase(MatchGrade.Mismatch, MatchGrade.Mismatch, LocusMatchCategory.Mismatch)]
         [TestCase(MatchGrade.Unknown, MatchGrade.Unknown, LocusMatchCategory.Unknown)]
         public void LocusAggregateMatchCategoryConverter_ReturnsMatchCategoryByWorstMatchGrade(

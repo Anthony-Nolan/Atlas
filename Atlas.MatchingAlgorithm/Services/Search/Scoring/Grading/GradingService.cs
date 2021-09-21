@@ -57,11 +57,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
                 MatchGrade.PGroup
             );
 
-        private readonly IPermissiveMismatchCalculator permissiveMismatchCalculator;
-
-        public GradingService(IPermissiveMismatchCalculator permissiveMismatchCalculator, IScoringCache scoringCache)
+        public GradingService(IScoringCache scoringCache)
         {
-            this.permissiveMismatchCalculator = permissiveMismatchCalculator;
             this.scoringCache = scoringCache;
         }
 
@@ -144,7 +141,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
                 c =>
                 {
                     var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                        permissiveMismatchCalculator,
                         patientMetadata.HlaScoringInfo,
                         donorMetadata.HlaScoringInfo);
                     var grade = calculator.CalculateGrade(patientMetadata, donorMetadata);

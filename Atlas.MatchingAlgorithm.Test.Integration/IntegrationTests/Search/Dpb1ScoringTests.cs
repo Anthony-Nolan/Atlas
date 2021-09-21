@@ -199,7 +199,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_WhenDpb1IsNotExcludedFromAggregateScoring_AndResultMismatchedAtDpb1Only_TotalScoreIsMismatch()
+        public async Task Search_SixOutOfSix_WhenDpb1IsNotExcludedFromAggregateScoring_AndResultMismatchedAtDpb1Only_CategoryIsMismatch()
         {
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(AlleleWithoutTceGroup);
             var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
