@@ -13,6 +13,7 @@ using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence;
@@ -33,6 +34,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         private readonly IConfidenceService confidenceService;
         private readonly IMatchScoreCalculator matchScoreCalculator;
         private readonly IScoreResultAggregator scoreResultAggregator;
+        private readonly IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator;
 
         public DonorScoringService(
             IHlaMetadataDictionaryFactory factory,
@@ -40,13 +42,15 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             IGradingService gradingService,
             IConfidenceService confidenceService,
             IMatchScoreCalculator matchScoreCalculator,
-            IScoreResultAggregator scoreResultAggregator)
+            IScoreResultAggregator scoreResultAggregator,
+            IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator)
         {
             hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
             this.gradingService = gradingService;
             this.confidenceService = confidenceService;
             this.matchScoreCalculator = matchScoreCalculator;
             this.scoreResultAggregator = scoreResultAggregator;
+            this.dpb1TceGroupMatchCalculator = dpb1TceGroupMatchCalculator;
         }
 
         public async Task<ScoreResult> ScoreDonorHlaAgainstPatientHla(DonorHlaScoringRequest request)
@@ -70,6 +74,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             var grades = gradingService.CalculateGrades(patientScoringMetadata, donorScoringMetadata);
             var confidences = confidenceService.CalculateMatchConfidences(patientScoringMetadata, donorScoringMetadata, grades);
 
+            var dpb1TceGroupMatchType = await dpb1TceGroupMatchCalculator.CalculateDpb1TceGroupMatchType(
+                patientScoringMetadata.Dpb1.Map(x => x?.LookupName),
+                donorHla.Dpb1
+            );
+
             var donorScoringInfo = new DonorScoringInfo
             {
                 Grades = grades,
@@ -77,7 +86,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                 DonorHla = donorHla
             };
 
-            return BuildScoreResult(request.ScoringCriteria, donorScoringInfo);
+            return BuildScoreResult(request.ScoringCriteria, donorScoringInfo, dpb1TceGroupMatchType);
         }
 
         protected async Task<PhenotypeInfo<IHlaScoringMetadata>> GetHlaScoringMetadata(PhenotypeInfo<string> hlaNames, IEnumerable<Locus> lociToScore)
@@ -95,7 +104,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                 });
         }
 
-        private ScoreResult BuildScoreResult(ScoringCriteria criteria, DonorScoringInfo donorScoringInfo)
+        private ScoreResult BuildScoreResult(ScoringCriteria criteria, DonorScoringInfo donorScoringInfo, Dpb1TceGroupMatchType dpb1TceGroupMatchType)
         {
             var scoreResult = new ScoreResult();
 
@@ -108,12 +117,16 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                     BuildScoreDetailsForPosition(gradeResults.GetAtPosition(p), confidences.GetAtPosition(p))
                 );
 
+                var matchCategory = locus == Locus.Dpb1
+                    ? LocusMatchCategoryAggregator.Dpb1MatchCategoryFromPositionScores(scoreDetailsPerPosition, dpb1TceGroupMatchType)
+                    : LocusMatchCategoryAggregator.LocusMatchCategoryFromPositionScores(scoreDetailsPerPosition);
+
                 var scoreDetails = new LocusScoreDetails
                 {
                     IsLocusTyped = donorScoringInfo.DonorHla.GetLocus(locus).Position1And2NotNull(),
                     ScoreDetailsAtPosition1 = scoreDetailsPerPosition.Position1,
                     ScoreDetailsAtPosition2 = scoreDetailsPerPosition.Position2,
-                    MatchCategory = LocusMatchCategoryAggregator.LocusMatchCategoryFromPositionScores(scoreDetailsPerPosition)
+                    MatchCategory = matchCategory
                 };
                 scoreResult.SetScoreDetailsForLocus(locus, scoreDetails);
             }
