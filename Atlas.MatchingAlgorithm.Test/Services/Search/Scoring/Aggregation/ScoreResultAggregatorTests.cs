@@ -477,20 +477,18 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
             aggregate.MatchCategory.Should().Be(MatchCategory.Mismatch);
         }
 
-        // It is not possible to have only one match grade be unknown - as Unknown is only possible for untyped loci, and loci cannot be half typed.
-        [TestCase(MatchGrade.Mismatch, MatchGrade.PermissiveMismatch, MatchCategory.Mismatch)]
-        [TestCase(MatchGrade.PermissiveMismatch, MatchGrade.PermissiveMismatch, MatchCategory.PermissiveMismatch)]
-        public void AggregateScoreDetails_MatchCategory_WithMismatchConfidenceAtDpb1_WithDpb1Grades(
-            MatchGrade dpb1Grade1,
-            MatchGrade dpb1Grade2,
+        [TestCase(LocusMatchCategory.Unknown, MatchCategory.Mismatch)]
+        [TestCase(LocusMatchCategory.Mismatch, MatchCategory.Mismatch)]
+        [TestCase(LocusMatchCategory.PermissiveMismatch, MatchCategory.PermissiveMismatch)]
+        public void AggregateScoreDetails_MatchCategory_WithMismatchConfidenceAtDpb1_WithDpb1Category(
+            LocusMatchCategory dpb1MatchCategory,
             MatchCategory expectedMatchCategory)
         {
             var scoreResult = new ScoreResultBuilder()
                 .WithMatchConfidenceAtAllLoci(MatchConfidence.Definite)
-                .WithMatchGradeAtAllLoci(MatchGrade.GDna)
-                .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, LocusPosition.One, MatchConfidence.Mismatch)
-                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.One, dpb1Grade1)
-                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.Two, dpb1Grade2)
+                .WithMatchCategoryAtAllLoci(LocusMatchCategory.Match)
+                .WithMatchConfidenceAtLocus(Locus.Dpb1, MatchConfidence.Mismatch)
+                .WithMatchCategoryAtLocus(Locus.Dpb1, dpb1MatchCategory)
                 .Build();
 
             var parameters = ScoreResultAggregatorParametersBuilder.New
@@ -499,51 +497,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
 
             var aggregate = resultAggregator.AggregateScoreDetails(parameters);
             aggregate.MatchCategory.Should().Be(expectedMatchCategory);
-        }
-
-        [TestCase(MatchGrade.Unknown, MatchGrade.Unknown)]
-        [TestCase(MatchGrade.PermissiveMismatch, MatchGrade.PermissiveMismatch)]
-        [TestCase(MatchGrade.Mismatch, MatchGrade.Mismatch)]
-        [TestCase(MatchGrade.Mismatch, MatchGrade.PermissiveMismatch)]
-        public void AggregateScoreDetails_MatchCategory_WithMismatchAtAnotherLocus_WithDpb1Grades_ReturnsMismatch(
-            MatchGrade dpb1Grade1,
-            MatchGrade dpb1Grade2)
-        {
-            var scoreResult = new ScoreResultBuilder()
-                .WithMatchConfidenceAtAllLoci(MatchConfidence.Definite)
-                .WithMatchGradeAtAllLoci(MatchGrade.GDna)
-                .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, LocusPosition.One, MatchConfidence.Mismatch)
-                .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Mismatch)
-                .WithMatchGradeAtLocus(Locus.A, MatchGrade.Mismatch)
-                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.One, dpb1Grade1)
-                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.Two, dpb1Grade2)
-                .Build();
-
-            var parameters = ScoreResultAggregatorParametersBuilder.New
-                .With(x => x.ScoreResult, scoreResult)
-                .Build();
-
-            var aggregate = resultAggregator.AggregateScoreDetails(parameters);
-            aggregate.MatchCategory.Should().Be(MatchCategory.Mismatch);
-        }
-
-        [Test]
-        public void AggregateScoreDetails_MatchCategory_WithOnePermissiveMismatchAtDpb1_AndDpb1Excluded_DoesNotReturnPermissiveMismatch()
-        {
-            var scoreResult = new ScoreResultBuilder()
-                .WithMatchConfidenceAtAllLoci(MatchConfidence.Definite)
-                .WithMatchGradeAtAllLoci(MatchGrade.GDna)
-                .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, LocusPosition.One, MatchConfidence.Mismatch)
-                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.One, MatchGrade.PermissiveMismatch)
-                .Build();
-
-            var parameters = ScoreResultAggregatorParametersBuilder.New
-                .With(x => x.ScoreResult, scoreResult)
-                .With(x => x.LociToExclude, new List<Locus> {Locus.Dpb1})
-                .Build();
-
-            var aggregate = resultAggregator.AggregateScoreDetails(parameters);
-            aggregate.MatchCategory.Should().Be(MatchCategory.Definite);
         }
     }
 }

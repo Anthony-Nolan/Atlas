@@ -9,13 +9,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
     /// </summary>
     public class ExpressingAlleleGradingCalculator : AlleleGradingCalculatorBase
     {
-        private readonly IPermissiveMismatchCalculator permissiveMismatchCalculator;
-
-        public ExpressingAlleleGradingCalculator(IPermissiveMismatchCalculator permissiveMismatchCalculator)
-        {
-            this.permissiveMismatchCalculator = permissiveMismatchCalculator;
-        }
-
         protected override MatchGrade GetAlleleMatchGrade(
             AlleleGradingInfo patientInfo,
             AlleleGradingInfo donorInfo)
@@ -41,10 +34,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
             else if (IsPGroupMatch(patientInfo, donorInfo))
             {
                 return MatchGrade.PGroup;
-            }
-            else if (IsPermissiveMismatch(patientInfo, donorInfo))
-            {
-                return MatchGrade.PermissiveMismatch;
             }
 
             return MatchGrade.Mismatch;
@@ -112,14 +101,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
         private static bool IsPGroupMatch(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
         {
             return string.Equals(patientInfo.ScoringInfo.MatchingPGroup, donorInfo.ScoringInfo.MatchingPGroup);
-        }
-
-        private bool IsPermissiveMismatch(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
-        {
-            return permissiveMismatchCalculator.IsPermissiveMismatch(
-                patientInfo.Allele.Locus,
-                patientInfo.Allele.Name,
-                donorInfo.Allele.Name);
         }
 
         protected static bool AreBothSequencesFullLength(
