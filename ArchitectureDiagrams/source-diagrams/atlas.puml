@@ -1,0 +1,100 @@
+﻿@startuml atlas
+!include ./styling/atlas-styling.puml
+
+actor Consumer as consumer
+
+cloud Azure as azure {
+
+component "Donor Import" as donorImport {
+    component "Donor Import" <<Functions App>> as donorFunctions
+    database "Donor DB" <<Azure SQL>> as donorDb
+    
+    queue "Donor Updates" as donorUpdates
+    
+    donorFunctions --> donorDb
+    donorFunctions --> donorUpdates
+}
+
+component "Matching Algorithm" as matchingAlgorithm {
+    component "Matching" <<Functions App>> as matchingFunctions
+    component "Donor Management" <<Functions App>> as matchingDonorManagement
+    
+    component "Repeat Search" <<Functions App>> as repeatSearch
+    
+    queue "Search Requests" <<Service Bus>> as matchingRequestsTopic
+    queue "Search (Matching\nonly) Results" <<Service Bus>> as matchingResultsTopic
+    
+    database "Matching Database" <<Azure SQL>> as matchingDb {
+        database A
+        database B
+        database Persistent
+        database "Repeat Search"
+        A -[hidden]right-> B
+    }
+    
+    matchingFunctions <-- matchingRequestsTopic
+    matchingFunctions --> matchingDb
+    matchingFunctions --> matchingResultsTopic
+    matchingDonorManagement -down-> matchingDb
+    matchingDonorManagement <-- donorUpdates
+    repeatSearch -down-> matchingDb
+}
+
+together {
+    component "Match Prediction Algorithm" as mpa {
+        component "MPA" <<Functions App>> as mpaFunctions
+        database "MPA DB" <<Azure SQL>> as mpaDb
+        boundary "Interface" <<C# Project>> as mpaInterface
+        
+        note as mpaNote 
+            This function is only
+            used for HF Set import.
+            MPA is *run* by 
+            orchestrator function.
+        end note
+        
+        mpaFunctions -> mpaDb
+        mpaNote <-- mpaFunctions
+    }
+    
+    component "Orchestration" <<Functions App>> as orchestrator 
+    
+    orchestrator --> matchingResultsTopic
+    orchestrator --> mpaInterface
+}
+
+component "HLA Metadata Dictionary" as hmd {
+    database "HMD Tables" <<Azure Table Storage>> as hmdTables
+    boundary "Interface" <<C# Project>> as hmdInterface
+    
+    hmd --> mac
+}
+
+component "MAC Dictionary" as mac {
+    database "MAC Tables" <<Azure Table Storage>> as macTables
+    boundary "Interface" <<C# Project>> as macInterface
+}
+
+component "Atlas Public API Boundary" as publicApi {
+    component "API" <<Functions App>> as publicApiFunctions
+    database "Search Results" <<Azure Blob Storage>> as searchResults
+    database "Donor Import Files" <<Azure Blob Storage>> as donorFiles
+    database "HF Set Files" <<Azure Blob Storage>> as hfSetFiles
+    queue "Search Results" <<Service Bus>> as resultsTopic
+    
+    consumer ---> publicApiFunctions
+    consumer ---> donorFiles
+    consumer ---> hfSetFiles
+    consumer <--- searchResults
+    consumer <--- resultsTopic
+    
+    resultsTopic <-- orchestrator
+    
+    donorFiles --> donorFunctions
+    hfSetFiles --> mpaFunctions
+    
+    publicApiFunctions --> matchingRequestsTopic
+}
+
+}
+@enduml
