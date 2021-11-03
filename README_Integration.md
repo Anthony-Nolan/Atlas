@@ -100,7 +100,7 @@ Recommended donor file size is 10,000 - 200,000 donors per file.
 
 #### Differential Import
 
-This process is intended for ongoing incremental updates of donors - donors can be added, removed, or updated via this process. 
+This process is intended for ongoing incremental updates of donors - donors can be added, removed, or updated via this process. You can use "Upsert" change type - it will create the donor if it hasn't created yet or update the existing one. It could be handy if you don't track the state of the imported donors by the Atlas system. 
 
 Differential donors will be automatically pre-processed for the matching algorithm, so there is no need to run a Data Refresh after triggering it.
 
