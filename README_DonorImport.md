@@ -93,11 +93,18 @@ The three operations - create, update and delete - will cause problems if the fi
 |---------|--------|-----------------------|-------------------------------|--------------------------------------------------------------------------------------------------------|
 | Create  | Create | Error                 | Error                         | The first create will work correctly, then throw an error on the second import, not changing the data  |
 | Create  | Update | Updated donor         | Error, then out of date donor | This will throw an error and update support, and the donor will be out of date.                        |
-| Create  | Delete | No change             | Donor is deleted              | The data here ends up correct                                                                          |
+| Create  | Upsert | Updated donor         | Error                         | The first upsert operation will create donor correctly, then throw an error on the attempt to create the same donor, not changing the data |
+| Create  | Delete | No change             | Error, then out of date donor | Error attempting to delete non-existing donor, then will create donor in the database that shouldn't be there   |
 | Create* | Delete | Error, donor deleted  | Donor deleted & recreated     | *Where donor already existed. in the out-of-order case this donor should not be present, but is        |
 | Update  | Create | update then Error     | Error then update             | This should be fine, the second create will be disregarded, support will be alerted                    |
 | Update  | Update | 2nd update stands     | 1st update stands             | We guard against this. Updates will not be applied if the upload time is before the most recent update |
+| Update  | Upsert | 2nd update stands     | 1st update stands             | We guard against this. Updates will not be applied if the upload time is before the most recent update |
 | Update  | Delete | No donor              | No donor                      | No Donor in either case so this is fine                                                                |
+| Upsert  | Create | update then Error     | Error then update             | This should be fine, the second create will be disregarded, support will be alerted                    |
+| Upsert  | Update | 2nd update stands     | 1st update stands             | We guard against this. Updates will not be applied if the upload time is before the most recent update |
+| Upsert  | Upsert | 2nd update stands     | 1st update stands             | We guard against this. Updates will not be applied if the upload time is before the most recent update |
+| Upsert  | Delete | No donor              | No donor                      | No Donor in either case so this is fine                                                                |
 | Delete  | Create | New donor             | Error, then delete            | This is ok, even though the data ends up incorrect, as support get alerted                             |
 | Delete  | Update | No donor, error       | No donor, no error            | In this and the case below this is fine as should be deleted                                           |
+| Delete  | Upsert | No donor, error       | No donor, no error            | In this and the case below this is fine as should be deleted                                           |
 | Delete  | Delete | No donor, error       | No donor, no error            |                                                                                                        |
