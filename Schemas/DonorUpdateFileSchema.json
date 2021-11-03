@@ -17,8 +17,8 @@
 					},
 					"changeType": {
 						"type": "string",
-						"enum": [ "D", "U", "N" ],
-						"description": "Deleted, Updated or New"
+						"enum": [ "D", "U", "N", "NU" ],
+						"description": "Deleted, Updated, New or New-or-Update (Upsert)"
 					},
 					"donorType": {
 						"type": "string",
