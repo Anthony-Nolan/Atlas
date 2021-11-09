@@ -73,6 +73,64 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
+        public async Task ImportDonors_ForDonorEdit_WhenRequiredLocusMissing_DoesNotChangeDatabase()
+        {
+            var donorUpdate = DonorCreationBuilder.Build();
+            var file = fileBuilder.WithDonors(donorUpdate).Build();
+            await donorFileImporter.ImportDonorFile(file);
+
+            var modifiedDonor = DonorUpdateBuilder.New
+                    .With(du => du.RecordId, donorUpdate.RecordId)
+                    .With(upd => upd.ChangeType, ImportDonorChangeType.Edit)
+                    .Build();
+            modifiedDonor.Hla.A = null;
+            var modifiedDonorFile = fileBuilder.WithDonors(modifiedDonor).Build();
+            
+            await donorFileImporter.ImportDonorFile(modifiedDonorFile);
+
+            var result = await donorRepository.GetDonor(donorUpdate.RecordId);
+            result.Should().NotBeNull();
+            result.A_1.Should().NotBeNullOrEmpty();
+        }
+
+        [Test]
+        public async Task ImportDonors_ForDonorUpsert_WhenDonorNotExistsAndRequiredLocusMissing_DoesNotChangeDatabase()
+        {
+            var donorUpdate = DonorUpdateBuilder.New
+                .WithRecordIdPrefix("external-donor-code-")
+                .With(upd => upd.ChangeType, ImportDonorChangeType.Upsert)
+                .Build();
+            donorUpdate.Hla.A = null;
+            var file = fileBuilder.WithDonors(donorUpdate).Build();
+
+            await donorFileImporter.ImportDonorFile(file);
+            
+            var result = await donorRepository.GetDonor(donorUpdate.RecordId);
+            result.Should().BeNull();
+        }
+
+        [Test]
+        public async Task ImportDonors_ForDonorUpsert_WhenDonorExistsAndRequiredLocusMissing_DoesNotChangeDatabase()
+        {
+            var donorUpdate = DonorCreationBuilder.Build();
+            var file = fileBuilder.WithDonors(donorUpdate).Build();
+            await donorFileImporter.ImportDonorFile(file);
+
+            var modifiedDonor = DonorUpdateBuilder.New
+                .With(du => du.RecordId, donorUpdate.RecordId)
+                .With(upd => upd.ChangeType, ImportDonorChangeType.Upsert)
+                .Build();
+            modifiedDonor.Hla.A = null;
+            var modifiedDonorFile = fileBuilder.WithDonors(modifiedDonor).Build();
+
+            await donorFileImporter.ImportDonorFile(modifiedDonorFile);
+
+            var result = await donorRepository.GetDonor(donorUpdate.RecordId);
+            result.Should().NotBeNull();
+            result.A_1.Should().NotBeNullOrEmpty();
+        }
+
+        [Test]
         public async Task ImportDonors_WhenRequiredLocusHasNullHlaValues_DoesNotAddToDatabase()
         {
             var donorUpdate = DonorCreationBuilder.Build();
