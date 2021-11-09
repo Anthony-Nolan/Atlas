@@ -146,7 +146,12 @@ namespace Atlas.DonorImport.Services
         private bool ValidateDonorIsSearchable(DonorUpdate donorUpdate)
         {
             var validationResult = searchableDonorValidator.Validate(donorUpdate);
-            logger.SendTrace($"Invalid Donor found with Id: {donorUpdate.RecordId}", LogLevel.Verbose);
+            
+            if (!validationResult.IsValid)
+            {
+                logger.SendTrace($"Invalid Donor found with Id: {donorUpdate.RecordId}", LogLevel.Verbose);
+            }
+
             return validationResult.IsValid;
         }
     }
