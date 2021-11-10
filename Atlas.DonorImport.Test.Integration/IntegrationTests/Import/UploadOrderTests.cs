@@ -25,6 +25,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         private Builder<DonorUpdate> createUpdateBuilder;
         private Builder<DonorUpdate> editUpdateBuilder;
         private Builder<DonorUpdate> deleteUpdateBuilder;
+        private Builder<DonorUpdate> upsertUpdateBuilder;
         private Builder<DonorImportFile> fileBuilder;
         private IDonorFileImporter donorFileImporter;
         private IDonorInspectionRepository donorRepository;
@@ -35,6 +36,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             createUpdateBuilder = DonorUpdateBuilder.New.With(update => update.ChangeType, ImportDonorChangeType.Create);
             editUpdateBuilder = DonorUpdateBuilder.New.With(update => update.ChangeType, ImportDonorChangeType.Edit);
             deleteUpdateBuilder = DonorUpdateBuilder.New.With(update => update.ChangeType, ImportDonorChangeType.Delete);
+            upsertUpdateBuilder = DonorUpdateBuilder.New.With(update => update.ChangeType, ImportDonorChangeType.Upsert);
             fileBuilder = DonorImportFileBuilder.NewWithoutContents;
             
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
@@ -108,7 +110,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var result1 = await donorRepository.GetDonor(donorExternalCode);
             result1.UpdateFile.Should().Be(file2Name);
             
-            // import File 2, it should throw exception and donor remain unchanged.
+            // import File 1, it should throw exception and donor remain unchanged.
             await donorFileImporter.ImportDonorFile(createFile1);
             await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             var result2 = await donorRepository.GetDonor(donorExternalCode);
@@ -161,7 +163,54 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.UpdateFile.Should().Be(file1Name);
         }
-        
+
+        [Test]
+        public async Task DonorImportOrder_CreateThenUpsert_UpdatesDonor()
+        {
+            // File 1 = Create
+            var donorExternalCode = "1";
+            var file1Name = "file-1";
+            var createFile = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            // File 2 = Upsert
+            var file2Name = "file-2";
+            var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // Import File 1, check it is imported
+            await donorFileImporter.ImportDonorFile(createFile);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.UpdateFile.Should().Be(file1Name);
+
+            // Import File 2, it should update the donor
+            await donorFileImporter.ImportDonorFile(upsertFile);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file2Name);
+        }
+
+        [Test]
+        public async Task DonorImportOrder_CreateThenUpsertOutOfOrder_ThrowsException()
+        {
+            // File 1 = Create
+            var donorExternalCode = "1";
+            var file1Name = "file-1";
+            var createFile = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            // File 2 = Upsert
+            var file2Name = "file-2";
+            var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // Import File 2, check it is imported
+            await donorFileImporter.ImportDonorFile(upsertFile);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.UpdateFile.Should().Be(file2Name);
+
+            // Import File 2, it should throw exception and donor remain unchanged
+            await donorFileImporter.ImportDonorFile(createFile);
+            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file2Name);
+        }
+
         [Test]
         public async Task DonorImportOrder_CreateThenDelete_DeletesDonor()
         {
@@ -337,13 +386,13 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             // import File 1, Donor gets Updated
             await donorFileImporter.ImportDonorFile(editFile);
-            var result2 = await donorRepository.GetDonor(donorExternalCode);
-            result2.UpdateFile.Should().Be(file1Name);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.UpdateFile.Should().Be(file1Name);
             
             // import File 2, Donor gets updated again
             await donorFileImporter.ImportDonorFile(editFile2);
-            var result1 = await donorRepository.GetDonor(donorExternalCode);
-            result1.UpdateFile.Should().Be(file2Name);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file2Name);
         }
         
         [Test]
@@ -365,15 +414,118 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             // import File 2, Donor gets Updated
             await donorFileImporter.ImportDonorFile(editFile2);
-            var result2 = await donorRepository.GetDonor(donorExternalCode);
-            result2.UpdateFile.Should().Be(file2Name);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.UpdateFile.Should().Be(file2Name);
             
             // import File 1, Donor does not update
             await donorFileImporter.ImportDonorFile(editFile);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file2Name);
+        }
+
+        [Test]
+        public async Task DonorImportOrder_UpdateThenUpsertWithoutPreExistingDonor_ThrowsExceptionAndCreates()
+        {
+            // File 1 = Edit
+            var donorExternalCode = "1";
+            var file1Name = "file-1";
+            var editFile = CreateDonorImportFile(editUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            // File 2 = Upsert
+            var file2Name = "file-2";
+            var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // import File 1, expect exception and no donor.
+            await donorFileImporter.ImportDonorFile(editFile);
+            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.Should().BeNull();
+
+            // import File 2, Donor gets created.
+            await donorFileImporter.ImportDonorFile(upsertFile);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file2Name);
+        }
+
+        [Test]
+        public async Task DonorImportOrder_UpdateThenUpsertWithoutPreExistingDonorOutOfOrder_CreatesAndDiscardsEdit()
+        {
+            // File 1 = Edit
+            var donorExternalCode = "1";
+            var file1Name = "file-1";
+            var editFile = CreateDonorImportFile(editUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            // File 2 = Upsert
+            var file2Name = "file-2";
+            var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // import File 2, Donor gets created.
+            await donorFileImporter.ImportDonorFile(upsertFile);
             var result1 = await donorRepository.GetDonor(donorExternalCode);
             result1.UpdateFile.Should().Be(file2Name);
+
+            // import File 1, Donor does not update.
+            await donorFileImporter.ImportDonorFile(editFile);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file2Name);
         }
-        
+
+        [Test]
+        public async Task DonorImportOrder_UpdateThenUpsertWithExistingDonor_UpdatesAndRejectsSecondUpsert()
+        {
+            var donorExternalCode = "1";
+
+            // File 0 - donor is already created.
+            var existingDonor = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, "not-applicable", 0);
+            await donorFileImporter.ImportDonorFile(existingDonor);
+
+            // File 1 = Edit
+            var file1Name = "file-1";
+            var editFile = CreateDonorImportFile(editUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            // File 2 = Upsert
+            var file2Name = "file-2";
+            var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // import File 1, Donor gets Updated
+            await donorFileImporter.ImportDonorFile(editFile);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.UpdateFile.Should().Be(file1Name);
+
+            // import File 2, Donor gets updated again
+            await donorFileImporter.ImportDonorFile(upsertFile);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file2Name);
+        }
+
+        [Test]
+        public async Task DonorImportOrder_UpdateThenUpsertWithExistingDonorOutOfOrder_UpdatesAndRejectsSecondUpdate()
+        {
+            var donorExternalCode = "1";
+
+            // File 0 - donor is already created.
+            var existingDonor = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, "not-applicable", 0);
+            await donorFileImporter.ImportDonorFile(existingDonor);
+
+            // File 1 = Edit
+            var file1Name = "file-1";
+            var editFile = CreateDonorImportFile(editUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            // File 2 = Upsert
+            var file2Name = "file-2";
+            var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // import File 2, Donor gets Updated
+            await donorFileImporter.ImportDonorFile(upsertFile);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.UpdateFile.Should().Be(file2Name);
+
+            // import File 1, Donor does not update
+            await donorFileImporter.ImportDonorFile(editFile);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file2Name);
+        }
+
         [Test]
         public async Task DonorImportOrder_UpdateThenDelete_Deletes()
         {
@@ -430,7 +582,234 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.Should().BeNull();
         }
-        
+
+        [Test]
+        public async Task DonorImportOrder_UpsertThenCreate_DonorUpdatedThenThrowsError()
+        {
+            var donorExternalCode = "1";
+
+            // File 0 - donor is already created
+            var existingDonor = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, "not-applicable", 0);
+            await donorFileImporter.ImportDonorFile(existingDonor);
+
+            // File 1 = Upsert
+            var file1Name = "file-1";
+            var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file1Name, 1);
+            
+            //File 2 = Create
+            var file2Name = "file-2";
+            var createFile = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // Import File 1, Donor updated
+            await donorFileImporter.ImportDonorFile(upsertFile);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.UpdateFile.Should().Be(file1Name);
+            
+            // Import File 2, Exception and donor unchanged
+            await donorFileImporter.ImportDonorFile(createFile);
+            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file1Name);
+        }
+
+        [Test]
+        public async Task DonorImportOrder_UpsertThenCreateOutOfOrder_ThrowsErrorThenDonorUpdated()
+        {
+            var donorExternalCode = "1";
+
+            // File 0 - donor is already created
+            var initialFileName = "file-0";
+            var existingDonor = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, initialFileName, 0);
+            await donorFileImporter.ImportDonorFile(existingDonor);
+
+            // File 1 = Upsert
+            var file1Name = "file-1";
+            var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            //File 2 = Create
+            var file2Name = "file-2";
+            var createFile = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // Import File 2, Exception and donor unchanged
+            await donorFileImporter.ImportDonorFile(createFile);
+            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.UpdateFile.Should().Be(initialFileName);
+
+            // Import File 2, Exception and donor unchanged
+            await donorFileImporter.ImportDonorFile(upsertFile);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file1Name);
+        }
+
+        [Test]
+        public async Task DonorImportOrder_UpsertThenUpdate_Updates()
+        {
+            var donorExternalCode = "1";
+
+            // File 0 - donor is already created
+            var existingDonor = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, "not-applicable", 0);
+            await donorFileImporter.ImportDonorFile(existingDonor);
+
+            // File 1 = Upsert
+            var file1Name = "file-1";
+            var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            //File 2 = Update
+            var file2Name = "file-2";
+            var updateFile = CreateDonorImportFile(editUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // Import File 1, Donor updated
+            await donorFileImporter.ImportDonorFile(upsertFile);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.UpdateFile.Should().Be(file1Name);
+
+            // Import File 2, Donor updated
+            await donorFileImporter.ImportDonorFile(updateFile);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file2Name);
+        }
+
+        [Test]
+        public async Task DonorImportOrder_UpsertThenUpdateOutOfOrder_RejectsSecondUpdate()
+        {
+            var donorExternalCode = "1";
+
+            // File 0 - donor is already created
+            var existingDonor = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, "not-applicable", 0);
+            await donorFileImporter.ImportDonorFile(existingDonor);
+
+            // File 1 = Upsert
+            var file1Name = "file-1";
+            var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            //File 2 = Update
+            var file2Name = "file-2";
+            var updateFile = CreateDonorImportFile(editUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // Import File 2, Donor updated
+            await donorFileImporter.ImportDonorFile(updateFile);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.UpdateFile.Should().Be(file2Name);
+
+            // Import File 1, Donor does not update
+            await donorFileImporter.ImportDonorFile(upsertFile);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file2Name);
+        }
+
+        [Test]
+        public async Task DonorImportOrder_UpsertThenUpsert_Updates()
+        {
+            var donorExternalCode = "1";
+
+            // File 0 - donor is already created
+            var existingDonor = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, "not-applicable", 0);
+            await donorFileImporter.ImportDonorFile(existingDonor);
+
+            // File 1 = Upsert
+            var file1Name = "file-1";
+            var upsertFile1 = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            //File 2 = Upsert
+            var file2Name = "file-2";
+            var upsertFile2 = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // Import File 1, Donor updated
+            await donorFileImporter.ImportDonorFile(upsertFile1);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.UpdateFile.Should().Be(file1Name);
+
+            // Import File 2, Donor updated
+            await donorFileImporter.ImportDonorFile(upsertFile2);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file2Name);
+        }
+
+        [Test]
+        public async Task DonorImportOrder_UpsertThenUpsertOutOfOrder_RejectsSecondUpsert()
+        {
+            var donorExternalCode = "1";
+
+            // File 0 - donor is already created
+            var existingDonor = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, "not-applicable", 0);
+            await donorFileImporter.ImportDonorFile(existingDonor);
+
+            // File 1 = Upsert
+            var file1Name = "file-1";
+            var upsertFile1 = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            //File 2 = Upsert
+            var file2Name = "file-2";
+            var upsertFile2 = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // Import File 2, Donor updated
+            await donorFileImporter.ImportDonorFile(upsertFile2);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.UpdateFile.Should().Be(file2Name);
+
+            // Import File 1, Donor does not update
+            await donorFileImporter.ImportDonorFile(upsertFile1);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file2Name);
+        }
+
+        [Test]
+        public async Task DonorImportOrder_UpsertThenDelete_Deletes()
+        {
+            var donorExternalCode = "1";
+
+            // File 0 - donor is already created
+            var existingDonor = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, "not-applicable", 0);
+            await donorFileImporter.ImportDonorFile(existingDonor);
+
+            // File 1 = Upsert
+            var file1Name = "file-1";
+            var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            //File 2 = Delete
+            var file2Name = "file-2";
+            var deleteFile = CreateDonorImportFile(deleteUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // Import File 1, Donor updated
+            await donorFileImporter.ImportDonorFile(upsertFile);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.UpdateFile.Should().Be(file1Name);
+
+            // Import File 2, Donor deleted
+            await donorFileImporter.ImportDonorFile(deleteFile);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.Should().BeNull();
+        }
+
+        [Test]
+        public async Task DonorImportOrder_UpsertThenDeleteOutOfOrder_DeletesThenThrowsError()
+        {
+            var donorExternalCode = "1";
+
+            // File 0 - donor is already created
+            var existingDonor = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, "not-applicable", 0);
+            await donorFileImporter.ImportDonorFile(existingDonor);
+
+            // File 1 = Upsert
+            var file1Name = "file-1";
+            var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            //File 2 = Delete
+            var file2Name = "file-2";
+            var deleteFile = CreateDonorImportFile(deleteUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // Import File 2, Donor deleted
+            await donorFileImporter.ImportDonorFile(deleteFile);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.Should().BeNull();
+
+            // Import File 1, Donor created
+            await donorFileImporter.ImportDonorFile(upsertFile);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file1Name);
+        }
+
         [Test]
         public async Task DonorImportOrder_DeleteThenCreate_DonorCreated()
         {
@@ -538,12 +917,66 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var result1 = await donorRepository.GetDonor(donorExternalCode);
             result1.UpdateFile.Should().Be(file2Name);
             
-            // import File 1, Deletes Donor
+            // import File 1, Donor remains
             await donorFileImporter.ImportDonorFile(deleteFile);
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.UpdateFile.Should().Be(file2Name);
         }
-        
+
+        [Test]
+        public async Task DonorImportOrder_DeleteThenUpsert_DonorCreated()
+        {
+            var donorExternalCode = "1";
+            // File 0 - donor is already created.
+            var existingDonor = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, "not-applicable", 0);
+            await donorFileImporter.ImportDonorFile(existingDonor);
+
+            // File 1 = Delete
+            var file1Name = "file-1";
+            var deleteFile = CreateDonorImportFile(deleteUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            // File 2 = Upsert
+            var file2Name = "file-2";
+            var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // import File 1, Deletes
+            await donorFileImporter.ImportDonorFile(deleteFile);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.Should().BeNull();
+
+            // import File 2, Donor created
+            await donorFileImporter.ImportDonorFile(upsertFile);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file2Name);
+        }
+
+        [Test]
+        public async Task DonorImportOrder_DeleteThenUpsertOutOfOrder_DonorNotDeleted()
+        {
+            var donorExternalCode = "1";
+            // File 0 - donor is already created.
+            var existingDonor = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, "not-applicable", 0);
+            await donorFileImporter.ImportDonorFile(existingDonor);
+
+            // File 1 = Delete
+            var file1Name = "file-1";
+            var deleteFile = CreateDonorImportFile(deleteUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            // File 2 = Upsert
+            var file2Name = "file-2";
+            var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // import File 2, Upsert updates donor
+            await donorFileImporter.ImportDonorFile(upsertFile);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.UpdateFile.Should().Be(file2Name);
+
+            // import File 1, Donor remains
+            await donorFileImporter.ImportDonorFile(deleteFile);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file2Name);
+        }
+
         [Test]
         public async Task DonorImportOrder_DeleteThenDelete_DonorDeletedWithError()
         {
