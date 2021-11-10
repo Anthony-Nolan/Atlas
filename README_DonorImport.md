@@ -103,7 +103,7 @@ The three operations - create, update and delete - will cause problems if the fi
 | Upsert  | Create | Update then error     | Error then update             | This should be fine, the second create will be disregarded, support will be alerted                    |
 | Upsert  | Update | 2nd update stands     | 1st update stands             | We guard against this. Updates will not be applied if the upload time is before the most recent update |
 | Upsert  | Upsert | 2nd update stands     | 1st update stands             | We guard against this. Updates will not be applied if the upload time is before the most recent update |
-| Upsert  | Delete | No donor              | No donor                      | No Donor in either case so this is fine                                                                |
+| Upsert  | Delete | No donor              | Donor deleted & recreated     | In the out-of-order case this donor should not be present, but is                                                                |
 | Delete  | Create | New donor             | Error, then delete            | This is ok, even though the data ends up incorrect, as support get alerted                             |
 | Delete  | Update | No donor, error       | Donor updated and not deleted, no error            | In this and the case below this is fine as should be deleted                                           |
 | Delete  | Upsert | No donor, error       | Donor updated and not deleted, no error            | In this and the case below this is fine as should be deleted                                           |
