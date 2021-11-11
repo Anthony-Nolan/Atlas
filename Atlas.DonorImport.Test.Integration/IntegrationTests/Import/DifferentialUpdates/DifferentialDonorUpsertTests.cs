@@ -50,9 +50,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
             {
                 mockServiceBusClient = Substitute.For<IMessagingServiceBusClient>();
                 var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
-                services.AddScoped(sp => mockServiceBusClient);
+                services.AddTransient(sp => mockServiceBusClient);
                 DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
 
+                mockServiceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<IMessagingServiceBusClient>();
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
                 fileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
             });
@@ -70,8 +71,6 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         [SetUp]
         public async Task SetUp()
         {
-            mockServiceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<IMessagingServiceBusClient>(); //We want a new one of these every time, for ease of asserting calls.
-
             var initialDonors = DonorBuilder
                 .With(du => du.ChangeType, ImportDonorChangeType.Create)
                 .With(du => du.Hla, new[] {hlaObject1, hlaObject2})
@@ -88,15 +87,11 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         [TearDown]
         public void TearDown()
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
-            {
-                mockServiceBusClient.ClearReceivedCalls();
-                DatabaseManager.ClearDatabases();
-            });
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(DatabaseManager.ClearDatabases);
         }
 
         [Test]
-        public async Task ImportDonors_ForUpsert_CreateDonors_IfNotExist()
+        public async Task ImportDonors_ForUpsert_DonorsNotExist_CreatesDonors()
         {
             const int additionCount = 3;
 
@@ -112,7 +107,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         }
 
         [Test]
-        public async Task ImportDonors_ForUpsert_UpdateDonors_IfExist()
+        public async Task ImportDonors_ForUpsert_DonorsExists_UpdateDonors()
         {
             const int modifiedCount = 3;
 
@@ -145,7 +140,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         }
 
         [Test]
-        public async Task ImportDonors_ForUpsert_UpdateDonors_IfExist_OrCreate_IfNot()
+        public async Task ImportDonors_ForUpsert_MixedExistAndNonExistDonors_UpdateIfExistsAndCreateIfNotExists()
         {
             const int additionCount = 2;
             const int modifiedCount = 3;
@@ -184,7 +179,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         }
 
         [Test]
-        public async Task ImportDonors_ForUpsert_WhereNoPertinentInfoChanged_DatabaseNotChanged_NorSendMessages()
+        public async Task ImportDonors_ForUpsert_NoPertinentInfoChanged_DatabaseNotChangedNorSendMessages()
         {
             var modifiedDonor = DonorBuilder
                 .With(du => du.RecordId, InitialDonors.Select(d => d.ExternalDonorCode))
@@ -205,7 +200,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         }
 
         [Test]
-        public async Task ImportDonors_ForUpsert_CreateDonorAndSendsMessagesMatchingTheNewProperties_AndAtlasIds()
+        public async Task ImportDonors_ForUpsert_MixedExistAndNonExistDonors_CreatesOrUpdatesDonorsAndSendsMessagesMatchingTheNewPropertiesAndAtlasIds()
         {
             const int additionCount = 2;
             const int modifiedCount = 3;

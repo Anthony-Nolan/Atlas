@@ -70,7 +70,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task DonorImportOrder_CreateThenCreateImport_ThrowsException()
+        public async Task DonorImportOrder_CreateThenCreateImport_PostsError()
         {
             // File 1 = Create
             var donorExternalCode = "1";
@@ -86,7 +86,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var result1 = await donorRepository.GetDonor(donorExternalCode);
             result1.UpdateFile.Should().Be(file1Name);
             
-            // import File 2, it should throw exception and donor remain unchanged.
+            // import File 2, it should post error and donor remain unchanged.
             await donorFileImporter.ImportDonorFile(createFile2);
             await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             var result2 = await donorRepository.GetDonor(donorExternalCode);
@@ -94,7 +94,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
         
         [Test]
-        public async Task DonorImportOrder_CreateThenCreateImportOutOfOrder_ThrowsException()
+        public async Task DonorImportOrder_CreateThenCreateImportOutOfOrder_PostsError()
         {
             // File 1 = Create
             var donorExternalCode = "1";
@@ -110,7 +110,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var result1 = await donorRepository.GetDonor(donorExternalCode);
             result1.UpdateFile.Should().Be(file2Name);
             
-            // import File 1, it should throw exception and donor remain unchanged.
+            // import File 1, it should post error and donor remain unchanged.
             await donorFileImporter.ImportDonorFile(createFile1);
             await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             var result2 = await donorRepository.GetDonor(donorExternalCode);
@@ -141,7 +141,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
         
         [Test]
-        public async Task DonorImportOrder_CreateThenUpdateOutOfOrder_ThrowsExceptionAndOutOfDateDonor()
+        public async Task DonorImportOrder_CreateThenUpdateOutOfOrder_PostsErrorAndOutOfDateDonor()
         {
             // File 1 = Create
             var donorExternalCode = "1";
@@ -188,7 +188,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task DonorImportOrder_CreateThenUpsertOutOfOrder_ThrowsException()
+        public async Task DonorImportOrder_CreateThenUpsertOutOfOrder_DonorCreatedAndPostsError()
         {
             // File 1 = Create
             var donorExternalCode = "1";
@@ -204,7 +204,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var result1 = await donorRepository.GetDonor(donorExternalCode);
             result1.UpdateFile.Should().Be(file2Name);
 
-            // Import File 2, it should throw exception and donor remain unchanged
+            // Import File 1, it should post error and donor remain unchanged
             await donorFileImporter.ImportDonorFile(createFile);
             await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             var result2 = await donorRepository.GetDonor(donorExternalCode);
@@ -258,7 +258,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
         
         [Test]
-        public async Task DonorImportOrder_EditThenCreateWithoutPreExistingDonor_ThrowsExceptionAndCreates()
+        public async Task DonorImportOrder_EditThenCreateWithoutPreExistingDonor_PostsErrorAndCreates()
         {
             // File 1 = Edit
             var donorExternalCode = "1";
@@ -270,7 +270,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var createFile = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, file2Name, 2);
 
             
-            // import File 1, expect exception and no donor.
+            // import File 1, expect error and no donor.
             await donorFileImporter.ImportDonorFile(editFile);
             await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             var result1 = await donorRepository.GetDonor(donorExternalCode);
@@ -331,7 +331,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             result1.UpdateFile.Should().Be(file1Name);
             
 
-            // import File 2, Exception and unchanged donor
+            // import File 2, Error and unchanged donor
             await donorFileImporter.ImportDonorFile(createFile);
             await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             var result2 = await donorRepository.GetDonor(donorExternalCode);
@@ -355,7 +355,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var file2Name = "file-2";
             var createFile = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, file2Name, 2);
 
-            // import File 2, Throws Error, donor is unchanged.
+            // import File 2, Posts Error, donor is unchanged.
             await donorFileImporter.ImportDonorFile(createFile);
             await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             var result2 = await donorRepository.GetDonor(donorExternalCode);
@@ -424,7 +424,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task DonorImportOrder_UpdateThenUpsertWithoutPreExistingDonor_ThrowsExceptionAndCreates()
+        public async Task DonorImportOrder_UpdateThenUpsertWithoutPreExistingDonor_PostsErrorAndCreates()
         {
             // File 1 = Edit
             var donorExternalCode = "1";
@@ -435,7 +435,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var file2Name = "file-2";
             var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file2Name, 2);
 
-            // import File 1, expect exception and no donor.
+            // import File 1, expect error and no donor.
             await donorFileImporter.ImportDonorFile(editFile);
             await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             var result1 = await donorRepository.GetDonor(donorExternalCode);
@@ -471,7 +471,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task DonorImportOrder_UpdateThenUpsertWithExistingDonor_UpdatesAndRejectsSecondUpsert()
+        public async Task DonorImportOrder_UpdateThenUpsertWithExistingDonor_Updates()
         {
             var donorExternalCode = "1";
 
@@ -555,7 +555,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
         
         [Test]
-        public async Task DonorImportOrder_UpdateThenDeleteOutOfOrder_DeletesWithException()
+        public async Task DonorImportOrder_UpdateThenDeleteOutOfOrder_DeletesWithError()
         {
             var donorExternalCode = "1";
             
@@ -576,7 +576,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var result1 = await donorRepository.GetDonor(donorExternalCode);
             result1.Should().BeNull();
             
-            // import File 1, Exception with no donor
+            // import File 1, Error with no donor
             await donorFileImporter.ImportDonorFile(editFile);
             await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             var result2 = await donorRepository.GetDonor(donorExternalCode);
@@ -584,7 +584,56 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task DonorImportOrder_UpsertThenCreate_DonorUpdatedThenThrowsError()
+        public async Task DonorImportOrder_UpsertThenCreateWithoutExistingDonor_DonorCreatedThenPostsError()
+        {
+            var donorExternalCode = "1";
+
+            // File 1 = Upsert
+            var file1Name = "file-1";
+            var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            //File 2 = Create
+            var file2Name = "file-2";
+            var createFile = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // Import File 1, Donor created
+            await donorFileImporter.ImportDonorFile(upsertFile);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.UpdateFile.Should().Be(file1Name);
+
+            // Import File 2, Error and donor unchanged
+            await donorFileImporter.ImportDonorFile(createFile);
+            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file1Name);
+        }
+
+        [Test]
+        public async Task DonorImportOrder_UpsertThenCreateWithoutExistingDonorOutOfOrder_DonorCreatedThenDiscardsChanges()
+        {
+            var donorExternalCode = "1";
+
+            // File 1 = Upsert
+            var file1Name = "file-1";
+            var upsertFile = CreateDonorImportFile(upsertUpdateBuilder, donorExternalCode, file1Name, 1);
+
+            //File 2 = Create
+            var file2Name = "file-2";
+            var createFile = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, file2Name, 2);
+
+            // Import File 2, Donor created
+            await donorFileImporter.ImportDonorFile(createFile);
+            var result1 = await donorRepository.GetDonor(donorExternalCode);
+            result1.UpdateFile.Should().Be(file2Name);
+
+            // Import File 1, Donor updated
+            await donorFileImporter.ImportDonorFile(upsertFile);
+            var result2 = await donorRepository.GetDonor(donorExternalCode);
+            result2.UpdateFile.Should().Be(file2Name);
+        }
+
+        [Test]
+        public async Task DonorImportOrder_UpsertThenCreateWithExistingDonor_DonorUpdatedThenPostsError()
         {
             var donorExternalCode = "1";
 
@@ -605,7 +654,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var result1 = await donorRepository.GetDonor(donorExternalCode);
             result1.UpdateFile.Should().Be(file1Name);
             
-            // Import File 2, Exception and donor unchanged
+            // Import File 2, Error and donor unchanged
             await donorFileImporter.ImportDonorFile(createFile);
             await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             var result2 = await donorRepository.GetDonor(donorExternalCode);
@@ -613,7 +662,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task DonorImportOrder_UpsertThenCreateOutOfOrder_ThrowsErrorThenDonorUpdated()
+        public async Task DonorImportOrder_UpsertThenCreateWithExistingDonorOutOfOrder_PostsErrorThenDonorUpdated()
         {
             var donorExternalCode = "1";
 
@@ -630,13 +679,13 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var file2Name = "file-2";
             var createFile = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, file2Name, 2);
 
-            // Import File 2, Exception and donor unchanged
+            // Import File 2, Error and donor unchanged
             await donorFileImporter.ImportDonorFile(createFile);
             await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             var result1 = await donorRepository.GetDonor(donorExternalCode);
             result1.UpdateFile.Should().Be(initialFileName);
 
-            // Import File 2, Exception and donor unchanged
+            // Import File 1, Donor updated
             await donorFileImporter.ImportDonorFile(upsertFile);
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.UpdateFile.Should().Be(file1Name);
@@ -783,7 +832,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task DonorImportOrder_UpsertThenDeleteOutOfOrder_DeletesThenThrowsError()
+        public async Task DonorImportOrder_UpsertThenDeleteOutOfOrder_DeletesThenCreatesDonor()
         {
             var donorExternalCode = "1";
 
