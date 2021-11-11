@@ -100,8 +100,8 @@ The three operations - create, update and delete - will cause problems if the fi
 | Update  | Update | 2nd update stands     | 1st update stands             | We guard against this. Updates will not be applied if the upload time is before the most recent update |
 | Update  | Upsert | 2nd update stands     | 1st update stands             | We guard against this. Updates will not be applied if the upload time is before the most recent update |
 | Update  | Delete | No donor              | No donor                      | No Donor in either case so this is fine                                                                |
-| Upsert  | Create | Update then error     | Error then update             | This should be fine, the second create will be disregarded, support will be alerted                    |
-| Upsert*  | Create | Create then error     | Create then discard changes  | *Where donor already existed                    |
+| Upsert  | Create | Create then error     | Create then discard changes   | Where donor is not exist. This should be fine, the second create will be disregarded, support will be alerted                    |
+| Upsert*  | Create | Update then error     | Error then update             | *Where donor already existed                    |
 | Upsert  | Update | 2nd update stands     | 1st update stands             | We guard against this. Updates will not be applied if the upload time is before the most recent update |
 | Upsert  | Upsert | 2nd update stands     | 1st update stands             | We guard against this. Updates will not be applied if the upload time is before the most recent update |
 | Upsert  | Delete | No donor              | Donor deleted & recreated     | In the out-of-order case this donor should not be present, but is                                                                |
