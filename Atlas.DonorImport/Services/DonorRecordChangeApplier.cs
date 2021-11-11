@@ -142,6 +142,7 @@ namespace Atlas.DonorImport.Services
             }
         }
 
+        /// <summary>
         /// Processes a collection of donor updates as UPSERTS - i.e. if the donor already exists, update it - if not, create it.
         /// </summary>
         /// <returns>A collection of donor updates to be published for import into the matching component's data store.</returns>
