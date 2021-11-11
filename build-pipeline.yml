@@ -9,7 +9,7 @@ pr: none
 jobs:
   - job: Build
     pool:
-      name: Hosted Ubuntu 1604
+      vmImage: 'ubuntu-latest'
     steps:
       - task: UseDotNet@2
         inputs:
@@ -228,7 +228,8 @@ jobs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/SQL'
           ArtifactName: sql
   - job: Terraform_Core
-    pool: Hosted Ubuntu 1604
+    pool: 
+      vmImage: 'ubuntu-latest'
     steps:
       - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
         displayName: 'Use Terraform 0.12.24'
