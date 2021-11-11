@@ -81,9 +81,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             var modifiedDonor = DonorUpdateBuilder.New
                     .With(du => du.RecordId, donorUpdate.RecordId)
+                    .With(du => du.Hla, HlaBuilder.New.WithMolecularHlaAtLocus(Locus.A, null, null))
                     .With(upd => upd.ChangeType, ImportDonorChangeType.Edit)
                     .Build();
-            modifiedDonor.Hla.A = null;
             var modifiedDonorFile = fileBuilder.WithDonors(modifiedDonor).Build();
             
             await donorFileImporter.ImportDonorFile(modifiedDonorFile);
@@ -98,9 +98,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         {
             var donorUpdate = DonorUpdateBuilder.New
                 .WithRecordIdPrefix("external-donor-code-")
+                .With(du => du.Hla, HlaBuilder.New.WithMolecularHlaAtLocus(Locus.A, null, null))
                 .With(upd => upd.ChangeType, ImportDonorChangeType.Upsert)
                 .Build();
-            donorUpdate.Hla.A = null;
             var file = fileBuilder.WithDonors(donorUpdate).Build();
 
             await donorFileImporter.ImportDonorFile(file);
@@ -118,9 +118,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             var modifiedDonor = DonorUpdateBuilder.New
                 .With(du => du.RecordId, donorUpdate.RecordId)
+                .With(du => du.Hla, HlaBuilder.New.WithMolecularHlaAtLocus(Locus.A, null, null))
                 .With(upd => upd.ChangeType, ImportDonorChangeType.Upsert)
                 .Build();
-            modifiedDonor.Hla.A = null;
             var modifiedDonorFile = fileBuilder.WithDonors(modifiedDonor).Build();
 
             await donorFileImporter.ImportDonorFile(modifiedDonorFile);
