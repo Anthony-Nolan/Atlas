@@ -14,7 +14,12 @@ namespace Atlas.MatchingAlgorithm.Common.Models.SearchResults
         /// The aggregate overall match category for this locus, calculated from the individual position match grades
         /// </summary>
         public LocusMatchCategory? MatchCategory { get; set; }
-        
+
+        /// <summary>
+        /// Indicates the direction of the Dpb1 mismatch, when there is a Dpb1 mismatch
+        /// </summary>
+        public Dpb1MismatchDirection? Dpb1MismatchDirection { get; set; }
+
         /// <summary>
         /// A numeric value representing the relative match grade at this locus, according to the scoring algorithm
         /// </summary>

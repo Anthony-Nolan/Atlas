@@ -59,5 +59,18 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
                     throw new ArgumentOutOfRangeException(nameof(tceGroupMatchType), tceGroupMatchType, null);
             }
         }
+
+        public static Dpb1MismatchDirection GetDpb1MismatchDirection(Dpb1TceGroupMatchType dpb1TceGroupMatchType)
+        {
+            switch (dpb1TceGroupMatchType)
+            {
+                case Dpb1TceGroupMatchType.NonPermissiveGvH:
+                    return Dpb1MismatchDirection.NonPermissiveGvH;
+                case Dpb1TceGroupMatchType.NonPermissiveHvG:
+                    return Dpb1MismatchDirection.NonPermissiveHvG;
+                default:
+                    return Dpb1MismatchDirection.Unknown;
+            }
+        }
     }
 }

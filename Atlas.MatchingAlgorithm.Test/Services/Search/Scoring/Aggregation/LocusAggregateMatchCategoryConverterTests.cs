@@ -2,6 +2,7 @@
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
 using FluentAssertions;
@@ -49,6 +50,17 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
                     locusScore.ScoreDetailsAtPosition1,
                     locusScore.ScoreDetailsAtPosition2)
                 ));
+        }
+
+        [TestCase(Dpb1TceGroupMatchType.NonPermissiveGvH, Dpb1MismatchDirection.NonPermissiveGvH)]
+        [TestCase(Dpb1TceGroupMatchType.NonPermissiveHvG, Dpb1MismatchDirection.NonPermissiveHvG)]
+        [TestCase(Dpb1TceGroupMatchType.Permissive, Dpb1MismatchDirection.Unknown)]
+        [TestCase(Dpb1TceGroupMatchType.Unknown, Dpb1MismatchDirection.Unknown)]
+        public void GetDpb1MismatchDirection_ReturnsDpb1MismatchDirection(Dpb1TceGroupMatchType dpb1TceGroupMatchType, Dpb1MismatchDirection expectedDpb1MismatchDirection)
+        {
+            var result = LocusMatchCategoryAggregator.GetDpb1MismatchDirection(dpb1TceGroupMatchType);
+
+            result.Should().Be(expectedDpb1MismatchDirection);
         }
     }
 }
