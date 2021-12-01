@@ -1,4 +1,6 @@
 ﻿using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Atlas.Common.GeneticData
 {
@@ -8,6 +10,7 @@ namespace Atlas.Common.GeneticData
     /// Biological phase is *not* consistent across loci - i.e. A1 is not guaranteed to be the same phase as B1
     /// All that is implied is that an allele at A1 has different phase to that at A2 
     /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum LocusPosition
     {
         One,

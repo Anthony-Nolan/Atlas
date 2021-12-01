@@ -33,12 +33,13 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
         public AggregateScoreDetails AggregateScoreDetails(ScoreResultAggregatorParameters parameters)
         {
             var locusScoreDetails = NonExcludedLocusScoreDetails(parameters).ToList();
+            var dpb1ScoreDetails = parameters.ScoreResult?.ScoreDetailsAtLocusDpb1;
 
             return new AggregateScoreDetails
             {
                 ConfidenceScore = AggregateConfidenceScore(locusScoreDetails),
                 GradeScore = AggregateGradeScore(locusScoreDetails),
-                MatchCategory = CategoriseMatch(locusScoreDetails),
+                MatchCategory = CategoriseMatch(locusScoreDetails, dpb1ScoreDetails),
                 MatchCount = CountMatches(locusScoreDetails),
                 OverallMatchConfidence = AggregateMatchConfidence(locusScoreDetails),
                 PotentialMatchCount = CountPotentialMatches(locusScoreDetails),
@@ -56,20 +57,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
             return locusScoreResults.Sum(s => s.MatchGradeScore);
         }
 
-        private MatchCategory CategoriseMatch(IReadOnlyCollection<LocusScoreDetails> locusScoreResults)
+        private static MatchCategory CategoriseMatch(IEnumerable<LocusScoreDetails> locusScoreResults, LocusScoreDetails dpb1ScoreDetails)
         {
             var overallMatchConfidence = AggregateMatchConfidence(locusScoreResults);
-            var allGrades = locusScoreResults.SelectMany(locusScoreDetails => new List<MatchGrade>
-            {
-                locusScoreDetails.ScoreDetailsAtPosition1.MatchGrade,
-                locusScoreDetails.ScoreDetailsAtPosition2.MatchGrade
-            });
 
             return overallMatchConfidence switch
             {
                 MatchConfidence.Mismatch =>
-                    // The only way to have an overall confidence of mismatch with no per-position mismatch is for all mismatches to be permissive.
-                    allGrades.All(g => g == MatchGrade.PermissiveMismatch || !MatchGradeConstants.MismatchGrades.Contains(g))
+                    dpb1ScoreDetails?.MatchCategory == LocusMatchCategory.PermissiveMismatch
                         ? MatchCategory.PermissiveMismatch
                         : MatchCategory.Mismatch,
                 MatchConfidence.Potential => MatchCategory.Potential,

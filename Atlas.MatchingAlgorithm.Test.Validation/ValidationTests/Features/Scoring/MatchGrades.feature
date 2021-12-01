@@ -97,13 +97,6 @@
     When I run an 8/10 search
     Then the match grade should be mismatch at A at both positions
 
-  Scenario: Permissive Mismatch grade - patient and donor mismatched at DPB1, same TCE groups
-    Given a patient has a match
-    And the patient and donor have mismatched DPB1 alleles with the same TCE group assignments
-    And scoring is enabled at locus DPB1
-    When I run a 6/6 search
-    Then the match grade should be permissive mismatch at DPB1 at both positions
-
   Scenario: Mismatch grade - patient and donor mismatched at DPB1, different TCE groups
     Given a patient has a match
     And the patient and donor have mismatched DPB1 alleles with different TCE group assignments
@@ -174,4 +167,4 @@
     |*01:01 |*66:01 |*57:01 |*41:01 |*13:XX |*07:01 |*01:01 |*02:01 |
     And scoring is enabled at locus DPB1
     When I run a 6/6 search
-    Then the match grade should be permissive mismatch at DPB1 at position 2
+    Then the locus match category should be PermissiveMismatch at locus Dpb1

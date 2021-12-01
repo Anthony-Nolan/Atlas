@@ -89,8 +89,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IConfidenceCalculator, ConfidenceCalculator>();
             services.AddScoped<IMatchScoreCalculator, MatchScoreCalculator>();
             services.AddScoped<IScoringRequestService, ScoringRequestService>();
-            services.AddScoped<IPermissiveMismatchCalculator, PermissiveMismatchCalculator>();
             services.AddScoped<IScoreResultAggregator, ScoreResultAggregator>();
+            services.AddScoped<IDpb1TceGroupMatchCalculator, Dpb1TceGroupMatchCalculator>();
 
             services.RegisterCommonGeneticServices();
             services.AddScoped<IActiveHlaNomenclatureVersionAccessor, ActiveHlaNomenclatureVersionAccessor>();

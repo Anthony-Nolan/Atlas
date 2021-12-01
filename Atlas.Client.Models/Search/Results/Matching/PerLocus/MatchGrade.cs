@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
 {
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum MatchGrade
     {
         /// Mismatch grades
         Mismatch,
-        PermissiveMismatch,
 
         // Grades for Serology-level matches
         Broad,
@@ -59,7 +61,6 @@ namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
         public static readonly HashSet<MatchGrade> MismatchGrades = new HashSet<MatchGrade>
         {
             MatchGrade.NullMismatch,
-            MatchGrade.PermissiveMismatch,
             MatchGrade.Mismatch
         };
     }
@@ -81,7 +82,6 @@ namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
                 MatchGrade.Associated => LocusMatchCategory.Match,
                 MatchGrade.Broad => LocusMatchCategory.Match,
                 MatchGrade.Split => LocusMatchCategory.Match,
-                MatchGrade.PermissiveMismatch => LocusMatchCategory.PermissiveMismatch,
                 MatchGrade.Mismatch => LocusMatchCategory.Mismatch,
                 MatchGrade.NullMismatch => LocusMatchCategory.Mismatch,
                 MatchGrade.Unknown => LocusMatchCategory.Unknown,

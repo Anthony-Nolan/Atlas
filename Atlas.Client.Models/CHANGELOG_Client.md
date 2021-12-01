@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Versions
 
+### 1.2.0
+
+* `MatchGrade` enum:
+    * `PermissiveMismatch` value removed.
+        * The match grade is a value that is calculated for allele pairs (rather than loci pairs), and as such search results will have two match grades per locus.
+        For Dpb1, the permissive mismatch grade can only be calculated by considering the whole locus - so it does not make sense to assign a grade of `PermissiveMismatch`
+        to an individual allele at a locus.
+        * The `PermissiveMismatch` match category will still be available in the `LocusMatchCategory`, at a per locus level (though will only ever be assigned at the DPB1 locus),
+        and in the `MatchCategory` enum for the overall consolidated value for a donor (i.e. when the only mismatches are permissive at DPB1)
+        * Loci with a `PermissiveMismatch` category will still be assigned match grades - but within the grade, all mismatches will be called `Mismatch` - to know if the 
+        mismatch at a locus is permissive overall, the match category **must** be used instead. 
+
+### 1.1.1
+
 ### 1.1.0
 
 #### Changed

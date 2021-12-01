@@ -7,7 +7,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
     public static class GradingCalculatorFactory
     {
         public static IGradingCalculator GetGradingCalculator(
-            IPermissiveMismatchCalculator permissiveMismatchCalculator,
             IHlaScoringInfo patientInfo,
             IHlaScoringInfo donorInfo
         )
@@ -26,28 +25,27 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
             }
             if (patientInfo is ConsolidatedMolecularScoringInfo || donorInfo is ConsolidatedMolecularScoringInfo)
             {
-                return new ConsolidatedMolecularGradingCalculator(permissiveMismatchCalculator);
+                return new ConsolidatedMolecularGradingCalculator();
             }
             if (patientInfo is MultipleAlleleScoringInfo || donorInfo is MultipleAlleleScoringInfo)
             {
-                return new MultipleAlleleGradingCalculator(permissiveMismatchCalculator);
+                return new MultipleAlleleGradingCalculator();
             }
             if (patientInfo is SingleAlleleScoringInfo pInfo && donorInfo is SingleAlleleScoringInfo dInfo)
             {
-                return GetSingleAlleleGradingCalculator(permissiveMismatchCalculator, pInfo, dInfo);
+                return GetSingleAlleleGradingCalculator(pInfo, dInfo);
             }
 
             throw new ArgumentException("No calculator available for provided patient and donor scoring infos.");
         }
 
         private static IGradingCalculator GetSingleAlleleGradingCalculator(
-            IPermissiveMismatchCalculator permissiveMismatchCalculator,
             SingleAlleleScoringInfo patientInfo,
             SingleAlleleScoringInfo donorInfo)
         {
             if (!patientInfo.IsNullExpresser && !donorInfo.IsNullExpresser)
             {
-                return new ExpressingAlleleGradingCalculator(permissiveMismatchCalculator);
+                return new ExpressingAlleleGradingCalculator();
             }
 
             if (patientInfo.IsNullExpresser && donorInfo.IsNullExpresser)

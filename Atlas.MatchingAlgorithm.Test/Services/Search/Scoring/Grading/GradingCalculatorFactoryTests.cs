@@ -13,25 +13,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 {
     public class GradingCalculatorFactoryTests
     {
-        private IPermissiveMismatchCalculator permissiveMismatchCalculator;
-
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
-        {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
-            {
-                permissiveMismatchCalculator = Substitute.For<IPermissiveMismatchCalculator>();
-            });
-        }
-
         [Test]
         public void GetGradingCalculator_WhenBothPatientAndDonorSerology_ReturnsSerologyGradingCalculator()
         {
             var patientScoringInfo = new SerologyScoringInfoBuilder().Build();
             var donorScoringInfo = new SerologyScoringInfoBuilder().Build();
 
-            var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<SerologyGradingCalculator>();
         }
@@ -45,8 +33,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientScoringInfo = new SerologyScoringInfoBuilder().Build();
             var donorScoringInfo = BuildScoringInfoOfType(donorScoringInfoType);
 
-            var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<SerologyGradingCalculator>();
         }
@@ -60,8 +47,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientScoringInfo = BuildScoringInfoOfType(patientScoringInfoType);
             var donorScoringInfo = new SerologyScoringInfoBuilder().Build();
 
-            var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<SerologyGradingCalculator>();
         }
@@ -75,8 +61,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientScoringInfo = new ConsolidatedMolecularScoringInfoBuilder().Build();
             var donorScoringInfo = BuildScoringInfoOfType(donorScoringInfoType);
 
-            var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<ConsolidatedMolecularGradingCalculator>();
         }
@@ -90,8 +75,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientScoringInfo = BuildScoringInfoOfType(patientScoringInfoType);
             var donorScoringInfo = new ConsolidatedMolecularScoringInfoBuilder().Build();
 
-            var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<ConsolidatedMolecularGradingCalculator>();
         }
@@ -104,8 +88,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientScoringInfo = new MultipleAlleleScoringInfoBuilder().Build();
             var donorScoringInfo = BuildScoringInfoOfType(donorScoringInfoType);
 
-            var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<MultipleAlleleGradingCalculator>();
         }
@@ -118,8 +101,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientScoringInfo = BuildScoringInfoOfType(patientScoringInfoType);
             var donorScoringInfo = new MultipleAlleleScoringInfoBuilder().Build();
 
-            var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<MultipleAlleleGradingCalculator>();
         }
@@ -131,8 +113,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(expressingAlleleName).Build();
             var donorScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(expressingAlleleName).Build();
 
-            var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<ExpressingAlleleGradingCalculator>();
         }
@@ -144,8 +125,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(nullAlleleName).Build();
             var donorScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(nullAlleleName).Build();
 
-            var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<NullAlleleGradingCalculator>();
         }
@@ -159,8 +139,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(patientAlleleName).Build();
             var donorScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(donorAlleleName).Build();
 
-            var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<ExpressingVsNullAlleleGradingCalculator>();
         }
@@ -172,7 +151,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientScoringInfo = new ConsolidatedMolecularScoringInfoBuilder().Build();
             var donorScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(nullAlleleName).Build();
 
-            var calculator = GradingCalculatorFactory.GetGradingCalculator(permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<ExpressingVsNullAlleleGradingCalculator>();
         }
@@ -184,8 +163,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientScoringInfo = new MultipleAlleleScoringInfoBuilder().Build();
             var donorScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(nullAlleleName).Build();
 
-            var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                permissiveMismatchCalculator, patientScoringInfo, donorScoringInfo);
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
 
             calculator.Should().BeOfType<ExpressingVsNullAlleleGradingCalculator>();
         }

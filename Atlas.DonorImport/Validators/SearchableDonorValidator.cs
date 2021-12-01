@@ -10,7 +10,9 @@ namespace Atlas.DonorImport.Validators
         {
             RuleFor(d => d.Hla)
                 .SetValidator(new SearchableHlaValidator())
-                .When(d => d.ChangeType == ImportDonorChangeType.Create || d.ChangeType == ImportDonorChangeType.Edit);
+                .When(d => d.ChangeType == ImportDonorChangeType.Create
+                           || d.ChangeType == ImportDonorChangeType.Edit
+                           || d.ChangeType == ImportDonorChangeType.Upsert);
         }
     }
 

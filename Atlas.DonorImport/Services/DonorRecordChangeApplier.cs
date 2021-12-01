@@ -93,12 +93,13 @@ namespace Atlas.DonorImport.Services
                 switch (updatesOfSameOperationType.Key, updateMode)
                 {
                     case (ImportDonorChangeType.Create, UpdateMode.Full):
-                        var upsertMessages = await ProcessDonorUpserts(updatesOfSameOperationType.ToList(), externalCodes, file, updateMode);
-                        matchingComponentUpdateMessages.Add(upsertMessages);
+                        var upsertMessagesFull = await ProcessDonorUpserts(updatesOfSameOperationType.ToList(), externalCodes, file, updateMode);
+                        matchingComponentUpdateMessages.Add(upsertMessagesFull);
                         break;
                     case (_, UpdateMode.Full):
                         throw new NotImplementedException(
                             "Full donor imports must only consist of donor creations. Updates and Deletions not supported (creates will be treated as upserts, deletions must be performed manually)");
+                    
                     case (ImportDonorChangeType.Create, _):
                         var creationMessages = await ProcessDonorCreations(
                             updatesOfSameOperationType.ToList(),
@@ -112,6 +113,11 @@ namespace Atlas.DonorImport.Services
                     case (ImportDonorChangeType.Edit, _):
                         var editMessages = await ProcessDonorEdits(updatesOfSameOperationType.ToList(), externalCodes, file);
                         matchingComponentUpdateMessages.Add(editMessages);
+                        break;
+
+                    case (ImportDonorChangeType.Upsert, _):
+                        var upsertMessages = await ProcessDonorUpserts(updatesOfSameOperationType.ToList(), externalCodes, file, updateMode);
+                        matchingComponentUpdateMessages.Add(upsertMessages);
                         break;
 
                     case (ImportDonorChangeType.Delete, _):

@@ -1,9 +1,13 @@
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
 namespace Atlas.Client.Models.Search.Results.Matching
 {
     /// <summary>
     ///     Values used to categorise an overall match.
     ///     Distinct from MatchGrade and MatchConfidence - each of which are calculated on a per-locus/position level.
     /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum MatchCategory
     {
         /// <summary>

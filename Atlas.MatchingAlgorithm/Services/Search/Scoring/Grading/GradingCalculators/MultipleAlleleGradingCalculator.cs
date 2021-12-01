@@ -16,13 +16,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
         GradingCalculatorBase,
         IMultipleAlleleGradingCalculator
     {
-        private readonly IPermissiveMismatchCalculator permissiveMismatchCalculator;
-
-        public MultipleAlleleGradingCalculator(IPermissiveMismatchCalculator permissiveMismatchCalculator)
-        {
-            this.permissiveMismatchCalculator = permissiveMismatchCalculator;
-        }
-
         protected override bool ScoringInfosAreOfPermittedTypes(
             IHlaScoringInfo patientInfo,
             IHlaScoringInfo donorInfo)
@@ -62,7 +55,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
             IHlaScoringMetadata donorMetadata)
         {
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
-                permissiveMismatchCalculator,
                 patientMetadata.HlaScoringInfo,
                 donorMetadata.HlaScoringInfo);
 

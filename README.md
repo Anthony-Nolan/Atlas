@@ -13,6 +13,7 @@ comprehensive list:
 
 - [Core README (You Are Here)](README.md)
 - [Development Start Up Guide ("Zero To Hero")](README_DevelopmentStartUpGuide.md)
+- [Architecture Diagrams](ArchitectureDiagrams/README_Diagrams.md)
 - Guide for Installation and usage of the ATLAS system 
     - [Deployment](README_Deployment.md)
     - [Integration](README_Integration.md)

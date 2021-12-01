@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators
@@ -17,13 +16,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
         GradingCalculatorBase,
         IConsolidatedMolecularGradingCalculator
     {
-        private readonly IPermissiveMismatchCalculator permissiveMismatchCalculator;
-
-        public ConsolidatedMolecularGradingCalculator(IPermissiveMismatchCalculator permissiveMismatchCalculator)
-        {
-            this.permissiveMismatchCalculator = permissiveMismatchCalculator;
-        }
-
         protected override bool ScoringInfosAreOfPermittedTypes(
             IHlaScoringInfo patientInfo,
             IHlaScoringInfo donorInfo)
@@ -35,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
         }
 
         protected override MatchGrade GetMatchGrade(
-            IHlaScoringMetadata patientMetadata, 
+            IHlaScoringMetadata patientMetadata,
             IHlaScoringMetadata donorMetadata)
         {
             var patientInfo = patientMetadata.HlaScoringInfo;
@@ -54,10 +46,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
             else if (IsPGroupMatch(patientInfo, donorInfo))
             {
                 return MatchGrade.PGroup;
-            }
-            else if (IsPermissiveMismatch(patientMetadata, donorMetadata))
-            {
-                return MatchGrade.PermissiveMismatch;
             }
 
             return MatchGrade.Mismatch;
@@ -85,16 +73,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
             return patientInfo.MatchingPGroups
                 .Intersect(donorInfo.MatchingPGroups)
                 .Any();
-        }
-
-        private bool IsPermissiveMismatch(
-            IHlaMetadata patientMetadata,
-            IHlaMetadata donorMetadata)
-        {
-            return permissiveMismatchCalculator.IsPermissiveMismatch(
-                patientMetadata.Locus,
-                patientMetadata.LookupName,
-                donorMetadata.LookupName);
         }
     }
 }

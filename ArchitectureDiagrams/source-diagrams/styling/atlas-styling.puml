@@ -1,0 +1,18 @@
+﻿' Hide the component icons
+skinparam componentStyle rectangle
+
+skinparam rectangle {
+  BackgroundColor<<Functions App>> Pink
+}
+
+skinparam database {
+  BackgroundColor<<Azure Sql>> #BBBBFF
+  BackgroundColor<<Azure Blob Storage>> #EEEEFF
+  BackgroundColor<<Azure Table Storage>> #CCAAFF
+}
+
+skinparam queue {
+  BackgroundColor<<Service Bus>> #AAFFAA
+}
+
+'skinparam linetype ortho

@@ -294,9 +294,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IRankingService, RankingService>();
             services.AddScoped<IMatchScoreCalculator, MatchScoreCalculator>();
             services.AddScoped<IScoringRequestService, ScoringRequestService>();
-            services.AddScoped<IPermissiveMismatchCalculator, PermissiveMismatchCalculator>();
             services.AddScoped<IScoreResultAggregator, ScoreResultAggregator>();
             services.AddScoped<IScoringCache, ScoringCache>();
+            services.AddScoped<IDpb1TceGroupMatchCalculator, Dpb1TceGroupMatchCalculator>();
 
             // Also used for dispatching searches, registered independently in ProjectInterfaceOrchestrationConfiguration.cs
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>();
