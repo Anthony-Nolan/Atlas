@@ -46,31 +46,23 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
                 return nonTceMatchCategory;
             }
 
-            switch (tceGroupMatchType)
+            return tceGroupMatchType switch
             {
-                case Dpb1TceGroupMatchType.Permissive:
-                    return LocusMatchCategory.PermissiveMismatch;
-                case Dpb1TceGroupMatchType.NonPermissiveHvG:
-                case Dpb1TceGroupMatchType.NonPermissiveGvH:
-                    return nonTceMatchCategory;
-                case Dpb1TceGroupMatchType.Unknown:
-                    return LocusMatchCategory.Unknown;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(tceGroupMatchType), tceGroupMatchType, null);
-            }
+                Dpb1TceGroupMatchType.Permissive => LocusMatchCategory.PermissiveMismatch,
+                Dpb1TceGroupMatchType.NonPermissiveHvG or Dpb1TceGroupMatchType.NonPermissiveGvH => nonTceMatchCategory,
+                Dpb1TceGroupMatchType.Unknown => LocusMatchCategory.Unknown,
+                _ => throw new ArgumentOutOfRangeException(nameof(tceGroupMatchType), tceGroupMatchType, null),
+            };
         }
 
         public static Dpb1MismatchDirection GetDpb1MismatchDirection(Dpb1TceGroupMatchType dpb1TceGroupMatchType)
         {
-            switch (dpb1TceGroupMatchType)
+            return dpb1TceGroupMatchType switch
             {
-                case Dpb1TceGroupMatchType.NonPermissiveGvH:
-                    return Dpb1MismatchDirection.NonPermissiveGvH;
-                case Dpb1TceGroupMatchType.NonPermissiveHvG:
-                    return Dpb1MismatchDirection.NonPermissiveHvG;
-                default:
-                    return Dpb1MismatchDirection.Unknown;
-            }
+                Dpb1TceGroupMatchType.NonPermissiveGvH => Dpb1MismatchDirection.NonPermissiveGvH,
+                Dpb1TceGroupMatchType.NonPermissiveHvG => Dpb1MismatchDirection.NonPermissiveHvG,
+                _ => Dpb1MismatchDirection.NotApplicable
+            };
         }
     }
 }

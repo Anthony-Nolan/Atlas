@@ -158,7 +158,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             Dpb1TceGroupMatchType dpb1TceGroupMatchType)
         {
             if (locus != Locus.Dpb1 || locusMatchCategory != LocusMatchCategory.Mismatch)
+            {
                 return null;
+            }
 
             return LocusMatchCategoryAggregator.GetDpb1MismatchDirection(dpb1TceGroupMatchType);
         }

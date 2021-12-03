@@ -16,7 +16,9 @@ namespace Atlas.MatchingAlgorithm.Common.Models.SearchResults
         public LocusMatchCategory? MatchCategory { get; set; }
 
         /// <summary>
-        /// Indicates the direction of the Dpb1 mismatch, when there is a Dpb1 mismatch
+        /// Indicates the direction of the DPB1 mismatch, when there is a DPB1 mismatch.
+        /// When the direction could not be calculated or the mismatch is permissive NotApplicable will be returned.
+        /// When there is no DPB1 mismatch the value will be null.
         /// </summary>
         public Dpb1MismatchDirection? Dpb1MismatchDirection { get; set; }
 

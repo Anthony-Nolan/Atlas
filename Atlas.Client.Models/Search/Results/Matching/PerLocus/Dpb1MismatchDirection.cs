@@ -10,9 +10,10 @@ namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
     public enum Dpb1MismatchDirection
     {
         /// <summary>
-        /// The mismatch direction of the Dpb1Mismatch is unknown.
+        /// The mismatch direction of the Dpb1Mismatch is not applicable.
         /// </summary>
-        Unknown,
+        NotApplicable,
+
         /// <summary>
         /// A mismatch at this locus will not be tolerated, and will cause complications after transplantation.
         /// The directionality of the mismatch is HvG - aka "Host vs Graft"; the host patient's immune system will reject the donor's tissue.
