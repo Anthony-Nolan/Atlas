@@ -55,12 +55,19 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
         [TestCase(Dpb1TceGroupMatchType.NonPermissiveGvH, Dpb1MismatchDirection.NonPermissiveGvH)]
         [TestCase(Dpb1TceGroupMatchType.NonPermissiveHvG, Dpb1MismatchDirection.NonPermissiveHvG)]
         [TestCase(Dpb1TceGroupMatchType.Permissive, Dpb1MismatchDirection.NotApplicable)]
-        [TestCase(Dpb1TceGroupMatchType.Unknown, Dpb1MismatchDirection.NotApplicable)]
         public void GetDpb1MismatchDirection_ReturnsDpb1MismatchDirection(Dpb1TceGroupMatchType dpb1TceGroupMatchType, Dpb1MismatchDirection expectedDpb1MismatchDirection)
         {
             var result = LocusMatchCategoryAggregator.GetDpb1MismatchDirection(dpb1TceGroupMatchType);
 
             result.Should().Be(expectedDpb1MismatchDirection);
+        }
+
+        [Test]
+        public void GetDpb1MismatchDirection_ReturnsNull_WhenMatchTypeIsUnknown()
+        {
+            var result = LocusMatchCategoryAggregator.GetDpb1MismatchDirection(Dpb1TceGroupMatchType.Unknown);
+
+            result.Should().BeNull();
         }
     }
 }

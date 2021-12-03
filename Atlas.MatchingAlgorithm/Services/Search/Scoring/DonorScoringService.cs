@@ -157,9 +157,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         private static Dpb1MismatchDirection? GetDpb1MismatchDirection(LocusMatchCategory locusMatchCategory, Locus locus,
             Dpb1TceGroupMatchType dpb1TceGroupMatchType)
         {
-            if (locus != Locus.Dpb1 || locusMatchCategory != LocusMatchCategory.Mismatch)
+            if (locus != Locus.Dpb1)
             {
                 return null;
+            }
+
+            if (locusMatchCategory != LocusMatchCategory.Mismatch)
+            {
+                return Dpb1MismatchDirection.NotApplicable;
             }
 
             return LocusMatchCategoryAggregator.GetDpb1MismatchDirection(dpb1TceGroupMatchType);

@@ -17,8 +17,8 @@ namespace Atlas.MatchingAlgorithm.Common.Models.SearchResults
 
         /// <summary>
         /// Indicates the direction of the DPB1 mismatch, when there is a DPB1 mismatch.
-        /// When the direction could not be calculated or the mismatch is permissive NotApplicable will be returned.
-        /// When there is no DPB1 mismatch the value will be null.
+        /// When the mismatch is permissive or there is no DPB1 mismatch, NotApplicable will be returned.
+        /// When the direction could not be calculated or the locus is non-DPB1, null will be returned.
         /// </summary>
         public Dpb1MismatchDirection? Dpb1MismatchDirection { get; set; }
 
