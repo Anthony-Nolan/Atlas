@@ -49,7 +49,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
             return tceGroupMatchType switch
             {
                 Dpb1TceGroupMatchType.Permissive => LocusMatchCategory.PermissiveMismatch,
-                Dpb1TceGroupMatchType.NonPermissiveHvG or Dpb1TceGroupMatchType.NonPermissiveGvH => nonTceMatchCategory,
+                Dpb1TceGroupMatchType.NonPermissiveHvG => nonTceMatchCategory,
+                Dpb1TceGroupMatchType.NonPermissiveGvH => nonTceMatchCategory,
                 Dpb1TceGroupMatchType.Unknown => LocusMatchCategory.Unknown,
                 _ => throw new ArgumentOutOfRangeException(nameof(tceGroupMatchType), tceGroupMatchType, null),
             };
