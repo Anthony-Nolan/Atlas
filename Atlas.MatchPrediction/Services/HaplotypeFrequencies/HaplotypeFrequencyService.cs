@@ -240,7 +240,8 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 EthnicityCode = set.EthnicityCode,
                 Id = set.Id,
                 Name = set.Name,
-                RegistryCode = set.RegistryCode
+                RegistryCode = set.RegistryCode,
+                PopulationId = set.PopulationId
             };
         }
 

@@ -7,5 +7,6 @@
         public string EthnicityCode { get; set; }
         public string HlaNomenclatureVersion { get; set; }
         public string Name { get; set; }
+        public int PopulationId { get; set; }
     }
 }

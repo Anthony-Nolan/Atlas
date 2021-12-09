@@ -15,9 +15,11 @@ using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
+using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
+using AutoFixture;
 
 namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 {
@@ -32,6 +34,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         private IHaplotypeFrequencyService haplotypeFrequencyService;
         private IMatchPredictionLogger logger;
         private MatchPredictionLoggingContext matchPredictionLoggingContext;
+        private readonly Fixture fixture = new Fixture();
 
         private IMatchProbabilityService matchProbabilityService;
 
@@ -137,6 +140,38 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 Arg.Any<IReadOnlyDictionary<PhenotypeInfo<string>, decimal>>(),
                 donorHfSetVersion
             );
+        }
+
+        [Test]
+        public async Task CalculateMatchProbability_ShouldReturnCompleteHaplotypeFrequencySet()
+        {
+            var patientSet = fixture.Create<HaplotypeFrequencySet>();
+            var donorSet = fixture.Create<HaplotypeFrequencySet>();
+
+            haplotypeFrequencyService.GetHaplotypeFrequencySets(default, default).ReturnsForAnyArgs(
+                new HaplotypeFrequencySetResponse
+                {
+                    PatientSet = patientSet,
+                    DonorSet = donorSet
+                }
+            );
+
+            var input = SingleDonorMatchProbabilityInputBuilder.Default.Build();
+            var result = await matchProbabilityService.CalculateMatchProbability(input);
+
+            result.DonorHlaFrequencySet.Id.Should().Be(donorSet.Id);
+            result.DonorHlaFrequencySet.RegistryCode.Should().Be(donorSet.RegistryCode);
+            result.DonorHlaFrequencySet.EthnicityCode.Should().Be(donorSet.EthnicityCode);
+            result.DonorHlaFrequencySet.HlaNomenclatureVersion.Should().Be(donorSet.HlaNomenclatureVersion);
+            result.DonorHlaFrequencySet.PopulationId.Should().Be(donorSet.PopulationId);
+            result.DonorFrequencySetNomenclatureVersion.Should().Be(donorSet.HlaNomenclatureVersion);
+
+            result.PatientHlaFrequencySet.Id.Should().Be(patientSet.Id);
+            result.PatientHlaFrequencySet.RegistryCode.Should().Be(patientSet.RegistryCode);
+            result.PatientHlaFrequencySet.EthnicityCode.Should().Be(patientSet.EthnicityCode);
+            result.PatientHlaFrequencySet.HlaNomenclatureVersion.Should().Be(patientSet.HlaNomenclatureVersion);
+            result.PatientHlaFrequencySet.PopulationId.Should().Be(patientSet.PopulationId);
+            result.PatientFrequencySetNomenclatureVersion.Should().Be(patientSet.HlaNomenclatureVersion);
         }
     }
 }

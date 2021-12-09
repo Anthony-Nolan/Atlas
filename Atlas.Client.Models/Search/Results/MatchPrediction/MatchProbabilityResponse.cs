@@ -42,14 +42,22 @@ namespace Atlas.Client.Models.Search.Results.MatchPrediction
         /// <summary>
         /// Nomenclature version used for HF set generation + processing for the patient.
         /// NOTE: HLA expansion of the request was done using the input version.
+        /// This property is set as readonly and is only used for backwards compatibility.
+        /// The property is moved to the PatientHlaFrequencySet
         /// </summary>
-        public string PatientFrequencySetNomenclatureVersion { get; set; }
+        public string PatientFrequencySetNomenclatureVersion => PatientHlaFrequencySet?.HlaNomenclatureVersion;
+
+        public HlaFrequencySet PatientHlaFrequencySet { get; set; }
 
         /// <summary>
         /// Nomenclature version used for HF set generation + processing for the donor.
         /// NOTE: HLA expansion of the request was done using the input version.
+        /// This property is set as readonly and is only used for backwards compatibility.
+        /// The property is moved to the DonorHlaFrequencySet
         /// </summary>
-        public string DonorFrequencySetNomenclatureVersion { get; set; }
+        public string DonorFrequencySetNomenclatureVersion => DonorHlaFrequencySet?.HlaNomenclatureVersion;
+
+        public HlaFrequencySet DonorHlaFrequencySet { get; set;}
 
         public bool IsPatientPhenotypeUnrepresented { get; set; }
         public bool IsDonorPhenotypeUnrepresented { get; set; }
@@ -78,8 +86,8 @@ namespace Atlas.Client.Models.Search.Results.MatchPrediction
                 MatchProbabilitiesPerLocus = MatchProbabilitiesPerLocus.Map((_, p) => p?.Round(decimalPlaces)),
                 IsPatientPhenotypeUnrepresented = IsPatientPhenotypeUnrepresented,
                 IsDonorPhenotypeUnrepresented = IsDonorPhenotypeUnrepresented,
-                PatientFrequencySetNomenclatureVersion = PatientFrequencySetNomenclatureVersion,
-                DonorFrequencySetNomenclatureVersion = DonorFrequencySetNomenclatureVersion
+                PatientHlaFrequencySet = PatientHlaFrequencySet,
+                DonorHlaFrequencySet = DonorHlaFrequencySet
             };
         }
 
