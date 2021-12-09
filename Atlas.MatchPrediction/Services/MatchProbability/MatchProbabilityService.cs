@@ -212,8 +212,22 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                         allowedLoci
                     );
 
-                    matchProbability.DonorFrequencySetNomenclatureVersion = frequencySets.DonorSet.HlaNomenclatureVersion;
-                    matchProbability.PatientFrequencySetNomenclatureVersion = frequencySets.PatientSet.HlaNomenclatureVersion;
+                    matchProbability.DonorHlaFrequencySet = new HlaFrequencySet
+                    {
+                        Id = frequencySets.DonorSet.Id,
+                        RegistryCode = frequencySets.DonorSet.RegistryCode,
+                        EthnicityCode = frequencySets.DonorSet.EthnicityCode,
+                        HlaNomenclatureVersion = frequencySets.DonorSet.HlaNomenclatureVersion,
+                        PopulationId = frequencySets.DonorSet.PopulationId
+                    };
+                    matchProbability.PatientHlaFrequencySet = new HlaFrequencySet
+                    {
+                        Id = frequencySets.PatientSet.Id,
+                        RegistryCode = frequencySets.PatientSet.RegistryCode,
+                        EthnicityCode = frequencySets.PatientSet.EthnicityCode,
+                        HlaNomenclatureVersion = frequencySets.PatientSet.HlaNomenclatureVersion,
+                        PopulationId = frequencySets.PatientSet.PopulationId
+                    };
 
                     return matchProbability;
                 }
