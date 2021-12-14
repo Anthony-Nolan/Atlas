@@ -10,6 +10,8 @@ The project version will be appropriately incremented with each change to the pr
 
 ## Versions
 
+### 1.3.0
+
 ### 1.2.0
 
 - Fixed scoring issue in which some DPB1 pairs were erroneously classified as a Non-Permissive Mismatch, when in reality they should be Permissive.
