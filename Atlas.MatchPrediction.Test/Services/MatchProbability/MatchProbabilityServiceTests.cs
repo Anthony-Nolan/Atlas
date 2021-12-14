@@ -159,18 +159,18 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             var input = SingleDonorMatchProbabilityInputBuilder.Default.Build();
             var result = await matchProbabilityService.CalculateMatchProbability(input);
 
-            result.DonorHlaFrequencySet.Id.Should().Be(donorSet.Id);
-            result.DonorHlaFrequencySet.RegistryCode.Should().Be(donorSet.RegistryCode);
-            result.DonorHlaFrequencySet.EthnicityCode.Should().Be(donorSet.EthnicityCode);
-            result.DonorHlaFrequencySet.HlaNomenclatureVersion.Should().Be(donorSet.HlaNomenclatureVersion);
-            result.DonorHlaFrequencySet.PopulationId.Should().Be(donorSet.PopulationId);
+            result.DonorHaplotypeFrequencySet.Id.Should().Be(donorSet.Id);
+            result.DonorHaplotypeFrequencySet.RegistryCode.Should().Be(donorSet.RegistryCode);
+            result.DonorHaplotypeFrequencySet.EthnicityCode.Should().Be(donorSet.EthnicityCode);
+            result.DonorHaplotypeFrequencySet.HlaNomenclatureVersion.Should().Be(donorSet.HlaNomenclatureVersion);
+            result.DonorHaplotypeFrequencySet.PopulationId.Should().Be(donorSet.PopulationId);
             result.DonorFrequencySetNomenclatureVersion.Should().Be(donorSet.HlaNomenclatureVersion);
 
-            result.PatientHlaFrequencySet.Id.Should().Be(patientSet.Id);
-            result.PatientHlaFrequencySet.RegistryCode.Should().Be(patientSet.RegistryCode);
-            result.PatientHlaFrequencySet.EthnicityCode.Should().Be(patientSet.EthnicityCode);
-            result.PatientHlaFrequencySet.HlaNomenclatureVersion.Should().Be(patientSet.HlaNomenclatureVersion);
-            result.PatientHlaFrequencySet.PopulationId.Should().Be(patientSet.PopulationId);
+            result.PatientHaplotypeFrequencySet.Id.Should().Be(patientSet.Id);
+            result.PatientHaplotypeFrequencySet.RegistryCode.Should().Be(patientSet.RegistryCode);
+            result.PatientHaplotypeFrequencySet.EthnicityCode.Should().Be(patientSet.EthnicityCode);
+            result.PatientHaplotypeFrequencySet.HlaNomenclatureVersion.Should().Be(patientSet.HlaNomenclatureVersion);
+            result.PatientHaplotypeFrequencySet.PopulationId.Should().Be(patientSet.PopulationId);
             result.PatientFrequencySetNomenclatureVersion.Should().Be(patientSet.HlaNomenclatureVersion);
         }
     }
