@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
@@ -43,21 +44,21 @@ namespace Atlas.Client.Models.Search.Results.MatchPrediction
         /// Nomenclature version used for HF set generation + processing for the patient.
         /// NOTE: HLA expansion of the request was done using the input version.
         /// This property is set as readonly and is only used for backwards compatibility.
-        /// The property is moved to the PatientHlaFrequencySet
         /// </summary>
-        public string PatientFrequencySetNomenclatureVersion => PatientHlaFrequencySet?.HlaNomenclatureVersion;
+        [Obsolete("The property is moved to the PatientHaplotypeFrequencySet")]
+        public string PatientFrequencySetNomenclatureVersion => PatientHaplotypeFrequencySet?.HlaNomenclatureVersion;
 
-        public HlaFrequencySet PatientHlaFrequencySet { get; set; }
+        public HaplotypeFrequencySet PatientHaplotypeFrequencySet { get; set; }
 
         /// <summary>
         /// Nomenclature version used for HF set generation + processing for the donor.
         /// NOTE: HLA expansion of the request was done using the input version.
         /// This property is set as readonly and is only used for backwards compatibility.
-        /// The property is moved to the DonorHlaFrequencySet
         /// </summary>
-        public string DonorFrequencySetNomenclatureVersion => DonorHlaFrequencySet?.HlaNomenclatureVersion;
+        [Obsolete("The property is moved to the DonorHaplotypeFrequencySet")]
+        public string DonorFrequencySetNomenclatureVersion => DonorHaplotypeFrequencySet?.HlaNomenclatureVersion;
 
-        public HlaFrequencySet DonorHlaFrequencySet { get; set;}
+        public HaplotypeFrequencySet DonorHaplotypeFrequencySet { get; set;}
 
         public bool IsPatientPhenotypeUnrepresented { get; set; }
         public bool IsDonorPhenotypeUnrepresented { get; set; }
@@ -86,8 +87,8 @@ namespace Atlas.Client.Models.Search.Results.MatchPrediction
                 MatchProbabilitiesPerLocus = MatchProbabilitiesPerLocus.Map((_, p) => p?.Round(decimalPlaces)),
                 IsPatientPhenotypeUnrepresented = IsPatientPhenotypeUnrepresented,
                 IsDonorPhenotypeUnrepresented = IsDonorPhenotypeUnrepresented,
-                PatientHlaFrequencySet = PatientHlaFrequencySet,
-                DonorHlaFrequencySet = DonorHlaFrequencySet
+                PatientHaplotypeFrequencySet = PatientHaplotypeFrequencySet,
+                DonorHaplotypeFrequencySet = DonorHaplotypeFrequencySet
             };
         }
 

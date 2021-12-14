@@ -212,7 +212,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                         allowedLoci
                     );
 
-                    matchProbability.DonorHlaFrequencySet = new HlaFrequencySet
+                    matchProbability.DonorHaplotypeFrequencySet = new Client.Models.Search.Results.MatchPrediction.HaplotypeFrequencySet
                     {
                         Id = frequencySets.DonorSet.Id,
                         RegistryCode = frequencySets.DonorSet.RegistryCode,
@@ -220,7 +220,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                         HlaNomenclatureVersion = frequencySets.DonorSet.HlaNomenclatureVersion,
                         PopulationId = frequencySets.DonorSet.PopulationId
                     };
-                    matchProbability.PatientHlaFrequencySet = new HlaFrequencySet
+                    matchProbability.PatientHaplotypeFrequencySet = new Client.Models.Search.Results.MatchPrediction.HaplotypeFrequencySet
                     {
                         Id = frequencySets.PatientSet.Id,
                         RegistryCode = frequencySets.PatientSet.RegistryCode,

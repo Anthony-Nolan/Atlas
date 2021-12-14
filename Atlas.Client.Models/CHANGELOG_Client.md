@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Versions
 
+### 1.3.0
+- Marked 'PatientFrequencySetNomenclatureVersion' and 'DonorFrequencySetNomenclatureVersion' as Obsolete and added 'PatientHaplotypeFrequencySet' and 'DonorHaplotypeFrequencySet' to replace them on the 'MatchProbabilityResponse'.
+  Both HF sets contain the metadata (internal ID, RegistryCode, EthnicityCode, HlaNomenclatureVersion and PopulationId) of the frequency set.
+- Added 'Dpb1MismatchDirection' to 'LocusSearchResult' to indicate the directionality of a DPB1 non-permissive mismatch.
+
 ### 1.2.0
 
 * `MatchGrade` enum:

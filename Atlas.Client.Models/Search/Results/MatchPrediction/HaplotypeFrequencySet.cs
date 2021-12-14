@@ -1,6 +1,6 @@
 ﻿namespace Atlas.Client.Models.Search.Results.MatchPrediction
 {
-    public class HlaFrequencySet
+    public class HaplotypeFrequencySet
     {
         public int Id { get; set; }
         public string RegistryCode { get; set; }
