@@ -127,7 +127,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                     ScoreDetailsAtPosition1 = scoreDetailsPerPosition.Position1,
                     ScoreDetailsAtPosition2 = scoreDetailsPerPosition.Position2,
                     MatchCategory = matchCategory,
-                    Dpb1MismatchDirection = GetDpb1MismatchDirection(matchCategory, locus, dpb1TceGroupMatchType)
+                    MismatchDirection = GetMismatchDirection(matchCategory, locus, dpb1TceGroupMatchType)
                 };
                 scoreResult.SetScoreDetailsForLocus(locus, scoreDetails);
             }
@@ -154,7 +154,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             };
         }
 
-        private static Dpb1MismatchDirection? GetDpb1MismatchDirection(LocusMatchCategory locusMatchCategory, Locus locus,
+        private static MismatchDirection? GetMismatchDirection(LocusMatchCategory locusMatchCategory, Locus locus,
             Dpb1TceGroupMatchType dpb1TceGroupMatchType)
         {
             if (locus != Locus.Dpb1)
@@ -164,10 +164,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
             if (locusMatchCategory != LocusMatchCategory.Mismatch)
             {
-                return Dpb1MismatchDirection.NotApplicable;
+                return MismatchDirection.NotApplicable;
             }
 
-            return LocusMatchCategoryAggregator.GetDpb1MismatchDirection(dpb1TceGroupMatchType);
+            return LocusMatchCategoryAggregator.GetMismatchDirection(dpb1TceGroupMatchType);
         }
 
         private class DonorScoringInfo

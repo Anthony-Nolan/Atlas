@@ -135,7 +135,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 ScoreDetailsAtPositionOne = scoreDetailsForLocus?.ScoreDetailsAtPosition1,
                 ScoreDetailsAtPositionTwo = scoreDetailsForLocus?.ScoreDetailsAtPosition2,
                 MatchCategory = scoreDetailsForLocus?.MatchCategory,
-                Dpb1MismatchDirection = scoreDetailsForLocus?.Dpb1MismatchDirection
+                MismatchDirection = scoreDetailsForLocus?.MismatchDirection
             };
         }
     }
