@@ -56,14 +56,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
             };
         }
 
-        public static Dpb1MismatchDirection? GetDpb1MismatchDirection(Dpb1TceGroupMatchType dpb1TceGroupMatchType)
+        public static MismatchDirection? GetMismatchDirection(Dpb1TceGroupMatchType dpb1TceGroupMatchType)
         {
             return dpb1TceGroupMatchType switch
             {
-                Dpb1TceGroupMatchType.NonPermissiveGvH => Dpb1MismatchDirection.NonPermissiveGvH,
-                Dpb1TceGroupMatchType.NonPermissiveHvG => Dpb1MismatchDirection.NonPermissiveHvG,
+                Dpb1TceGroupMatchType.NonPermissiveGvH => MismatchDirection.NonPermissiveGvH,
+                Dpb1TceGroupMatchType.NonPermissiveHvG => MismatchDirection.NonPermissiveHvG,
                 Dpb1TceGroupMatchType.Unknown => null,
-                _ => Dpb1MismatchDirection.NotApplicable
+                _ => MismatchDirection.NotApplicable
             };
         }
     }

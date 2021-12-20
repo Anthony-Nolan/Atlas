@@ -7,7 +7,7 @@ namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
     /// This enum represents the mismatch direction of a Dpb1Mismatch. 
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum Dpb1MismatchDirection
+    public enum MismatchDirection
     {
         /// <summary>
         /// The mismatch direction of the Dpb1Mismatch is not applicable.

@@ -52,20 +52,20 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
                 ));
         }
 
-        [TestCase(Dpb1TceGroupMatchType.NonPermissiveGvH, Dpb1MismatchDirection.NonPermissiveGvH)]
-        [TestCase(Dpb1TceGroupMatchType.NonPermissiveHvG, Dpb1MismatchDirection.NonPermissiveHvG)]
-        [TestCase(Dpb1TceGroupMatchType.Permissive, Dpb1MismatchDirection.NotApplicable)]
-        public void GetDpb1MismatchDirection_ReturnsDpb1MismatchDirection(Dpb1TceGroupMatchType dpb1TceGroupMatchType, Dpb1MismatchDirection expectedDpb1MismatchDirection)
+        [TestCase(Dpb1TceGroupMatchType.NonPermissiveGvH, MismatchDirection.NonPermissiveGvH)]
+        [TestCase(Dpb1TceGroupMatchType.NonPermissiveHvG, MismatchDirection.NonPermissiveHvG)]
+        [TestCase(Dpb1TceGroupMatchType.Permissive, MismatchDirection.NotApplicable)]
+        public void GetMismatchDirection_ReturnsMismatchDirection(Dpb1TceGroupMatchType dpb1TceGroupMatchType, MismatchDirection expectedMismatchDirection)
         {
-            var result = LocusMatchCategoryAggregator.GetDpb1MismatchDirection(dpb1TceGroupMatchType);
+            var result = LocusMatchCategoryAggregator.GetMismatchDirection(dpb1TceGroupMatchType);
 
-            result.Should().Be(expectedDpb1MismatchDirection);
+            result.Should().Be(expectedMismatchDirection);
         }
 
         [Test]
-        public void GetDpb1MismatchDirection_ReturnsNull_WhenMatchTypeIsUnknown()
+        public void GetMismatchDirection_ReturnsNull_WhenMatchTypeIsUnknown()
         {
-            var result = LocusMatchCategoryAggregator.GetDpb1MismatchDirection(Dpb1TceGroupMatchType.Unknown);
+            var result = LocusMatchCategoryAggregator.GetMismatchDirection(Dpb1TceGroupMatchType.Unknown);
 
             result.Should().BeNull();
         }
