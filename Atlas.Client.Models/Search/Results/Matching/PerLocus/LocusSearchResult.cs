@@ -51,9 +51,10 @@
         public LocusPositionScoreDetails ScoreDetailsAtPositionTwo { get; set; }
         
         /// <summary>
-        /// Indicates the direction of the DPB1 mismatch, when there is a DPB1 mismatch.
-        /// When the mismatch is permissive or there is no DPB1 mismatch, NotApplicable will be returned.
+        /// Indicates the direction of the mismatch, when there is a mismatch.
+        /// When the mismatch is permissive or there is no mismatch, NotApplicable will be returned.
         /// When the direction could not be calculated or the locus is non-DPB1, null will be returned.
+        /// Currently the mismatch direction is only implemented for DPB1 loci.
         /// </summary>
         public MismatchDirection? MismatchDirection { get; set; }
 
