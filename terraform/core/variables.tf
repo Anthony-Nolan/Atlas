@@ -262,6 +262,12 @@ variable "ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE" {
   default = 10
 }
 
+variable "PUBLIC_API_FUNCTION_HOST_KEY" {
+  type        = string
+  default     = ""
+  description = "Optional. Host keys cannot be set from terraform. This should be set up manually, and is only included to be used as an export. If unset, other terraformed apps cannot use the ATLAS remote state to fetch the host key, and must have it provided manually."
+}
+
 variable "REPEAT_SEARCH_DATABASE_PASSWORD" {
   type = string
 }
