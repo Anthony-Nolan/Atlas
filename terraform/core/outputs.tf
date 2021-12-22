@@ -17,6 +17,13 @@ output "multiple_allele_code_lookup" {
   value = module.multiple_allele_code_lookup
 }
 
+output "public_api_function" {
+  value = {
+    api_key = var.PUBLIC_API_FUNCTION_HOST_KEY
+    base_url = "https://${azurerm_function_app.atlas_public_api_function.default_site_hostname}"
+  }
+}
+
 output "sql_server" {
   value = azurerm_sql_server.atlas_sql_server.name
 }
