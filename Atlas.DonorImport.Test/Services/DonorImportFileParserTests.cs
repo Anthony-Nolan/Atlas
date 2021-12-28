@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.Models.FileSchema;
@@ -79,6 +78,28 @@ namespace Atlas.DonorImport.Test.Services
             var lazyParsedDonors = donorImportFileParser.PrepareToLazilyParseDonorUpdates(fileStream).ReadLazyDonorUpdates();
 
             lazyParsedDonors.Invoking(lazyDonors => lazyDonors.ToList()).Should().NotThrow();
+        }
+
+        [Test]
+        public void ImportDonorFile_WithChangeTypeDelete_WithNullHla_DoesNotThrowException()
+        {
+            var donor = DonorUpdateBuilder.New.WithHla(null).With(x => x.ChangeType, ImportDonorChangeType.Delete).Build();
+            var donorImportFileStream = DonorImportFileContentsBuilder.New.WithDonors(donor).Build().ToStream();
+
+            var lazyParsedDonors = donorImportFileParser.PrepareToLazilyParseDonorUpdates(donorImportFileStream).ReadLazyDonorUpdates();
+
+            lazyParsedDonors.Invoking(donors => donors.ToList()).Should().NotThrow();
+        }
+
+        [Test]
+        public void ImportDonorFile_WithChangeTypeNotDelete_WithNullHla_ThrowsMalformedDonorFileException()
+        {
+            var donor = DonorUpdateBuilder.New.WithHla(null).With(x => x.ChangeType, ImportDonorChangeType.Upsert).Build();
+            var donorImportFileStream = DonorImportFileContentsBuilder.New.WithDonors(donor).Build().ToStream();
+
+            var lazyParsedDonors = donorImportFileParser.PrepareToLazilyParseDonorUpdates(donorImportFileStream).ReadLazyDonorUpdates();
+
+            lazyParsedDonors.Invoking(donors => donors.ToList()).Should().Throw<MalformedDonorFileException>();
         }
     }
 }
