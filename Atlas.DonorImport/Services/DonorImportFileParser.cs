@@ -99,7 +99,7 @@ namespace Atlas.DonorImport.Services
                                     //Record the successful parsing for diagnostics if subsequent records fail, before returning it to the caller.
                                     ParsedDonorCount++;
                                     LastSuccessfullyParsedDonorCode = donorOperation.RecordId;
-                                    if (donorOperation.Hla == null)
+                                    if (donorOperation.Hla == null && donorOperation.ChangeType != ImportDonorChangeType.Delete)
                                     {
                                         throw new MalformedDonorFileException("Donor property HLA cannot be null.");
                                     }
