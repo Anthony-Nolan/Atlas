@@ -89,9 +89,12 @@ namespace Atlas.DonorImport.Services
                                         throw new MalformedDonorFileException("Donor in array of input file could not be parsed.");
                                     }
 
-                                    if (updateMode.Value == UpdateMode.Full && donorOperation.ChangeType != ImportDonorChangeType.Create)
+                                    if (updateMode.Value == UpdateMode.Full &&
+                                        donorOperation.ChangeType != ImportDonorChangeType.Create &&
+                                        donorOperation.ChangeType != ImportDonorChangeType.Upsert)
                                     {
-                                        throw new MalformedDonorFileException($"File Update mode is '{UpdateMode.Full}, but a record in the file is of ChangeType '{donorOperation.ChangeType}'. Only 'New' records / Creations are permitted in a '{UpdateMode.Full}' file.");
+                                        throw new MalformedDonorFileException(
+                                            $"File Update mode is '{UpdateMode.Full}, but a record in the file is of ChangeType '{donorOperation.ChangeType}'. Only 'New'/'Upsert' records / Creations are permitted in a '{UpdateMode.Full}' file.");
                                     }
 
                                     donorOperation.UpdateMode = updateMode.Value;
