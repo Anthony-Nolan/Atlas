@@ -49,6 +49,23 @@ namespace Atlas.DonorImport.Test.Services
         }
 
         [Test]
+        public void ImportDonorFile_FullModeWithUpsertsOnly_DoesNotThrow()
+        {
+            var donors =
+                DonorUpdateBuilder.New
+                    .With(donor => donor.ChangeType, ImportDonorChangeType.Upsert)
+                    .Build(10);
+            var fileStream = DonorImportFileContentsBuilder.New
+                .With(file => file.updateMode, UpdateMode.Full)
+                .WithDonors(donors.ToArray())
+                .Build().ToStream();
+
+            var lazyParsedDonors = donorImportFileParser.PrepareToLazilyParseDonorUpdates(fileStream).ReadLazyDonorUpdates();
+
+            lazyParsedDonors.Invoking(lazyDonors => lazyDonors.ToList()).Should().NotThrow();
+        }
+
+        [Test]
         public void ImportDonorFile_FullModeWithNonAdditions_Throws()
         {
             var variedDonors =

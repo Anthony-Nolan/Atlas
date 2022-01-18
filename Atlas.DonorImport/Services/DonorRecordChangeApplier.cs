@@ -93,6 +93,8 @@ namespace Atlas.DonorImport.Services
                 switch (updatesOfSameOperationType.Key, updateMode)
                 {
                     case (ImportDonorChangeType.Create, UpdateMode.Full):
+                    case (ImportDonorChangeType.Upsert, UpdateMode.Full):
+                    case (ImportDonorChangeType.Upsert, _):
                         var upsertMessagesFull = await ProcessDonorUpserts(updatesOfSameOperationType.ToList(), externalCodes, file, updateMode);
                         matchingComponentUpdateMessages.Add(upsertMessagesFull);
                         break;
@@ -113,11 +115,6 @@ namespace Atlas.DonorImport.Services
                     case (ImportDonorChangeType.Edit, _):
                         var editMessages = await ProcessDonorEdits(updatesOfSameOperationType.ToList(), externalCodes, file);
                         matchingComponentUpdateMessages.Add(editMessages);
-                        break;
-
-                    case (ImportDonorChangeType.Upsert, _):
-                        var upsertMessages = await ProcessDonorUpserts(updatesOfSameOperationType.ToList(), externalCodes, file, updateMode);
-                        matchingComponentUpdateMessages.Add(upsertMessages);
                         break;
 
                     case (ImportDonorChangeType.Delete, _):
