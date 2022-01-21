@@ -24,6 +24,17 @@ output "public_api_function" {
   }
 }
 
+output "resource_group_name" {
+  value = local.resource_group_name
+}
+
+output "service_bus" {
+  value = {
+    namespace_name = azurerm_servicebus_namespace.general.name
+    read_connection_string = azurerm_servicebus_namespace_authorization_rule.read-only.primary_connection_string
+  }
+}
+
 output "sql_server" {
   value = azurerm_sql_server.atlas_sql_server.name
 }
@@ -31,5 +42,6 @@ output "sql_server" {
 output "storage_account" {
   value = {
     id = azurerm_storage_account.azure_storage.id
+    connection_string = azurerm_storage_account.azure_storage.primary_connection_string
   }
 }
