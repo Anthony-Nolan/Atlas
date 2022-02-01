@@ -45,3 +45,7 @@ output "storage_account" {
     connection_string = azurerm_storage_account.azure_storage.primary_connection_string
   }
 }
+
+output "support" {
+  value = module.support
+}
