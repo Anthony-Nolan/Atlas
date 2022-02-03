@@ -117,6 +117,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
             searchRequestBuilder.WithNullLocusSearchHla(locus);
             return this;
         }
+        
+        public SearchRequestFromHlasBuilder WithDonorRegistryCodes(List<string> donorRegistryCodes)
+        {
+            searchRequestBuilder.WithDonorRegistryCodes(donorRegistryCodes);
+            return this;
+        }
 
         public SearchRequest Build()
         {
