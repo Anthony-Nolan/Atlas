@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Versions
 
 ### 1.3.0
+
+#### Search Requests
+
+* Added optional `DonorRegistryCodes` property to search request, to allow filtering of donor results to those from certain registry codes. 
+
+#### Search Results
+
 - Marked 'PatientFrequencySetNomenclatureVersion' and 'DonorFrequencySetNomenclatureVersion' as Obsolete and added 'PatientHaplotypeFrequencySet' and 'DonorHaplotypeFrequencySet' to replace them on the 'MatchProbabilityResponse'.
   Both HF sets contain the metadata (internal ID, RegistryCode, EthnicityCode, HlaNomenclatureVersion and PopulationId) of the frequency set.
 - Added 'MismatchDirection' to 'LocusSearchResult' to indicate the directionality of a DPB1 non-permissive mismatch.

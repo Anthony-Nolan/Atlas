@@ -29,6 +29,7 @@ using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
+using Atlas.MatchingAlgorithm.Services.Search.NonHlaFiltering;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence;
@@ -271,6 +272,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             );
 
             services.AddScoped<ISearchService, SearchService>();
+            services.AddScoped<IDonorDetailsResultFilterer, DonorDetailsResultFilterer>();
             services.AddScoped<IMatchCriteriaMapper, MatchCriteriaMapper>();
 
             services.AddApplicationInsightsTelemetryWorkerService();
