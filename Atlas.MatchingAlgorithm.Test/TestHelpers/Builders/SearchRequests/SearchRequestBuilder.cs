@@ -144,6 +144,12 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests
             return this;
         }
 
+        public SearchRequestBuilder WithDonorRegistryCodes(List<string> registryCodes)
+        {
+            searchRequest.DonorRegistryCodes = registryCodes;
+            return this;
+        }
+
         public SearchRequest Build()
         {
             searchRequest.SearchHlaData = searchHla.ToPhenotypeInfoTransfer();

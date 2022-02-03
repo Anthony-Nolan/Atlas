@@ -16,6 +16,7 @@ using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
+using Atlas.MatchingAlgorithm.Services.Search.NonHlaFiltering;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
@@ -34,6 +35,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly IMatchingService matchingService;
         private readonly ILogger searchLogger;
         private readonly IDonorReader donorReader;
+        private readonly IDonorDetailsResultFilterer donorDetailsResultFilterer;
 
         public SearchService(
             IMatchCriteriaMapper matchCriteriaMapper,
@@ -41,12 +43,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             IMatchingService matchingService,
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchingAlgorithmSearchLogger searchLogger,
-            IDonorReader donorReader)
+            IDonorReader donorReader,
+            IDonorDetailsResultFilterer donorDetailsResultFilterer)
         {
             this.scoringService = scoringService;
             this.matchingService = matchingService;
             this.searchLogger = searchLogger;
             this.donorReader = donorReader;
+            this.donorDetailsResultFilterer = donorDetailsResultFilterer;
             this.matchCriteriaMapper = matchCriteriaMapper;
         }
 
@@ -76,7 +80,13 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var donorLookup = await donorReader.GetDonors(reifiedScoredMatches.Select(r => r.MatchResult.DonorId));
             donorLookupTimer.Dispose();
 
-            return reifiedScoredMatches.Select(scoredMatch => MapSearchResultToApiSearchResult(scoredMatch, donorLookup));
+            var resultsFilteredByDonorDetails = donorDetailsResultFilterer.FilterResultsByDonorData(
+                new DonorFilteringCriteria{RegistryCodes = matchingRequest.DonorRegistryCodes}, 
+                reifiedScoredMatches,
+                donorLookup
+            ).ToList();
+
+            return resultsFilteredByDonorDetails.Select(scoredMatch => MapSearchResultToApiSearchResult(scoredMatch, donorLookup));
         }
 
         private static MatchingAlgorithmResult MapSearchResultToApiSearchResult(

@@ -31,6 +31,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 {
     internal static class ServiceConfiguration
     {
+        internal static IDonorReader MockDonorReader;
+        
         private const string PersistentSqlConnectionStringKey = "PersistentSql";
         private const string TransientASqlConnectionStringKey = "SqlA";
         private const string TransientBSqlConnectionStringKey = "SqlB";
@@ -110,6 +112,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
+            services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<DonorManagementSettings>("DonorManagement");
             services.RegisterAsOptions<MessagingServiceBusSettings>("DonorManagementMessagingServiceBus");
         }
@@ -127,13 +130,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.AddScoped(sp => Substitute.For<INotificationSender>());
             services.AddScoped(sp => Substitute.For<IAzureDatabaseManager>());
 
-            var mockDonorReader = Substitute.For<IDonorReader>();
-            mockDonorReader.GetDonors(default).ReturnsForAnyArgs(callInfo =>
+            MockDonorReader = Substitute.For<IDonorReader>();
+            MockDonorReader.GetDonors(default).ReturnsForAnyArgs(callInfo =>
             {
                 var ids = callInfo.Arg<IEnumerable<int>>();
                 return ids.ToDictionary(id => id, id => new Donor {AtlasDonorId = id, ExternalDonorCode = id.ToString()});
             });
-            services.AddScoped(_ => mockDonorReader);
+            services.AddScoped(_ => MockDonorReader);
 
             // Log to file, not to ApplicationInsights!
             services.AddSingleton<ILogger, FileBasedLogger>();

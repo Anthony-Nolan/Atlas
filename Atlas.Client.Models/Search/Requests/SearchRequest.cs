@@ -50,6 +50,13 @@ namespace Atlas.Client.Models.Search.Requests
         /// expensive and time consuming portion of a search, so if results are not needed, results can be returned much faster without it.
         /// </summary>
         public bool RunMatchPrediction { get; set; } = true;
+        
+        /// <summary>
+        /// Optional.
+        /// When non-null, only donors from the corresponding registry codes will be returned from the search.
+        /// These registry codes must *exactly* match (case-sensitive) those provided in donor files used to import donors to Atlas.
+        /// </summary>
+        public List<string> DonorRegistryCodes { get; set; }
     }
     
     public class MismatchCriteria
