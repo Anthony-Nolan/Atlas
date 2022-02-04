@@ -84,6 +84,7 @@ resource "azurerm_function_app" "atlas_matching_algorithm_function" {
 
   site_config {
     pre_warmed_instance_count = 1
+    use_32_bit_worker_process = false
     ip_restriction            = [for ip in var.IP_RESTRICTION_SETTINGS : {
       ip_address = ip
       subnet_id  = null
