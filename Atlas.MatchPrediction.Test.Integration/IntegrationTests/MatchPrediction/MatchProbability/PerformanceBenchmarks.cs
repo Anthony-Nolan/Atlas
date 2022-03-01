@@ -121,7 +121,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        [IgnoreExceptOnCiPerfTest("Runs in ~11s")]
         public async Task MatchPrediction__WithDonor_AndPatient_FullyTypedAtXXCodeResolution__CalculatesProbabilityCorrectly()
         {
             var xxTypedHla = new PhenotypeInfoBuilder<string>()
@@ -130,6 +129,52 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDataAt(Locus.C, "07:XX")
                 .WithDataAt(Locus.Dqb1, "02:XX")
                 .WithDataAt(Locus.Drb1, "03:XX")
+                .Build();
+
+            var matchProbabilityInput = InputBuilder
+                .WithDonorHla(xxTypedHla)
+                .WithPatientHla(xxTypedHla)
+                .Build();
+
+            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+
+            matchDetails.MatchProbabilities.ShouldHavePercentages(97,3,0);
+        }
+
+        [Test]
+        [IgnoreExceptOnCiPerfTest("DNF - expected to take > 30 min")]
+        public async Task MatchPrediction__WithDonor_AndPatient_FullyTypedAtXXCodeResolution_DifficultHla_1__CalculatesProbabilityCorrectly()
+        {
+            var xxTypedHla = new PhenotypeInfoBuilder<string>()
+                .WithDataAt(Locus.A, LocusPosition.One, "02:XX")
+                .WithDataAt(Locus.A, LocusPosition.Two, "24:XX")
+                .WithDataAt(Locus.B, LocusPosition.One, "15:XX")
+                .WithDataAt(Locus.B, LocusPosition.Two, "40:XX")
+                .WithDataAt(Locus.Drb1, LocusPosition.One, "08:XX")
+                .WithDataAt(Locus.Drb1, LocusPosition.Two, "11:XX")
+                .Build();
+
+            var matchProbabilityInput = InputBuilder
+                .WithDonorHla(xxTypedHla)
+                .WithPatientHla(xxTypedHla)
+                .Build();
+
+            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+
+            matchDetails.MatchProbabilities.ShouldHavePercentages(97,3,0);
+        }
+
+        [Test]
+        [IgnoreExceptOnCiPerfTest("DNF - expected to take > 30 min")]
+        public async Task MatchPrediction__WithDonor_AndPatient_FullyTypedAtXXCodeResolution_DifficultHla_2__CalculatesProbabilityCorrectly()
+        {
+            var xxTypedHla = new PhenotypeInfoBuilder<string>()
+                .WithDataAt(Locus.A, LocusPosition.One, "02:XX")
+                .WithDataAt(Locus.A, LocusPosition.Two, "24:XX")
+                .WithDataAt(Locus.B, LocusPosition.One, "15:XX")
+                .WithDataAt(Locus.B, LocusPosition.Two, "40:XX")
+                .WithDataAt(Locus.Drb1, LocusPosition.One, "04:XX")
+                .WithDataAt(Locus.Drb1, LocusPosition.Two, "13:XX")
                 .Build();
 
             var matchProbabilityInput = InputBuilder
