@@ -187,12 +187,17 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             var patientStringGenotypes = patientGenotypes.Select(g => g.ToHlaNames()).ToHashSet();
             var donorStringGenotypes = donorGenotypes.Select(g => g.ToHlaNames()).ToHashSet();
-            
+
             var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientStringGenotypes, frequencySets.PatientSet, allowedLoci);
             var donorGenotypeLikelihoods = await CalculateGenotypeLikelihoods(donorStringGenotypes, frequencySets.DonorSet, allowedLoci);
 
-            var convertedPatientGenotypes = await genotypeConverter.ConvertGenotypes(patientGenotypes, "patient", patientGenotypeLikelihoods, patientHlaVersion);
-            var convertedDonorGenotypes = await genotypeConverter.ConvertGenotypes(donorGenotypes, "donor", donorGenotypeLikelihoods, donorHlaVersion);
+            var truncatedDonor = ExpandedGenotypeTruncater.TruncateGenotypes(donorGenotypeLikelihoods, donorGenotypes);
+            var truncatedPatient = ExpandedGenotypeTruncater.TruncateGenotypes(patientGenotypeLikelihoods, patientGenotypes);
+
+            var convertedPatientGenotypes = await genotypeConverter.ConvertGenotypes(
+                truncatedPatient.Genotypes, "patient", truncatedPatient.GenotypeLikelihoods, patientHlaVersion);
+            var convertedDonorGenotypes = await genotypeConverter.ConvertGenotypes(
+                truncatedDonor.Genotypes, "donor", truncatedDonor.GenotypeLikelihoods, donorHlaVersion);
             var allPatientDonorCombinations = CombineGenotypes(convertedPatientGenotypes, convertedDonorGenotypes);
 
             using (var matchCountLogger = MatchCountLogger(NumberOfPairsOfCartesianProduct(convertedDonorGenotypes, convertedPatientGenotypes)))
@@ -200,8 +205,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 var patientDonorMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, allowedLoci, matchCountLogger);
 
                 // Sum likelihoods outside of loop, so they are not calculated millions of times
-                var sumOfPatientLikelihoods = patientGenotypeLikelihoods.Values.SumDecimals();
-                var sumOfDonorLikelihoods = donorGenotypeLikelihoods.Values.SumDecimals();
+                var sumOfPatientLikelihoods = truncatedPatient.GenotypeLikelihoods.Values.SumDecimals();
+                var sumOfDonorLikelihoods = truncatedDonor.GenotypeLikelihoods.Values.SumDecimals();
 
                 using (logger.RunTimed("Calculate match probability", LogLevel.Verbose))
                 {
