@@ -76,7 +76,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 })
             );
 
-            genotypeLikelihoodService.CalculateLikelihood(default, default, default).ReturnsForAnyArgs(0.01m);
+            genotypeLikelihoodService.CalculateLikelihoodForDiplotype(default, default, default).ReturnsForAnyArgs(0.01m);
 
             genotypeConverter.ConvertGenotypes(default, default, default, default).ReturnsForAnyArgs(
                 new List<GenotypeAtDesiredResolutions>()
