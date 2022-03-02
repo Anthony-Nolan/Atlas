@@ -160,29 +160,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             if (donorGenotypes.IsNullOrEmpty() || patientGenotypes.IsNullOrEmpty())
             {
-                if (donorGenotypes.IsNullOrEmpty())
-                {
-                    logger.SendTrace($"{LoggingPrefix}Donor genotype unrepresented.", LogLevel.Verbose);
-                }
-
-                if (patientGenotypes.IsNullOrEmpty())
-                {
-                    logger.SendTrace($"{LoggingPrefix}Patient genotype unrepresented.", LogLevel.Verbose);
-                }
-
+                LogUnrepresentedGenotypes(donorGenotypes, patientGenotypes);
                 return new MatchProbabilityResponse(null, allowedLoci)
                 {
                     IsDonorPhenotypeUnrepresented = donorGenotypes.IsNullOrEmpty(),
                     IsPatientPhenotypeUnrepresented = patientGenotypes.IsNullOrEmpty()
                 };
-            }
-
-            if (NumberOfPairsOfCartesianProduct(patientGenotypes, donorGenotypes) > 40_000_000)
-            {
-                logger.SendTrace(
-                    $"{LoggingPrefix} Calculating the MatchCounts of provided donor patient pairs is expected to take upwards of 1 minute." +
-                    $"[{donorGenotypes.Count * patientGenotypes.Count} pairs to calculate.]"
-                    , LogLevel.Warn);
             }
 
             var patientStringGenotypes = patientGenotypes.Select(g => g.ToHlaNames()).ToHashSet();
@@ -236,6 +219,19 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
                     return matchProbability;
                 }
+            }
+        }
+
+        private void LogUnrepresentedGenotypes(ISet<TypedGenotype> donorGenotypes, ISet<TypedGenotype> patientGenotypes)
+        {
+            if (donorGenotypes.IsNullOrEmpty())
+            {
+                logger.SendTrace($"{LoggingPrefix}Donor genotype unrepresented.", LogLevel.Verbose);
+            }
+
+            if (patientGenotypes.IsNullOrEmpty())
+            {
+                logger.SendTrace($"{LoggingPrefix}Patient genotype unrepresented.", LogLevel.Verbose);
             }
         }
 
@@ -344,12 +340,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         }
 
         private async Task<KeyValuePair<StringGenotype, decimal>> CalculateLikelihood(
-            StringGenotype genotype,
+            StringGenotype diplotype,
             HaplotypeFrequencySet frequencySet,
             ISet<Locus> allowedLoci)
         {
-            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotype, frequencySet, allowedLoci);
-            return new KeyValuePair<StringGenotype, decimal>(genotype, likelihood);
+            var likelihood = await genotypeLikelihoodService.CalculateLikelihoodForDiplotype(diplotype, frequencySet, allowedLoci);
+            return new KeyValuePair<StringGenotype, decimal>(diplotype, likelihood);
         }
     }
 }

@@ -58,7 +58,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<ISet<Locus>>())
                 .Returns(new ExpandedGenotype {Diplotypes = diplotypes});
 
-            await genotypeLikelihoodService.CalculateLikelihood(new PhenotypeInfo<string>(), new HaplotypeFrequencySet(), allLoci);
+            await genotypeLikelihoodService.CalculateLikelihoodForGenotype(new PhenotypeInfo<string>(), new HaplotypeFrequencySet(), allLoci);
 
             await frequencyService.ReceivedWithAnyArgs(2 * numberOfDiplotypes).GetFrequencyForHla(default, default, default);
         }
@@ -66,7 +66,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         [Test]
         public async Task CalculateLikelihood_LikelihoodCalculatorIsCalledOnce()
         {
-            await genotypeLikelihoodService.CalculateLikelihood(new PhenotypeInfo<string>(), new HaplotypeFrequencySet(), allLoci);
+            await genotypeLikelihoodService.CalculateLikelihoodForGenotype(new PhenotypeInfo<string>(), new HaplotypeFrequencySet(), allLoci);
 
             genotypeLikelihoodCalculator.Received(1).CalculateLikelihood(Arg.Any<ExpandedGenotype>());
         }

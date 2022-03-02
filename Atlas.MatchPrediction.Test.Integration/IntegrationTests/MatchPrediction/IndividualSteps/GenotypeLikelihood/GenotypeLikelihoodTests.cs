@@ -95,7 +95,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var genotypeInput = DefaultUnambiguousGGroupsBuilder.Build();
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotypeInput, haplotypeFrequencySet, allLoci);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihoodForGenotype(genotypeInput, haplotypeFrequencySet, allLoci);
 
             likelihoodResponse.Should().Be(1.1424m);
         }
@@ -111,7 +111,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDataAt(homozygousLocus, Alleles.UnambiguousAlleleDetails.GetPosition(homozygousLocus, LocusPosition.One).GGroup)
                 .Build();
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet, allLoci);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihoodForGenotype(genotype, haplotypeFrequencySet, allLoci);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
@@ -131,7 +131,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 genotype = genotype.SetPosition(homozygousLocus, LocusPosition.Two, genotype.GetPosition(homozygousLocus, LocusPosition.One));
             }
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet, allLoci);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihoodForGenotype(genotype, haplotypeFrequencySet, allLoci);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
@@ -144,7 +144,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             allowedLoci.Remove(missingLocus);
             var genotype = DefaultUnambiguousGGroupsBuilder.WithDataAt(missingLocus, (string) null).Build();
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet, allowedLoci);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihoodForGenotype(genotype, haplotypeFrequencySet, allowedLoci);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
@@ -158,7 +158,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var genotype = DefaultUnambiguousGGroupsBuilder.WithDataAt(unrepresentedLocus, "un-represented").Build();
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet, allLoci);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihoodForGenotype(genotype, haplotypeFrequencySet, allLoci);
 
             likelihoodResponse.Should().Be(0m);
         }
@@ -194,7 +194,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var genotype = DefaultUnambiguousGGroupsBuilder.Build();
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, newHaplotypeFrequencySet, allLoci);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihoodForGenotype(genotype, newHaplotypeFrequencySet, allLoci);
 
             likelihoodResponse.Should().Be(0.1488m);
         }
