@@ -94,10 +94,28 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
             var haplotypes = new Diplotype(diplotype);
             var excludedLoci = LocusSettings.MatchPredictionLoci.Except(allowedLoci).ToHashSet();
 
+            var isEveryLocusHomozygous = !GetHeterozygousLoci(diplotype, allowedLoci).Any();
+            var homozygosityCorrectionFactor = isEveryLocusHomozygous ? 1 : 2;
+            
             haplotypes.Item1.Frequency = await haplotypeFrequencyService.GetFrequencyForHla(frequencySet.Id, haplotypes.Item1.Hla, excludedLoci);
             haplotypes.Item2.Frequency = await haplotypeFrequencyService.GetFrequencyForHla(frequencySet.Id, haplotypes.Item2.Hla, excludedLoci);
 
-            return haplotypes.Item1.Frequency * haplotypes.Item2.Frequency;
+            return haplotypes.Item1.Frequency * haplotypes.Item2.Frequency * homozygosityCorrectionFactor;
+        }
+        
+        private static List<Locus> GetHeterozygousLoci(PhenotypeInfo<string> genotype, ISet<Locus> allowedLoci)
+        {
+            var heterozygousLoci = new List<Locus>();
+
+            genotype.EachLocus((locus, locusInfo) =>
+            {
+                if (locusInfo.Position1 != locusInfo.Position2 && allowedLoci.Contains(locus))
+                {
+                    heterozygousLoci.Add(locus);
+                }
+            });
+
+            return heterozygousLoci;
         }
     }
 }
