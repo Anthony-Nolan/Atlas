@@ -125,7 +125,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
         /// <param name="allowedLoci">List of loci that are being considered.</param>
         private static List<Tuple<LociInfo<HlaAtKnownTypingCategory>, LociInfo<HlaAtKnownTypingCategory>>> FilterDiplotypes(
             List<Tuple<LociInfo<HlaAtKnownTypingCategory>, LociInfo<HlaAtKnownTypingCategory>>> allowedDiplotypes,
-            DataByResolution<PhenotypeInfo<IReadOnlyCollection<string>>> groupsPerPosition,
+            DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition,
             ISet<Locus> allowedLoci)
         {
             bool IsRepresentedInTargetPhenotype(HlaAtKnownTypingCategory hla, Locus locus, LocusPosition position)
@@ -156,10 +156,10 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
             }).ToList();
         }
 
-        private static LociInfo<ISet<string>> CombineSetsAtLoci(PhenotypeInfo<IReadOnlyCollection<string>> phenotypeInfo)
+        private static LociInfo<ISet<string>> CombineSetsAtLoci(PhenotypeInfo<ISet<string>> phenotypeInfo)
         {
             return phenotypeInfo.ToLociInfo((_, values1, values2)
-                => values1 != null && values2 != null ? (ISet<string>)new HashSet<string>(values1.Concat(values2)) : null
+                => values1 != null && values2 != null ? (ISet<string>) new HashSet<string>(values1.Concat(values2)) : null
             );
         }
     }

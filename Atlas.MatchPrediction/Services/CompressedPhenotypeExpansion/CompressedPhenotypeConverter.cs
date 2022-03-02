@@ -7,6 +7,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.ApplicationInsights;
+using MoreLinq.Extensions;
 
 namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
 {
@@ -20,7 +21,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
         /// Provided `null`s will be preserved.
         /// An empty list will be returned where HLA cannot be converted, e.g., an allele could not be found in the HMD due to being renamed in a later HLA version.
         /// </returns>
-        Task<PhenotypeInfo<IReadOnlyCollection<string>>> ConvertPhenotype(
+        Task<PhenotypeInfo<ISet<string>>> ConvertPhenotype(
             IHlaMetadataDictionary hlaMetadataDictionary,
             PhenotypeInfo<string> compressedPhenotype,
             TargetHlaCategory targetHlaCategory,
@@ -40,7 +41,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
         }
         
         /// <inheritdoc />
-        public async Task<PhenotypeInfo<IReadOnlyCollection<string>>> ConvertPhenotype(
+        public async Task<PhenotypeInfo<ISet<string>>> ConvertPhenotype(
             IHlaMetadataDictionary hlaMetadataDictionary,
             PhenotypeInfo<string> compressedPhenotype,
             TargetHlaCategory targetHlaCategory,
@@ -55,7 +56,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
 
                 try
                 {
-                    return await hlaMetadataDictionary.ConvertHla(locus, hla, targetHlaCategory);
+                    return (ISet<string>) (await hlaMetadataDictionary.ConvertHla(locus, hla, targetHlaCategory)).ToHashSet();
                 }
                 // All HMD exceptions are being caught and suppressed here, under the assumption that the subject's HLA has already been
                 // validated by the matching algorithm component, and the only reason the typing is missing
@@ -75,7 +76,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
 
                     //TODO issue #637 - re-attempt HLA conversion using other approaches
 
-                    return new List<string>();
+                    return new HashSet<string>();
                 }
             });
         }
