@@ -333,8 +333,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         {
             using (logger.RunTimed($"{LoggingPrefix}Calculate likelihoods for genotypes", LogLevel.Verbose))
             {
-                var genotypeLikelihoodTasks = genotypes.Select(genotype => CalculateLikelihood(genotype, frequencySet, allowedLoci)).ToList();
-                var genotypeLikelihoods = await Task.WhenAll(genotypeLikelihoodTasks);
+                var genotypeLikelihoods = new List<KeyValuePair<StringGenotype, decimal>>();
+
+                foreach (var genotype in genotypes)
+                {
+                    genotypeLikelihoods.Add(await CalculateLikelihood(genotype, frequencySet, allowedLoci));
+                }
                 return genotypeLikelihoods.ToDictionary();
             }
         }
