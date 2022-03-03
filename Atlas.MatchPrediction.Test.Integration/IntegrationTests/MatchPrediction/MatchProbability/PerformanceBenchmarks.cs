@@ -75,7 +75,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ShouldHavePercentages(73,23,3);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(74,23,2);
         }
 
         [Test]
@@ -121,6 +121,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
+        [IgnoreExceptOnCiPerfTest("Takes around 7 seconds")]
         public async Task MatchPrediction__WithDonor_AndPatient_FullyTypedAtXXCodeResolution__CalculatesProbabilityCorrectly()
         {
             var xxTypedHla = new PhenotypeInfoBuilder<string>()
@@ -142,7 +143,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        [IgnoreExceptOnCiPerfTest("Takes around 10 seconds")]
+        [IgnoreExceptOnCiPerfTest("Takes around 30 seconds")]
         public async Task MatchPrediction__WithDonor_AndPatient_FullyTypedAtXXCodeResolution_DifficultHla_1__CalculatesProbabilityCorrectly()
         {
             var xxTypedHla = new PhenotypeInfoBuilder<string>()
@@ -161,11 +162,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ShouldHavePercentages(2,6,12);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(2,5,11);
         }
 
         [Test]
-        [IgnoreExceptOnCiPerfTest("Takes around 30 seconds")]
+        [IgnoreExceptOnCiPerfTest("Takes around 45 seconds")]
         public async Task MatchPrediction__WithDonor_AndPatient_FullyTypedAtXXCodeResolution_DifficultHla_2__CalculatesProbabilityCorrectly()
         {
             var xxTypedHla = new PhenotypeInfoBuilder<string>()
@@ -184,14 +185,14 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ShouldHavePercentages(3,7,15);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(3,7,14);
         }
 
         /// <summary>
         /// Calculated by using XX codes for 2x most common first fields among required loci, as of 03/03/22 
         /// </summary>
         [Test]
-        [IgnoreExceptOnCiPerfTest("Takes around 30 seconds")]
+        [IgnoreExceptOnCiPerfTest("Takes around 40 seconds")]
         public async Task MatchPrediction__WithDonor_AndPatient_FullyTypedAtXXCodeResolution_DifficultHla_3__CalculatesProbabilityCorrectly()
         {
             var xxTypedHla = new PhenotypeInfoBuilder<string>()
@@ -210,7 +211,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ShouldHavePercentages(3,7,15);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(1,4,13);
         }
 
         /// <summary>
@@ -218,7 +219,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         /// Ends up expanding to significantly less options than heterozygous cases, so this isn't all that bad as worst cases go.
         /// </summary>
         [Test]
-        [IgnoreExceptOnCiPerfTest("Takes around 30 seconds")]
+        [IgnoreExceptOnCiPerfTest("Takes around 13 seconds")]
         public async Task MatchPrediction__WithDonor_AndPatient_FullyTypedAtXXCodeResolution_DifficultHla_4__CalculatesProbabilityCorrectly()
         {
             var xxTypedHla = new PhenotypeInfoBuilder<string>()
@@ -237,7 +238,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ShouldHavePercentages(3,7,15);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(0,2,10);
         }
 
         [Test]
@@ -261,7 +262,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         
         [Test]
         // During testing in a WMDA sized test dataset in Feb-22, this was the slowest logged patient/donor pair calculation 
-        // [IgnoreExceptOnCiPerfTest("DNF - expected to take > 30 min")]
+        [IgnoreExceptOnCiPerfTest("Takes around 10 seconds")]
         public async Task MatchPrediction__SlowestObservedWMDACase()
         {
             var matchProbabilityInput = InputBuilder
@@ -291,7 +292,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ShouldHavePercentages(1,5,10);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(1,4,8);
         }
 
         [Test]

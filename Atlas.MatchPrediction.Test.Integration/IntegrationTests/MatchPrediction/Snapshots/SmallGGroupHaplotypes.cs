@@ -19,7 +19,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ShouldHavePercentages(16, 32, 38);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(13, 30, 39);
         }
     }
 }

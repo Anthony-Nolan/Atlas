@@ -8,9 +8,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 {
     internal partial class SnapshotTests
     {
-        [TestCase(new[] {Locus.C}, 14, 29, 36)]
-        [TestCase(new[] {Locus.Dqb1}, 21, 30, 41)]
-        [TestCase(new[] {Locus.C, Locus.Dqb1}, 14, 25, 38)]
+        [TestCase(new[] {Locus.C}, 10, 22, 34)]
+        [TestCase(new[] {Locus.Dqb1}, 16, 26, 40)]
+        [TestCase(new[] {Locus.C, Locus.Dqb1}, 10, 20, 33)]
         public async Task MatchPrediction_WithExcludedLoci(
             Locus[] excludedLoci,
             int? expected0Mm,
