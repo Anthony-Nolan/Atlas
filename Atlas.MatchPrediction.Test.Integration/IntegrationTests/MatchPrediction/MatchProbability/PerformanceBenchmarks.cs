@@ -142,7 +142,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        [IgnoreExceptOnCiPerfTest("DNF - expected to take > 30 min")]
+        [IgnoreExceptOnCiPerfTest("Takes around 10 seconds")]
         public async Task MatchPrediction__WithDonor_AndPatient_FullyTypedAtXXCodeResolution_DifficultHla_1__CalculatesProbabilityCorrectly()
         {
             var xxTypedHla = new PhenotypeInfoBuilder<string>()
@@ -161,11 +161,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ShouldHavePercentages(97,3,0);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(2,6,12);
         }
 
         [Test]
-        [IgnoreExceptOnCiPerfTest("DNF - expected to take > 30 min")]
+        [IgnoreExceptOnCiPerfTest("Takes around 30 seconds")]
         public async Task MatchPrediction__WithDonor_AndPatient_FullyTypedAtXXCodeResolution_DifficultHla_2__CalculatesProbabilityCorrectly()
         {
             var xxTypedHla = new PhenotypeInfoBuilder<string>()
@@ -184,7 +184,60 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ShouldHavePercentages(97,3,0);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(3,7,15);
+        }
+
+        /// <summary>
+        /// Calculated by using XX codes for 2x most common first fields among required loci, as of 03/03/22 
+        /// </summary>
+        [Test]
+        [IgnoreExceptOnCiPerfTest("Takes around 30 seconds")]
+        public async Task MatchPrediction__WithDonor_AndPatient_FullyTypedAtXXCodeResolution_DifficultHla_3__CalculatesProbabilityCorrectly()
+        {
+            var xxTypedHla = new PhenotypeInfoBuilder<string>()
+                .WithDataAt(Locus.A, LocusPosition.One, "02:XX")
+                .WithDataAt(Locus.A, LocusPosition.Two, "24:XX")
+                .WithDataAt(Locus.B, LocusPosition.One, "15:XX")
+                .WithDataAt(Locus.B, LocusPosition.Two, "35:XX")
+                .WithDataAt(Locus.Drb1, LocusPosition.One, "04:XX")
+                .WithDataAt(Locus.Drb1, LocusPosition.Two, "13:XX")
+                .Build();
+
+            var matchProbabilityInput = InputBuilder
+                .WithDonorHla(xxTypedHla)
+                .WithPatientHla(xxTypedHla)
+                .Build();
+
+            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+
+            matchDetails.MatchProbabilities.ShouldHavePercentages(3,7,15);
+        }
+
+        /// <summary>
+        /// Homozygous cases of most common first field among required loci, as of 03/03/22
+        /// Ends up expanding to significantly less options than heterozygous cases, so this isn't all that bad as worst cases go.
+        /// </summary>
+        [Test]
+        [IgnoreExceptOnCiPerfTest("Takes around 30 seconds")]
+        public async Task MatchPrediction__WithDonor_AndPatient_FullyTypedAtXXCodeResolution_DifficultHla_4__CalculatesProbabilityCorrectly()
+        {
+            var xxTypedHla = new PhenotypeInfoBuilder<string>()
+                .WithDataAt(Locus.A, LocusPosition.One, "02:XX")
+                .WithDataAt(Locus.A, LocusPosition.Two, "02:XX")
+                .WithDataAt(Locus.B, LocusPosition.One, "35:XX")
+                .WithDataAt(Locus.B, LocusPosition.Two, "35:XX")
+                .WithDataAt(Locus.Drb1, LocusPosition.One, "04:XX")
+                .WithDataAt(Locus.Drb1, LocusPosition.Two, "04:XX")
+                .Build();
+
+            var matchProbabilityInput = InputBuilder
+                .WithDonorHla(xxTypedHla)
+                .WithPatientHla(xxTypedHla)
+                .Build();
+
+            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+
+            matchDetails.MatchProbabilities.ShouldHavePercentages(3,7,15);
         }
 
         [Test]
@@ -205,9 +258,43 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             matchDetails.MatchProbabilities.ShouldHavePercentages(96,4,0);
         }
+        
+        [Test]
+        // During testing in a WMDA sized test dataset in Feb-22, this was the slowest logged patient/donor pair calculation 
+        // [IgnoreExceptOnCiPerfTest("DNF - expected to take > 30 min")]
+        public async Task MatchPrediction__SlowestObservedWMDACase()
+        {
+            var matchProbabilityInput = InputBuilder
+                .WithDonorHla(new PhenotypeInfoBuilder<string>()
+                    .WithDataAt(Locus.A, LocusPosition.One, "02:XX")
+                    .WithDataAt(Locus.A, LocusPosition.Two, "11:XX")
+                    .WithDataAt(Locus.B, LocusPosition.One, "35:XX")
+                    .WithDataAt(Locus.B, LocusPosition.Two, "40:XX")
+                    .WithDataAt(Locus.Drb1, LocusPosition.One, "11:XX")
+                    .WithDataAt(Locus.Drb1, LocusPosition.Two, "15:XX")
+                    .Build())
+                .WithPatientHla(new PhenotypeInfoBuilder<string>()
+                    .WithDataAt(Locus.A, LocusPosition.One, "02:XX")
+                    .WithDataAt(Locus.A, LocusPosition.Two, "11:XX")
+                    .WithDataAt(Locus.B, LocusPosition.One, "35:XX")
+                    .WithDataAt(Locus.B, LocusPosition.Two, "40:XX")
+                    .WithDataAt(Locus.C, LocusPosition.One, "04:XX")
+                    .WithDataAt(Locus.C, LocusPosition.Two, "15:XX")
+                    .WithDataAt(Locus.Dpb1, LocusPosition.One, "04:01")
+                    .WithDataAt(Locus.Dpb1, LocusPosition.Two, "04:01")
+                    .WithDataAt(Locus.Dqb1, LocusPosition.One, "03:XX")
+                    .WithDataAt(Locus.Dqb1, LocusPosition.Two, "06:XX")
+                    .WithDataAt(Locus.Drb1, LocusPosition.One, "11:XX")
+                    .WithDataAt(Locus.Drb1, LocusPosition.Two, "15:XX")
+                    .Build())
+                .Build();
+
+            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+
+            matchDetails.MatchProbabilities.ShouldHavePercentages(1,5,10);
+        }
 
         [Test]
-        [IgnoreExceptOnCiPerfTest("Runs in ~9s")]
         public async Task
             MatchPrediction__WithDonor_TypedAtXXCodeResolution_AtRequiredLociOnly_AndPatient_UnambiguouslyTyped_AtRequiredLociOnly__CalculatesProbabilityCorrectly()
         {
@@ -228,7 +315,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ShouldHavePercentages(93,6,0);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(93,7,0);
         }
 
         private static async Task ImportHaplotypeFrequencies()
