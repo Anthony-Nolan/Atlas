@@ -31,21 +31,21 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         private static object[] metadataTestCases =
         {
-            new object[] {Registry1, null, null, null, 22, 38, 33},
+            new object[] { Registry1, null, null, null, 16, 30, 39 },
             // TODO: ATLAS-829: Use different enough HF sets that these results actually differ
-            new object[] {Registry2, null, null, null, 22, 38, 33},
-            new object[] {Registry2, Ethnicity1, null, null, 22, 38, 33},
-            new object[] {Registry2, Ethnicity2, null, null, 14, 30, 38},
+            new object[] { Registry2, null, null, null, 16, 30, 39 },
+            new object[] { Registry2, Ethnicity1, null, null, 16, 30, 39 },
+            new object[] { Registry2, Ethnicity2, null, null, 11, 27, 39 },
 
-            new object[] {null, null, Registry1, null, 22, 38, 33},
-            new object[] {null, null, Registry2, null, 22, 38, 33},
-            new object[] {null, null, Registry2, Ethnicity1, 22, 38, 33},
-            new object[] {null, null, Registry2, Ethnicity2, 14, 30, 38},
+            new object[] { null, null, Registry1, null, 16, 30, 39 },
+            new object[] { null, null, Registry2, null, 16, 30, 39 },
+            new object[] { null, null, Registry2, Ethnicity1, 16, 30, 39 },
+            new object[] { null, null, Registry2, Ethnicity2, 11, 27, 39 },
 
-            new object[] {Registry1, null, Registry1, null, 22, 38, 33},
-            new object[] {Registry2, null, Registry2, null, 22, 38, 33},
-            new object[] {Registry2, Ethnicity1, Registry2, Ethnicity1, 22, 38, 33},
-            new object[] {Registry2, Ethnicity2, Registry2, Ethnicity2, 11, 27, 38},
+            new object[] { Registry1, null, Registry1, null, 16, 30, 39 },
+            new object[] { Registry2, null, Registry2, null, 16, 30, 39 },
+            new object[] { Registry2, Ethnicity1, Registry2, Ethnicity1, 16, 30, 39 },
+            new object[] { Registry2, Ethnicity2, Registry2, Ethnicity2, 10, 26, 38 },
         };
     }
 }

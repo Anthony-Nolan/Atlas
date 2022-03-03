@@ -75,7 +75,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(DefaultInputBuilder.Build());
 
-            matchDetails.MatchProbabilities.ShouldHavePercentages(22, 38, 33);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(16, 30, 39);
         }
 
         private static async Task ImportHaplotypeFrequencies()
