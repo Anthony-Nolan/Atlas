@@ -69,7 +69,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 ServiceConfiguration.MockDonorReader.GetDonors(Arg.Is<IEnumerable<int>>(ids =>
                         ids.ToHashSet().SetEquals(new HashSet<int> { donorAtRegistryA.DonorId, donorAtRegistryB.DonorId })
                     ))
-                    .ReturnsForAnyArgs(new Dictionary<int, Donor>
+                    .Returns(new Dictionary<int, Donor>
                     {
                         {
                             donorAtRegistryA.DonorId,
