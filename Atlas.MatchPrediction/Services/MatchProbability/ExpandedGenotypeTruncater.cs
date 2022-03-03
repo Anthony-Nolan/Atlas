@@ -35,7 +35,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         ///     It would also allow us to have more faith in the accuracy of the results - as we'd confirm that we're only ever discarding statistically insignificant values
         ///     However this would come at a cost of not being able to guarantee the necessary performance of the match prediction algorithm. 
         /// </summary>
-        private const int MaximumExpandedGenotypesPerInput = 1000;
+        private const int MaximumExpandedGenotypesPerInput = 2000;
 
         public static TruncatedGenotypeSet TruncateGenotypes(
             Dictionary<PhenotypeInfo<string>, decimal> likelihoods,
