@@ -253,7 +253,7 @@ variable "MATCHING_USERNAME_FOR_DONOR_IMPORT_DATABASE" {
 
 variable "MAX_CONCURRENT_ACTIVITY_FUNCTIONS" {
   type = number
-  default = 10
+  default = 1
   description = "Maximum number of concurrent activity functions in the top level Atlas functions app. Notably affects match prediction concurrency per-instance."
 }
 
