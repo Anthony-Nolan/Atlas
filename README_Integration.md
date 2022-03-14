@@ -8,7 +8,7 @@ For a deployment guide, see [the relevant README](README_Deployment.md).
 > By default, two keys will exist per function - one named `master`, which has admin access to function endpoints, and one called `default` which just has functions
 > access.
 >
-> For systems/developers, either teh default key can be used, or specific ones can be generated manually.
+> For systems/developers, either the default key can be used, or specific ones can be generated manually.
 > 
 > To authenticate an HTTP request, set the appropriate function key as either a query param or header, as described in the [Azure documentation](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook-trigger?tabs=csharp)
 > (query param = `code`, header = `x-functions-key`)

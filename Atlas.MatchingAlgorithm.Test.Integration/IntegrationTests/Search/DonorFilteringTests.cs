@@ -32,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 
 
         // A selection of valid hla data for the single donor to have
-        private readonly PhenotypeInfo<string> donorHlas = new(
+        private readonly PhenotypeInfo<string> donorHlas = new PhenotypeInfo<string>(
             valueA: new LocusInfo<string>("01:02", "01:02"),
             valueB: new LocusInfo<string>("14:53", "14:47"),
             valueDrb1: new LocusInfo<string>("13:03:01", "13:02:01:03"),
