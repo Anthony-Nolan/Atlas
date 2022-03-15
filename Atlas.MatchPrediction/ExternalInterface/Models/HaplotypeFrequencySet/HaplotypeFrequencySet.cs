@@ -8,5 +8,17 @@
         public string HlaNomenclatureVersion { get; set; }
         public string Name { get; set; }
         public int PopulationId { get; set; }
+
+        internal Client.Models.Search.Results.MatchPrediction.HaplotypeFrequencySet ToClientHaplotypeFrequencySet()
+        {
+            return new Client.Models.Search.Results.MatchPrediction.HaplotypeFrequencySet
+            {
+                Id = Id,
+                RegistryCode = RegistryCode,
+                EthnicityCode = EthnicityCode,
+                HlaNomenclatureVersion = HlaNomenclatureVersion,
+                PopulationId = PopulationId
+            };
+        }
     }
 }

@@ -164,7 +164,9 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 return new MatchProbabilityResponse(null, allowedLoci)
                 {
                     IsDonorPhenotypeUnrepresented = donorGenotypes.IsNullOrEmpty(),
-                    IsPatientPhenotypeUnrepresented = patientGenotypes.IsNullOrEmpty()
+                    IsPatientPhenotypeUnrepresented = patientGenotypes.IsNullOrEmpty(),
+                    DonorHaplotypeFrequencySet = frequencySets.DonorSet.ToClientHaplotypeFrequencySet(),
+                    PatientHaplotypeFrequencySet = frequencySets.PatientSet.ToClientHaplotypeFrequencySet()
                 };
             }
 
@@ -200,22 +202,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                         allowedLoci
                     );
 
-                    matchProbability.DonorHaplotypeFrequencySet = new Client.Models.Search.Results.MatchPrediction.HaplotypeFrequencySet
-                    {
-                        Id = frequencySets.DonorSet.Id,
-                        RegistryCode = frequencySets.DonorSet.RegistryCode,
-                        EthnicityCode = frequencySets.DonorSet.EthnicityCode,
-                        HlaNomenclatureVersion = frequencySets.DonorSet.HlaNomenclatureVersion,
-                        PopulationId = frequencySets.DonorSet.PopulationId
-                    };
-                    matchProbability.PatientHaplotypeFrequencySet = new Client.Models.Search.Results.MatchPrediction.HaplotypeFrequencySet
-                    {
-                        Id = frequencySets.PatientSet.Id,
-                        RegistryCode = frequencySets.PatientSet.RegistryCode,
-                        EthnicityCode = frequencySets.PatientSet.EthnicityCode,
-                        HlaNomenclatureVersion = frequencySets.PatientSet.HlaNomenclatureVersion,
-                        PopulationId = frequencySets.PatientSet.PopulationId
-                    };
+                    matchProbability.DonorHaplotypeFrequencySet = frequencySets.DonorSet.ToClientHaplotypeFrequencySet();
+                    matchProbability.PatientHaplotypeFrequencySet = frequencySets.PatientSet.ToClientHaplotypeFrequencySet();
 
                     return matchProbability;
                 }
