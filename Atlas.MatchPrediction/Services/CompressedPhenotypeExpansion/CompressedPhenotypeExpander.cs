@@ -85,6 +85,21 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
 
             var groupsPerLocus = groupsPerPosition.Map(CombineSetsAtLoci);
 
+            var isUnambiguousAtSelectedLoci = allowedLoci.All(l =>
+            {
+                var groupsAtLocus = groupsPerPosition.SmallGGroup.GetLocus(l);
+                return groupsAtLocus.Position1?.Count == 1 && groupsAtLocus.Position2?.Count == 1;
+            });
+            
+            if (isUnambiguousAtSelectedLoci)
+            {
+                return new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>>
+                {
+                    groupsPerPosition.SmallGGroup.Map((_, __, v) =>
+                        v == null ? null : new HlaAtKnownTypingCategory(v.Single(), HaplotypeTypingCategory.SmallGGroup))
+                };
+            }
+
             var allowedHaplotypes = GetAllowedHaplotypes(allowedLoci, input.AllHaplotypes, groupsPerLocus);
 
             var allowedHaplotypesExcludingLoci = new HashSet<LociInfo<HlaAtKnownTypingCategory>>(allowedHaplotypes.Select(h =>
