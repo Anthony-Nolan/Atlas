@@ -21,6 +21,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 {
     public class MatchProbabilityTestsBase
     {
+        protected readonly FrequencySetMetadata GlobalHfSetMetadata = new FrequencySetMetadata { EthnicityCode = null, RegistryCode = null };
+
         protected IMatchProbabilityService MatchProbabilityService;
         protected IHaplotypeFrequencyService ImportService;
 
@@ -46,8 +48,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             string nomenclatureVersion = HlaNomenclatureVersion,
             ImportTypingCategory typingCategory = ImportTypingCategory.LargeGGroup)
         {
-            var registry = registryCode == null ? null : new[] {registryCode};
-            var ethnicity = ethnicityCode == null ? null : new[] {ethnicityCode};
+            var registry = registryCode == null ? null : new[] { registryCode };
+            var ethnicity = ethnicityCode == null ? null : new[] { ethnicityCode };
 
             using var file = FrequencySetFileBuilder
                 .New(haplotypes, registry, ethnicity, nomenclatureVersion: nomenclatureVersion, typingCategory: typingCategory)
@@ -76,7 +78,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected static Builder<SingleDonorMatchProbabilityInput> DefaultInputBuilder => SingleDonorMatchProbabilityInputBuilder.Default
             .WithPatientHla(DefaultUnambiguousAllelesBuilder.Build())
             .WithDonorHla(DefaultUnambiguousAllelesBuilder.Build())
-            .WithDonorMetadata(new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode})
-            .WithPatientMetadata(new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode});
+            .WithDonorMetadata(new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode })
+            .WithPatientMetadata(new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode });
     }
 }
