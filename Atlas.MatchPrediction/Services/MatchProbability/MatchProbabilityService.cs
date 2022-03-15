@@ -335,10 +335,19 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             {
                 var genotypeLikelihoods = new List<KeyValuePair<StringGenotype, decimal>>();
 
-                foreach (var genotype in genotypes)
+                // If there is no ambiguity for an input genotype, we do not need to use haplotype frequencies to work out the likelihood of said genotype - it is already guaranteed! 
+                if (genotypes.Count == 1)
                 {
-                    genotypeLikelihoods.Add(await CalculateLikelihood(genotype, frequencySet, allowedLoci));
+                    genotypeLikelihoods.Add(new KeyValuePair<StringGenotype, decimal>(genotypes.Single(), 1));
                 }
+                else
+                {
+                    foreach (var genotype in genotypes)
+                    {
+                        genotypeLikelihoods.Add(await CalculateLikelihood(genotype, frequencySet, allowedLoci));
+                    }
+                }
+
                 return genotypeLikelihoods.ToDictionary();
             }
         }

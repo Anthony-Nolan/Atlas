@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Models;
 using Atlas.MatchPrediction.Data.Models;
@@ -11,12 +12,18 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 {
     public class UnrepresentedLociTests : MatchProbabilityTestsBase
     {
+        // the default "ambiguous alleles builder" is not actually ambiguous with respect to g-groups
+        // - to show up as unrepresented, there must be some ambiguity at the g-group level in the input genotype
+        private PhenotypeInfo<string> ambiguousGenotype = DefaultAmbiguousAllelesBuilder
+            .WithDataAt(Locus.A, LocusPosition.One, "01:XX")
+            .Build();
+
         [Test]
         public async Task CalculateMatchProbability_WhenUnrepresentedPatientAndDonor_ReturnsNullProbabilityAndPatientAndDonorUnrepresentedFlagsTrue()
         {
             var matchProbabilityInput = DefaultInputBuilder
-                .WithDonorHla(DefaultAmbiguousAllelesBuilder.Build())
-                .WithPatientHla(DefaultAmbiguousAllelesBuilder.Build())
+                .WithDonorHla(ambiguousGenotype)
+                .WithPatientHla(ambiguousGenotype)
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
@@ -27,7 +34,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes, null, null);
 
-            var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>((Probability) null);
+            var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>((Probability)null);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
             var roundedMatchDetails = matchDetails.Round(4);
@@ -45,7 +52,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [Test]
         public async Task CalculateMatchProbability_WhenUnrepresentedPatient_ReturnsNullProbabilityAndPatientUnrepresentedFlagTrue()
         {
-            var matchProbabilityInput = DefaultInputBuilder.WithPatientHla(DefaultAmbiguousAllelesBuilder.Build()).Build();
+            var matchProbabilityInput = DefaultInputBuilder.WithPatientHla(ambiguousGenotype).Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
             {
@@ -55,7 +62,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes, null, null);
 
-            var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>((Probability) null);
+            var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>((Probability)null);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
             var roundedMatchDetails = matchDetails.Round(4);
@@ -73,7 +80,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [Test]
         public async Task CalculateMatchProbability_WhenUnrepresentedDonor_ReturnsNullProbabilityAndDonorUnrepresentedFlagTrue()
         {
-            var matchProbabilityInput = DefaultInputBuilder.WithDonorHla(DefaultAmbiguousAllelesBuilder.Build()).Build();
+            var matchProbabilityInput = DefaultInputBuilder.WithDonorHla(ambiguousGenotype).Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
             {
@@ -83,7 +90,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes, null, null);
 
-            var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>((Probability) null);
+            var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>((Probability)null);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
             var roundedMatchDetails = matchDetails.Round(4);

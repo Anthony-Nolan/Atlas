@@ -47,7 +47,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        public async Task CalculateMatchProbability_WhenIdenticalGenotypes_UnrepresentedInFrequencySet_ReturnsZeroPercent()
+        public async Task CalculateMatchProbability_WhenIdenticalUnambiguousGenotypes_UnrepresentedInFrequencySet_ReturnsOneHundredPercent()
         {
             var matchProbabilityInput = DefaultInputBuilder.Build();
 
@@ -55,19 +55,21 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             {
                 DefaultHaplotypeFrequency1.WithDataAt(Locus.A, "68:24").With(h => h.Frequency, 0.00001m).Build()
             });
-
-            var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>((Probability) null);
+            
+            var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>(1).SetLocus(Locus.Dpb1, null);
+            var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
+            var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ZeroMismatchProbability.Should().Be(null);
-            matchDetails.MatchProbabilities.OneMismatchProbability.Should().Be(null);
-            matchDetails.MatchProbabilities.TwoMismatchProbability.Should().Be(null);
-            matchDetails.ZeroMismatchProbabilityPerLocus.Should().Be(expectedMismatchProbabilityPerLocus);
-            matchDetails.OneMismatchProbabilityPerLocus.Should().Be(expectedMismatchProbabilityPerLocus);
-            matchDetails.TwoMismatchProbabilityPerLocus.Should().Be(expectedMismatchProbabilityPerLocus);
+            matchDetails.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(1m);
+            matchDetails.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0m);
+            matchDetails.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0m);
+            matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
+            matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
+            matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
         }
-
+        
         [Test]
         public async Task CalculateMatchProbability_WhenIdenticalGenotypes_RepresentedInFrequencySet_ReturnsOneHundredPercent()
         {
