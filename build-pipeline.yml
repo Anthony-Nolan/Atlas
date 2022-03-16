@@ -14,7 +14,7 @@ jobs:
       - task: UseDotNet@2
         inputs:
           packageType: 'sdk'
-          version: '3.1.x'
+          version: '6.0.x'
       - task: DotNetCoreCLI@2
         displayName: Install dotnet-ef
         inputs:
