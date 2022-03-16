@@ -498,5 +498,25 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
             var aggregate = resultAggregator.AggregateScoreDetails(parameters);
             aggregate.MatchCategory.Should().Be(expectedMatchCategory);
         }
+
+        [Test]
+        public void AggregateScoreDetails_MatchCategory_WithMismatchAtNonDpb1Locus_AndPermissiveMismatchAtDpb1_AssignsMismatchOverall()
+        {
+            var scoreResult = new ScoreResultBuilder()
+                .WithMatchConfidenceAtAllLoci(MatchConfidence.Definite)
+                .WithMatchCategoryAtAllLoci(LocusMatchCategory.Match)
+                .WithMatchConfidenceAtLocus(Locus.Dpb1, MatchConfidence.Mismatch)
+                .WithMatchCategoryAtLocus(Locus.Dpb1, LocusMatchCategory.PermissiveMismatch)
+                .WithMatchConfidenceAtLocus(Locus.A, MatchConfidence.Mismatch)
+                .WithMatchCategoryAtLocus(Locus.A, LocusMatchCategory.Mismatch)
+                .Build();
+
+            var parameters = ScoreResultAggregatorParametersBuilder.New
+                .With(x => x.ScoreResult, scoreResult)
+                .Build();
+
+            var aggregate = resultAggregator.AggregateScoreDetails(parameters);
+            aggregate.MatchCategory.Should().Be(MatchCategory.Mismatch);
+        }
     }
 }

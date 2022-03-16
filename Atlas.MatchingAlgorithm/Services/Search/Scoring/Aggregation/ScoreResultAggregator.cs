@@ -33,13 +33,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
         public AggregateScoreDetails AggregateScoreDetails(ScoreResultAggregatorParameters parameters)
         {
             var locusScoreDetails = NonExcludedLocusScoreDetails(parameters).ToList();
-            var dpb1ScoreDetails = parameters.ScoreResult?.ScoreDetailsAtLocusDpb1;
+            var nonDpb1ScoreDetails = NonExcludedLocusScoreDetailsWithoutDpb1(parameters).ToList();
+            var dpb1ScoreDetails = parameters.LociToExclude.Contains(Locus.Dpb1) ? null : parameters.ScoreResult?.ScoreDetailsAtLocusDpb1;
 
             return new AggregateScoreDetails
             {
                 ConfidenceScore = AggregateConfidenceScore(locusScoreDetails),
                 GradeScore = AggregateGradeScore(locusScoreDetails),
-                MatchCategory = CategoriseMatch(locusScoreDetails, dpb1ScoreDetails),
+                MatchCategory = CategoriseMatch(nonDpb1ScoreDetails, dpb1ScoreDetails),
                 MatchCount = CountMatches(locusScoreDetails),
                 OverallMatchConfidence = AggregateMatchConfidence(locusScoreDetails),
                 PotentialMatchCount = CountPotentialMatches(locusScoreDetails),
@@ -57,16 +58,17 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
             return locusScoreResults.Sum(s => s.MatchGradeScore);
         }
 
-        private static MatchCategory CategoriseMatch(IEnumerable<LocusScoreDetails> locusScoreResults, LocusScoreDetails dpb1ScoreDetails)
+        private static MatchCategory CategoriseMatch(IList<LocusScoreDetails> nonDpb1ScoreResults, LocusScoreDetails dpb1ScoreDetails)
         {
+            var locusScoreResults = nonDpb1ScoreResults.Concat(new[] { dpb1ScoreDetails }).Where(x => x != null);
             var overallMatchConfidence = AggregateMatchConfidence(locusScoreResults);
+
+            var onlyMismatchIsPermissive = nonDpb1ScoreResults.All(r => r.MatchCategory == LocusMatchCategory.Match) &&
+                                           dpb1ScoreDetails?.MatchCategory == LocusMatchCategory.PermissiveMismatch;
 
             return overallMatchConfidence switch
             {
-                MatchConfidence.Mismatch =>
-                    dpb1ScoreDetails?.MatchCategory == LocusMatchCategory.PermissiveMismatch
-                        ? MatchCategory.PermissiveMismatch
-                        : MatchCategory.Mismatch,
+                MatchConfidence.Mismatch => onlyMismatchIsPermissive ? MatchCategory.PermissiveMismatch : MatchCategory.Mismatch,
                 MatchConfidence.Potential => MatchCategory.Potential,
                 MatchConfidence.Exact => MatchCategory.Exact,
                 MatchConfidence.Definite => MatchCategory.Definite,
@@ -82,7 +84,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
         private static MatchConfidence AggregateMatchConfidence(IEnumerable<LocusScoreDetails> locusScoreResults)
         {
             return locusScoreResults
-                .SelectMany(d => new List<MatchConfidence> {d.ScoreDetailsAtPosition1.MatchConfidence, d.ScoreDetailsAtPosition2.MatchConfidence})
+                .SelectMany(d => new List<MatchConfidence> { d.ScoreDetailsAtPosition1.MatchConfidence, d.ScoreDetailsAtPosition2.MatchConfidence })
                 .Min();
         }
 
@@ -99,6 +101,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
         private static IEnumerable<LocusScoreDetails> NonExcludedLocusScoreDetails(ScoreResultAggregatorParameters parameters)
         {
             var includedLoci = parameters.ScoredLoci.Except(parameters.LociToExclude);
+            return includedLoci.Select(parameters.ScoreResult.ScoreDetailsForLocus);
+        }
+
+        private static IEnumerable<LocusScoreDetails> NonExcludedLocusScoreDetailsWithoutDpb1(ScoreResultAggregatorParameters parameters)
+        {
+            var includedLoci = parameters.ScoredLoci.Except(parameters.LociToExclude).Except(new[] { Locus.Dpb1 });
             return includedLoci.Select(parameters.ScoreResult.ScoreDetailsForLocus);
         }
     }
