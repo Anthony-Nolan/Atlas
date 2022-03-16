@@ -9,7 +9,7 @@ resource "azurerm_function_app" "atlas_function" {
   location                   = local.location
   app_service_plan_id        = azurerm_app_service_plan.atlas-elastic-plan.id
   https_only                 = true
-  version                    = "~3"
+  version                    = "~4"
   storage_account_access_key = azurerm_storage_account.atlas_durable_function_storage.primary_access_key
   storage_account_name       = azurerm_storage_account.atlas_durable_function_storage.name
 
@@ -113,7 +113,7 @@ resource "azurerm_function_app" "atlas_public_api_function" {
   location                   = local.location
   app_service_plan_id        = azurerm_app_service_plan.atlas-public-api-elastic-plan.id
   https_only                 = true
-  version                    = "~3"
+  version                    = "~4"
   storage_account_access_key = azurerm_storage_account.function_storage.primary_access_key
   storage_account_name       = azurerm_storage_account.function_storage.name
 

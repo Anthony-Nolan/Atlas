@@ -8,7 +8,7 @@ resource "azurerm_function_app" "atlas_donor_import_function" {
   location                   = var.general.location
   app_service_plan_id        = var.app_service_plan.id
   https_only                 = true
-  version                    = "~3"
+  version                    = "~4"
   storage_account_access_key = var.shared_function_storage.primary_access_key
   storage_account_name       = var.shared_function_storage.name
 

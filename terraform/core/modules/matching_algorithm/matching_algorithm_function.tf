@@ -78,7 +78,7 @@ resource "azurerm_function_app" "atlas_matching_algorithm_function" {
   location                   = var.general.location
   app_service_plan_id        = var.elastic_app_service_plan.id
   https_only                 = true
-  version                    = "~3"
+  version                    = "~4"
   storage_account_access_key = azurerm_storage_account.matching_function_storage.primary_access_key
   storage_account_name       = azurerm_storage_account.matching_function_storage.name
 

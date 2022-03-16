@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <AzureFunctionsVersion>v3</AzureFunctionsVersion>
+        <AzureFunctionsVersion>v4</AzureFunctionsVersion>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <OutputPath>bin/</OutputPath>
         <UserSecretsId>3c34ff5f-9a99-43e8-b3f6-7c7d75b3809b</UserSecretsId>
