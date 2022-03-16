@@ -8,7 +8,6 @@ using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
 using LoggingStopwatch;
 using Microsoft.Data.SqlClient;
-using static MoreLinq.Extensions.DistinctByExtension;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
 {

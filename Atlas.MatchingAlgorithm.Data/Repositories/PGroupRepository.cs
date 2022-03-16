@@ -9,8 +9,6 @@ using Atlas.Common.Sql;
 using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using LoggingStopwatch;
-using MoreLinq.Extensions;
-
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
 {
