@@ -72,10 +72,8 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
                 "%DataRefresh:RequestsTopic%",
                 "%DataRefresh:RequestsTopicSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString")]
-            Message message)
+            ValidatedDataRefreshRequest request)
         {
-            var request = JsonConvert.DeserializeObject<ValidatedDataRefreshRequest>(Encoding.UTF8.GetString(message.Body));
-
             await dataRefreshOrchestrator.OrchestrateDataRefresh(request.DataRefreshRecordId);
         }
 

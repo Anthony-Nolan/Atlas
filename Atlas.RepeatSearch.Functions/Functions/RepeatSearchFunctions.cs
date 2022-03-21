@@ -55,11 +55,8 @@ namespace Atlas.RepeatSearch.Functions.Functions
                 "%MessagingServiceBus:RepeatSearchRequestsTopic%",
                 "%MessagingServiceBus:RepeatSearchRequestsSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString")]
-            Message message)
+            IdentifiedRepeatSearchRequest request)
         {
-            var serialisedData = Encoding.UTF8.GetString(message.Body);
-            var request = JsonConvert.DeserializeObject<IdentifiedRepeatSearchRequest>(serialisedData);
-
             await repeatSearchRunner.RunSearch(request);
         }
     }

@@ -53,11 +53,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
                 "%DataRefresh:CompletionTopic%",
                 "%DataRefresh:CompletionTopicSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString")]
-            Message message)
+            CompletedDataRefresh dataRefresh)
         {
-            var serialisedData = Encoding.UTF8.GetString(message.Body);
-            var dataRefresh = JsonConvert.DeserializeObject<CompletedDataRefresh>(serialisedData);
-
             await atlasPreparer.UpdateLatestExportRecord(dataRefresh);
         }
     }

@@ -54,11 +54,8 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
                 "%MessagingServiceBus:SearchRequestsTopic%",
                 "%MessagingServiceBus:SearchRequestsSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString")]
-            Message message)
+            IdentifiedSearchRequest request)
         {
-            var serialisedData = Encoding.UTF8.GetString(message.Body);
-            var request = JsonConvert.DeserializeObject<IdentifiedSearchRequest>(serialisedData);
-
             await searchRunner.RunSearch(request);
         }
     }

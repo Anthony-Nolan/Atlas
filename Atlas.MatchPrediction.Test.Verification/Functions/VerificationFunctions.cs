@@ -59,11 +59,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
                 "%Matching:ResultsTopic%",
                 "%Matching:ResultsTopicSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString")]
-            Message message)
+            MatchingResultsNotification notification)
         {
-            var serialisedData = Encoding.UTF8.GetString(message.Body);
-            var notification = JsonConvert.DeserializeObject<MatchingResultsNotification>(serialisedData);
-
             try
             {
                 await matchingGenotypesProcessor.ProcessAndStoreResultSet(notification);
@@ -82,11 +79,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
                 "%Search:ResultsTopic%",
                 "%Search:ResultsTopicSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString")]
-            Message message)
+            SearchResultsNotification notification)
         {
-            var serialisedData = Encoding.UTF8.GetString(message.Body);
-            var notification = JsonConvert.DeserializeObject<SearchResultsNotification>(serialisedData);
-
             try
             {
                 await searchResultSetProcessor.ProcessAndStoreResultSet(notification);

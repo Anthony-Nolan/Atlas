@@ -26,11 +26,8 @@ namespace Atlas.RepeatSearch.Functions.Functions
                 "%MessagingServiceBus:OriginalSearchRequestsTopic%",
                 "%MessagingServiceBus:OriginalSearchRequestsSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString")]
-            Message message)
+            MatchingResultsNotification resultsNotification)
         {
-            var serialisedData = Encoding.UTF8.GetString(message.Body);
-            var resultsNotification = JsonConvert.DeserializeObject<MatchingResultsNotification>(serialisedData);
-
             await originalSearchResultSetTracker.StoreOriginalSearchResults(resultsNotification);
         }
     }
