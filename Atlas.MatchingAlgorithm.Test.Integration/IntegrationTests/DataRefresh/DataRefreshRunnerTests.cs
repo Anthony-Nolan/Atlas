@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
@@ -25,9 +26,15 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
             dataRefreshHistoryRepository = DependencyInjection.DependencyInjection.Provider.GetService<ITestDataRefreshHistoryRepository>();
 
             // Set up a dummy record so the refresh does not attempt to regenerate the file-backed metadata dictionary
-            dataRefreshHistoryRepository.InsertDummySuccessfulRefreshRecord(FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion);
+            dataRefreshHistoryRepository?.InsertDummySuccessfulRefreshRecord(FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion);
 
             dataRefreshRunner = DependencyInjection.DependencyInjection.Provider.GetService<IDataRefreshRunner>();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(IntegrationTestSetUp.RunInitialDataRefresh);
         }
 
         [Test]

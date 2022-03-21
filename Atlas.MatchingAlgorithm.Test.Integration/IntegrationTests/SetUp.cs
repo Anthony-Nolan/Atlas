@@ -26,10 +26,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         /// <summary>
         /// Sets up a data refresh record to ensure a hla nomenclature version is available, if running only non-data refresh tests.
         /// </summary>
-        private static void RunInitialDataRefresh()
+        internal static void RunInitialDataRefresh()
         {
             var dataRefreshHistoryRepository = DependencyInjection.DependencyInjection.Provider.GetService<ITestDataRefreshHistoryRepository>();
-            dataRefreshHistoryRepository.InsertDummySuccessfulRefreshRecord();
+            dataRefreshHistoryRepository?.InsertDummySuccessfulRefreshRecord();
         }
 
         private static void ResetDatabase()

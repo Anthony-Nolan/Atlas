@@ -18,6 +18,7 @@ using SqlException = Microsoft.Data.SqlClient.SqlException;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 {
+    [NonParallelizable]
     public class DonorStorageTests
     {
         private IDonorImportRepository donorImportRepository;
