@@ -176,6 +176,44 @@ This problem may manifest itself as follows:
     - Without manual changes, no searches will be processed until the SQL timeout expires (approx. one hour)
     - To expedite this, restart the matching algorithm function
 
+### Search is not completing
+
+If a search has not yet returned results after a reasonable period of time, there are some steps that can be taken to track this "missing" search:
+
+* Matching Algorithm
+  * Is the search still ongoing in the matching algorithm? 
+    * Check the `matching-requests` topic, in the `matching-algorithm` subscription. There are three possible states for your search: 
+      * (i) Still processing: the message initiating your search request is still in the subscription. This indicates matching is still ongoing for your searches. 
+        * All searches are expected to run in a low number of minutes - if it has been significantly longer than that, you may be running on a database tier that is too low for your data volume. 
+      * (ii) Dead lettered: the message will be found in the dead letter queue. This means the search failed x times, where x is the retry count (default is 10 attempts). 
+        * You should be able to identify the failure reason from the matching results message if present, and AI logs if not.
+      * (iii) Complete: the message is no longer in the subscription, nor the dead-letter queue. 
+  * Was the request scheduled for match prediction? 
+    * Check the `matching-results-ready` topic, in the `audit` subscription.
+    * If your search is not in this subscription, it was never queued for match prediction - and thus is not ever expected to have results in the `search-results-ready` topic / `atlas-search-results` blob container. 
+    * For searches run without match prediction, the matching results are expected to be used directly - i.e. the `matching-results-ready` topic / `matching-algorith-results` blob container.
+  * Is the request still scheduled for match prediction orchestration? 
+    * If your search is still in the `matching-results-ready` topic's `match-prediction-orchestration` subscription, this implies that the `Atlas` functions app is failing to initiate match prediction
+    * Note that messages leaving this subscription do *NOT* indicate that they have completed match prediction - just that match prediction has begun
+  * Is match prediction still ongoing?
+    * We have a few options available to help track match prediction:
+      * Durable Functions Storage
+        * Match Prediction horizontal scaling is managed by the Azure Durable Functions framework - we can look at the azure storage account used to drive this process, but cannot guarantee that this structure will stay the same with future updates
+          * In the `<env>atlasdurablefunc` storage account: 
+            * `AzureFunctionsHubInstances` will contain a row per orchestrator function, with a `RunTimeStatus` - this status can be used to identify orchestrator functions that are still in progress
+            * In the `atlasfunctionshub-workitems` queue, any items in this queue indicate work is still being performed by durable functions
+      * Results Files
+        * Each donor will have a unique match prediction output, written to `<env>atlasstorage/match-prediction-results`. 
+        * The matching algorithm output message will contain a number of donors matched in the search
+        * You can compare the number of donors expected to be returned, to the number of results files in the folder for your search request
+        * If the number of results files is increasing over time, this indicates match prediction is still ongoing
+      * AI Logs
+        * Match prediction will log, as `traces`, multiple stages of the process, in addition to the trace logs written by the functions framework itself
+    * If it appears that the match prediction functions app is continuously starting batches of donors, but never finishing them, it is possible that the functions app is running on a service plan without enough memory to handle the prediction work (this will be 
+    more likely in scenarios with very ambiguous patients/donors, or if the match prediction _batch size_ or _number of concurrent activity functions per instance_ are set too high.)
+      * If you're seeing such behaviour, try: 
+        * (a) reducing the number of concurrent activity functions
+        * (b) increasing the amount of memory available by scaling up the app service plan
 
 ## MACs
 
