@@ -2,7 +2,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Services;
-using Microsoft.Azure.EventGrid.Models;
+using Azure.Messaging.EventGrid;
 using Microsoft.Azure.WebJobs;
 
 namespace Atlas.DonorImport.Functions.Functions
@@ -33,7 +33,7 @@ namespace Atlas.DonorImport.Functions.Functions
             {
                 Contents = blobStream,
                 FileLocation = blobCreatedEvent.Subject,
-                UploadTime = blobCreatedEvent.EventTime,
+                UploadTime = blobCreatedEvent.EventTime.UtcDateTime,
                 MessageId = messageId
             });
         }

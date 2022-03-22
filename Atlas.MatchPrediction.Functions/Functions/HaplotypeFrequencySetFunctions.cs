@@ -1,19 +1,17 @@
-﻿using Atlas.MatchPrediction.ExternalInterface;
-using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
-using Atlas.MatchPrediction.Models;
-using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
-using AzureFunctions.Extensions.Swashbuckle.Attribute;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.EventGrid.Models;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.EventGrid;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
+using Atlas.MatchPrediction.ExternalInterface;
+using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
+using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using Azure.Messaging.EventGrid;
+using AzureFunctions.Extensions.Swashbuckle.Attribute;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 
 namespace Atlas.MatchPrediction.Functions.Functions
 {
