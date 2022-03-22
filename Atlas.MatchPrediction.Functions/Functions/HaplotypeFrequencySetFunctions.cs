@@ -2,11 +2,11 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.AzureEventGrid;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
-using Azure.Messaging.EventGrid;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -40,7 +40,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
                 "%MessagingServiceBus:ImportFileTopic%",
                 "%MessagingServiceBus:ImportFileSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString"
-            )] EventGridEvent blobCreatedEvent,
+            )] EventGridSchema blobCreatedEvent,
             [Blob("{data.url}", FileAccess.Read)] Stream blobStream
         )
         {

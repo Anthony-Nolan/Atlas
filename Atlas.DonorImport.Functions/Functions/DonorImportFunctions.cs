@@ -1,8 +1,8 @@
 using System.IO;
 using System.Threading.Tasks;
+using Atlas.Common.AzureEventGrid;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Services;
-using Azure.Messaging.EventGrid;
 using Microsoft.Azure.WebJobs;
 
 namespace Atlas.DonorImport.Functions.Functions
@@ -25,7 +25,7 @@ namespace Atlas.DonorImport.Functions.Functions
                 "%MessagingServiceBus:ImportFileTopic%",
                 "%MessagingServiceBus:ImportFileSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString"
-            )] EventGridEvent blobCreatedEvent, string messageId,
+            )] EventGridSchema blobCreatedEvent, string messageId,
             [Blob("{data.url}", FileAccess.Read)] Stream blobStream // Raw JSON Text file containing donor updates in expected schema
         )
         {
