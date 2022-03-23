@@ -27,6 +27,11 @@ namespace Atlas.Functions
             RegisterSettings(builder.Services);
             RegisterTopLevelFunctionServices(builder.Services);
 
+            builder.Services.RegisterNotificationSender(
+                OptionsReaderFor<NotificationsServiceBusSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>()
+            );
+
             builder.Services.RegisterDonorReader(ConnectionStringReader("DonorImport:Sql"));
 
             builder.Services.RegisterMacDictionary(

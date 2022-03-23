@@ -1,3 +1,4 @@
+using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
@@ -6,11 +7,12 @@ using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
 using Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders;
 using NSubstitute;
-using NSubstitute.ReceivedExtensions;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Notifications;
+using NSubstitute.ExceptionExtensions;
 
 namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
 {
@@ -21,6 +23,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
         private IMacFetcher mockFetcher;
         private IMacRepository mockRepository;
         private ILogger mockLogger;
+        private INotificationsClient mockNotificationsClient;
 
         [SetUp]
         public void Setup()
@@ -30,7 +33,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
                 mockFetcher = Substitute.For<IMacFetcher>();
                 mockRepository = Substitute.For<IMacRepository>();
                 mockLogger = Substitute.For<ILogger>();
-                macImporter = new MacImporter(mockRepository, mockFetcher, mockLogger);
+                mockNotificationsClient = Substitute.For<INotificationsClient>();
+                macImporter = new MacImporter(mockRepository, mockFetcher, mockLogger, mockNotificationsClient);
             });
         }
 
@@ -63,6 +67,21 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
             await macImporter.ImportLatestMacs();
             
             await mockRepository.Received().InsertMacs(Arg.Is<IEnumerable<Mac>>(x => x.Count() == numberOfNewMacs));
+        }
+
+        [Test]
+        public async Task ImportMacs_OnFailure_SendsAlert()
+        {
+            mockRepository.InsertMacs(default).ThrowsForAnyArgs(new Exception());
+
+            try
+            {
+                await macImporter.ImportLatestMacs();
+            }
+            catch (Exception)
+            {
+                await mockNotificationsClient.ReceivedWithAnyArgs().SendAlert(default);
+            }
         }
     }
 }
