@@ -76,7 +76,7 @@ namespace Atlas.Functions.Services
                 resultSet.BlobStorageContainerName = resultsContainer;
                 resultSet.MatchingAlgorithmTime = matchingTime;
                 resultSet.MatchPredictionTime = matchPredictionResultLocations.ElapsedTime;
-                resultSet.SearchedHla = matchingAlgorithmResultSet.SearchedHla;
+                resultSet.SearchRequest = matchingAlgorithmResultSet.SearchRequest;
 
                 return resultSet;
             }

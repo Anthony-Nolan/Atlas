@@ -74,7 +74,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     TotalResults = results.Count,
                     MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
                     BlobStorageContainerName = blobContainerName,
-                    SearchedHla = identifiedSearchRequest.SearchRequest.SearchHlaData
+                    SearchRequest = identifiedSearchRequest.SearchRequest
                 };
 
                 await resultsBlobStorageClient.UploadResults(searchResultSet);

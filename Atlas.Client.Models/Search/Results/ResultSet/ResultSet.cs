@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 
 namespace Atlas.Client.Models.Search.Results.ResultSet
@@ -17,8 +18,9 @@ namespace Atlas.Client.Models.Search.Results.ResultSet
         public IEnumerable<TResult> Results { get; set; }
 
         /// <summary>
-        /// The HLA that the search was run against.
+        /// The <see cref="SearchRequest"/> that this result set is for. Not strictly necessary for consuming results, but can be very useful for
+        /// debugging / support purposes, removing the need to cross reference result sets to request details.  
         /// </summary>
-        public PhenotypeInfoTransfer<string> SearchedHla { get; set; }
+        public SearchRequest SearchRequest { get; set; }
     }
 }
