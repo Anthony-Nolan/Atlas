@@ -4,6 +4,8 @@ using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
 using Dasync.Collections;
 using System;
 using System.Threading.Tasks;
+using Atlas.Common.Notifications;
+using Atlas.Common.Notifications.MessageModels;
 
 namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
 {
@@ -20,12 +22,14 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         private readonly IMacRepository macRepository;
         private readonly IMacFetcher macFetcher;
         private readonly ILogger logger;
+        private readonly INotificationsClient notificationsClient;
 
-        public MacImporter(IMacRepository macRepository, IMacFetcher macFetcher, ILogger logger)
+        public MacImporter(IMacRepository macRepository, IMacFetcher macFetcher, ILogger logger, INotificationsClient notificationsClient)
         {
             this.macRepository = macRepository;
             this.macFetcher = macFetcher;
             this.logger = logger;
+            this.notificationsClient = notificationsClient;
         }
 
         public async Task RecreateMacTable()
@@ -49,6 +53,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
             }
             catch (Exception e)
             {
+                var alert = new Alert("MAC Import failed", "Failed to import MACs, check AI logs for error details.", Priority.High);
+                await notificationsClient.SendAlert(alert);
                 logger.SendEvent(new ErrorEventModel($"{TracePrefix}Failed to finish MAC Import", e));
                 throw;
             }
