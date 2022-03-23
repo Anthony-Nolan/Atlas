@@ -133,14 +133,17 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [FunctionName(nameof(SendFailureNotification))]
-        public async Task SendFailureNotification([ActivityTrigger] (string, string, string) failureInfo)
+        public async Task SendFailureNotification([ActivityTrigger] (string, string, string, string) failureInfo)
         {
-            var (searchRequestId, failedStage, repeatSearchId) = failureInfo;
-
+            var (searchRequestId, failedStage, repeatSearchId, validationError) = failureInfo;
+            
+            var validationMessage = validationError == null ? "" : $" With validation error: {validationError}";
+            var failureMessage = $"Search failed at stage: {failedStage}{validationMessage}. See Application Insights for failure details.";
+            
             await searchCompletionMessageSender.PublishFailureMessage(
                 searchRequestId,
                 repeatSearchId,
-                $"Search failed at stage: {failedStage}. See Application Insights for failure details."
+                failureMessage
             );
         }
 

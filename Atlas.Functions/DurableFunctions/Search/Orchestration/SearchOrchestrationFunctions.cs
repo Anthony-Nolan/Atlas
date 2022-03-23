@@ -26,7 +26,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
     // ReSharper disable once ClassNeverInstantiated.Global
     public class SearchOrchestrationFunctions
     {
-        private static readonly RetryOptions RetryOptions = new RetryOptions(TimeSpan.FromSeconds(5), 5) {BackoffCoefficient = 2};
+        private static readonly RetryOptions RetryOptions = new RetryOptions(TimeSpan.FromSeconds(5), 5) { BackoffCoefficient = 2 };
 
         private readonly ILogger logger;
 
@@ -94,7 +94,13 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 var orchestrationInitiated = context.CurrentUtcDateTime;
                 if (!notification.WasSuccessful)
                 {
-                    await SendFailureNotification(context, "Matching Algorithm", searchRequestId, notification.RepeatSearchRequestId);
+                    await SendFailureNotification(
+                        context,
+                        "Matching Algorithm",
+                        searchRequestId,
+                        notification.RepeatSearchRequestId,
+                        notification.ValidationError
+                    );
                     return null;
                 }
 
@@ -271,12 +277,13 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             IDurableOrchestrationContext context,
             string failedStage,
             string searchId,
-            string repeatSearchId)
+            string repeatSearchId,
+            string validationError = null)
         {
             await context.CallActivityWithRetryAsync(
                 nameof(SearchActivityFunctions.SendFailureNotification),
                 RetryOptions,
-                (searchId, failedStage, repeatSearchId)
+                (searchId, failedStage, repeatSearchId, validationError)
             );
 
             context.SetCustomStatus($"Search failed, during stage: {failedStage}");
