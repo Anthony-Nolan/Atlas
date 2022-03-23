@@ -7,6 +7,7 @@ using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
@@ -93,6 +94,20 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
                 return searchResultSet;
+            }
+            catch (HlaMetadataDictionaryException hldException)
+            {
+                searchLogger.SendTrace($"Failed to lookup HLA for search with id {searchRequestId}. Exception: {hldException}", LogLevel.Error);
+                var notification = new MatchingResultsNotification
+                {
+                    WasSuccessful = false,
+                    SearchRequestId = searchRequestId,
+                    MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
+                    MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
+                    ValidationError = hldException.ToString()
+                };
+                await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
+                throw;
             }
             catch (Exception e)
             {
