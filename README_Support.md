@@ -239,4 +239,15 @@ Check the MAC store in Azure storage, to see if it has been imported.
 
 If not, the import may be failing - check the Atlas Functions app logs in Azure Portal / Application Insights
 
+### MAC Import is failing
 
+Check exception details from the MAC import jon in AI. 
+
+If the error mentions "The specified entity already exists." - check the following data in the `<env>atlasstorage/AtlasMultipleAlleleCodes` table in Azure Table Storage: 
+
+(a) Record with `Partition=Metadata` and `Row=LastImported` - this is the logged last imported MAC
+(b) Query the same table to see if this is correct - use the partition key of the length of the last seen MAC, and a >= operator to see if any later MACs exist. 
+
+If the MAC import catastrophically fails between inserting new MACs and updating the "last seen" MAC (e.g. due to a platform failure), these can stray out of sync. 
+
+In this case, identify the *actual* last imported MAC manually, and update the "LastUpdated" row to be correct. From this point onwards the import job should work as expected. 
