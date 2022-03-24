@@ -21,6 +21,14 @@ variable "MAX_INSTANCES" {
   type = number
 }
 
+variable "NOTIFICATIONS_ON_DELETION_OF_INVALID_DONOR" {
+  type = bool
+}
+
+variable "NOTIFICATIONS_ON_SUCCESSFUL_IMPORT" {
+  type = bool
+}
+
 variable "STALLED_FILE_CHECK_CRONTAB" {
   type = string
 }

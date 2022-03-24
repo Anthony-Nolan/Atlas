@@ -8,9 +8,11 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Validators;
 using Dasync.Collections;
+using Microsoft.Extensions.Options;
 using MoreLinq;
 
 // ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
@@ -32,6 +34,7 @@ namespace Atlas.DonorImport.Services
         private readonly IDonorImportLogService donorLogService;
         private readonly ILogger logger;
         private readonly SearchableDonorValidator searchableDonorValidator;
+        private readonly NotificationConfigurationSettings notificationConfigSettings;
 
         public DonorFileImporter(
             IDonorImportFileParser fileParser,
@@ -39,7 +42,8 @@ namespace Atlas.DonorImport.Services
             IDonorImportFileHistoryService donorImportFileHistoryService,
             INotificationSender notificationSender,
             IDonorImportLogService donorLogService,
-            ILogger logger)
+            ILogger logger,
+            NotificationConfigurationSettings notificationConfigSettings)
         {
             this.fileParser = fileParser;
             this.donorRecordChangeApplier = donorRecordChangeApplier;
@@ -47,6 +51,7 @@ namespace Atlas.DonorImport.Services
             this.notificationSender = notificationSender;
             this.donorLogService = donorLogService;
             this.logger = logger;
+            this.notificationConfigSettings = notificationConfigSettings;
             searchableDonorValidator = new SearchableDonorValidator();
         }
 
@@ -64,7 +69,7 @@ namespace Atlas.DonorImport.Services
                 logger.SendTrace($"Donor Import: {donorUpdatesToSkip} donors have already been imported from this file and will be skipped.",
                     props: new Dictionary<string, string>
                     {
-                        {"FileLocation", file.FileLocation}
+                        { "FileLocation", file.FileLocation }
                     });
             }
 
@@ -92,12 +97,17 @@ namespace Atlas.DonorImport.Services
                 logger.SendTrace(
                     $"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s). Failed to import {invalidDonorIds.Count} donor(s).",
                     LogLevel.Info,
-                    invalidDonorIds.Count == 0 ? null : new Dictionary<string, string> {{"FailedDonorIds", $"[{invalidDonorIds.StringJoin(", ")}]"}});
+                    invalidDonorIds.Count == 0
+                        ? null
+                        : new Dictionary<string, string> { { "FailedDonorIds", $"[{invalidDonorIds.StringJoin(", ")}]" } });
 
-                await notificationSender.SendNotification($"Donor Import Successful: {file.FileLocation}",
-                    $"Imported {importedDonorCount} donor(s). Failed to import {invalidDonorIds.Count} donor(s).",
-                    nameof(ImportDonorFile)
-                );
+                if (notificationConfigSettings.NotifyOnSuccessfulDonorImport)
+                {
+                    await notificationSender.SendNotification($"Donor Import Successful: {file.FileLocation}",
+                        $"Imported {importedDonorCount} donor(s). Failed to import {invalidDonorIds.Count} donor(s).",
+                        nameof(ImportDonorFile)
+                    );
+                }
             }
             catch (EmptyDonorFileException e)
             {
@@ -146,7 +156,7 @@ namespace Atlas.DonorImport.Services
         private bool ValidateDonorIsSearchable(DonorUpdate donorUpdate)
         {
             var validationResult = searchableDonorValidator.Validate(donorUpdate);
-            
+
             if (!validationResult.IsValid)
             {
                 logger.SendTrace($"Invalid Donor found with Id: {donorUpdate.RecordId}", LogLevel.Verbose);

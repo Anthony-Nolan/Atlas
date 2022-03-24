@@ -7,6 +7,7 @@ using Atlas.Common.Notifications;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
@@ -33,7 +34,7 @@ namespace Atlas.DonorImport.Test.Services
         private IDonorRecordChangeApplier donorOperationApplier;
         private IImportedLocusInterpreter naiveDnaLocusInterpreter;
 
-        private readonly DonorImportFile defaultFile = new DonorImportFile {FileLocation = "file", UploadTime = DateTime.Now};
+        private readonly DonorImportFile defaultFile = new DonorImportFile { FileLocation = "file", UploadTime = DateTime.Now };
 
         [SetUp]
         public void SetUp()
@@ -60,7 +61,8 @@ namespace Atlas.DonorImport.Test.Services
                 naiveDnaLocusInterpreter,
                 donorImportLogService,
                 donorImportHistoryService,
-                notificationSender
+                notificationSender,
+                new NotificationConfigurationSettings { NotifyOnAttemptedDeletionOfUntrackedDonor = true }
             );
         }
 
@@ -74,8 +76,8 @@ namespace Atlas.DonorImport.Test.Services
 
             donorInspectionRepository.GetDonorIdsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, int>
             {
-                {donorUpdates[0].RecordId, 1},
-                {donorUpdates[1].RecordId, 2},
+                { donorUpdates[0].RecordId, 1 },
+                { donorUpdates[1].RecordId, 2 },
             });
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
@@ -109,7 +111,7 @@ namespace Atlas.DonorImport.Test.Services
             //ARRANGE
             var donorUpdates = DonorUpdateBuilder.New
                 .With(d => d.UpdateMode, UpdateMode.Differential)
-                .With(d => d.ChangeType, new[] {ImportDonorChangeType.Create, ImportDonorChangeType.Delete, ImportDonorChangeType.Edit})
+                .With(d => d.ChangeType, new[] { ImportDonorChangeType.Create, ImportDonorChangeType.Delete, ImportDonorChangeType.Edit })
                 .Build(21)
                 .ToList();
 
@@ -117,7 +119,7 @@ namespace Atlas.DonorImport.Test.Services
                 .ReturnsForAnyArgs(args => args.Arg<ICollection<string>>().ToDictionary(code => code, code => 0));
 
             donorInspectionRepository.GetDonorsByExternalDonorCodes(default)
-                .ReturnsForAnyArgs(args => args.Arg<ICollection<string>>().ToDictionary(code => code, code => new Donor {AtlasId = 0}));
+                .ReturnsForAnyArgs(args => args.Arg<ICollection<string>>().ToDictionary(code => code, code => new Donor { AtlasId = 0 }));
 
             // Capture all the Calls to MessageServiceBus.
             var sequenceOfMassCalls = new List<List<SearchableDonorUpdate>>();
@@ -168,11 +170,11 @@ namespace Atlas.DonorImport.Test.Services
                 .ToList();
 
             donorInspectionRepository.GetDonorIdsByExternalDonorCodes(default).ReturnsForAnyArgs(new Dictionary<string, int>());
-            
+
             donorInspectionRepository.GetDonorsByExternalDonorCodes(default).ReturnsForAnyArgs(new Dictionary<string, Donor>
             {
-                {donorUpdates[0].RecordId, new Donor {AtlasId = 1, ExternalDonorCode = donorUpdates[0].RegistryCode}},
-                {donorUpdates[1].RecordId, new Donor {AtlasId = 2, ExternalDonorCode = donorUpdates[1].RegistryCode}},
+                { donorUpdates[0].RecordId, new Donor { AtlasId = 1, ExternalDonorCode = donorUpdates[0].RegistryCode } },
+                { donorUpdates[1].RecordId, new Donor { AtlasId = 2, ExternalDonorCode = donorUpdates[1].RegistryCode } },
             });
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
@@ -190,10 +192,10 @@ namespace Atlas.DonorImport.Test.Services
                 .ToList();
 
             donorInspectionRepository.GetDonorIdsByExternalDonorCodes(default).ReturnsForAnyArgs(new Dictionary<string, int>());
-            
+
             donorInspectionRepository.GetDonorsByExternalDonorCodes(default).ReturnsForAnyArgs(new Dictionary<string, Donor>
             {
-                {donorUpdates[0].RecordId, new Donor {AtlasId = 1, ExternalDonorCode = donorUpdates[0].RegistryCode}},
+                { donorUpdates[0].RecordId, new Donor { AtlasId = 1, ExternalDonorCode = donorUpdates[0].RegistryCode } },
             });
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
