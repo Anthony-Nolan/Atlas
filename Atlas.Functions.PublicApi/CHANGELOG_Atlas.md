@@ -20,6 +20,9 @@ The project version will be appropriately incremented with each change to the pr
 #### Donor Import
 
 - New "changeType" supported for donor import files = `NU` = Upsert ("new or update") - allowing a consumer to provide a donor that should be added or updated, without caring whether that donor was already tracked by Atlas. 
+* New config settings added to allow disabling of notifications when: 
+  * File successfully imported
+  * Donor deletions were attempted for donors that were not tracked in Atlas
 
 #### Matching Algorithm
 
