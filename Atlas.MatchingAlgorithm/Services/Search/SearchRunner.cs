@@ -104,7 +104,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     SearchRequestId = searchRequestId,
                     MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
                     MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
-                    ValidationError = hldException.ToString()
+                    ValidationError = hldException.Message
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
                 throw;
