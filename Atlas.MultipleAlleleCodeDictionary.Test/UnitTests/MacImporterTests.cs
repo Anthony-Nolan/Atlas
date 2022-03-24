@@ -23,7 +23,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
         private IMacFetcher mockFetcher;
         private IMacRepository mockRepository;
         private ILogger mockLogger;
-        private INotificationsClient mockNotificationsClient;
+        private INotificationSender mockNotificationSender;
 
         [SetUp]
         public void Setup()
@@ -33,8 +33,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
                 mockFetcher = Substitute.For<IMacFetcher>();
                 mockRepository = Substitute.For<IMacRepository>();
                 mockLogger = Substitute.For<ILogger>();
-                mockNotificationsClient = Substitute.For<INotificationsClient>();
-                macImporter = new MacImporter(mockRepository, mockFetcher, mockLogger, mockNotificationsClient);
+                mockNotificationSender = Substitute.For<INotificationSender>();
+                macImporter = new MacImporter(mockRepository, mockFetcher, mockLogger, mockNotificationSender);
             });
         }
 
@@ -46,12 +46,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
 
             await macImporter.ImportLatestMacs();
 
-            #pragma warning disable 4014
+#pragma warning disable 4014
             // disabled warning as the method is async, but not awaitable
 
             mockFetcher.Received().FetchAndLazilyParseMacsSince(lastOldMac);
 
-            #pragma warning restore 4014
+#pragma warning restore 4014
         }
 
         [Test]
@@ -63,9 +63,9 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
             const int numberOfNewMacs = 50;
             var newMacs = Enumerable.Range(0, numberOfNewMacs).Select(i => MacBuilder.New.Build()).ToList();
             mockFetcher.FetchAndLazilyParseMacsSince(default).ReturnsForAnyArgs(newMacs.ToAsyncEnumerable());
-            
+
             await macImporter.ImportLatestMacs();
-            
+
             await mockRepository.Received().InsertMacs(Arg.Is<IEnumerable<Mac>>(x => x.Count() == numberOfNewMacs));
         }
 
@@ -80,7 +80,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
             }
             catch (Exception)
             {
-                await mockNotificationsClient.ReceivedWithAnyArgs().SendAlert(default);
+                await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             }
         }
     }
