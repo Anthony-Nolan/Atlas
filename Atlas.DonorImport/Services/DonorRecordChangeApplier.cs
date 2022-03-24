@@ -11,6 +11,7 @@ using Atlas.DonorImport.Config;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
@@ -38,6 +39,7 @@ namespace Atlas.DonorImport.Services
         private readonly IDonorImportLogService donorImportLogService;
         private readonly IDonorImportFileHistoryService donorImportHistoryService;
         private readonly INotificationSender notificationSender;
+        private readonly NotificationConfigurationSettings notificationConfigSettings;
 
         public DonorRecordChangeApplier(
             IMessagingServiceBusClient messagingServiceBusClient,
@@ -46,7 +48,8 @@ namespace Atlas.DonorImport.Services
             IImportedLocusInterpreter locusInterpreter,
             IDonorImportLogService donorImportLogService,
             IDonorImportFileHistoryService donorImportHistoryService,
-            INotificationSender notificationSender)
+            INotificationSender notificationSender,
+            NotificationConfigurationSettings notificationConfigSettings)
         {
             this.donorImportRepository = donorImportRepository;
             this.messagingServiceBusClient = messagingServiceBusClient;
@@ -55,6 +58,7 @@ namespace Atlas.DonorImport.Services
             this.donorImportLogService = donorImportLogService;
             this.donorImportHistoryService = donorImportHistoryService;
             this.notificationSender = notificationSender;
+            this.notificationConfigSettings = notificationConfigSettings;
         }
 
         public async Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, DonorImportFile file, int skippedDonors)
@@ -101,7 +105,7 @@ namespace Atlas.DonorImport.Services
                     case (_, UpdateMode.Full):
                         throw new NotImplementedException(
                             "Full donor imports must only consist of donor creations. Updates and Deletions not supported (creates will be treated as upserts, deletions must be performed manually)");
-                    
+
                     case (ImportDonorChangeType.Create, _):
                         var creationMessages = await ProcessDonorCreations(
                             updatesOfSameOperationType.ToList(),
@@ -217,13 +221,16 @@ namespace Atlas.DonorImport.Services
             var nonExistentAtlasDonors = deletedExternalCodes.Except(deletedAtlasDonorIds.Keys).ToList();
             if (nonExistentAtlasDonors.Any())
             {
-                await notificationSender.SendNotification(
-                    "Attempted to delete donors that were not found in the Atlas database",
-                    $"This does not violate the data integrity of Atlas directly, but does imply a stray between Atlas and consumer's donor collection. Donor ids: {nonExistentAtlasDonors.StringJoin(",")}.",
-                    NotificationConstants.OriginatorName
-                );
+                if (notificationConfigSettings.NotifyOnAttemptedDeletionOfUntrackedDonor)
+                {
+                    await notificationSender.SendNotification(
+                        "Attempted to delete donors that were not found in the Atlas database",
+                        $"This does not violate the data integrity of Atlas directly, but does imply a stray between Atlas and consumer's donor collection. Donor ids: {nonExistentAtlasDonors.StringJoin(",")}.",
+                        NotificationConstants.OriginatorName
+                    );
+                }
             }
-            
+
             await donorImportRepository.DeleteDonorBatch(deletedAtlasDonorIds.Values.ToList());
 
             return deletedAtlasDonorIds.Values.Select(MapToDeletionUpdateMessage).ToList();
@@ -256,9 +263,9 @@ namespace Atlas.DonorImport.Services
             Dictionary<string, string> CreateLogContext(Locus locus) =>
                 new Dictionary<string, string>
                 {
-                    {"ImportFile", fileLocation},
-                    {"DonorCode", fileUpdate.RecordId},
-                    {"Locus", locus.ToString()}
+                    { "ImportFile", fileLocation },
+                    { "DonorCode", fileUpdate.RecordId },
+                    { "Locus", locus.ToString() }
                 };
 
             var interpretedA = locusInterpreter.Interpret(fileUpdate.Hla.A, CreateLogContext(Locus.A));

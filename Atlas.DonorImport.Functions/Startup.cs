@@ -20,6 +20,7 @@ namespace Atlas.DonorImport.Functions
             builder.Services.RegisterDonorImport(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<NotificationConfigurationSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<StalledFileSettings>(),
                 ConnectionStringReader("DonorStoreSql")
@@ -30,6 +31,7 @@ namespace Atlas.DonorImport.Functions
         {
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+            services.RegisterAsOptions<NotificationConfigurationSettings>("NotificationConfiguration");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
             services.RegisterAsOptions<StalledFileSettings>("DonorImport");
         }

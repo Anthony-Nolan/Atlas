@@ -66,6 +66,18 @@ variable "DONOR_IMPORT_MAX_INSTANCES" {
   description = "Determines the number of instances of the donor import that can exist in parallel. Combined with the per-instance service bus concurrency settings in host.json, defines the maximum number of concurrent instances of the donor import. Can be larger with a larger database."
 }
 
+variable "DONOR_IMPORT_NOTIFICATIONS_ON_DELETION_OF_INVALID_DONOR" {
+  type        = bool
+  default     = true
+  description = "When true, notifications will be sent on every attempt to delete a donor that does not exist in Atlas"
+}
+
+variable "DONOR_IMPORT_NOTIFICATIONS_ON_SUCCESSFUL_IMPORT" {
+  type        = bool
+  default     = true
+  description = "When true, notifications will be sent on every successful donor file import"
+}
+
 variable "DONOR_IMPORT_STALLED_FILE_CHECK_CRONTAB" {
   type    = string
   default = "0 */30 * * * *"
@@ -130,20 +142,20 @@ variable "MATCHING_BATCH_SIZE" {
 }
 
 variable "MATCHING_DATA_REFRESH_AUTO_RUN" {
-  type = bool
-  default = true
+  type        = bool
+  default     = true
   description = "When set, the data refresh job to update processed donor data will automatically run when a new nomenclature version is detected. Otherwise, it will be manual only."
 }
 
 variable "MATCHING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE" {
-  type = number
-  default = 3
+  type        = number
+  default     = 3
   description = "The maximum number of concurrent search requests that can run on each instance of the matching algorithm."
 }
 
 variable "MATCHING_MAX_SCALE_OUT" {
-  type = number
-  default = 3
+  type        = number
+  default     = 3
   description = "The maximum number of instances of the matching algorithm that can be scaled out."
 }
 
@@ -155,14 +167,14 @@ variable "MATCHING_DATABASE_TRANSIENT_TIMEOUT" {
 
 
 variable "MATCHING_DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE" {
-  type = number
-  default = -1
+  type        = number
+  default     = -1
   description = "The 'auto-pause' duration for the active matching database, in minutes. Only relevant for serverless database tier - will be ignored for other tiers. -1 = auto-pause disabled. Minimum 60."
 }
 
 variable "MATCHING_DATA_REFRESH_DB_AUTO_PAUSE_DORMANT" {
-  type = number
-  default = -1
+  type        = number
+  default     = -1
   description = "The 'auto-pause' duration for the dormant matching database, in minutes. Only relevant for serverless database tier - will be ignored for other tiers. -1 = auto-pause disabled. Minimum 60."
 }
 
@@ -252,8 +264,8 @@ variable "MATCHING_USERNAME_FOR_DONOR_IMPORT_DATABASE" {
 }
 
 variable "MAX_CONCURRENT_ACTIVITY_FUNCTIONS" {
-  type = number
-  default = 1
+  type        = number
+  default     = 1
   description = "Maximum number of concurrent activity functions in the top level Atlas functions app. Notably affects match prediction concurrency per-instance."
 }
 
@@ -278,20 +290,20 @@ variable "REPEAT_SEARCH_DATABASE_USERNAME" {
 }
 
 variable "REPEAT_SEARCH_MATCHING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE" {
-  type = number
-  default = 1
+  type        = number
+  default     = 1
   description = "The maximum number of concurrent repeat search requests that can run on each instance of the matching algorithm."
 }
 
 variable "REPEAT_SEARCH_MATCHING_MAX_SCALE_OUT" {
-  type = number
-  default = 1
+  type        = number
+  default     = 1
   description = "The maximum number of instances of the repeat search's matching algorithm that can be scaled out."
 }
 
 variable "SERVICE_PLAN_MAX_SCALE_OUT" {
-  type = number
-  default = 50
+  type        = number
+  default     = 50
   description = "The maximum number of workers that can be scaled out on the service plan. Affects all functions apps - which can be further restricted, but can never exceed this limit."
 }
 

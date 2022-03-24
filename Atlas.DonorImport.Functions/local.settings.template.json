@@ -11,6 +11,8 @@
     "MessagingServiceBus:ImportFileSubscription": "donor-import",
     "MessagingServiceBus:ImportFileTopic": "donor-import-file-uploads",
     "MessagingServiceBus:MatchingDonorUpdateTopic": "updated-searchable-donors",
+    "NotificationConfiguration:NotifyOnSuccessfulDonorImport": true,
+    "NotificationConfiguration:NotifyOnAttemptedDeletionOfUntrackedDonor": true,
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications",

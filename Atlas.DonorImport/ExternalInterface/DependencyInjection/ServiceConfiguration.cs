@@ -20,15 +20,15 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, NotificationConfigurationSettings> fetchNotificationConfigurationSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
-            Func<IServiceProvider,StalledFileSettings> fetchStalledFileSettings,
-            Func<IServiceProvider, string> fetchSqlConnectionString
-        )
+            Func<IServiceProvider, StalledFileSettings> fetchStalledFileSettings,
+            Func<IServiceProvider, string> fetchSqlConnectionString)
         {
             // Perform static Dapper set up that should be performed once before any SQL requests are made.
             Initialise.InitaliseDapper();
             
-            services.RegisterSettings(fetchMessagingServiceBusSettings, fetchStalledFileSettings);
+            services.RegisterSettings(fetchMessagingServiceBusSettings, fetchNotificationConfigurationSettings, fetchStalledFileSettings);
             services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices();
@@ -49,11 +49,12 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
         private static void RegisterSettings(
             this IServiceCollection services,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
-            Func<IServiceProvider,StalledFileSettings> fetchStalledFileSettings)
+            Func<IServiceProvider, NotificationConfigurationSettings> fetchNotificationConfigurationSettings,
+            Func<IServiceProvider, StalledFileSettings> fetchStalledFileSettings)
         {
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
             services.MakeSettingsAvailableForUse(fetchStalledFileSettings);
-            
+            services.MakeSettingsAvailableForUse(fetchNotificationConfigurationSettings);
         }
 
         private static void RegisterServices(this IServiceCollection services)
