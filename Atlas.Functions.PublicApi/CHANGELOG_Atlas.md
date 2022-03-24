@@ -12,6 +12,35 @@ The project version will be appropriately incremented with each change to the pr
 
 ### 1.3.0
 
+#### Technical 
+
+* Framework updated from .det core 3.1 to .net 6.0.
+* Azure functions SDK updated from v3 to v4.
+
+#### Donor Import
+
+- New "changeType" supported for donor import files = `NU` = Upsert ("new or update") - allowing a consumer to provide a donor that should be added or updated, without caring whether that donor was already tracked by Atlas. 
+
+#### Matching Algorithm
+
+* Bug fixed where overall match confidence could be assigned "Permissive Mismatch" when non-DPB1 mismatches were known to be present
+
+#### Match Prediction
+
+* Major performance improvements have significantly reduced the time taken for match prediction with large haplotype frequency sets
+* Bug fixed where some haplotypes were included twice in the probability calculations
+
+#### MAC Dictionary
+
+* Alerts are now sent when the MAC dictionary import fails
+
+#### Search 
+
+* Atlas can now filter donor results based on registry codes
+* Dpb1 Mismatch Direction is now returned in Scoring results from searches.
+* Search result now contains details about the search criteria used to initiate the search.
+* Search result now contains details about the Haplotype Frequency sets used for match prediction, for both patient and donor results.
+
 ### 1.2.0
 
 - Fixed scoring issue in which some DPB1 pairs were erroneously classified as a Non-Permissive Mismatch, when in reality they should be Permissive.
