@@ -17,7 +17,11 @@ namespace Atlas.Common.AzureStorage.Blob
         protected async Task<CloudBlobContainer> GetBlobContainer(string containerName)
         {
             var container = blobClient.GetContainerReference(containerName);
-            await container.CreateIfNotExistsAsync();
+            if (!container.Exists())
+            {
+                await container.CreateIfNotExistsAsync();
+            }
+
             return container;
         }
     }

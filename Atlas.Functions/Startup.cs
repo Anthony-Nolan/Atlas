@@ -103,6 +103,15 @@ namespace Atlas.Functions
                 return new MatchPredictionResultsDownloader(options, downloader, logger);
             });
             services.AddScoped<IMatchPredictionRequestBlobClient, MatchPredictionRequestBlobClient>();
+
+            services.AddScoped<IMonitoringService>(sp =>
+            {
+                var messagingServiceBusSettings = sp.GetService<IOptions<Atlas.Functions.Settings.AzureStorageSettings>>().Value;
+                var azureStorageOptions = sp.GetService<IOptions<Settings.AzureStorageSettings>>();
+                var connectionString = azureStorageOptions.Value.MatchPredictionConnectionString;
+                var blobMetadata = new BlobMetadataAnalyser(connectionString);
+                return new MonitoringService(blobMetadata, messagingServiceBusSettings);
+            });
         }
     }
 }
