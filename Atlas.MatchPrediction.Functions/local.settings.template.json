@@ -18,6 +18,6 @@
     "NotificationsServiceBus:NotificationsTopic": "notifications"
   },
   "ConnectionStrings": {
-    "MatchPredictionSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;"
+    "MatchPredictionSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"
   }
 }
