@@ -69,4 +69,21 @@ namespace Atlas.MatchingAlgorithm.Client.Models.Scoring
         /// </summary>
         public LocusSearchResult SearchResultAtLocusDrb1 { get; set; }
     }
+    
+    
+    /// <summary>
+    /// Identified result of scoring of one donor against a patient
+    /// </summary>
+    public class DonorScoringResult
+    {
+        /// <summary>
+        /// Identifier of the donor in the batch
+        /// </summary>
+        public string DonorId { get; set; }
+
+        /// <summary>
+        /// Scoring result of the donor
+        /// </summary>
+        public ScoringResult ScoringResult { get; set; }
+    }
 }
