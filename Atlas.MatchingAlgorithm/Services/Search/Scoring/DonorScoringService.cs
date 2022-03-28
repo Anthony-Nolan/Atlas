@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
@@ -25,6 +27,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
     public interface IDonorScoringService
     {
         Task<ScoreResult> ScoreDonorHlaAgainstPatientHla(DonorHlaScoringRequest request);
+
+        Task<Dictionary<PhenotypeInfo<string>, ScoreResult>> ScoreDonorsHlaAgainstPatientHla(
+            List<PhenotypeInfo<string>> distinctDonorPhenotypes,
+            PhenotypeInfo<string> patientPhenotypeInfo,
+            ScoringCriteria scoringCriteria);
     }
 
     public class DonorScoringService : IDonorScoringService
@@ -35,6 +42,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         private readonly IMatchScoreCalculator matchScoreCalculator;
         private readonly IScoreResultAggregator scoreResultAggregator;
         private readonly IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator;
+        private readonly ILogger logger;
 
         public DonorScoringService(
             IHlaMetadataDictionaryFactory factory,
@@ -43,7 +51,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             IConfidenceService confidenceService,
             IMatchScoreCalculator matchScoreCalculator,
             IScoreResultAggregator scoreResultAggregator,
-            IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator)
+            IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator,
+            ILogger logger)
         {
             hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
             this.gradingService = gradingService;
@@ -51,6 +60,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             this.matchScoreCalculator = matchScoreCalculator;
             this.scoreResultAggregator = scoreResultAggregator;
             this.dpb1TceGroupMatchCalculator = dpb1TceGroupMatchCalculator;
+            this.logger = logger;
         }
 
         public async Task<ScoreResult> ScoreDonorHlaAgainstPatientHla(DonorHlaScoringRequest request)
@@ -61,15 +71,49 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             }
 
             var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla.ToPhenotypeInfo(), request.ScoringCriteria.LociToScore);
-            return await ScoreDonorHlaAgainstPatientMetadata(request.DonorHla.ToPhenotypeInfo(), request, patientScoringMetadata);
+            return await ScoreDonorHlaAgainstPatientMetadata(request.DonorHla.ToPhenotypeInfo(), request.ScoringCriteria, patientScoringMetadata);
+        }
+
+        public async Task<Dictionary<PhenotypeInfo<string>, ScoreResult>> ScoreDonorsHlaAgainstPatientHla(
+            List<PhenotypeInfo<string>> donorsHla,
+            PhenotypeInfo<string> patientHla,
+            ScoringCriteria scoringCriteria)
+        {
+            var patientMetadata = await GetHlaScoringMetadata(patientHla, scoringCriteria.LociToScore);
+            logger.SendTrace($"Received patient scoring HLA result", LogLevel.Info);
+
+            var scoringResultsPerDonorsHla = new Dictionary<PhenotypeInfo<string>, ScoreResult>();
+
+            // we are deliberately avoiding running scoring for multiple donors in parallel for now to minimize load on scoring system.
+            // in case we find performance issues with this approach, it'll be changed later.
+            for (var i = 0; i < donorsHla.Count; i++)
+            {
+                var donorHla = donorsHla[i];
+                ScoreResult scoringResult = null;
+                try
+                {
+                    scoringResult = await ScoreDonorHlaAgainstPatientMetadata(donorHla, scoringCriteria, patientMetadata);
+                    logger.SendTrace($"Received scoring result for donor {i + 1} / {donorsHla.Count}", LogLevel.Verbose);
+                }
+                catch (Exception ex)
+                {
+                    logger.SendTrace($"Could not get score result for one of the donors. Exception: {ex}", LogLevel.Error);
+                }
+
+                scoringResultsPerDonorsHla[donorHla] = scoringResult;
+            }
+
+            logger.SendTrace($"Received scoring results for {donorsHla.Count} donors", LogLevel.Info);
+
+            return scoringResultsPerDonorsHla;
         }
 
         protected async Task<ScoreResult> ScoreDonorHlaAgainstPatientMetadata(
             PhenotypeInfo<string> donorHla,
-            ScoringRequest request,
+            ScoringCriteria scoringCriteria,
             PhenotypeInfo<IHlaScoringMetadata> patientScoringMetadata)
         {
-            var donorScoringMetadata = await GetHlaScoringMetadata(donorHla, request.ScoringCriteria.LociToScore);
+            var donorScoringMetadata = await GetHlaScoringMetadata(donorHla, scoringCriteria.LociToScore);
 
             var grades = gradingService.CalculateGrades(patientScoringMetadata, donorScoringMetadata);
             var confidences = confidenceService.CalculateMatchConfidences(patientScoringMetadata, donorScoringMetadata, grades);
@@ -86,7 +130,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                 DonorHla = donorHla
             };
 
-            return BuildScoreResult(request.ScoringCriteria, donorScoringInfo, dpb1TceGroupMatchType);
+            return BuildScoreResult(scoringCriteria, donorScoringInfo, dpb1TceGroupMatchType);
         }
 
         protected async Task<PhenotypeInfo<IHlaScoringMetadata>> GetHlaScoringMetadata(PhenotypeInfo<string> hlaNames, IEnumerable<Locus> lociToScore)
@@ -154,7 +198,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             };
         }
 
-        private static MismatchDirection? GetMismatchDirection(LocusMatchCategory locusMatchCategory, Locus locus,
+        private static MismatchDirection? GetMismatchDirection(
+            LocusMatchCategory locusMatchCategory,
+            Locus locus,
             Dpb1TceGroupMatchType dpb1TceGroupMatchType)
         {
             if (locus != Locus.Dpb1)
@@ -169,7 +215,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
             return LocusMatchCategoryAggregator.GetMismatchDirection(dpb1TceGroupMatchType);
         }
-
+        
         private class DonorScoringInfo
         {
             public PhenotypeInfo<MatchGradeResult> Grades { get; set; }

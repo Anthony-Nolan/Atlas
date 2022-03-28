@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Extensions;
@@ -37,7 +38,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             IMatchScoreCalculator matchScoreCalculator,
             IScoreResultAggregator scoreResultAggregator,
             IMatchingAlgorithmSearchLogger searchLogger,
-            IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator)
+            IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator, 
+            ILogger logger)
             : base(
                 factory,
                 hlaNomenclatureVersionAccessor,
@@ -45,7 +47,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                 confidenceService,
                 matchScoreCalculator,
                 scoreResultAggregator,
-                dpb1TceGroupMatchCalculator)
+                dpb1TceGroupMatchCalculator, 
+                logger)
         {
             this.rankingService = rankingService;
             this.searchLogger = searchLogger;
@@ -77,7 +80,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                 matchAndScoreResults.Add(new MatchAndScoreResult
                 {
                     MatchResult = matchResult,
-                    ScoreResult = await ScoreDonorHlaAgainstPatientMetadata(matchResult.DonorInfo.HlaNames, request, patientScoringMetadata)
+                    ScoreResult = await ScoreDonorHlaAgainstPatientMetadata(matchResult.DonorInfo.HlaNames, request.ScoringCriteria, patientScoringMetadata)
                 });
             }
 
@@ -101,7 +104,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                     yield return new MatchAndScoreResult
                     {
                         MatchResult = matchResult,
-                        ScoreResult = await ScoreDonorHlaAgainstPatientMetadata(matchResult.DonorInfo.HlaNames, request, patientScoringMetadata)
+                        ScoreResult = await ScoreDonorHlaAgainstPatientMetadata(matchResult.DonorInfo.HlaNames, request.ScoringCriteria, patientScoringMetadata)
                     };
                 }
             }

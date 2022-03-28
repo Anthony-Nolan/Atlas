@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Versions
 
+### 1.4.0
+
+* New `BatchScoringRequest` model added, using new `IdentifiedDonorHla` model
+  * Used to allow standalone scoring requests for batches of multiple donors at a time. 
+
 ### 1.3.0
 
 #### Search Requests
