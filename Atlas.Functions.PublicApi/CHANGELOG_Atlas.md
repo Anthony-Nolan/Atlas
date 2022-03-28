@@ -10,6 +10,12 @@ The project version will be appropriately incremented with each change to the pr
 
 ## Versions
 
+## 1.4.0
+
+#### Matching Algorithm
+
+* New Batch scoring endpoint added, to allow standalone scoring feature to be run on multiple donors at once
+
 ### 1.3.0
 
 #### Technical 
