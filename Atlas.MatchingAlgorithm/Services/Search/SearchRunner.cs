@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 {
     public interface ISearchRunner
     {
-        Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedSearchRequest identifiedSearchRequest);
+        Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest);
     }
 
     public class SearchRunner : ISearchRunner
@@ -49,7 +49,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
         }
 
-        public async Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
+        public async Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
         {
             var searchRequestId = identifiedSearchRequest.Id;
             searchLoggingContext.SearchRequestId = searchRequestId;
@@ -93,7 +93,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     ElapsedTime = stopwatch.Elapsed
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
-                return searchResultSet;
             }
             catch (HlaMetadataDictionaryException hldException)
             {
@@ -107,7 +106,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     ValidationError = hldException.Message
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
-                throw;
+                // Do not re-throw on HMD exception. In this case we know the search failed due to a failed HLA lookup, and we will continue to fail on retry. 
+                // Instead of retrying and ultimately dead lettering, we treat invalid HLA as an "Expected error" pathway 
+                // The results will be a single failure notification instead of one per retry, as well as ensuring that only unexpected errors cause search request messages to dead letter.
             }
             catch (Exception e)
             {
