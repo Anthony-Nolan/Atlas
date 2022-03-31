@@ -10,14 +10,17 @@ using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
+using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Services.Search.NonHlaFiltering;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
+using Dasync.Collections;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
 {
@@ -60,7 +63,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var criteria = await matchCriteriaMapper.MapRequestToAlleleLevelMatchCriteria(matchingRequest);
             expansionTimer.Dispose();
 
-            var matches = matchingService.GetMatches(criteria, cutOffDate);
+            var splitSearch = MatchCriteriaSimplifier.SplitSearch(criteria);
+            searchLogger.SendTrace(
+                $"Split into {splitSearch.Count} sub-searches: {splitSearch.Select(s => $"{s.LocusCriteria.A?.MismatchCount}{s.LocusCriteria.B?.MismatchCount}{s.LocusCriteria.Drb1?.MismatchCount}{s.LocusCriteria.C?.MismatchCount}{s.LocusCriteria.Dqb1?.MismatchCount}").StringJoin("|")}");
+
+            var matches = RunSubSearches(splitSearch, cutOffDate);
+
 
             var request = new StreamingMatchResultsScoringRequest
             {
@@ -74,19 +82,32 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             // If memory continues to be a concern on large datasets, it wouldn't be much work from here to stream results to file so we don't even need to store all results in memory! Though 
             // to do so would be to remove ranking of results, and may cause issues down the line where all results *do* need to be loaded into memory.
             var scoredMatches = await scoringService.StreamScoring(request);
-            var reifiedScoredMatches = scoredMatches.ToList();
+            var reifiedScoredMatches = scoredMatches.DistinctBy(m => m.MatchResult.DonorId).ToList();
+            searchLogger.SendTrace($"Via {splitSearch.Count} sub-searches, matched {reifiedScoredMatches.Count} donors total.");
 
             var donorLookupTimer = searchLogger.RunTimed($"{LoggingPrefix}Look up external donor ids");
             var donorLookup = await donorReader.GetDonors(reifiedScoredMatches.Select(r => r.MatchResult.DonorId));
             donorLookupTimer.Dispose();
 
             var resultsFilteredByDonorDetails = donorDetailsResultFilterer.FilterResultsByDonorData(
-                new DonorFilteringCriteria{RegistryCodes = matchingRequest.DonorRegistryCodes}, 
+                new DonorFilteringCriteria { RegistryCodes = matchingRequest.DonorRegistryCodes },
                 reifiedScoredMatches,
                 donorLookup
             ).ToList();
 
             return resultsFilteredByDonorDetails.Select(scoredMatch => MapSearchResultToApiSearchResult(scoredMatch, donorLookup));
+        }
+
+        private async IAsyncEnumerable<MatchResult> RunSubSearches(List<AlleleLevelMatchCriteria> splitSearch, DateTimeOffset? cutOffDate)
+        {
+            foreach (var subSearch in splitSearch)
+            {
+                var subSearchResults = matchingService.GetMatches(subSearch, cutOffDate);
+                await foreach (var result in subSearchResults)
+                {
+                    yield return result;
+                }
+            }
         }
 
         private static MatchingAlgorithmResult MapSearchResultToApiSearchResult(
