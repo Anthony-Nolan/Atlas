@@ -16,9 +16,10 @@ comprehensive list:
 - [Architecture Diagrams](ArchitectureDiagrams/README_Diagrams.md)
 - [Contribution and Versioning](README_Contribution_Versioning.md)
 - Guide for Installation and usage of the ATLAS system 
-    - [Deployment](README_Deployment.md)
-    - [Integration](README_Integration.md)
-    - [Support](README_Support.md)
+    - [Deployment](README_Deployment.md) - deploying the resources needed to run Atlas
+    - [Configuration](README_Configuration.md) - configuring resources / settings of Atlas to fine tune your installation
+    - [Integration](README_Integration.md) - processing reference data, and integrating your non-Atlas systems into Atlas
+    - [Support](README_Support.md) - resources for assisting with any issues when running an installation of Atlas
 - Components 
     - [Donor Import](README_DonorImport.md) 
     - [HLA Metadata Dictionary](README_HlaMetadataDictionary.md) 

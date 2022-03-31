@@ -2,7 +2,13 @@
 
 This README should cover the necessary steps to integrate ATLAS into another system, assuming it has been fully set up.
 
-For a deployment guide, see [the relevant README](README_Deployment.md).
+
+This document covers tuning the configuration of Atlas to suit your needs.
+
+* PREVIOUS: [Deployment](./README_Deployment.md), [Configuration](./README_Configuration.md) 
+* NEXT: [Support](./README_Support.md)
+
+_____________________________
 
 > On function invocation: All HTTP functions can be triggered via HTTP, and are authenticated via functions keys. These can be found and managed in Azure Portal.
 > By default, two keys will exist per function - one named `master`, which has admin access to function endpoints, and one called `default` which just has functions
@@ -234,41 +240,3 @@ It is possible to run each of the results categorisation processes - "Scoring" (
 on a per-donor basis.
 
 These routes are not officially supported, so have not been rigorously load tested / documented - but the option is available.
-
-## Search Concurrency Configuration
-
-There are a few different factors to affecting the concurrency of search operations. These may need tweaking on a per-installation basis, so a summary of the various options is available here.
-
-### Number of concurrent processes
-
-This is a multi-faceted configuration option due to horizontal scaling. 
-
-First we must consider how many concurrent processes can run on each worker. 
-
-This is configured by `maxConcurrentCalls` for regular functions (e.g. matching), and `maxConcurrentActivityFunctions` for durable functions (e.g. match prediction).
-
-Next we must consider how many horizontal instances can be spun out.
-
-This is configured by the minimum of `WEBSITE_MAX_DYNAMIC_SCALE_OUT` (sets it per-functions app), and `maximum elastic worker count` (sets it per service plan).
-These can both be set via terraform configuration values.  
-
-#### Repeat Search
-
-Two different functions apps will be making calls to the matching database - the matching functions app (running initial searches), and the repeat search app (running repeat searches).
-
-The vast majority of the time, repeat searches are expected to be much quicker and less resource intensive, so can afford lower concurrency.
-
-The above considerations of (scaled instances * max concurrent calls) applies for both functions apps - so the database connection limit in practice is:
-
-`(<concurrent matching calls per instance> * <number of matching instances>) + (<concurrent repeat matching calls per instance> * <number of repeat search instances>)`
-
-
-### Database Connection Limit
-
-Within a single process, multiple database connections may be concurrently opened.
-
-There is a hard limit on concurrent connections set by Azure - docs available for [vCore](https://docs.microsoft.com/en-us/azure/azure-sql/database/resource-limits-vcore-single-databases) 
-and [DTU](https://docs.microsoft.com/en-us/azure/azure-sql/database/resource-limits-dtu-single-databases) pricing models.
-
-If the concurrency settings of Atlas searches involve more concurrent connections than the provisioned database tier, requests will fail. Ensure that the database provisioned is large enough to 
-handle the required number of concurrent connections.

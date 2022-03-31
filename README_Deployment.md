@@ -1,5 +1,12 @@
 # Deployment
 
+This document covers deploying the resources required to run Atlas, but not necessarily fine tuning the configuration.
+
+* PREVIOUS: N/A
+* NEXT: [Configuration](./README_Configuration.md)
+
+ _________
+
 As much as possible of deployment of the ATLAS system has been scripted, via a combination of Terraform (using the Azure Resource Manager provider), and Azure Devops .yml scripts.
 Atlas is supported in an Azure environment, built and deployed using Azure Devops - to change either would require some custom changes to the codebase.
 
