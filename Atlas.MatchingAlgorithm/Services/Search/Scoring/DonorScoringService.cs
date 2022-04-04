@@ -136,10 +136,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         protected async Task<PhenotypeInfo<IHlaScoringMetadata>> GetHlaScoringMetadata(PhenotypeInfo<string> hlaNames, IEnumerable<Locus> lociToScore)
         {
             return await hlaNames.MapAsync(
-                async (locus, position, hla) =>
+                async (locus, _, hla) =>
                 {
                     // do not perform lookup for an untyped locus or a locus that is not to be scored
-                    if (hla == null || !lociToScore.Contains(locus))
+                    if (hla.IsNullOrEmpty() || !lociToScore.Contains(locus))
                     {
                         return default;
                     }
