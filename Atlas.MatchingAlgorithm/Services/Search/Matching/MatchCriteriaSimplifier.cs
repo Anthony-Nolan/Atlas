@@ -35,6 +35,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                     return SplitSingleMismatchSearch(criteria);
                 case 2:
                     return SplitDoubleMismatchSearch(criteria);
+                case 3:
+                    return SplitTripleMismatchSearch(criteria);
             }
         }
 
@@ -90,8 +92,19 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             }.Concat(splitSearchWithOneMismatchPerLocus).ToList();
         }
 
+        private static List<AlleleLevelMatchCriteria> SplitTripleMismatchSearch(AlleleLevelMatchCriteria criteria)
+        {
+            return new List<AlleleLevelMatchCriteria>
+            {
+                criteria.CopyWithNoMismatchesAtLocus(Locus.A),
+                criteria.CopyWithNoMismatchesAtLocus(Locus.B),
+                criteria.CopyWithNoMismatchesAtLocus(Locus.Drb1),
+                criteria.MapLocusCriteria((l, c) => l.IsRequired() ? c?.WithXMismatches(Math.Min(c.MismatchCount, 1)) : c)
+            };
+        }
+
         private static AlleleLevelLocusMatchCriteria WithNoMismatches(this AlleleLevelLocusMatchCriteria criteria) => criteria?.WithXMismatches(0);
-        
+
         private static AlleleLevelLocusMatchCriteria WithOneMismatch(this AlleleLevelLocusMatchCriteria criteria) => criteria?.WithXMismatches(1);
 
         private static AlleleLevelLocusMatchCriteria WithXMismatches(this AlleleLevelLocusMatchCriteria criteria, int x)
