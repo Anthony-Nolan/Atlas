@@ -149,6 +149,25 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
             splitSearch.Count(s => MatchesMismatchCounts(s, 2, 0, 1, 1, 1, 1)).Should().Be(1);
         }
         
+        [Test]
+        public void SplitSearch_WithThreeMismatches_IncludingTwoAtAllRequiredAndOptionalLoci_SplitsSearch()
+        {
+            var search = new AlleleLevelMatchCriteriaBuilder()
+                .WithDonorMismatchCount(3)
+                .WithRequiredLociMatchCriteria(2)
+                .WithLocusMismatchCount(Locus.C, 2)
+                .WithLocusMismatchCount(Locus.Dqb1, 2)
+                .Build();
+
+            var splitSearch = MatchCriteriaSimplifier.SplitSearch(search);
+
+            splitSearch.Count.Should().Be(4);
+            splitSearch.Count(s => MatchesMismatchCounts(s, 3, 2, 2, 0, 2, 2)).Should().Be(1);
+            splitSearch.Count(s => MatchesMismatchCounts(s, 3, 2, 0, 2, 2, 2)).Should().Be(1);
+            splitSearch.Count(s => MatchesMismatchCounts(s, 3, 0, 2, 2, 2, 2)).Should().Be(1);
+            splitSearch.Count(s => MatchesMismatchCounts(s, 3, 1, 1, 1, 2, 2)).Should().Be(1);
+        }
+        
         private static bool MatchesMismatchCounts(AlleleLevelMatchCriteria criteria, int total, int a, int b, int drb1, int? c = null, int? dqb1 = null)
         {
             var requiredDataMatches = criteria.DonorMismatchCount == total
