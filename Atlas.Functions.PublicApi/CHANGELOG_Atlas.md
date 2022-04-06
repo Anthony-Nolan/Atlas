@@ -15,6 +15,7 @@ The project version will be appropriately incremented with each change to the pr
 #### Matching Algorithm
 
 * New Batch scoring endpoint added, to allow standalone scoring feature to be run on multiple donors at once
+* Performance improvements greatly improve speed of 1-3 mismatch searches, particularly in very large installations
 
 ### 1.3.0
 
