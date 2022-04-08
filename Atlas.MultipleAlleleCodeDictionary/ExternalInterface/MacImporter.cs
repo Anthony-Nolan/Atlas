@@ -4,6 +4,7 @@ using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
 using Dasync.Collections;
 using System;
 using System.Threading.Tasks;
+using Atlas.Common.AzureStorage.TableStorage;
 using Atlas.Common.Notifications;
 
 namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
@@ -50,9 +51,22 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
                 logger.SendTrace($"{TracePrefix}Attempting to insert {newMacs.Count} new MACs");
                 await macRepository.InsertMacs(newMacs);
             }
+            catch (AzureTableBatchInsertException)
+            {
+                logger.SendTrace(
+                    $"{TracePrefix}Failed to insert MACs. Assuming this is due to de-synced metadata - re-syncing metadata (this may take some time)",
+                    LogLevel.Error);
+                
+                var lastEntryBeforeInsert = await macRepository.GetLastMacEntry(true);
+                var newMacs = await macFetcher.FetchAndLazilyParseMacsSince(lastEntryBeforeInsert).ToListAsync();
+                
+                logger.SendTrace($"{TracePrefix}Attempting to insert {newMacs.Count} new MACs");
+                await macRepository.InsertMacs(newMacs);
+            }
             catch (Exception e)
             {
-                await notificationSender.SendAlert("MAC Import failed", "Failed to import MACs, check AI logs for error details.", Priority.High, nameof(MacImporter));
+                await notificationSender.SendAlert("MAC Import failed", "Failed to import MACs, check AI logs for error details.", Priority.High,
+                    nameof(MacImporter));
                 logger.SendEvent(new ErrorEventModel($"{TracePrefix}Failed to finish MAC Import", e));
                 throw;
             }
