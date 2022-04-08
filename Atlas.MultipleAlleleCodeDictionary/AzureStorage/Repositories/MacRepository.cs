@@ -15,7 +15,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 {
     internal interface IMacRepository
     {
-        public Task<string> GetLastMacEntry();
+        /// <param name="bypassMetadata">
+        /// Defaults to false.
+        /// When set, will not use the efficient stored metadata to work out the latest seen MAC, and instead will work it out from the data.
+        /// This is *very slow*, and as such should only be done when absolutely necessary, e.g. the metadata has strayed out of sync from the real data.
+        /// </param>
+        public Task<string> GetLastMacEntry(bool bypassMetadata = false);
         public Task InsertMacs(IEnumerable<Mac> macCodes);
         public Task<Mac> GetMac(string macCode);
         public Task<IReadOnlyCollection<Mac>> GetAllMacs();
@@ -26,10 +31,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
     {
         private readonly ILogger logger;
         protected readonly CloudTable Table;
+
         private readonly string NonMetaDataFilter = TableQuery.GenerateFilterCondition(
-        "PartitionKey",
-        QueryComparisons.NotEqual,
-        LastStoredMacMetadataEntity.MetadataPartitionKey
+            "PartitionKey",
+            QueryComparisons.NotEqual,
+            LastStoredMacMetadataEntity.MetadataPartitionKey
         );
 
         public MacRepository(MacDictionarySettings macDictionarySettings, ILogger logger)
@@ -43,8 +49,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             Table.CreateIfNotExists(); //TODO: ATLAS-512. Is there any mileage in using the "Lazy" Indexing Policy? (Apparently requires "Gateway" mode on the table?)
         }
 
-        public async Task<string> GetLastMacEntry()
+        public async Task<string> GetLastMacEntry(bool bypassMetadata)
         {
+            if (bypassMetadata)
+            {
+                return await CalculateLastMacEntry();
+            }
             var lastMacEntryFromMetadata = await FetchLastMacEntryFromMetadata();
             return lastMacEntryFromMetadata ?? await CalculateLastMacEntry();
         }
@@ -70,6 +80,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             {
                 throw new MacNotFoundException(macCode);
             }
+
             return new Mac(macEntity);
         }
 
@@ -132,10 +143,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             // Weirdly that Async delete doesn't wait until the deletion is finalised before continuing.
             // So we have to wait for it ourselves.
             var twoMinuteRetryPolicy = Policy
-                .Handle<StorageException>(ex => 
+                .Handle<StorageException>(ex =>
                     (ex?.RequestInformation?.HttpStatusMessage ?? "") == "Conflict" &&
                     (ex?.RequestInformation?.ExtendedErrorInformation?.ErrorCode ?? "") == "TableBeingDeleted"
-                 )
+                )
                 .WaitAndRetryAsync(120, _ => TimeSpan.FromSeconds(1));
 
             await twoMinuteRetryPolicy.ExecuteAsync(async () => await Table.CreateIfNotExistsAsync());
@@ -148,7 +159,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         private async Task ExplicitlyDeleteAllMacRecords()
         {
             var query = new TableQuery<MacEntity>();
-            var existingMacs = await Table.ExecuteQueryAsync(query); // GetAllMacs would A) do unnecessary conversions and B) skip the LastUpdated record
+            var existingMacs =
+                await Table.ExecuteQueryAsync(query); // GetAllMacs would A) do unnecessary conversions and B) skip the LastUpdated record
 
             foreach (var macToDelete in existingMacs)
             {

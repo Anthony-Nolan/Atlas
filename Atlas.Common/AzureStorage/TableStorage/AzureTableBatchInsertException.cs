@@ -6,7 +6,7 @@ using Microsoft.Azure.Cosmos.Table;
 
 namespace Atlas.Common.AzureStorage.TableStorage
 {
-    internal class AzureTableBatchInsertException : Exception
+    public class AzureTableBatchInsertException : Exception
     {
         public AzureTableBatchInsertException(IEnumerable<TableEntity> tableEntities, Exception inner)
             : base(GetErrorMessage(tableEntities), inner)
