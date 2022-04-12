@@ -24,6 +24,12 @@ namespace Atlas.MatchingAlgorithm.Client.Models.Scoring
         /// The TotalMatchCount is a sum of potential and exact matches, so an exact match count can be calculated as the difference of these values
         /// </summary>
         public int ExactMatchCount => TotalMatchCount - PotentialMatchCount;
+
+        /// <summary>
+        /// The number of loci which are typed for this donor.
+        /// Loci excluded from scoring aggregation will not be included, regardless of whether they are typed.
+        /// </summary>
+        public int TypedLociCount { get; set; }
         
         /// <summary>
         /// A numeric value representing the aggregate relative match grade across all loci, according to the scoring algorithm
