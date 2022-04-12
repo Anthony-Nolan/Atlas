@@ -28,7 +28,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
             CacheAllMacs();
         }
 
-        public Task<string> GetLastMacEntry()
+        public Task<string> GetLastMacEntry(bool bypassMetadata)
         {
             throw new System.NotImplementedException();
         }
