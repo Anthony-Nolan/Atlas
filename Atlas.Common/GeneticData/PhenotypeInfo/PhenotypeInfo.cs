@@ -137,6 +137,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 .SetPosition(locus, LocusPosition.Two, value);
         }
 
+        public PhenotypeInfo<T> SetLocus(Locus locus, T value1, T value2)
+        {
+            return SetPosition(locus, LocusPosition.One, value1)
+                .SetPosition(locus, LocusPosition.Two, value2);
+        }
+
         #region Functional Methods
 
         public PhenotypeInfo<R> Map<R>(Func<Locus, LocusPosition, T, R> mapping)
