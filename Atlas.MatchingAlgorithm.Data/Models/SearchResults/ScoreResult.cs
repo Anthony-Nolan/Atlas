@@ -20,23 +20,16 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
 
         public LocusScoreDetails ScoreDetailsForLocus(Locus locus)
         {
-            switch (locus)
+            return locus switch
             {
-                case Locus.A:
-                    return ScoreDetailsAtLocusA;
-                case Locus.B:
-                    return ScoreDetailsAtLocusB;
-                case Locus.C:
-                    return ScoreDetailsAtLocusC;
-                case Locus.Dpb1:
-                    return ScoreDetailsAtLocusDpb1;
-                case Locus.Dqb1:
-                    return ScoreDetailsAtLocusDqb1;
-                case Locus.Drb1:
-                    return ScoreDetailsAtLocusDrb1;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                Locus.A => ScoreDetailsAtLocusA,
+                Locus.B => ScoreDetailsAtLocusB,
+                Locus.C => ScoreDetailsAtLocusC,
+                Locus.Dpb1 => ScoreDetailsAtLocusDpb1,
+                Locus.Dqb1 => ScoreDetailsAtLocusDqb1,
+                Locus.Drb1 => ScoreDetailsAtLocusDrb1,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
         
         public void SetScoreDetailsForLocus(Locus locus, LocusScoreDetails locusScoreDetails)

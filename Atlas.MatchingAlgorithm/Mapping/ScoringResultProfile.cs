@@ -20,6 +20,7 @@ namespace Atlas.MatchingAlgorithm.Mapping
             CreateMap<ScoreResult, ScoringResult>()
                 .ForMember(s => s.TotalMatchCount, opt => opt.MapFrom(m => m.AggregateScoreDetails.MatchCount))
                 .ForMember(s => s.PotentialMatchCount, opt => opt.MapFrom(m => m.AggregateScoreDetails.PotentialMatchCount))
+                .ForMember(s => s.TypedLociCount, opt => opt.MapFrom(m => m.AggregateScoreDetails.TypedLociCount))
                 .ForMember(s => s.GradeScore, opt => opt.MapFrom(m => m.AggregateScoreDetails.GradeScore))
                 .ForMember(s => s.ConfidenceScore, opt => opt.MapFrom(m => m.AggregateScoreDetails.ConfidenceScore))
                 .ForMember(s => s.MatchCategory, opt => opt.MapFrom(m => m.AggregateScoreDetails.MatchCategory))
