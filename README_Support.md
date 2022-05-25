@@ -231,6 +231,8 @@ The exception is expected.
 
 The MAC has not yet been imported. Manually trigger an early MAC import, or wait 24 hours.
 
+(To manually trigger an import, call the `ManuallyImportMacs` function - either from a REST client of your choice, including the function key from Azure as an authorisation header, or directly from the Azure Portal's "Funtions" view, which allows you to execute individual functions directly from the portal)
+
 If this happens frequently, consider increasing the frequency of the MAC import.
 
 - If the MAC is valid, and >24 hours old
