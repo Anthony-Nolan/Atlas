@@ -37,7 +37,12 @@ comprehensive list:
 ### CHANGELOG Index
 - [Client](Atlas.Client.Models/CHANGELOG_Client.md)
 - [Atlas Product](Atlas.Functions.PublicApi/CHANGELOG_Atlas.md)
-
+- Databases
+  - [Matching - Persistent](Atlas.MatchingAlgorithm.Data.Persistent/CHANGELOG_Data.md)
+  - [Matching - Transient](Atlas.MatchingAlgorithm.Data/CHANGELOG_Data.md)
+  - [Match Prediction](Atlas.MatchPrediction.Data/CHANGELOG_Data.md)
+  - [Repeat Search](Atlas.RepeatSearch.Data/CHANGELOG_Data.md)
+  - [Donors](Atlas.DonorImport.Data/CHANGELOG_Data.md)
 
 ## Components
 
