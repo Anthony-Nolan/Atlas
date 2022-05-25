@@ -24,7 +24,6 @@ comprehensive list:
     - [HLA Metadata Dictionary](README_HlaMetadataDictionary.md) 
     - [Matching Algorithm](README_MatchingAlgorithm.md)
         - [Validation Test (Non-Technical BDD Testing)](Atlas.MatchingAlgorithm.Test.Validation/ValidationTests/Features/README_MatchingValidationTests.md)
-    - [Match Prediction Algorithm](README_MatchPredictionAlgorithm.md) 
     - [MAC Dictionary](README_MultipleAlleleCodeDictionary.md)
 - [Manual Testing](README_ManualTesting.md)
 - [Test and Debug Resources](MiscTestingAndDebuggingResources/README_TestAndDebug.md)
