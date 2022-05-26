@@ -231,7 +231,7 @@ jobs:
     pool: 
       vmImage: 'ubuntu-latest'
     steps:
-      - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
+      - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
         displayName: 'Use Terraform 0.12.24'
         inputs:
           terraformVersion: '0.12.24'
