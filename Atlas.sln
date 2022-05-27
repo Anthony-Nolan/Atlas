@@ -60,6 +60,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction.Data", "Atlas.MatchPrediction.Data\Atlas.MatchPrediction.Data.csproj", "{A44AF465-B57E-4A17-B5C2-85D0170B2BEE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MatchPrediction", "MatchPrediction", "{8DF9D0B6-B94E-4680-8AB8-CB1509F23A74}"
+	ProjectSection(SolutionItems) = preProject
+		README_MatchPredictionAlgorithm.md = README_MatchPredictionAlgorithm.md
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction.Test.Integration", "Atlas.MatchPrediction.Test.Integration\Atlas.MatchPrediction.Test.Integration.csproj", "{00290A50-CE88-4148-B50F-63B3AF313E8A}"
 EndProject

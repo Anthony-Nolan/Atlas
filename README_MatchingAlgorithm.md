@@ -1,4 +1,4 @@
-Service for AN's HSC Search Algorithm.
+Service for the Atlas (Matching, non-predictive portion of the) Search Algorithm.
 
 ## Projects
 
