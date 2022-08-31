@@ -15,8 +15,8 @@ output "function_app" {
 
 output "service_bus" {
   value = {
-    matching_requests_topic = azurerm_servicebus_topic.matching-requests.name
-    matching_results_topic  = azurerm_servicebus_topic.matching-results-ready.name
+    matching_requests_topic = azurerm_servicebus_topic.matching-requests
+    matching_results_topic  = azurerm_servicebus_topic.matching-results-ready
   }
 }
 

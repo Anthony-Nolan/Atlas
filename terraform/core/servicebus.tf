@@ -77,7 +77,7 @@ resource "azurerm_servicebus_subscription" "match-prediction-orchestration-searc
   name                                 = "match-prediction-orchestration"
   resource_group_name                  = azurerm_resource_group.atlas_resource_group.name
   namespace_name                       = azurerm_servicebus_namespace.general.name
-  topic_name                           = module.matching_algorithm.service_bus.matching_results_topic
+  topic_name                           = module.matching_algorithm.service_bus.matching_results_topic.name
   auto_delete_on_idle                  = local.service-bus.long-expiry
   default_message_ttl                  = local.service-bus.long-expiry
   lock_duration                        = local.service-bus.default-read-lock
