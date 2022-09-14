@@ -7,9 +7,9 @@ locals {
     long-expiry = "P9999D"
 
     // 5GB
-    default-bus-size                 = 5120
+    default-bus-size = 5120
 
-    default-read-lock                = "PT5M"
+    default-read-lock       = "PT5M"
     default-message-retries = 10
   }
 }

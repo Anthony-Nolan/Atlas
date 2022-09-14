@@ -12,22 +12,22 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs
     public static class SingleDonorMatchProbabilityInputBuilder
     {
         public static Builder Default => Builder.New
-            .With(i => i.DonorInput, new DonorInput())
+            .With(i => i.Donor, new DonorInput())
             .WithPatientHla(new PhenotypeInfo<string>("hla"))
             .WithDonorHla(new PhenotypeInfo<string>("hla"));
 
         public static Builder WithDonorHla(this Builder builder, PhenotypeInfo<string> donorHla)
         {
-            var donorInput = builder.Build().DonorInput;
+            var donorInput = builder.Build().Donor;
             donorInput.DonorHla = donorHla?.ToPhenotypeInfoTransfer();
-            return builder.With(i => i.DonorInput, donorInput);
+            return builder.With(i => i.Donor, donorInput);
         }
 
         public static Builder WithDonorMetadata(this Builder builder, FrequencySetMetadata frequencySetMetadata)
         {
-            var donorInput = builder.Build().DonorInput;
+            var donorInput = builder.Build().Donor;
             donorInput.DonorFrequencySetMetadata = frequencySetMetadata;
-            return builder.With(i => i.DonorInput, donorInput);
+            return builder.With(i => i.Donor, donorInput);
         }
 
         public static Builder WithPatientHla(this Builder builder, PhenotypeInfo<string> patientHla) =>

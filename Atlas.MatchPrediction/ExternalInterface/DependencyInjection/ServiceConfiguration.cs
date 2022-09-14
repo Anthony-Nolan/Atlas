@@ -14,6 +14,7 @@ using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Atlas.MatchPrediction.Clients;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Services.ResultsUpload;
@@ -48,7 +49,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 
         public static void RegisterMatchPredictionValidator(this IServiceCollection services)
         {
-            services.AddScoped<IMatchPredictionAlgorithmValidator, MatchPredictionAlgorithmValidator>();
+            services.AddScoped<IMatchPredictionValidator, MatchPredictionValidator>();
         }
 
         public static void RegisterHaplotypeFrequenciesReader(
@@ -60,6 +61,17 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.AddScoped<IHaplotypeFrequencySetReadRepository>(sp =>
                 new HaplotypeFrequencySetReadRepository(fetchMatchPredictionDatabaseConnectionString(sp))
             );
+        }
+
+        public static void RegisterMatchPredictionRequester(
+            this IServiceCollection services,
+            Func<IServiceProvider, MessagingServiceBusSettings> messagingServiceBusSettings
+        )
+        {
+            services.AddScoped<IMatchPredictionValidator, MatchPredictionValidator>();
+            services.AddScoped<IMatchPredictionRequestDispatcher, MatchPredictionRequestDispatcher>();
+            services.MakeSettingsAvailableForUse(messagingServiceBusSettings);
+            services.AddScoped<IMatchPredictionBusClient, MatchPredictionBusClient>();
         }
 
         private static void RegisterSettings(
