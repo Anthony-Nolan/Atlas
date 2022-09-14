@@ -3,7 +3,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using LochNessBuilder;
-using Builder = LochNessBuilder.Builder<Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability.MatchProbabilityRequestInput>;
+using Builder = LochNessBuilder.Builder<Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability.IdentifiedMatchProbabilityRequest>;
 
 namespace Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs
 {

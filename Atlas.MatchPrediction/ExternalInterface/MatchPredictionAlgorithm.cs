@@ -66,7 +66,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
                     using (logger.RunTimed("Run Match Prediction Algorithm per donor"))
                     {
                         var result = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
-                        foreach (var donorId in matchProbabilityInput.DonorInput.DonorIds)
+                        foreach (var donorId in matchProbabilityInput.Donor.DonorIds)
                         {
                             var fileName = await resultUploader.UploadDonorResult(searchRequestId, donorId, result);
                             fileNames[donorId] = fileName;
