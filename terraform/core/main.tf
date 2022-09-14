@@ -11,7 +11,7 @@ locals {
   min_tls_version     = "1.0"
   resource_group_name = "${local.environment}-ATLAS-RESOURCE-GROUP"
   subscription_id     = var.AZURE_SUBSCRIPTION_ID
-  common_tags         = {
+  common_tags = {
     controlled_by_terraform = true
     repository_name         = local.repository_name
   }
@@ -144,7 +144,7 @@ module "matching_algorithm" {
 module "match_prediction" {
   source = "./modules/match_prediction"
 
-  general                     = {
+  general = {
     environment = local.environment
     location    = local.location
     common_tags = local.common_tags
@@ -190,7 +190,7 @@ module "multiple_allele_code_lookup" {
 module "repeat_search" {
   source = "./modules/repeat_search"
 
-  general                     = {
+  general = {
     environment = local.environment
     location    = local.location
     common_tags = local.common_tags
@@ -208,18 +208,18 @@ module "repeat_search" {
   matching_transient_b_database_connection_string = module.matching_algorithm.sql_database.transient_b_database_connection_string
   original-search-matching-results-topic-name     = module.matching_algorithm.service_bus.matching_results_topic.name
   servicebus_namespace                            = azurerm_servicebus_namespace.general
-  servicebus_namespace_authorization_rules        = {
+  servicebus_namespace_authorization_rules = {
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
     read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
     write-only = azurerm_servicebus_namespace_authorization_rule.write-only
   }
-  servicebus_topics                               = {
+  servicebus_topics = {
     alerts        = module.support.general.alerts_servicebus_topic
     notifications = module.support.general.notifications_servicebus_topic
   }
-  shared_function_storage                         = azurerm_storage_account.function_storage
-  sql_database                                    = azurerm_sql_database.atlas-database-shared
-  sql_server                                      = azurerm_sql_server.atlas_sql_server
+  shared_function_storage = azurerm_storage_account.function_storage
+  sql_database            = azurerm_sql_database.atlas-database-shared
+  sql_server              = azurerm_sql_server.atlas_sql_server
 
 
   // Release variables

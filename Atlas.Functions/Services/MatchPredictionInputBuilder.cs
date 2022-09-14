@@ -81,12 +81,12 @@ namespace Atlas.Functions.Services
         /// <param name="searchRequestId"></param>
         /// <param name="searchRequest"></param>
         /// <returns></returns>
-        private static MatchProbabilityRequestInput BuildSearchRequestMatchPredictionInput(
+        private static IdentifiedMatchProbabilityRequest BuildSearchRequestMatchPredictionInput(
             string searchRequestId,
             SearchRequest searchRequest
         )
         {
-            return new MatchProbabilityRequestInput
+            return new IdentifiedMatchProbabilityRequest
             {
                 SearchRequestId = searchRequestId,
                 ExcludedLoci = ExcludedLoci(searchRequest.MatchCriteria),

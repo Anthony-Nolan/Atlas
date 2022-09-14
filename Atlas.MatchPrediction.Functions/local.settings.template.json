@@ -13,6 +13,7 @@
     "MessagingServiceBus:ConnectionString": "override-this",
     "MessagingServiceBus:ImportFileSubscription": "haplotype-frequency-import",
     "MessagingServiceBus:ImportFileTopic": "haplotype-frequency-file-uploads",
+    "MessagingServiceBus:MatchPredictionRequestsTopic": "match-prediction-requests",
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications"

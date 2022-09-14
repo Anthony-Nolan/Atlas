@@ -10,7 +10,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
     public interface IDonorInputBatcher
     {
         IEnumerable<MultipleDonorMatchProbabilityInput> BatchDonorInputs(
-            MatchProbabilityRequestInput requestInput,
+            IdentifiedMatchProbabilityRequest request,
             IEnumerable<DonorInput> donorInputs,
             int batchSize
         );
@@ -19,7 +19,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
     internal class DonorInputBatcher : IDonorInputBatcher
     {
         public IEnumerable<MultipleDonorMatchProbabilityInput> BatchDonorInputs(
-            MatchProbabilityRequestInput requestInput,
+            IdentifiedMatchProbabilityRequest request,
             IEnumerable<DonorInput> donorInputs,
             int batchSize = 10)
         {
@@ -37,7 +37,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
                     DonorIds = group.SelectMany(d => d.DonorIds).ToList()
                 });
 
-            return consolidatedDonorInputs.Batch(batchSize).Select(donorBatch => new MultipleDonorMatchProbabilityInput(requestInput)
+            return consolidatedDonorInputs.Batch(batchSize).Select(donorBatch => new MultipleDonorMatchProbabilityInput(request)
             {
                 MatchProbabilityRequestId = Guid.NewGuid().ToString(),
                 Donors = donorBatch.ToList()

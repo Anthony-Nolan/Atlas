@@ -6,29 +6,36 @@ using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 {
-    public class SingleDonorMatchProbabilityInput : MatchProbabilityRequestInput
+    public class SingleDonorMatchProbabilityInput : IdentifiedMatchProbabilityRequest
     {
         public SingleDonorMatchProbabilityInput()
         {
         }
 
-        public SingleDonorMatchProbabilityInput(MatchProbabilityRequestInput matchProbabilityRequestInput) : base(matchProbabilityRequestInput)
+        /// <summary>
+        /// To be used when running a match prediction request outside of search
+        /// </summary>
+        public SingleDonorMatchProbabilityInput(MatchProbabilityRequest request) : base(request)
+        {
+        }
+
+        public SingleDonorMatchProbabilityInput(IdentifiedMatchProbabilityRequest request) : base(request)
         {
         }
 
         /// <summary>
         /// Can actually represent multiple donors, provided they all share phenotypes and metadata 
         /// </summary>
-        public DonorInput DonorInput { get; set; }
+        public DonorInput Donor { get; set; }
     }
 
-    public class MultipleDonorMatchProbabilityInput : MatchProbabilityRequestInput
+    public class MultipleDonorMatchProbabilityInput : IdentifiedMatchProbabilityRequest
     {
         public MultipleDonorMatchProbabilityInput()
         {
         }
 
-        public MultipleDonorMatchProbabilityInput(MatchProbabilityRequestInput requestInput) : base(requestInput)
+        public MultipleDonorMatchProbabilityInput(IdentifiedMatchProbabilityRequest request) : base(request)
         {
         }
 
@@ -40,7 +47,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         internal IEnumerable<SingleDonorMatchProbabilityInput> SingleDonorMatchProbabilityInputs =>
             Donors.Select(d => new SingleDonorMatchProbabilityInput(this)
             {
-                DonorInput = d
+                Donor = d
             }).ToList();
     }
 
@@ -63,27 +70,25 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         public FrequencySetMetadata DonorFrequencySetMetadata { get; set; }
     }
 
-    /// <summary>
-    /// Contains all information to run a match prediction *request* - whether for one donor or multiple
-    /// </summary>
-    public class MatchProbabilityRequestInput
+    public class IdentifiedMatchProbabilityRequest : MatchProbabilityRequest
     {
         // ReSharper disable once MemberCanBeProtected.Global - Deserialised
-        public MatchProbabilityRequestInput()
+        public IdentifiedMatchProbabilityRequest()
         {
         }
 
-        protected MatchProbabilityRequestInput(MatchProbabilityRequestInput initial)
+        protected IdentifiedMatchProbabilityRequest(MatchProbabilityRequest request) : base(request)
+        {
+        }
+
+        protected IdentifiedMatchProbabilityRequest(IdentifiedMatchProbabilityRequest initial) : base(initial)
         {
             MatchProbabilityRequestId = initial.MatchProbabilityRequestId;
             SearchRequestId = initial.SearchRequestId;
-            ExcludedLoci = initial.ExcludedLoci;
-            PatientHla = initial.PatientHla;
-            PatientFrequencySetMetadata = initial.PatientFrequencySetMetadata;
         }
 
         /// <summary>
-        /// Unique Identifier used for this match prediction request, used to identify MPA requests across serialisation boundaries in duravble functions
+        /// Unique Identifier used for this match prediction request, used to identify MPA requests across serialisation boundaries in durable functions
         /// </summary>
         public string MatchProbabilityRequestId { get; set; }
 
@@ -91,6 +96,24 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         /// Search ID is used to identify uploaded results of the Match Prediction Algorithm
         /// </summary>
         public string SearchRequestId { get; set; }
+    }
+
+    /// <summary>
+    /// Contains information needed to run a match prediction request, excluding donor data
+    /// </summary>
+    public class MatchProbabilityRequest
+    {
+        // ReSharper disable once MemberCanBeProtected.Global - Deserialised
+        public MatchProbabilityRequest()
+        {
+        }
+
+        protected MatchProbabilityRequest(MatchProbabilityRequest initial)
+        {
+            ExcludedLoci = initial.ExcludedLoci;
+            PatientHla = initial.PatientHla;
+            PatientFrequencySetMetadata = initial.PatientFrequencySetMetadata;
+        }
 
         /// <summary>
         /// Match prediction will be run on all loci by default.

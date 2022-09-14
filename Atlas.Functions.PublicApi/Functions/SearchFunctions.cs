@@ -21,13 +21,13 @@ namespace Atlas.Functions.PublicApi.Functions
     {
         private readonly ISearchDispatcher searchDispatcher;
         private readonly IRepeatSearchDispatcher repeatSearchDispatcher;
-        private readonly IMatchPredictionAlgorithmValidator matchPredictionAlgorithmValidator;
+        private readonly IMatchPredictionValidator matchPredictionValidator;
 
-        public SearchFunctions(ISearchDispatcher searchDispatcher, IRepeatSearchDispatcher repeatSearchDispatcher, IMatchPredictionAlgorithmValidator matchPredictionAlgorithmValidator)
+        public SearchFunctions(ISearchDispatcher searchDispatcher, IRepeatSearchDispatcher repeatSearchDispatcher, IMatchPredictionValidator matchPredictionValidator)
         {
             this.searchDispatcher = searchDispatcher;
             this.repeatSearchDispatcher = repeatSearchDispatcher;
-            this.matchPredictionAlgorithmValidator = matchPredictionAlgorithmValidator;
+            this.matchPredictionValidator = matchPredictionValidator;
         }
 
         [FunctionName(nameof(Search))]
@@ -45,7 +45,7 @@ namespace Atlas.Functions.PublicApi.Functions
             }
 
             var probabilityRequestToValidate = searchRequest.ToPartialMatchProbabilitySearchRequest();
-            var probabilityValidationResult = matchPredictionAlgorithmValidator.ValidateMatchPredictionAlgorithmInput(probabilityRequestToValidate);
+            var probabilityValidationResult = matchPredictionValidator.ValidateMatchProbabilityNonDonorInput(probabilityRequestToValidate);
             if (!probabilityValidationResult.IsValid)
             {
                 return BuildValidationResponse(probabilityValidationResult);
@@ -70,7 +70,7 @@ namespace Atlas.Functions.PublicApi.Functions
             }
 
             var probabilityRequestToValidate = repeatSearchRequest.SearchRequest.ToPartialMatchProbabilitySearchRequest();
-            var probabilityValidationResult = matchPredictionAlgorithmValidator.ValidateMatchPredictionAlgorithmInput(probabilityRequestToValidate);
+            var probabilityValidationResult = matchPredictionValidator.ValidateMatchProbabilityNonDonorInput(probabilityRequestToValidate);
             if (!probabilityValidationResult.IsValid)
             {
                 return BuildValidationResponse(probabilityValidationResult);
