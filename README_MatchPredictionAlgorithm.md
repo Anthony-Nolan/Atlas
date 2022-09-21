@@ -11,7 +11,7 @@ The solution is split across multiple projects:
 - Atlas.MatchPrediction.Functions
   - **WARNING** This functions app does not actually run match prediction in a search request - instead that is performed by `Atlas.Functions` in the durable functions layer
   - This functions app provides import functionality for HF sets
-  - It also exposes HTTP endpoints intended to be used for manual debugging/support of the match prediction algorithm and its component stages - these are not intended for production use while running searches
+  - It also exposes a HTTP endpoint intended for manual debugging/support of the match prediction algorithm and its component stages - not intended for production use while running searches.
 - Atlas.MatchPrediction.Test
   - Unit tests for the project
 - Atlas.MatchPrediction.Test.Integration
@@ -57,4 +57,28 @@ A high level overview of the match prediction algorithm's logic is as follows:
 * Final Calculation
   * For each of the percentage results, the final result can be calculated by dividing the `sum of all patient donor pairs' likelihoods that meet the result's criteria`
     (e.g. 0 mismatches overall) by the `sum of all patient donor pairs' likelihoods`
-  
+
+
+## Match Prediction Requests
+- Match prediction requests (outside of search) can be submitted to the http-triggered function within the Match prediction project.
+  - The endpoint will return a unique request ID.
+  - The function forwards the request onto a dedicated service bus topic; in this way, potentially millions of requests can be made and queued on the topic for gradual processing.
+- A second, servicebus-triggered function reads messages in batches off the topic, and runs the requests.
+  - Results are uploaded to a subfolder of the match prediction results blob storage container (subfolder name: `match-prediction-requests`).
+    - Each json result file is named after its corresponding match prediction request ID.
+    - Note, the file does not contain a patient or donor ID; the consumer should map patient-donor IDs to request ID when initially submitting the request.
+  - If any requests contain invalid properties, such as missing values or invalid HLA, these will be indiviually caught and logged to Application Insights to allow users to correct them and re-submit.
+    - Note: No alerts are sent out in such case; the user should manually monitor the logs, or use Application Insights monitoring.
+
+
+## Match Prediction Algorithm (MPA) Settings
+
+### Handling HLA metadata dictionary (HMD) errors caused by HLA versioning
+
+There is a known issue that occurs when the matching and match prediction components are run on different versions of the HMD, specifically where the former may be ahead of the latter, and contain new alleles. Refer to [issue #637](https://github.com/Anthony-Nolan/Atlas/issues/637) for more details.
+
+Until a more permanent fix has been implemented, the following setting has been added to the MPA to control whether HMD errors will be thrown during the "phenotype conversion" step of the algorithm: `SuppressCompressedPhenotypeConversionExceptions: [true/false]`.
+
+It has been set to `true` for search requests handled by the `Atlas.Functions` app, and to `false` for match prediction requests run by the `Atlas.MatchPrediction.Functions` app. This is because the above issue only occurs when both matching and match prediction are run sequentially on the same patient-donor set (i.e., during search). When only match prediction is run, HMD exceptions may be due to genuinely invalid HLA being submitted in a request that should rightly cause the request to fail.
+
+Note to developers: `SuppressCompressedPhenotypeConversionExceptions` has been added as an app-level setting, as for the immediate future, there are no plans to run match prediction requests from the top-level function. If this changes before a fix for issue #637 has been implemented, the scope of controlling suppression of conversion errors may need amending.

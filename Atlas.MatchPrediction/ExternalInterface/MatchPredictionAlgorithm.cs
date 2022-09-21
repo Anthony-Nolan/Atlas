@@ -6,9 +6,9 @@ using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
+using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
-using Atlas.MatchPrediction.Services.ResultsUpload;
 using LoggingStopwatch;
 
 namespace Atlas.MatchPrediction.ExternalInterface
@@ -27,15 +27,15 @@ namespace Atlas.MatchPrediction.ExternalInterface
     {
         private readonly IMatchProbabilityService matchProbabilityService;
         private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
-        private readonly IResultUploader resultUploader;
+        private readonly ISearchDonorResultUploader resultUploader;
         private readonly ILogger logger;
 
         public MatchPredictionAlgorithm(
             IMatchProbabilityService matchProbabilityService,
-            // ReSharper disable once SuggestBaseTypeForParameter
-            IMatchPredictionLogger logger,
+            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+            IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
             IHaplotypeFrequencyService haplotypeFrequencyService,
-            IResultUploader resultUploader)
+            ISearchDonorResultUploader resultUploader)
         {
             this.matchProbabilityService = matchProbabilityService;
             this.logger = logger;
@@ -68,7 +68,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
                         var result = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
                         foreach (var donorId in matchProbabilityInput.Donor.DonorIds)
                         {
-                            var fileName = await resultUploader.UploadDonorResult(searchRequestId, donorId, result);
+                            var fileName = await resultUploader.UploadSearchDonorResult(searchRequestId, donorId, result);
                             fileNames[donorId] = fileName;
                         }
                     }

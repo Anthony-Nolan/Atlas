@@ -26,8 +26,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
 
         public GenotypeConverter(
-            // ReSharper disable once SuggestBaseTypeForParameter
-            IMatchPredictionLogger logger,
+            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+            IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory)
         {
             this.logger = logger;

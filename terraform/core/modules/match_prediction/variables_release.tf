@@ -21,6 +21,10 @@ variable "MAC_SOURCE" {
   type = string
 }
 
+variable "SUPPRESS_COMPRESSED_PHENOTYPE_CONVERSION_EXCEPTIONS" {
+  type = bool
+}
+
 variable "WEBSITE_RUN_FROM_PACKAGE" {
   type = string
 }

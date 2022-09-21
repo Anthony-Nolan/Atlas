@@ -9,7 +9,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions
         public string Locus { get; set; }
         public string HlaName { get; set; }
 
-        internal HlaMetadataDictionaryException(string locus, string hlaName, string message, Exception inner = null)
+        public HlaMetadataDictionaryException(string locus, string hlaName, string message, Exception inner = null)
             : base(message, inner)
         {
             Locus = locus;

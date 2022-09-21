@@ -8,8 +8,14 @@ using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 
 namespace Atlas.MatchPrediction.ApplicationInsights
 {
-    internal class MatchPredictionLoggingContext : LoggingContext
+    public class MatchProbabilityLoggingContext : LoggingContext
     {
+        public string SearchRequestId { get; set; }
+        public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
+        public string DonorIds { get; set; }
+        public PhenotypeInfo<string> DonorHla { get; set; }
+        public PhenotypeInfo<string> PatientHla { get; set; }
+
         public void Initialise(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput)
         {
             SearchRequestId = singleDonorMatchProbabilityInput.SearchRequestId;
@@ -17,12 +23,6 @@ namespace Atlas.MatchPrediction.ApplicationInsights
             DonorHla = singleDonorMatchProbabilityInput.Donor?.DonorHla?.ToPhenotypeInfo();
             PatientHla = singleDonorMatchProbabilityInput.PatientHla?.ToPhenotypeInfo();
         }
-
-        public string SearchRequestId { get; set; }
-        public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
-        public string DonorIds { get; set; }
-        public PhenotypeInfo<string> DonorHla { get; set; }
-        public PhenotypeInfo<string> PatientHla { get; set; }
 
         /// <inheritdoc />
         public override Dictionary<string, string> PropertiesToLog()
