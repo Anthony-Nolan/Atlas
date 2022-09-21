@@ -20,7 +20,7 @@ namespace Atlas.Common.Validation
             };
         }
 
-        internal static string ToErrorMessagesString(this ValidationException validationException)
+        public static string ToErrorMessagesString(this ValidationException validationException)
         {
             var errorMessages = validationException.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}");
             return errorMessages.StringJoinWithNewline();

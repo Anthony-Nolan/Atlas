@@ -57,8 +57,8 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
         private readonly ICompressedPhenotypeConverter converter;
 
         public CompressedPhenotypeExpander(
-            // ReSharper disable once SuggestBaseTypeForParameter
-            IMatchPredictionLogger logger,
+            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+            IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             ICompressedPhenotypeConverter converter)
         {

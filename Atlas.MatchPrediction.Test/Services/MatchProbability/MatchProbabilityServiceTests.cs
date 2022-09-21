@@ -32,9 +32,9 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         private IGenotypeConverter genotypeConverter;
         private IMatchProbabilityCalculator matchProbabilityCalculator;
         private IHaplotypeFrequencyService haplotypeFrequencyService;
-        private IMatchPredictionLogger logger;
-        private MatchPredictionLoggingContext matchPredictionLoggingContext;
-        private readonly Fixture fixture = new Fixture();
+        private IMatchPredictionLogger<MatchProbabilityLoggingContext> logger;
+        private MatchProbabilityLoggingContext matchProbabilityLoggingContext;
+        private readonly Fixture fixture = new();
 
         private IMatchProbabilityService matchProbabilityService;
 
@@ -47,8 +47,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             matchCalculationService = Substitute.For<IMatchCalculationService>();
             matchProbabilityCalculator = Substitute.For<IMatchProbabilityCalculator>();
             haplotypeFrequencyService = Substitute.For<IHaplotypeFrequencyService>();
-            logger = Substitute.For<IMatchPredictionLogger>();
-            matchPredictionLoggingContext = new MatchPredictionLoggingContext();
+            logger = Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
+            matchProbabilityLoggingContext = new MatchProbabilityLoggingContext();
 
             var hmd = Substitute.For<IHlaMetadataDictionary>();
             var hmdFactory = Substitute.For<IHlaMetadataDictionaryFactory>();
@@ -62,7 +62,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 matchProbabilityCalculator,
                 haplotypeFrequencyService,
                 logger,
-                matchPredictionLoggingContext);
+                matchProbabilityLoggingContext);
 
             haplotypeFrequencyService.GetAllHaplotypeFrequencies(default).ReturnsForAnyArgs(
                 new ConcurrentDictionary<LociInfo<string>, HaplotypeFrequency>(
@@ -72,7 +72,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             compressedPhenotypeExpander.ExpandCompressedPhenotype(default).ReturnsForAnyArgs(
                 new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>>(new List<PhenotypeInfo<HlaAtKnownTypingCategory>>
                 {
-                    new PhenotypeInfo<HlaAtKnownTypingCategory>(new HlaAtKnownTypingCategory("hla", HaplotypeTypingCategory.SmallGGroup))
+                    new(new HlaAtKnownTypingCategory("hla", HaplotypeTypingCategory.SmallGGroup))
                 })
             );
 
@@ -164,14 +164,14 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             result.DonorHaplotypeFrequencySet.EthnicityCode.Should().Be(donorSet.EthnicityCode);
             result.DonorHaplotypeFrequencySet.HlaNomenclatureVersion.Should().Be(donorSet.HlaNomenclatureVersion);
             result.DonorHaplotypeFrequencySet.PopulationId.Should().Be(donorSet.PopulationId);
-            result.DonorFrequencySetNomenclatureVersion.Should().Be(donorSet.HlaNomenclatureVersion);
+            result.DonorHaplotypeFrequencySet.HlaNomenclatureVersion.Should().Be(donorSet.HlaNomenclatureVersion);
 
             result.PatientHaplotypeFrequencySet.Id.Should().Be(patientSet.Id);
             result.PatientHaplotypeFrequencySet.RegistryCode.Should().Be(patientSet.RegistryCode);
             result.PatientHaplotypeFrequencySet.EthnicityCode.Should().Be(patientSet.EthnicityCode);
             result.PatientHaplotypeFrequencySet.HlaNomenclatureVersion.Should().Be(patientSet.HlaNomenclatureVersion);
             result.PatientHaplotypeFrequencySet.PopulationId.Should().Be(patientSet.PopulationId);
-            result.PatientFrequencySetNomenclatureVersion.Should().Be(patientSet.HlaNomenclatureVersion);
+            result.PatientHaplotypeFrequencySet.HlaNomenclatureVersion.Should().Be(patientSet.HlaNomenclatureVersion);
         }
     }
 }

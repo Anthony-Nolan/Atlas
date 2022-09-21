@@ -69,9 +69,9 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             IHaplotypeFrequencySetRepository frequencySetRepository,
             IHaplotypeFrequenciesRepository frequencyRepository,
             INotificationSender notificationSender,
-            // ReSharper disable once SuggestBaseTypeForParameter
-            IMatchPredictionLogger logger,
-            // ReSharper disable once SuggestBaseTypeForParameter
+            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+            IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
+            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IPersistentCacheProvider persistentCacheProvider,
             IFrequencyConsolidator frequencyConsolidator
         )
