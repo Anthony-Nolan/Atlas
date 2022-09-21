@@ -66,8 +66,9 @@ resource "azurerm_function_app" "atlas_function" {
     "Matching:MessagingServiceBus:SearchRequestsTopic" = module.matching_algorithm.service_bus.matching_requests_topic.name
     "Matching:MessagingServiceBus:SearchResultsTopic"  = module.matching_algorithm.service_bus.matching_results_topic.name
 
-    "MatchPrediction:AzureStorage:ConnectionString"                    = azurerm_storage_account.azure_storage.primary_connection_string
-    "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer" = module.match_prediction.storage.match_prediction_results_container_name
+    "MatchPrediction:AzureStorage:ConnectionString"                             = azurerm_storage_account.azure_storage.primary_connection_string
+    "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer"          = module.match_prediction.storage.match_prediction_results_container_name
+    "MatchPrediction:Algorithm:SuppressCompressedPhenotypeConversionExceptions" = var.SEARCH_SUPPRESS_COMPRESSED_PHENOTYPE_CONVERSION_EXCEPTIONS
 
     "NotificationsServiceBus:AlertsTopic"        = module.support.general.alerts_servicebus_topic.name
     "NotificationsServiceBus:ConnectionString"   = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string

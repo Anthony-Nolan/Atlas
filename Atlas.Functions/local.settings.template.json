@@ -19,7 +19,7 @@
     "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic": "matching-results-ready",
     "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic": "search-results-ready",
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic": "search-results-ready",
-    
+
     "AtlasFunction:Orchestration:MatchPredictionBatchSize": 100,
 
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
@@ -41,6 +41,7 @@
 
     "MatchPrediction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer": "match-prediction-results",
+    "MatchPrediction:Algorithm:SuppressCompressedPhenotypeConversionExceptions": true,
 
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",

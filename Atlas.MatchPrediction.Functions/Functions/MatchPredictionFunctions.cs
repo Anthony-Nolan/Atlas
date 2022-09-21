@@ -1,8 +1,8 @@
-﻿using System;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
+using Atlas.Common.Utils;
 using Atlas.MatchPrediction.ExternalInterface;
-using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Functions.Models;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
@@ -15,18 +15,18 @@ namespace Atlas.MatchPrediction.Functions.Functions
 {
     public class MatchPredictionFunctions
     {
-        private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
         private readonly IMatchPredictionValidator matchPredictionValidator;
         private readonly IMatchPredictionRequestDispatcher requestDispatcher;
+        private readonly IMatchPredictionRequestRunner requestRunner;
 
         public MatchPredictionFunctions(
-            IMatchPredictionAlgorithm matchPredictionAlgorithm,
             IMatchPredictionValidator matchPredictionValidator,
-            IMatchPredictionRequestDispatcher requestDispatcher)
+            IMatchPredictionRequestDispatcher requestDispatcher,
+            IMatchPredictionRequestRunner requestRunner)
         {
-            this.matchPredictionAlgorithm = matchPredictionAlgorithm;
             this.matchPredictionValidator = matchPredictionValidator;
             this.requestDispatcher = requestDispatcher;
+            this.requestRunner = requestRunner;
         }
 
         /// <summary>
@@ -52,43 +52,13 @@ namespace Atlas.MatchPrediction.Functions.Functions
             return new JsonResult(new MatchPredictionInitiationResponse { MatchPredictionRequestId = id });
         }
 
-        [FunctionName(nameof(CalculateMatchProbability))]
-        public async Task<IActionResult> CalculateMatchProbability(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(SingleDonorMatchProbabilityInput), nameof(SingleDonorMatchProbabilityInput))]
-            HttpRequest request)
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
+        [FunctionName(nameof(RunMatchPredictionRequestBatch))]
+        public async Task RunMatchPredictionRequestBatch(
+            [TimerTrigger("%MatchPredictionRequests:CronSchedule%")]
+            TimerInfo myTimer)
         {
-            try
-            {
-                var matchProbabilityInput =
-                    JsonConvert.DeserializeObject<SingleDonorMatchProbabilityInput>(await new StreamReader(request.Body).ReadToEndAsync());
-
-                var matchProbabilityResponse = await matchPredictionAlgorithm.RunMatchPredictionAlgorithm(matchProbabilityInput);
-                return new JsonResult(matchProbabilityResponse);
-            }
-            catch (Exception exception)
-            {
-                return new BadRequestObjectResult(exception);
-            }
-        }
-
-        [FunctionName(nameof(CalculateMatchProbabilityBatch))]
-        public async Task<IActionResult> CalculateMatchProbabilityBatch(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(MultipleDonorMatchProbabilityInput), nameof(MultipleDonorMatchProbabilityInput))]
-            HttpRequest request)
-        {
-            try
-            {
-                var matchProbabilityInput =
-                    JsonConvert.DeserializeObject<MultipleDonorMatchProbabilityInput>(await new StreamReader(request.Body).ReadToEndAsync());
-                var matchProbabilityResponse = await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(matchProbabilityInput);
-                return new JsonResult(matchProbabilityResponse);
-            }
-            catch (Exception exception)
-            {
-                return new BadRequestObjectResult(exception);
-            }
+            await requestRunner.RunMatchPredictionRequestBatch();
         }
     }
 }

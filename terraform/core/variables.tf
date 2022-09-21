@@ -135,6 +135,24 @@ variable "MATCH_PREDICTION_DATABASE_USERNAME" {
   default = "match_prediction"
 }
 
+variable "MATCH_PREDICTION_MESSAGING_BUS_REQUEST_BATCH_SIZE" {
+  type        = number
+  default     = 50
+  description = "Batch size of requests processed by the match prediction component."
+}
+
+variable "MATCH_PREDICTION_MESSAGING_BUS_REQUEST_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */1 * * * *"
+  description = "Crontab used to determine when to poll for new batches of match prediction requests."
+}
+
+variable "MATCH_PREDICTION_SUPPRESS_COMPRESSED_PHENOTYPE_CONVERSION_EXCEPTIONS" {
+  type        = bool
+  default     = false
+  description = "Compressed phenotype conversion exceptions should NOT be suppressed when running match prediction requests outside of search."
+}
+
 variable "MATCHING_BATCH_SIZE" {
   type        = number
   default     = 250000
@@ -299,6 +317,12 @@ variable "REPEAT_SEARCH_MATCHING_MAX_SCALE_OUT" {
   type        = number
   default     = 1
   description = "The maximum number of instances of the repeat search's matching algorithm that can be scaled out."
+}
+
+variable "SEARCH_SUPPRESS_COMPRESSED_PHENOTYPE_CONVERSION_EXCEPTIONS" {
+  type        = bool
+  default     = true
+  description = "Compressed phenotype conversion exceptions should be suppressed when running match prediction as part of search."
 }
 
 variable "SERVICE_PLAN_MAX_SCALE_OUT" {

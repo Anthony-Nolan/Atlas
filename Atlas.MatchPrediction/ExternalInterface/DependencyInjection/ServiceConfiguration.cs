@@ -1,11 +1,17 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
+using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ApplicationInsights;
+using Atlas.MatchPrediction.Clients;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.ExternalInterface.Models;
+using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
+using Atlas.MatchPrediction.ExternalInterface.Settings;
+using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
@@ -14,10 +20,6 @@ using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Atlas.MatchPrediction.Clients;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
-using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
-using Atlas.MatchPrediction.Services.ResultsUpload;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
@@ -29,12 +31,13 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
+            Func<IServiceProvider, MatchPredictionAlgorithmSettings> fetchMatchPredictionAlgorithmSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, string> fetchSqlConnectionString
         )
         {
-            services.RegisterSettings(fetchNotificationsServiceBusSettings, fetchAzureStorageSettings);
+            services.RegisterSettings(fetchNotificationsServiceBusSettings, fetchAzureStorageSettings, fetchMatchPredictionAlgorithmSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices();
             services.RegisterDatabaseServices(fetchSqlConnectionString);
@@ -65,22 +68,41 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 
         public static void RegisterMatchPredictionRequester(
             this IServiceCollection services,
-            Func<IServiceProvider, MessagingServiceBusSettings> messagingServiceBusSettings
-        )
+            Func<IServiceProvider, MessagingServiceBusSettings> messagingServiceBusSettings,
+            Func<IServiceProvider, MatchPredictionRequestsSettings> matchPredictionRequestSettings)
         {
             services.AddScoped<IMatchPredictionValidator, MatchPredictionValidator>();
             services.AddScoped<IMatchPredictionRequestDispatcher, MatchPredictionRequestDispatcher>();
+
             services.MakeSettingsAvailableForUse(messagingServiceBusSettings);
+            services.MakeSettingsAvailableForUse(matchPredictionRequestSettings);
             services.AddScoped<IMatchPredictionBusClient, MatchPredictionBusClient>();
+            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
+                new MessageReceiverFactory(messagingServiceBusSettings(sp).ConnectionString)
+            );
+
+            services.AddScoped<IMatchPredictionRequestRunner, MatchPredictionRequestRunner>();
+            services.AddScoped<IMessageProcessor<IdentifiedMatchPredictionRequest>, MatchPredictionRequestProcessor>(sp =>
+            {
+                var settings = matchPredictionRequestSettings(sp);
+                var factory = sp.GetService<IMessageReceiverFactory>();
+                var messageReceiver = new ServiceBusMessageReceiver<IdentifiedMatchPredictionRequest>(
+                    factory, settings.ServiceBusTopic, settings.ServiceBusSubscription);
+                return new MatchPredictionRequestProcessor(messageReceiver);
+            });
+            services.AddScoped<IMatchPredictionRequestResultUploader, MatchPredictionRequestResultUploader>();
+            services.AddScoped<MatchPredictionRequestLoggingContext>();
         }
 
         private static void RegisterSettings(
             this IServiceCollection services,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, MatchPredictionAlgorithmSettings> fetchMatchPredictionAlgorithmSettings)
         {
             services.MakeSettingsAvailableForUse(fetchNotificationsServiceBusSettings);
             services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
+            services.MakeSettingsAvailableForUse(fetchMatchPredictionAlgorithmSettings);
         }
 
         private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)
@@ -110,8 +132,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 
         private static void RegisterServices(this IServiceCollection services)
         {
-            services.AddScoped<MatchPredictionLoggingContext>();
-            services.AddScoped<IMatchPredictionLogger, MatchPredictionLogger>();
+            services.AddScoped<MatchProbabilityLoggingContext>();
+            services.AddScoped(typeof(IMatchPredictionLogger<>), typeof(MatchPredictionLogger<>));
 
             services.AddScoped<IMatchPredictionAlgorithm, MatchPredictionAlgorithm>();
             services.AddScoped<IDonorInputBatcher, DonorInputBatcher>();
@@ -136,7 +158,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.AddScoped<IMatchProbabilityCalculator, MatchProbabilityCalculator>();
             services.AddScoped<IGenotypeConverter, GenotypeConverter>();
 
-            services.AddScoped<IResultUploader, ResultUploader>();
+            services.AddScoped<ISearchDonorResultUploader, SearchDonorResultUploader>();
         }
     }
 }

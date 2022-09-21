@@ -104,7 +104,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         private readonly IMatchProbabilityCalculator matchProbabilityCalculator;
         private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
         private readonly ILogger logger;
-        private readonly MatchPredictionLoggingContext matchPredictionLoggingContext;
+        private readonly MatchProbabilityLoggingContext matchProbabilityLoggingContext;
 
         public MatchProbabilityService(
             ICompressedPhenotypeExpander compressedPhenotypeExpander,
@@ -113,9 +113,9 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             IMatchCalculationService matchCalculationService,
             IMatchProbabilityCalculator matchProbabilityCalculator,
             IHaplotypeFrequencyService haplotypeFrequencyService,
-            // ReSharper disable once SuggestBaseTypeForParameter
-            IMatchPredictionLogger logger,
-            MatchPredictionLoggingContext matchPredictionLoggingContext)
+            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+            IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
+            MatchProbabilityLoggingContext matchProbabilityLoggingContext)
         {
             this.compressedPhenotypeExpander = compressedPhenotypeExpander;
             this.genotypeLikelihoodService = genotypeLikelihoodService;
@@ -124,14 +124,14 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             this.matchProbabilityCalculator = matchProbabilityCalculator;
             this.haplotypeFrequencyService = haplotypeFrequencyService;
             this.logger = logger;
-            this.matchPredictionLoggingContext = matchPredictionLoggingContext;
+            this.matchProbabilityLoggingContext = matchProbabilityLoggingContext;
         }
 
         public async Task<MatchProbabilityResponse> CalculateMatchProbability(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput)
         {
             await new MatchProbabilityInputValidator().ValidateAndThrowAsync(singleDonorMatchProbabilityInput);
 
-            matchPredictionLoggingContext.Initialise(singleDonorMatchProbabilityInput);
+            matchProbabilityLoggingContext.Initialise(singleDonorMatchProbabilityInput);
 
             var frequencySets = await haplotypeFrequencyService.GetHaplotypeFrequencySets(
                 singleDonorMatchProbabilityInput.Donor.DonorFrequencySetMetadata,

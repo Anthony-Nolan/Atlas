@@ -3,15 +3,18 @@ using Microsoft.ApplicationInsights;
 
 namespace Atlas.MatchPrediction.ApplicationInsights
 {
-    internal interface IMatchPredictionLogger : ILogger
+    // ReSharper disable once UnusedTypeParameter
+    public interface IMatchPredictionLogger<TLoggingContext> : ILogger
+        where TLoggingContext : MatchProbabilityLoggingContext
     {
     }
 
-    internal class MatchPredictionLogger : ContextAwareLogger<MatchPredictionLoggingContext>, IMatchPredictionLogger
+    public class MatchPredictionLogger<TLoggingContext> : ContextAwareLogger<TLoggingContext>, IMatchPredictionLogger<TLoggingContext>
+        where TLoggingContext : MatchProbabilityLoggingContext
     {
         /// <inheritdoc />
         public MatchPredictionLogger(
-            MatchPredictionLoggingContext loggingContext,
+            TLoggingContext loggingContext,
             TelemetryClient client,
             ApplicationInsightsSettings applicationInsightsSettings) : base(loggingContext, client, applicationInsightsSettings)
         {

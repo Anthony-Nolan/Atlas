@@ -17,10 +17,12 @@ namespace Atlas.MatchPrediction.Clients
         private readonly string connectionString;
         private readonly string requestsTopicName;
 
-        public MatchPredictionBusClient(MessagingServiceBusSettings messagingServiceBusSettings)
+        public MatchPredictionBusClient(
+            MessagingServiceBusSettings messagingServiceBusSettings,
+            MatchPredictionRequestsSettings matchPredictionRequestsSettings)
         {
             connectionString = messagingServiceBusSettings.ConnectionString;
-            requestsTopicName = messagingServiceBusSettings.MatchPredictionRequestsTopic;
+            requestsTopicName = matchPredictionRequestsSettings.ServiceBusTopic;
         }
 
         public async Task PublishToMatchPredictionRequestsTopic(IdentifiedMatchPredictionRequest request)

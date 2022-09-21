@@ -7,6 +7,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.ApplicationInsights;
+using Atlas.MatchPrediction.ExternalInterface.Settings;
 using MoreLinq.Extensions;
 
 namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
@@ -26,23 +27,25 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
             PhenotypeInfo<string> compressedPhenotype,
             TargetHlaCategory targetHlaCategory,
             ISet<Locus> allowedLoci
-        );
+            );
     }
 
     internal class CompressedPhenotypeConverter : ICompressedPhenotypeConverter
     {
         private readonly ILogger logger;
+        private readonly MatchPredictionAlgorithmSettings settings;
 
         public CompressedPhenotypeConverter(
-            // ReSharper disable once SuggestBaseTypeForParameter
-            IMatchPredictionLogger logger)
+            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+            IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
+            MatchPredictionAlgorithmSettings settings)
         {
             this.logger = logger;
+            this.settings = settings;
         }
         
         /// <inheritdoc />
-        public async Task<PhenotypeInfo<ISet<string>>> ConvertPhenotype(
-            IHlaMetadataDictionary hlaMetadataDictionary,
+        public async Task<PhenotypeInfo<ISet<string>>> ConvertPhenotype(IHlaMetadataDictionary hlaMetadataDictionary,
             PhenotypeInfo<string> compressedPhenotype,
             TargetHlaCategory targetHlaCategory,
             ISet<Locus> allowedLoci)
@@ -58,13 +61,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
                 {
                     return (ISet<string>) (await hlaMetadataDictionary.ConvertHla(locus, hla, targetHlaCategory)).ToHashSet();
                 }
-                // All HMD exceptions are being caught and suppressed here, under the assumption that the subject's HLA has already been
-                // validated by the matching algorithm component, and the only reason the typing is missing
-                // from the HMD is due to the matching algorithm and HF set being on different nomenclature versions.
-                // See https://github.com/Anthony-Nolan/Atlas/issues/636 for more info.
-                // Note: if the MPA endpoint is ever added to the Public API to allow it to be run independently of matching,
-                // then the above assumption no longer stands; the possibility of invalid HLA being submitted to the MPA directly must be handled.
-                catch (HlaMetadataDictionaryException exception)
+                catch (HlaMetadataDictionaryException exception) when (settings.SuppressCompressedPhenotypeConversionExceptions)
                 {
                     logger.SendEvent(new HlaConversionFailureEventModel(
                         locus,

@@ -21,6 +21,18 @@ variable "MAC_SOURCE" {
   type = string
 }
 
+variable "MESSAGING_BUS_MATCH_PREDICTION_BATCH_SIZE" {
+  type = number
+}
+
+variable "MESSAGING_BUS_MATCH_PREDICTION_CRON_SCHEDULE" {
+  type = string
+}
+
+variable "SUPPRESS_COMPRESSED_PHENOTYPE_CONVERSION_EXCEPTIONS" {
+  type = bool
+}
+
 variable "WEBSITE_RUN_FROM_PACKAGE" {
   type = string
 }

@@ -30,10 +30,14 @@ resource "azurerm_function_app" "atlas_match_prediction_function" {
     "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
     "MacDictionary:TableName"                    = var.mac_import_table.name,
 
-    "MessagingServiceBus:ConnectionString"             = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
-    "MessagingServiceBus:ImportFileSubscription"       = azurerm_servicebus_subscription.haplotype-frequency-file-processor.name
-    "MessagingServiceBus:ImportFileTopic"              = azurerm_servicebus_topic.haplotype-frequency-file-uploads.name
-    "MessagingServiceBus:MatchPredictionRequestsTopic" = azurerm_servicebus_topic.match-prediction-requests.name
+    "MessagingServiceBus:ConnectionString"                                     = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
+    "MessagingServiceBus:ImportFileSubscription"                               = azurerm_servicebus_subscription.haplotype-frequency-file-processor.name
+    "MessagingServiceBus:ImportFileTopic"                                      = azurerm_servicebus_topic.haplotype-frequency-file-uploads.name
+    "MatchPredictionAlgorithm:SuppressCompressedPhenotypeConversionExceptions" = var.SUPPRESS_COMPRESSED_PHENOTYPE_CONVERSION_EXCEPTIONS
+    "MatchPredictionRequests:BatchSize"                                        = var.MESSAGING_BUS_MATCH_PREDICTION_BATCH_SIZE
+    "MatchPredictionRequests:CronSchedule"                                     = var.MESSAGING_BUS_MATCH_PREDICTION_CRON_SCHEDULE
+    "MatchPredictionRequests:ServiceBusSubscription"                           = azurerm_servicebus_subscription.match-prediction-request-runner.name
+    "MatchPredictionRequests:ServiceBusTopic"                                  = azurerm_servicebus_topic.match-prediction-requests.name
 
     "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
