@@ -162,6 +162,7 @@ module "match_prediction" {
   mac_import_table        = module.multiple_allele_code_lookup.storage_table
 
   servicebus_namespace_authorization_rules = {
+    manage     = azurerm_servicebus_namespace_authorization_rule.manage
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
     read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
     write-only = azurerm_servicebus_namespace_authorization_rule.write-only

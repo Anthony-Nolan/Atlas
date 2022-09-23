@@ -21,6 +21,16 @@ resource "azurerm_servicebus_namespace" "general" {
   sku                 = local.service-bus.default-sku
 }
 
+resource "azurerm_servicebus_namespace_authorization_rule" "manage" {
+  name                = "manage"
+  namespace_name      = azurerm_servicebus_namespace.general.name
+  resource_group_name = azurerm_resource_group.atlas_resource_group.name
+
+  listen = true
+  send   = true
+  manage = true
+}
+
 resource "azurerm_servicebus_namespace_authorization_rule" "read-only" {
   name                = "read-only"
   namespace_name      = azurerm_servicebus_namespace.general.name
