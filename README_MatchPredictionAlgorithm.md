@@ -61,13 +61,14 @@ A high level overview of the match prediction algorithm's logic is as follows:
 
 ## Match Prediction Requests
 - Match prediction requests (outside of search) can be submitted to the http-triggered function within the Match prediction project.
-  - The endpoint will return a unique request ID.
-  - The function forwards the request onto a dedicated service bus topic; in this way, potentially millions of requests can be made and queued on the topic for gradual processing.
+  - The endpoint accepts a single patient along with a set of donors (at least one donor must be submitted).
+  - The endpoint will return a unique request ID for each valid donor input in the batch, and will return validation errors for any invalid donor inputs, i.e, those missing required info.
+  - The function forwards the batch request onto a dedicated service bus topic; in this way, potentially millions of requests can be made and queued on the topic for gradual processing.
 - A second, servicebus-triggered function reads messages in batches off the topic, and runs the requests.
   - Results are uploaded to a subfolder of the match prediction results blob storage container (subfolder name: `match-prediction-requests`).
     - Each json result file is named after its corresponding match prediction request ID.
     - Note, the file does not contain a patient or donor ID; the consumer should map patient-donor IDs to request ID when initially submitting the request.
-  - If any requests contain invalid properties, such as missing values or invalid HLA, these will be indiviually caught and logged to Application Insights to allow users to correct them and re-submit.
+  - At this point, if any requests contain invalid properties, such invalid HLA, these will be indiviually caught and logged to Application Insights to allow users to correct them and re-submit.
     - Note: No alerts are sent out in such case; the user should manually monitor the logs, or use Application Insights monitoring.
 
 
