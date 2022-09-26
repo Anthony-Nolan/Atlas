@@ -7,11 +7,6 @@ namespace Atlas.MatchPrediction.ExternalInterface
     public interface IMatchPredictionValidator
     {
         /// <summary>
-        /// Validates the entirety of match probability input: request parameters, patient data, and donor data.
-        /// </summary>
-        public ValidationResult ValidateMatchProbabilityInput(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput);
-
-        /// <summary>
         /// Only validates match probability input properties that are not related to donor data.
         /// </summary>
         public ValidationResult ValidateMatchProbabilityNonDonorInput(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput);
@@ -19,11 +14,6 @@ namespace Atlas.MatchPrediction.ExternalInterface
 
     internal class MatchPredictionValidator : IMatchPredictionValidator
     {
-        public ValidationResult ValidateMatchProbabilityInput(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput)
-        {
-            return new MatchProbabilityInputValidator().Validate(singleDonorMatchProbabilityInput);
-        }
-
         public ValidationResult ValidateMatchProbabilityNonDonorInput(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput)
         {
             return new MatchProbabilityNonDonorValidator().Validate(singleDonorMatchProbabilityInput);
