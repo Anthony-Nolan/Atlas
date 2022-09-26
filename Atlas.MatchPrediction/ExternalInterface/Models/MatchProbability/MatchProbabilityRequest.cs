@@ -12,14 +12,14 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         {
         }
 
-        /// <summary>
-        /// To be used when running a match prediction request outside of search
-        /// </summary>
-        public SingleDonorMatchProbabilityInput(MatchProbabilityRequest request) : base(request)
+        public SingleDonorMatchProbabilityInput(IdentifiedMatchProbabilityRequest request) : base(request)
         {
         }
 
-        public SingleDonorMatchProbabilityInput(IdentifiedMatchProbabilityRequest request) : base(request)
+        /// <summary>
+        /// To be used when running a match prediction request outside of search
+        /// </summary>
+        public SingleDonorMatchProbabilityInput(MatchProbabilityRequestBase requestWithoutIds) : base(requestWithoutIds)
         {
         }
 
@@ -74,16 +74,12 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
     }
 
     /// <summary>
-    /// <see cref="MatchProbabilityRequest"/> with additional Ids to help track across serialisation boundaries during search.
+    /// <see cref="MatchProbabilityRequestBase"/> with additional Ids to help track across serialisation boundaries during search.
     /// </summary>
-    public class IdentifiedMatchProbabilityRequest : MatchProbabilityRequest
+    public class IdentifiedMatchProbabilityRequest : MatchProbabilityRequestBase
     {
         // ReSharper disable once MemberCanBeProtected.Global - Deserialised
         public IdentifiedMatchProbabilityRequest()
-        {
-        }
-
-        protected IdentifiedMatchProbabilityRequest(MatchProbabilityRequest request) : base(request)
         {
         }
 
@@ -91,6 +87,10 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         {
             MatchProbabilityRequestId = initial.MatchProbabilityRequestId;
             SearchRequestId = initial.SearchRequestId;
+        }
+
+        protected IdentifiedMatchProbabilityRequest(MatchProbabilityRequestBase initialWithoutIds) : base(initialWithoutIds)
+        {
         }
 
         /// <summary>
@@ -107,14 +107,14 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
     /// <summary>
     /// Contains information needed to run a match probability request, excluding donor data
     /// </summary>
-    public class MatchProbabilityRequest
+    public abstract class MatchProbabilityRequestBase
     {
         // ReSharper disable once MemberCanBeProtected.Global - Deserialised
-        public MatchProbabilityRequest()
+        protected MatchProbabilityRequestBase()
         {
         }
 
-        protected MatchProbabilityRequest(MatchProbabilityRequest initial)
+        protected MatchProbabilityRequestBase(MatchProbabilityRequestBase initial)
         {
             ExcludedLoci = initial.ExcludedLoci;
             PatientHla = initial.PatientHla;

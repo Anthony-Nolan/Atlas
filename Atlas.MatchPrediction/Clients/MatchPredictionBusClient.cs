@@ -1,15 +1,15 @@
-using System.Text;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
-using Microsoft.Azure.ServiceBus;
+using Azure.Messaging.ServiceBus;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Clients
 {
     public interface IMatchPredictionBusClient
     {
-        Task PublishToMatchPredictionRequestsTopic(IdentifiedMatchPredictionRequest request);
+        Task BatchPublishToMatchPredictionRequestsTopic(IEnumerable<IdentifiedMatchPredictionRequest> requests);
     }
 
     public class MatchPredictionBusClient : IMatchPredictionBusClient
@@ -25,13 +25,28 @@ namespace Atlas.MatchPrediction.Clients
             requestsTopicName = matchPredictionRequestsSettings.ServiceBusTopic;
         }
 
-        public async Task PublishToMatchPredictionRequestsTopic(IdentifiedMatchPredictionRequest request)
+        public async Task BatchPublishToMatchPredictionRequestsTopic(IEnumerable<IdentifiedMatchPredictionRequest> requests)
         {
-            var json = JsonConvert.SerializeObject(request);
-            var message = new Message(Encoding.UTF8.GetBytes(json));
+            await using var client = new ServiceBusClient(connectionString);
+            var sender = client.CreateSender(requestsTopicName);
 
-            var client = new TopicClient(connectionString, requestsTopicName);
-            await client.SendAsync(message);
+            var localQueue = new Queue<ServiceBusMessage>();
+            foreach (var request in requests)
+            {
+                var message = new ServiceBusMessage(JsonConvert.SerializeObject(request));
+                localQueue.Enqueue(message);
+            }
+
+            while (localQueue.Count > 0)
+            {
+                using var messageBatch = await sender.CreateMessageBatchAsync();
+                while (localQueue.Count > 0 && messageBatch.TryAddMessage(localQueue.Peek()))
+                {
+                    localQueue.Dequeue();
+                }
+
+                await sender.SendMessagesAsync(messageBatch);
+            }
         }
     }
 }
