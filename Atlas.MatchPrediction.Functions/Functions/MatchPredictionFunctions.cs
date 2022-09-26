@@ -1,5 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Functions.Models;
@@ -29,28 +32,42 @@ namespace Atlas.MatchPrediction.Functions.Functions
         }
 
         /// <summary>
-        /// Submits a match prediction request for a single patient-donor pair without running a full search.
+        /// Submits a batch of match prediction requests - one patient vs. a set of donors - without running a full search.
         /// </summary>
-        /// <returns>Unique Id for the match prediction request.</returns>
-        [FunctionName(nameof(RequestMatchPrediction))]
-        public async Task<IActionResult> RequestMatchPrediction(
+        /// <returns>Set of match prediction request IDs.</returns>
+        [FunctionName(nameof(BatchMatchPredictionRequests))]
+        public async Task<IActionResult> BatchMatchPredictionRequests(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(MatchPredictionRequest), nameof(MatchPredictionRequest))]
+            [RequestBodyType(typeof(BatchedMatchPredictionRequests), nameof(BatchMatchPredictionRequests))]
             HttpRequest request)
         {
-            var matchPredictionRequest = JsonConvert.DeserializeObject<MatchPredictionRequest>(await new StreamReader(request.Body).ReadToEndAsync());
-            var input = matchPredictionRequest.ToSingleDonorMatchProbabilityInput();
+            var batch = JsonConvert.DeserializeObject<BatchedMatchPredictionRequests>(await new StreamReader(request.Body).ReadToEndAsync());
 
-            var validationResult = matchPredictionValidator.ValidateMatchProbabilityInput(input);
-            if (!validationResult.IsValid)
+            try
             {
-                return new BadRequestObjectResult(validationResult.Errors);
+                var inputs = batch.ToSingleDonorMatchProbabilityInputs().ToList();
+
+                if (inputs.IsNullOrEmpty())
+                {
+                    return new BadRequestObjectResult("No match probability inputs submitted.");
+                }
+
+                // every input in the batch will have the same non-donor info, and so only one input need be validated
+                var results = matchPredictionValidator.ValidateMatchProbabilityNonDonorInput(inputs.First());
+                if (!results.IsValid)
+                {
+                    return new BadRequestObjectResult(results.Errors);
+                }
+
+                var response = await requestDispatcher.DispatchMatchPredictionRequestBatch(inputs);
+                return new JsonResult(response);
             }
-
-            var id = await requestDispatcher.DispatchMatchPredictionRequest(input);
-            return new JsonResult(new MatchPredictionInitiationResponse { MatchPredictionRequestId = id });
+            catch (Exception ex)
+            {
+                return new BadRequestObjectResult(ex);
+            }
         }
-
+        
         [FunctionName(nameof(RunMatchPredictionRequestBatch))]
         public async Task RunMatchPredictionRequestBatch(
             [ServiceBusTrigger(
