@@ -33,7 +33,10 @@ resource "azurerm_function_app" "atlas_match_prediction_function" {
     "MessagingServiceBus:ConnectionString"                                     = var.servicebus_namespace_authorization_rules.manage.primary_connection_string
     "MessagingServiceBus:ImportFileSubscription"                               = azurerm_servicebus_subscription.haplotype-frequency-file-processor.name
     "MessagingServiceBus:ImportFileTopic"                                      = azurerm_servicebus_topic.haplotype-frequency-file-uploads.name
-    "MatchPredictionAlgorithm:SuppressCompressedPhenotypeConversionExceptions" = var.SUPPRESS_COMPRESSED_PHENOTYPE_CONVERSION_EXCEPTIONS
+    
+    // Compressed phenotype conversion exceptions should NOT be suppressed when running match prediction requests outside of search
+    "MatchPredictionAlgorithm:SuppressCompressedPhenotypeConversionExceptions" = false
+    
     "MatchPredictionRequests:ServiceBusSubscription"                           = azurerm_servicebus_subscription.match-prediction-request-runner.name
     "MatchPredictionRequests:ServiceBusTopic"                                  = azurerm_servicebus_topic.match-prediction-requests.name
 
