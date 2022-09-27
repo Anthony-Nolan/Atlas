@@ -24,14 +24,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
         /// <inheritdoc />
         public async Task<MatchPredictionResultLocation> UploadMatchPredictionRequestResult(string matchPredictionRequestId, MatchProbabilityResponse matchProbabilityResponse)
         {
-            var fileName = $"match-prediction-requests/{matchPredictionRequestId}.json";
-            await UploadResult(fileName, matchProbabilityResponse);
-            return new MatchPredictionResultLocation
-            {
-                MatchPredictionRequestId = matchPredictionRequestId,
-                BlobStorageContainerName = ResultsContainer,
-                FileName = fileName
-            };
+            var location = ResultLocationBuilder.BuildMatchPredictionRequestResultLocation(matchPredictionRequestId, ResultsContainer);
+            await UploadResult(location.FileName, matchProbabilityResponse);
+            return location;
         }
     }
 }

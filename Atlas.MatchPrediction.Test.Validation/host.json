@@ -1,0 +1,17 @@
+{
+  "extensions": {
+    "serviceBus": {
+      "maxMessageBatchSize": 1000
+    }
+  },
+  "version": "2.0",
+  "functionTimeout": "-1",
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      }
+    }
+  }
+}

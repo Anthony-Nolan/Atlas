@@ -1,12 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Atlas.Common.Sql.BulkInsert;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 // ReSharper disable InconsistentNaming
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness
 {
-    public class NormalisedHaplotypeFrequency : IModel
+    public class NormalisedHaplotypeFrequency : IBulkInsertModel
     {
         public int Id { get; set; }
 

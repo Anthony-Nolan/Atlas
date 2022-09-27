@@ -24,6 +24,7 @@ using System;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers;
+using Atlas.Common.AzureStorage.Blob;
 
 namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 {
@@ -34,6 +35,7 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             Func<IServiceProvider, string> fetchMatchPredictionVerificationSqlConnectionString,
             Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString,
             Func<IServiceProvider, string> fetchDonorImportSqlConnectionString,
+            Func<IServiceProvider, VerificationAzureStorageSettings> fetchVerificationAzureStorageSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
@@ -42,7 +44,8 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
         {
             services.RegisterSettings();
             services.RegisterDatabaseServices(fetchMatchPredictionVerificationSqlConnectionString);
-            services.RegisterServices(fetchMatchPredictionSqlConnectionString);
+            services.RegisterServices(
+                fetchMatchPredictionSqlConnectionString, fetchVerificationAzureStorageSettings);
             services.RegisterLifeTimeScopedCacheTypes();
             services.RegisterHaplotypeFrequenciesReader(fetchMatchPredictionSqlConnectionString);
 
@@ -58,7 +61,6 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 
         private static void RegisterSettings(this IServiceCollection services)
         {
-            services.RegisterAsOptions<VerificationAzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<VerificationDataRefreshSettings>("DataRefresh");
             services.RegisterAsOptions<VerificationSearchSettings>("Search");
         }
@@ -92,13 +94,19 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 
         private static void RegisterServices(
             this IServiceCollection services, 
-            Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString)
+            Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString,
+            Func<IServiceProvider, VerificationAzureStorageSettings> fetchVerificationAzureStorageSettings)
         {
+            services.AddScoped<IBlobStreamer, BlobStreamer>(sp =>
+            {
+                var settings = fetchVerificationAzureStorageSettings(sp);
+                return new BlobStreamer(settings.ConnectionString);
+            });
+
             services.AddScoped<IMacExpander, MacExpander>();
 
             services.AddScoped<ITestHarnessGenerator, TestHarnessGenerator>();
             services.AddScoped<IHaplotypeFrequenciesReader, HaplotypeFrequenciesReader>();
-            services.AddScoped<IFrequencySetStreamer, FrequencySetStreamer>();
             services.AddScoped<INormalisedPoolGenerator, NormalisedPoolGenerator>(sp =>
                 {
                     var reader = sp.GetService<IHaplotypeFrequenciesReader>();
@@ -131,7 +139,6 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             services.AddScoped<IResultsStorer<SearchResult, LocusMatchCount>, SearchResultCountsStorer>();
             services.AddScoped(typeof(IMismatchedDonorsStorer<>), typeof(MismatchedDonorsStorer<>));
             services.AddScoped<IResultsStorer<SearchResult, MatchProbability>, MatchedProbabilitiesStorer>();
-            services.AddScoped<ISearchResultsStreamer, SearchResultsStreamer>();
             services.AddScoped<IVerificationResultsWriter, VerificationResultsWriter>();
             services.AddScoped<IVerificationResultsCompiler, VerificationResultsCompiler>();
             services.AddScoped<IActualVersusExpectedResultsCompiler, ActualVersusExpectedResultsCompiler>();
