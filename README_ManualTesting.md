@@ -10,18 +10,54 @@ This code is designed to be run locally; it is not production quality and cannot
   - A rudimentary harness for collating performance data of search times.
   - Relies on locally-run MatchingAlgorithm API.
 
-- `Atlas.MatchPrediction.Test.Verification`
-  - Functions project for the manual verification of the Match Prediction Algorithm (MPA).
-  - Verification involves generating a harness of simulated patients and donors, running it through search requests,
-	and collating the final results to determine the accuracy of match probabilities.
+- Match Prediction **Validation**
+  - `Atlas.MatchPrediction.Test.Validation`
+    - Functions project for the validation of the Match Prediction Algorithm (MPA).
+    - Validation involves running match prediction requests for an externally-generated set of patients and donors, and compiling the match probabilty results for subsequent analysis.
 
-- `Atlas.MatchPrediction.Test.Verification.Test`
-  - Minimal suite of unit tests for the `Atlas.MatchPrediction.Test.Verification` project, with sufficient coverage only to ensure the reliability of the generated data.
+  - `Atlas.MatchPrediction.Test.Validation.Data`
+    - Project to manage Entity Framework migrations for the local Validation database.
 
-- `Atlas.MatchPrediction.Test.Verification.Data`
-  - Project to manage Entity Framework migrations for the local Verification database.
+- Match Prediction **Verification**
+  - `Atlas.MatchPrediction.Test.Verification`
+    - Functions project for the verification of the MPA.
+    - Verification involves generating a harness of simulated patients and donors, running it through search requests, and collating the final results to determine the accuracy of match probabilities.
 
+  - `Atlas.MatchPrediction.Test.Verification.Test`
+    - Minimal suite of unit tests for the `Atlas.MatchPrediction.Test.Verification` project, with sufficient coverage only to ensure the reliability of the generated data.
 
+  - `Atlas.MatchPrediction.Test.Verification.Data`
+    - Project to manage Entity Framework migrations for the local Verification database.
+
+## Validation
+
+### Dataset files
+- Patient and donor data will be imported from their own text files with the following schema:
+`ID;A_1;A_2;C_1;C_2;B_1;B_2;DRB1_1;DRB1_2;DQB1_1;DQB1_2`
+  - This header line must be included, though the order of columns is not critical as long as the header is present.
+  - Subjects not typed at the required loci (A, B, DRB1) will be ignored; debug output displays how many subjects were actually imported.
+- Haplotype Frequency (HF) file should be uploaded to the target Atlas installation as the global HF set, prior to submitting match prediction requests.
+  - Before upload, ensure that the HLA metadata dictionary on the target Atlas instance has the HLA version that the frequency file was encoded to.
+
+### Stored Data
+- At present, only data generated from the last validation run will be persisted to the associated Validation database (defined within the Functions app setting: `MatchPredictionValidation:Sql`)
+  - Running a new import clears tables of all existing data.
+  - Submitting match requests deletes existing requests and results, but patient and donor data is left intact.
+
+### Running Validation
+Validation functions and services are designed to be run locally, although they may be pointed to remote resources, e.g., you may wish to submit match prediction prediction requests to a deployed Atlas instance to leverage Azure app scaling.
+
+1. Invoke the `ImportSubjects` function, submitting the locations of the patient and donor text files.
+2. Send match predictions requests, either by invoking the `SendMatchPredictionRequests` function or `ResumeMatchPredictionRequests` function.
+  - Before starting, set the request URL in the functions settings & manually create a new subscription to the `match-prediction-results` topic on the service bus.
+  - At present, one request is sent per patient, with a subset of donors included as a batched request, to reduce the total number of http calls. Batch size is configurable via function settings.
+  - Use the `Send...` function if you are running validation for the first time, or want to start a new run (**WARNING: all previous results will be wiped from the database**).
+  - Alternatively, use `Resume...` function if you wish to resume sending requests from the last recorded patient with a match request, onwards; this is useful if the last invocation was interrupted before completion.
+  - Note: the maximum size of the topic subscription is 5Gb, and it is possible to hit that limit if you are submitting several million requests. Once the limit is reached, the match prediction request endpoint will return 4xx responses until the algorithm has consumed some of the requests. It is worth keeping an eye on the topic size, and stop/resume requests sending accordingly.
+3. The service-bus-triggered function, `ProcessResults`, will automatically download and store available results to the validation database.
+  - Make sure to set the Azure storage and messaging bus connection strings, as well as subscription name, in the function settings.
+  - Messages that contain algorithm request IDs not in the requests table will be ignored but will also be taken off the queue.
+4. [Optional] In case any match prediction results were not downloaded, and their service bus messages have been taken off the queue, invoke function `PromptDownloadOfMissingResults`; this will query the database for those requests that are missing results, and send off new messages to the `results` topic, thereby kicking off the above described results-download process. This requires that the results files are still on the blob storage container.
 ## Verification
 
 - [Glossary](#glossary)

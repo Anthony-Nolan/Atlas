@@ -1,5 +1,4 @@
 ﻿using Atlas.MatchPrediction.Test.Verification.Data.Context;
-using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
@@ -7,6 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
+using Atlas.Common.Sql.BulkInsert;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {

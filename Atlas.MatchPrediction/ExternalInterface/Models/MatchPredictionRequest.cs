@@ -5,7 +5,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Atlas.MatchPrediction.Functions.Models
+namespace Atlas.MatchPrediction.ExternalInterface.Models
 {
     /// <summary>
     /// Requests for one patient vs a set of donors

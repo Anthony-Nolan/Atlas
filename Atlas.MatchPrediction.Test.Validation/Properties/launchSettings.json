@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Atlas.MatchPrediction.Test.Validation": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7002",
+      "launchBrowser": false
+    }
+  }
+}
