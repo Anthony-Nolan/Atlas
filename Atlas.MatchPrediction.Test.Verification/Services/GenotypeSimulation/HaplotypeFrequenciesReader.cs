@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.AzureStorage.Blob;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
+using Atlas.MatchPrediction.Test.Verification.Settings;
+using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
 {
@@ -20,17 +23,20 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
     internal class HaplotypeFrequenciesReader : IHaplotypeFrequenciesReader
     {
         private readonly IHaplotypeFrequencySetReader setReader;
-        private readonly IFrequencySetStreamer setStreamer;
+        private readonly IBlobStreamer setStreamer;
         private readonly IFrequencyFileParser fileParser;
+        private readonly string containerName;
 
         public HaplotypeFrequenciesReader(
             IHaplotypeFrequencySetReader setReader,
-            IFrequencySetStreamer setStreamer,
-            IFrequencyFileParser fileParser)
+            IBlobStreamer setStreamer,
+            IFrequencyFileParser fileParser,
+            IOptions<VerificationAzureStorageSettings> settings)
         {
             this.setReader = setReader;
             this.setStreamer = setStreamer;
             this.fileParser = fileParser;
+            this.containerName = settings.Value.HaplotypeFrequencySetBlobContainer;
         }
 
         public async Task<HaplotypeFrequenciesReaderResult> GetUnalteredActiveGlobalHaplotypeFrequencies()
@@ -54,8 +60,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
 
         private async Task<FrequencySetFileSchema> ReadHaplotypeFrequenciesFromFile(HaplotypeFrequencySet set)
         {
-            var fileStream = await setStreamer.GetFileContents(set.Name);
-
+            var fileStream = await setStreamer.GetBlobContents(containerName, set.Name);
             return fileParser.GetFrequencies(fileStream);
         }
     }

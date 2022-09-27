@@ -1,12 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Sql.BulkInsert;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification
 {
     // ReSharper disable InconsistentNaming
 
-    public class LocusMatchCount : IModel
+    public class LocusMatchCount : IBulkInsertModel
     {
         public int Id { get; set; }
         public int MatchedDonor_Id { get; set; }

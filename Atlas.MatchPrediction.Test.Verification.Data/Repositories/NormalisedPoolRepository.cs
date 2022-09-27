@@ -6,8 +6,8 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.Models.FileSchema;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
+using Atlas.Common.Sql.BulkInsert;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {

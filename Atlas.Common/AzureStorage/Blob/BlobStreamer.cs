@@ -4,13 +4,23 @@ using Microsoft.Azure.Storage.Blob;
 
 namespace Atlas.Common.AzureStorage.Blob
 {
-    public abstract class BlobStreamer : AzureStorageBlobClient
+    public interface IBlobStreamer
     {
-        protected BlobStreamer(string azureStorageConnectionString) : base(azureStorageConnectionString)
+        Task<Stream> GetBlobContents(string containerName, string blobName);
+    }
+
+    public class BlobStreamer : AzureStorageBlobClient, IBlobStreamer
+    {
+        public BlobStreamer(string azureStorageConnectionString) : base(azureStorageConnectionString)
         {
         }
 
-        protected async Task<Stream> GetContentStream(string containerName, string fileName)
+        public async Task<Stream> GetBlobContents(string containerName, string blobName)
+        {
+            return await GetContentStream(containerName, blobName);
+        }
+
+        private async Task<Stream> GetContentStream(string containerName, string fileName)
         {
             var blob = await GetCloudBlob(containerName, fileName);
             return await blob.OpenReadAsync();

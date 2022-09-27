@@ -1,7 +1,6 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
-using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ApplicationInsights;
@@ -84,8 +83,16 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 
             // services for running a match prediction request
             services.AddScoped<IMatchPredictionRequestRunner, MatchPredictionRequestRunner>();
-            services.AddScoped<IMatchPredictionRequestResultUploader, MatchPredictionRequestResultUploader>();
             services.AddScoped<MatchPredictionRequestLoggingContext>();
+            services.AddScoped<IMatchPredictionRequestResultUploader, MatchPredictionRequestResultUploader>();
+            services.RegisterMatchPredictionResultsLocationPublisher(messagingServiceBusSettings, matchPredictionRequestSettings);
+        }
+
+        public static void RegisterMatchPredictionResultsLocationPublisher(
+            this IServiceCollection services,
+            Func<IServiceProvider, MessagingServiceBusSettings> messagingServiceBusSettings,
+            Func<IServiceProvider, MatchPredictionRequestsSettings> matchPredictionRequestSettings)
+        {
             services.AddScoped<IBulkMessagePublisher<MatchPredictionResultLocation>, BulkMessagePublisher<MatchPredictionResultLocation>>(sp =>
             {
                 var serviceBusSettings = messagingServiceBusSettings(sp);

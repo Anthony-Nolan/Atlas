@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.ResultSet;
+using Atlas.Common.AzureStorage.Blob;
 using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
@@ -17,7 +18,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
 
         public SearchResultSetProcessor(
             ISearchRequestsRepository searchRequestsRepository,
-            ISearchResultsStreamer resultsStreamer,
+            IBlobStreamer resultsStreamer,
             IResultsStorer<SearchResult, MatchedDonor> donorsStorer,
             IResultsStorer<SearchResult, LocusMatchCount> countsStorer,
             IMismatchedDonorsStorer<SearchResult> mismatchedDonorsStorer,

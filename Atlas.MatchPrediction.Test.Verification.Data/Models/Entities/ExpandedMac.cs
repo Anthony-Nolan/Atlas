@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Atlas.Common.Sql.BulkInsert;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities
 {
-    public class ExpandedMac : IModel
+    public class ExpandedMac : IBulkInsertModel
     {
         public int Id { get; set; }
 

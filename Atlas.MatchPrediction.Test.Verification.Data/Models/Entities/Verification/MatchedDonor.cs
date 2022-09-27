@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Atlas.Common.Sql.BulkInsert;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -8,7 +9,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
 {
     // ReSharper disable InconsistentNaming
 
-    public class MatchedDonor : IModel
+    public class MatchedDonor : IBulkInsertModel
     {
         public int Id { get; set; }
         public int SearchRequestRecord_Id { get; set; }

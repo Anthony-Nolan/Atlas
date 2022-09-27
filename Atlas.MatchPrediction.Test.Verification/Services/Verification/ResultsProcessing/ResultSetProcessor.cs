@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.ResultSet;
+using Atlas.Common.AzureStorage.Blob;
 using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
@@ -21,11 +22,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         where TResult : Result
     {
         private readonly ISearchRequestsRepository searchRequestsRepository;
-        private readonly ISearchResultsStreamer resultsStreamer;
+        private readonly IBlobStreamer resultsStreamer;
 
         protected ResultSetProcessor(
             ISearchRequestsRepository searchRequestsRepository,
-            ISearchResultsStreamer resultsStreamer)
+            IBlobStreamer resultsStreamer)
         {
             this.searchRequestsRepository = searchRequestsRepository;
             this.resultsStreamer = resultsStreamer;
@@ -66,7 +67,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
 
         private async Task<string> DownloadResults(TNotification notification)
         {
-            var blobStream = await resultsStreamer.GetSearchResultsBlobContents(
+            var blobStream = await resultsStreamer.GetBlobContents(
                 notification.BlobStorageContainerName, notification.ResultsFileName);
             return await new StreamReader(blobStream).ReadToEndAsync();
         }

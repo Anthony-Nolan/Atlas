@@ -1,0 +1,17 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
+    "AzureStorage:MatchPredictionResultsBlobContainer": "match-prediction-results",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "OutgoingMatchPredictionRequests:RequestBatchSize": 1000,
+    "OutgoingMatchPredictionRequests:RequestUrl": "http://localhost:7085/api/BatchMatchPredictionRequests",
+    "MatchPredictionRequests:ResultsSubscription": "override-this",
+    "MatchPredictionRequests:ResultsTopic": "match-prediction-results",
+    "MessagingServiceBus:ConnectionString": "override-this"
+  },
+  "ConnectionStrings": {
+    "MatchPredictionValidation:Sql": "Data Source=(local);Initial Catalog=AtlasMatchPredictionValidation;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"
+  }
+}
