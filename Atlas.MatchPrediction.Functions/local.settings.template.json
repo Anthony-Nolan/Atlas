@@ -14,8 +14,9 @@
     "MessagingServiceBus:ImportFileSubscription": "haplotype-frequency-import",
     "MessagingServiceBus:ImportFileTopic": "haplotype-frequency-file-uploads",
     "MatchPredictionAlgorithm:SuppressCompressedPhenotypeConversionExceptions": false,
-    "MatchPredictionRequests:ServiceBusSubscription": "match-prediction",
-    "MatchPredictionRequests:ServiceBusTopic": "match-prediction-requests",
+    "MatchPredictionRequests:RequestsSubscription": "match-prediction",
+    "MatchPredictionRequests:RequestsTopic": "match-prediction-requests",
+    "MatchPredictionRequests:ResultsTopic": "match-prediction-results",
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications"

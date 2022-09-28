@@ -1,10 +1,10 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
+using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ApplicationInsights;
-using Atlas.MatchPrediction.Clients;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
@@ -18,6 +18,7 @@ using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
@@ -69,17 +70,28 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> messagingServiceBusSettings,
             Func<IServiceProvider, MatchPredictionRequestsSettings> matchPredictionRequestSettings)
         {
+            services.AddScoped(typeof(IBulkMessagePublisher<>), typeof(BulkMessagePublisher<>));
+
             // services for requesting a match prediction
             services.AddScoped<IMatchPredictionValidator, MatchPredictionValidator>();
             services.AddScoped<IMatchPredictionRequestDispatcher, MatchPredictionRequestDispatcher>();
-            services.MakeSettingsAvailableForUse(messagingServiceBusSettings);
-            services.MakeSettingsAvailableForUse(matchPredictionRequestSettings);
-            services.AddScoped<IMatchPredictionBusClient, MatchPredictionBusClient>();
+            services.AddScoped<IBulkMessagePublisher<IdentifiedMatchPredictionRequest>, BulkMessagePublisher<IdentifiedMatchPredictionRequest>>(sp =>
+            {
+                var serviceBusSettings = messagingServiceBusSettings(sp);
+                var matchPredictionRequestsSettings = matchPredictionRequestSettings(sp);
+                return new BulkMessagePublisher<IdentifiedMatchPredictionRequest>(serviceBusSettings, matchPredictionRequestsSettings.RequestsTopic);
+            });
 
             // services for running a match prediction request
             services.AddScoped<IMatchPredictionRequestRunner, MatchPredictionRequestRunner>();
             services.AddScoped<IMatchPredictionRequestResultUploader, MatchPredictionRequestResultUploader>();
             services.AddScoped<MatchPredictionRequestLoggingContext>();
+            services.AddScoped<IBulkMessagePublisher<MatchPredictionResultLocation>, BulkMessagePublisher<MatchPredictionResultLocation>>(sp =>
+            {
+                var serviceBusSettings = messagingServiceBusSettings(sp);
+                var matchPredictionRequestsSettings = matchPredictionRequestSettings(sp);
+                return new BulkMessagePublisher<MatchPredictionResultLocation>(serviceBusSettings, matchPredictionRequestsSettings.ResultsTopic);
+            });
         }
 
         private static void RegisterSettings(

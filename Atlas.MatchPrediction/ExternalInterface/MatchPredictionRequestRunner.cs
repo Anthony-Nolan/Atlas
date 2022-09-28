@@ -27,29 +27,39 @@ namespace Atlas.MatchPrediction.ExternalInterface
     {
         private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
         private readonly IMatchPredictionRequestResultUploader resultUploader;
+        private readonly IBulkMessagePublisher<MatchPredictionResultLocation> messagePublisher;
         private readonly ILogger logger;
         private readonly MatchPredictionRequestLoggingContext loggingContext;
 
         public MatchPredictionRequestRunner(
             IMatchPredictionAlgorithm matchPredictionAlgorithm, 
             IMatchPredictionRequestResultUploader resultUploader,
+            IBulkMessagePublisher<MatchPredictionResultLocation> messagePublisher,
             // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IMatchPredictionLogger<MatchPredictionRequestLoggingContext> logger,
             MatchPredictionRequestLoggingContext loggingContext)
         {
             this.matchPredictionAlgorithm = matchPredictionAlgorithm;
             this.resultUploader = resultUploader;
+            this.messagePublisher = messagePublisher;
             this.logger = logger;
             this.loggingContext = loggingContext;
         }
 
         public async Task RunMatchPredictionRequestBatch(IEnumerable<IdentifiedMatchPredictionRequest> requestBatch)
         {
+            var resultsLocations = new List<MatchPredictionResultLocation>();
+
             foreach (var request in requestBatch)
             {
                 try
                 {
-                    await RunMatchPredictionRequest(request);
+                    if (request == null)
+                    {
+                        continue;
+                    }
+
+                    resultsLocations.Add(await RunMatchPredictionRequest(request));
                 }
                 catch (ValidationException ex)
                 {
@@ -72,22 +82,18 @@ namespace Atlas.MatchPrediction.ExternalInterface
                     throw new MatchPredictionRequestException(ex);
                 }
             }
+
+            await messagePublisher.BatchPublish(resultsLocations);
         }
 
-        private async Task RunMatchPredictionRequest(IdentifiedMatchPredictionRequest request)
+        private async Task<MatchPredictionResultLocation> RunMatchPredictionRequest(IdentifiedMatchPredictionRequest request)
         {
-            if (request == null)
-            {
-                return;
-            }
-
             loggingContext.Initialise(request);
 
             logger.SendTrace("Run match prediction request");
             var result = await matchPredictionAlgorithm.RunMatchPredictionAlgorithm(request.SingleDonorMatchProbabilityInput);
 
-            await resultUploader.UploadMatchPredictionRequestResult(request.Id, result);
-            logger.SendTrace("Match prediction request completed & results uploaded");
+            return await resultUploader.UploadMatchPredictionRequestResult(request.Id, result);
         }
     }
 }
