@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.Clients;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
@@ -21,14 +20,14 @@ namespace Atlas.MatchPrediction.Test.Services
         private static readonly Builder<SingleDonorMatchProbabilityInput> InputMissingDonorInfo = SingleDonorMatchProbabilityInputBuilder.Default
             .With(x => x.Donor, (DonorInput)null);
 
-        private IMatchPredictionBusClient serviceBusClient;
+        private IBulkMessagePublisher<IdentifiedMatchPredictionRequest> requestPublisher;
         private IMatchPredictionRequestDispatcher dispatcher;
 
         [SetUp]
         public void SetUp()
         {
-            serviceBusClient = Substitute.For<IMatchPredictionBusClient>();
-            dispatcher = new MatchPredictionRequestDispatcher(serviceBusClient);
+            requestPublisher = Substitute.For<IBulkMessagePublisher<IdentifiedMatchPredictionRequest>>();
+            dispatcher = new MatchPredictionRequestDispatcher(requestPublisher);
         }
 
         [Test]
@@ -104,7 +103,7 @@ namespace Atlas.MatchPrediction.Test.Services
             var validInput = SingleDonorMatchProbabilityInputBuilder.Valid.WithDonorId(validDonorId).Build(validDonorCount);
             await dispatcher.DispatchMatchPredictionRequestBatch(validInput.Concat(InputMissingDonorInfo.Build(invalidDonorCount)));
 
-            await serviceBusClient.Received(1).BatchPublishToMatchPredictionRequestsTopic(Arg.Is<IEnumerable<IdentifiedMatchPredictionRequest>>(x =>
+            await requestPublisher.Received(1).BatchPublish(Arg.Is<IEnumerable<IdentifiedMatchPredictionRequest>>(x =>
                 x.Count() == validDonorCount &&
                 x.SelectMany(r => r.SingleDonorMatchProbabilityInput.Donor.DonorIds).Distinct().Single() == validDonorId));
         }
@@ -127,7 +126,7 @@ namespace Atlas.MatchPrediction.Test.Services
         [Test]
         public void DispatchMatchPredictionRequestBatch_OtherExceptionOccurs_ThrowsException()
         {
-            serviceBusClient.BatchPublishToMatchPredictionRequestsTopic(default).ThrowsForAnyArgs(new Exception("error"));
+            requestPublisher.BatchPublish(default).ThrowsForAnyArgs(new Exception("error"));
             
             var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build(1);
 

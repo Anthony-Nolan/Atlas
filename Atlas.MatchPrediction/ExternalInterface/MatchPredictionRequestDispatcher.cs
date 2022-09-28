@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.Clients;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Validators;
@@ -23,11 +22,11 @@ namespace Atlas.MatchPrediction.ExternalInterface
 
     public class MatchPredictionRequestDispatcher : IMatchPredictionRequestDispatcher
     {
-        private readonly IMatchPredictionBusClient serviceBusClient;
+        private readonly IBulkMessagePublisher<IdentifiedMatchPredictionRequest> requestPublisher;
 
-        public MatchPredictionRequestDispatcher(IMatchPredictionBusClient serviceBusClient)
+        public MatchPredictionRequestDispatcher(IBulkMessagePublisher<IdentifiedMatchPredictionRequest> requestPublisher)
         {
-            this.serviceBusClient = serviceBusClient;
+            this.requestPublisher = requestPublisher;
         }
 
         /// <inheritdoc />
@@ -58,7 +57,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
                 }
             }
 
-            await serviceBusClient.BatchPublishToMatchPredictionRequestsTopic(validRequests);
+            await requestPublisher.BatchPublish(validRequests);
 
             // Not using `.Single` here on purpose as don't want to throw in case multiple IDs (of same phenotype) were submitted.
             // Multiple IDs is an unlikely use case, and not worth fretting over.

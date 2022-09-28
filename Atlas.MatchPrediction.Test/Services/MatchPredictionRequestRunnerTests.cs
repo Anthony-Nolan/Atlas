@@ -29,6 +29,7 @@ namespace Atlas.MatchPrediction.Test.Services
 
         private IMatchPredictionAlgorithm matchPredictionAlgorithm;
         private IMatchPredictionRequestResultUploader resultUploader;
+        private IBulkMessagePublisher<MatchPredictionResultLocation> locationPublisher;
         private IMatchPredictionLogger<MatchPredictionRequestLoggingContext> logger;
         private MatchPredictionRequestLoggingContext loggingContext;
 
@@ -39,10 +40,11 @@ namespace Atlas.MatchPrediction.Test.Services
         {
             matchPredictionAlgorithm = Substitute.For<IMatchPredictionAlgorithm>();
             resultUploader = Substitute.For<IMatchPredictionRequestResultUploader>();
+            locationPublisher = Substitute.For<IBulkMessagePublisher<MatchPredictionResultLocation>>();
             logger = Substitute.For<IMatchPredictionLogger<MatchPredictionRequestLoggingContext>>();
             loggingContext = new MatchPredictionRequestLoggingContext();
 
-            runner = new MatchPredictionRequestRunner(matchPredictionAlgorithm, resultUploader, logger, loggingContext);
+            runner = new MatchPredictionRequestRunner(matchPredictionAlgorithm, resultUploader, locationPublisher, logger, loggingContext);
         }
 
         [Test]
@@ -81,6 +83,20 @@ namespace Atlas.MatchPrediction.Test.Services
             await runner.RunMatchPredictionRequestBatch(requestBatch);
 
             await resultUploader.Received(requestCount).UploadMatchPredictionRequestResult(DefaultRequestId, Arg.Any<MatchProbabilityResponse>());
+        }
+
+        [Test]
+        public async Task RunMatchPredictionRequestBatch_BatchPublishesResultFileLocations()
+        {
+            const int requestCount = 3;
+
+            var requestBatch = DefaultRequestBuilder.Build(requestCount);
+            matchPredictionAlgorithm.RunMatchPredictionAlgorithm(default).ReturnsForAnyArgs(new MatchProbabilityResponse());
+            resultUploader.UploadMatchPredictionRequestResult(default, default).ReturnsForAnyArgs(new MatchPredictionResultLocation());
+
+            await runner.RunMatchPredictionRequestBatch(requestBatch);
+
+            await locationPublisher.Received(1).BatchPublish(Arg.Is<IEnumerable<MatchPredictionResultLocation>>(x => x.Count() == requestCount));
         }
 
         [Test]

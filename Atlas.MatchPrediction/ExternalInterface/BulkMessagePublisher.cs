@@ -1,39 +1,36 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Azure.Messaging.ServiceBus;
 using Newtonsoft.Json;
 
-namespace Atlas.MatchPrediction.Clients
+namespace Atlas.MatchPrediction.ExternalInterface
 {
-    public interface IMatchPredictionBusClient
+    public interface IBulkMessagePublisher<in T>
     {
-        Task BatchPublishToMatchPredictionRequestsTopic(IEnumerable<IdentifiedMatchPredictionRequest> requests);
+        Task BatchPublish(IEnumerable<T> contentToPublish);
     }
 
-    public class MatchPredictionBusClient : IMatchPredictionBusClient
+    public class BulkMessagePublisher<T> : IBulkMessagePublisher<T>
     {
         private readonly string connectionString;
-        private readonly string requestsTopicName;
+        private readonly string topicName;
 
-        public MatchPredictionBusClient(
-            MessagingServiceBusSettings messagingServiceBusSettings,
-            MatchPredictionRequestsSettings matchPredictionRequestsSettings)
+        public BulkMessagePublisher(MessagingServiceBusSettings messagingServiceBusSettings, string topicName)
         {
             connectionString = messagingServiceBusSettings.ConnectionString;
-            requestsTopicName = matchPredictionRequestsSettings.ServiceBusTopic;
+            this.topicName = topicName;
         }
 
-        public async Task BatchPublishToMatchPredictionRequestsTopic(IEnumerable<IdentifiedMatchPredictionRequest> requests)
+        public async Task BatchPublish(IEnumerable<T> contentToPublish)
         {
             await using var client = new ServiceBusClient(connectionString);
-            var sender = client.CreateSender(requestsTopicName);
+            var sender = client.CreateSender(topicName);
 
             var localQueue = new Queue<ServiceBusMessage>();
-            foreach (var request in requests)
+            foreach (var content in contentToPublish)
             {
-                var message = new ServiceBusMessage(JsonConvert.SerializeObject(request));
+                var message = new ServiceBusMessage(JsonConvert.SerializeObject(content));
                 localQueue.Enqueue(message);
             }
 

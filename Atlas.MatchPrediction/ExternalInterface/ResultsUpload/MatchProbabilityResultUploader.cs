@@ -10,11 +10,11 @@ namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
 {
     public abstract class MatchProbabilityResultUploader : BlobUploader
     {
-        private readonly string resultsContainer;
+        protected readonly string ResultsContainer;
 
         protected MatchProbabilityResultUploader(AzureStorageSettings azureStorageSettings, ILogger logger) : base(azureStorageSettings.ConnectionString, logger)
         {
-            resultsContainer = azureStorageSettings.MatchPredictionResultsBlobContainer;
+            ResultsContainer = azureStorageSettings.MatchPredictionResultsBlobContainer;
         }
 
         public async Task UploadResult(string fileName, MatchProbabilityResponse matchProbabilityResponse)
@@ -22,7 +22,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
             using (Logger.RunTimed("Uploading match prediction results", LogLevel.Verbose))
             {
                 var serialisedResult = JsonConvert.SerializeObject(matchProbabilityResponse);
-                await Upload(resultsContainer, fileName, serialisedResult);
+                await Upload(ResultsContainer, fileName, serialisedResult);
             }
         }
     }

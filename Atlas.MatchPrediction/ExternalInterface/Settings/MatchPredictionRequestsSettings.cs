@@ -2,7 +2,8 @@
 {
     public class MatchPredictionRequestsSettings
     {
-        public string ServiceBusSubscription { get; set; }
-        public string ServiceBusTopic { get; set; }
+        public string RequestsSubscription { get; set; }
+        public string RequestsTopic { get; set; }
+        public string ResultsTopic { get; set; }
     }
 }
