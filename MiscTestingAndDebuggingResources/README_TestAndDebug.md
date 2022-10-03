@@ -9,3 +9,11 @@ This readme exists to give context to the test resources located in this folder 
   * Select Donor information from the Donor database and edit it as appropriate, before adding them to the `donorsHla` array.
     * (tip: When copied the information from SSMS it resulted in literal tabs instead of `\t`. You can fix this in VSCode by doing a find and replace, with regex enabled from `\t` -> `\\t`)
   * You can then run the code, either from your IDE (VSCode and Rider work fine for this), or from the command line with `node DonorImportFileGenerator.js`
+
+
+## Validation Against Consensus Data
+
+This directory contains scripts to assist with validation against the consensus search result data detailed in https://onlinelibrary.wiley.com/doi/10.1111/tan.12817
+
+Such validation has not been automated - instead, scripts have been written in this directory to aid in transforming input data to Atlas 
+specifications (e.g. donor data, HF sets, patient search requests), and to compare Atlas results with the consensus data. 
