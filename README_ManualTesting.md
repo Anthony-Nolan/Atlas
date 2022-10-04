@@ -38,6 +38,7 @@ This code is designed to be run locally; it is not production quality and cannot
   - Subjects not typed at the required loci (A, B, DRB1) will be ignored; debug output displays how many subjects were actually imported.
 - Haplotype Frequency (HF) file should be uploaded to the target Atlas installation as the global HF set, prior to submitting match prediction requests.
   - Before upload, ensure that the HLA metadata dictionary on the target Atlas instance has the HLA version that the frequency file was encoded to.
+  - The folder `\MiscTestingAndDebuggingResources\ManualTesting\MatchPredictionValidation` contains an example of a script that converts a delimited text file to the required JSON file; it includes a step to "upgrade" v3.4.0 HLA values to v3.33.0 (the earliest HLA nomenclature version that Atlas supports).
 
 ### Stored Data
 - At present, only data generated from the last validation run will be persisted to the associated Validation database (defined within the Functions app setting: `MatchPredictionValidation:Sql`)
