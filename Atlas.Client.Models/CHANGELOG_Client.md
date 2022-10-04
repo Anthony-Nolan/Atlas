@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Versions
 
+### 1.5.0
+* No change made to the search client in this version.
+
 ### 1.4.0
 
 * New `BatchScoringRequest` model added, using new `IdentifiedDonorHla` model
