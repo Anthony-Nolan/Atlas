@@ -10,7 +10,15 @@ The project version will be appropriately incremented with each change to the pr
 
 ## Versions
 
-## 1.4.0
+### 1.5.0
+
+#### Match Prediction
+* New endpoint added that allows match prediction to be performed without running a full search. It accepts batches of match prediction requests: one patient vs. a set of donors. Results are written out to blob storage, and a notification sent to a new topic: `match-prediction-results`.
+
+#### Manual Testing
+* New projects have been added to permit the validation of the match prediction algorithm using an externally generated dataset.
+
+### 1.4.0
 
 #### Matching Algorithm
 
