@@ -27,8 +27,7 @@ Instead, stable versions of Atlas will be tagged in the following format:
 
 `stable/x.y.z`, where `x.y.z` is the [version](#versioning) of Atlas.
 
-Maintainers of Atlas instances should aim to only deploy from such tags - other commits may exist on the `master` git branch, but will not have been
-fully tested or signed off.
+Maintainers of Atlas instances should aim to only deploy from the `stable` tag - other commits may exist on the `master` git branch, but will not have been fully tested or signed off.
 
 In order to "release" code in this manner, someone at Anthony Nolan should sign off on a batch of changes to be released.
 
@@ -40,6 +39,10 @@ This sign-off process should involve ensuring:
 * Documentation has been updated as appropriate:
     * Notably, the [Feature CHANGELOG](./Atlas.Functions.PublicApi/CHANGELOG_Atlas.md) should always be updated, and
       the [Client CHANGELOG](./Atlas.Client.Models/CHANGELOG_Client.md) should always be updated if any client models were changed
+
+### Other Tags
+
+* The `unverified/x.y.z` tag will be used occasionally to manage the release of versions to non-production environments.
 
 
 ## Contributing
