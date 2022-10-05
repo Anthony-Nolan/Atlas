@@ -48,6 +48,16 @@ This code is designed to be run locally; it is not production quality and cannot
 ### Running Validation
 Validation functions and services are designed to be run locally, although they may be pointed to remote resources, e.g., you may wish to submit match prediction prediction requests to a deployed Atlas instance to leverage Azure app scaling.
 
+#### One time Set-up
+
+- Set up the Validation database by running EF core database migrations on `Atlas.MatchPrediction.Test.Validation.Data`.
+  - Default connection strings in the `.Data` project app.settings and Function project settings both point locally. 
+- Configure connection strings for other resources in the settings file of the `Atlas.MatchPrediction.Test.Validation` project (see below for specific guidance on what should be overridden).
+
+#### Functions app
+- The steps of validation are managed by individual functions within the `Atlas.MatchPrediction.Test.Validation` Functions app project.
+- After starting up the Functions app (ideally **not** in debug mode for best perfomance):
+
 1. Invoke the `ImportSubjects` function, submitting the locations of the patient and donor text files.
 2. Send match predictions requests, either by invoking the `SendMatchPredictionRequests` function or `ResumeMatchPredictionRequests` function.
   - Before starting, set the request URL in the functions settings & manually create a new subscription to the `match-prediction-results` topic on the service bus.
@@ -59,6 +69,7 @@ Validation functions and services are designed to be run locally, although they 
   - Make sure to set the Azure storage and messaging bus connection strings, as well as subscription name, in the function settings.
   - Messages that contain algorithm request IDs not in the requests table will be ignored but will also be taken off the queue.
 4. [Optional] In case any match prediction results were not downloaded, and their service bus messages have been taken off the queue, invoke function `PromptDownloadOfMissingResults`; this will query the database for those requests that are missing results, and send off new messages to the `results` topic, thereby kicking off the above described results-download process. This requires that the results files are still on the blob storage container.
+
 ## Verification
 
 - [Glossary](#glossary)
