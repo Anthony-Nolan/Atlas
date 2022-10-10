@@ -6,6 +6,7 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.Functions.PublicApi.Test.Manual.Services;
 using Atlas.Functions.PublicApi.Test.Manual.Services.ServiceBus;
 using Atlas.Functions.PublicApi.Test.Manual.Settings;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -20,7 +21,8 @@ namespace Atlas.Functions.PublicApi.Test.Manual.DependencyInjection
             services.RegisterInternalServices(
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<MatchingSettings>(),
-                OptionsReaderFor<SearchSettings>()
+                OptionsReaderFor<SearchSettings>(),
+                OptionsReaderFor<DonorManagementSettings>()
                 );
             services.RegisterLifeTimeScopedCacheTypes();
         }
@@ -29,6 +31,7 @@ namespace Atlas.Functions.PublicApi.Test.Manual.DependencyInjection
         {
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<MatchingSettings>("Matching");
+            services.RegisterAsOptions<DonorManagementSettings>("Matching:DonorManagement");
             services.RegisterAsOptions<SearchSettings>("Search");
         }
 
@@ -36,7 +39,8 @@ namespace Atlas.Functions.PublicApi.Test.Manual.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, MatchingSettings> fetchMatchingSettings,
-            Func<IServiceProvider, SearchSettings> fetchSearchSettings
+            Func<IServiceProvider, SearchSettings> fetchSearchSettings,
+            Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings
         )
         {
             services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
@@ -64,6 +68,14 @@ namespace Atlas.Functions.PublicApi.Test.Manual.DependencyInjection
                 return new MessagesPeeker<SearchResultsNotification>(factory, settings.ResultsTopic, settings.ResultsSubscription);
             });
             services.AddScoped<ISearchResultNotificationsPeeker, SearchResultNotificationsPeeker>();
+
+            services.AddScoped<IMessagesPeeker<SearchableDonorUpdate>, MessagesPeeker<SearchableDonorUpdate>>(sp =>
+            {
+                var factory = sp.GetService<IMessageReceiverFactory>();
+                var settings = fetchDonorManagementSettings(sp);
+                return new MessagesPeeker<SearchableDonorUpdate>(factory, settings.Topic, settings.Subscription);
+            });
+            services.AddScoped<ISearchableDonorUpdatesPeeker, SearchableDonorUpdatesPeeker>();
         }
     }
 }

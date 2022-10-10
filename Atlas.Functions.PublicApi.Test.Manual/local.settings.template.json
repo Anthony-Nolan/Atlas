@@ -7,6 +7,8 @@
 
     "Matching:RequestsTopic": "matching-requests",
     "Matching:RequestsSubscription": "audit",
+    "Matching:DonorManagement:Topic": "updated-searchable-donors",
+    "Matching:DonorManagement:Subscription": "audit",
 
     "Search:ResultsTopic": "search-results-ready",
     "Search:ResultsSubscription": "audit"

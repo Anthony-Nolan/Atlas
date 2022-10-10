@@ -10,4 +10,9 @@
     {
         public string SearchRequestId { get; set; }
     }
+
+    public class PeekByAtlasDonorIdRequest : PeekRequest
+    {
+        public int AtlasDonorId { get; set; }
+    }
 }
