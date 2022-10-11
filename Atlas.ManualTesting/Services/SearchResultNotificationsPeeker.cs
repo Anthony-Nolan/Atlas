@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
-using Atlas.Functions.PublicApi.Test.Manual.Models;
-using Atlas.Functions.PublicApi.Test.Manual.Services.ServiceBus;
+using Atlas.ManualTesting.Models;
+using Atlas.ManualTesting.Services.ServiceBus;
 
-namespace Atlas.Functions.PublicApi.Test.Manual.Services
+namespace Atlas.ManualTesting.Services
 {
     public interface ISearchResultNotificationsPeeker
     {

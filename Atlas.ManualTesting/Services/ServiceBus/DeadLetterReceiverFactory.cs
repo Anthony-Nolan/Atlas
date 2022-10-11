@@ -2,7 +2,7 @@
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 
-namespace Atlas.Functions.PublicApi.Test.Manual.Services.ServiceBus
+namespace Atlas.ManualTesting.Services.ServiceBus
 {
     internal interface IDeadLetterReceiverFactory : IMessageReceiverFactory
     {

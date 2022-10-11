@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Atlas.Client.Models.Search.Results;
 
-namespace Atlas.Functions.PublicApi.Test.Manual.Models
+namespace Atlas.ManualTesting.Models
 {
     public class PeekedSearchResultsNotifications
     {

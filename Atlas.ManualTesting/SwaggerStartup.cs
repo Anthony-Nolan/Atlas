@@ -1,12 +1,12 @@
 ﻿using System.Reflection;
-using Atlas.Functions.PublicApi.Test.Manual;
+using Atlas.ManualTesting;
 using AzureFunctions.Extensions.Swashbuckle;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 
 [assembly: WebJobsStartup(typeof(SwashBuckleStartup))]
 
-namespace Atlas.Functions.PublicApi.Test.Manual
+namespace Atlas.ManualTesting
 {
     internal class SwashBuckleStartup : IWebJobsStartup
     {

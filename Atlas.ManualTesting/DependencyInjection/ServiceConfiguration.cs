@@ -3,15 +3,15 @@ using Atlas.Client.Models.Search.Results;
 using Atlas.Common.Caching;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.Utils.Extensions;
-using Atlas.Functions.PublicApi.Test.Manual.Services;
-using Atlas.Functions.PublicApi.Test.Manual.Services.ServiceBus;
-using Atlas.Functions.PublicApi.Test.Manual.Settings;
+using Atlas.ManualTesting.Services;
+using Atlas.ManualTesting.Services.ServiceBus;
+using Atlas.ManualTesting.Settings;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
-namespace Atlas.Functions.PublicApi.Test.Manual.DependencyInjection
+namespace Atlas.ManualTesting.DependencyInjection
 {
     internal static class ServiceConfiguration
     {
