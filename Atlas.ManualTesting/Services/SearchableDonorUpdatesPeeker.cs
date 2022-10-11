@@ -10,7 +10,7 @@ namespace Atlas.ManualTesting.Services
 {
     public interface ISearchableDonorUpdatesPeeker
     {
-        Task<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>> GetMessagesByAtlasDonorId(PeekByAtlasDonorIdRequest peekRequest);
+        Task<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>> GetMessagesByAtlasDonorId(PeekByAtlasDonorIdsRequest peekRequest);
     }
 
     internal class SearchableDonorUpdatesPeeker : ISearchableDonorUpdatesPeeker
@@ -22,11 +22,11 @@ namespace Atlas.ManualTesting.Services
             this.messagesReceiver = messagesReceiver;
         }
 
-        public async Task<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>> GetMessagesByAtlasDonorId(PeekByAtlasDonorIdRequest peekRequest)
+        public async Task<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>> GetMessagesByAtlasDonorId(PeekByAtlasDonorIdsRequest peekRequest)
         {
             var notifications = await messagesReceiver.Peek(peekRequest);
 
-            return notifications.Where(n => n.DeserializedBody.DonorId == peekRequest.AtlasDonorId);
+            return notifications.Where(n => peekRequest.AtlasDonorIds.Contains(n.DeserializedBody.DonorId));
         }
     }
 }

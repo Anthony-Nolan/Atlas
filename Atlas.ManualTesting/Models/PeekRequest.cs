@@ -1,4 +1,6 @@
-﻿namespace Atlas.ManualTesting.Models
+﻿using System.Collections.Generic;
+
+namespace Atlas.ManualTesting.Models
 {
     public class PeekRequest
     {
@@ -11,8 +13,8 @@
         public string SearchRequestId { get; set; }
     }
 
-    public class PeekByAtlasDonorIdRequest : PeekRequest
+    public class PeekByAtlasDonorIdsRequest : PeekRequest
     {
-        public int AtlasDonorId { get; set; }
+        public IEnumerable<int> AtlasDonorIds { get; set; }
     }
 }
