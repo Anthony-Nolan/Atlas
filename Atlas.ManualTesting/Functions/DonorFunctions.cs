@@ -23,13 +23,13 @@ namespace Atlas.ManualTesting.Functions
             this.donorStoresInspector = donorStoresInspector;
         }
 
-        [FunctionName(nameof(FilterSearchableDonorUpdatesByAtlasDonorId))]
-        public async Task<IActionResult> FilterSearchableDonorUpdatesByAtlasDonorId(
+        [FunctionName(nameof(FilterSearchableDonorUpdatesByAtlasDonorIds))]
+        public async Task<IActionResult> FilterSearchableDonorUpdatesByAtlasDonorIds(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(PeekByAtlasDonorIdRequest), nameof(PeekByAtlasDonorIdRequest))]
+            [RequestBodyType(typeof(PeekByAtlasDonorIdsRequest), nameof(PeekByAtlasDonorIdsRequest))]
             HttpRequest request)
         {
-            var peekRequest = await request.DeserialiseRequestBody<PeekByAtlasDonorIdRequest>();
+            var peekRequest = await request.DeserialiseRequestBody<PeekByAtlasDonorIdsRequest>();
 
             var resultsNotifications = await searchableDonorUpdatesPeeker.GetMessagesByAtlasDonorId(peekRequest);
 
