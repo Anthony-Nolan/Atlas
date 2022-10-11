@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
-namespace Atlas.Functions.PublicApi.Test.Manual.Helpers
+namespace Atlas.ManualTesting.Helpers
 {
     internal static class RequestExtension
     {

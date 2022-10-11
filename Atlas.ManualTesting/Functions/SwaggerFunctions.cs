@@ -4,7 +4,7 @@ using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 
-namespace Atlas.Functions.PublicApi.Test.Manual.Functions
+namespace Atlas.ManualTesting.Functions
 {
     public static class SwaggerFunctions
     {

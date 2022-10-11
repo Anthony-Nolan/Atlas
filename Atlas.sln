@@ -128,7 +128,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction.Test.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction.Test.Verification.Data", "Atlas.MatchPrediction.Test.Verification.Data\Atlas.MatchPrediction.Test.Verification.Data.csproj", "{E9E4EFDF-7AAC-4881-89EB-AC884D257748}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.Functions.PublicApi.Test.Manual", "Atlas.Functions.PublicApi.Test.Manual\Atlas.Functions.PublicApi.Test.Manual.csproj", "{AE342924-9AEF-4D6A-BE56-BBF137FF784E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.ManualTesting", "Atlas.ManualTesting\Atlas.ManualTesting.csproj", "{AE342924-9AEF-4D6A-BE56-BBF137FF784E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RepeatSearch", "RepeatSearch", "{025C2DDA-6FBF-4323-ABE4-3468CD025FB1}"
 	ProjectSection(SolutionItems) = preProject

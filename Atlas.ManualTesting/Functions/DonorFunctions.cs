@@ -1,20 +1,20 @@
 using System.Threading.Tasks;
-using Atlas.Functions.PublicApi.Test.Manual.Helpers;
-using Atlas.Functions.PublicApi.Test.Manual.Models;
-using Atlas.Functions.PublicApi.Test.Manual.Services;
+using Atlas.ManualTesting.Helpers;
+using Atlas.ManualTesting.Models;
+using Atlas.ManualTesting.Services;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
 
-namespace Atlas.Functions.PublicApi.Test.Manual.Functions
+namespace Atlas.ManualTesting.Functions
 {
-    public class DonorUpdateMessageFunctions
+    public class DonorFunctions
     {
         private readonly ISearchableDonorUpdatesPeeker searchableDonorUpdatesPeeker;
 
-        public DonorUpdateMessageFunctions(ISearchableDonorUpdatesPeeker searchableDonorUpdatesPeeker)
+        public DonorFunctions(ISearchableDonorUpdatesPeeker searchableDonorUpdatesPeeker)
         {
             this.searchableDonorUpdatesPeeker = searchableDonorUpdatesPeeker;
         }

@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Functions.PublicApi.Test.Manual.Models;
-using Atlas.Functions.PublicApi.Test.Manual.Services.ServiceBus;
+using Atlas.ManualTesting.Models;
+using Atlas.ManualTesting.Services.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 
-namespace Atlas.Functions.PublicApi.Test.Manual.Services
+namespace Atlas.ManualTesting.Services
 {
     public interface IMatchingRequestsPeeker
     {

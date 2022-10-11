@@ -1,11 +1,11 @@
-using Atlas.Functions.PublicApi.Test.Manual;
-using Atlas.Functions.PublicApi.Test.Manual.DependencyInjection;
+using Atlas.ManualTesting;
+using Atlas.ManualTesting.DependencyInjection;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
-namespace Atlas.Functions.PublicApi.Test.Manual
+namespace Atlas.ManualTesting
 {
     internal class Startup : FunctionsStartup
     {

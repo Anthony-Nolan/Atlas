@@ -1,4 +1,4 @@
-﻿namespace Atlas.Functions.PublicApi.Test.Manual.Settings
+﻿namespace Atlas.ManualTesting.Settings
 {
     public class MessagingServiceBusSettings
     {

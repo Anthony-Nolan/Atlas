@@ -4,12 +4,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.ServiceBus.Models;
-using Atlas.Functions.PublicApi.Test.Manual.Models;
+using Atlas.ManualTesting.Models;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 using Newtonsoft.Json;
 
-namespace Atlas.Functions.PublicApi.Test.Manual.Services.ServiceBus
+namespace Atlas.ManualTesting.Services.ServiceBus
 {
     internal interface IMessagesPeeker<T> : IServiceBusPeeker<T>
     {
