@@ -21,7 +21,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Atlas.Client.Models\Atlas.Client.Models.csproj" />
     <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
+    <ProjectReference Include="..\Atlas.DonorImport\Atlas.DonorImport.csproj" />
     <ProjectReference Include="..\Atlas.MatchingAlgorithm.Common\Atlas.MatchingAlgorithm.Common.csproj" />
+    <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

@@ -13,5 +13,8 @@
     "Search:ResultsTopic": "search-results-ready",
     "Search:ResultsSubscription": "audit"
   },
-  "ConnectionStrings": {}
+  "ConnectionStrings": {
+    "ActiveMatchingSql": "Data Source=(local);Initial Catalog=AtlasMatchingA;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
+    "DonorImportSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;trustServerCertificate=true"
+  }
 }

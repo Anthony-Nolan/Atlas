@@ -1,4 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Atlas.Common.Utils;
 using Atlas.ManualTesting.Helpers;
 using Atlas.ManualTesting.Models;
 using Atlas.ManualTesting.Services;
@@ -13,10 +15,12 @@ namespace Atlas.ManualTesting.Functions
     public class DonorFunctions
     {
         private readonly ISearchableDonorUpdatesPeeker searchableDonorUpdatesPeeker;
+        private readonly IDonorStoresInspector donorStoresInspector;
 
-        public DonorFunctions(ISearchableDonorUpdatesPeeker searchableDonorUpdatesPeeker)
+        public DonorFunctions(ISearchableDonorUpdatesPeeker searchableDonorUpdatesPeeker, IDonorStoresInspector donorStoresInspector)
         {
             this.searchableDonorUpdatesPeeker = searchableDonorUpdatesPeeker;
+            this.donorStoresInspector = donorStoresInspector;
         }
 
         [FunctionName(nameof(FilterSearchableDonorUpdatesByAtlasDonorId))]
@@ -30,6 +34,17 @@ namespace Atlas.ManualTesting.Functions
             var resultsNotifications = await searchableDonorUpdatesPeeker.GetMessagesByAtlasDonorId(peekRequest);
 
             return new JsonResult(resultsNotifications);
+        }
+
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
+        [FunctionName(nameof(GetDonorsMissingFromActiveMatchingDatabase))]
+        public async Task<IActionResult> GetDonorsMissingFromActiveMatchingDatabase(
+            [HttpTrigger(AuthorizationLevel.Function, "get")]
+            HttpRequest request)
+        {
+            var missingIds = await donorStoresInspector.GetDonorsMissingFromActiveMatchingDatabase();
+
+            return new JsonResult(missingIds);
         }
     }
 }

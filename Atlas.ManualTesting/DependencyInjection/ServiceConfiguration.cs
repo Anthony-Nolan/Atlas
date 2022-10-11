@@ -3,6 +3,7 @@ using Atlas.Client.Models.Search.Results;
 using Atlas.Common.Caching;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.Utils.Extensions;
+using Atlas.DonorImport.Data.Repositories;
 using Atlas.ManualTesting.Services;
 using Atlas.ManualTesting.Services.ServiceBus;
 using Atlas.ManualTesting.Settings;
@@ -18,12 +19,13 @@ namespace Atlas.ManualTesting.DependencyInjection
         public static void RegisterServices(this IServiceCollection services)
         {
             services.RegisterSettings();
-            services.RegisterInternalServices(
+            services.RegisterServices(
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<MatchingSettings>(),
                 OptionsReaderFor<SearchSettings>(),
                 OptionsReaderFor<DonorManagementSettings>()
-                );
+            );
+            services.RegisterDatabaseServices(ConnectionStringReader("ActiveMatchingSql"), ConnectionStringReader("DonorImportSql"));
             services.RegisterLifeTimeScopedCacheTypes();
         }
 
@@ -35,7 +37,7 @@ namespace Atlas.ManualTesting.DependencyInjection
             services.RegisterAsOptions<SearchSettings>("Search");
         }
 
-        private static void RegisterInternalServices(
+        private static void RegisterServices(
             this IServiceCollection services,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, MatchingSettings> fetchMatchingSettings,
@@ -76,6 +78,19 @@ namespace Atlas.ManualTesting.DependencyInjection
                 return new MessagesPeeker<SearchableDonorUpdate>(factory, settings.Topic, settings.Subscription);
             });
             services.AddScoped<ISearchableDonorUpdatesPeeker, SearchableDonorUpdatesPeeker>();
+
+            services.AddScoped<IDonorStoresInspector, DonorStoresInspector>();
+        }
+
+        private static void RegisterDatabaseServices(
+            this IServiceCollection services, 
+            Func<IServiceProvider, string> fetchActiveMatchingSqlConnectionString,
+            Func<IServiceProvider, string> fetchDonorImportSqlConnectionString)
+        {
+            services.AddScoped<IActiveMatchingDatabaseConnectionStringProvider, ActiveMatchingDatabaseConnectionStringProvider>(sp =>
+                new ActiveMatchingDatabaseConnectionStringProvider(fetchActiveMatchingSqlConnectionString(sp)));
+            services.AddScoped<IDonorReadRepository, DonorReadRepository>(sp =>
+                new DonorReadRepository(fetchDonorImportSqlConnectionString(sp)));
         }
     }
 }
