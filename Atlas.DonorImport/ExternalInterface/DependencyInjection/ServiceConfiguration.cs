@@ -2,14 +2,15 @@ using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Notifications;
+using Atlas.Common.ServiceBus;
 using Atlas.Common.Utils.Extensions;
-using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
@@ -28,10 +29,10 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             // Perform static Dapper set up that should be performed once before any SQL requests are made.
             Initialise.InitaliseDapper();
             
-            services.RegisterSettings(fetchMessagingServiceBusSettings, fetchNotificationConfigurationSettings, fetchStalledFileSettings);
+            services.RegisterSettings(fetchNotificationConfigurationSettings, fetchStalledFileSettings);
             services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
-            services.RegisterServices();
+            services.RegisterServices(fetchMessagingServiceBusSettings);
             services.RegisterImportDatabaseTypes(fetchSqlConnectionString);
         }
 
@@ -48,16 +49,16 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
 
         private static void RegisterSettings(
             this IServiceCollection services,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, NotificationConfigurationSettings> fetchNotificationConfigurationSettings,
             Func<IServiceProvider, StalledFileSettings> fetchStalledFileSettings)
         {
-            services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
             services.MakeSettingsAvailableForUse(fetchStalledFileSettings);
             services.MakeSettingsAvailableForUse(fetchNotificationConfigurationSettings);
         }
 
-        private static void RegisterServices(this IServiceCollection services)
+        private static void RegisterServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
             services.AddScoped<IDonorFileImporter, DonorFileImporter>();
             services.AddScoped<IDonorImportFileParser, DonorImportFileParser>();
@@ -66,6 +67,12 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IImportedLocusInterpreter, ImportedLocusInterpreter>();
             services.AddScoped<IDonorImportFileHistoryService, DonorImportFileHistoryService>();
             services.AddScoped<IDonorImportLogService, DonorImportLogService>();
+
+            services.AddScoped<IMessageBatchPublisher<SearchableDonorUpdate>, MessageBatchPublisher<SearchableDonorUpdate>>(sp =>
+            {
+                var serviceBusSettings = fetchMessagingServiceBusSettings(sp);
+                return new MessageBatchPublisher<SearchableDonorUpdate>(serviceBusSettings.ConnectionString, serviceBusSettings.MatchingDonorUpdateTopic);
+            });
         }
 
         private static void RegisterDonorReaderServices(this IServiceCollection services)
@@ -78,7 +85,6 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings)
         {
-            services.AddScoped<IMessagingServiceBusClient, MessagingServiceBusClient>();
             services.RegisterNotificationSender(fetchNotificationsServiceBusSettings, fetchApplicationInsightsSettings);
         }
 

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ServiceBus;
 using Atlas.Common.Test.SharedTestHelpers;
-using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Services;
@@ -23,7 +23,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
     public class DifferentialDonorUpsertTests
     {
         private IDonorInspectionRepository donorRepository;
-        private IMessagingServiceBusClient mockServiceBusClient;
+        private IMessageBatchPublisher<SearchableDonorUpdate> mockMessagePublisher;
         private IDonorFileImporter fileImporter;
         private readonly Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
 
@@ -48,12 +48,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                mockServiceBusClient = Substitute.For<IMessagingServiceBusClient>();
-                var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
-                services.AddTransient(sp => mockServiceBusClient);
-                DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
-
-                mockServiceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<IMessagingServiceBusClient>();
+                mockMessagePublisher = DependencyInjection.DependencyInjection.Provider.GetService<IMessageBatchPublisher<SearchableDonorUpdate>>();
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
                 fileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
             });
@@ -187,7 +182,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
                 .Build();
             var donorFile = fileBuilder.WithDonors(modifiedDonor);
 
-            mockServiceBusClient.ClearReceivedCalls();
+            mockMessagePublisher.ClearReceivedCalls();
 
             // ACT
             await fileImporter.ImportDonorFile(donorFile);
@@ -196,7 +191,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
             var initDonor = InitialDonors.Take(1).Single();
 
             initDonor.Should().BeEquivalentTo(dbDonor);
-            await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
+            await mockMessagePublisher.DidNotReceiveWithAnyArgs().BatchPublish(default);
         }
 
         [Test]
@@ -217,7 +212,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
             var mixedDonors = additionDonors.Union(modifiedDonors).ToArray();
             var mixedDonorsFile = fileBuilder.WithDonors(mixedDonors);
 
-            mockServiceBusClient.ClearReceivedCalls();
+            mockMessagePublisher.ClearReceivedCalls();
             var capturedUpdates = ConfigureCapturingOfUpdateMessageBatches();
 
             // ACT
@@ -243,10 +238,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         private List<SearchableDonorUpdate> ConfigureCapturingOfUpdateMessageBatches()
         {
             var capturedUpdates = new List<SearchableDonorUpdate>();
-            mockServiceBusClient
-                .When(client => client.PublishDonorUpdateMessages(Arg.Any<ICollection<SearchableDonorUpdate>>()))
+            mockMessagePublisher
+                .When(client => client.BatchPublish(Arg.Any<ICollection<SearchableDonorUpdate>>()))
                 .Do(clientCallArgs => capturedUpdates.AddRange(clientCallArgs.Arg<ICollection<SearchableDonorUpdate>>()));
-            mockServiceBusClient.ClearReceivedCalls();
+            mockMessagePublisher.ClearReceivedCalls();
             
             return capturedUpdates;
         }

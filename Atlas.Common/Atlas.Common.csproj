@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.10.0" />
     <PackageReference Include="EnumStringValues" Version="4.0.2" />
     <PackageReference Include="FluentValidation" Version="8.4.0" />
     <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4">

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ServiceBus;
 using Atlas.Common.Validation;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchPrediction.ApplicationInsights;
@@ -27,14 +28,14 @@ namespace Atlas.MatchPrediction.ExternalInterface
     {
         private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
         private readonly IMatchPredictionRequestResultUploader resultUploader;
-        private readonly IBulkMessagePublisher<MatchPredictionResultLocation> messagePublisher;
+        private readonly IMessageBatchPublisher<MatchPredictionResultLocation> messagePublisher;
         private readonly ILogger logger;
         private readonly MatchPredictionRequestLoggingContext loggingContext;
 
         public MatchPredictionRequestRunner(
             IMatchPredictionAlgorithm matchPredictionAlgorithm, 
             IMatchPredictionRequestResultUploader resultUploader,
-            IBulkMessagePublisher<MatchPredictionResultLocation> messagePublisher,
+            IMessageBatchPublisher<MatchPredictionResultLocation> messagePublisher,
             // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IMatchPredictionLogger<MatchPredictionRequestLoggingContext> logger,
             MatchPredictionRequestLoggingContext loggingContext)

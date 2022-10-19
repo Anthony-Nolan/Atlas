@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Notifications;
+using Atlas.Common.ServiceBus;
 using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
-using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Config;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
@@ -32,7 +32,7 @@ namespace Atlas.DonorImport.Services
 
     internal class DonorRecordChangeApplier : IDonorRecordChangeApplier
     {
-        private readonly IMessagingServiceBusClient messagingServiceBusClient;
+        private readonly IMessageBatchPublisher<SearchableDonorUpdate> messagePublisher;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDonorReadRepository donorInspectionRepository;
         private readonly IImportedLocusInterpreter locusInterpreter;
@@ -42,7 +42,7 @@ namespace Atlas.DonorImport.Services
         private readonly NotificationConfigurationSettings notificationConfigSettings;
 
         public DonorRecordChangeApplier(
-            IMessagingServiceBusClient messagingServiceBusClient,
+            IMessageBatchPublisher<SearchableDonorUpdate> messagePublisher,
             IDonorImportRepository donorImportRepository,
             IDonorReadRepository donorInspectionRepository,
             IImportedLocusInterpreter locusInterpreter,
@@ -52,7 +52,7 @@ namespace Atlas.DonorImport.Services
             NotificationConfigurationSettings notificationConfigSettings)
         {
             this.donorImportRepository = donorImportRepository;
-            this.messagingServiceBusClient = messagingServiceBusClient;
+            this.messagePublisher = messagePublisher;
             this.donorInspectionRepository = donorInspectionRepository;
             this.locusInterpreter = locusInterpreter;
             this.donorImportLogService = donorImportLogService;
@@ -139,7 +139,7 @@ namespace Atlas.DonorImport.Services
             // Batched by update mode, to make testing of combined files easier
             foreach (var donorUpdateBatch in donorUpdates.Where(donorUpdateBatch => donorUpdateBatch.Any()))
             {
-                await messagingServiceBusClient.PublishDonorUpdateMessages(donorUpdateBatch);
+                await messagePublisher.BatchPublish(donorUpdateBatch);
             }
         }
 

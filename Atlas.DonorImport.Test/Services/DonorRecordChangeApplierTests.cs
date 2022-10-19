@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Notifications;
-using Atlas.DonorImport.Clients;
+using Atlas.Common.ServiceBus;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.ExternalInterface.Settings;
@@ -24,7 +24,7 @@ namespace Atlas.DonorImport.Test.Services
     [TestFixture]
     internal class DonorRecordChangeApplierTests
     {
-        private IMessagingServiceBusClient messagingServiceBusClient;
+        private IMessageBatchPublisher<SearchableDonorUpdate> messagePublisher;
         private IDonorImportRepository donorImportRepository;
         private IDonorReadRepository donorInspectionRepository;
         private IDonorImportLogService donorImportLogService;
@@ -39,7 +39,7 @@ namespace Atlas.DonorImport.Test.Services
         [SetUp]
         public void SetUp()
         {
-            messagingServiceBusClient = Substitute.For<IMessagingServiceBusClient>();
+            messagePublisher = Substitute.For<IMessageBatchPublisher<SearchableDonorUpdate>>();
             donorImportRepository = Substitute.For<IDonorImportRepository>();
             donorInspectionRepository = Substitute.For<IDonorReadRepository>();
             donorImportLogService = Substitute.For<IDonorImportLogService>();
@@ -55,7 +55,7 @@ namespace Atlas.DonorImport.Test.Services
             donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>());
 
             donorOperationApplier = new DonorRecordChangeApplier(
-                messagingServiceBusClient,
+                messagePublisher,
                 donorImportRepository,
                 donorInspectionRepository,
                 naiveDnaLocusInterpreter,
@@ -100,9 +100,9 @@ namespace Atlas.DonorImport.Test.Services
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
 
-            await messagingServiceBusClient
+            await messagePublisher
                 .Received(1)
-                .PublishDonorUpdateMessages(Arg.Is<List<SearchableDonorUpdate>>(messages => messages.Count == donorUpdates.Count));
+                .BatchPublish(Arg.Is<List<SearchableDonorUpdate>>(messages => messages.Count == donorUpdates.Count));
         }
 
         [Test]
@@ -124,7 +124,7 @@ namespace Atlas.DonorImport.Test.Services
             // Capture all the Calls to MessageServiceBus.
             var sequenceOfMassCalls = new List<List<SearchableDonorUpdate>>();
 
-            messagingServiceBusClient.PublishDonorUpdateMessages(
+            messagePublisher.BatchPublish(
                 Arg.Do<ICollection<SearchableDonorUpdate>>(messageCollection => { sequenceOfMassCalls.Add(messageCollection.ToList()); })
             ).Returns(Task.CompletedTask);
 
@@ -156,7 +156,7 @@ namespace Atlas.DonorImport.Test.Services
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
 
-            await messagingServiceBusClient.Received(1).PublishDonorUpdateMessages(Arg.Is<List<SearchableDonorUpdate>>(messages =>
+            await messagePublisher.Received(1).BatchPublish(Arg.Is<List<SearchableDonorUpdate>>(messages =>
                 messages.All(u => u.DonorId == atlasId)
             ));
         }
@@ -179,7 +179,7 @@ namespace Atlas.DonorImport.Test.Services
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
 
-            await messagingServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
+            await messagePublisher.DidNotReceiveWithAnyArgs().BatchPublish(default);
         }
 
         [Test]

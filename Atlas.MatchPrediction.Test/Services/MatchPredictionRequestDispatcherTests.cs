@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ServiceBus;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
@@ -20,13 +21,13 @@ namespace Atlas.MatchPrediction.Test.Services
         private static readonly Builder<SingleDonorMatchProbabilityInput> InputMissingDonorInfo = SingleDonorMatchProbabilityInputBuilder.Default
             .With(x => x.Donor, (DonorInput)null);
 
-        private IBulkMessagePublisher<IdentifiedMatchPredictionRequest> requestPublisher;
+        private IMessageBatchPublisher<IdentifiedMatchPredictionRequest> requestPublisher;
         private IMatchPredictionRequestDispatcher dispatcher;
 
         [SetUp]
         public void SetUp()
         {
-            requestPublisher = Substitute.For<IBulkMessagePublisher<IdentifiedMatchPredictionRequest>>();
+            requestPublisher = Substitute.For<IMessageBatchPublisher<IdentifiedMatchPredictionRequest>>();
             dispatcher = new MatchPredictionRequestDispatcher(requestPublisher);
         }
 

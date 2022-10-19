@@ -1,24 +1,23 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Azure.Messaging.ServiceBus;
 using Newtonsoft.Json;
 
-namespace Atlas.MatchPrediction.ExternalInterface
+namespace Atlas.Common.ServiceBus
 {
-    public interface IBulkMessagePublisher<in T>
+    public interface IMessageBatchPublisher<in T>
     {
         Task BatchPublish(IEnumerable<T> contentToPublish);
     }
 
-    public class BulkMessagePublisher<T> : IBulkMessagePublisher<T>
+    public class MessageBatchPublisher<T> : IMessageBatchPublisher<T>
     {
         private readonly string connectionString;
         private readonly string topicName;
 
-        public BulkMessagePublisher(MessagingServiceBusSettings messagingServiceBusSettings, string topicName)
+        public MessageBatchPublisher(string connectionString, string topicName)
         {
-            connectionString = messagingServiceBusSettings.ConnectionString;
+            this.connectionString = connectionString;
             this.topicName = topicName;
         }
 

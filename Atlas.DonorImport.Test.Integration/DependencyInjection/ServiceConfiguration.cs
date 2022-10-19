@@ -1,11 +1,9 @@
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using System.Transactions;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus;
-using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Context;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
@@ -39,16 +37,16 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
 
             SetUpConfiguration(services);
             services.RegisterDonorImport(
-                sp => new ApplicationInsightsSettings {LogLevel = "Info"},
+                sp => new ApplicationInsightsSettings { LogLevel = "Info" },
                 sp => new MessagingServiceBusSettings(),
                 sp => new NotificationConfigurationSettings(),
                 sp => new NotificationsServiceBusSettings(),
-                sp => new StalledFileSettings { HoursToCheckStalledFiles = 2}, 
+                sp => new StalledFileSettings { HoursToCheckStalledFiles = 2 },
                 ConnectionStringReader(DonorStoreSqlConnectionString)
             );
             RegisterIntegrationTestServices(services);
             SetUpMockServices(services);
-            
+
             return services;
         }
 
@@ -74,18 +72,22 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
 
         private static void SetUpMockServices(IServiceCollection services)
         {
+            #region Mock up topic client for Notifications sender
             // Service bus client package will throw if it detects an ongoing transaction, as it doesn't support distributed transactions.
             // We emulate that on all service bus clients here to enable testing for such cases.
             var mockTopicClient = Substitute.For<ITopicClient>();
             mockTopicClient
-                .WhenForAnyArgs(x => x.SendAsync((Message) default))
+                .WhenForAnyArgs(x => x.SendAsync((Message)default))
                 .Do(_ => ThrowIfInTransaction());
 
             var mockTopicClientFactory = Substitute.For<ITopicClientFactory>();
             mockTopicClientFactory.BuildTopicClient(default, default).ReturnsForAnyArgs(mockTopicClient);
-            
-            services.AddScoped(sp => Substitute.For<ILogger>());
             services.AddScoped(sp => mockTopicClientFactory);
+            #endregion
+
+
+            services.AddScoped(sp => Substitute.For<IMessageBatchPublisher<SearchableDonorUpdate>>());
+            services.AddScoped(sp => Substitute.For<ILogger>());
         }
 
         private static void ThrowIfInTransaction()

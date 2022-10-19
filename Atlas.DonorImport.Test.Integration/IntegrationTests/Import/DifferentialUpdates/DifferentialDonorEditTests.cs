@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Notifications;
+using Atlas.Common.ServiceBus;
 using Atlas.Common.Test.SharedTestHelpers;
-using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Services;
@@ -23,7 +23,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
     [TestFixture]
     public class DifferentialDonorEditTests
     {
-        private IMessagingServiceBusClient mockServiceBusClient;
+        private IMessageBatchPublisher<SearchableDonorUpdate> mockMessagePublisher;
         private INotificationSender mockNotificationSender;
         
         private const string DonorCodePrefix = "external-donor-code-";
@@ -49,15 +49,12 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                mockServiceBusClient = Substitute.For<IMessagingServiceBusClient>();
                 mockNotificationSender = Substitute.For<INotificationSender>();
                 var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
-                services.AddScoped(sp => mockServiceBusClient);
                 services.AddScoped(sp => mockNotificationSender);
                 DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
                 
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
-                mockServiceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<IMessagingServiceBusClient>();
                 donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
             });
         }
@@ -72,7 +69,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         [SetUp]
         public async Task SetUp()
         {
-            mockServiceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<IMessagingServiceBusClient>(); //We want a new one of these every time, for ease of asserting calls.
+            //We want a new one of these every time, for ease of asserting calls.
+            mockMessagePublisher = DependencyInjection.DependencyInjection.Provider.GetService<IMessageBatchPublisher<SearchableDonorUpdate>>();
 
             var newDonorUpdates =
                 DonorUpdateBuilder.New
@@ -93,7 +91,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                mockServiceBusClient.ClearReceivedCalls();
+                mockMessagePublisher.ClearReceivedCalls();
                 mockNotificationSender.ClearReceivedCalls();
                 DatabaseManager.ClearDatabases();
             });
@@ -127,7 +125,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
 
             var donorEditFile = fileBuilder.WithDonors(donorEdit);
 
-            mockServiceBusClient.ClearReceivedCalls();
+            mockMessagePublisher.ClearReceivedCalls();
 
             //ACT
             await donorFileImporter.ImportDonorFile(donorEditFile);
@@ -136,7 +134,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
             var unchangedDonorAtInsertion = InitialDonors.Take(1).Single();
             unchangedDonorAtInsertion.Should().BeEquivalentTo(updatedDonor);
 
-            await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
+            await mockMessagePublisher.DidNotReceiveWithAnyArgs().BatchPublish(default);
         }
 
         [Test]
@@ -184,7 +182,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
                 .Build(2).ToArray();
 
             var donorEditFile = fileBuilder.WithDonors(donorEdit);
-            mockServiceBusClient.ClearReceivedCalls();
+            mockMessagePublisher.ClearReceivedCalls();
             var capturedUpdates = ConfigureCapturingOfUpdateMessageBatches();
 
             //ACT
@@ -205,7 +203,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
                 .Build(deletionCount).ToArray();
 
             var donorDeleteFile = fileBuilder.WithDonors(donorDeletes);
-            mockServiceBusClient.ClearReceivedCalls();
+            mockMessagePublisher.ClearReceivedCalls();
 
             //ACT
             await donorFileImporter.ImportDonorFile(donorDeleteFile);
@@ -214,7 +212,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
             
             var unchangedDonors = donorRepository.StreamAllDonors().ToList();
             unchangedDonors.Should().BeEquivalentTo(InitialDonors);
-            await mockServiceBusClient.DidNotReceive().PublishDonorUpdateMessages(Arg.Is<ICollection<SearchableDonorUpdate>>(collection => collection.Any()));
+            await mockMessagePublisher.DidNotReceive().BatchPublish(Arg.Is<ICollection<SearchableDonorUpdate>>(collection => collection.Any()));
         }
 
         [Test]
@@ -228,7 +226,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
 
             var mixedDonorUpdateFile = fileBuilder.WithDonors(mixedDonorUpdates).Build();
 
-            mockServiceBusClient.ClearReceivedCalls();
+            mockMessagePublisher.ClearReceivedCalls();
 
             //ACT
             await donorFileImporter.ImportDonorFile(mixedDonorUpdateFile);
@@ -237,18 +235,18 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
 
             var unchangedDonors = donorRepository.StreamAllDonors().ToList();
             unchangedDonors.Should().BeEquivalentTo(InitialDonors);
-            await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
+            await mockMessagePublisher.DidNotReceiveWithAnyArgs().BatchPublish(default);
 
         }
 
         private List<SearchableDonorUpdate> ConfigureCapturingOfUpdateMessageBatches()
         {
             var capturedUpdates = new List<SearchableDonorUpdate>();
-            mockServiceBusClient
-                .When(client => client.PublishDonorUpdateMessages(Arg.Any<ICollection<SearchableDonorUpdate>>()))
+            mockMessagePublisher
+                .When(client => client.BatchPublish(Arg.Any<ICollection<SearchableDonorUpdate>>()))
                 .Do(clientCallArgs => capturedUpdates.AddRange(clientCallArgs.Arg<ICollection<SearchableDonorUpdate>>()));
 
-            mockServiceBusClient.ClearReceivedCalls();
+            mockMessagePublisher.ClearReceivedCalls();
             return capturedUpdates;
         }
     }

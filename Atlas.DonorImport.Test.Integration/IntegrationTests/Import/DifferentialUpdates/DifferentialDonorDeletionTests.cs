@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ServiceBus;
 using Atlas.Common.Test.SharedTestHelpers;
-using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Services;
@@ -22,7 +22,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
     [TestFixture]
     public class DifferentialDonorDeletionTests
     {
-        private IMessagingServiceBusClient mockServiceBusClient;
+        private IMessageBatchPublisher<SearchableDonorUpdate> messagePublisher;
 
         private IDonorInspectionRepository donorRepository;
         private IDonorFileImporter donorFileImporter;
@@ -31,7 +31,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         private const int InitialCount = 10;
         private readonly Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
 
-        private Builder<DonorUpdate> DonorDeletionBuilder =>
+        private static Builder<DonorUpdate> DonorDeletionBuilder =>
             DonorUpdateBuilder.New
                 .WithRecordIdPrefix("external-donor-code-")
                 .With(upd => upd.ChangeType, ImportDonorChangeType.Delete);
@@ -41,14 +41,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                mockServiceBusClient = Substitute.For<IMessagingServiceBusClient>();
-                var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
-                services.AddScoped(sp => mockServiceBusClient);
-                DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
-
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
-                mockServiceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<IMessagingServiceBusClient>();
                 donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
+                messagePublisher = DependencyInjection.DependencyInjection.Provider.GetService<IMessageBatchPublisher<SearchableDonorUpdate>>();
             });
         }
 
@@ -79,7 +74,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                mockServiceBusClient.ClearReceivedCalls();
+                messagePublisher.ClearReceivedCalls();
                 DatabaseManager.ClearDatabases();
             });
         }
@@ -110,15 +105,15 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
                 .Build(deletionCount).ToArray();
 
             var donorDeleteFile = fileBuilder.WithDonors(donorDeletes);
-            mockServiceBusClient.ClearReceivedCalls();
+            messagePublisher.ClearReceivedCalls();
 
             //ACT
             await donorFileImporter.Invoking(importer => importer.ImportDonorFile(donorDeleteFile)).Should().NotThrowAsync();
 
             var remainingDonors = donorRepository.StreamAllDonors().ToList();
             remainingDonors.Should().HaveCount(InitialCount);
-            await mockServiceBusClient.DidNotReceive()
-                .PublishDonorUpdateMessages(Arg.Is<ICollection<SearchableDonorUpdate>>(collection => collection.Any()));
+            await messagePublisher.DidNotReceive()
+                .BatchPublish(Arg.Is<ICollection<SearchableDonorUpdate>>(collection => collection.Any()));
         }
 
         [Test]
@@ -136,7 +131,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
 
             var remainingDonors = donorRepository.StreamAllDonors().ToList();
             remainingDonors.Should().HaveCount(InitialCount - goodDeletesCount);
-            await mockServiceBusClient.ReceivedWithAnyArgs(1).PublishDonorUpdateMessages(default);
+            await messagePublisher.ReceivedWithAnyArgs(1).BatchPublish(default);
             capturedUpdates.Should().HaveCount(goodDeletesCount);
             capturedUpdates.Select(update => update.DonorId).Should().BeEquivalentTo(goodDeleteAtlasIds);
         }
@@ -159,11 +154,11 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         private List<SearchableDonorUpdate> ConfigureCapturingOfUpdateMessages()
         {
             var capturedUpdates = new List<SearchableDonorUpdate>();
-            mockServiceBusClient
-                .When(client => client.PublishDonorUpdateMessages(Arg.Any<ICollection<SearchableDonorUpdate>>()))
+            messagePublisher
+                .When(client => client.BatchPublish(Arg.Any<ICollection<SearchableDonorUpdate>>()))
                 .Do(clientCallArgs => capturedUpdates.AddRange(clientCallArgs.Arg<ICollection<SearchableDonorUpdate>>()));
 
-            mockServiceBusClient.ClearReceivedCalls();
+            messagePublisher.ClearReceivedCalls();
             return capturedUpdates;
         }
     }

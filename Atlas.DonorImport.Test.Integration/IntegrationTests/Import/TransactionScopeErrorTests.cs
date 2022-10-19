@@ -1,11 +1,12 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ServiceBus;
 using Atlas.Common.Test.SharedTestHelpers;
-using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.DependencyInjection;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using FluentAssertions;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,12 +50,12 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task ImportDonors_WhenLastDonorInFileFails_DoesNotSendNotificationForEarlierDonor()
         {
-            var mockClient = Substitute.For<IMessagingServiceBusClient>();
-            
+            var mockMessagePublisher = Substitute.For<IMessageBatchPublisher<SearchableDonorUpdate>>();
+
             var services = ServiceConfiguration.BuildServiceCollection();
-            services.AddScoped(sp => mockClient);
+            services.AddScoped(sp => mockMessagePublisher);
             DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
-            
+
             var donorUpdate = DonorUpdateBuilder.New.Build();
             var donorEditFile = DonorImportFileBuilder.NewWithoutContents.WithDonors(donorUpdate, donorUpdate);
 
@@ -68,7 +69,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             }
             finally
             {
-                await mockClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
+                await mockMessagePublisher.DidNotReceiveWithAnyArgs().BatchPublish(default);
             }
         }
     }
