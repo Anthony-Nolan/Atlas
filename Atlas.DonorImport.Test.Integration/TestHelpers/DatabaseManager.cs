@@ -32,6 +32,13 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
             context?.Database.ExecuteSqlRaw($"TRUNCATE TABLE {Donor.QualifiedTableName}");
             context?.Database.ExecuteSqlRaw($"TRUNCATE TABLE {DonorImportHistoryRecord.QualifiedTableName}");
             context?.Database.ExecuteSqlRaw($"TRUNCATE TABLE {DonorLog.QualifiedTableName}");
+            context?.Database.ExecuteSqlRaw($"TRUNCATE TABLE {PublishableDonorUpdate.QualifiedTableName}");
+        }
+
+        internal static void ClearPublishableDonorUpdates()
+        {
+            var context = DependencyInjection.DependencyInjection.Provider.GetService<DonorContext>();
+            context?.Database.ExecuteSqlRaw($"TRUNCATE TABLE {PublishableDonorUpdate.QualifiedTableName}");
         }
     }
 }

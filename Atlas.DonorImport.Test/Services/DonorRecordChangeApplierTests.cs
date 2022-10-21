@@ -4,15 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Notifications;
-using Atlas.Common.ServiceBus;
+using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.ExternalInterface.Settings;
+using Atlas.DonorImport.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
@@ -24,9 +24,9 @@ namespace Atlas.DonorImport.Test.Services
     [TestFixture]
     internal class DonorRecordChangeApplierTests
     {
-        private IMessageBatchPublisher<SearchableDonorUpdate> messagePublisher;
         private IDonorImportRepository donorImportRepository;
         private IDonorReadRepository donorInspectionRepository;
+        private IPublishableDonorUpdatesRepository updatesRepository;
         private IDonorImportLogService donorImportLogService;
         private IDonorImportFileHistoryService donorImportHistoryService;
         private INotificationSender notificationSender;
@@ -39,9 +39,9 @@ namespace Atlas.DonorImport.Test.Services
         [SetUp]
         public void SetUp()
         {
-            messagePublisher = Substitute.For<IMessageBatchPublisher<SearchableDonorUpdate>>();
             donorImportRepository = Substitute.For<IDonorImportRepository>();
             donorInspectionRepository = Substitute.For<IDonorReadRepository>();
+            updatesRepository = Substitute.For<IPublishableDonorUpdatesRepository>();
             donorImportLogService = Substitute.For<IDonorImportLogService>();
             donorImportHistoryService = Substitute.For<IDonorImportFileHistoryService>();
             notificationSender = Substitute.For<INotificationSender>();
@@ -55,9 +55,9 @@ namespace Atlas.DonorImport.Test.Services
             donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>());
 
             donorOperationApplier = new DonorRecordChangeApplier(
-                messagePublisher,
                 donorImportRepository,
                 donorInspectionRepository,
+                updatesRepository,
                 naiveDnaLocusInterpreter,
                 donorImportLogService,
                 donorImportHistoryService,
@@ -88,7 +88,7 @@ namespace Atlas.DonorImport.Test.Services
         }
 
         [Test]
-        public async Task ApplyDonorOperationBatch_ForDifferentialUpdate_WithCreationsOnly_PostsAMatchingUpdateForEachDonor()
+        public async Task ApplyDonorOperationBatch_ForDifferentialUpdate_WithCreationsOnly_SavesAPublishableUpdateForEachDonor()
         {
             var donorUpdates = DonorUpdateBuilder.New
                 .With(d => d.UpdateMode, UpdateMode.Differential)
@@ -100,13 +100,13 @@ namespace Atlas.DonorImport.Test.Services
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
 
-            await messagePublisher
+            await updatesRepository
                 .Received(1)
-                .BatchPublish(Arg.Is<List<SearchableDonorUpdate>>(messages => messages.Count == donorUpdates.Count));
+                .BulkInsert(Arg.Is<List<PublishableDonorUpdate>>(messages => messages.Count == donorUpdates.Count));
         }
 
         [Test]
-        public async Task ApplyDonorOperationBatch_ForDifferentialUpdate_WithAMixOfOperations_PostsMatchingUpdatesForEachDonor()
+        public async Task ApplyDonorOperationBatch_ForDifferentialUpdate_WithAMixOfOperations_SavesPublishableUpdateForEachDonor()
         {
             //ARRANGE
             var donorUpdates = DonorUpdateBuilder.New
@@ -121,11 +121,11 @@ namespace Atlas.DonorImport.Test.Services
             donorInspectionRepository.GetDonorsByExternalDonorCodes(default)
                 .ReturnsForAnyArgs(args => args.Arg<ICollection<string>>().ToDictionary(code => code, code => new Donor { AtlasId = 0 }));
 
-            // Capture all the Calls to MessageServiceBus.
-            var sequenceOfMassCalls = new List<List<SearchableDonorUpdate>>();
+            // Capture all the saved messages.
+            var sequenceOfMassCalls = new List<List<PublishableDonorUpdate>>();
 
-            messagePublisher.BatchPublish(
-                Arg.Do<ICollection<SearchableDonorUpdate>>(messageCollection => { sequenceOfMassCalls.Add(messageCollection.ToList()); })
+            updatesRepository.BulkInsert(
+                Arg.Do<IReadOnlyCollection<PublishableDonorUpdate>>(publishableDonorUpdates => { sequenceOfMassCalls.Add(publishableDonorUpdates.ToList()); })
             ).Returns(Task.CompletedTask);
 
 
@@ -136,13 +136,13 @@ namespace Atlas.DonorImport.Test.Services
             //Should be batched up in 3 sets of 7. Each of which maps to one ChangeType. IsAvailableForSearch is the closest surrogate we have to ChangeType.
             foreach (var massCall in sequenceOfMassCalls)
             {
-                massCall.Select(call => call.IsAvailableForSearch).Should().AllBeEquivalentTo(massCall.First().IsAvailableForSearch);
+                massCall.Select(call => call.ToSearchableDonorUpdate().IsAvailableForSearch).Should().AllBeEquivalentTo(massCall.First().ToSearchableDonorUpdate().IsAvailableForSearch);
                 massCall.Should().HaveCount(7);
             }
         }
 
         [Test]
-        public async Task ApplyDonorOperationBatch_ForDifferentialUpdate_IncludesNewlyAssignedAtlasIdInMatchingUpdate()
+        public async Task ApplyDonorOperationBatch_ForDifferentialUpdate_IncludesNewlyAssignedAtlasIdInPublishableDonorUpdate()
         {
             const int atlasId = 66;
             var donorUpdates = new List<DonorUpdate>
@@ -156,13 +156,13 @@ namespace Atlas.DonorImport.Test.Services
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
 
-            await messagePublisher.Received(1).BatchPublish(Arg.Is<List<SearchableDonorUpdate>>(messages =>
-                messages.All(u => u.DonorId == atlasId)
+            await updatesRepository.Received(1).BulkInsert(Arg.Is<List<PublishableDonorUpdate>>(messages =>
+                messages.All(u => u.ToSearchableDonorUpdate().DonorId == atlasId)
             ));
         }
 
         [Test]
-        public async Task ApplyDonorOperationBatch_ForFullUpdate_DoesNotPostMatchingUpdates()
+        public async Task ApplyDonorOperationBatch_ForFullUpdate_DoesNotSavePublishableDonorUpdates()
         {
             var donorUpdates = DonorUpdateBuilder.New
                 .With(d => d.UpdateMode, UpdateMode.Full)
@@ -179,7 +179,7 @@ namespace Atlas.DonorImport.Test.Services
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
 
-            await messagePublisher.DidNotReceiveWithAnyArgs().BatchPublish(default);
+            await updatesRepository.DidNotReceiveWithAnyArgs().BulkInsert(default);
         }
 
         [Test]

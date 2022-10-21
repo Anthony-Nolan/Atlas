@@ -11,7 +11,6 @@ using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,11 +52,16 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
         private static void RegisterIntegrationTestServices(IServiceCollection services)
         {
             services.AddScoped(sp => new ContextFactory().Create(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
+
             services.AddScoped<IDonorInspectionRepository>(sp =>
                 new DonorInspectionRepository(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
+
             services.AddScoped<IDonorImportHistoryRepository>(sp =>
                 new DonorImportHistoryRepository(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
             services.AddScoped<IDonorImportFileHistoryService, DonorImportFileHistoryService>();
+
+            services.AddScoped<IPublishableDonorUpdatesInspectionRepository>(sp =>
+                new PublishableDonorUpdatesInspectionRepository(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
         }
 
         private static void SetUpConfiguration(IServiceCollection services)
@@ -85,8 +89,6 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
             services.AddScoped(sp => mockTopicClientFactory);
             #endregion
 
-
-            services.AddScoped(sp => Substitute.For<IMessageBatchPublisher<SearchableDonorUpdate>>());
             services.AddScoped(sp => Substitute.For<ILogger>());
         }
 

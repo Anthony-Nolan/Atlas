@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Notifications;
-using Atlas.Common.ServiceBus;
 using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Config;
@@ -12,6 +11,7 @@ using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.ExternalInterface.Settings;
+using Atlas.DonorImport.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
@@ -25,16 +25,16 @@ namespace Atlas.DonorImport.Services
         /// <param name="file">The donor import file being imported</param>
         /// <param name="skippedDonors">
         /// The number of donors that were processed in a batch, but have not been applied due to per-donor validation failure.
-        /// This must be passed in here as we need to apply donor updates and logs in the same transaction - but we also need to send service bus updates, which mean that this method cannot be called from an outer transaction scope.
+        /// This must be passed in here as we need to apply donor updates and logs in the same transaction.
         /// </param>
         Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, DonorImportFile file, int skippedDonors);
     }
 
     internal class DonorRecordChangeApplier : IDonorRecordChangeApplier
     {
-        private readonly IMessageBatchPublisher<SearchableDonorUpdate> messagePublisher;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDonorReadRepository donorInspectionRepository;
+        private readonly IPublishableDonorUpdatesRepository updatesRepository;
         private readonly IImportedLocusInterpreter locusInterpreter;
         private readonly IDonorImportLogService donorImportLogService;
         private readonly IDonorImportFileHistoryService donorImportHistoryService;
@@ -42,9 +42,9 @@ namespace Atlas.DonorImport.Services
         private readonly NotificationConfigurationSettings notificationConfigSettings;
 
         public DonorRecordChangeApplier(
-            IMessageBatchPublisher<SearchableDonorUpdate> messagePublisher,
             IDonorImportRepository donorImportRepository,
             IDonorReadRepository donorInspectionRepository,
+            IPublishableDonorUpdatesRepository updatesRepository,
             IImportedLocusInterpreter locusInterpreter,
             IDonorImportLogService donorImportLogService,
             IDonorImportFileHistoryService donorImportHistoryService,
@@ -52,8 +52,8 @@ namespace Atlas.DonorImport.Services
             NotificationConfigurationSettings notificationConfigSettings)
         {
             this.donorImportRepository = donorImportRepository;
-            this.messagePublisher = messagePublisher;
             this.donorInspectionRepository = donorInspectionRepository;
+            this.updatesRepository = updatesRepository;
             this.locusInterpreter = locusInterpreter;
             this.donorImportLogService = donorImportLogService;
             this.donorImportHistoryService = donorImportHistoryService;
@@ -69,16 +69,14 @@ namespace Atlas.DonorImport.Services
                 return;
             }
 
-            List<List<SearchableDonorUpdate>> matchingMessages;
             using (var transactionScope = new AsyncTransactionScope())
             {
-                matchingMessages = await ApplyUpdatesToDonorStore(donorUpdates, file);
+                var updates = await ApplyUpdatesToDonorStore(donorUpdates, file);
+                await SavePublishableDonorUpdates(updates);
                 await donorImportLogService.SetLastUpdated(donorUpdates, file.UploadTime);
                 await donorImportHistoryService.RegisterSuccessfulBatchImport(file, donorUpdates.Count + skippedDonors);
                 transactionScope.Complete();
             }
-
-            await SendUpdatesForMatchingAlgorithm(matchingMessages);
         }
 
         private async Task<List<List<SearchableDonorUpdate>>> ApplyUpdatesToDonorStore(
@@ -134,12 +132,13 @@ namespace Atlas.DonorImport.Services
             return matchingComponentUpdateMessages;
         }
 
-        private async Task SendUpdatesForMatchingAlgorithm(List<List<SearchableDonorUpdate>> donorUpdates)
+        private async Task SavePublishableDonorUpdates(IEnumerable<List<SearchableDonorUpdate>> donorUpdates)
         {
             // Batched by update mode, to make testing of combined files easier
             foreach (var donorUpdateBatch in donorUpdates.Where(donorUpdateBatch => donorUpdateBatch.Any()))
             {
-                await messagePublisher.BatchPublish(donorUpdateBatch);
+                var publishableUpdates = donorUpdateBatch.Select(u => u.ToPublishableDonorUpdate()).ToList();
+                await updatesRepository.BulkInsert(publishableUpdates);
             }
         }
 

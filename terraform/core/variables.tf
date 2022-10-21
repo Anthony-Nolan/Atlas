@@ -78,6 +78,12 @@ variable "DONOR_IMPORT_NOTIFICATIONS_ON_SUCCESSFUL_IMPORT" {
   description = "When true, notifications will be sent on every successful donor file import"
 }
 
+variable "DONOR_IMPORT_PUBLISH_DONOR_UPDATES_CRONTAB" {
+  type    = string
+  default = "0 */1 * * * *"
+  description = "Crontab used to determine how often to check for and publish new donor updates."
+}
+
 variable "DONOR_IMPORT_STALLED_FILE_CHECK_CRONTAB" {
   type    = string
   default = "0 */30 * * * *"

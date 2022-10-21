@@ -29,6 +29,10 @@ variable "NOTIFICATIONS_ON_SUCCESSFUL_IMPORT" {
   type = bool
 }
 
+variable "PUBLISH_DONOR_UPDATES_CRONTAB" {
+  type = string
+}
+
 variable "STALLED_FILE_CHECK_CRONTAB" {
   type = string
 }

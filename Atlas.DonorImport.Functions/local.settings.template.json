@@ -2,21 +2,22 @@
   "IsEncrypted": false,
   "Values": {
     "ApplicationInsights:LogLevel": "Info",
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:DonorFileBlobContainer": "donors",
-    "DonorImport:FileCheckCronSchedule":  "0 */30 * * * *",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "DonorImport:FileCheckCronSchedule": "0 */30 * * * *",
     "DonorImport:HoursToCheckStalledFiles": "2",
+    "FUNCTIONS.WORKER.RUNTIME": "dotnet",
     "MessagingServiceBus:ConnectionString": "override-this",
     "MessagingServiceBus:ImportFileSubscription": "donor-import",
     "MessagingServiceBus:ImportFileTopic": "donor-import-file-uploads",
-    "MessagingServiceBus:MatchingDonorUpdateTopic": "updated-searchable-donors",
-    "NotificationConfiguration:NotifyOnSuccessfulDonorImport": true,
+    "MessagingServiceBus:UpdatedSearchableDonorsTopic": "updated-searchable-donors",
     "NotificationConfiguration:NotifyOnAttemptedDeletionOfUntrackedDonor": true,
+    "NotificationConfiguration:NotifyOnSuccessfulDonorImport": true,
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications",
-    "FUNCTIONS.WORKER.RUNTIME": "dotnet"
+    "PublishDonorUpdates:CronSchedule": "0 */1 * * * *"
   },
   "ConnectionStrings": {
     "DonorStoreSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"
