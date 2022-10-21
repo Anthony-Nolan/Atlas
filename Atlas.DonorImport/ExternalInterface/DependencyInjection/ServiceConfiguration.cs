@@ -68,10 +68,11 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IDonorImportFileHistoryService, DonorImportFileHistoryService>();
             services.AddScoped<IDonorImportLogService, DonorImportLogService>();
 
+            services.AddScoped<IDonorUpdatesPublisher, DonorUpdatesPublisher>();
             services.AddScoped<IMessageBatchPublisher<SearchableDonorUpdate>, MessageBatchPublisher<SearchableDonorUpdate>>(sp =>
             {
                 var serviceBusSettings = fetchMessagingServiceBusSettings(sp);
-                return new MessageBatchPublisher<SearchableDonorUpdate>(serviceBusSettings.ConnectionString, serviceBusSettings.MatchingDonorUpdateTopic);
+                return new MessageBatchPublisher<SearchableDonorUpdate>(serviceBusSettings.ConnectionString, serviceBusSettings.UpdatedSearchableDonorsTopic);
             });
         }
 
@@ -96,6 +97,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IDonorReadRepository>(sp => new DonorReadRepository(fetchDonorImportDatabaseConnectionString(sp)));
             services.AddScoped<IDonorImportHistoryRepository>(sp => new DonorImportHistoryRepository(fetchDonorImportDatabaseConnectionString(sp)));
             services.AddScoped<IDonorImportLogRepository>(sp => new DonorImportLogRepository(fetchDonorImportDatabaseConnectionString(sp)));
+            services.AddScoped<IPublishableDonorUpdatesRepository>(sp => new PublishableDonorUpdatesRepository(fetchDonorImportDatabaseConnectionString(sp)));
         }
     }
 }

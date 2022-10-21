@@ -7,6 +7,7 @@ using Microsoft.Data.SqlClient;
 
 namespace Atlas.Common.Sql.BulkInsert
 {
+    // TODO: #821: Use generic BulkInsertRepository everywhere that we bulk insert
     public interface IBulkInsertRepository<in TEntity> where TEntity : IBulkInsertModel
     {
         Task BulkInsert(IReadOnlyCollection<TEntity> entities);
