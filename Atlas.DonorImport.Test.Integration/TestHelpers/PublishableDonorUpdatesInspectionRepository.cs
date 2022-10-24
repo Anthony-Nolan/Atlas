@@ -41,7 +41,7 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
         {
             const string sql = $@"
                 SELECT * FROM {PublishableDonorUpdate.QualifiedTableName} WHERE
-                JSON_VALUE({nameof(PublishableDonorUpdate.SearchableDonorUpdate)}, '$.{nameof(SearchableDonorUpdate.DonorId)}') IN @{nameof(donorIds)} AND
+                {nameof(PublishableDonorUpdate.DonorId)} IN @{nameof(donorIds)} AND
                 JSON_VALUE({nameof(PublishableDonorUpdate.SearchableDonorUpdate)}, '$.{nameof(SearchableDonorUpdate.IsAvailableForSearch)}') = @{nameof(isAvailableForSearch)}";
 
             await using (var conn = new SqlConnection(connectionString))

@@ -13,6 +13,8 @@ namespace Atlas.DonorImport.Data.Models
 
         public int Id { get; set; }
 
+        public int DonorId { get; set; }
+
         [Required]
         [Column(TypeName = "nvarchar(MAX)")]
         public string SearchableDonorUpdate { get; set; }

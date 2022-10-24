@@ -8,7 +8,11 @@ namespace Atlas.DonorImport.Models
     {
         public static PublishableDonorUpdate ToPublishableDonorUpdate(this SearchableDonorUpdate donorUpdate)
         {
-            return new PublishableDonorUpdate { SearchableDonorUpdate = JsonConvert.SerializeObject(donorUpdate) };
+            return new PublishableDonorUpdate
+            {
+                DonorId = donorUpdate.DonorId,
+                SearchableDonorUpdate = JsonConvert.SerializeObject(donorUpdate)
+            };
         }
 
         public static SearchableDonorUpdate ToSearchableDonorUpdate(this PublishableDonorUpdate donorUpdate)

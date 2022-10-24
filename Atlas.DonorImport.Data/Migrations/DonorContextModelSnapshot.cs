@@ -175,6 +175,9 @@ namespace Atlas.DonorImport.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<int>("DonorId")
+                        .HasColumnType("int");
+
                     b.Property<string>("SearchableDonorUpdate")
                         .IsRequired()
                         .HasColumnType("nvarchar(MAX)");
