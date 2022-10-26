@@ -4,14 +4,14 @@ using System.Threading.Tasks;
 using Atlas.Common.ServiceBus;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
-using Atlas.DonorImport.Services;
+using Atlas.DonorImport.Services.DonorUpdates;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using LochNessBuilder;
 using Newtonsoft.Json;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.DonorImport.Test.Services
+namespace Atlas.DonorImport.Test.Services.DonorUpdates
 {
     [TestFixture]
     internal class DonorUpdatePublisherTests
@@ -38,7 +38,7 @@ namespace Atlas.DonorImport.Test.Services
             await updatesPublisher.PublishSearchableDonorUpdatesBatch();
 
             // 2000 is current hard-coded batch size
-            await updatesRepository.Received(1).GetOldestDonorUpdates(2000);
+            await updatesRepository.Received(1).GetOldestUnpublishedDonorUpdates(2000);
         }
 
         [Test]
@@ -50,11 +50,11 @@ namespace Atlas.DonorImport.Test.Services
         }
 
         [Test]
-        public async Task PublishSearchableDonorUpdatesBatch_WhenNoUpdates_DoesNotDeleteUpdates()
+        public async Task PublishSearchableDonorUpdatesBatch_WhenNoUpdates_DoesNotMarkUpdatesAsPublished()
         {
             await updatesPublisher.PublishSearchableDonorUpdatesBatch();
 
-            await updatesRepository.DidNotReceiveWithAnyArgs().BulkInsert(default);
+            await updatesRepository.DidNotReceiveWithAnyArgs().MarkUpdatesAsPublished(default);
         }
 
         [Test]
@@ -62,7 +62,7 @@ namespace Atlas.DonorImport.Test.Services
         {
             const int updateCount = 2;
 
-            updatesRepository.GetOldestDonorUpdates(default).ReturnsForAnyArgs(UpdateBuilder.Build(updateCount));
+            updatesRepository.GetOldestUnpublishedDonorUpdates(default).ReturnsForAnyArgs(UpdateBuilder.Build(updateCount));
 
             await updatesPublisher.PublishSearchableDonorUpdatesBatch();
 
@@ -70,17 +70,17 @@ namespace Atlas.DonorImport.Test.Services
         }
 
         [Test]
-        public async Task PublishSearchableDonorUpdatesBatch_DeleteUpdatesAfterPublishing()
+        public async Task PublishSearchableDonorUpdatesBatch_MarksUpdatesAsPublishedAfterPublishing()
         {
             var update = UpdateBuilder.Build(1).ToList();
-            updatesRepository.GetOldestDonorUpdates(default).ReturnsForAnyArgs(update);
+            updatesRepository.GetOldestUnpublishedDonorUpdates(default).ReturnsForAnyArgs(update);
 
             await updatesPublisher.PublishSearchableDonorUpdatesBatch();
 
-            Received.InOrder( () =>
+            Received.InOrder(() =>
                 {
                     messagePublisher.Received(1).BatchPublish(Arg.Any<IEnumerable<SearchableDonorUpdate>>());
-                    updatesRepository.Received(1).DeleteDonorUpdates(Arg.Is<IEnumerable<int>>(x => x.Single() == update.Single().Id));
+                    updatesRepository.Received(1).MarkUpdatesAsPublished(Arg.Is<IEnumerable<int>>(x => x.Single() == update.Single().Id));
                 });
         }
     }

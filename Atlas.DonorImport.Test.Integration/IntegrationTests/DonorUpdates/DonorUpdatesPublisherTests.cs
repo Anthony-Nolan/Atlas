@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ServiceBus;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.ExternalInterface.Models;
-using Atlas.DonorImport.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
@@ -16,11 +16,12 @@ using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
+using Atlas.DonorImport.Services.DonorUpdates;
 
-namespace Atlas.DonorImport.Test.Integration.IntegrationTests
+namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorUpdates
 {
     [TestFixture]
-    internal class DonorUpdatesPublisherTests
+    internal class DonorUpdatesPublisherTest
     {
         private IDonorUpdatesPublisher updatesPublisher;
         private IMessageBatchPublisher<SearchableDonorUpdate> messagePublisher;
@@ -74,55 +75,70 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests
         }
 
         [Test]
-        public async Task PublishSearchableDonorUpdatesBatch_PublishesOldestUpdateMessages()
+        public async Task PublishSearchableDonorUpdatesBatch_PublishesUpdateMessagesNotAlreadyPublishedByOldestFirst()
         {
             // note, if max batch size changes (either hard-coded value or configured), this test would fail
             const int publishBatchSize = 2000;
-            const int donorCount = publishBatchSize + 56;
+            const int donorCount = publishBatchSize*2;
 
             await BuildAndImportDonors(donorCount);
-            var updatesBeforePublishing = await updatesInspectionRepository.GetAll();
-            var donorIdsOfOldestUpdates = updatesBeforePublishing
+            var donorIdsOldestFirst = (await updatesInspectionRepository.GetAll())
                 .OrderBy(u => u.Id)
-                .Take(publishBatchSize)
-                .Select(u => u.ToSearchableDonorUpdate().DonorId);
+                .Select(u => u.DonorId)
+                .ToList();
+
+            var expectedBatch1 = donorIdsOldestFirst.Take(publishBatchSize);
+            var expectedBatch2 = donorIdsOldestFirst.Skip(publishBatchSize).Take(publishBatchSize);
 
             // ACT
             await updatesPublisher.PublishSearchableDonorUpdatesBatch();
+            await updatesPublisher.PublishSearchableDonorUpdatesBatch();
 
-            await messagePublisher.Received().BatchPublish(Arg.Is<IEnumerable<SearchableDonorUpdate>>(x => 
-                x.Count() == publishBatchSize &&
-                x.Select(m => m.DonorId).SequenceEqual(donorIdsOfOldestUpdates)));
+            Received.InOrder(() =>
+            {
+                messagePublisher.Received(1).BatchPublish(Arg.Is<IEnumerable<SearchableDonorUpdate>>(x =>
+                    x.Count() == publishBatchSize && x.Select(m => m.DonorId).SequenceEqual(expectedBatch1)));
+                messagePublisher.Received(1).BatchPublish(Arg.Is<IEnumerable<SearchableDonorUpdate>>(x =>
+                    x.Count() == publishBatchSize && x.Select(m => m.DonorId).SequenceEqual(expectedBatch2)));
+            });
         }
 
         [Test]
-        public async Task PublishSearchableDonorUpdatesBatch_DeletesPublishedUpdates()
+        public async Task PublishSearchableDonorUpdatesBatch_MarksUpdatesAsPublished()
         {
             // note, if max batch size changes (either hard-coded value or configured), this test would fail
             const int publishBatchSize = 2000;
-            const int expectedUnpublishedCount = 21;
-            const int donorCount = publishBatchSize + expectedUnpublishedCount;
+            const int notPublishedCount = 21;
+            const int totalCount = publishBatchSize + notPublishedCount;
 
-            await BuildAndImportDonors(donorCount);
-            var updatesCountBeforePublish = await updatesInspectionRepository.Count();
+            await BuildAndImportDonors(totalCount);
 
             // ACT
             await updatesPublisher.PublishSearchableDonorUpdatesBatch();
 
-            var updatesCountAfterPublish = await updatesInspectionRepository.Count();
+            var updates = (await updatesInspectionRepository.GetAll()).ToList();
+            var published = updates.Where(u => u.IsPublished).ToList();
+            var notPublished = updates.Where(u => !u.IsPublished).ToList();
 
-            updatesCountBeforePublish.Should().Be(donorCount);
-            updatesCountAfterPublish.Should().Be(expectedUnpublishedCount);
+            published.Count.Should().Be(publishBatchSize);
+            notPublished.Count.Should().Be(notPublishedCount);
+            published.Select(u => u.PublishedOn).Should().NotContainNulls();
+            notPublished.Select(u => u.PublishedOn).Should().AllBeEquivalentTo((DateTimeOffset?)null);
+
+            // ACT again to publish remaining updates
+            await updatesPublisher.PublishSearchableDonorUpdatesBatch();
+
+            updates = (await updatesInspectionRepository.GetAll()).ToList();
+            updates.Count(u => u.IsPublished).Should().Be(totalCount);
+            updates.Select(u => u.PublishedOn).Should().NotContainNulls();
         }
 
         // Importing donors creates new updates for publishing - this functionality is tested elsewhere.
-        private async Task<IReadOnlyCollection<DonorUpdate>> BuildAndImportDonors(int donorCount)
+        private async Task BuildAndImportDonors(int donorCount)
         {
             var donors = DonorBuilder.Build(donorCount).ToArray();
             var importFile = FileBuilder.WithDonors(donors).Build();
             await fileImporter.ImportDonorFile(importFile);
-
-            return donors.ToList();
         }
     }
 }

@@ -175,14 +175,30 @@ namespace Atlas.DonorImport.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<DateTimeOffset>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
                     b.Property<int>("DonorId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("PublishedOn")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("SearchableDonorUpdate")
                         .IsRequired()
                         .HasColumnType("nvarchar(MAX)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IsPublished")
+                        .HasFilter("[IsPublished] = 0");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("IsPublished"), new[] { "SearchableDonorUpdate" });
 
                     b.ToTable("PublishableDonorUpdates", "Donors");
                 });

@@ -60,6 +60,12 @@ variable "DONOR_DATABASE_USERNAME" {
   default = "donors"
 }
 
+variable "DONOR_IMPORT_DELETE_PUBLISHED_DONOR_UPDATES_CRONTAB" {
+  type        = string
+  default     = "0 0 0 * * *"
+  description = "Crontab used to determine how often to delete expired, published donor updates."
+}
+
 variable "DONOR_IMPORT_MAX_INSTANCES" {
   type        = number
   default     = 1
@@ -79,9 +85,15 @@ variable "DONOR_IMPORT_NOTIFICATIONS_ON_SUCCESSFUL_IMPORT" {
 }
 
 variable "DONOR_IMPORT_PUBLISH_DONOR_UPDATES_CRONTAB" {
-  type    = string
-  default = "0 */1 * * * *"
+  type        = string
+  default     = "0 * * * * *"
   description = "Crontab used to determine how often to check for and publish new donor updates."
+}
+
+variable "DONOR_IMPORT_PUBLISHED_UPDATE_EXPIRY_IN_DAYS" {
+  type        = number
+  default     = 30
+  description = "Number of days after publishing that a donor update will expire and be eligible for deletion."
 }
 
 variable "DONOR_IMPORT_STALLED_FILE_CHECK_CRONTAB" {

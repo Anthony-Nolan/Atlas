@@ -4,15 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Notifications;
-using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.ExternalInterface.Settings;
-using Atlas.DonorImport.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
+using Atlas.DonorImport.Services.DonorUpdates;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
@@ -26,8 +26,8 @@ namespace Atlas.DonorImport.Test.Services
     {
         private IDonorImportRepository donorImportRepository;
         private IDonorReadRepository donorInspectionRepository;
-        private IPublishableDonorUpdatesRepository updatesRepository;
         private IDonorImportLogService donorImportLogService;
+        private IDonorUpdatesSaver updatesSaver;
         private IDonorImportFileHistoryService donorImportHistoryService;
         private INotificationSender notificationSender;
 
@@ -41,7 +41,7 @@ namespace Atlas.DonorImport.Test.Services
         {
             donorImportRepository = Substitute.For<IDonorImportRepository>();
             donorInspectionRepository = Substitute.For<IDonorReadRepository>();
-            updatesRepository = Substitute.For<IPublishableDonorUpdatesRepository>();
+            updatesSaver = Substitute.For<IDonorUpdatesSaver>();
             donorImportLogService = Substitute.For<IDonorImportLogService>();
             donorImportHistoryService = Substitute.For<IDonorImportFileHistoryService>();
             notificationSender = Substitute.For<INotificationSender>();
@@ -57,8 +57,8 @@ namespace Atlas.DonorImport.Test.Services
             donorOperationApplier = new DonorRecordChangeApplier(
                 donorImportRepository,
                 donorInspectionRepository,
-                updatesRepository,
                 naiveDnaLocusInterpreter,
+                updatesSaver,
                 donorImportLogService,
                 donorImportHistoryService,
                 notificationSender,
@@ -100,9 +100,9 @@ namespace Atlas.DonorImport.Test.Services
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
 
-            await updatesRepository
+            await updatesSaver
                 .Received(1)
-                .BulkInsert(Arg.Is<List<PublishableDonorUpdate>>(messages => messages.Count == donorUpdates.Count));
+                .Save(Arg.Is<List<SearchableDonorUpdate>>(messages => messages.Count == donorUpdates.Count));
         }
 
         [Test]
@@ -122,12 +122,11 @@ namespace Atlas.DonorImport.Test.Services
                 .ReturnsForAnyArgs(args => args.Arg<ICollection<string>>().ToDictionary(code => code, code => new Donor { AtlasId = 0 }));
 
             // Capture all the saved messages.
-            var sequenceOfMassCalls = new List<List<PublishableDonorUpdate>>();
+            var sequenceOfMassCalls = new List<List<SearchableDonorUpdate>>();
 
-            updatesRepository.BulkInsert(
-                Arg.Do<IReadOnlyCollection<PublishableDonorUpdate>>(publishableDonorUpdates => { sequenceOfMassCalls.Add(publishableDonorUpdates.ToList()); })
+            updatesSaver.Save(
+                Arg.Do<IReadOnlyCollection<SearchableDonorUpdate>>(publishableDonorUpdates => { sequenceOfMassCalls.Add(publishableDonorUpdates.ToList()); })
             ).Returns(Task.CompletedTask);
-
 
             //ACT
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
@@ -136,7 +135,7 @@ namespace Atlas.DonorImport.Test.Services
             //Should be batched up in 3 sets of 7. Each of which maps to one ChangeType. IsAvailableForSearch is the closest surrogate we have to ChangeType.
             foreach (var massCall in sequenceOfMassCalls)
             {
-                massCall.Select(call => call.ToSearchableDonorUpdate().IsAvailableForSearch).Should().AllBeEquivalentTo(massCall.First().ToSearchableDonorUpdate().IsAvailableForSearch);
+                massCall.Select(call => call.IsAvailableForSearch).Should().AllBeEquivalentTo(massCall.First().IsAvailableForSearch);
                 massCall.Should().HaveCount(7);
             }
         }
@@ -156,8 +155,8 @@ namespace Atlas.DonorImport.Test.Services
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
 
-            await updatesRepository.Received(1).BulkInsert(Arg.Is<List<PublishableDonorUpdate>>(messages =>
-                messages.All(u => u.ToSearchableDonorUpdate().DonorId == atlasId)
+            await updatesSaver.Received(1).Save(Arg.Is<List<SearchableDonorUpdate>>(messages =>
+                messages.All(u => u.DonorId == atlasId)
             ));
         }
 
@@ -179,7 +178,7 @@ namespace Atlas.DonorImport.Test.Services
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
 
-            await updatesRepository.DidNotReceiveWithAnyArgs().BulkInsert(default);
+            await updatesSaver.DidNotReceiveWithAnyArgs().Save(default);
         }
 
         [Test]

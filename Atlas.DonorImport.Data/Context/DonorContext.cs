@@ -14,10 +14,10 @@ namespace Atlas.DonorImport.Data.Context
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Donor>().SetUpDonorModel();
-            modelBuilder.Entity<DonorImportHistoryRecord>().SetUpDonorImportHistory();
-            modelBuilder.Entity<DonorLog>().SetUpDonorLogModel();
-            modelBuilder.Entity<PublishableDonorUpdate>();
+            modelBuilder.Entity<Donor>().SetUpModel();
+            modelBuilder.Entity<DonorImportHistoryRecord>().SetUpModel();
+            modelBuilder.Entity<DonorLog>().SetUpModel();
+            modelBuilder.Entity<PublishableDonorUpdate>().SetUpModel();
             modelBuilder.HasDefaultSchema("Donors");
         }
 

@@ -20,7 +20,7 @@ namespace Atlas.DonorImport.Data.Models
     
     public static class DonorLogModelBuilder
     {
-        public static void SetUpDonorLogModel(this EntityTypeBuilder<DonorLog> donorModel)
+        public static void SetUpModel(this EntityTypeBuilder<DonorLog> donorModel)
         {
             donorModel.HasKey(d => d.ExternalDonorCode);
             donorModel.HasIndex(d => d.ExternalDonorCode).IsUnique();

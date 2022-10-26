@@ -75,7 +75,7 @@ namespace Atlas.DonorImport.Data.Models
 
     internal static class DonorImportHistoryModelBuilder
     {
-        public static void SetUpDonorImportHistory(this EntityTypeBuilder<DonorImportHistoryRecord> donorHistoryModel)
+        public static void SetUpModel(this EntityTypeBuilder<DonorImportHistoryRecord> donorHistoryModel)
         {
             donorHistoryModel.HasKey(d => new {d.Filename, d.UploadTime});
             donorHistoryModel.Property(d => d.Id).ValueGeneratedOnAdd();

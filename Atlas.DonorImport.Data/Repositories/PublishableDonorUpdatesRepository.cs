@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.Sql.BulkInsert;
 using Atlas.DonorImport.Data.Models;
@@ -9,9 +10,9 @@ namespace Atlas.DonorImport.Data.Repositories
 {
     public interface IPublishableDonorUpdatesRepository : IBulkInsertRepository<PublishableDonorUpdate>
     {
-        Task<IEnumerable<PublishableDonorUpdate>> GetOldestDonorUpdates(int batchSize);
-
-        Task DeleteDonorUpdates(IEnumerable<int> updateIds);
+        Task<IEnumerable<PublishableDonorUpdate>> GetOldestUnpublishedDonorUpdates(int batchSize);
+        Task MarkUpdatesAsPublished(IEnumerable<int> updateIds);
+        Task DeleteUpdatesPublishedOnOrBefore(DateTimeOffset dateCutOff);
     }
 
     public class PublishableDonorUpdatesRepository : BulkInsertRepository<PublishableDonorUpdate>, IPublishableDonorUpdatesRepository
@@ -20,9 +21,11 @@ namespace Atlas.DonorImport.Data.Repositories
         {
         }
 
-        public async Task<IEnumerable<PublishableDonorUpdate>> GetOldestDonorUpdates(int batchSize)
+        public async Task<IEnumerable<PublishableDonorUpdate>> GetOldestUnpublishedDonorUpdates(int batchSize)
         {
-            const string sql = $"SELECT TOP (@{nameof(batchSize)}) * FROM {PublishableDonorUpdate.QualifiedTableName} ORDER BY {nameof(PublishableDonorUpdate.Id)}";
+            const string sql = @$"SELECT TOP (@{nameof(batchSize)}) * FROM {PublishableDonorUpdate.QualifiedTableName}
+                               WHERE {nameof(PublishableDonorUpdate.IsPublished)} = 0
+                               ORDER BY {nameof(PublishableDonorUpdate.Id)}";
 
             await using(var connection = new SqlConnection(ConnectionString))
             {
@@ -30,13 +33,29 @@ namespace Atlas.DonorImport.Data.Repositories
             }
         }
 
-        public async Task DeleteDonorUpdates(IEnumerable<int> updateIds)
+        public async Task MarkUpdatesAsPublished(IEnumerable<int> updateIds)
         {
-            const string sql = $"DELETE FROM {PublishableDonorUpdate.QualifiedTableName} WHERE {nameof(PublishableDonorUpdate.Id)} IN @{nameof(updateIds)}";
+            var dateTimeNow = DateTimeOffset.Now;
+            const string sql = @$"UPDATE {PublishableDonorUpdate.QualifiedTableName} SET
+                               {nameof(PublishableDonorUpdate.IsPublished)} = 1,
+                               {nameof(PublishableDonorUpdate.PublishedOn)} = @{nameof(dateTimeNow)}
+                               WHERE {nameof(PublishableDonorUpdate.Id)} IN @{nameof(updateIds)}";
 
             await using (var connection = new SqlConnection(ConnectionString))
             {
-                await connection.ExecuteAsync(sql, param: new { updateIds });
+                await connection.ExecuteAsync(sql, param: new { dateTimeNow, updateIds });
+            }
+        }
+
+        public async Task DeleteUpdatesPublishedOnOrBefore(DateTimeOffset dateCutOff)
+        {
+            const string sql = @$"DELETE FROM {PublishableDonorUpdate.QualifiedTableName} WHERE
+                               {nameof(PublishableDonorUpdate.IsPublished)} = 1 AND
+                               {nameof(PublishableDonorUpdate.PublishedOn)} <= @{nameof(dateCutOff)}";
+
+            await using (var connection = new SqlConnection(ConnectionString))
+            {
+                await connection.ExecuteAsync(sql, param: new { dateCutOff });
             }
         }
     }

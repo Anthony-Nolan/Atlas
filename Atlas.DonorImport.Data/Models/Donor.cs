@@ -142,7 +142,7 @@ namespace Atlas.DonorImport.Data.Models
 
     internal static class DonorModelBuilder
     {
-        public static void SetUpDonorModel(this EntityTypeBuilder<Donor> donorModel)
+        public static void SetUpModel(this EntityTypeBuilder<Donor> donorModel)
         {
             donorModel.HasKey(d => d.AtlasId);
             donorModel.Property(p => p.AtlasId).ValueGeneratedOnAdd();

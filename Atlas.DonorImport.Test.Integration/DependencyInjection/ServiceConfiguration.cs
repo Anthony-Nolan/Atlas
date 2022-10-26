@@ -11,6 +11,7 @@ using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,6 +42,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
                 sp => new NotificationConfigurationSettings(),
                 sp => new NotificationsServiceBusSettings(),
                 sp => new StalledFileSettings { HoursToCheckStalledFiles = 2 },
+                sp => new PublishDonorUpdatesSettings(),
                 ConnectionStringReader(DonorStoreSqlConnectionString)
             );
             RegisterIntegrationTestServices(services);
@@ -90,6 +92,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
             #endregion
 
             services.AddScoped(sp => Substitute.For<ILogger>());
+            services.AddScoped(sp => Substitute.For<IMessageBatchPublisher<SearchableDonorUpdate>>());
         }
 
         private static void ThrowIfInTransaction()

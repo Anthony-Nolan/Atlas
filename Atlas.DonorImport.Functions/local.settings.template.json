@@ -17,7 +17,9 @@
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications",
-    "PublishDonorUpdates:CronSchedule": "0 */1 * * * *"
+    "PublishDonorUpdates:DeletionCronSchedule": "0 0 0 * * *",
+    "PublishDonorUpdates:PublishCronSchedule": "0 * * * * *",
+    "PublishDonorUpdates:PublishedUpdateExpiryInDays": 30
   },
   "ConnectionStrings": {
     "DonorStoreSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"

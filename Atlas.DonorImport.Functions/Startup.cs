@@ -23,6 +23,7 @@ namespace Atlas.DonorImport.Functions
                 OptionsReaderFor<NotificationConfigurationSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<StalledFileSettings>(),
+                OptionsReaderFor<PublishDonorUpdatesSettings>(),
                 ConnectionStringReader("DonorStoreSql")
             );
         }
@@ -34,6 +35,7 @@ namespace Atlas.DonorImport.Functions
             services.RegisterAsOptions<NotificationConfigurationSettings>("NotificationConfiguration");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
             services.RegisterAsOptions<StalledFileSettings>("DonorImport");
+            services.RegisterAsOptions<PublishDonorUpdatesSettings>("PublishDonorUpdates");
         }
     }
 }

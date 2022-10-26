@@ -26,19 +26,21 @@ resource "azurerm_function_app" "atlas_donor_import_function" {
 
     "FUNCTIONS_WORKER_RUNTIME" : "dotnet"
 
-    "MessagingServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
-    "MessagingServiceBus:ImportFileSubscription"   = azurerm_servicebus_subscription.donor-import-file-processor.name
-    "MessagingServiceBus:ImportFileTopic"          = azurerm_servicebus_topic.donor-import-file-uploads.name
+    "MessagingServiceBus:ConnectionString"             = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
+    "MessagingServiceBus:ImportFileSubscription"       = azurerm_servicebus_subscription.donor-import-file-processor.name
+    "MessagingServiceBus:ImportFileTopic"              = azurerm_servicebus_topic.donor-import-file-uploads.name
     "MessagingServiceBus:UpdatedSearchableDonorsTopic" = azurerm_servicebus_topic.updated-searchable-donors.name
-    
+
     "NotificationConfiguration:NotifyOnSuccessfulDonorImport"             = var.NOTIFICATIONS_ON_SUCCESSFUL_IMPORT
     "NotificationConfiguration:NotifyOnAttemptedDeletionOfUntrackedDonor" = var.NOTIFICATIONS_ON_DELETION_OF_INVALID_DONOR
-    
+
     "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:NotificationsTopic" = var.servicebus_topics.notifications.name
 
-    "PublishDonorUpdates:CronSchedule" = var.PUBLISH_DONOR_UPDATES_CRONTAB
+    "PublishDonorUpdates:DeletionCronSchedule"        = var.DELETE_PUBLISHED_DONOR_UPDATES_CRONTAB
+    "PublishDonorUpdates:PublishCronSchedule"         = var.PUBLISH_DONOR_UPDATES_CRONTAB
+    "PublishDonorUpdates:PublishedUpdateExpiryInDays" = var.PUBLISHED_UPDATE_EXPIRY_IN_DAYS
 
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = var.MAX_INSTANCES
     "WEBSITE_RUN_FROM_PACKAGE"                  = "1"

@@ -10,6 +10,7 @@ using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
+using Atlas.DonorImport.Services.DonorUpdates;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,12 +25,14 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, NotificationConfigurationSettings> fetchNotificationConfigurationSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, StalledFileSettings> fetchStalledFileSettings,
+            Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings,
             Func<IServiceProvider, string> fetchSqlConnectionString)
         {
             // Perform static Dapper set up that should be performed once before any SQL requests are made.
             Initialise.InitaliseDapper();
-            
-            services.RegisterSettings(fetchNotificationConfigurationSettings, fetchStalledFileSettings);
+
+            services.RegisterSettings(
+                fetchNotificationConfigurationSettings, fetchStalledFileSettings, fetchPublishDonorUpdatesSettings);
             services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices(fetchMessagingServiceBusSettings);
@@ -50,10 +53,12 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
         private static void RegisterSettings(
             this IServiceCollection services,
             Func<IServiceProvider, NotificationConfigurationSettings> fetchNotificationConfigurationSettings,
-            Func<IServiceProvider, StalledFileSettings> fetchStalledFileSettings)
+            Func<IServiceProvider, StalledFileSettings> fetchStalledFileSettings,
+            Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings)
         {
             services.MakeSettingsAvailableForUse(fetchStalledFileSettings);
             services.MakeSettingsAvailableForUse(fetchNotificationConfigurationSettings);
+            services.MakeSettingsAvailableForUse(fetchPublishDonorUpdatesSettings);
         }
 
         private static void RegisterServices(
@@ -68,12 +73,14 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IDonorImportFileHistoryService, DonorImportFileHistoryService>();
             services.AddScoped<IDonorImportLogService, DonorImportLogService>();
 
+            services.AddScoped<IDonorUpdatesSaver, DonorUpdatesSaver>();
             services.AddScoped<IDonorUpdatesPublisher, DonorUpdatesPublisher>();
             services.AddScoped<IMessageBatchPublisher<SearchableDonorUpdate>, MessageBatchPublisher<SearchableDonorUpdate>>(sp =>
             {
                 var serviceBusSettings = fetchMessagingServiceBusSettings(sp);
                 return new MessageBatchPublisher<SearchableDonorUpdate>(serviceBusSettings.ConnectionString, serviceBusSettings.UpdatedSearchableDonorsTopic);
             });
+            services.AddScoped<IDonorUpdatesCleaner, DonorUpdatesCleaner>();
         }
 
         private static void RegisterDonorReaderServices(this IServiceCollection services)
@@ -89,9 +96,9 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.RegisterNotificationSender(fetchNotificationsServiceBusSettings, fetchApplicationInsightsSettings);
         }
 
-       internal static void RegisterImportDatabaseTypes(
-            this IServiceCollection services,
-            Func<IServiceProvider, string> fetchDonorImportDatabaseConnectionString)
+        internal static void RegisterImportDatabaseTypes(
+             this IServiceCollection services,
+             Func<IServiceProvider, string> fetchDonorImportDatabaseConnectionString)
         {
             services.AddScoped<IDonorImportRepository>(sp => new DonorImportRepository(fetchDonorImportDatabaseConnectionString(sp)));
             services.AddScoped<IDonorReadRepository>(sp => new DonorReadRepository(fetchDonorImportDatabaseConnectionString(sp)));

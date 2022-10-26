@@ -11,9 +11,9 @@ using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.ExternalInterface.Settings;
-using Atlas.DonorImport.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Models.Mapping;
+using Atlas.DonorImport.Services.DonorUpdates;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Donor = Atlas.DonorImport.Data.Models.Donor;
 
@@ -34,8 +34,8 @@ namespace Atlas.DonorImport.Services
     {
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDonorReadRepository donorInspectionRepository;
-        private readonly IPublishableDonorUpdatesRepository updatesRepository;
         private readonly IImportedLocusInterpreter locusInterpreter;
+        private readonly IDonorUpdatesSaver updatesSaver;
         private readonly IDonorImportLogService donorImportLogService;
         private readonly IDonorImportFileHistoryService donorImportHistoryService;
         private readonly INotificationSender notificationSender;
@@ -44,8 +44,8 @@ namespace Atlas.DonorImport.Services
         public DonorRecordChangeApplier(
             IDonorImportRepository donorImportRepository,
             IDonorReadRepository donorInspectionRepository,
-            IPublishableDonorUpdatesRepository updatesRepository,
             IImportedLocusInterpreter locusInterpreter,
+            IDonorUpdatesSaver updatesSaver,
             IDonorImportLogService donorImportLogService,
             IDonorImportFileHistoryService donorImportHistoryService,
             INotificationSender notificationSender,
@@ -53,7 +53,7 @@ namespace Atlas.DonorImport.Services
         {
             this.donorImportRepository = donorImportRepository;
             this.donorInspectionRepository = donorInspectionRepository;
-            this.updatesRepository = updatesRepository;
+            this.updatesSaver = updatesSaver;
             this.locusInterpreter = locusInterpreter;
             this.donorImportLogService = donorImportLogService;
             this.donorImportHistoryService = donorImportHistoryService;
@@ -137,8 +137,7 @@ namespace Atlas.DonorImport.Services
             // Batched by update mode, to make testing of combined files easier
             foreach (var donorUpdateBatch in donorUpdates.Where(donorUpdateBatch => donorUpdateBatch.Any()))
             {
-                var publishableUpdates = donorUpdateBatch.Select(u => u.ToPublishableDonorUpdate()).ToList();
-                await updatesRepository.BulkInsert(publishableUpdates);
+                await updatesSaver.Save(donorUpdateBatch);
             }
         }
 
