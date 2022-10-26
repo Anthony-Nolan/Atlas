@@ -198,8 +198,6 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.HasIndex("IsPublished")
                         .HasFilter("[IsPublished] = 0");
 
-                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("IsPublished"), new[] { "SearchableDonorUpdate" });
-
                     b.ToTable("PublishableDonorUpdates", "Donors");
                 });
 #pragma warning restore 612, 618

@@ -40,8 +40,7 @@ namespace Atlas.DonorImport.Data.Models
 
             model
                 .HasIndex(x => x.IsPublished)
-                .HasFilter($"[{nameof(PublishableDonorUpdate.IsPublished)}] = 0")
-                .IncludeProperties(x => new { x.SearchableDonorUpdate });
+                .HasFilter($"[{nameof(PublishableDonorUpdate.IsPublished)}] = 0");
         }
     }
 }
