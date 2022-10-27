@@ -41,6 +41,10 @@ namespace Atlas.DonorImport.Data.Models
             model
                 .HasIndex(x => x.IsPublished)
                 .HasFilter($"[{nameof(PublishableDonorUpdate.IsPublished)}] = 0");
+
+            model
+                .HasIndex(x => new { x.PublishedOn, x.IsPublished })
+                .HasFilter($"[{nameof(PublishableDonorUpdate.IsPublished)}] = 1");
         }
     }
 }

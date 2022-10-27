@@ -198,6 +198,9 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.HasIndex("IsPublished")
                         .HasFilter("[IsPublished] = 0");
 
+                    b.HasIndex("PublishedOn", "IsPublished")
+                        .HasFilter("[IsPublished] = 1");
+
                     b.ToTable("PublishableDonorUpdates", "Donors");
                 });
 #pragma warning restore 612, 618
