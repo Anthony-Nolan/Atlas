@@ -30,10 +30,25 @@ readable manner.
 | Terraform Setting          | Functions App Name                 | Functions App Setting Name | Description                |
 | -------------------------- | ------------------                 | -------------------------- | -----------                | 
 | MATCHING-DATA-REFRESH-AUTO-RUN | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | DataRefresh-AutoRunDataRefresh | When set, the data refresh will automatically run once new HLA nomenclature is detected. This can be disabled to allow manual control on when new nomenclature is imported. |
-| DONOR-IMPORT-NOTIFICATIONS-ON-DELETION-OF-INVALID-DONOR | ATLAS-DONOR-IMPORT-FUNCTIONS | NotificationConfiguration-NotifyOnAttemptedDeletionOfUntrackedDonor | When enabled, notifications will be sent if an import file attempts to delete a donor that was not tracked in Atlas. |
-| DONOR-IMPORT-NOTIFICATIONS-ON-SUCCESSFUL-IMPORT | ATLAS-DONOR-IMPORT-FUNCTIONS | NotificationConfiguration-NotifyOnSuccessfulDonorImport | When enabled, notifications will be sent for every imported donor file. May want to be disabled if donor imports are very frequent. |
 | IP-RESTRICTION-SETTINGS | all | N/A | Allows restriction of functions app access to specified IPs only. |
 | MATCHING-DATA-REFRESH-AUTO-RUN | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | DataRefresh-AutoRunDataRefresh | When set, data refresh will automatically run whenever new HLA nomenclature is detected. If disabled, all data refreshes must be kicked off manually. |
+
+## Donor Import
+Settings for the donor import app (`ATLAS-DONOR-IMPORT-FUNCTIONS`).
+
+| Terraform Setting          | Functions App Setting Name | Description                |
+| -------------------------- | -------------------------- | -----------                | 
+| DONOR-IMPORT-NOTIFICATIONS-ON-DELETION-OF-INVALID-DONOR | NotificationConfiguration-NotifyOnAttemptedDeletionOfUntrackedDonor | When enabled, notifications will be sent if an import file attempts to delete a donor that was not tracked in Atlas. |
+| DONOR-IMPORT-NOTIFICATIONS-ON-SUCCESSFUL-IMPORT | NotificationConfiguration-NotifyOnSuccessfulDonorImport | When enabled, notifications will be sent for every imported donor file. May want to be disabled if donor imports are very frequent. |
+
+### Publishing Donor Updates
+Donor updates are published during donor import, and are consumed by the matching algorithm component, to keep its donor table in sync with that of donor import. The settings below control how often updates are published, and when published updates should be cleaned.
+
+| Terraform Setting          | Functions App Setting Name | Description                |
+| -------------------------- | -------------------------- | -----------                | 
+| DONOR-IMPORT-DELETE-PUBLISHED-DONOR-UPDATES-CRONTAB | PublishDonorUpdates-DeletionCronSchedule | Crontab used to determine how often to delete expired, published donor updates. |
+| DONOR-IMPORT-PUBLISH-DONOR-UPDATES-CRONTAB | PublishDonorUpdates-PublishCronSchedule | Crontab used to determine how often to check for and publish new donor updates. |
+| DONOR-IMPORT-PUBLISHED-UPDATE-EXPIRY-IN-DAYS | PublishDonorUpdates-PublishedUpdateExpiryInDays | Number of days after publishing that a donor update will expire and be eligible for deletion. If not set, then no deletions will occur (warning, in this case, the updates table will continue to grow and this may impact update publishing performance after time). |
 
 ## Performance / Scale Tuning
 
