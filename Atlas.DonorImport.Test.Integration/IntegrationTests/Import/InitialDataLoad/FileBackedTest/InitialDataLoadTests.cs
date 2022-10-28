@@ -4,13 +4,11 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Utils.Extensions;
-using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
 using NUnit.Framework;
 
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialDataLoad.FileBackedTest
@@ -25,20 +23,16 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
         private IDonorInspectionRepository donorRepository;
 
         private IDonorFileImporter donorFileImporter;
-        private IMessagingServiceBusClient mockServiceBusClient;
+        private IPublishableDonorUpdatesInspectionRepository updatesInspectionRepository;
 
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
         {
             await TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage_Async(async () =>
             {
-                mockServiceBusClient = Substitute.For<IMessagingServiceBusClient>();
-                var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
-                services.AddScoped(sp => mockServiceBusClient);
-                DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
-                
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
                 donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
+                updatesInspectionRepository = DependencyInjection.DependencyInjection.Provider.GetService<IPublishableDonorUpdatesInspectionRepository>();
                 // Run operation under test once for this fixture, to (a) improve performance (b) remove the need to clean up duplicate ids between runs
                 await ImportFile();
             });
@@ -94,9 +88,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
         }
 
         [Test]
-        public void ImportDonors_DoesNotSendNotificationsForMatchingAlgorithm()
+        public async Task ImportDonors_DoesNotSavePublishableDonorUpdates()
         {
-            mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
+            (await updatesInspectionRepository.Count()).Should().Be(0);
         }
 
         private async Task ImportFile()

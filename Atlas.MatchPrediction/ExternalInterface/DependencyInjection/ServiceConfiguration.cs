@@ -1,11 +1,13 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
+using Atlas.Common.ServiceBus;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
@@ -17,7 +19,6 @@ using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Atlas.MatchPrediction.ExternalInterface.Models;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
@@ -69,16 +70,16 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> messagingServiceBusSettings,
             Func<IServiceProvider, MatchPredictionRequestsSettings> matchPredictionRequestSettings)
         {
-            services.AddScoped(typeof(IBulkMessagePublisher<>), typeof(BulkMessagePublisher<>));
+            services.AddScoped(typeof(IMessageBatchPublisher<>), typeof(MessageBatchPublisher<>));
 
             // services for requesting a match prediction
             services.AddScoped<IMatchPredictionValidator, MatchPredictionValidator>();
             services.AddScoped<IMatchPredictionRequestDispatcher, MatchPredictionRequestDispatcher>();
-            services.AddScoped<IBulkMessagePublisher<IdentifiedMatchPredictionRequest>, BulkMessagePublisher<IdentifiedMatchPredictionRequest>>(sp =>
+            services.AddScoped<IMessageBatchPublisher<IdentifiedMatchPredictionRequest>, MessageBatchPublisher<IdentifiedMatchPredictionRequest>>(sp =>
             {
                 var serviceBusSettings = messagingServiceBusSettings(sp);
                 var matchPredictionRequestsSettings = matchPredictionRequestSettings(sp);
-                return new BulkMessagePublisher<IdentifiedMatchPredictionRequest>(serviceBusSettings, matchPredictionRequestsSettings.RequestsTopic);
+                return new MessageBatchPublisher<IdentifiedMatchPredictionRequest>(serviceBusSettings.ConnectionString, matchPredictionRequestsSettings.RequestsTopic);
             });
 
             // services for running a match prediction request
@@ -93,11 +94,11 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> messagingServiceBusSettings,
             Func<IServiceProvider, MatchPredictionRequestsSettings> matchPredictionRequestSettings)
         {
-            services.AddScoped<IBulkMessagePublisher<MatchPredictionResultLocation>, BulkMessagePublisher<MatchPredictionResultLocation>>(sp =>
+            services.AddScoped<IMessageBatchPublisher<MatchPredictionResultLocation>, MessageBatchPublisher<MatchPredictionResultLocation>>(sp =>
             {
                 var serviceBusSettings = messagingServiceBusSettings(sp);
                 var matchPredictionRequestsSettings = matchPredictionRequestSettings(sp);
-                return new BulkMessagePublisher<MatchPredictionResultLocation>(serviceBusSettings, matchPredictionRequestsSettings.ResultsTopic);
+                return new MessageBatchPublisher<MatchPredictionResultLocation>(serviceBusSettings.ConnectionString, matchPredictionRequestsSettings.ResultsTopic);
             });
         }
 

@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ServiceBus;
 using Atlas.MatchPrediction.ExternalInterface.Models;
-using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories;
 using Atlas.MatchPrediction.Test.Validation.Models;
@@ -16,12 +16,12 @@ namespace Atlas.MatchPrediction.Test.Validation.Services
     internal class MessageSender : IMessageSender
     {
         private readonly IValidationRepository validationRepository;
-        private readonly IBulkMessagePublisher<MatchPredictionResultLocation> messagePublisher;
+        private readonly IMessageBatchPublisher<MatchPredictionResultLocation> messagePublisher;
         private readonly string resultsContainer;
 
         public MessageSender(
             IValidationRepository validationRepository,
-            IBulkMessagePublisher<MatchPredictionResultLocation> messagePublisher,
+            IMessageBatchPublisher<MatchPredictionResultLocation> messagePublisher,
             ValidationAzureStorageSettings settings)
         {
             this.validationRepository = validationRepository;

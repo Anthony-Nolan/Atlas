@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
+#nullable disable
+
 namespace Atlas.DonorImport.Data.Migrations
 {
     [DbContext(typeof(DonorContext))]
@@ -16,16 +18,18 @@ namespace Atlas.DonorImport.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("Donors")
-                .HasAnnotation("ProductVersion", "3.1.4")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "6.0.3")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
             modelBuilder.Entity("Atlas.DonorImport.Data.Models.Donor", b =>
                 {
                     b.Property<int>("AtlasId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AtlasId"), 1L, 1);
 
                     b.Property<string>("A_1")
                         .HasColumnType("nvarchar(max)");
@@ -67,12 +71,12 @@ namespace Atlas.DonorImport.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("EthnicityCode")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("ExternalDonorCode")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Hash")
                         .HasColumnType("nvarchar(450)");
@@ -81,12 +85,12 @@ namespace Atlas.DonorImport.Data.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("RegistryCode")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("UpdateFile")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("AtlasId");
 
@@ -96,10 +100,11 @@ namespace Atlas.DonorImport.Data.Migrations
 
                     b.HasIndex("Hash");
 
-                    b.HasIndex("LastUpdated")
-                        .HasAnnotation("SqlServer:Include", new[] { "ExternalDonorCode" });
+                    b.HasIndex("LastUpdated");
 
-                    b.ToTable("Donors");
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("LastUpdated"), new[] { "ExternalDonorCode" });
+
+                    b.ToTable("Donors", "Donors");
                 });
 
             modelBuilder.Entity("Atlas.DonorImport.Data.Models.DonorImportHistoryRecord", b =>
@@ -114,13 +119,14 @@ namespace Atlas.DonorImport.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("FileStateString")
-                        .HasColumnName("FileState")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("FileState");
 
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<DateTime>("ImportBegin")
                         .HasColumnType("datetime2");
@@ -137,12 +143,12 @@ namespace Atlas.DonorImport.Data.Migrations
 
                     b.Property<string>("ServiceBusMessageId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Filename", "UploadTime");
 
-                    b.ToTable("DonorImportHistory");
+                    b.ToTable("DonorImportHistory", "Donors");
                 });
 
             modelBuilder.Entity("Atlas.DonorImport.Data.Models.DonorLog", b =>
@@ -158,7 +164,44 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.HasIndex("ExternalDonorCode")
                         .IsUnique();
 
-                    b.ToTable("DonorLogs");
+                    b.ToTable("DonorLogs", "Donors");
+                });
+
+            modelBuilder.Entity("Atlas.DonorImport.Data.Models.PublishableDonorUpdate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<DateTimeOffset>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("DonorId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("PublishedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("SearchableDonorUpdate")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(MAX)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsPublished")
+                        .HasFilter("[IsPublished] = 0");
+
+                    b.HasIndex("PublishedOn", "IsPublished")
+                        .HasFilter("[IsPublished] = 1");
+
+                    b.ToTable("PublishableDonorUpdates", "Donors");
                 });
 #pragma warning restore 612, 618
         }

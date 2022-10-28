@@ -1,21 +1,22 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using FluentAssertions;
-using NSubstitute.ExceptionExtensions;
-using Atlas.MatchPrediction.ApplicationInsights;
-using Atlas.MatchPrediction.ExternalInterface.Models;
-using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
-using Atlas.MatchPrediction.ExternalInterface;
-using NSubstitute;
-using NUnit.Framework;
-using System.Collections.Generic;
-using System;
-using Atlas.Client.Models.Search.Results.MatchPrediction;
+﻿using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ServiceBus;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
+using Atlas.MatchPrediction.ApplicationInsights;
+using Atlas.MatchPrediction.ExternalInterface;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
+using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
+using FluentAssertions;
 using FluentValidation;
 using LochNessBuilder;
+using NSubstitute;
+using NSubstitute.ExceptionExtensions;
+using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Services
 {
@@ -29,7 +30,7 @@ namespace Atlas.MatchPrediction.Test.Services
 
         private IMatchPredictionAlgorithm matchPredictionAlgorithm;
         private IMatchPredictionRequestResultUploader resultUploader;
-        private IBulkMessagePublisher<MatchPredictionResultLocation> locationPublisher;
+        private IMessageBatchPublisher<MatchPredictionResultLocation> locationPublisher;
         private IMatchPredictionLogger<MatchPredictionRequestLoggingContext> logger;
         private MatchPredictionRequestLoggingContext loggingContext;
 
@@ -40,7 +41,7 @@ namespace Atlas.MatchPrediction.Test.Services
         {
             matchPredictionAlgorithm = Substitute.For<IMatchPredictionAlgorithm>();
             resultUploader = Substitute.For<IMatchPredictionRequestResultUploader>();
-            locationPublisher = Substitute.For<IBulkMessagePublisher<MatchPredictionResultLocation>>();
+            locationPublisher = Substitute.For<IMessageBatchPublisher<MatchPredictionResultLocation>>();
             logger = Substitute.For<IMatchPredictionLogger<MatchPredictionRequestLoggingContext>>();
             loggingContext = new MatchPredictionRequestLoggingContext();
 

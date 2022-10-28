@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ServiceBus;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Validators;
@@ -22,9 +23,9 @@ namespace Atlas.MatchPrediction.ExternalInterface
 
     public class MatchPredictionRequestDispatcher : IMatchPredictionRequestDispatcher
     {
-        private readonly IBulkMessagePublisher<IdentifiedMatchPredictionRequest> requestPublisher;
+        private readonly IMessageBatchPublisher<IdentifiedMatchPredictionRequest> requestPublisher;
 
-        public MatchPredictionRequestDispatcher(IBulkMessagePublisher<IdentifiedMatchPredictionRequest> requestPublisher)
+        public MatchPredictionRequestDispatcher(IMessageBatchPublisher<IdentifiedMatchPredictionRequest> requestPublisher)
         {
             this.requestPublisher = requestPublisher;
         }

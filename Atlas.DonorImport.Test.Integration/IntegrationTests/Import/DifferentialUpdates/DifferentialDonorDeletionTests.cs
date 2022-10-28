@@ -2,18 +2,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
-using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using FluentAssertions;
 using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
 using NUnit.Framework;
 using Donor = Atlas.DonorImport.Data.Models.Donor;
 
@@ -22,16 +20,15 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
     [TestFixture]
     public class DifferentialDonorDeletionTests
     {
-        private IMessagingServiceBusClient mockServiceBusClient;
-
         private IDonorInspectionRepository donorRepository;
+        private IPublishableDonorUpdatesInspectionRepository updatesInspectionRepository;
         private IDonorFileImporter donorFileImporter;
 
         private List<Donor> initialDonors;
         private const int InitialCount = 10;
         private readonly Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
 
-        private Builder<DonorUpdate> DonorDeletionBuilder =>
+        private static Builder<DonorUpdate> DonorDeletionBuilder =>
             DonorUpdateBuilder.New
                 .WithRecordIdPrefix("external-donor-code-")
                 .With(upd => upd.ChangeType, ImportDonorChangeType.Delete);
@@ -41,14 +38,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                mockServiceBusClient = Substitute.For<IMessagingServiceBusClient>();
-                var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
-                services.AddScoped(sp => mockServiceBusClient);
-                DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
-
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
-                mockServiceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<IMessagingServiceBusClient>();
                 donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
+                updatesInspectionRepository = DependencyInjection.DependencyInjection.Provider.GetService<IPublishableDonorUpdatesInspectionRepository>();
             });
         }
 
@@ -79,7 +71,6 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                mockServiceBusClient.ClearReceivedCalls();
                 DatabaseManager.ClearDatabases();
             });
         }
@@ -102,7 +93,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         }
 
         [Test]
-        public async Task ImportDonors_ForDeletionsIfRecordsAreNotFound_DoesNotThrow_AndDoesNotAffectExistingRecords_AndDoesNotSendMessages()
+        public async Task ImportDonors_ForDeletionsIfRecordsAreNotFound_DoesNotThrow_AndDoesNotAffectExistingRecords_AndDoesNotSaveUpdates()
         {
             const int deletionCount = 4;
             var donorDeletes = DonorDeletionBuilder
@@ -110,35 +101,37 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
                 .Build(deletionCount).ToArray();
 
             var donorDeleteFile = fileBuilder.WithDonors(donorDeletes);
-            mockServiceBusClient.ClearReceivedCalls();
+
+            var updateCountBeforeImport = await updatesInspectionRepository.Count();
 
             //ACT
             await donorFileImporter.Invoking(importer => importer.ImportDonorFile(donorDeleteFile)).Should().NotThrowAsync();
 
             var remainingDonors = donorRepository.StreamAllDonors().ToList();
             remainingDonors.Should().HaveCount(InitialCount);
-            await mockServiceBusClient.DidNotReceive()
-                .PublishDonorUpdateMessages(Arg.Is<ICollection<SearchableDonorUpdate>>(collection => collection.Any()));
+
+            var updateCountAfterImport = await updatesInspectionRepository.Count();
+            updateCountAfterImport.Should().Be(updateCountBeforeImport);
         }
 
         [Test]
         public async Task
-            ImportDonors_ForDeletions_WithMixOfRecordsFoundAndNotFound_FoundRecordsAreDeletedFromDatabase_AndSendsMessagesMatchingTheDeletedAtlasIds()
+            ImportDonors_ForDeletions_WithMixOfRecordsFoundAndNotFound_FoundRecordsAreDeletedFromDatabase_AndSavesUpdatesMatchingTheDeletedAtlasIds()
         {
             const int goodDeletesCount = 2;
             const int badDeletesCount = 6;
 
             var (donorMixedDeleteFile, goodDeleteAtlasIds) = GenerateMixedDeletionFileWithMatchingAtlasIds(goodDeletesCount, badDeletesCount);
-            var capturedUpdates = ConfigureCapturingOfUpdateMessages();
 
             //ACT
             await donorFileImporter.ImportDonorFile(donorMixedDeleteFile);
 
             var remainingDonors = donorRepository.StreamAllDonors().ToList();
             remainingDonors.Should().HaveCount(InitialCount - goodDeletesCount);
-            await mockServiceBusClient.ReceivedWithAnyArgs(1).PublishDonorUpdateMessages(default);
-            capturedUpdates.Should().HaveCount(goodDeletesCount);
-            capturedUpdates.Select(update => update.DonorId).Should().BeEquivalentTo(goodDeleteAtlasIds);
+
+            var updates = (await updatesInspectionRepository.Get(goodDeleteAtlasIds, false)).ToList();
+            updates.Should().HaveCount(goodDeletesCount);
+            updates.Select(u => u.ToSearchableDonorUpdate().DonorId).Should().BeEquivalentTo(goodDeleteAtlasIds);
         }
 
         private (DonorImportFile, List<int>) GenerateMixedDeletionFileWithMatchingAtlasIds(int goodDeletesCount, int badDeletesCount)
@@ -154,17 +147,6 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
             var donorMixedDeleteFile = fileBuilder.WithDonors(goodDeletes.Union(badDeletes).ToArray()).Build();
 
             return (donorMixedDeleteFile, goodDeleteAtlasIds);
-        }
-
-        private List<SearchableDonorUpdate> ConfigureCapturingOfUpdateMessages()
-        {
-            var capturedUpdates = new List<SearchableDonorUpdate>();
-            mockServiceBusClient
-                .When(client => client.PublishDonorUpdateMessages(Arg.Any<ICollection<SearchableDonorUpdate>>()))
-                .Do(clientCallArgs => capturedUpdates.AddRange(clientCallArgs.Arg<ICollection<SearchableDonorUpdate>>()));
-
-            mockServiceBusClient.ClearReceivedCalls();
-            return capturedUpdates;
         }
     }
 }
