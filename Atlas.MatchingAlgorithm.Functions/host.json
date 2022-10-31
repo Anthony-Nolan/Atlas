@@ -1,19 +1,23 @@
 {
-  "version": "2.0",
   "extensions": {
     "serviceBus": {
       "messageHandlerOptions": {
-        "maxConcurrentCalls": 3,
-        "maxAutoRenewDuration": "2.00:30:00"
+        "maxAutoRenewDuration": "2.00:30:00",
+        "maxConcurrentCalls": 3
       }
     }
   },
   "functionTimeout": "2.00:00:00",
   "logging": {
     "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request;Event"
+      },
       "snapshotConfiguration": {
-        "IsEnabled": true
+        "isEnabled": true
       }
     }
-  }
+  },
+  "version": "2.0"
 }
