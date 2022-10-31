@@ -10,8 +10,12 @@
   },
   "logging": {
     "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request;Event"
+      },
       "snapshotConfiguration": {
-        "IsEnabled": true
+        "isEnabled": true
       }
     }
   }
