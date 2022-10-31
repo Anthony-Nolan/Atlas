@@ -11,8 +11,12 @@
   "functionTimeout": "2.00:00:00",
   "logging": {
     "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request;Event"
+      },
       "snapshotConfiguration": {
-        "IsEnabled": true
+        "isEnabled": true
       }
     }
   }
