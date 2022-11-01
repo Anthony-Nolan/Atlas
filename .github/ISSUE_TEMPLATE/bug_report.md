@@ -23,10 +23,10 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-** Inputs/Outputs **
+**Inputs/Outputs**
 E.g., donor input file, body of search request, search results file, body of service bus message, etc.
 
-** Atlas Build & Runtime Info (please complete the following information):**
+**Atlas Build & Runtime Info (please complete the following information):**
  - Runtime Environment [e.g. local Windows desktop, Azure cloud]
  - Atlas Version [e.g. 1.0.0]
  - GitHub commit ID of Atlas build
