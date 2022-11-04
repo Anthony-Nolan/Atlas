@@ -1,7 +1,7 @@
 # file: hla_nom.txt
 # date: 2018-07-11
 # version: IPD-IMGT/HLA 3.33.0
-# origin: file modified from http://hla.alleles.org/wmda/hla_nom.txt; only contains alleles needed for tests; all other removed to improve performance
+# origin: file modified from http://hla.alleles.org/wmda/hla_nom.txt; only contains alleles needed for tests (some from later versions to cover edge cases); all other removed to improve performance
 # repository: https://raw.githubusercontent.com/ANHIG/IMGTHLA/Latest/wmda/hla_nom.txt
 # author: WHO, Steven G. E. Marsh (steven.marsh@ucl.ac.uk)
 
@@ -1550,7 +1550,9 @@ A*;02:738;20180531;;;
 A*;02:739;20180531;;;
 A*;02:740;20180531;;;
 A*;02:741;20180531;;;
+A*;03:200Q;20140623;20170929;03:266N;Sequence error
 A*;03:260;20160930;20170929;03:284N;Sequence error
+A*;03:266N;20161031;;;
 A*;11:53;20090930;20111128;11:02:01;Sequence identical
 A*;23:01:01:01;19910801;;;
 A*;23:01:01:02;20161231;;;
@@ -4271,11 +4273,14 @@ C*;03:387;20180329;;;
 C*;03:388;20180329;;;
 C*;03:389;20180531;;;
 C*;03:390;20180618;;;
+C*;06:359N;20220930;;;
 C*;07:01:01:14Q;20170127;;;
 C*;07:06:01:01;19960526;;;
 C*;07:295;20121031;20121031;;Never assigned
 C*;07:491:01N;20160229;;;
 C*;12:02:02:01;19930421;;;
+C*;12:274:02N;20191031;20200930;12:329N;Sequence renamed
+C*;12:329N;20200930;;;
 C*;14:02:01:01;19940322;;;
 C*;14:02:02;19980311;;;
 C*;14:02:03;20030326;;;
@@ -4305,6 +4310,7 @@ C*;14:05;20010430;;;
 C*;14:08;20060127;;;
 C*;15:07;19980423;;;
 C*;15:21;20070430;;;
+C*;16:199N;20220630;20220930;06:359N;Name assigned in error
 
 DPB1*;01:01:01:01;19890801;;;
 DPB1*;09:01:01;19890801;;;

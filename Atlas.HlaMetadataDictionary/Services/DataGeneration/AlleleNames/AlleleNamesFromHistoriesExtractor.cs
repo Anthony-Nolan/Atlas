@@ -17,11 +17,6 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
     {
         private readonly IAlleleNameHistoriesConsolidator historiesConsolidator;
 
-        private IEnumerable<AlleleNameHistory> ConsolidatedAlleleNameHistories(string hlaNomenclatureVersion)
-        {
-            return historiesConsolidator.GetConsolidatedAlleleNameHistories(hlaNomenclatureVersion).ToList();
-        }
-
         public AlleleNamesFromHistoriesExtractor(
             IAlleleNameHistoriesConsolidator historiesConsolidator,
             IWmdaDataRepository dataRepository)
@@ -34,6 +29,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
         {
             return ConsolidatedAlleleNameHistories(hlaNomenclatureVersion)
                 .SelectMany(h => GetAlleleNamesFromSingleHistory(h, hlaNomenclatureVersion));
+        }
+
+        private IEnumerable<AlleleNameHistory> ConsolidatedAlleleNameHistories(string hlaNomenclatureVersion)
+        {
+            return historiesConsolidator.GetConsolidatedAlleleNameHistories(hlaNomenclatureVersion).ToList();
         }
 
         private IEnumerable<AlleleNameMetadata> GetAlleleNamesFromSingleHistory(AlleleNameHistory history, string hlaNomenclatureVersion)
