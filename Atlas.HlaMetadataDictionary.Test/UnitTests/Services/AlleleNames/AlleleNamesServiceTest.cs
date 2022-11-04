@@ -82,6 +82,32 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.AlleleNames
             actualAlleleName.CurrentAlleleNames.Should().BeEquivalentTo(expectedCurrentAlleleNames);
         }
 
+        /// <summary>
+        /// Regression tests to cover bug where truncated versions of deleted alleles with expression suffixes were not being stored.
+        /// </summary>
+        [TestCase(Locus.A, "03:200Q", "03:266N", Description = "Deleted allele with two fields & Q suffix")]
+        [TestCase(Locus.A, "03:200", "03:266N", Description = "Q suffix removed from deleted 2f allele")]
+        [TestCase(Locus.A, "03:266N", "03:266N", Description = "Allele identical to deleted 2f allele with Q suffix")]
+        [TestCase(Locus.A, "03:266", "03:266N", Description = "Suffix removed from allele identical to deleted 2f allele with Q suffix")]
+
+        [TestCase(Locus.C, "16:199N", "06:359N", Description = "Deleted allele with two fields & N suffix")]
+        [TestCase(Locus.C, "16:199", "06:359N", Description = "N suffix removed from deleted 2f allele")]
+        [TestCase(Locus.C, "06:359N", "06:359N", Description = "Allele identical to deleted 2f allele with N suffix")]
+        [TestCase(Locus.C, "06:359", "06:359N", Description = "Suffix removed from allele identical to deleted 2f allele with N suffix")]
+
+        [TestCase(Locus.C, "12:274:02N", "12:329N", Description = "Deleted allele with three fields & N suffix")]
+        [TestCase(Locus.C, "12:274:02", "12:329N", Description = "N suffix removed from deleted 3f allele")]
+        [TestCase(Locus.C, "12:274", "12:329N", Description = "N suffix and 3rd field removed from deleted 3f allele")]
+        [TestCase(Locus.C, "12:329N", "12:329N", Description = "Allele identical to deleted 3f allele with N suffix")]
+        [TestCase(Locus.C, "12:329", "12:329N", Description = "Suffix removed from allele identical to deleted 3f allele with N suffix")]
+        public void AlleleNamesService_DeletedAlleleWithExpressionSuffix_ReturnsIdenticalToAlleleName(
+            Locus locus, string lookupName, string expectedAlleleName)
+        {
+            var actualAlleleName = GetAlleleNameMetadata(locus, lookupName);
+
+            actualAlleleName.CurrentAlleleNames.Single().Should().Be(expectedAlleleName);
+        }
+
         private IAlleleNameMetadata GetAlleleNameMetadata(Locus locus, string lookupName)
         {
             return alleleNameMetadata
