@@ -26,7 +26,7 @@ resource "azurerm_servicebus_subscription" "audit-haplotype-frequency-file-uploa
   namespace_name                       = var.servicebus_namespace.name
   topic_name                           = azurerm_servicebus_topic.haplotype-frequency-file-uploads.name
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
-  default_message_ttl                  = var.default_servicebus_settings.long-expiry
+  default_message_ttl                  = var.default_servicebus_settings.audit-subscription-ttl-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
   max_delivery_count                   = var.default_servicebus_settings.default-message-retries
   dead_lettering_on_message_expiration = false
@@ -63,3 +63,7 @@ resource "azurerm_servicebus_topic" "match-prediction-results" {
   max_size_in_megabytes = var.default_servicebus_settings.default-bus-size
   support_ordering      = true
 }
+
+// Note: no audit subscriptions have been defined for either `match-prediction-requests` or `match-prediction-results`.
+// This is because the expected use case of the match prediction request feature is to receive millions of requests for validation purposes.
+// Having an audit sub uses up the limited topic space, thereby increasing the chance of new messages being rejected when space runs out.
