@@ -21,6 +21,16 @@ The project version will be appropriately incremented with each change to the pr
 #### Manual Testing
 * New projects have been added to permit the validation of the match prediction algorithm using an externally generated dataset.
 
+### 1.4.2
+
+#### HLA Metadata Dictionary
+* Fix for bug where HMD lookup failed for a decoded MAC that included a deleted allele with an expression suffix.
+
+### 1.4.1
+
+#### Deployment
+* Fixes made to build pipelines and terraform files.
+
 ### 1.4.0
 
 #### Matching Algorithm
