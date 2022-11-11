@@ -30,16 +30,16 @@ resource "azurerm_function_app" "atlas_match_prediction_function" {
     "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
     "MacDictionary:TableName"                    = var.mac_import_table.name,
 
-    "MessagingServiceBus:ConnectionString"                                     = var.servicebus_namespace_authorization_rules.manage.primary_connection_string
-    "MessagingServiceBus:ImportFileSubscription"                               = azurerm_servicebus_subscription.haplotype-frequency-file-processor.name
-    "MessagingServiceBus:ImportFileTopic"                                      = azurerm_servicebus_topic.haplotype-frequency-file-uploads.name
-    
+    "MessagingServiceBus:ConnectionString"       = var.servicebus_namespace_authorization_rules.manage.primary_connection_string
+    "MessagingServiceBus:ImportFileSubscription" = azurerm_servicebus_subscription.haplotype-frequency-file-processor.name
+    "MessagingServiceBus:ImportFileTopic"        = azurerm_servicebus_topic.haplotype-frequency-file-uploads.name
+
     // Compressed phenotype conversion exceptions should NOT be suppressed when running match prediction requests outside of search
     "MatchPredictionAlgorithm:SuppressCompressedPhenotypeConversionExceptions" = false
-    
-    "MatchPredictionRequests:RequestsSubscription"                             = azurerm_servicebus_subscription.match-prediction-request-runner.name
-    "MatchPredictionRequests:RequestsTopic"                                    = azurerm_servicebus_topic.match-prediction-requests.name
-    "MatchPredictionRequests:ResultsTopic"                                     = azurerm_servicebus_topic.match-prediction-results.name
+
+    "MatchPredictionRequests:RequestsSubscription" = azurerm_servicebus_subscription.match-prediction-request-runner.name
+    "MatchPredictionRequests:RequestsTopic"        = azurerm_servicebus_topic.match-prediction-requests.name
+    "MatchPredictionRequests:ResultsTopic"         = azurerm_servicebus_topic.match-prediction-results.name
 
     "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name

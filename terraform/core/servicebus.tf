@@ -6,6 +6,9 @@ locals {
     // Equivalent to 27.4 years - use on any prop that requires a long timespan before expiry
     long-expiry = "P9999D"
 
+    // Value should be long enough to allow time for debug/support but short enough to prevent messages piling up
+    audit-subscription-ttl-expiry = "P14D"
+
     // 5GB
     default-bus-size = 5120
 
@@ -77,7 +80,7 @@ resource "azurerm_servicebus_subscription" "audit-search-results-ready" {
   namespace_name                       = azurerm_servicebus_namespace.general.name
   topic_name                           = azurerm_servicebus_topic.search-results-ready.name
   auto_delete_on_idle                  = local.service-bus.long-expiry
-  default_message_ttl                  = local.service-bus.long-expiry
+  default_message_ttl                  = local.service-bus.audit-subscription-ttl-expiry
   lock_duration                        = local.service-bus.default-read-lock
   max_delivery_count                   = local.service-bus.default-message-retries
   dead_lettering_on_message_expiration = false

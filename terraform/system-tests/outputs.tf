@@ -2,7 +2,7 @@ output "matching_algorithm_db_connection_string" {
   value = local.matching_algorithm_connection_string
 }
 
-output "matching_algorithm_validation_db_connection_string"{
+output "matching_algorithm_validation_db_connection_string" {
   value = local.matching_algorithm_validation_connection_string
 }
 

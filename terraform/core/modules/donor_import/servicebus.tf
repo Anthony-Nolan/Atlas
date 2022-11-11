@@ -14,7 +14,7 @@ resource "azurerm_servicebus_subscription" "audit-updated-searchable-donors" {
   namespace_name                       = var.servicebus_namespace.name
   topic_name                           = azurerm_servicebus_topic.updated-searchable-donors.name
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
-  default_message_ttl                  = var.default_servicebus_settings.long-expiry
+  default_message_ttl                  = var.default_servicebus_settings.audit-subscription-ttl-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
   max_delivery_count                   = var.default_servicebus_settings.default-message-retries
   dead_lettering_on_message_expiration = false
@@ -48,7 +48,7 @@ resource "azurerm_servicebus_subscription" "audit-donor-import-file-upload" {
   namespace_name                       = var.servicebus_namespace.name
   topic_name                           = azurerm_servicebus_topic.donor-import-file-uploads.name
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
-  default_message_ttl                  = var.default_servicebus_settings.long-expiry
+  default_message_ttl                  = var.default_servicebus_settings.audit-subscription-ttl-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
   max_delivery_count                   = var.default_servicebus_settings.default-message-retries
   dead_lettering_on_message_expiration = false

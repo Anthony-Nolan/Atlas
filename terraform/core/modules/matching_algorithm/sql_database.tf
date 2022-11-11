@@ -29,7 +29,7 @@ resource "azurerm_sql_database" "atlas-matching-transient-b" {
   server_name         = var.sql_server.name
 
   max_size_bytes = var.DATABASE_MAX_SIZE
-  
+
   lifecycle {
     ignore_changes = [
       // DO NOT SET THE PRICING TIER IN TERRAFORM - this is dynamically scaled as part of the data refresh, and specifying any values in terraform will cause releases to override said scaling
