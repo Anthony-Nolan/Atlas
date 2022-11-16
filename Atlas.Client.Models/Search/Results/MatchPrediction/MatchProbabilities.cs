@@ -10,10 +10,10 @@ namespace Atlas.Client.Models.Search.Results.MatchPrediction
         public Probability TwoMismatchProbability { get; set; }
 
         [JsonIgnore]
-        public PredictiveMatchCategory? MatchCategory => ZeroMismatchProbability?.Decimal switch
+        public PredictiveMatchCategory? MatchCategory => ZeroMismatchProbability?.Percentage switch
         {
-            1m => PredictiveMatchCategory.Exact,
-            0m => PredictiveMatchCategory.Mismatch,
+            100 => PredictiveMatchCategory.Exact,
+            0 => PredictiveMatchCategory.Mismatch,
             null => null,
             _ => PredictiveMatchCategory.Potential
         };

@@ -7,23 +7,23 @@ namespace Atlas.Client.Models.Search.Results.MatchPrediction
     /// Values used to categorise the overall match probability.
     /// 
     /// Distinct from MatchCategory and MatchConfidence as they are calculated in the matching algorithm,
-    /// whereas this is caclulated from Match Prediction data.
+    /// whereas this is calculated from Match Prediction data.
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
     public enum PredictiveMatchCategory
     {
         /// <summary>
-        /// Molecular matches within a single p-group.
+        /// 100% likelihood of zero mismatches at this locus or position.
         /// </summary>
         Exact,
 
         /// <summary>
-        /// Potential match.
+        /// 1-99% likelihood of zero mismatches at this locus or position.
         /// </summary>
         Potential,
 
         /// <summary>
-        /// At least one known (non-permissive) mismatch.
+        /// 0% likelihood of zero mismatches at this locus or position.
         /// </summary>
         Mismatch
     }

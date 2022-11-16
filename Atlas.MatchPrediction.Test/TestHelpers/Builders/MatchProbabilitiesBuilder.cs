@@ -24,5 +24,10 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
                 .With(r => r.OneMismatchProbability, new Probability(oneMismatchValue))
                 .With(r => r.TwoMismatchProbability, new Probability(twoMismatchValue));
         }
+
+        public static Builder WithZeroMismatchProbability(this Builder builder, decimal zeroMismatchValue)
+        {
+            return builder.With(r => r.ZeroMismatchProbability, new Probability(zeroMismatchValue));
+        }
     }
 }

@@ -18,9 +18,9 @@ namespace Atlas.Client.Models.Search.Results.MatchPrediction
         {
             PredictiveMatchCategory.Exact => new LocusMatchCategories(PredictiveMatchCategory.Exact),
             PredictiveMatchCategory.Mismatch => new LocusMatchCategories(PredictiveMatchCategory.Mismatch,
-                GetMismatchSecondMatchCategory()),
+                GetSecondMatchCategoryWhenFirstIsMismatch()),
             PredictiveMatchCategory.Potential => new LocusMatchCategories(PredictiveMatchCategory.Potential,
-                GetPotentialSecondMatchCategory()),
+                GetSecondMatchCategoryWhenFirstIsPotential()),
             null => null,
             _ => throw new ArgumentOutOfRangeException()
         };
@@ -48,32 +48,33 @@ namespace Atlas.Client.Models.Search.Results.MatchPrediction
         }
 
         /// <summary>
-        /// If zero percent chance of two mismatches, other match category must be exact.
-        /// If zero percent chance of one mismatch, can't be either exact or potential so must be mismatch.
-        /// All other cases the match category will be potential.
+        /// If first category is Mismatch,
+        /// AND 100% chance of two mismatches, then other match category must be Mismatch.
+        ///
+        /// If first category is Mismatch,
+        /// AND 0% chance of two mismatches, then other category must be Exact.
         /// </summary>
-        private PredictiveMatchCategory? GetMismatchSecondMatchCategory()
+        /// <returns></returns>
+        private PredictiveMatchCategory? GetSecondMatchCategoryWhenFirstIsMismatch()
         {
-            if (MatchProbabilities.TwoMismatchProbability.Decimal == 0)
+            return MatchProbabilities.TwoMismatchProbability.Percentage switch
             {
-                return PredictiveMatchCategory.Exact;
-            }
-
-            if (MatchProbabilities.OneMismatchProbability.Decimal == 0)
-            {
-                return PredictiveMatchCategory.Mismatch;
-            }
-
-            return PredictiveMatchCategory.Potential;
+                100 => PredictiveMatchCategory.Mismatch,
+                0 => PredictiveMatchCategory.Exact,
+                _ => PredictiveMatchCategory.Potential
+            };
         }
 
         /// <summary>
-        /// If zero percent chance of two mismatches, other match category must be exact.
-        /// If There is a chance of two mismatches then neither of them can be exact so match category is potential.
+        /// If first category is Potential,
+        /// And 0% chance of two mismatches, then other match category must be Exact.
+        ///
+        /// If first category is Potential,
+        /// AND there is a chance of two mismatches, then neither of them can be Exact so match category is Potential.
         /// </summary>
-        private PredictiveMatchCategory? GetPotentialSecondMatchCategory()
+        private PredictiveMatchCategory? GetSecondMatchCategoryWhenFirstIsPotential()
         {
-            return MatchProbabilities.TwoMismatchProbability.Decimal == 0 ? PredictiveMatchCategory.Exact : PredictiveMatchCategory.Potential;
+            return MatchProbabilities.TwoMismatchProbability.Percentage == 0 ? PredictiveMatchCategory.Exact : PredictiveMatchCategory.Potential;
         }
     }
 }
