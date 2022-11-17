@@ -18,7 +18,7 @@ locals {
 }
 
 provider "azurerm" {
-  version         = "2.22.0"
+  version         = "2.99.0"
   subscription_id = local.subscription_id
 
   // According to the docs, the default behaviour is to attempt to register every possible resource provider
