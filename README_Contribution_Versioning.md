@@ -2,6 +2,10 @@
 
 ## Versioning
 
+See [Version ADR](ArchitecturalDecisionRecord/Phase2/005-Versioning.md) for an explanation of Atlas versioning.
+
+---
+
 Atlas follows semantic versioning:
 
 `major.minor.patch`
@@ -49,8 +53,8 @@ This sign-off process should involve ensuring:
 
 To contribute to Atlas, the following steps should be taken: 
 
-* Ensure there is an appropriate Github Issue for the change being made - if one does not exist, please create one with a description of why the change is necessary
-* Fork the repository, and make any code changes on a branch of your fork
-* Create a Github Pull Request from your fork branch to the master branch of this repository
-* All code changes will then be reviewed by a code owner before they can be merged into the master branch
-* If any testing fails post-merge, you may be asked by a repository owner to assist in fixes as required.  
+1. Ensure there is [an appropriate Github Issue](https://github.com/Anthony-Nolan/Atlas/issues) for the change being made - if one does not exist, please create one with a description of why the change is necessary, using the templates provided.
+2. Fork the repository, and make any code changes on a branch of your fork.
+3. Create a Github Pull Request from your fork branch to the master branch of this repository.
+4. All code changes will then be reviewed by a code owner before they can be merged into the master branch.
+5. If any testing fails post-merge, you may be asked by a repository owner to assist in fixes, as required.  

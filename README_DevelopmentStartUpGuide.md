@@ -20,6 +20,7 @@
 - Before running a functions app locally, make sure to amend the necessary app settings via the `local.settings.json` file.
   - The placeholder value: `override-this` is used to highlight those settings that must be overriden for the functions app to run successfully, e.g., service bus connection strings.
   - These files are ignored by git to prevent the accidental sharing of secrets.
+  - Read the [Settings README](README_DevelopmentSettings.md) for more details about Atlas settings, and how to work with them when developing.
 
 How to run functions via Swagger using Visual Studio:
 - To run a function set it as your start-up project and run it.
