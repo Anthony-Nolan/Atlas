@@ -6,7 +6,8 @@ There are several HLA matching algorithms in use worldwide, but Atlas is unique 
 
 ## Documentation & Support
 
-- Atlas has extensive [README documentation](#readme-index) which is mainly aimed at technically proficient developers and support agents.
+- The [specifications page](README_Specifications.md) lists the current features of Atlas.
+- This repository has extensive [README documentation](#readme-index) mainly aimed at developers and support agents.
 - If you have **questions about Atlas** - technical or otherwise - please browse the Q&A section of the [Discussions board](https://github.com/Anthony-Nolan/Atlas/discussions), and feel free to post your own questions.
 - If you wish to be **updated on changes to Atlas**, please [subscribe to the repo](https://docs.github.com/en/account-and-profile/managing-subscriptions-and-notifications-on-github) and consult the [Atlas Changelogs](#changelog-index).
 - Atlas is an open-source project and we welcome feedback, ideas, and contributions.
@@ -20,7 +21,8 @@ There are several HLA matching algorithms in use worldwide, but Atlas is unique 
 
 Due to the size and complexity of the project, the README has been split into various small chunks. Other READMEs have been linked to where appropriate, but here is a comprehensive list:
 
-- [Core README (You Are Here)](README.md)
+- [Landing Page README (You Are Here)](README.md)
+- [Atlas Specifications](README_Specifications.md)
 
 - Guides for developers working on Atlas
   - [Architectural Overview](README_ArchitecturalOverview.md)
@@ -43,6 +45,7 @@ Due to the size and complexity of the project, the README has been split into va
         - [Matching Algorithm Validation Test Suite (i.e., non-Technical BDD Testing)](Atlas.MatchingAlgorithm.Test.Validation/ValidationTests/Features/README_MatchingValidationTests.md)
     - [Match Prediction Algorithm](README_MatchPredictionAlgorithm.md) 
     - [MAC Dictionary](README_MultipleAlleleCodeDictionary.md)
+    - [Repeat Search](README_RepeatSearch.md)
 
 ## CHANGELOG Index
 
