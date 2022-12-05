@@ -1,6 +1,6 @@
 # Summary
 
-This readme exists to give context to the test resources located in this folder - any more general test and debug resources should go in the [Development Start Up Guide README](../README_DevelopmentStartUpGuide.md).
+This readme exists to give context to the test resources located in the `MiscTestingAndDebuggingResources` folder - any more general test and debug resources should go in the [Development Start Up Guide README](../README_DevelopmentStartUpGuide.md).
 
 ## Donor Import
 

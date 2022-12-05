@@ -1,5 +1,7 @@
+# Manual Testing
 Projects dedicated to manual, non-automated testing of various aspects of the Atlas solution.
-This code is designed to be run locally; it is not production quality and cannot be deployed "as-is" to remote environments.
+
+> Important! This code is designed to be run locally; it is not production quality and cannot be deployed "as-is" to remote environments.
 
 ## Projects
 - `Atlas.ManualTesting`
