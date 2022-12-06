@@ -112,6 +112,37 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
             aggregate.PotentialMatchCount.Should().Be(6);
         }
 
+        /// <summary>
+        /// Regression test for bug where potential matches were not being counted correctly where only one position was Potential
+        /// </summary>
+        [Test]
+        public void AggregateScoreDetails_OnlyOnePositionPerLocusIsPotential_SumsMatchCountOnlyWhereMatchIsPotential()
+        {
+            var scoreResult = new ScoreResultBuilder()
+                .WithMatchCountAtLocus(Locus.A, 2)
+                .WithMatchConfidenceAtLocusPosition(Locus.A, LocusPosition.Two, MatchConfidence.Potential)
+                .WithMatchCountAtLocus(Locus.B, 2)
+                .WithMatchConfidenceAtLocusPosition(Locus.B, LocusPosition.Two, MatchConfidence.Potential)
+                .WithMatchCountAtLocus(Locus.C, 2)
+                .WithMatchConfidenceAtLocusPosition(Locus.C, LocusPosition.Two, MatchConfidence.Potential)
+                .WithMatchCountAtLocus(Locus.Dpb1, 2)
+                .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, LocusPosition.Two, MatchConfidence.Potential)
+                .WithMatchCountAtLocus(Locus.Dqb1, 2)
+                .WithMatchConfidenceAtLocusPosition(Locus.Dqb1, LocusPosition.Two, MatchConfidence.Potential)
+                .WithMatchCountAtLocus(Locus.Drb1, 2)
+                .WithMatchConfidenceAtLocusPosition(Locus.Drb1, LocusPosition.Two, MatchConfidence.Potential)
+                .Build();
+
+            var parameters = ScoreResultAggregatorParametersBuilder.New
+                .With(x => x.ScoreResult, scoreResult)
+                .Build();
+
+            var aggregate = resultAggregator.AggregateScoreDetails(parameters);
+
+            aggregate.PotentialMatchCount.Should().Be(6);
+        }
+
+
         [Test]
         public void AggregateScoreDetails_GradeScore_SumsGradeScoreAtAllScoredLoci()
         {
