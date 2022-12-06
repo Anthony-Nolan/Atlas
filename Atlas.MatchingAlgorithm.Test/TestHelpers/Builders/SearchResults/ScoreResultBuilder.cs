@@ -154,6 +154,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
                 .WithMatchGradeAtLocus(Locus.Dqb1, matchGrade)
                 .WithMatchGradeAtLocus(Locus.Drb1, matchGrade);
         }
+
         public ScoreResultBuilder WithMatchCategoryAtAllLoci(LocusMatchCategory matchCategory)
         {
             return this
