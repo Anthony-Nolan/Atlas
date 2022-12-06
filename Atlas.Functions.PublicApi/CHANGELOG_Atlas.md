@@ -12,6 +12,9 @@ The project version will be appropriately incremented with each change to the pr
 
 ### 1.5.0
 
+#### Matching Algorithm
+* Fixed bug where, in certain cases, potential and exact match counts per donor was not being calculated correctly.
+
 #### Support
 * Decreased Time To Live on `audit` service bus subscriptions to avoid topic maximum size limit being reached due to old messages not being cleared. The value has been set to 14 days, which should be enough time for debug/support purposes.
 

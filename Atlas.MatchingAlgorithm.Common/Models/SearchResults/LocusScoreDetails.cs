@@ -53,8 +53,13 @@ namespace Atlas.MatchingAlgorithm.Common.Models.SearchResults
             }
         }
 
-        public bool IsPotentialMatch => ScoreDetailsAtPosition1.MatchConfidence == MatchConfidence.Potential &&
-                                        ScoreDetailsAtPosition2.MatchConfidence == MatchConfidence.Potential;
+        /// <summary>
+        /// Calculates the potential match count based on the assigned grades.
+        /// </summary>
+        public int PotentialMatchCount()
+        {
+            return CountByMatchConfidence(MatchConfidence.Potential);
+        }
 
         /// <summary>
         /// Calculates the match count based on the assigned grades. Used in the case where matching has not been run for a locus
@@ -62,10 +67,15 @@ namespace Atlas.MatchingAlgorithm.Common.Models.SearchResults
         /// </summary>
         public int MatchCount()
         {
+            return 2 - CountByMatchConfidence(MatchConfidence.Mismatch);
+        }
+
+        private int CountByMatchConfidence(MatchConfidence matchConfidence)
+        {
             return new[]
                 {
-                    ScoreDetailsAtPosition1.MatchConfidence != MatchConfidence.Mismatch,
-                    ScoreDetailsAtPosition2.MatchConfidence != MatchConfidence.Mismatch
+                    ScoreDetailsAtPosition1.MatchConfidence == matchConfidence,
+                    ScoreDetailsAtPosition2.MatchConfidence == matchConfidence
                 }.AsEnumerable()
                 .Count(x => x);
         }

@@ -24,11 +24,7 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
                 return 0;
             }
 
-            var scoreDetailsAtLocus = ScoreResult?.ScoreDetailsForLocus(locus);
-
-            return scoreDetailsAtLocus != null && scoreDetailsAtLocus.IsPotentialMatch
-                ? matchDetailsAtLocus.MatchCount
-                : 0;
+            return ScoreResult?.ScoreDetailsForLocus(locus)?.PotentialMatchCount() ?? 0;
         }
     }
 }

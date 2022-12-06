@@ -90,7 +90,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
 
         private static int CountPotentialMatches(IEnumerable<LocusScoreDetails> locusScoreResults)
         {
-            return locusScoreResults.Where(s => s.IsPotentialMatch).Sum(s => s.MatchCount());
+            return locusScoreResults.Sum(s => s.PotentialMatchCount());
         }
 
         private static int CountTypedLoci(IEnumerable<LocusScoreDetails> locusScoreDetails)
