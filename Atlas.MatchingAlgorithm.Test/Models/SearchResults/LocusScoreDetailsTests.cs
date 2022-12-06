@@ -68,42 +68,33 @@ namespace Atlas.MatchingAlgorithm.Test.Models.SearchResults
             locusScoreDetails.MatchConfidenceScore.Should().Be(expectedTotalScore);
         }
 
-        [Test]
-        public void IsPotentialMatch_WhenMatchConfidencesAreBothPotential_ReturnsTrue()
-        {
-            var locusScoreDetails = new LocusScoreDetailsBuilder()
-                .WithMatchConfidenceAtPosition(LocusPosition.One, MatchConfidence.Potential)
-                .WithMatchConfidenceAtPosition(LocusPosition.Two, MatchConfidence.Potential)
-                .Build();
-
-            locusScoreDetails.IsPotentialMatch.Should().BeTrue();
-        }
-
-        [TestCase(MatchConfidence.Potential, MatchConfidence.Definite)]
-        [TestCase(MatchConfidence.Potential, MatchConfidence.Exact)]
-        [TestCase(MatchConfidence.Potential, MatchConfidence.Mismatch)]
-        [TestCase(MatchConfidence.Definite, MatchConfidence.Potential)]
-        [TestCase(MatchConfidence.Definite, MatchConfidence.Definite)]
-        [TestCase(MatchConfidence.Definite, MatchConfidence.Exact)]
-        [TestCase(MatchConfidence.Definite, MatchConfidence.Mismatch)]
-        [TestCase(MatchConfidence.Mismatch, MatchConfidence.Potential)]
-        [TestCase(MatchConfidence.Mismatch, MatchConfidence.Definite)]
-        [TestCase(MatchConfidence.Mismatch, MatchConfidence.Exact)]
-        [TestCase(MatchConfidence.Mismatch, MatchConfidence.Mismatch)]
-        [TestCase(MatchConfidence.Exact, MatchConfidence.Potential)]
-        [TestCase(MatchConfidence.Exact, MatchConfidence.Definite)]
-        [TestCase(MatchConfidence.Exact, MatchConfidence.Exact)]
-        [TestCase(MatchConfidence.Exact, MatchConfidence.Mismatch)]
-        public void IsPotentialMatch_WhenOneOrNeitherMatchConfidencesArePotential_ReturnsFalse(
+        [TestCase(MatchConfidence.Potential, MatchConfidence.Potential, 2)]
+        [TestCase(MatchConfidence.Potential, MatchConfidence.Definite, 1)]
+        [TestCase(MatchConfidence.Potential, MatchConfidence.Exact, 1)]
+        [TestCase(MatchConfidence.Potential, MatchConfidence.Mismatch, 1)]
+        [TestCase(MatchConfidence.Definite, MatchConfidence.Potential, 1)]
+        [TestCase(MatchConfidence.Definite, MatchConfidence.Definite, 0)]
+        [TestCase(MatchConfidence.Definite, MatchConfidence.Exact, 0)]
+        [TestCase(MatchConfidence.Definite, MatchConfidence.Mismatch, 0)]
+        [TestCase(MatchConfidence.Mismatch, MatchConfidence.Potential, 1)]
+        [TestCase(MatchConfidence.Mismatch, MatchConfidence.Definite, 0)]
+        [TestCase(MatchConfidence.Mismatch, MatchConfidence.Exact, 0)]
+        [TestCase(MatchConfidence.Mismatch, MatchConfidence.Mismatch, 0)]
+        [TestCase(MatchConfidence.Exact, MatchConfidence.Potential, 1)]
+        [TestCase(MatchConfidence.Exact, MatchConfidence.Definite, 0)]
+        [TestCase(MatchConfidence.Exact, MatchConfidence.Exact, 0)]
+        [TestCase(MatchConfidence.Exact, MatchConfidence.Mismatch, 0)]
+        public void PotentialMatchCount_CalculatesPotentialMatchCount(
             MatchConfidence matchConfidenceAtOne,
-            MatchConfidence matchConfidenceAtTwo)
+            MatchConfidence matchConfidenceAtTwo,
+            int expectedCount)
         {
             var locusScoreDetails = new LocusScoreDetailsBuilder()
                 .WithMatchConfidenceAtPosition(LocusPosition.One, matchConfidenceAtOne)
                 .WithMatchConfidenceAtPosition(LocusPosition.Two, matchConfidenceAtTwo)
                 .Build();
 
-            locusScoreDetails.IsPotentialMatch.Should().BeFalse();
+            locusScoreDetails.PotentialMatchCount().Should().Be(expectedCount);
         }
 
         [TestCase(MatchConfidence.Potential, MatchConfidence.Potential)]
