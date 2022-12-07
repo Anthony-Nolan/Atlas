@@ -14,12 +14,15 @@ variable "DATABASE_SERVER_ADMIN_LOGIN_PASSWORD" {
 
 variable "DATABASE_SERVER_AZUREAD_ADMINISTRATOR_LOGIN_USERNAME" {
   type = string
+  description = "Name of the AD group used to control admin access to the SQL server."
 }
 
 variable "DATABASE_SERVER_AZUREAD_ADMINISTRATOR_OBJECTID" {
   type = string
+  description = "Object ID of admin access AD group."
 }
 
 variable "DATABASE_SERVER_AZUREAD_ADMINISTRATOR_TENANTID" {
   type = string
+  description = "ID of Tenant where admin access AD group resides."
 }

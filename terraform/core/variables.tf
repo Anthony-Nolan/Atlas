@@ -35,14 +35,17 @@ variable "DATABASE_SERVER_ADMIN_LOGIN_PASSWORD" {
 
 variable "DATABASE_SERVER_AZUREAD_ADMINISTRATOR_LOGIN_USERNAME" {
   type = string
+  description = "Name of the AD group used to control admin access to the SQL server."
 }
 
 variable "DATABASE_SERVER_AZUREAD_ADMINISTRATOR_OBJECTID" {
   type = string
+  description = "Object ID of admin access AD group."
 }
 
 variable "DATABASE_SERVER_AZUREAD_ADMINISTRATOR_TENANTID" {
   type = string
+  description = "ID of Tenant where admin access AD group resides."
 }
 
 variable "DATABASE_SHARED_EDITION" {
@@ -207,7 +210,6 @@ variable "MATCHING_DATA_REFRESH_DB_AUTO_PAUSE_DORMANT" {
   default     = -1
   description = "The 'auto-pause' duration for the dormant matching database, in minutes. Only relevant for serverless database tier - will be ignored for other tiers. -1 = auto-pause disabled. Minimum 60."
 }
-
 
 variable "MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE" {
   type        = string
