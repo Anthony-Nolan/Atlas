@@ -23,26 +23,37 @@ The following are the steps that are required to be taken manually when deployin
 - An *Azure subscription* must exist into which the Atlas system will be deployed.
 - An *Azure storage account* must be available for Terraform to use as a backend.
 - An *App Registration* should be created within Azure Active Directory, to be used by Terraform for authentication.
-- A second *App Registration* should be created within Azure Active Directory, to be used by the code itself for managing azure resources at runtime
+- A second *App Registration* should be created within Azure Active Directory, to be used by the code itself for managing azure resources at runtime.
     - e.g. The matching algorithm Data Refresh needs to be able to scale azure databases at runtime.
-    - This information is set up as app settings by Terraform - the relevant Terraform variables are `AZURE_CLIENT_ID` and `AZURE_CLIENT_SECRET`
-    - These variables (`AZURE_CLIENT_ID` and `AZURE_CLIENT_SECRET`) are also used by Terraform to fetch function keys .
+    - It also allows Terraform to fetch function keys.
+    - This information is set up as app settings during **release** by Terraform.
+    - The terraform release variables are called: `AZURE_CLIENT_ID` and `AZURE_CLIENT_SECRET`.
 
 ### Azure Devops Configuration
 
-- A variable group named "terraform" should be created, with the following variables:
-  - *ARM_ACCESS_KEY*
-    - storage account access key for the storage-driven terraform backend
-  - *ARM_CLIENT_ID*
-  - *ARM_CLIENT_SECRET*
-  - *ARM_TENANT_ID*
-    - Details available from the azure AD app registration
-  - *BACKEND_RESOURCE_GROUP_NAME*
-  - *BACKEND_STORAGE_ACCOUNT_NAME*
-  - *BACKEND_STORAGE_CONTAINER_NAME* 
-    - Information regarding the location of the Terraform backend, hosted in an Azure Storage instance
-    - Note that this is currently duplicated as release variables - ensure that the release and build use the same values to ensure that both validate and apply use the same backend! 
-    
+#### 1. Create Variable Group
+A variable group named "Terraform" should be created, with the following variables.
+
+##### Azure Authentication
+These variables are used by Terraform for authentication so it can manage resources. They should be retrieved from the app registration created for Terraform:
+  - ARM_CLIENT_SECRET
+  - ARM_CLIENT_ID
+  - ARM_TENANT_ID
+
+##### Terraform Backend
+These variables are used to access the storage container that hosts the Terraform backend.
+Note, these are currently duplicated as release variables; build and release must use the same values to ensure that both `validate` and `apply` use the same backend!
+
+- ARM_ACCESS_KEY
+  - Access key of the storage account
+- BACKEND_RESOURCE_GROUP_NAME
+  - Resource group to which storage account belongs
+- BACKEND_STORAGE_ACCOUNT_NAME
+  - Storage account name
+- BACKEND_STORAGE_CONTAINER_NAME
+  - Name of storage container, e.g., `terraform-state`
+
+#### 2. Remaining Steps
 - New Devops build pipelines should be created, using the checked in `<pipeline>.yml` files.
 - An Azure service connection should be set up to the target Azure subscription, scoped to the new resource group for this Atlas installation
   - Due to the restriction by resource group, terraform must be run before this can be set up - either via a partial release or manually
