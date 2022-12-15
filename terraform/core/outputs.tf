@@ -33,6 +33,7 @@ output "service_bus" {
     namespace_name         = azurerm_servicebus_namespace.general.name
     read_connection_string = azurerm_servicebus_namespace_authorization_rule.read-only.primary_connection_string
   }
+  sensitive = true
 }
 
 output "sql_server" {
@@ -44,6 +45,7 @@ output "storage_account" {
     id                = azurerm_storage_account.azure_storage.id
     connection_string = azurerm_storage_account.azure_storage.primary_connection_string
   }
+  sensitive = true
 }
 
 output "support" {
