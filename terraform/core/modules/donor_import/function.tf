@@ -2,20 +2,20 @@ locals {
   donor_import_function_name = "${var.general.environment}-ATLAS-DONOR-IMPORT-FUNCTION"
 }
 
-resource "azurerm_function_app" "atlas_donor_import_function" {
-  name                       = local.donor_import_function_name
-  resource_group_name        = var.app_service_plan.resource_group_name
-  location                   = var.general.location
-  app_service_plan_id        = var.app_service_plan.id
-  https_only                 = true
-  version                    = "~4"
-  storage_account_access_key = var.shared_function_storage.primary_access_key
-  storage_account_name       = var.shared_function_storage.name
+resource "azurerm_windows_function_app" "atlas_donor_import_function" {
+  name                        = local.donor_import_function_name
+  resource_group_name         = var.app_service_plan.resource_group_name
+  location                    = var.general.location
+  service_plan_id             = var.app_service_plan.id
+  client_certificate_mode     = "Required"
+  https_only                  = true
+  functions_extension_version = "~4"
+  storage_account_access_key  = var.shared_function_storage.primary_access_key
+  storage_account_name        = var.shared_function_storage.name
 
   tags = var.general.common_tags
 
   app_settings = {
-    "APPINSIGHTS_INSTRUMENTATIONKEY" = var.application_insights.instrumentation_key
     "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
     "AzureStorage:ConnectionString"       = var.azure_storage.primary_connection_string,
@@ -23,8 +23,6 @@ resource "azurerm_function_app" "atlas_donor_import_function" {
 
     "DonorImport:FileCheckCronSchedule"    = var.STALLED_FILE_CHECK_CRONTAB
     "DonorImport:HoursToCheckStalledFiles" = var.STALLED_FILE_DURATION
-
-    "FUNCTIONS_WORKER_RUNTIME" : "dotnet"
 
     "MessagingServiceBus:ConnectionString"             = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
     "MessagingServiceBus:ImportFileSubscription"       = azurerm_servicebus_subscription.donor-import-file-processor.name
@@ -47,10 +45,22 @@ resource "azurerm_function_app" "atlas_donor_import_function" {
   }
 
   site_config {
+    application_insights_key = var.application_insights.instrumentation_key
+    application_stack {
+      dotnet_version = "6"
+    }
+    cors {
+      allowed_origins     = []
+      support_credentials = false
+    }
+
     ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
       ip_address = ip
       subnet_id  = null
     }]
+
+    ftps_state              = "AllAllowed"
+    scm_minimum_tls_version = "1.0"
   }
 
   connection_string {

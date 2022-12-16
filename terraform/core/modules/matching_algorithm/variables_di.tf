@@ -47,6 +47,7 @@ variable "resource_group" {
 
 variable "servicebus_namespace" {
   type = object({
+    id   = string
     name = string
   })
 }
@@ -68,6 +69,7 @@ variable "servicebus_namespace_authorization_rules" {
 variable "servicebus_topics" {
   type = object({
     updated-searchable-donors = object({
+      id   = string
       name = string
     })
     alerts = object({
@@ -87,6 +89,7 @@ variable "sql_database_shared" {
 
 variable "sql_server" {
   type = object({
+    id                          = string
     name                        = string
     fully_qualified_domain_name = string
   })

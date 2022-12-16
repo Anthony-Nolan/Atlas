@@ -1,7 +1,6 @@
 resource "azurerm_servicebus_topic" "haplotype-frequency-file-uploads" {
   name                  = "haplotype-frequency-file-uploads"
-  resource_group_name   = var.app_service_plan.resource_group_name
-  namespace_name        = var.servicebus_namespace.name
+  namespace_id          = var.servicebus_namespace.id
   auto_delete_on_idle   = var.default_servicebus_settings.long-expiry
   default_message_ttl   = var.default_servicebus_settings.long-expiry
   max_size_in_megabytes = var.default_servicebus_settings.default-bus-size
@@ -10,9 +9,7 @@ resource "azurerm_servicebus_topic" "haplotype-frequency-file-uploads" {
 
 resource "azurerm_servicebus_subscription" "haplotype-frequency-file-processor" {
   name                                 = "haplotype-frequency-import"
-  resource_group_name                  = var.app_service_plan.resource_group_name
-  namespace_name                       = var.servicebus_namespace.name
-  topic_name                           = azurerm_servicebus_topic.haplotype-frequency-file-uploads.name
+  topic_id                             = azurerm_servicebus_topic.haplotype-frequency-file-uploads.id
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
   default_message_ttl                  = var.default_servicebus_settings.long-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
@@ -22,9 +19,7 @@ resource "azurerm_servicebus_subscription" "haplotype-frequency-file-processor" 
 
 resource "azurerm_servicebus_subscription" "audit-haplotype-frequency-file-upload" {
   name                                 = "audit"
-  resource_group_name                  = var.app_service_plan.resource_group_name
-  namespace_name                       = var.servicebus_namespace.name
-  topic_name                           = azurerm_servicebus_topic.haplotype-frequency-file-uploads.name
+  topic_id                             = azurerm_servicebus_topic.haplotype-frequency-file-uploads.id
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
   default_message_ttl                  = var.default_servicebus_settings.audit-subscription-ttl-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
@@ -34,8 +29,7 @@ resource "azurerm_servicebus_subscription" "audit-haplotype-frequency-file-uploa
 
 resource "azurerm_servicebus_topic" "match-prediction-requests" {
   name                  = "match-prediction-requests"
-  resource_group_name   = var.app_service_plan.resource_group_name
-  namespace_name        = var.servicebus_namespace.name
+  namespace_id          = var.servicebus_namespace.id
   auto_delete_on_idle   = var.default_servicebus_settings.long-expiry
   default_message_ttl   = var.default_servicebus_settings.long-expiry
   max_size_in_megabytes = var.default_servicebus_settings.default-bus-size
@@ -44,9 +38,7 @@ resource "azurerm_servicebus_topic" "match-prediction-requests" {
 
 resource "azurerm_servicebus_subscription" "match-prediction-request-runner" {
   name                                 = "match-prediction"
-  resource_group_name                  = var.app_service_plan.resource_group_name
-  namespace_name                       = var.servicebus_namespace.name
-  topic_name                           = azurerm_servicebus_topic.match-prediction-requests.name
+  topic_id                             = azurerm_servicebus_topic.match-prediction-requests.id
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
   default_message_ttl                  = var.default_servicebus_settings.long-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
@@ -56,8 +48,7 @@ resource "azurerm_servicebus_subscription" "match-prediction-request-runner" {
 
 resource "azurerm_servicebus_topic" "match-prediction-results" {
   name                  = "match-prediction-results"
-  resource_group_name   = var.app_service_plan.resource_group_name
-  namespace_name        = var.servicebus_namespace.name
+  namespace_id          = var.servicebus_namespace.id
   auto_delete_on_idle   = var.default_servicebus_settings.long-expiry
   default_message_ttl   = var.default_servicebus_settings.long-expiry
   max_size_in_megabytes = var.default_servicebus_settings.default-bus-size

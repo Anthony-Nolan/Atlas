@@ -6,7 +6,7 @@ output "donor-database-username" {
 }
 
 output "donor-import-database-name" {
-  value = azurerm_sql_database.atlas-database-shared.name
+  value = azurerm_mssql_database.atlas-database-shared.name
 }
 
 output "donor-import-function-name" {
@@ -22,7 +22,7 @@ output "function-app-name" {
 }
 
 output "match-prediction-database-name" {
-  value = azurerm_sql_database.atlas-database-shared.name
+  value = azurerm_mssql_database.atlas-database-shared.name
 }
 
 output "match-prediction-function-name" {
@@ -34,7 +34,7 @@ output "match-prediction-database-username" {
 }
 
 output "matching-algorithm-database-persistent-name" {
-  value = azurerm_sql_database.atlas-database-shared.name
+  value = azurerm_mssql_database.atlas-database-shared.name
 }
 
 output "matching-algorithm-database-transient-a-name" {
@@ -62,7 +62,7 @@ output "public-api-function-app-name" {
 }
 
 output "repeat-search-database-name" {
-  value = azurerm_sql_database.atlas-database-shared.name
+  value = azurerm_mssql_database.atlas-database-shared.name
 }
 
 output "repeat-search-username" {
@@ -74,7 +74,7 @@ output "repeat-search-function-name" {
 }
 
 output "sql-server" {
-  value = azurerm_sql_server.atlas_sql_server.fully_qualified_domain_name
+  value = azurerm_mssql_server.atlas_sql_server.fully_qualified_domain_name
 }
 
 output "sql-server-admin-login" {

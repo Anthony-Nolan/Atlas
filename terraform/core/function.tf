@@ -3,32 +3,40 @@ locals {
   atlas_public_api_function_app_name = "${local.environment}-ATLAS-API"
 }
 
-resource "azurerm_function_app" "atlas_function" {
-  name                       = local.atlas_function_app_name
-  resource_group_name        = azurerm_resource_group.atlas_resource_group.name
-  location                   = local.location
-  app_service_plan_id        = azurerm_app_service_plan.atlas-elastic-plan.id
-  https_only                 = true
-  version                    = "~4"
-  storage_account_access_key = azurerm_storage_account.atlas_durable_function_storage.primary_access_key
-  storage_account_name       = azurerm_storage_account.atlas_durable_function_storage.name
+resource "azurerm_windows_function_app" "atlas_function" {
+  name                        = local.atlas_function_app_name
+  resource_group_name         = azurerm_resource_group.atlas_resource_group.name
+  location                    = local.location
+  service_plan_id             = azurerm_service_plan.atlas-elastic-plan.id
+  client_certificate_mode     = "Required"
+  https_only                  = true
+  functions_extension_version = "~4"
+  storage_account_access_key  = azurerm_storage_account.atlas_durable_function_storage.primary_access_key
+  storage_account_name        = azurerm_storage_account.atlas_durable_function_storage.name
 
   tags = local.common_tags
 
   site_config {
+    application_insights_key  = azurerm_application_insights.atlas.instrumentation_key
     pre_warmed_instance_count = 1
-    use_32_bit_worker_process = false
+    use_32_bit_worker         = false
     ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
       ip_address = ip
       subnet_id  = null
     }]
+    ftps_state              = "AllAllowed"
+    scm_minimum_tls_version = "1.0"
+    cors {
+      allowed_origins     = []
+      support_credentials = false
+    }
+    application_stack {
+      dotnet_version = "6"
+    }
   }
 
   app_settings = {
-    // APPINSIGHTS_INSTRUMENTATIONKEY
-    //      The azure functions dashboard requires the instrumentation key with this name to integrate with application insights.
-    "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.atlas.instrumentation_key
-    "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
+    "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
     "AzureFunctionsJobHost__extensions__durableTask__maxConcurrentActivityFunctions" = var.MAX_CONCURRENT_ACTIVITY_FUNCTIONS
 
@@ -49,8 +57,6 @@ resource "azurerm_function_app" "atlas_function" {
     "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic"                = module.repeat_search.service_bus.repeat_search_results_topic
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic"                      = azurerm_servicebus_topic.search-results-ready.name
     "AtlasFunction:Orchestration:MatchPredictionBatchSize"                      = var.ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE
-
-    "FUNCTIONS_WORKER_RUNTIME" = "dotnet"
 
     "HlaMetadataDictionary:AzureStorageConnectionString" = azurerm_storage_account.azure_storage.primary_connection_string
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"     = var.WMDA_FILE_URL
@@ -110,33 +116,39 @@ resource "azurerm_function_app" "atlas_function" {
   }
 }
 
-resource "azurerm_function_app" "atlas_public_api_function" {
-  name                       = local.atlas_public_api_function_app_name
-  resource_group_name        = azurerm_resource_group.atlas_resource_group.name
-  location                   = local.location
-  app_service_plan_id        = azurerm_app_service_plan.atlas-public-api-elastic-plan.id
-  https_only                 = true
-  version                    = "~4"
-  storage_account_access_key = azurerm_storage_account.function_storage.primary_access_key
-  storage_account_name       = azurerm_storage_account.function_storage.name
+resource "azurerm_windows_function_app" "atlas_public_api_function" {
+  name                        = local.atlas_public_api_function_app_name
+  resource_group_name         = azurerm_resource_group.atlas_resource_group.name
+  location                    = local.location
+  service_plan_id             = azurerm_service_plan.atlas-public-api-elastic-plan.id
+  client_certificate_mode     = "Required"
+  https_only                  = true
+  functions_extension_version = "~4"
+  storage_account_access_key  = azurerm_storage_account.function_storage.primary_access_key
+  storage_account_name        = azurerm_storage_account.function_storage.name
 
   tags = local.common_tags
 
   site_config {
+    application_insights_key  = azurerm_application_insights.atlas.instrumentation_key
     pre_warmed_instance_count = 1
     ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
       ip_address = ip
       subnet_id  = null
     }]
+    ftps_state              = "AllAllowed"
+    scm_minimum_tls_version = "1.0"
+    cors {
+      allowed_origins     = []
+      support_credentials = false
+    }
+    application_stack {
+      dotnet_version = "6"
+    }
   }
 
   app_settings = {
-    // APPINSIGHTS_INSTRUMENTATIONKEY
-    //      The azure functions dashboard requires the instrumentation key with this name to integrate with application insights.
-    "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.atlas.instrumentation_key
-    "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
-
-    "FUNCTIONS_WORKER_RUNTIME" : "dotnet"
+    "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
     "Matching:MessagingServiceBus:ConnectionString"    = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
     "Matching:MessagingServiceBus:SearchRequestsTopic" = module.matching_algorithm.service_bus.matching_requests_topic.name

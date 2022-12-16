@@ -25,9 +25,8 @@ resource "azurerm_servicebus_namespace" "general" {
 }
 
 resource "azurerm_servicebus_namespace_authorization_rule" "manage" {
-  name                = "manage"
-  namespace_name      = azurerm_servicebus_namespace.general.name
-  resource_group_name = azurerm_resource_group.atlas_resource_group.name
+  name         = "manage"
+  namespace_id = azurerm_servicebus_namespace.general.id
 
   listen = true
   send   = true
@@ -35,9 +34,8 @@ resource "azurerm_servicebus_namespace_authorization_rule" "manage" {
 }
 
 resource "azurerm_servicebus_namespace_authorization_rule" "read-only" {
-  name                = "read-only"
-  namespace_name      = azurerm_servicebus_namespace.general.name
-  resource_group_name = azurerm_resource_group.atlas_resource_group.name
+  name         = "read-only"
+  namespace_id = azurerm_servicebus_namespace.general.id
 
   listen = true
   send   = false
@@ -45,9 +43,8 @@ resource "azurerm_servicebus_namespace_authorization_rule" "read-only" {
 }
 
 resource "azurerm_servicebus_namespace_authorization_rule" "write-only" {
-  name                = "write-only"
-  namespace_name      = azurerm_servicebus_namespace.general.name
-  resource_group_name = azurerm_resource_group.atlas_resource_group.name
+  name         = "write-only"
+  namespace_id = azurerm_servicebus_namespace.general.id
 
   listen = false
   send   = true
@@ -55,9 +52,8 @@ resource "azurerm_servicebus_namespace_authorization_rule" "write-only" {
 }
 
 resource "azurerm_servicebus_namespace_authorization_rule" "read-write" {
-  name                = "read-write"
-  namespace_name      = azurerm_servicebus_namespace.general.name
-  resource_group_name = azurerm_resource_group.atlas_resource_group.name
+  name         = "read-write"
+  namespace_id = azurerm_servicebus_namespace.general.id
 
   listen = true
   send   = true
@@ -66,8 +62,7 @@ resource "azurerm_servicebus_namespace_authorization_rule" "read-write" {
 
 resource "azurerm_servicebus_topic" "search-results-ready" {
   name                  = "search-results-ready"
-  resource_group_name   = azurerm_resource_group.atlas_resource_group.name
-  namespace_name        = azurerm_servicebus_namespace.general.name
+  namespace_id          = azurerm_servicebus_namespace.general.id
   auto_delete_on_idle   = local.service-bus.long-expiry
   default_message_ttl   = local.service-bus.long-expiry
   max_size_in_megabytes = local.service-bus.default-bus-size
@@ -76,9 +71,7 @@ resource "azurerm_servicebus_topic" "search-results-ready" {
 
 resource "azurerm_servicebus_subscription" "audit-search-results-ready" {
   name                                 = "audit"
-  resource_group_name                  = azurerm_resource_group.atlas_resource_group.name
-  namespace_name                       = azurerm_servicebus_namespace.general.name
-  topic_name                           = azurerm_servicebus_topic.search-results-ready.name
+  topic_id                             = azurerm_servicebus_topic.search-results-ready.id
   auto_delete_on_idle                  = local.service-bus.long-expiry
   default_message_ttl                  = local.service-bus.audit-subscription-ttl-expiry
   lock_duration                        = local.service-bus.default-read-lock
@@ -88,9 +81,7 @@ resource "azurerm_servicebus_subscription" "audit-search-results-ready" {
 
 resource "azurerm_servicebus_subscription" "match-prediction-orchestration-search-results-ready" {
   name                                 = "match-prediction-orchestration"
-  resource_group_name                  = azurerm_resource_group.atlas_resource_group.name
-  namespace_name                       = azurerm_servicebus_namespace.general.name
-  topic_name                           = module.matching_algorithm.service_bus.matching_results_topic.name
+  topic_id                             = module.matching_algorithm.service_bus.matching_results_topic.id
   auto_delete_on_idle                  = local.service-bus.long-expiry
   default_message_ttl                  = local.service-bus.long-expiry
   lock_duration                        = local.service-bus.default-read-lock

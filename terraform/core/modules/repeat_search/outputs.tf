@@ -1,8 +1,8 @@
 output "function_app" {
   value = {
-    hostname = azurerm_function_app.atlas_repeat_search_function.default_hostname
+    hostname = azurerm_windows_function_app.atlas_repeat_search_function.default_hostname
     app_name = local.atlas_repeat_search_function_name
-    id       = azurerm_function_app.atlas_repeat_search_function.id
+    id       = azurerm_windows_function_app.atlas_repeat_search_function.id
   }
 }
 
