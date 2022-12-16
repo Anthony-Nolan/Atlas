@@ -43,12 +43,16 @@ variable "matching_transient_b_database_connection_string" {
   type = string
 }
 
-variable "original-search-matching-results-topic-name" {
-  type = string
+variable "original-search-matching-results-topic" {
+  type = object({
+    id   = string
+    name = string
+  })
 }
 
 variable "servicebus_namespace" {
   type = object({
+    id   = string
     name = string
   })
 }
@@ -83,6 +87,7 @@ variable "sql_database" {
 
 variable "sql_server" {
   type = object({
+    id                          = string
     name                        = string
     fully_qualified_domain_name = string
   })

@@ -23,6 +23,7 @@ variable "azure_storage" {
 
 variable "servicebus_namespace" {
   type = object({
+    id   = string
     name = string
   })
 }
@@ -64,6 +65,7 @@ variable "sql_database" {
 
 variable "sql_server" {
   type = object({
+    id                          = string
     name                        = string
     fully_qualified_domain_name = string
   })

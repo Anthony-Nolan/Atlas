@@ -42,13 +42,13 @@ module "donor_import" {
   default_servicebus_settings = local.service-bus
 
   // DI Variables 
-  app_service_plan        = azurerm_app_service_plan.atlas-elastic-plan
+  app_service_plan        = azurerm_service_plan.atlas-elastic-plan
   application_insights    = azurerm_application_insights.atlas
   azure_storage           = azurerm_storage_account.azure_storage
   servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage
-  sql_database            = azurerm_sql_database.atlas-database-shared
-  sql_server              = azurerm_sql_server.atlas_sql_server
+  sql_database            = azurerm_mssql_database.atlas-database-shared
+  sql_server              = azurerm_mssql_server.atlas_sql_server
 
   servicebus_namespace_authorization_rules = {
     write-only = azurerm_servicebus_namespace_authorization_rule.write-only
@@ -90,14 +90,14 @@ module "matching_algorithm" {
   // DI variables
   application_insights      = azurerm_application_insights.atlas
   azure_storage             = azurerm_storage_account.azure_storage
-  donor_import_sql_database = azurerm_sql_database.atlas-database-shared
-  elastic_app_service_plan  = azurerm_app_service_plan.atlas-elastic-plan
+  donor_import_sql_database = azurerm_mssql_database.atlas-database-shared
+  elastic_app_service_plan  = azurerm_service_plan.atlas-elastic-plan
   mac_import_table          = module.multiple_allele_code_lookup.storage_table
   resource_group            = azurerm_resource_group.atlas_resource_group
   servicebus_namespace      = azurerm_servicebus_namespace.general
   shared_function_storage   = azurerm_storage_account.function_storage
-  sql_database_shared       = azurerm_sql_database.atlas-database-shared
-  sql_server                = azurerm_sql_server.atlas_sql_server
+  sql_database_shared       = azurerm_mssql_database.atlas-database-shared
+  sql_server                = azurerm_mssql_server.atlas_sql_server
 
   servicebus_namespace_authorization_rules = {
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
@@ -123,7 +123,7 @@ module "matching_algorithm" {
   DATA_REFRESH_DB_SIZE_DORMANT                     = var.MATCHING_DATA_REFRESH_DB_SIZE_DORMANT
   DATA_REFRESH_DB_SIZE_REFRESH                     = var.MATCHING_DATA_REFRESH_DB_SIZE_REFRESH
   DATA_REFRESH_CRONTAB                             = var.MATCHING_DATA_REFRESH_CRONTAB
-  DATABASE_MAX_SIZE                                = var.MATCHING_DATABASE_MAX_SIZE
+  DATABASE_MAX_SIZE_GB                             = var.MATCHING_DATABASE_MAX_SIZE_GB
   DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS = var.MATCHING_DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS
   DATABASE_PASSWORD                                = var.MATCHING_DATABASE_PASSWORD
   DATABASE_TRANSIENT_TIMEOUT                       = var.MATCHING_DATABASE_TRANSIENT_TIMEOUT
@@ -155,12 +155,12 @@ module "match_prediction" {
 
   // DI Variables
   application_insights    = azurerm_application_insights.atlas
-  app_service_plan        = azurerm_app_service_plan.atlas-elastic-plan
+  app_service_plan        = azurerm_service_plan.atlas-elastic-plan
   azure_storage           = azurerm_storage_account.azure_storage
   servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage
-  sql_server              = azurerm_sql_server.atlas_sql_server
-  sql_database            = azurerm_sql_database.atlas-database-shared
+  sql_server              = azurerm_mssql_server.atlas_sql_server
+  sql_database            = azurerm_mssql_database.atlas-database-shared
   mac_import_table        = module.multiple_allele_code_lookup.storage_table
 
   servicebus_namespace_authorization_rules = {
@@ -202,14 +202,14 @@ module "repeat_search" {
 
   // DI Variables
   application_insights                            = azurerm_application_insights.atlas
-  app_service_plan                                = azurerm_app_service_plan.atlas-elastic-plan
+  app_service_plan                                = azurerm_service_plan.atlas-elastic-plan
   azure_storage                                   = azurerm_storage_account.azure_storage
   donor_database_connection_string                = module.donor_import.sql_database.connection_string
   mac_import_table                                = module.multiple_allele_code_lookup.storage_table
   matching_persistent_database_connection_string  = module.matching_algorithm.sql_database.persistent_database_connection_string
   matching_transient_a_database_connection_string = module.matching_algorithm.sql_database.transient_a_database_connection_string
   matching_transient_b_database_connection_string = module.matching_algorithm.sql_database.transient_b_database_connection_string
-  original-search-matching-results-topic-name     = module.matching_algorithm.service_bus.matching_results_topic.name
+  original-search-matching-results-topic          = module.matching_algorithm.service_bus.matching_results_topic
   servicebus_namespace                            = azurerm_servicebus_namespace.general
   servicebus_namespace_authorization_rules = {
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
@@ -221,8 +221,8 @@ module "repeat_search" {
     notifications = module.support.general.notifications_servicebus_topic
   }
   shared_function_storage = azurerm_storage_account.function_storage
-  sql_database            = azurerm_sql_database.atlas-database-shared
-  sql_server              = azurerm_sql_server.atlas_sql_server
+  sql_database            = azurerm_mssql_database.atlas-database-shared
+  sql_server              = azurerm_mssql_server.atlas_sql_server
 
 
   // Release variables

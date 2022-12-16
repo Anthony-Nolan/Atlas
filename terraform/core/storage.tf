@@ -3,37 +3,43 @@
 // https://docs.microsoft.com/en-us/azure/azure-functions/storage-considerations 
 resource "azurerm_storage_account" "function_storage" {
   // Lowercase only. Max = 24 characters, 8 reserved for environment
-  name                      = "${lower(replace(local.environment, "/\\W/", ""))}atlasfuncstorage"
-  resource_group_name       = azurerm_resource_group.atlas_resource_group.name
-  location                  = var.LOCATION
-  account_tier              = "Standard"
-  account_replication_type  = "LRS"
-  enable_https_traffic_only = true
-  tags                      = local.common_tags
+  name                            = "${lower(replace(local.environment, "/\\W/", ""))}atlasfuncstorage"
+  resource_group_name             = azurerm_resource_group.atlas_resource_group.name
+  location                        = var.LOCATION
+  allow_nested_items_to_be_public = true
+  account_tier                    = "Standard"
+  account_replication_type        = "LRS"
+  enable_https_traffic_only       = true
+  min_tls_version                 = "TLS1_0"
+  tags                            = local.common_tags
 }
 
 // standalone storage account for the top level "ATLAS-FUNCTIONS" function app 
 resource "azurerm_storage_account" "atlas_durable_function_storage" {
   // Lowercase only. Max = 24 characters, 8 reserved for environment
-  name                      = "${lower(replace(local.environment, "/\\W/", ""))}atlasdurablefunc"
-  resource_group_name       = azurerm_resource_group.atlas_resource_group.name
-  location                  = var.LOCATION
-  account_tier              = "Standard"
-  account_replication_type  = "LRS"
-  enable_https_traffic_only = true
-  tags                      = local.common_tags
+  name                            = "${lower(replace(local.environment, "/\\W/", ""))}atlasdurablefunc"
+  resource_group_name             = azurerm_resource_group.atlas_resource_group.name
+  location                        = var.LOCATION
+  allow_nested_items_to_be_public = false
+  account_tier                    = "Standard"
+  account_replication_type        = "LRS"
+  enable_https_traffic_only       = true
+  min_tls_version                 = "TLS1_0"
+  tags                            = local.common_tags
 }
 
 resource "azurerm_storage_account" "azure_storage" {
   // Lowercase only. Max = 24 characters, 8 reserved for environment
-  name                      = "${lower(replace(local.environment, "/\\W/", ""))}atlasstorage"
-  resource_group_name       = azurerm_resource_group.atlas_resource_group.name
-  location                  = var.LOCATION
-  account_tier              = "Standard"
-  account_kind              = "StorageV2"
-  account_replication_type  = "LRS"
-  enable_https_traffic_only = true
-  tags                      = local.common_tags
+  name                            = "${lower(replace(local.environment, "/\\W/", ""))}atlasstorage"
+  resource_group_name             = azurerm_resource_group.atlas_resource_group.name
+  location                        = var.LOCATION
+  allow_nested_items_to_be_public = true
+  account_tier                    = "Standard"
+  account_kind                    = "StorageV2"
+  account_replication_type        = "LRS"
+  enable_https_traffic_only       = true
+  min_tls_version                 = "TLS1_0"
+  tags                            = local.common_tags
 }
 
 resource "azurerm_storage_container" "search_results_blob_container" {

@@ -44,7 +44,7 @@ variable "DATA_REFRESH_CRONTAB" {
   type = string
 }
 
-variable "DATABASE_MAX_SIZE" {
+variable "DATABASE_MAX_SIZE_GB" {
   type = string
 }
 

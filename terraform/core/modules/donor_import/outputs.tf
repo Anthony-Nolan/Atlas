@@ -1,8 +1,8 @@
 output "function_app" {
   value = {
-    hostname = azurerm_function_app.atlas_donor_import_function.default_hostname
+    hostname = azurerm_windows_function_app.atlas_donor_import_function.default_hostname
     app_name = local.donor_import_function_name
-    id       = azurerm_function_app.atlas_donor_import_function.id
+    id       = azurerm_windows_function_app.atlas_donor_import_function.id
   }
 }
 

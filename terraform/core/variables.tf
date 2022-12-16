@@ -33,16 +33,28 @@ variable "DATABASE_SERVER_ADMIN_LOGIN_PASSWORD" {
   type = string
 }
 
+variable "DATABASE_SERVER_AZUREAD_ADMINISTRATOR_LOGIN_USERNAME" {
+  type = string
+}
+
+variable "DATABASE_SERVER_AZUREAD_ADMINISTRATOR_OBJECTID" {
+  type = string
+}
+
+variable "DATABASE_SERVER_AZUREAD_ADMINISTRATOR_TENANTID" {
+  type = string
+}
+
 variable "DATABASE_SHARED_EDITION" {
   type        = string
   default     = "Standard"
   description = "Database edition. Defaults to 'Standard' for SKU (S0, P1, etc.) pricing model. For VCore (including Serverless) model, must be changed to 'GeneralPurpose'"
 }
 
-variable "DATABASE_SHARED_MAX_SIZE" {
+variable "DATABASE_SHARED_MAX_SIZE_GB" {
   type        = string
-  default     = "32212254720"
-  description = "Maximum size in bytes, refer to Azure documentation for supported sizes."
+  default     = "30"
+  description = "Maximum size in gigabytes, refer to Azure documentation for supported sizes."
 }
 
 variable "DATABASE_SHARED_SKU_SIZE" {
@@ -221,10 +233,10 @@ variable "MATCHING_DATA_REFRESH_CRONTAB" {
   description = "A crontab determining when the matching data refresh will be auto-attempted. It will only run to completion if new HLA nomenclature is detected."
 }
 
-variable "MATCHING_DATABASE_MAX_SIZE" {
+variable "MATCHING_DATABASE_MAX_SIZE_GB" {
   type        = string
-  default     = "268435456000"
-  description = "Maximum size in bytes, refer to Azure documentation for supported sizes"
+  default     = "250"
+  description = "Maximum size in gigabytes, refer to Azure documentation for supported sizes"
 }
 
 variable "MATCHING_DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS" {

@@ -1,12 +1,5 @@
 locals {
   matching_func_app_settings = {
-    // APPINSIGHTS_INSTRUMENTATIONKEY
-    //      The azure functions dashboard requires the instrumentation key with this name to integrate with application insights.
-    // MessagingServiceBus:ConnectionString & NotificationsServiceBus:ConnectionString
-    //      Historically this codebase used 2 distinct Service Buses; however we don't think that's necessary in practice.
-    //      We retain the ability to separate them again in the future, but in fact have them pointed at the same namespace
-    //      (albeit with different permissions).
-    "APPINSIGHTS_INSTRUMENTATIONKEY" = var.application_insights.instrumentation_key
     "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
     "AzureFunctionsJobHost__extensions__serviceBus__messageHandlerOptions__maxConcurrentCalls" = var.MAX_CONCURRENT_SERVICEBUS_FUNCTIONS
@@ -29,8 +22,8 @@ locals {
     "DataRefresh:RequestsTopicSubscription"                                                 = azurerm_servicebus_subscription.matching-algorithm-data-refresh-requests.name
     "DataRefresh:CompletionTopic"                                                           = azurerm_servicebus_topic.completed-data-refresh-jobs.name
     "DataRefresh:CronTab"                                                                   = var.DATA_REFRESH_CRONTAB
-    "DataRefresh:DatabaseAName"                                                             = azurerm_sql_database.atlas-matching-transient-a.name
-    "DataRefresh:DatabaseBName"                                                             = azurerm_sql_database.atlas-matching-transient-b.name
+    "DataRefresh:DatabaseAName"                                                             = azurerm_mssql_database.atlas-matching-transient-a.name
+    "DataRefresh:DatabaseBName"                                                             = azurerm_mssql_database.atlas-matching-transient-b.name
     "DataRefresh:DataRefreshDonorUpdatesShouldBeFullyTransactional"                         = var.DONOR_WRITE_TRANSACTIONALITY__DATA_REFRESH
     "DataRefresh:DonorManagement:BatchSize"                                                 = var.MESSAGING_BUS_DONOR_BATCH_SIZE
     "DataRefresh:DonorManagement:CronSchedule"                                              = "NotActuallyUsedInThisFunction"
@@ -41,8 +34,6 @@ locals {
     "DataRefresh:DormantDatabaseAutoPauseTimeout"                                           = var.DATA_REFRESH_DB_AUTO_PAUSE_DORMANT
     "DataRefresh:DormantDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_DORMANT
     "DataRefresh:RefreshDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_REFRESH
-
-    "FUNCTIONS_WORKER_RUNTIME" : "dotnet"
 
     "HlaMetadataDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string,
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"     = var.WMDA_FILE_URL,
@@ -72,23 +63,34 @@ locals {
   matching_algorithm_function_app_name = "${var.general.environment}-ATLAS-MATCHING-ALGORITHM-FUNCTIONS"
 }
 
-resource "azurerm_function_app" "atlas_matching_algorithm_function" {
-  name                       = local.matching_algorithm_function_app_name
-  resource_group_name        = var.resource_group.name
-  location                   = var.general.location
-  app_service_plan_id        = var.elastic_app_service_plan.id
-  https_only                 = true
-  version                    = "~4"
-  storage_account_access_key = azurerm_storage_account.matching_function_storage.primary_access_key
-  storage_account_name       = azurerm_storage_account.matching_function_storage.name
+resource "azurerm_windows_function_app" "atlas_matching_algorithm_function" {
+  name                        = local.matching_algorithm_function_app_name
+  resource_group_name         = var.resource_group.name
+  location                    = var.general.location
+  service_plan_id             = var.elastic_app_service_plan.id
+  client_certificate_mode     = "Required"
+  https_only                  = true
+  functions_extension_version = "~4"
+  storage_account_access_key  = azurerm_storage_account.matching_function_storage.primary_access_key
+  storage_account_name        = azurerm_storage_account.matching_function_storage.name
 
   site_config {
+    application_insights_key = var.application_insights.instrumentation_key
+    application_stack {
+      dotnet_version = "6"
+    }
+    cors {
+      allowed_origins     = []
+      support_credentials = false
+    }
     pre_warmed_instance_count = 1
-    use_32_bit_worker_process = false
+    use_32_bit_worker = false
     ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
       ip_address = ip
       subnet_id  = null
     }]
+    ftps_state              = "AllAllowed"
+    scm_minimum_tls_version = "1.0"
   }
 
   tags = var.general.common_tags

@@ -1,30 +1,39 @@
-resource "azurerm_sql_server" "atlas_sql_server" {
+resource "azurerm_mssql_server" "atlas_sql_server" {
   name                         = lower("${local.environment}-ATLAS-SQL-SERVER")
   resource_group_name          = azurerm_resource_group.atlas_resource_group.name
   location                     = local.location
+  minimum_tls_version          = "Disabled"
   tags                         = local.common_tags
   version                      = "12.0"
   administrator_login          = var.DATABASE_SERVER_ADMIN_LOGIN
   administrator_login_password = var.DATABASE_SERVER_ADMIN_LOGIN_PASSWORD
+
+  azuread_administrator {
+    azuread_authentication_only = false
+    login_username              = var.DATABASE_SERVER_AZUREAD_ADMINISTRATOR_LOGIN_USERNAME
+    object_id                   = var.DATABASE_SERVER_AZUREAD_ADMINISTRATOR_OBJECTID
+    tenant_id                   = var.DATABASE_SERVER_AZUREAD_ADMINISTRATOR_TENANTID
+  }
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = [administrator_login_password]
+  }
 }
 
-resource "azurerm_sql_firewall_rule" "firewall_rule_allow_azure" {
-  name                = "AllowAzureServices"
-  resource_group_name = azurerm_resource_group.atlas_resource_group.name
-  server_name         = azurerm_sql_server.atlas_sql_server.name
-  start_ip_address    = "0.0.0.0"
-  end_ip_address      = "0.0.0.0"
+resource "azurerm_mssql_firewall_rule" "firewall_rule_allow_azure" {
+  name             = "AllowAzureServices"
+  server_id        = azurerm_mssql_server.atlas_sql_server.id
+  start_ip_address = "0.0.0.0"
+  end_ip_address   = "0.0.0.0"
 }
 
-resource "azurerm_sql_database" "atlas-database-shared" {
-  location            = local.location
-  name                = lower("${local.environment}-ATLAS")
-  resource_group_name = azurerm_resource_group.atlas_resource_group.name
-  server_name         = azurerm_sql_server.atlas_sql_server.name
+resource "azurerm_mssql_database" "atlas-database-shared" {
+  name      = lower("${local.environment}-ATLAS")
+  server_id = azurerm_mssql_server.atlas_sql_server.id
 
-  edition                          = var.DATABASE_SHARED_EDITION
-  max_size_bytes                   = var.DATABASE_SHARED_MAX_SIZE
-  requested_service_objective_name = var.DATABASE_SHARED_SKU_SIZE
+  max_size_gb = var.DATABASE_SHARED_MAX_SIZE_GB
+  sku_name    = var.DATABASE_SHARED_SKU_SIZE
 
   tags = local.common_tags
 }

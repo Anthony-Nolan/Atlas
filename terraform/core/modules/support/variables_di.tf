@@ -8,6 +8,7 @@ variable "resource_group" {
 
 variable "servicebus_namespace" {
   type = object({
+    id   = string
     name = string
   })
 }

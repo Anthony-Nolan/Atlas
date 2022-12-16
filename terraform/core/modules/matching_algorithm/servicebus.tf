@@ -1,8 +1,6 @@
 resource "azurerm_servicebus_subscription" "matching_transient_a" {
   name                                 = "matching-transient-a"
-  resource_group_name                  = var.resource_group.name
-  namespace_name                       = var.servicebus_namespace.name
-  topic_name                           = var.servicebus_topics.updated-searchable-donors.name
+  topic_id                             = var.servicebus_topics.updated-searchable-donors.id
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
   default_message_ttl                  = var.default_servicebus_settings.long-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
@@ -12,9 +10,7 @@ resource "azurerm_servicebus_subscription" "matching_transient_a" {
 
 resource "azurerm_servicebus_subscription" "matching_transient_b" {
   name                                 = "matching-transient-b"
-  resource_group_name                  = var.resource_group.name
-  namespace_name                       = var.servicebus_namespace.name
-  topic_name                           = var.servicebus_topics.updated-searchable-donors.name
+  topic_id                             = var.servicebus_topics.updated-searchable-donors.id
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
   default_message_ttl                  = var.default_servicebus_settings.long-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
@@ -24,8 +20,7 @@ resource "azurerm_servicebus_subscription" "matching_transient_b" {
 
 resource "azurerm_servicebus_topic" "matching-requests" {
   name                  = "matching-requests"
-  resource_group_name   = var.resource_group.name
-  namespace_name        = var.servicebus_namespace.name
+  namespace_id          = var.servicebus_namespace.id
   auto_delete_on_idle   = var.default_servicebus_settings.long-expiry
   default_message_ttl   = var.default_servicebus_settings.long-expiry
   max_size_in_megabytes = var.default_servicebus_settings.default-bus-size
@@ -34,9 +29,7 @@ resource "azurerm_servicebus_topic" "matching-requests" {
 
 resource "azurerm_servicebus_subscription" "audit-matching-requests" {
   name                                 = "audit"
-  resource_group_name                  = var.resource_group.name
-  namespace_name                       = var.servicebus_namespace.name
-  topic_name                           = azurerm_servicebus_topic.matching-requests.name
+  topic_id                             = azurerm_servicebus_topic.matching-requests.id
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
   default_message_ttl                  = var.default_servicebus_settings.audit-subscription-ttl-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
@@ -46,9 +39,7 @@ resource "azurerm_servicebus_subscription" "audit-matching-requests" {
 
 resource "azurerm_servicebus_subscription" "matching-requests-matching-algorithm" {
   name                                 = "matching-algorithm"
-  resource_group_name                  = var.resource_group.name
-  namespace_name                       = var.servicebus_namespace.name
-  topic_name                           = azurerm_servicebus_topic.matching-requests.name
+  topic_id                             = azurerm_servicebus_topic.matching-requests.id
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
   default_message_ttl                  = var.default_servicebus_settings.long-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
@@ -58,8 +49,7 @@ resource "azurerm_servicebus_subscription" "matching-requests-matching-algorithm
 
 resource "azurerm_servicebus_topic" "matching-results-ready" {
   name                  = "matching-results-ready"
-  resource_group_name   = var.resource_group.name
-  namespace_name        = var.servicebus_namespace.name
+  namespace_id          = var.servicebus_namespace.id
   auto_delete_on_idle   = var.default_servicebus_settings.long-expiry
   default_message_ttl   = var.default_servicebus_settings.long-expiry
   max_size_in_megabytes = var.default_servicebus_settings.default-bus-size
@@ -68,9 +58,7 @@ resource "azurerm_servicebus_topic" "matching-results-ready" {
 
 resource "azurerm_servicebus_subscription" "audit-matching-results-ready" {
   name                                 = "audit"
-  resource_group_name                  = var.resource_group.name
-  namespace_name                       = var.servicebus_namespace.name
-  topic_name                           = azurerm_servicebus_topic.matching-results-ready.name
+  topic_id                             = azurerm_servicebus_topic.matching-results-ready.id
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
   default_message_ttl                  = var.default_servicebus_settings.audit-subscription-ttl-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
@@ -80,8 +68,7 @@ resource "azurerm_servicebus_subscription" "audit-matching-results-ready" {
 
 resource "azurerm_servicebus_topic" "data-refresh-requests" {
   name                  = "data-refresh-requests"
-  resource_group_name   = var.resource_group.name
-  namespace_name        = var.servicebus_namespace.name
+  namespace_id          = var.servicebus_namespace.id
   auto_delete_on_idle   = var.default_servicebus_settings.long-expiry
   default_message_ttl   = var.default_servicebus_settings.long-expiry
   max_size_in_megabytes = var.default_servicebus_settings.default-bus-size
@@ -90,9 +77,7 @@ resource "azurerm_servicebus_topic" "data-refresh-requests" {
 
 resource "azurerm_servicebus_subscription" "audit-data-refresh-requests" {
   name                                 = "audit"
-  resource_group_name                  = var.resource_group.name
-  namespace_name                       = var.servicebus_namespace.name
-  topic_name                           = azurerm_servicebus_topic.data-refresh-requests.name
+  topic_id                             = azurerm_servicebus_topic.data-refresh-requests.id
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
   default_message_ttl                  = var.default_servicebus_settings.audit-subscription-ttl-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
@@ -102,9 +87,7 @@ resource "azurerm_servicebus_subscription" "audit-data-refresh-requests" {
 
 resource "azurerm_servicebus_subscription" "matching-algorithm-data-refresh-requests" {
   name                                 = "matching-algorithm"
-  resource_group_name                  = var.resource_group.name
-  namespace_name                       = var.servicebus_namespace.name
-  topic_name                           = azurerm_servicebus_topic.data-refresh-requests.name
+  topic_id                             = azurerm_servicebus_topic.data-refresh-requests.id
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
   default_message_ttl                  = var.default_servicebus_settings.long-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
@@ -114,8 +97,7 @@ resource "azurerm_servicebus_subscription" "matching-algorithm-data-refresh-requ
 
 resource "azurerm_servicebus_topic" "completed-data-refresh-jobs" {
   name                  = "completed-data-refresh-jobs"
-  resource_group_name   = var.resource_group.name
-  namespace_name        = var.servicebus_namespace.name
+  namespace_id          = var.servicebus_namespace.id
   auto_delete_on_idle   = var.default_servicebus_settings.long-expiry
   default_message_ttl   = var.default_servicebus_settings.long-expiry
   max_size_in_megabytes = var.default_servicebus_settings.default-bus-size
@@ -124,9 +106,7 @@ resource "azurerm_servicebus_topic" "completed-data-refresh-jobs" {
 
 resource "azurerm_servicebus_subscription" "audit-completed-data-refresh-jobs" {
   name                                 = "audit"
-  resource_group_name                  = var.resource_group.name
-  namespace_name                       = var.servicebus_namespace.name
-  topic_name                           = azurerm_servicebus_topic.completed-data-refresh-jobs.name
+  topic_id                             = azurerm_servicebus_topic.completed-data-refresh-jobs.id
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
   default_message_ttl                  = var.default_servicebus_settings.audit-subscription-ttl-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
