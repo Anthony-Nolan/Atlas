@@ -5,7 +5,6 @@ terraform {
 }
 
 provider "azurerm" {
-  version         = "2.39.0"
   subscription_id = var.AZURE_SUBSCRIPTION_ID
 
   // According to the docs, the default behaviour is to attempt to register every possible resource provider
