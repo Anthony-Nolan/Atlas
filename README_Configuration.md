@@ -29,9 +29,8 @@ readable manner.
 
 | Terraform Setting          | Functions App Name                 | Functions App Setting Name | Description                |
 | -------------------------- | ------------------                 | -------------------------- | -----------                | 
-| MATCHING-DATA-REFRESH-AUTO-RUN | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | DataRefresh-AutoRunDataRefresh | When set, the data refresh will automatically run once new HLA nomenclature is detected. This can be disabled to allow manual control on when new nomenclature is imported. |
 | IP-RESTRICTION-SETTINGS | all | N/A | Allows restriction of functions app access to specified IPs only. |
-| MATCHING-DATA-REFRESH-AUTO-RUN | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | DataRefresh-AutoRunDataRefresh | When set, data refresh will automatically run whenever new HLA nomenclature is detected. If disabled, all data refreshes must be kicked off manually. |
+| MATCHING-DATA-REFRESH-AUTO-RUN | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | DataRefresh-AutoRunDataRefresh | When set, the data refresh will automatically run once new HLA nomenclature is detected. This can be disabled to allow manual control on when new nomenclature is imported. |
 
 ## Donor Import
 Settings for the donor import app (`ATLAS-DONOR-IMPORT-FUNCTIONS`).

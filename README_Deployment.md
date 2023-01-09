@@ -26,8 +26,10 @@ The following are the steps that are required to be taken manually when deployin
 - A second *App Registration* should be created within Azure Active Directory, to be used by the code itself for managing azure resources at runtime.
     - e.g. The matching algorithm Data Refresh needs to be able to scale azure databases at runtime.
     - It also allows Terraform to fetch function keys.
-    - This information is set up as app settings during **release** by Terraform.
-    - The terraform release variables are called: `AZURE_CLIENT_ID` and `AZURE_CLIENT_SECRET`.
+    - This registration must have the role of `Contributor` on the Atlas resource group.
+    - App registration info must be provided via the following terraform release vars:
+      - `AZURE_CLIENT_ID`
+      - `AZURE_CLIENT_SECRET`.
 - An *Azure Active Directory (AD) group* should be created to control admin access to the Atlas SQL Server (one AD group per release environment).
   - AD group info must be provided via the following terraform release vars:
     - `DATABASE_SERVER_AZUREAD_ADMINISTRATOR_LOGIN_USERNAME` - Name of the AD group used to control admin access to the Atlas SQL server, e.g., `DEV SQL Server Administrators`
