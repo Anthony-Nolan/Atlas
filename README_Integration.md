@@ -99,7 +99,7 @@ have imported - see the "Data Refresh" section below.
 
 This process is expected to be used as a one-off when installing ATLAS for the first time, to import all existing donors at the time of installation.
 
-It should be able to handle millions of donors in a timeframe of hours. Performance can be improved further by manually scaling up the "-atlas-donors" SQL database in Azure for
+It should be able to handle millions of donors in a timeframe of hours. Performance can be improved further by manually scaling up the "-atlas" shared SQL database in Azure for
 the duration of the import process.
 
 Recommended donor file size is 10,000 - 200,000 donors per file.
