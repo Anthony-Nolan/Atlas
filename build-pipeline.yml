@@ -31,6 +31,7 @@ jobs:
         inputs:
           command: 'build'
           projects: |
+            Atlas.Client.Models
             Atlas.Functions
             Atlas.Functions.PublicApi
             Atlas.DonorImport.Data
@@ -53,6 +54,30 @@ jobs:
           command: 'test'
           projects: '**/*Test.csproj'
           arguments: '--no-restore'
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Prepare Client Models'
+        inputs:
+          command: pack
+          packagesToPack: '**/Atlas.Client.Models.csproj'
+          packDirectory: '$(Build.ArtifactStagingDirectory)/client-models'
+          nobuild: true
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: Client Models'
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/client-models'
+          ArtifactName: client-models
+        # Inline version bump of client project to add "-ci", to allow for a prerelease ci (continuous integration) package to be published  
+      - bash: sed -i 's/<\/VersionPrefix>/-ci-$(Build.BuildId)<\/VersionPrefix>/g' **/Atlas.Client.Models.csproj
+        displayName: Update Prerelease Client Models version
+      - bash: dotnet pack **/Atlas.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/client-models-ci --no-build
+        displayName: Pack Prerelease Client Models
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: Client Models-CI'
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/client-models-ci'
+          ArtifactName: client-models-ci
+
       - task: CopyFiles@2
         displayName: 'Copy Atlas Functions Build'
         inputs:
