@@ -5,6 +5,7 @@ using Atlas.HlaMetadataDictionary.HlaTypingInfo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.HlaMetadataDictionary.InternalModels.Metadata
 {

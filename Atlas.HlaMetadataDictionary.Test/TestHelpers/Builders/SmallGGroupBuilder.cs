@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using LochNessBuilder;
 

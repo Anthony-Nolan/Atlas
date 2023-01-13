@@ -1,5 +1,6 @@
 ﻿using System;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions

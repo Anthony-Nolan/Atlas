@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
+using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
 {

@@ -1,5 +1,5 @@
 using Atlas.Client.Models.Search.Requests;
-using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Validators.SearchRequest

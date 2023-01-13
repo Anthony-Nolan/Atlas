@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
-using Atlas.Common.Utils.Models;
+using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Newtonsoft.Json;
 
 namespace Atlas.Client.Models.Search.Results.MatchPrediction

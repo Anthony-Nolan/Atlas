@@ -10,7 +10,7 @@ using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
 using LoggingStopwatch;
 using Microsoft.Data.SqlClient;
-using static Atlas.Common.GeneticData.Locus;
+using static Atlas.Common.Public.Models.GeneticData.Locus;
 
 // ReSharper disable InconsistentNaming
 

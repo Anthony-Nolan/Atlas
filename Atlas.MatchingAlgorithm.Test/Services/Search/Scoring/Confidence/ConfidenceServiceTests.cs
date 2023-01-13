@@ -18,6 +18,8 @@ using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
+using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
 {
@@ -25,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
     public class ConfidenceServiceTests
     {
         // Unless specified otherwise, all tests will be at a shared locus + position, to reduce setup in the individual test cases
-        private const Locus Locus = Atlas.Common.GeneticData.Locus.A;
+        private const Locus Locus = Atlas.Common.Public.Models.GeneticData.Locus.A;
         private const LocusPosition Position = LocusPosition.One;
 
         private IConfidenceService confidenceService;

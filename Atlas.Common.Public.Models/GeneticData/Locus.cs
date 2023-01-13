@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Atlas.Common.GeneticData
+namespace Atlas.Common.Public.Models.GeneticData
 {
     [JsonConverter(typeof(StringEnumConverter))]
     public enum Locus

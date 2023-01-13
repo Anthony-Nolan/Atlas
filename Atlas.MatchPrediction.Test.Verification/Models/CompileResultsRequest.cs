@@ -1,4 +1,5 @@
 ﻿using Atlas.Common.GeneticData;
+using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.MatchPrediction.Test.Verification.Models
 {

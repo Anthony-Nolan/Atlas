@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
+using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
 {

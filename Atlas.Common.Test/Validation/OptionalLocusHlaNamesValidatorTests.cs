@@ -1,5 +1,5 @@
-﻿using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+﻿using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Validation;
 using FluentAssertions;
 using NUnit.Framework;

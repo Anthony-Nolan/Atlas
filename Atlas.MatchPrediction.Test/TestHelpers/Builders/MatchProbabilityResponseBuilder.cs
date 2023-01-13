@@ -1,6 +1,7 @@
 using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Utils.Models;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+using Atlas.Common.Public.Models.MatchPrediction;
 using LochNessBuilder;
 using Builder = LochNessBuilder.Builder<Atlas.Client.Models.Search.Results.MatchPrediction.MatchProbabilityResponse>;
 

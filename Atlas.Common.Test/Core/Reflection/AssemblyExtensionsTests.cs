@@ -21,7 +21,7 @@ namespace Atlas.Common.Test.Core.Reflection
         {
             var ret = typeof(AssemblyExtensionsTests).Assembly.LoadAtlasAssemblies();
 
-            ret.Select(a => a.GetName().Name).Should().Equal("Atlas.Common.Test", "Atlas.Common");
+            ret.Select(a => a.GetName().Name).Should().Equal("Atlas.Common.Test", "Atlas.Common", "Atlas.Common.Public.Models");
         }
 
         [Test]

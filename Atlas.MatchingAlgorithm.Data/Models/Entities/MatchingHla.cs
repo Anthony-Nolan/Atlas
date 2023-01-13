@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Config;
 
 // ReSharper disable ClassNeverInstantiated.Global - Instantiated by EF

@@ -1,6 +1,8 @@
 using System;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using LochNessBuilder;
 using Builder = LochNessBuilder.Builder<Atlas.MatchPrediction.Data.Models.HaplotypeFrequency>;
 

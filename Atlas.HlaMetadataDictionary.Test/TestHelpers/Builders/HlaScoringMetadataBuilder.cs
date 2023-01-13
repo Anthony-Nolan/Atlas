@@ -3,6 +3,7 @@ using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders.ScoringInfoBuilders;
 using System;
+using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
 {

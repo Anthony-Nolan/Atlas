@@ -3,6 +3,7 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using LochNessBuilder;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.Public.Models.GeneticData;
 using static EnumStringValues.EnumExtensions;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults

@@ -65,9 +65,18 @@ The service uses two storage methods for different data, SQL and Azure Cloud Tab
 
 ## Other Solution Projects/Functions
 
+### Atlas.Client.Models
+
+Models used by the public API.
+
 ### Atlas.Common
 
 Contains code that can be shared between multiple Atlas components. E.g. Utility methods, genetic data models. 
+
+### Atlas.Common.Public.Models
+
+Only contains those models that are commonly used across the solution AND are also referenced by the Atlas client models.
+These models were originally part of the main `Atlas.Common` project, but were moved to their own class library so they can be published with the client models as a NuGet package.
 
 ### Atlas.Functions
 

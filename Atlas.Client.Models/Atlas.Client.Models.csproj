@@ -7,7 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
+      <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Atlas.Common.Public.Models\Atlas.Common.Public.Models.csproj" />
     </ItemGroup>
 
 </Project>

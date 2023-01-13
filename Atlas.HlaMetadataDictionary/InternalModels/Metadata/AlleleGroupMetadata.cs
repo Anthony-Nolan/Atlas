@@ -3,6 +3,7 @@ using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.HlaMetadataDictionary.InternalModels.Metadata
 {

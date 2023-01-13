@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using LochNessBuilder;
 using Builder = LochNessBuilder.Builder<Atlas.MatchPrediction.Services.MatchProbability.SubjectCalculatorInputs>;
 

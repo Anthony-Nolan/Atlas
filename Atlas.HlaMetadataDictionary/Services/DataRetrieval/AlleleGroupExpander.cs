@@ -7,6 +7,7 @@ using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {

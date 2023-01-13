@@ -14,12 +14,14 @@ Atlas follows semantic versioning:
 * minor = small features, minor tweaks to application logic
 * patch = bugfixes, small documentation improvements
 
-Only the *public interface* of ATLAS is versioned in code. In practice, this means two projects within this solution:
+Only the *public interface* of ATLAS is versioned in code. In practice, this means these projects within this solution:
 
 * `Atlas.Functions.PublicApi`
     * The public HTTP interface that consumers should use for all HTTP requests to ATLAS
 * `Atlas.Client.Models`
     * All models expected to be needed by external consumers are within this package, which is versioned in-step with the public api.
+* `Atlas.Common.Public.Models`
+    * All models referenced by both `Client.Models` and other Atlas components; versioned in-step with the public api.
 
 ## Releases
 

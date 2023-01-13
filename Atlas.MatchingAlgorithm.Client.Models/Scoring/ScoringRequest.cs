@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Atlas.Client.Models.Search.Requests;
-using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 
 namespace Atlas.MatchingAlgorithm.Client.Models.Scoring
 {

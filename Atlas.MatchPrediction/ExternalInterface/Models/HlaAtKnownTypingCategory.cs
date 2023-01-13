@@ -1,5 +1,6 @@
 using System;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Data.Models;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models

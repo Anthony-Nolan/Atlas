@@ -11,6 +11,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
+using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 {

@@ -163,6 +163,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InstallationAndUsage", "Ins
 		README_Support.md = README_Support.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.Common.Public.Models", "Atlas.Common.Public.Models\Atlas.Common.Public.Models.csproj", "{01BA6FE0-B631-4262-A8B8-9EC27636A65D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -422,6 +424,12 @@ Global
 		{AFA20036-6B76-4E2C-B4F5-0DFE9EFBE9AB}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{AFA20036-6B76-4E2C-B4F5-0DFE9EFBE9AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFA20036-6B76-4E2C-B4F5-0DFE9EFBE9AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01BA6FE0-B631-4262-A8B8-9EC27636A65D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01BA6FE0-B631-4262-A8B8-9EC27636A65D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01BA6FE0-B631-4262-A8B8-9EC27636A65D}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{01BA6FE0-B631-4262-A8B8-9EC27636A65D}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{01BA6FE0-B631-4262-A8B8-9EC27636A65D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01BA6FE0-B631-4262-A8B8-9EC27636A65D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
