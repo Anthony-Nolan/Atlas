@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
 
 // ReSharper disable InconsistentNaming - want to use T/R to easily distinguish contained type and target type(s)
 // ReSharper disable MemberCanBeInternal
 
-namespace Atlas.Common.GeneticData.PhenotypeInfo
+namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo
 {
     /// <summary>
     /// <see cref="LocusInfo{T}"/> is a single Locus' information - with a T at each position.
@@ -58,7 +55,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
 
         public IEnumerable<T> ToEnumerable() => new[] {Position1, Position2};
         
-        internal LocusInfo<T> ShallowCopy()
+        public LocusInfo<T> ShallowCopy()
         {
             return (LocusInfo<T>) MemberwiseClone();
         }

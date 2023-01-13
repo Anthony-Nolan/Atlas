@@ -1,5 +1,5 @@
 ﻿using Atlas.Client.Models.Search.Results.Matching.PerLocus;
-using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 
 namespace Atlas.Client.Models.Search.Results.Matching
 {

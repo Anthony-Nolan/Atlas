@@ -10,10 +10,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
-using MaskedHla =
-    Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<
+using MaskedHla = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<
         System.Collections.Generic.IReadOnlyCollection<Atlas.MatchPrediction.Test.Verification.Models.SimulantLocusHla>>;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration

@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 
 // ReSharper disable InconsistentNaming - want to use T/R to easily distinguish contained type and target type(s)
 // ReSharper disable MemberCanBeInternal
 
 // ReSharper disable MemberCanBePrivate.Global
-namespace Atlas.Common.GeneticData.PhenotypeInfo
+namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo
 {
     /// <summary>
     /// Data type to hold one instance of T for each of the supported HLA loci and each type position within.

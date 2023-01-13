@@ -5,7 +5,9 @@ using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.MutableModels;
-using Atlas.Common.Utils.Models;
+using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchPrediction.Models;
 
 // ReSharper disable ParameterTypeCanBeEnumerable.Local

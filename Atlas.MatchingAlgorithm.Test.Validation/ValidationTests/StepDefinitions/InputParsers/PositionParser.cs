@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Atlas.Common.GeneticData;
+using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers
 {

@@ -1,6 +1,6 @@
 // ReSharper disable ClassNeverInstantiated.Global
 
-namespace Atlas.Common.GeneticData.PhenotypeInfo.TransferModels
+namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels
 {
     /// <summary>
     /// A serialisable version of <see cref="PhenotypeInfo{T}"/>, for usage across serialisation boundaries.

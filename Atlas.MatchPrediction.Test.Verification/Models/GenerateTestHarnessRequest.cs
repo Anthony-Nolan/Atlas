@@ -1,7 +1,7 @@
-﻿using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.Collections.Generic;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 
 namespace Atlas.MatchPrediction.Test.Verification.Models
 {

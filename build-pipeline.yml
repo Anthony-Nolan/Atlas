@@ -32,6 +32,7 @@ jobs:
           command: 'build'
           projects: |
             Atlas.Client.Models
+            Atlas.Common.Public.Models
             Atlas.Functions
             Atlas.Functions.PublicApi
             Atlas.DonorImport.Data
@@ -60,23 +61,31 @@ jobs:
         inputs:
           command: pack
           packagesToPack: '**/Atlas.Client.Models.csproj'
-          packDirectory: '$(Build.ArtifactStagingDirectory)/client-models'
+          packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
+          nobuild: true
+      - task: DotNetCoreCLI@2
+        displayName: 'Prepare Common Public Models'
+        inputs:
+          command: pack
+          packagesToPack: '**/Atlas.Common.Public.Models.csproj'
+          packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
           nobuild: true
       - task: PublishBuildArtifacts@1
-        displayName: 'Publish Artifact: Client Models'
+        displayName: 'Publish Artifact: Published Models'
         inputs:
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)/client-models'
-          ArtifactName: client-models
-        # Inline version bump of client project to add "-ci", to allow for a prerelease ci (continuous integration) package to be published  
-      - bash: sed -i 's/<\/VersionPrefix>/-ci-$(Build.BuildId)<\/VersionPrefix>/g' **/Atlas.Client.Models.csproj
-        displayName: Update Prerelease Client Models version
-      - bash: dotnet pack **/Atlas.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/client-models-ci --no-build
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/published-models'
+          ArtifactName: published-models
+
+        # Suffix version number with build ID to allow for a prerelease ci (continuous integration) packages to be published  
+      - bash: dotnet pack **/Atlas.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Client Models
+      - bash: dotnet pack **/Atlas.Common.Public.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
+        displayName: Pack Prerelease Common Public Models
       - task: PublishBuildArtifacts@1
-        displayName: 'Publish Artifact: Client Models-CI'
+        displayName: 'Publish Artifact: Published Models-CI'
         inputs:
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)/client-models-ci'
-          ArtifactName: client-models-ci
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/published-models-ci'
+          ArtifactName: published-models-ci
 
       - task: CopyFiles@2
         displayName: 'Copy Atlas Functions Build'

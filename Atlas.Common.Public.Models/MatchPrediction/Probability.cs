@@ -1,7 +1,6 @@
-using System;
 using Newtonsoft.Json;
 
-namespace Atlas.Common.Utils.Models
+namespace Atlas.Common.Public.Models.MatchPrediction
 {
     public class Probability
     {

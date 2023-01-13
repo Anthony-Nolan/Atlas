@@ -1,3 +1,5 @@
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+
 namespace Atlas.Common.GeneticData.PhenotypeInfo.MutableModels
 {
     /// <summary>

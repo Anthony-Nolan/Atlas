@@ -19,8 +19,8 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using MoreLinq.Extensions;
 using NUnit.Framework;
-using static Atlas.Common.GeneticData.Locus;
-using static Atlas.Common.GeneticData.LocusPosition;
+using static Atlas.Common.Public.Models.GeneticData.Locus;
+using static Atlas.Common.Public.Models.GeneticData.LocusPosition;
 using static Atlas.MatchingAlgorithm.Client.Models.Donors.DonorType;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates

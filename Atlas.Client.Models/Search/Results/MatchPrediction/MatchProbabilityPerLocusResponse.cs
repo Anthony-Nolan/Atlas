@@ -1,7 +1,6 @@
 ﻿using System;
-using Atlas.Common.Utils.Models;
-using LocusMatchCategories =
-    Atlas.Common.GeneticData.PhenotypeInfo.LocusInfo<Atlas.Client.Models.Search.Results.MatchPrediction.PredictiveMatchCategory?>;
+using Atlas.Common.Public.Models.MatchPrediction;
+using LocusMatchCategories = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LocusInfo<Atlas.Client.Models.Search.Results.MatchPrediction.PredictiveMatchCategory?>;
 
 namespace Atlas.Client.Models.Search.Results.MatchPrediction
 {

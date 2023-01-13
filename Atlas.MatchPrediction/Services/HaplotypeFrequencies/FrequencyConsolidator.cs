@@ -2,10 +2,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
-using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
+using HaplotypeHla = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 {

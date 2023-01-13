@@ -1,5 +1,6 @@
 using System;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.DonorImport.Models.FileSchema;
 using LochNessBuilder;
 

@@ -7,6 +7,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.MatchGr
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
 {

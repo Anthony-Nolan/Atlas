@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using EnumStringValues;
 
 // ReSharper disable InconsistentNaming
 
 // ReSharper disable MemberCanBeProtected.Global
 
-namespace Atlas.Common.GeneticData.PhenotypeInfo
+namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo
 {
     /// <summary>
     /// Data type to hold one instance of T for each of the supported HLA loci.

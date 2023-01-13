@@ -1,6 +1,7 @@
 ﻿using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using FluentAssertions;

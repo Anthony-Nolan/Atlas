@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Matching.Services;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using FluentAssertions;
 using NUnit.Framework;
 

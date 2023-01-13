@@ -4,6 +4,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories

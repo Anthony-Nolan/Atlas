@@ -2,6 +2,7 @@
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Test.Verification.Models;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation

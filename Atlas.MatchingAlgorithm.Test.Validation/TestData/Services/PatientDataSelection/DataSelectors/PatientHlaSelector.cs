@@ -10,6 +10,8 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles;
 using System;
 using System.Linq;
 using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
+using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.DataSelectors
 {

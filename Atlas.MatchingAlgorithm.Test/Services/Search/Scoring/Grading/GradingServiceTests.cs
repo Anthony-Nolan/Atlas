@@ -11,12 +11,13 @@ using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
-using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using System;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
+using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 {

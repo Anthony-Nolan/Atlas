@@ -1,8 +1,7 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Atlas.Common.GeneticData
+namespace Atlas.Common.Public.Models.GeneticData
 {
     /// <summary>
     /// Position of an allele or other information *within* a locus.
@@ -15,18 +14,5 @@ namespace Atlas.Common.GeneticData
     {
         One,
         Two
-    }
-    
-    public static class LocusPositionExtensions
-    {
-        public static LocusPosition Other(this LocusPosition typePosition)
-        {
-            return typePosition switch
-            {
-                LocusPosition.Two => LocusPosition.One,
-                LocusPosition.One => LocusPosition.Two,
-                _ => throw new ArgumentOutOfRangeException(nameof(typePosition), typePosition, null)
-            };
-        }
     }
 }

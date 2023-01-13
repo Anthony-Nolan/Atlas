@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Utils.Models;
+﻿using Atlas.Common.Public.Models.MatchPrediction;
 using LochNessBuilder;
 using Builder = LochNessBuilder.Builder<Atlas.Client.Models.Search.Results.MatchPrediction.MatchProbabilities>;
 

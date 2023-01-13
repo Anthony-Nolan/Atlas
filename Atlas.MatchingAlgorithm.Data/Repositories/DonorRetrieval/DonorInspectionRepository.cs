@@ -12,6 +12,7 @@ using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Sql;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval

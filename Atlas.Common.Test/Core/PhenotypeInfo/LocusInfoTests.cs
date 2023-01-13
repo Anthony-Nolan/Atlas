@@ -1,6 +1,6 @@
-﻿using Atlas.Common.GeneticData;
-using FluentAssertions;
-using Atlas.Common.GeneticData.PhenotypeInfo;
+﻿using FluentAssertions;
+using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using NUnit.Framework;
 
 namespace Atlas.Common.Test.Core.PhenotypeInfo

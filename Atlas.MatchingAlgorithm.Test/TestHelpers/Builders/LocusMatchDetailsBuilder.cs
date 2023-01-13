@@ -1,4 +1,5 @@
 using Atlas.Common.GeneticData;
+using Atlas.Common.Public.Models.GeneticData;
 using LochNessBuilder;
 using MoreLinq;
 using Builder = LochNessBuilder.Builder<Atlas.MatchingAlgorithm.Common.Models.SearchResults.LocusMatchDetails>;
