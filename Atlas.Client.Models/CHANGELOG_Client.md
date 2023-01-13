@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Versions
 
 ### 1.5.0
-* No change made to the search client in this version.
+* No outward, discernable change made to the client models.
+* The client models project was refactored to replace dependency on Atlas.Common with a new project, Atlas.Common.Public.Models, which only contains those models referenced by both the client and other components.
 
 ## 1.4.2
 * No change to client.
