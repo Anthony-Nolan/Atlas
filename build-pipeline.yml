@@ -36,6 +36,7 @@ jobs:
             Atlas.Functions
             Atlas.Functions.PublicApi
             Atlas.DonorImport.Data
+            Atlas.DonorImport.FileSchema.Models
             Atlas.DonorImport.Functions
             Atlas.MatchingAlgorithm.Client.Models
             Atlas.MatchingAlgorithm.Functions
@@ -72,6 +73,13 @@ jobs:
           packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
           nobuild: true
       - task: DotNetCoreCLI@2
+        displayName: 'Prepare Donor Import File Schema Models'
+        inputs:
+          command: pack
+          packagesToPack: '**/Atlas.DonorImport.FileSchema.Models.csproj'
+          packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
+          nobuild: true
+      - task: DotNetCoreCLI@2
         displayName: 'Prepare Common Public Models'
         inputs:
           command: pack
@@ -89,6 +97,8 @@ jobs:
         displayName: Pack Prerelease Client Models
       - bash: dotnet pack **/Atlas.MatchingAlgorithm.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Matching Algorithm Client Models
+      - bash: dotnet pack **/Atlas.DonorImport.FileSchema.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
+        displayName: Pack Prerelease Donor Import File Schema Models
       - bash: dotnet pack **/Atlas.Common.Public.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Common Public Models
       - task: PublishBuildArtifacts@1
