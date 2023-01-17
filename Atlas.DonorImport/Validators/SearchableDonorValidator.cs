@@ -1,5 +1,5 @@
 ﻿using Atlas.Common.Utils.Extensions;
-using Atlas.DonorImport.Models.FileSchema;
+using Atlas.DonorImport.FileSchema.Models;
 using FluentValidation;
 
 namespace Atlas.DonorImport.Validators
