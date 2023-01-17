@@ -12,8 +12,10 @@ The project version will be appropriately incremented with each change to the pr
 
 ### 1.5.0
 
-#### Deployment
-* Build pipeline extended with tasks for generating NuGet packages for Atlas client models and their dependencies.
+#### Deployment & Integration
+* Atlas client models and donor import schema now published as NuGet packages to simplify task of integration.
+  * Build pipeline extended with tasks for generating NuGet packages.
+  * Donor import file schema and "Common" models moved to new, standalone projects so they can be published as packages.
 
 #### Matching Algorithm
 * Fixed bug where, in certain cases, potential and exact match counts per donor were not being calculated correctly.
