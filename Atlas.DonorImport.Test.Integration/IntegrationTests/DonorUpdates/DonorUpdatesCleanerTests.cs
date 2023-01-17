@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
-using Atlas.DonorImport.Models.FileSchema;
+using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Atlas.DonorImport.Test.Integration.TestHelpers;

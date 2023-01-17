@@ -1,12 +1,12 @@
 using System.Runtime.Serialization;
 
-namespace Atlas.DonorImport.Models.FileSchema
+namespace Atlas.DonorImport.FileSchema.Models
 {
     /// <summary>
     /// Per-donor operation type.
     /// </summary>
     ///
-    internal enum ImportDonorChangeType
+    public enum ImportDonorChangeType
     {
         [EnumMember(Value = "N")] Create,
         [EnumMember(Value = "D")] Delete,

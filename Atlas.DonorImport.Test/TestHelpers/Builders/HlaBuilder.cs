@@ -1,7 +1,6 @@
 using System;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
-using Atlas.DonorImport.Models.FileSchema;
+using Atlas.DonorImport.FileSchema.Models;
 using LochNessBuilder;
 
 namespace Atlas.DonorImport.Test.TestHelpers.Builders

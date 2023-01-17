@@ -1,10 +1,10 @@
 using Newtonsoft.Json;
 
-namespace Atlas.DonorImport.Models.FileSchema
+namespace Atlas.DonorImport.FileSchema.Models
 {
     // ReSharper disable InconsistentNaming
     // ReSharper disable ClassNeverInstantiated.Global - Instantiated by JSON parser
-    internal class ImportedHla
+    public class ImportedHla
     {
         public ImportedLocus A { get; set; }
         public ImportedLocus B { get; set; }
@@ -14,7 +14,7 @@ namespace Atlas.DonorImport.Models.FileSchema
         public ImportedLocus DRB1 { get; set; }
     }
 
-    internal class ImportedLocus
+    public class ImportedLocus
     {
         public TwoFieldStringData Dna { get; set; }
 
@@ -22,7 +22,7 @@ namespace Atlas.DonorImport.Models.FileSchema
         public TwoFieldStringData Serology { get; set; }
     }
 
-    internal class TwoFieldStringData
+    public class TwoFieldStringData
     {
         public string Field1 { get; set; }
         public string Field2 { get; set; }
