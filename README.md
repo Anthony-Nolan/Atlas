@@ -50,8 +50,10 @@ Due to the size and complexity of the project, the README has been split into va
 ## CHANGELOG Index
 
 ### API changelogs
-- [Client](Atlas.Client.Models/CHANGELOG_Client.md)
 - [Atlas Product](Atlas.Functions.PublicApi/CHANGELOG_Atlas.md)
+- [Public API Client](Atlas.Client.Models/CHANGELOG_Client.md)
+- [Matching Algorithm Client](Atlas.MatchingAlgorithm.Client.Models/CHANGELOG_MatchingAlgorithmClient.md)
+- [Donor Import File Schema](Atlas.DonorImport.FileSchema.Models/CHANGELOG_DonorImportFileSchema.md)
 
 ### Database Changelogs
   - [Matching - Persistent](Atlas.MatchingAlgorithm.Data.Persistent/CHANGELOG_Data.md)
