@@ -18,10 +18,10 @@ Only the *public interface* of ATLAS is versioned in code. In practice, this mea
 
 * `Atlas.Functions.PublicApi`
     * The public HTTP interface that consumers should use for all HTTP requests to ATLAS
-* `Atlas.Client.Models`
-    * All models expected to be needed by external consumers are within this package, which is versioned in-step with the public api.
+* `Atlas.*.Client.Models`
+    * All client models expected to be needed by external consumers are within these projects; clients are versioned in-step with the public api.
 * `Atlas.Common.Public.Models`
-    * All models referenced by both `Client.Models` and other Atlas components; versioned in-step with the public api.
+    * All models referenced by `Atlas.*.Client.Models` and other Atlas components; versioned in-step with the public api.
 
 ## Releases
 
