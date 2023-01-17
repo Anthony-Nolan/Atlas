@@ -35,7 +35,6 @@ Some reference data is imported from third party services, such as NMDP and WMDA
 Other data must be provided by the owner of the Atlas installation - donor information, and haplotype frequency data.   
 
 
-
 ### Multiple Allele Codes
 
 These will be automatically imported nightly, from source data [hosted by NMDP](https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip)
@@ -43,7 +42,6 @@ These will be automatically imported nightly, from source data [hosted by NMDP](
 An import can also be manually triggered, if e.g. you don't want to wait until the next day to start using an ATLAS installation.
 
 > The function `ManuallyImportMacs` should be called, within the `ATLAS-FUNCTIONS` functions app.
-
 
 
 ### HLA Metadata
@@ -55,7 +53,6 @@ HLA metadata will be automatically imported for the latest stable version at the
 To enforce a recreation (e.g. in the case of a schema change), or to import an older version, manual endpoints can be hit.   
 
 > The function `RefreshHlaMetadataDictionaryToSpecificVersion` should be called, within the `ATLAS-MATCHING-ALGORITHM-FUNCTIONS` functions app.
-
 
 
 ### Haplotype Frequency Sets
@@ -70,7 +67,6 @@ On success, a notification will be sent, and on failure, an alert.
 Donors/patients will use an appropriate set based on the ethnicity/registry codes provided - such codes must be identical strings to those used in HF set import to be used.
 
 A "global" set should be uploaded with `null` ethnicity and registry information - when no appropriate set is found for a patient/donor, this global default will be used.
-
 
 
 ### Donor Import
@@ -123,7 +119,6 @@ If ordering of donor updates is even 100% guaranteed, we recommend replacing the
 the order of updates before they make it to ATLAS.  
 
 
-
 ### Data Refresh
 
 The "data refresh" is a manually triggered job in the matching algorithm. 
@@ -146,7 +141,7 @@ This process is expected to be run:
 The process is expected to take several hours - and will increase with both the number of donors, and the ambiguity of their HLA. 
 For a dataset with ~2 million donors, the process takes 1-2 hours.
 
- 
+
 ## Running Searches
  
  Once all the data described above has been imported, Atlas will be ready to perform searches!
@@ -240,3 +235,18 @@ It is possible to run each of the results categorisation processes - "Scoring" (
 on a per-donor basis.
 
 These routes are not officially supported, so have not been rigorously load tested / documented - but the option is available.
+
+
+## NuGet Packages
+To aid the process of integrating Atlas into consumer services, the following API models have been made available as NuGet packages:
+- Public API Client (`Atlas.Client.Models`)
+- Donor Import File Schema (`Atlas.DonorImport.FileSchema.Models`)
+- Matching Algorithm Client (`Atlas.MatchingAlgorithm.Client.Models`)
+
+Some have a dependency on the package, `Atlas.Common.Public.Models`, that contains models shared by multiple components.
+
+Please refer to [this ADR](ArchitecturalDecisionRecord/Phase2/008-Publish_NuGet_Packages.md) for more details, including pre-release versioning for continuous integration.
+
+The packages are currently built as part of every build. They can be published to an Azure Artifacts feed using the `NuGet Push` task on the Azure DevOps release pipeline.
+
+//TODO - Publish packages to NuGet.org and document feed URL here.
