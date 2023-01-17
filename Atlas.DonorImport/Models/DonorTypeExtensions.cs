@@ -1,22 +1,9 @@
+﻿using Atlas.DonorImport.Data.Models;
+using Atlas.DonorImport.FileSchema.Models;
 using System;
-using System.Runtime.Serialization;
-using Atlas.DonorImport.Data.Models;
 
-namespace Atlas.DonorImport.Models.FileSchema
+namespace Atlas.DonorImport.Models
 {
-    /// <summary>
-    /// Donor Type as defined by the schema agreed for external use when uploading donor imports.  
-    /// </summary>
-    internal enum ImportDonorType
-    {
-        [EnumMember(Value = "D")] Adult,
-        [EnumMember(Value = "C")] Cord,
-        /// <summary>
-        /// Banked donors are in the agreed schema for donor uploads, but are not yet supported by the Atlas system.
-        /// </summary>
-        [EnumMember(Value = "B")] Banked
-    }
-    
     internal static class DonorTypeExtensions
     {
         public static DatabaseDonorType ToDatabaseType(this ImportDonorType fileDonorType)
@@ -28,7 +15,7 @@ namespace Atlas.DonorImport.Models.FileSchema
                 _ => throw new ArgumentOutOfRangeException(nameof(fileDonorType), fileDonorType, null)
             };
         }
-        
+
         public static MatchingAlgorithm.Client.Models.Donors.DonorType ToMatchingAlgorithmType(this ImportDonorType fileDonorType)
         {
             return fileDonorType switch

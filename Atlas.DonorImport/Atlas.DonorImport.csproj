@@ -17,6 +17,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Atlas.DonorImport.Data\Atlas.DonorImport.Data.csproj" />
+      <ProjectReference Include="..\Atlas.DonorImport.FileSchema.Models\Atlas.DonorImport.FileSchema.Models.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Client.Models\Atlas.MatchingAlgorithm.Client.Models.csproj" />
     </ItemGroup>
 

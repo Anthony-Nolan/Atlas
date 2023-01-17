@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Atlas.DonorImport.Exceptions;
-using Atlas.DonorImport.Models.FileSchema;
+using Atlas.DonorImport.FileSchema.Models;
 using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Services

@@ -9,10 +9,9 @@ using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.ExternalInterface.Settings;
-using Atlas.DonorImport.Models.FileSchema;
+using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Validators;
 using Dasync.Collections;
-using Microsoft.Extensions.Options;
 using MoreLinq;
 
 // ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault

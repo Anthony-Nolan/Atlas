@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
-using Atlas.DonorImport.Models.FileSchema;
+using Atlas.DonorImport.FileSchema.Models;
 using MoreLinq;
 
 namespace Atlas.DonorImport.Services

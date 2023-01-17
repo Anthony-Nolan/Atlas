@@ -1,8 +1,8 @@
 using Newtonsoft.Json;
 
-namespace Atlas.DonorImport.Models.FileSchema
+namespace Atlas.DonorImport.FileSchema.Models
 {
-    internal class DonorUpdate
+    public class DonorUpdate
     {
         public string RecordId { get; set; }
         

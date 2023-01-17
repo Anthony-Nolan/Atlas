@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Atlas.DonorImport.Models.FileSchema;
+using Atlas.DonorImport.FileSchema.Models;
 using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Test.TestHelpers.Models.MalformedDonorFileModels
