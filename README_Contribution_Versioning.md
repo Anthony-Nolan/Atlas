@@ -17,11 +17,15 @@ Atlas follows semantic versioning:
 Only the *public interface* of ATLAS is versioned in code. In practice, this means these projects within this solution:
 
 * `Atlas.Functions.PublicApi`
-    * The public HTTP interface that consumers should use for all HTTP requests to ATLAS
+  * The public HTTP interface that consumers should use for all HTTP requests to ATLAS
 * `Atlas.*.Client.Models`
-    * All client models expected to be needed by external consumers are within these projects; clients are versioned in-step with the public api.
+  * All client models expected to be needed by external consumers are within these projects.
+* `Atlas.DonorImport.FileSchema.Models`
+  * Models that represent the donor import file schema.
 * `Atlas.Common.Public.Models`
-    * All models referenced by `Atlas.*.Client.Models` and other Atlas components; versioned in-step with the public api.
+  * All models referenced by API projects and other Atlas components.
+
+All the above projects are versioned in-step with the public API.
 
 ## Releases
 
