@@ -1,10 +1,14 @@
 # Specifications
 
-A list of features and requirements for the Atlas product. This is not an exhaustive list, but it does cover the most critical features.
+Atlas is a software application developed in-house by Anthony Nolan for the purposes of finding matching unrelated donors (MUDs) and cord blood units (CBUs) for patients.
+After generating a match list, Atlas scores how well the HLA typing of each donor matches to the patients and the probability that the donor is an allele-level match.
+The calculated matching data allows search coordinators to select the donors they deem best for the given patient.
+
+Below is a list of features and requirements for the Atlas product. This is not an exhaustive list, but it does cover the most critical features.
 
 ## Donor Search 
 
-Atlas can search for both matching unrelated donors (MUDs) and cord blood units (CBUs).
+- Note, within the Atlas domain, the term "Donor" can refer to either MUDs and CBUs.
 
 ### HLA Typings
 
