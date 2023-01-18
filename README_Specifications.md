@@ -1,8 +1,8 @@
 # Specifications
 
-Atlas is a software application developed in-house by Anthony Nolan for the purposes of finding matching unrelated donors (MUDs) and cord blood units (CBUs) for patients.
-After generating a match list, Atlas scores how well the HLA typing of each donor matches to the patients and the probability that the donor is an allele-level match.
-The calculated matching data allows search coordinators to select the donors they deem best for the given patient.
+Atlas is a software application developed in-house by Anthony Nolan for the purposes of finding matching unrelated donors (MUDs) and cord blood units (CBUs) for haematopoietic stem cell transplantation.
+After generating a match list, Atlas scores how well the HLA typing of each potential stem cell donor matches to the patient and the probability that the donor is an allele-level match.
+Search coordinators use this calculated matching data in combination with other factors, such as donor age and availability, to select those donors that will lead to the best post-transplant outcomes for the given patient.
 
 Below is a list of features and requirements for the Atlas product. This is not an exhaustive list, but it does cover the most critical features.
 
