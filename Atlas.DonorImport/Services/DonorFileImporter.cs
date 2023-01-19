@@ -9,8 +9,6 @@ using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.ExternalInterface.Settings;
-using Atlas.DonorImport.FileSchema.Models;
-using Atlas.DonorImport.Validators;
 using Dasync.Collections;
 using MoreLinq;
 
@@ -31,8 +29,8 @@ namespace Atlas.DonorImport.Services
         private readonly IDonorImportFileHistoryService donorImportFileHistoryService;
         private readonly INotificationSender notificationSender;
         private readonly IDonorImportLogService donorLogService;
+        private readonly IDonorUpdateCategoriser donorUpdateCategoriser;
         private readonly ILogger logger;
-        private readonly SearchableDonorValidator searchableDonorValidator;
         private readonly NotificationConfigurationSettings notificationConfigSettings;
 
         public DonorFileImporter(
@@ -41,6 +39,7 @@ namespace Atlas.DonorImport.Services
             IDonorImportFileHistoryService donorImportFileHistoryService,
             INotificationSender notificationSender,
             IDonorImportLogService donorLogService,
+            IDonorUpdateCategoriser donorUpdateCategoriser,
             ILogger logger,
             NotificationConfigurationSettings notificationConfigSettings)
         {
@@ -49,9 +48,9 @@ namespace Atlas.DonorImport.Services
             this.donorImportFileHistoryService = donorImportFileHistoryService;
             this.notificationSender = notificationSender;
             this.donorLogService = donorLogService;
+            this.donorUpdateCategoriser = donorUpdateCategoriser;
             this.logger = logger;
             this.notificationConfigSettings = notificationConfigSettings;
-            searchableDonorValidator = new SearchableDonorValidator();
         }
 
         public async Task ImportDonorFile(DonorImportFile file)
@@ -80,13 +79,13 @@ namespace Atlas.DonorImport.Services
 
                 foreach (var donorUpdateBatch in donorUpdates.Skip(donorUpdatesToSkip).Batch(BatchSize))
                 {
-                    var (validDonors, invalidDonors) = donorUpdateBatch.ReifyAndSplit(ValidateDonorIsSearchable);
-                    var donorUpdatesToApply = donorLogService.FilterDonorUpdatesBasedOnUpdateTime(validDonors, file.UploadTime);
+                    var categoriserResults = donorUpdateCategoriser.Categorise(donorUpdateBatch);
+                    var donorUpdatesToApply = donorLogService.FilterDonorUpdatesBasedOnUpdateTime(categoriserResults.ValidDonors, file.UploadTime);
 
                     var reifiedDonorBatch = await donorUpdatesToApply.ToListAsync();
-                    await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file, invalidDonors.Count);
+                    await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file, categoriserResults.InvalidDonors.Count);
 
-                    invalidDonorIds = invalidDonorIds.Concat(invalidDonors.Select(d => d.RecordId)).ToList();
+                    invalidDonorIds = invalidDonorIds.Concat(categoriserResults.InvalidDonors.Select(d => d.RecordId)).ToList();
                     importedDonorCount += reifiedDonorBatch.Count;
                     logger.SendTrace($"Batch complete - imported {reifiedDonorBatch.Count} donors this batch. Cumulatively {importedDonorCount} donors. ");
                 }
@@ -150,18 +149,6 @@ namespace Atlas.DonorImport.Services
             await donorImportFileHistoryService.RegisterFailedDonorImportWithPermanentError(file);
             logger.SendTrace(message, LogLevel.Warn);
             await notificationSender.SendAlert(message, description, Priority.Medium, nameof(ImportDonorFile));
-        }
-
-        private bool ValidateDonorIsSearchable(DonorUpdate donorUpdate)
-        {
-            var validationResult = searchableDonorValidator.Validate(donorUpdate);
-
-            if (!validationResult.IsValid)
-            {
-                logger.SendTrace($"Invalid Donor found with Id: {donorUpdate.RecordId}", LogLevel.Verbose);
-            }
-
-            return validationResult.IsValid;
         }
     }
 }

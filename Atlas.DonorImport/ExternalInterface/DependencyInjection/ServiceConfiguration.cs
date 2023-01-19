@@ -72,6 +72,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IImportedLocusInterpreter, ImportedLocusInterpreter>();
             services.AddScoped<IDonorImportFileHistoryService, DonorImportFileHistoryService>();
             services.AddScoped<IDonorImportLogService, DonorImportLogService>();
+            services.AddScoped<IDonorUpdateCategoriser, DonorUpdateCategoriser>();
 
             services.AddScoped<IDonorUpdatesSaver, DonorUpdatesSaver>();
             services.AddScoped<IDonorUpdatesPublisher, DonorUpdatesPublisher>();
