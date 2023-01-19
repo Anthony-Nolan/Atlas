@@ -8,11 +8,12 @@ namespace Atlas.DonorImport.Validators
     {
         public SearchableDonorValidator()
         {
-            RuleFor(d => d.Hla)
-                .SetValidator(new SearchableHlaValidator())
-                .When(d => d.ChangeType == ImportDonorChangeType.Create
-                           || d.ChangeType == ImportDonorChangeType.Edit
-                           || d.ChangeType == ImportDonorChangeType.Upsert);
+            When(donorUpdate => donorUpdate.ChangeType != ImportDonorChangeType.Delete, () =>
+            {
+                RuleFor(d => d.Hla)
+                    .NotEmpty()
+                    .SetValidator(new SearchableHlaValidator());
+            });
         }
     }
 
