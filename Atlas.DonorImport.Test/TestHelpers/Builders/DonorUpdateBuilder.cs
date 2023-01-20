@@ -9,9 +9,16 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
     [Builder]
     internal static class DonorUpdateBuilder
     {
+        private const string RecordIdPrefix = "donor-update-";
+
         internal static Builder<DonorUpdate> New => Builder<DonorUpdate>.New
-            .WithRecordIdPrefix("donor-update-")
-            .With(d => d.Hla, HlaBuilder.New.WithValidHlaAtAllLoci().Build())
+            .WithRecordIdPrefix(RecordIdPrefix)
+            .With(d => d.Hla, HlaBuilder.Default.WithValidHlaAtAllLoci().Build())
+            .With(d => d.UpdateMode, UpdateMode.Differential)
+            .With(d => d.DonorType, ImportDonorType.Adult);
+
+        internal static Builder<DonorUpdate> NoHla => Builder<DonorUpdate>.New
+            .WithRecordIdPrefix(RecordIdPrefix)
             .With(d => d.UpdateMode, UpdateMode.Differential)
             .With(d => d.DonorType, ImportDonorType.Adult);
 
@@ -27,7 +34,7 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
 
         internal static Builder<DonorUpdate> WithHomozygousHlaAt(this Builder<DonorUpdate> builder, Locus locus, string hla)
         {
-            return builder.With(d => d.Hla, HlaBuilder.New.WithValidHlaAtAllLoci().WithHomozygousMolecularHlaAtLocus(locus, hla).Build());
+            return builder.With(d => d.Hla, HlaBuilder.Default.WithValidHlaAtAllLoci().WithHomozygousMolecularHlaAtLocus(locus, hla).Build());
         }
     }
 
@@ -35,7 +42,7 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
     internal static class DonorUpdateWithInvalidEnumBuilder
     {
         internal static Builder<DonorUpdateWithInvalidEnums> New => Builder<DonorUpdateWithInvalidEnums>.New
-            .With(d => d.Hla, HlaBuilder.New.Build())
+            .With(d => d.Hla, HlaBuilder.Default.Build())
             .With(d => d.UpdateMode, "INVALID")
             .With(d => d.DonorType, "INVALID");
     }

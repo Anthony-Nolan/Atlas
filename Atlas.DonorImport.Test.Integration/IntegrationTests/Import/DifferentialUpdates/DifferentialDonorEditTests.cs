@@ -40,9 +40,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         private const string hla1 = "*01:01";
         private const string hla2 = "*01:02";
         private const string hla3 = "*01:03";
-        private readonly ImportedHla hlaObject1 = HlaBuilder.New.WithHomozygousMolecularHlaAtAllLoci(hla1).Build();
-        private readonly ImportedHla hlaObject2 = HlaBuilder.New.WithHomozygousMolecularHlaAtAllLoci(hla2).Build();
-        private readonly ImportedHla hlaObject3 = HlaBuilder.New.WithHomozygousMolecularHlaAtAllLoci(hla3).Build();
+        private readonly ImportedHla hlaObject1 = HlaBuilder.Default.WithHomozygousMolecularHlaAtAllLoci(hla1).Build();
+        private readonly ImportedHla hlaObject2 = HlaBuilder.Default.WithHomozygousMolecularHlaAtAllLoci(hla2).Build();
+        private readonly ImportedHla hlaObject3 = HlaBuilder.Default.WithHomozygousMolecularHlaAtAllLoci(hla3).Build();
 
         [OneTimeSetUp]
         public void OneTimeSetUp()

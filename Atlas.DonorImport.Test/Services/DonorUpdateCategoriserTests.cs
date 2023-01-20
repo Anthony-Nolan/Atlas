@@ -42,7 +42,7 @@ namespace Atlas.DonorImport.Test.Services
             var invalidNoHla = DonorUpdateBuilder.New.WithHla(null).Build(noHlaCount).ToList();
 
             const int noDrb1Count = 5;
-            var hlaMissingDrb1 = HlaBuilder.New.WithValidHlaAtAllLoci().With(x => x.DRB1, (ImportedLocus)null).Build();
+            var hlaMissingDrb1 = HlaBuilder.Default.WithValidHlaAtAllLoci().With(x => x.DRB1, (ImportedLocus)null).Build();
             var invalidMissingDrb1 = DonorUpdateBuilder.New.WithHla(hlaMissingDrb1).Build(noDrb1Count);
 
             var result = categoriser.Categorise(invalidNoHla.Concat(invalidMissingDrb1));

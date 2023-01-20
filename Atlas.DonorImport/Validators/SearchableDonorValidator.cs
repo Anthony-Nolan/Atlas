@@ -11,7 +11,7 @@ namespace Atlas.DonorImport.Validators
             When(donorUpdate => donorUpdate.ChangeType != ImportDonorChangeType.Delete, () =>
             {
                 RuleFor(d => d.Hla)
-                    .NotEmpty()
+                    .NotNull()
                     .SetValidator(new SearchableHlaValidator());
             });
         }
@@ -21,9 +21,9 @@ namespace Atlas.DonorImport.Validators
     {
         public SearchableHlaValidator()
         {
-            RuleFor(h => h.A).NotEmpty().SetValidator(new RequiredImportedLocusValidator());
-            RuleFor(h => h.B).NotEmpty().SetValidator(new RequiredImportedLocusValidator());
-            RuleFor(h => h.DRB1).NotEmpty().SetValidator(new RequiredImportedLocusValidator());
+            RuleFor(h => h.A).NotNull().SetValidator(new RequiredImportedLocusValidator());
+            RuleFor(h => h.B).NotNull().SetValidator(new RequiredImportedLocusValidator());
+            RuleFor(h => h.DRB1).NotNull().SetValidator(new RequiredImportedLocusValidator());
 
             RuleFor(h => h.C).SetValidator(new OptionalImportedLocusValidator());
             RuleFor(h => h.DPB1).SetValidator(new OptionalImportedLocusValidator());
@@ -35,8 +35,10 @@ namespace Atlas.DonorImport.Validators
     {
         public RequiredImportedLocusValidator()
         {
-            RuleFor(l => l)
-                .Must(l => l.Dna != null && new RequiredTwoFieldStringValidator().Validate(l.Dna).IsValid)
+            RuleFor(l => l.Dna)
+                .NotNull()
+                .SetValidator(new RequiredTwoFieldStringValidator())
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse - removing the null check leads to null argument exceptions by the validator
                 .Unless(l => l.Serology != null && new RequiredTwoFieldStringValidator().Validate(l.Serology).IsValid);
         }
     }
@@ -45,7 +47,7 @@ namespace Atlas.DonorImport.Validators
     {
         public RequiredTwoFieldStringValidator()
         {
-            RuleFor(d => d.Field1).NotEmpty();
+            RuleFor(x => x.Field1).NotEmpty();
         }
     }
 
