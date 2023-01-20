@@ -9,10 +9,12 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
     internal static class HlaBuilder
     {
 #pragma warning disable 618
-        private static readonly ImportedLocus DefaultLocus = new ImportedLocus{ Dna = new TwoFieldStringData()};
+        private static readonly ImportedLocus DefaultLocus = new() { Dna = new TwoFieldStringData()};
 #pragma warning restore 618
 
-        internal static Builder<ImportedHla> New => Builder<ImportedHla>.New
+        internal static Builder<ImportedHla> New => Builder<ImportedHla>.New;
+
+        internal static Builder<ImportedHla> Default => New
             .With(hla => hla.A, DefaultLocus)
             .With(hla => hla.B, DefaultLocus)
             .With(hla => hla.C, DefaultLocus)
@@ -35,14 +37,19 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
 
         internal static Builder<ImportedHla> WithMolecularHlaAtLocus(this Builder<ImportedHla> builder, Locus locus, string field1, string field2)
         {
+            return builder.WithImportedLocus(locus, new ImportedLocus { Dna = new TwoFieldStringData { Field1 = field1, Field2 = field2 } });
+        }
+
+        internal static Builder<ImportedHla> WithImportedLocus(this Builder<ImportedHla> builder, Locus locus, ImportedLocus typing)
+        {
             return locus switch
             {
-                Locus.A => builder.With(hla => hla.A, new ImportedLocus {Dna = new TwoFieldStringData {Field1 = field1, Field2 = field2}}),
-                Locus.B => builder.With(hla => hla.B, new ImportedLocus {Dna = new TwoFieldStringData {Field1 = field1, Field2 = field2}}),
-                Locus.C => builder.With(hla => hla.C, new ImportedLocus {Dna = new TwoFieldStringData {Field1 = field1, Field2 = field2}}),
-                Locus.Dpb1 => builder.With(hla => hla.DPB1, new ImportedLocus {Dna = new TwoFieldStringData {Field1 = field1, Field2 = field2}}),
-                Locus.Dqb1 => builder.With(hla => hla.DQB1, new ImportedLocus {Dna = new TwoFieldStringData {Field1 = field1, Field2 = field2}}),
-                Locus.Drb1 => builder.With(hla => hla.DRB1, new ImportedLocus {Dna = new TwoFieldStringData {Field1 = field1, Field2 = field2}}),
+                Locus.A => builder.With(x => x.A, typing),
+                Locus.B => builder.With(x => x.B, typing),
+                Locus.C => builder.With(x => x.C, typing),
+                Locus.Dpb1 => builder.With(x => x.DPB1, typing),
+                Locus.Dqb1 => builder.With(x => x.DQB1, typing),
+                Locus.Drb1 => builder.With(x => x.DRB1, typing),
                 _ => throw new ArgumentOutOfRangeException(nameof(locus), locus, null)
             };
         }

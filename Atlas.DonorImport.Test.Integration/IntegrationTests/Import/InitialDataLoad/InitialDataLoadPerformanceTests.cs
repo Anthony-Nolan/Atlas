@@ -45,7 +45,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
         [IgnoreExceptOnCiPerfTest("Performance Test. 100_000 donors ran in ~10 seconds.")]
         public async Task ImportDonors_AllInvalid_Performance()
         {
-            var hla = HlaBuilder.New.WithValidHlaAtAllLoci().WithMolecularHlaAtLocus(Locus.B, null, null).Build();
+            var hla = HlaBuilder.Default.WithValidHlaAtAllLoci().WithMolecularHlaAtLocus(Locus.B, null, null).Build();
             var donors = DonorUpdateBuilder.New.WithHla(hla).Build(100_000);
             var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(donors.ToArray());
 
@@ -58,7 +58,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
         {
             const int donorCount = 30_000;
             
-            var invalidHla = HlaBuilder.New.WithValidHlaAtAllLoci().WithMolecularHlaAtLocus(Locus.B, null, null).Build();
+            var invalidHla = HlaBuilder.Default.WithValidHlaAtAllLoci().WithMolecularHlaAtLocus(Locus.B, null, null).Build();
             var invalidDonors = DonorUpdateBuilder.New.WithHla(invalidHla).Build(donorCount/2);
             var validDonors = DonorUpdateBuilder.New.Build(donorCount/2);
 

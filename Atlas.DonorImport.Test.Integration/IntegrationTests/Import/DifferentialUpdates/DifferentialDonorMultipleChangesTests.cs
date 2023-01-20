@@ -71,7 +71,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
                 createUpdateBuilder.With(d => d.RecordId, "4").WithHomozygousHlaAt(Locus.B, "*01:02").Build(),
                 createUpdateBuilder.With(d => d.RecordId, "5").WithHomozygousHlaAt(Locus.B, "*01:02").Build(),
                 createUpdateBuilder.With(d => d.RecordId, "6").WithHomozygousHlaAt(Locus.A, "*01:03").Build(),
-                createUpdateBuilder.With(d => d.RecordId, "7").WithHla(HlaBuilder.New.WithMolecularHlaAtAllLoci("01:01", "01:01").WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:03").WithHomozygousMolecularHlaAtLocus(Locus.C, "*01:04").Build()).Build(),
+                createUpdateBuilder.With(d => d.RecordId, "7").WithHla(HlaBuilder.Default.WithMolecularHlaAtAllLoci("01:01", "01:01").WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:03").WithHomozygousMolecularHlaAtLocus(Locus.C, "*01:04").Build()).Build(),
                 createUpdateBuilder.With(d => d.RecordId, "8").WithHomozygousHlaAt(Locus.A, "*01:03").Build(),
                 // recordId "9" hasn't been created yet.
             };
@@ -92,7 +92,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
                 //createUpdateBuilder.With(d => d.RecordId, "4").WithHomozygousHlaAt(Locus.B, "*01:02").Build(),
                 //createUpdateBuilder.With(d => d.RecordId, "5").WithHomozygousHlaAt(Locus.B, "*01:02").Build(),
                 editUpdateBuilder.With(d => d.RecordId, "6").WithHomozygousHlaAt(Locus.B, "*01:04").Build(), //Note this overriding the A property on the original.
-                //createUpdateBuilder.With(d => d.RecordId, "7").WithHla(HlaBuilder.New.WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:03").WithHomozygousMolecularHlaAtLocus(Locus.C, "*01:04").Build()).Build(),
+                //createUpdateBuilder.With(d => d.RecordId, "7").WithHla(HlaBuilder.Default.WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:03").WithHomozygousMolecularHlaAtLocus(Locus.C, "*01:04").Build()).Build(),
                 //createUpdateBuilder.With(d => d.RecordId, "8").WithHomozygousHlaAt(Locus.A, "*01:03").Build(),
                 // recordId "9" hasn't been created yet.
             };
@@ -111,7 +111,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
                 deleteUpdateBuilder.With(d => d.RecordId, "4").Build(),
                 deleteUpdateBuilder.With(d => d.RecordId, "5").Build(),
                 //editUpdateBuilder.With(d => d.RecordId, "6").WithHomozygousHlaAt(Locus.B, "*01:04").Build(), //Note this overriding the A property on the original.
-                //createUpdateBuilder.With(d => d.RecordId, "7").WithHla(HlaBuilder.New.WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:03").WithHomozygousMolecularHlaAtLocus(Locus.C, "*01:04").Build()).Build(),
+                //createUpdateBuilder.With(d => d.RecordId, "7").WithHla(HlaBuilder.Default.WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:03").WithHomozygousMolecularHlaAtLocus(Locus.C, "*01:04").Build()).Build(),
                 //createUpdateBuilder.With(d => d.RecordId, "8").WithHomozygousHlaAt(Locus.A, "*01:03").Build(),
                 // recordId "9" hasn't been created yet.
             };
@@ -130,8 +130,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
                 //deleteUpdateBuilder.With(d => d.RecordId, "4").Build(),
                 //deleteUpdateBuilder.With(d => d.RecordId, "5").Build(),
                 //editUpdateBuilder.With(d => d.RecordId, "6").WithHomozygousHlaAt(Locus.B, "*01:04").Build(), //Note this overriding the A property on the original.
-                //createUpdateBuilder.With(d => d.RecordId, "7").WithHla(HlaBuilder.New.WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:03").WithHomozygousMolecularHlaAtLocus(Locus.C, "*01:04").Build()).Build(),
-                editUpdateBuilder.With(d => d.RecordId, "8").WithHla(HlaBuilder.New.WithMolecularHlaAtAllLoci("01:01", "01:01").WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:06").WithHomozygousMolecularHlaAtLocus(Locus.B, "*01:07").Build()).Build(),
+                //createUpdateBuilder.With(d => d.RecordId, "7").WithHla(HlaBuilder.Default.WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:03").WithHomozygousMolecularHlaAtLocus(Locus.C, "*01:04").Build()).Build(),
+                editUpdateBuilder.With(d => d.RecordId, "8").WithHla(HlaBuilder.Default.WithMolecularHlaAtAllLoci("01:01", "01:01").WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:06").WithHomozygousMolecularHlaAtLocus(Locus.B, "*01:07").Build()).Build(),
                 // recordId "9" hasn't been created yet.
             };
 
@@ -149,8 +149,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
                 createUpdateBuilder.With(d => d.RecordId, "4").WithHomozygousHlaAt(Locus.C, "*01:11").Build(), //Note this re-creating a previously deleted record.
                 //deleteUpdateBuilder.With(d => d.RecordId, "5").Build(),
                 //editUpdateBuilder.With(d => d.RecordId, "6").WithHomozygousHlaAt(Locus.B, "*01:04").Build(), //Note this overriding the A property on the original.
-                //createUpdateBuilder.With(d => d.RecordId, "7").WithHla(HlaBuilder.New.WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:03").WithHomozygousMolecularHlaAtLocus(Locus.C, "*01:04").Build()).Build(),
-                //editUpdateBuilder.With(d => d.RecordId, "8").WithHla(HlaBuilder.New.WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:06").WithHomozygousMolecularHlaAtLocus(Locus.B, "*01:07").Build()).Build(),
+                //createUpdateBuilder.With(d => d.RecordId, "7").WithHla(HlaBuilder.Default.WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:03").WithHomozygousMolecularHlaAtLocus(Locus.C, "*01:04").Build()).Build(),
+                //editUpdateBuilder.With(d => d.RecordId, "8").WithHla(HlaBuilder.Default.WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:06").WithHomozygousMolecularHlaAtLocus(Locus.B, "*01:07").Build()).Build(),
                 createUpdateBuilder.With(d => d.RecordId, "9").WithHomozygousHlaAt(Locus.C, "*01:10").Build(),
             };
 

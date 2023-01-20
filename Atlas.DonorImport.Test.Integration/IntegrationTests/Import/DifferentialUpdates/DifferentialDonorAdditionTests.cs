@@ -85,8 +85,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         {
             const string hla1 = "*01:01";
             const string hla2 = "*01:02";
-            var hlaObject1 = HlaBuilder.New.WithHomozygousMolecularHlaAtAllLoci(hla1).Build();
-            var hlaObject2 = HlaBuilder.New.WithHomozygousMolecularHlaAtAllLoci(hla2).Build();
+            var hlaObject1 = HlaBuilder.Default.WithHomozygousMolecularHlaAtAllLoci(hla1).Build();
+            var hlaObject2 = HlaBuilder.Default.WithHomozygousMolecularHlaAtAllLoci(hla2).Build();
 
             const string donorCodePrefix = "test2-";
             var donorUpdates =

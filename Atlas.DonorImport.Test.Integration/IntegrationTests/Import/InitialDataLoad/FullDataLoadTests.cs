@@ -38,7 +38,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
         [Test]
         public async Task FullDonorImport_WhenDonorsAlreadyExist_UpdatesDonors()
         {
-            var hla = HlaBuilder.New.WithValidHlaAtAllLoci().Build();
+            var hla = HlaBuilder.Default.WithValidHlaAtAllLoci().Build();
             var donors = DonorUpdateBuilder.New.WithHla(hla).Build(5).ToList();
             var file1 = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(donors.ToArray());
 
@@ -46,7 +46,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
 
             var initialDonors = donorRepository.StreamAllDonors().ToList();
 
-            var updatedHla = HlaBuilder.New.WithValidHlaAtAllLoci().WithMolecularHlaAtLocus(Locus.Dqb1, null, null).Build();
+            var updatedHla = HlaBuilder.Default.WithValidHlaAtAllLoci().WithMolecularHlaAtLocus(Locus.Dqb1, null, null).Build();
             foreach (var donor in donors)
             {
                 donor.Hla = updatedHla;
