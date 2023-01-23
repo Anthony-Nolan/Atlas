@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Validators;
@@ -10,6 +11,8 @@ namespace Atlas.DonorImport.Test.Validators
     [TestFixture]
     internal class RequiredImportedLocusValidatorTests
     {
+        private const Locus TestLocus = Locus.A;
+
         private RequiredImportedLocusValidator validator;
 
         private static readonly IEnumerable<TwoFieldStringData> EmptyTwoFieldData = new[]
@@ -21,7 +24,7 @@ namespace Atlas.DonorImport.Test.Validators
         [SetUp]
         public void SetUp()
         {
-            validator = new RequiredImportedLocusValidator();
+            validator = new RequiredImportedLocusValidator(TestLocus);
         }
 
         [Test]
@@ -68,7 +71,20 @@ namespace Atlas.DonorImport.Test.Validators
 
             var result = validator.Validate(locus);
 
-            result.IsValid.Should().BeFalse();
+            string.Join(";", result.Errors).Should().StartWith($"Required locus {TestLocus}");
+        }
+
+        [TestCaseSource(nameof(EmptyTwoFieldData))]
+        public void Validate_DnaIsEmpty_AndSerologyIsEmpty_ReturnsErrorMessagePrefixedWithLocusName(TwoFieldStringData emptyData)
+        {
+            var locus = LocusBuilder.Default
+                .WithDna(emptyData)
+                .WithSerology(emptyData)
+                .Build();
+
+            var result = validator.Validate(locus);
+
+            string.Join(";", result.Errors).Should().StartWith($"Required locus {TestLocus}");
         }
     }
 }

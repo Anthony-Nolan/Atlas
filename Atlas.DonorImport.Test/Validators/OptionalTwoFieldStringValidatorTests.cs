@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Validators;
 using FluentAssertions;
@@ -9,6 +10,9 @@ namespace Atlas.DonorImport.Test.Validators
     [TestFixture]
     internal class OptionalTwoFieldStringValidatorTests
     {
+        private const Locus TestLocus = Locus.C;
+        private const HlaFieldType TestHlaFieldType = HlaFieldType.Dna;
+
         private OptionalTwoFieldStringValidator validator;
 
         private static readonly IEnumerable<string> EmptyStrings = new[] { null, "" };
@@ -16,7 +20,7 @@ namespace Atlas.DonorImport.Test.Validators
         [SetUp]
         public void SetUp()
         {
-            validator = new OptionalTwoFieldStringValidator();
+            validator = new OptionalTwoFieldStringValidator(TestLocus, TestHlaFieldType);
         }
 
         [TestCase("")]
@@ -63,6 +67,20 @@ namespace Atlas.DonorImport.Test.Validators
             var result = validator.Validate(twoFieldData);
 
             result.IsValid.Should().BeFalse();
+        }
+
+        [TestCaseSource(nameof(EmptyStrings))]
+        public void Validate_FieldOneIsEmpty_AndFieldTwoIsNotEmpty_ReturnsErrorMessagePrefixedWithLocusNameAndHlaFieldType(string emptyField1)
+        {
+            var twoFieldData = new TwoFieldStringData
+            {
+                Field1 = emptyField1,
+                Field2 = "field-2"
+            };
+
+            var result = validator.Validate(twoFieldData);
+
+            string.Join(";", result.Errors).Should().StartWith($"Optional locus {TestLocus}, {TestHlaFieldType}");
         }
     }
 }
