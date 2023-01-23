@@ -5,6 +5,14 @@ Donor JSON Files are uploaded to BlobStorage, where they are picked up for proce
 * If the Donor File denotes a *change* to a Donor, then a Donor Update Message is put in the ServiceBusQueue to be processed into the Matching Donor Database.
 * If the Donor File is marked as being part of a "full" upload, then no such Message is Enqueued, and it is expected that a full Donor Refresh will be manually triggered in the near future.
 
+## File Validation
+
+Contents of the donor import file are validated on import to check that all required fields have been submitted; the [schema file](/Schemas/DonorUpdateFileSchema.json) indicates which fields are required.
+Validation failures are logged as custom events to Application Insights.
+
+Note: HLA typings themselves are not verified at this stage, as this would involve HLA metadata dictionary lookups, which would slow down the import process.
+"Bad" HLA will be caught and reported at the point where the donor is added to the Matching Donor Database (either via Service Bus, or Data Refresh).
+
 ## Limitations
 
 The donor import process does not fully guarantee ordering of the application of donor update files.
