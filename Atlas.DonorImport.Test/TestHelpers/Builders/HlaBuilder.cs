@@ -8,9 +8,7 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
     [Builder]
     internal static class HlaBuilder
     {
-#pragma warning disable 618
         private static readonly ImportedLocus DefaultLocus = new() { Dna = new TwoFieldStringData()};
-#pragma warning restore 618
 
         internal static Builder<ImportedHla> New => Builder<ImportedHla>.New;
 

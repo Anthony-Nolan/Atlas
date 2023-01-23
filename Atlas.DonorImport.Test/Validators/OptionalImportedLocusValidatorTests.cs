@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Validators;
@@ -10,6 +11,8 @@ namespace Atlas.DonorImport.Test.Validators
     [TestFixture]
     internal class OptionalImportedLocusValidatorTests
     {
+        private const Locus TestLocus = Locus.C;
+
         private OptionalImportedLocusValidator validator;
 
         private static readonly IEnumerable<TwoFieldStringData> EmptyTwoFieldData = new[]
@@ -21,7 +24,7 @@ namespace Atlas.DonorImport.Test.Validators
         [SetUp]
         public void SetUp()
         {
-            validator = new OptionalImportedLocusValidator();
+            validator = new OptionalImportedLocusValidator(TestLocus);
         }
 
         [Test]

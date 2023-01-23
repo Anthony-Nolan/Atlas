@@ -1,4 +1,5 @@
-﻿using Atlas.DonorImport.FileSchema.Models;
+﻿using Atlas.Common.Public.Models.GeneticData;
+using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Validators;
 using FluentAssertions;
 using NUnit.Framework;
@@ -8,12 +9,15 @@ namespace Atlas.DonorImport.Test.Validators
     [TestFixture]
     internal class RequiredTwoFieldStringValidatorTests
     {
+        private const Locus TestLocus = Locus.A;
+        private const HlaFieldType TestHlaFieldType = HlaFieldType.Dna;
+
         private RequiredTwoFieldStringValidator validator;
 
         [SetUp]
         public void SetUp()
         {
-            validator = new RequiredTwoFieldStringValidator();
+            validator = new RequiredTwoFieldStringValidator(TestLocus, TestHlaFieldType);
         }
 
         [TestCase("")]
@@ -46,6 +50,23 @@ namespace Atlas.DonorImport.Test.Validators
             var result = validator.Validate(twoFieldData);
 
             result.IsValid.Should().BeFalse();
+        }
+
+        [Test]
+        public void Validate_FieldOneIsEmpty_ReturnsErrorMessagePrefixedWithLocusNameAndHlaFieldType(
+            [Values("", null)] string emptyField1,
+            [Values("", null, "field-2")] string field2)
+        {
+            var twoFieldData = new TwoFieldStringData
+            {
+                Field1 = emptyField1,
+                Field2 = field2
+            };
+
+            var result = validator.Validate(twoFieldData);
+
+            string.Join(";", result.Errors).Should().StartWith($"Required locus {TestLocus}, {TestHlaFieldType}");
+
         }
     }
 }
