@@ -25,6 +25,7 @@ The project version will be appropriately incremented with each change to the pr
 
 #### Donor Import
 * Bug fix: New `DonorImport` function added to publish the donor update messages that keep the matching algorithm donor store in sync with the donor import donor store. This is to prevent messages from being lost if the app restarts during donor import. A second timer function cleans up expired updates to keep the update repository from getting too large.
+* Donor import validation errors now logged as custom events to Application Insights.
 
 #### Match Prediction
 * New endpoint added that allows match prediction to be performed without running a full search. It accepts batches of match prediction requests: one patient vs. a set of donors. Results are written out to blob storage, and a notification sent to a new topic: `match-prediction-results`.
