@@ -81,7 +81,7 @@ namespace Atlas.DonorImport.Services
                 .Select(errorMessage => new
                 {
                     ErrorMessage = errorMessage.Key,
-                    FailedDonorIds = errorMessage.Select(e => e.DonorUpdate.RecordId)
+                    FailedDonorIds = errorMessage.Select(e => e.DonorUpdate.RecordId).ToList()
                 });
 
             foreach (var error in errorMessages)
