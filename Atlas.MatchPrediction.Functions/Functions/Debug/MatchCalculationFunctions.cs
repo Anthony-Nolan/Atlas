@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Atlas.Common.Utils.Http;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.MatchCalculation;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.MatchCalculation;
@@ -11,7 +12,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
 
-namespace Atlas.MatchPrediction.Functions.Functions
+namespace Atlas.MatchPrediction.Functions.Functions.Debug
 {
     public class MatchCalculationFunctions
     {
@@ -24,7 +25,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
 
         [FunctionName(nameof(CalculateMatch))]
         public async Task<IActionResult> CalculateMatch(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(CalculateMatch)}")]
             [RequestBodyType(typeof(MatchCalculationInput), nameof(MatchCalculationInput))]
             HttpRequest request)
         {

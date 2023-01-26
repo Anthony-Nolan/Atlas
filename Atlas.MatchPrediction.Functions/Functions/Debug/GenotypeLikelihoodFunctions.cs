@@ -1,4 +1,7 @@
-﻿using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
+﻿using System.IO;
+using System.Threading.Tasks;
+using Atlas.Common.Utils.Http;
+using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -8,10 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
-using System.IO;
-using System.Threading.Tasks;
 
-namespace Atlas.MatchPrediction.Functions.Functions
+namespace Atlas.MatchPrediction.Functions.Functions.Debug
 {
     public class GenotypeLikelihoodFunctions
     {
@@ -26,7 +27,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
 
         [FunctionName(nameof(CalculateGenotypeLikelihood))]
         public async Task<IActionResult> CalculateGenotypeLikelihood(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(CalculateGenotypeLikelihood)}")]
             [RequestBodyType(typeof(GenotypeLikelihoodInput), nameof(GenotypeLikelihoodInput))]
             HttpRequest request)
         {
