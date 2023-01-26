@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using Atlas.Common.Utils;
 using Atlas.Common.Utils.Http;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Functions.Models.Debug;
@@ -28,10 +26,9 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(ConvertHla))]
         public async Task<IEnumerable<string>> ConvertHla(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(ConvertHla)}")]
             [RequestBodyType(typeof(HlaConversionRequest), nameof(HlaConversionRequest))]
             HttpRequest httpRequest)
         {
