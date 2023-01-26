@@ -4,7 +4,11 @@
 	"properties": {
 		"updateMode": {
 			"type": "string",
-			"enum": [ "diff" ]
+			"enum": [
+				"diff",
+				"full"
+			],
+			"description": "Differential or Full"
 		},
 		"donors": {
 			"type": "array",
@@ -13,67 +17,103 @@
 				"type": "object",
 				"properties": {
 					"recordId": {
-						"type": "integer"
+						"type": "string"
 					},
 					"changeType": {
 						"type": "string",
-						"enum": [ "D", "U", "N", "NU" ],
+						"enum": [
+							"D",
+							"U",
+							"N",
+							"NU"
+						],
 						"description": "Deleted, Updated, New or New-or-Update (Upsert)"
 					},
 					"donorType": {
 						"type": "string",
-						"enum": [ "D", "C", "B" ],
+						"enum": [
+							"D",
+							"C",
+							"B"
+						],
 						"description": "Donor, Cord or Banked"
 					},
 					"donPool": {
-						"type": "integer",
-						"minimum": 1000,
-						"maximum": 9999,
-						"description": "Physical location of the donor. Used to denote which registry a donor belongs to. Four digit code. "
+						"type": [
+							"string",
+							"null"
+						],
+						"description": "Physical location of the donor, used to denote which registry a donor belongs to."
 					},
 					"ethn": {
-						"enum": [ "AFNA", "AFSS", "ASSW", "ASSO", "ASCE", "ASSE", "ASNE", "ASOC", "CAEU", "CAER", "CANA", "CAAU", "HICA", "HISA", "AF", "AS", "CA", "HI", "MX", "OT", "UK", null ]
+						"type": [
+							"string",
+							"null"
+						],
+						"description": "Ethnicity of the donor."
 					},
 					"hla": {
 						"$ref": "#/definitions/hla"
 					}
 				},
-				"required": [ "recordId", "donorType", "donPool", "ethn", "hla" ],
+				"required": [
+					"recordId",
+					"changeType",
+					"donorType",
+					"donPool",
+					"ethn",
+					"hla"
+				],
 				"additionalProperties": false
 			}
 		}
 	},
-	"required": [ "updateMode", "donors" ],
+	"required": [
+		"updateMode",
+		"donors"
+	],
 	"additionalProperties": false,
 	"definitions": {
 		"dna": {
 			"type": "object",
 			"properties": {
 				"field1": {
-					"type": [ "string", "null" ],
-					"maxLength": 20
+					"type": [
+						"string",
+						"null"
+					]
 				},
 				"field2": {
-					"type": [ "string", "null" ],
-					"maxLength": 20
+					"type": [
+						"string",
+						"null"
+					]
 				}
 			},
-			"required": [ "field1", "field2" ],
+			"required": [
+				"field1"
+			],
 			"additionalProperties": false
 		},
 		"ser": {
 			"type": "object",
 			"properties": {
 				"field1": {
-					"type": [ "string", "null" ],
-					"maxLength": 5
+					"type": [
+						"string",
+						"null"
+					]
 				},
 				"field2": {
-					"type": [ "string", "null" ],
-					"maxLength": 5
+					"type": [
+						"string",
+						"null"
+					]
 				}
 			},
-			"required": [ "field1", "field2" ],
+			"required": [
+				"field1"
+			],
 			"additionalProperties": false
 		},
 		"a": {
@@ -86,7 +126,10 @@
 					"$ref": "#/definitions/ser"
 				}
 			},
-			"required": [ "dna", "ser" ],
+			"required": [
+				"dna",
+				"ser"
+			],
 			"additionalProperties": false
 		},
 		"b": {
@@ -99,7 +142,10 @@
 					"$ref": "#/definitions/ser"
 				}
 			},
-			"required": [ "dna", "ser" ],
+			"required": [
+				"dna",
+				"ser"
+			],
 			"additionalProperties": false
 		},
 		"c": {
@@ -111,15 +157,8 @@
 				"ser": {
 					"$ref": "#/definitions/ser"
 				}
-			}
-		},
-		"dpa1": {
-			"type": "object",
-			"properties": {
-				"dna": {
-					"$ref": "#/definitions/dna"
-				}
-			}
+			},
+			"additionalProperties": false
 		},
 		"dpb1": {
 			"type": "object",
@@ -127,15 +166,8 @@
 				"dna": {
 					"$ref": "#/definitions/dna"
 				}
-			}
-		},
-		"dqa1": {
-			"type": "object",
-			"properties": {
-				"dna": {
-					"$ref": "#/definitions/dna"
-				}
-			}
+			},
+			"additionalProperties": false
 		},
 		"dqb1": {
 			"type": "object",
@@ -146,7 +178,8 @@
 				"ser": {
 					"$ref": "#/definitions/ser"
 				}
-			}
+			},
+			"additionalProperties": false
 		},
 		"drb1": {
 			"type": "object",
@@ -157,31 +190,8 @@
 				"ser": {
 					"$ref": "#/definitions/ser"
 				}
-			}
-		},
-		"drb3": {
-			"type": "object",
-			"properties": {
-				"dna": {
-					"$ref": "#/definitions/dna"
-				}
-			}
-		},
-		"drb4": {
-			"type": "object",
-			"properties": {
-				"dna": {
-					"$ref": "#/definitions/dna"
-				}
-			}
-		},
-		"drb5": {
-			"type": "object",
-			"properties": {
-				"dna": {
-					"$ref": "#/definitions/dna"
-				}
-			}
+			},
+			"additionalProperties": false
 		},
 		"hla": {
 			"type": "object",
@@ -195,33 +205,21 @@
 				"c": {
 					"$ref": "#/definitions/c"
 				},
-				"dpa1": {
-					"$ref": "#/definitions/dpa1"
-				},
 				"dpb1": {
 					"$ref": "#/definitions/dpb1"
-				},
-				"dqa1": {
-					"$ref": "#/definitions/dqa1"
 				},
 				"dqb1": {
 					"$ref": "#/definitions/dqb1"
 				},
 				"drb1": {
 					"$ref": "#/definitions/drb1"
-				},
-				"drb3": {
-					"$ref": "#/definitions/drb3"
-				},
-				"drb4": {
-					"$ref": "#/definitions/drb4"
-				},
-				"drb5": {
-					"$ref": "#/definitions/drb5"
 				}
 			},
-						"required": [ "a", "b", "c", "drb1", "drb3", "drb4", "drb5", "dqa1", "dqb1", "dpa1", "dpb1" ],
-						"additionalProperties": false
+			"required": [
+				"a",
+				"b",
+				"drb1"
+			]
 		}
 	}
 }
