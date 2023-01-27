@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.DonorImport.Data.Models;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
 

@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ServiceBus.Models;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.ManualTesting.Models;
 using Atlas.ManualTesting.Services.ServiceBus;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
 
 namespace Atlas.ManualTesting.Services
 {

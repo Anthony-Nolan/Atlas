@@ -1,5 +1,5 @@
 ﻿using Atlas.DonorImport.Data.Models;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Models

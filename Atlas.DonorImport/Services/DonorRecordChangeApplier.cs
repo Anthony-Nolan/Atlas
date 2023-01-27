@@ -15,7 +15,6 @@ using Atlas.DonorImport.Models;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services.DonorUpdates;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Donor = Atlas.DonorImport.Data.Models.Donor;
 
 namespace Atlas.DonorImport.Services

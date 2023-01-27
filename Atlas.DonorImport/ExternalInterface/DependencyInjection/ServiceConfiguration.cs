@@ -6,12 +6,12 @@ using Atlas.Common.ServiceBus;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data;
 using Atlas.DonorImport.Data.Repositories;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Services.DonorUpdates;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.DonorImport.ExternalInterface.DependencyInjection

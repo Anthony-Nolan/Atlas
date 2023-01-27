@@ -1,5 +1,5 @@
 ﻿using System;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
+using Atlas.DonorImport.ExternalInterface.Models;
 using FluentAssertions;
 using Newtonsoft.Json;
 using NUnit.Framework;

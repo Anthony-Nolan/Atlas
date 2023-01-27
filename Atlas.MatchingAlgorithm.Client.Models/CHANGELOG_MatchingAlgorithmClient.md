@@ -9,5 +9,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Versions
 
 ### 1.5.0
-* No outward changes to client models.
 * Versioning and changelog added as client will now be published as NuGet package.
+* Removed `SearchableDonorInformation` model and `DonorType` extensions as they are not used by the Matching Algorithm API.
