@@ -1,4 +1,5 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models.Donors;
+﻿using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using LochNessBuilder;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders

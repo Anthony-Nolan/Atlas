@@ -1,18 +1,12 @@
 ﻿using System;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 
 // ReSharper disable InconsistentNaming
 
-namespace Atlas.MatchingAlgorithm.Client.Models.Donors
+namespace Atlas.DonorImport.ExternalInterface.Models
 {
-    /// It could be argued that these donor update models belong to the Donor Import component,
-    /// as it is responsible for detecting and publishing this information.
-    /// However, as matching algorithm is currently the only consumer, and the model only includes
-    /// properties need by matching, it seems ok to leave these here, and avoid a breaking client change.
-    /// But it would make sense to migrate these models in the unlikely event that an additional component subscribes to the same updates.
-
     /// <summary>
-    /// Donor info containing only the information required to search for donors - e.g. by the search algorithm service
-    /// This only includes the bare minimum for a search for performance reasons.
+    /// Info pertaining to donor search only.
     /// </summary>
     public class SearchableDonorInformation
     {
@@ -32,6 +26,9 @@ namespace Atlas.MatchingAlgorithm.Client.Models.Donors
         public string DRB1_2 { get; set; }
     }
 
+    /// <summary>
+    /// Update published after a donor change has been successfully applied.
+    /// </summary>
     public class SearchableDonorUpdate
     {
         public DateTimeOffset PublishedDateTime { get; set; } = DateTimeOffset.UtcNow;

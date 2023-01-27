@@ -1,6 +1,6 @@
 using Atlas.Common.Validation;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
-using Atlas.MatchingAlgorithm.Extensions;
+using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.MatchingAlgorithm.Models;
 using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Validators.DonorInfo

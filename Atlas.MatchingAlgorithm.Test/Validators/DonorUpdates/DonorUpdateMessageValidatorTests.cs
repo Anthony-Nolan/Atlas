@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models.Donors;
+﻿using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
 using FluentValidation.TestHelper;
 using NUnit.Framework;

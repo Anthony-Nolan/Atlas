@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
 
 namespace Atlas.DonorImport.Services.DonorUpdates
 {

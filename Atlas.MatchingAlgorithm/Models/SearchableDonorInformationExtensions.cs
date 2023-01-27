@@ -1,10 +1,9 @@
-﻿using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+﻿using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 
-namespace Atlas.MatchingAlgorithm.Extensions
+namespace Atlas.MatchingAlgorithm.Models
 {
     internal static class SearchableDonorInformationExtensions
     {
