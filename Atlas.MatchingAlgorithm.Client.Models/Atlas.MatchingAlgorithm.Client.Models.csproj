@@ -6,6 +6,7 @@
       <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <RootNamespace>Atlas.MatchingAlgorithm.Client.Models</RootNamespace>
         <NoWarn>1591</NoWarn>
+        <PackageReadmeFile>CHANGELOG_MatchingAlgorithmClient.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,6 +19,13 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Atlas.Client.Models\Atlas.Client.Models.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="CHANGELOG_MatchingAlgorithmClient.md">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
     </ItemGroup>
 
 </Project>

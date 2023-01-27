@@ -5,11 +5,20 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <VersionPrefix>1.5.0</VersionPrefix>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <PackageReadmeFile>CHANGELOG_CommonPublicModels.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="EnumStringValues" Version="4.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="CHANGELOG_CommonPublicModels.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
