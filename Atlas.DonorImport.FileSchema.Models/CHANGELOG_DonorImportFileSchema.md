@@ -1,4 +1,9 @@
-﻿# Changelog
+﻿# Atlas.DonorImport.FileSchema.Models
+
+## Description
+This package contains models that define the Atlas Donor Import file.
+
+## Changelog
 All notable data structure changes to this project will be documented in this file.
 
 This includes both schema and data workflow changes.

@@ -1,4 +1,14 @@
-﻿# Changelog
+﻿# Atlas.MatchingAlgorithm.Client.Models
+
+## Description
+This package contains all client models utilised by the Atlas Matching Algorithm API for data refresh, scoring-only, and matching-only requests.
+
+* `DataRefresh` - request, response and completion message
+* `Donors` - currently only contains `DonorType` enum, which is due to be moved out of the Client package (//TODO - [issue #763](https://github.com/Anthony-Nolan/Atlas/issues/763))
+* `Scoring` - request and result
+* `SearchRequests` - Initiation response when search request is made direct to the matching component
+
+## Changelog
 All notable data structure changes to this project will be documented in this file.
 
 This includes both schema and data workflow changes.

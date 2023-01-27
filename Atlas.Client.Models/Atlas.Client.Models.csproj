@@ -4,6 +4,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <VersionPrefix>1.5.0</VersionPrefix>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <PackageReadmeFile>CHANGELOG_Client.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,6 +13,13 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Atlas.Common.Public.Models\Atlas.Common.Public.Models.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="CHANGELOG_Client.md">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
     </ItemGroup>
 
 </Project>
