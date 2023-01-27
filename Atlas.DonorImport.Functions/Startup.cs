@@ -26,6 +26,8 @@ namespace Atlas.DonorImport.Functions
                 OptionsReaderFor<PublishDonorUpdatesSettings>(),
                 ConnectionStringReader("DonorStoreSql")
             );
+
+            builder.Services.RegisterDonorReader(ConnectionStringReader("DonorStoreSql"));
         }
 
         private static void RegisterSettings(IServiceCollection services)
