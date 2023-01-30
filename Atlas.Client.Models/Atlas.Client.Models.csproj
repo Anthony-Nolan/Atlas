@@ -1,25 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <VersionPrefix>1.5.0</VersionPrefix>
-        <GenerateDocumentationFile>True</GenerateDocumentationFile>
-        <PackageReadmeFile>CHANGELOG_Client.md</PackageReadmeFile>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <VersionPrefix>1.5.0</VersionPrefix>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <PackageReadmeFile>CHANGELOG_Client.md</PackageReadmeFile>
+    <Authors>Anthony Nolan</Authors>
+    <Company>Anthony Nolan</Company>
+    <Description>Contains all client models utilised by the Atlas Public API to request searches and repeat searches, and to retrieve their results. See package README for more details and changelog.</Description>
+    <PackageProjectUrl>https://github.com/Anthony-Nolan/Atlas</PackageProjectUrl>
+    <Copyright>https://github.com/Anthony-Nolan/Atlas/blob/master/LICENSE</Copyright>
+  </PropertyGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Atlas.Common.Public.Models\Atlas.Common.Public.Models.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Atlas.Common.Public.Models\Atlas.Common.Public.Models.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <None Update="CHANGELOG_Client.md">
-        <Pack>True</Pack>
-        <PackagePath>\</PackagePath>
-      </None>
-    </ItemGroup>
+  <ItemGroup>
+    <None Update="CHANGELOG_Client.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>

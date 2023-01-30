@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <VersionPrefix>1.5.0</VersionPrefix>
@@ -7,6 +7,11 @@
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <PackageReadmeFile>CHANGELOG_DonorImportFileSchema.md</PackageReadmeFile>
+    <Authors>Anthony Nolan</Authors>
+    <Company>Anthony Nolan</Company>
+    <Description>Contains models that define the Atlas Donor Import file. See package README for more details and changelog.</Description>
+    <PackageProjectUrl>https://github.com/Anthony-Nolan/Atlas</PackageProjectUrl>
+    <Copyright>https://github.com/Anthony-Nolan/Atlas/blob/master/LICENSE</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
