@@ -19,8 +19,9 @@ provider "azurerm" {
 
 locals {
   repository_name     = "Atlas"
-  location            = "uksouth"
+  location            = var.AZURE_LOCATION
   min_tls_version     = "1.0"
+  name_prefix         = var.NAME_PREFIX
   resource_group_name = "ATLAS-SYSTEM-TEST-RESOURCE-GROUP"
   common_tags = {
     controlled_by_terraform = true

@@ -1,5 +1,5 @@
 resource "azurerm_storage_account" "system_test_storage" {
-  name                     = lower("AtlasSystemTestStorage")
+  name                     = "${lower(replace(local.name_prefix, "/\\W/", ""))}systemteststorage"
   resource_group_name      = azurerm_resource_group.atlas_system_tests_resource_group.name
   min_tls_version          = "TLS1_0"
   location                 = local.location
