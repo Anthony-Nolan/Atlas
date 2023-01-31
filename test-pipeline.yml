@@ -133,7 +133,7 @@ jobs:
     displayName: 'Nuget Restore'
     inputs:
       command: 'restore'
-      vstsFeed: '47b810d9-ad1c-410b-b5e5-45a100bcf88a'
+      feedsToUse: 'select'
 
   - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
     displayName: 'Update connection string ''DonorSql'''
