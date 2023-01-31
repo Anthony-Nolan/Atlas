@@ -61,6 +61,16 @@ To contribute to Atlas, the following steps should be taken:
 
 1. Ensure there is [an appropriate Github Issue](https://github.com/Anthony-Nolan/Atlas/issues) for the change being made - if one does not exist, please create one with a description of why the change is necessary, using the templates provided.
 2. Fork the repository, and make any code changes on a branch of your fork.
+3. Ensure commit messages are prefixed with the GitHub issue # and follow [semantic commit messaging] (https://seesparkbox.com/foundry/semantic_commit_messages).
+  - Examples:
+  - `chore: #12: add new component to build script`
+  - `docs: #23: explain HLA nomenclature`
+  - `feature: #34: add match prediction`
+  - `fix: #45: fix null reference`
+  - `refactor: #56: extract helper class for locus selection`
+  - `style: #67 :convert tabs to spaces`
+  - `test: #78: add validation tests for new feature`
+  - `review: #89: review markups`
 3. Create a Github Pull Request from your fork branch to the master branch of this repository.
 4. All code changes will then be reviewed by a code owner before they can be merged into the master branch.
 5. If any testing fails post-merge, you may be asked by a repository owner to assist in fixes, as required.  
