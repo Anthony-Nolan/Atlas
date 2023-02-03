@@ -52,6 +52,9 @@ jobs:
       env:
         ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
         ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+        ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+        TF_VAR_DATABASE_SERVER_ADMIN_LOGIN_PASSWORD: $(TF_VAR_DATABASE_SERVER_ADMIN_LOGIN_PASSWORD)
+
     - task: Powershell@2
       name: OutputTFVars
       env:
@@ -130,7 +133,7 @@ jobs:
     displayName: 'Nuget Restore'
     inputs:
       command: 'restore'
-      vstsFeed: '47b810d9-ad1c-410b-b5e5-45a100bcf88a'
+      feedsToUse: 'select'
 
   - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
     displayName: 'Update connection string ''DonorSql'''
