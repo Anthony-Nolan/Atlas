@@ -12,6 +12,9 @@ The project version will be appropriately incremented with each change to the pr
 
 ### 1.5.0
 
+#### API Documentation
+* Added new http function that generates a JSON schema for the requested ResultSet client model.
+
 #### Deployment & Integration
 * Atlas client models and donor import schema now published as NuGet packages to simplify task of integration.
   * Build pipeline extended with tasks for generating NuGet packages.
