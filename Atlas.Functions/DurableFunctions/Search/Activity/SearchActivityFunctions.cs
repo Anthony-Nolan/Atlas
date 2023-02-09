@@ -108,9 +108,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [FunctionName(nameof(PersistSearchResults))]
-        public async Task PersistSearchResults([ActivityTrigger] PersistSearchResultsParameters persistSearchResultsParameters)
+        public async Task PersistSearchResults([ActivityTrigger] PersistSearchResultsFunctionParameters parameters)
         {
-            var matchingResultsNotification = persistSearchResultsParameters.MatchingResultsNotification;
+            var matchingResultsNotification = parameters.MatchingResultsNotification;
 
             var matchingResults = await logger.RunTimedAsync("Download matching results", async () =>
                 await matchingResultsDownloader.Download(matchingResultsNotification.ResultsFileName, matchingResultsNotification.IsRepeatSearch)
@@ -124,45 +124,18 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             var resultSet = await resultsCombiner.CombineResults(
                 matchingResults,
                 donorInfo,
-                persistSearchResultsParameters.MatchPredictionResultLocations,
-                persistSearchResultsParameters.MatchingResultsNotification.ElapsedTime
+                parameters.MatchPredictionResultLocations,
+                parameters.MatchingResultsNotification.ElapsedTime
             );
             
             await searchResultsBlobUploader.UploadResults(resultSet);
-            await searchCompletionMessageSender.PublishResultsMessage(resultSet, persistSearchResultsParameters.SearchInitiated);
+            await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated);
         }
 
         [FunctionName(nameof(SendFailureNotification))]
-        public async Task SendFailureNotification([ActivityTrigger] (string, string, string, string) failureInfo)
+        public async Task SendFailureNotification([ActivityTrigger] RequestInfo requestInfo)
         {
-            var (searchRequestId, failedStage, repeatSearchId, validationError) = failureInfo;
-            
-            var validationMessage = validationError == null ? "" : $" With validation error: {validationError}";
-            var failureMessage = $"Search failed at stage: {failedStage}{validationMessage}. See Application Insights for failure details.";
-            
-            await searchCompletionMessageSender.PublishFailureMessage(
-                searchRequestId,
-                repeatSearchId,
-                failureMessage
-            );
-        }
-
-        /// <summary>
-        /// Parameters wrapped in single object as Azure Activity functions may only have one parameter.
-        /// </summary>
-        public class PersistSearchResultsParameters
-        {
-            public MatchingResultsNotification MatchingResultsNotification { get; set; }
-
-            /// <summary>
-            /// Keyed by ATLAS Donor ID
-            /// </summary>
-            public TimedResultSet<IReadOnlyDictionary<int, string>> MatchPredictionResultLocations { get; set; }
-
-            /// <summary>
-            /// The time the *orchestration function* was initiated. Used to calculate an overall search time for Atlas search requests.
-            /// </summary>
-            public DateTime SearchInitiated { get; set; }
+            await searchCompletionMessageSender.PublishFailureMessage(requestInfo);
         }
     }
 }
