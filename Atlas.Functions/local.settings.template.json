@@ -14,6 +14,7 @@
 
     "AtlasFunction:MessagingServiceBus:ConnectionString": "override-this",
     "AtlasFunction:MessagingServiceBus:MatchingResultsSubscription": "match-prediction-orchestration",
+    "AtlasFunction:MessagingServiceBus:MatchingResultsSubscriptionMaxDeliveryCount": 10,
     "AtlasFunction:MessagingServiceBus:MatchingResultsTopic": "matching-results-ready",
     "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsSubscription": "match-prediction-orchestration",
     "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic": "repeat-search-matching-results-ready",

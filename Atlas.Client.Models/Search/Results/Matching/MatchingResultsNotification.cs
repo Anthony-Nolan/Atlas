@@ -16,12 +16,12 @@ namespace Atlas.Client.Models.Search.Results.Matching
         public bool IsRepeatSearch => RepeatSearchRequestId != null;
 
         /// <summary>
-        ///     The version of the deployed matching algorithm that ran the search request
+        /// The version of the deployed matching algorithm that ran the search request
         /// </summary>
         public string MatchingAlgorithmServiceVersion { get; set; }
 
         public TimeSpan ElapsedTime { get; set; }
-        
+
         /// <summary>
         /// Will be null if the search succeeded (i.e. <see cref="ResultsNotification.WasSuccessful"/> is true).
         /// Most validation errors will be caught at search initiation time, and the search will not get queued in the first place.

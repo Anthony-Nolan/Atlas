@@ -133,7 +133,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [FunctionName(nameof(SendFailureNotification))]
-        public async Task SendFailureNotification([ActivityTrigger] RequestInfo requestInfo)
+        public async Task SendFailureNotification([ActivityTrigger] FailureNotificationRequestInfo requestInfo)
         {
             await searchCompletionMessageSender.PublishFailureMessage(requestInfo);
         }

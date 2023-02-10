@@ -355,7 +355,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.AddSingleton<IMemoryCache, MemoryCache>(sp => new MemoryCache(new MemoryCacheOptions()));
 
-            services.AddSingleton(sp => AutomapperConfig.CreateMapper());
+            services.AddSingleton(sp => AutoMapperConfig.CreateMapper());
 
             services.AddApplicationInsightsTelemetryWorkerService();
 

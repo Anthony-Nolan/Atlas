@@ -49,14 +49,15 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "AtlasFunction:AzureStorage:MatchPredictionRequestsBlobContainer"     = module.match_prediction.storage.match_prediction_requests_container_name
     "AtlasFunction:AzureStorage:MatchPredictionResultsBlobContainer"      = module.match_prediction.storage.match_prediction_results_container_name
 
-    "AtlasFunction:MessagingServiceBus:ConnectionString"                        = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
-    "AtlasFunction:MessagingServiceBus:MatchingResultsSubscription"             = azurerm_servicebus_subscription.match-prediction-orchestration-search-results-ready.name
-    "AtlasFunction:MessagingServiceBus:MatchingResultsTopic"                    = module.matching_algorithm.service_bus.matching_results_topic.name
-    "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsSubscription" = module.repeat_search.service_bus.repeat_search_matching_results_subscription
-    "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic"        = module.repeat_search.service_bus.repeat_search_matching_results_topic
-    "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic"                = module.repeat_search.service_bus.repeat_search_results_topic
-    "AtlasFunction:MessagingServiceBus:SearchResultsTopic"                      = azurerm_servicebus_topic.search-results-ready.name
-    "AtlasFunction:Orchestration:MatchPredictionBatchSize"                      = var.ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE
+    "AtlasFunction:MessagingServiceBus:ConnectionString"                            = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "AtlasFunction:MessagingServiceBus:MatchingResultsSubscription"                 = azurerm_servicebus_subscription.match-prediction-orchestration-search-results-ready.name
+    "AtlasFunction:MessagingServiceBus:MatchingResultsSubscriptionMaxDeliveryCount" = azurerm_servicebus_subscription.match-prediction-orchestration-search-results-ready.max_delivery_count 
+    "AtlasFunction:MessagingServiceBus:MatchingResultsTopic"                        = module.matching_algorithm.service_bus.matching_results_topic.name
+    "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsSubscription"     = module.repeat_search.service_bus.repeat_search_matching_results_subscription
+    "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic"            = module.repeat_search.service_bus.repeat_search_matching_results_topic
+    "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic"                    = module.repeat_search.service_bus.repeat_search_results_topic
+    "AtlasFunction:MessagingServiceBus:SearchResultsTopic"                          = azurerm_servicebus_topic.search-results-ready.name
+    "AtlasFunction:Orchestration:MatchPredictionBatchSize"                          = var.ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE
 
     "HlaMetadataDictionary:AzureStorageConnectionString" = azurerm_storage_account.azure_storage.primary_connection_string
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"     = var.WMDA_FILE_URL

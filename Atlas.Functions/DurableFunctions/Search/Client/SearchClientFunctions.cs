@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Functions.DurableFunctions.Search.Orchestration;
+using Atlas.Functions.Models;
 using Atlas.MatchPrediction.ExternalInterface;
+using AutoMapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Newtonsoft.Json;
@@ -21,12 +23,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
     public class SearchClientFunctions
     {
         private readonly ILogger logger;
+        private readonly IMapper mapper;
         private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
 
-        public SearchClientFunctions(IMatchPredictionAlgorithm matchPredictionAlgorithm, ILogger logger)
+        public SearchClientFunctions(IMatchPredictionAlgorithm matchPredictionAlgorithm, ILogger logger, IMapper mapper)
         {
             this.matchPredictionAlgorithm = matchPredictionAlgorithm;
             this.logger = logger;
+            this.mapper = mapper;
         }
 
         [FunctionName(nameof(Search))]
@@ -37,17 +41,20 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
                 Connection = "AtlasFunction:MessagingServiceBus:ConnectionString"
             )]
             MatchingResultsNotification resultsNotification,
+            int deliveryCount,
             [DurableClient] IDurableOrchestrationClient starter)
         {
-            var searchId = resultsNotification.SearchRequestId;
-            if (!resultsNotification.SearchRequest?.RunMatchPrediction ?? false)
+            var deliveredNotification = BuildDeliveredNotification(resultsNotification, deliveryCount);
+
+            var searchId = deliveredNotification.SearchRequestId;
+            if (!deliveredNotification.SearchRequest?.RunMatchPrediction ?? false)
             {
                 logger.SendTrace($"Match prediction for search request '{searchId}' was not requested, so will not be run.");
                 // TODO: ATLAS-493: Make the matching only results usable. 
                 return;
             }
 
-            var instanceId = await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.SearchOrchestrator), resultsNotification);
+            var instanceId = await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.SearchOrchestrator), deliveredNotification);
 
             try
             {
@@ -70,17 +77,20 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
                 Connection = "AtlasFunction:MessagingServiceBus:ConnectionString"
             )]
             MatchingResultsNotification resultsNotification,
+            int deliveryCount,
             [DurableClient] IDurableOrchestrationClient starter)
         {
-            var repeatSearchId = resultsNotification.RepeatSearchRequestId;
-            if (!resultsNotification.SearchRequest?.RunMatchPrediction ?? false)
+            var deliveredNotification = BuildDeliveredNotification(resultsNotification, deliveryCount);
+
+            var repeatSearchId = deliveredNotification.RepeatSearchRequestId;
+            if (!deliveredNotification.SearchRequest?.RunMatchPrediction ?? false)
             {
                 logger.SendTrace($"Match prediction for repeat search request '{repeatSearchId}' was not requested, so will not be run.");
                 // TODO: ATLAS-493: Make the matching only results usable. 
                 return;
             }
 
-            var instanceId = await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.RepeatSearchOrchestrator), resultsNotification);
+            var instanceId = await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.RepeatSearchOrchestrator), deliveredNotification);
 
             try
             {
@@ -93,6 +103,12 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
                 // This function cannot be allowed to fail post-orchestration scheduling, as it would then retry, and we cannot schedule more than one orchestrator with the same id.
                 // We are only doing logging past this point, so if it fails we just swallow exceptions.
             }
+        }
+        private DeliveredMatchingResultsNotification BuildDeliveredNotification(MatchingResultsNotification resultsNotification, int deliveryCount)
+        {
+            var deliveredNotification = mapper.Map<DeliveredMatchingResultsNotification>(resultsNotification);
+            deliveredNotification.MessageDeliveryCount = deliveryCount;
+            return deliveredNotification;
         }
 
         private static async Task<StatusCheckEndpoints> GetStatusCheckEndpoints(IDurableOrchestrationClient orchestrationClient, string instanceId)

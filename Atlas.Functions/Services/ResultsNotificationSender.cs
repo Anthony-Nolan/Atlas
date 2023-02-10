@@ -8,6 +8,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Functions.Models;
 using Atlas.Functions.Settings;
+using AutoMapper;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -17,22 +18,28 @@ namespace Atlas.Functions.Services
     public interface ISearchCompletionMessageSender
     {
         Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime) where T : SearchResultSet;
-        Task PublishFailureMessage(RequestInfo requestInfo);
+        Task PublishFailureMessage(FailureNotificationRequestInfo requestInfo);
     }
 
     internal class SearchCompletionMessageSender : ISearchCompletionMessageSender
     {
         private readonly ILogger logger;
+        private readonly IMapper mapper;
         private readonly string connectionString;
         private readonly string resultsNotificationTopicName;
         private readonly string repeatResultsNotificationTopicName;
+        private readonly int maxDeliveryCount;
 
-        public SearchCompletionMessageSender(IOptions<MessagingServiceBusSettings> messagingServiceBusSettings, ILogger logger)
+        public SearchCompletionMessageSender(
+            IOptions<MessagingServiceBusSettings> messagingServiceBusSettings,
+            ILogger logger, IMapper mapper)
         {
             this.logger = logger;
+            this.mapper = mapper;
             connectionString = messagingServiceBusSettings.Value.ConnectionString;
             resultsNotificationTopicName = messagingServiceBusSettings.Value.SearchResultsTopic;
             repeatResultsNotificationTopicName = messagingServiceBusSettings.Value.RepeatSearchResultsTopic;
+            maxDeliveryCount = messagingServiceBusSettings.Value.MatchingResultsSubscriptionMaxDeliveryCount;
         }
 
         public async Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime) where T : SearchResultSet
@@ -77,17 +84,21 @@ namespace Atlas.Functions.Services
         }
 
         /// <inheritdoc />
-        public async Task PublishFailureMessage(RequestInfo requestInfo)
+        public async Task PublishFailureMessage(FailureNotificationRequestInfo requestInfo)
         {
-            var validationMessage = requestInfo.ValidationError == null ? "" : $" With validation error: {requestInfo.ValidationError}";
-            var failureMessage = $"Search failed at stage: {requestInfo.Stage}{validationMessage}. See Application Insights for failure details.";
+            var validationMessage = string.IsNullOrEmpty(requestInfo.MatchingAlgorithmValidationError) ? "" : $" With validation error: {requestInfo.MatchingAlgorithmValidationError}";
+            var failureMessage = $"Search failed at stage: {requestInfo.StageReached}{validationMessage}. See Application Insights for failure details.";
+            
+            var failureInfo = mapper.Map<SearchFailureInfo>(requestInfo);
+            failureInfo.RemainingRetriesCount = requestInfo.WillNotBeRetried ? 0 : maxDeliveryCount - requestInfo.AttemptNumber;
 
             var searchResultsNotification = new SearchResultsNotification
             {
                 WasSuccessful = false,
                 SearchRequestId = requestInfo.SearchRequestId,
                 RepeatSearchRequestId = requestInfo.RepeatSearchRequestId,
-                FailureMessage = failureMessage
+                FailureMessage = failureMessage,
+                FailureInfo = failureInfo
             };
 
             await SendNotificationMessage(searchResultsNotification);

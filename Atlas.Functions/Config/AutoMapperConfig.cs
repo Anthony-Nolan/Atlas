@@ -3,7 +3,7 @@ using System.Reflection;
 using Atlas.Common.Utils.Extensions;
 using AutoMapper;
 
-namespace Atlas.MatchingAlgorithm.Config
+namespace Atlas.Functions.Config
 {
     internal class AutoMapperConfig
     {
