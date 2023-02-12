@@ -1,6 +1,6 @@
 locals {
   matching_func_app_settings = {
-    "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
+    "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
     "AzureFunctionsJobHost__extensions__serviceBus__messageHandlerOptions__maxConcurrentCalls" = var.MAX_CONCURRENT_SERVICEBUS_FUNCTIONS
 
@@ -43,10 +43,11 @@ locals {
 
     "MatchingConfiguration:MatchingBatchSize" = var.MATCHING_BATCH_SIZE,
 
-    "MessagingServiceBus:ConnectionString"           = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
-    "MessagingServiceBus:SearchRequestsSubscription" = azurerm_servicebus_subscription.matching-requests-matching-algorithm.name
-    "MessagingServiceBus:SearchRequestsTopic"        = azurerm_servicebus_topic.matching-requests.name
-    "MessagingServiceBus:SearchResultsTopic"         = azurerm_servicebus_topic.matching-results-ready.name
+    "MessagingServiceBus:ConnectionString"               = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
+    "MessagingServiceBus:SearchRequestsMaxDeliveryCount" = azurerm_servicebus_subscription.matching-requests-matching-algorithm.max_delivery_count
+    "MessagingServiceBus:SearchRequestsSubscription"     = azurerm_servicebus_subscription.matching-requests-matching-algorithm.name
+    "MessagingServiceBus:SearchRequestsTopic"            = azurerm_servicebus_topic.matching-requests.name
+    "MessagingServiceBus:SearchResultsTopic"             = azurerm_servicebus_topic.matching-results-ready.name
 
     "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
@@ -84,7 +85,7 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_function" {
       support_credentials = false
     }
     pre_warmed_instance_count = 1
-    use_32_bit_worker = false
+    use_32_bit_worker         = false
     ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
       ip_address = ip
       subnet_id  = null

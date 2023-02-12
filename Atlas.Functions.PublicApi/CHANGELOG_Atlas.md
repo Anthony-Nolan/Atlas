@@ -20,22 +20,29 @@ The project version will be appropriately incremented with each change to the pr
   * Build pipeline extended with tasks for generating NuGet packages.
   * Donor import file schema and "Common" models moved to new, standalone projects so they can be published as packages.
 
-#### Matching Algorithm
-* Fixed bug where, in certain cases, potential and exact match counts per donor were not being calculated correctly.
-
-#### Support
-* Decreased Time To Live on `audit` service bus subscriptions to avoid topic maximum size limit being reached due to old messages not being cleared. The value has been set to 14 days, which should be enough time for debug/support purposes.
-
 #### Donor Import
 * Bug fix: New `DonorImport` function added to publish the donor update messages that keep the matching algorithm donor store in sync with the donor import donor store. This is to prevent messages from being lost if the app restarts during donor import. A second timer function cleans up expired updates to keep the update repository from getting too large.
 * Donor import validation errors now logged as custom events to Application Insights.
+
+#### Manual Testing
+* New projects have been added to permit the validation of the match prediction algorithm using an externally generated dataset.
+
+#### Matching Algorithm
+* Fixed bug where, in certain cases, potential and exact match counts per donor were not being calculated correctly.
+* Matching algorithm results notification extended with failure information, including the number of times a failed search has been attempted thus far, and how many attempts remain.
 
 #### Match Prediction
 * New endpoint added that allows match prediction to be performed without running a full search. It accepts batches of match prediction requests: one patient vs. a set of donors. Results are written out to blob storage, and a notification sent to a new topic: `match-prediction-results`.
 * Fix for bug where predictive match categories were not being consistently applied to different loci, despite them having the same match probability percentage values.
 
-#### Manual Testing
-* New projects have been added to permit the validation of the match prediction algorithm using an externally generated dataset.
+#### Search
+* Search results notification has been extended with failure information, including:
+  * the stage of failure,
+  * the number of times matching has been attempted and how many attempts remain,
+  * and whether search as a whole will be retried.
+
+#### Support
+* Decreased Time To Live on `audit` service bus subscriptions to avoid topic maximum size limit being reached due to old messages not being cleared. The value has been set to 14 days, which should be enough time for debug/support purposes.
 
 ### 1.4.2
 

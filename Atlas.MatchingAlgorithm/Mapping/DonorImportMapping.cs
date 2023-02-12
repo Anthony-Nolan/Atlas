@@ -1,5 +1,4 @@
 using Atlas.DonorImport.ExternalInterface.Models;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
 
 namespace Atlas.MatchingAlgorithm.Mapping
 {

@@ -13,6 +13,7 @@
     </Target>
     
     <ItemGroup>
+        <PackageReference Include="AutoMapper" Version="8.1.1" />
         <PackageReference Include="AzureExtensions.Swashbuckle" Version="3.2.2" />
         <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4">
           <PrivateAssets>all</PrivateAssets>

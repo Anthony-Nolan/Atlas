@@ -5,8 +5,8 @@ locals {
 }
 
 resource "azurerm_mssql_database" "atlas-matching-transient-a" {
-  name                = lower("${var.general.environment}-ATLAS-MATCHING-A")
-  server_id           = var.sql_server.id
+  name      = lower("${var.general.environment}-ATLAS-MATCHING-A")
+  server_id = var.sql_server.id
 
   max_size_gb = var.DATABASE_MAX_SIZE_GB
 
@@ -21,8 +21,8 @@ resource "azurerm_mssql_database" "atlas-matching-transient-a" {
 }
 
 resource "azurerm_mssql_database" "atlas-matching-transient-b" {
-  name                = lower("${var.general.environment}-ATLAS-MATCHING-B")
-  server_id           = var.sql_server.id
+  name      = lower("${var.general.environment}-ATLAS-MATCHING-B")
+  server_id = var.sql_server.id
 
   max_size_gb = var.DATABASE_MAX_SIZE_GB
 

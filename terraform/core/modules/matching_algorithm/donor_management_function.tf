@@ -1,6 +1,6 @@
 locals {
   donor_func_app_settings = {
-    "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
+    "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
     "AzureStorage:ConnectionString" = var.azure_storage.primary_connection_string
 
@@ -35,8 +35,8 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_donor_manageme
   client_certificate_mode     = "Required"
   https_only                  = true
   functions_extension_version = "~4"
-  storage_account_access_key = var.shared_function_storage.primary_access_key
-  storage_account_name       = var.shared_function_storage.name
+  storage_account_access_key  = var.shared_function_storage.primary_access_key
+  storage_account_name        = var.shared_function_storage.name
 
   site_config {
     application_insights_key = var.application_insights.instrumentation_key
