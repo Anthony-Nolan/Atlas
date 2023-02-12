@@ -3,6 +3,7 @@ using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.Functions;
+using Atlas.Functions.Config;
 using Atlas.Functions.Services;
 using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
@@ -105,6 +106,8 @@ namespace Atlas.Functions
                 return new MatchPredictionResultsDownloader(options, downloader, logger);
             });
             services.AddScoped<IMatchPredictionRequestBlobClient, MatchPredictionRequestBlobClient>();
+
+            services.AddSingleton(sp => AutoMapperConfig.CreateMapper());
         }
     }
 }

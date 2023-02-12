@@ -52,9 +52,10 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
                 "%MessagingServiceBus:SearchRequestsTopic%",
                 "%MessagingServiceBus:SearchRequestsSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString")]
-            IdentifiedSearchRequest request)
+            IdentifiedSearchRequest request,
+            int deliveryCount)
         {
-            await searchRunner.RunSearch(request);
+            await searchRunner.RunSearch(request, deliveryCount);
         }
     }
 }

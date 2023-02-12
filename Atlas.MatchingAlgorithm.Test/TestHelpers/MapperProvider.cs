@@ -7,6 +7,6 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers
     {
         private static IMapper _mapper;
         
-        public static IMapper Mapper => _mapper ?? (_mapper = AutomapperConfig.CreateMapper());
+        public static IMapper Mapper => _mapper ?? (_mapper = AutoMapperConfig.CreateMapper());
     }
 }

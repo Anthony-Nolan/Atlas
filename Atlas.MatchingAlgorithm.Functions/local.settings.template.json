@@ -35,6 +35,7 @@
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
     "MatchingConfiguration:MatchingBatchSize": 250000,
     "MessagingServiceBus:ConnectionString": "override-this",
+    "MessagingServiceBus:SearchRequestsMaxDeliveryCount": 10,
     "MessagingServiceBus:SearchRequestsSubscription": "matching-algorithm",
     "MessagingServiceBus:SearchRequestsTopic": "matching-requests",
     "MessagingServiceBus:SearchResultsTopic": "matching-results-ready",

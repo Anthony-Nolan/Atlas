@@ -14,9 +14,9 @@
 
     "AtlasFunction:MessagingServiceBus:ConnectionString": "override-this",
     "AtlasFunction:MessagingServiceBus:MatchingResultsSubscription": "match-prediction-orchestration",
-    "AtlasFunction:MessagingServiceBus:MatchingResultsTopic": "repeat-search-matching-results-ready",
+    "AtlasFunction:MessagingServiceBus:MatchingResultsTopic": "matching-results-ready",
     "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsSubscription": "match-prediction-orchestration",
-    "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic": "matching-results-ready",
+    "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic": "repeat-search-matching-results-ready",
     "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic": "search-results-ready",
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic": "search-results-ready",
 

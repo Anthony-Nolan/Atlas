@@ -10,7 +10,14 @@ namespace Atlas.Client.Models.Search.Results
         /// <summary>
         /// If the search was not a success, this should be populated to indicate which stage of search failed. 
         /// </summary>
+        [Obsolete(message: $"Superseded by {nameof(FailureInfo)}. {nameof(FailureMessage)} will be only be populated for backwards compatibility.")]
         public string FailureMessage { get; set; }
+
+        /// <summary>
+        ///<inheritdoc cref="SearchFailureInfo"/>
+        /// Only set when <see cref="ResultsNotification.WasSuccessful"/> is `false`.
+        /// </summary>
+        public SearchFailureInfo FailureInfo { get; set; }
 
         /// <summary>
         /// Time taken to run the matching algorithm - currently includes matching, and scoring.

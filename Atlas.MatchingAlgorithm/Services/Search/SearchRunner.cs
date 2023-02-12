@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
-using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
@@ -13,6 +12,7 @@ using Atlas.MatchingAlgorithm.Clients.AzureStorage;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using FluentValidation;
 
@@ -20,7 +20,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 {
     public interface ISearchRunner
     {
-        Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest);
+        /// <param name="identifiedSearchRequest"></param>
+        /// <param name="attemptNumber">The number of times this <paramref name="identifiedSearchRequest"/> has been attempted, including the current attempt.</param>
+        Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest, int attemptNumber);
     }
 
     public class SearchRunner : ISearchRunner
@@ -31,6 +33,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly ILogger searchLogger;
         private readonly MatchingAlgorithmSearchLoggingContext searchLoggingContext;
         private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
+        private readonly int searchRequestMaxRetryCount;
 
         public SearchRunner(
             ISearchServiceBusClient searchServiceBusClient,
@@ -39,7 +42,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchingAlgorithmSearchLogger searchLogger,
             MatchingAlgorithmSearchLoggingContext searchLoggingContext,
-            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
+            MessagingServiceBusSettings messagingServiceBusSettings)
         {
             this.searchServiceBusClient = searchServiceBusClient;
             this.searchService = searchService;
@@ -47,9 +51,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.searchLogger = searchLogger;
             this.searchLoggingContext = searchLoggingContext;
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
+            searchRequestMaxRetryCount = messagingServiceBusSettings.SearchRequestsMaxDeliveryCount;
         }
 
-        public async Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
+        public async Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest, int attemptNumber)
         {
             var searchRequestId = identifiedSearchRequest.Id;
             searchLoggingContext.SearchRequestId = searchRequestId;
@@ -94,33 +99,55 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
             }
-            catch (HlaMetadataDictionaryException hldException)
+            // Invalid HLA is treated as an "Expected error" pathway and will not be retried.
+            // This means only a single failure notification will be sent out, and the request message will be completed and not dead-lettered.
+            catch (HlaMetadataDictionaryException hmdException)
             {
-                searchLogger.SendTrace($"Failed to lookup HLA for search with id {searchRequestId}. Exception: {hldException}", LogLevel.Error);
+                searchLogger.SendTrace($"Failed to lookup HLA for search with id {searchRequestId}. Exception: {hmdException}", LogLevel.Error);
+
+                var failureInfo = new MatchingAlgorithmFailureInfo
+                {
+                    ValidationError = hmdException.Message,
+                    AttemptNumber = attemptNumber,
+                    RemainingRetriesCount = 0
+                };
+
                 var notification = new MatchingResultsNotification
                 {
                     WasSuccessful = false,
                     SearchRequestId = searchRequestId,
                     MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
                     MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
-                    ValidationError = hldException.Message
+                    ValidationError = failureInfo.ValidationError,
+                    FailureInfo = failureInfo
                 };
+                
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
-                // Do not re-throw on HMD exception. In this case we know the search failed due to a failed HLA lookup, and we will continue to fail on retry. 
-                // Instead of retrying and ultimately dead lettering, we treat invalid HLA as an "Expected error" pathway 
-                // The results will be a single failure notification instead of one per retry, as well as ensuring that only unexpected errors cause search request messages to dead letter.
+
+                // Do not re-throw the HMD exception to prevent the search being retried or dead-lettered.
             }
+            // "Unexpected" exceptions will be re-thrown to ensure that the request will be retried or dead-lettered, as appropriate.
             catch (Exception e)
             {
                 searchLogger.SendTrace($"Failed to run search with id {searchRequestId}. Exception: {e}", LogLevel.Error);
+
+                var failureInfo = new MatchingAlgorithmFailureInfo
+                {
+                    AttemptNumber = attemptNumber,
+                    RemainingRetriesCount = searchRequestMaxRetryCount - attemptNumber
+                };
+
                 var notification = new MatchingResultsNotification
                 {
                     WasSuccessful = false,
                     SearchRequestId = searchRequestId,
                     MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
-                    MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion
+                    MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
+                    FailureInfo = failureInfo
                 };
+
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
+
                 throw;
             }
         }

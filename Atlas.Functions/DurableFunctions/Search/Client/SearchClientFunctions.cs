@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Functions.DurableFunctions.Search.Orchestration;
-using Atlas.MatchPrediction.ExternalInterface;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Newtonsoft.Json;
@@ -21,11 +20,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
     public class SearchClientFunctions
     {
         private readonly ILogger logger;
-        private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
 
-        public SearchClientFunctions(IMatchPredictionAlgorithm matchPredictionAlgorithm, ILogger logger)
-        {
-            this.matchPredictionAlgorithm = matchPredictionAlgorithm;
+        public SearchClientFunctions(ILogger logger)
+        { 
             this.logger = logger;
         }
 

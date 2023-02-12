@@ -3,16 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
-using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Functions.DurableFunctions.Search.Activity;
 using Atlas.Functions.Exceptions;
 using Atlas.Functions.Models;
-using Atlas.Functions.Services.BlobStorageClients;
+using AutoMapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using MoreLinq.Extensions;
-using Polly;
 
 namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 {
@@ -26,40 +24,46 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
     // ReSharper disable once ClassNeverInstantiated.Global
     public class SearchOrchestrationFunctions
     {
-        private static readonly RetryOptions RetryOptions = new RetryOptions(TimeSpan.FromSeconds(5), 5) { BackoffCoefficient = 2 };
+        private static readonly RetryOptions RetryOptions = new(TimeSpan.FromSeconds(5), 5) { BackoffCoefficient = 2 };
 
         private readonly ILogger logger;
+        private readonly IMapper mapper;
 
-        public SearchOrchestrationFunctions(ILogger logger)
+        public SearchOrchestrationFunctions(ILogger logger, IMapper mapper)
         {
             this.logger = logger;
+            this.mapper = mapper;
         }
 
         [FunctionName(nameof(SearchOrchestrator))]
         public async Task<SearchOrchestrationOutput> SearchOrchestrator([OrchestrationTrigger] IDurableOrchestrationContext context)
         {
             var notification = context.GetInput<MatchingResultsNotification>();
-            var searchId = notification.SearchRequestId;
-            var repeatSearchId = notification.RepeatSearchRequestId;
+            var requestInfo = mapper.Map<FailureNotificationRequestInfo>(notification);
 
             try
             {
                 var orchestrationInitiated = context.CurrentUtcDateTime;
                 if (!notification.WasSuccessful)
                 {
-                    await SendFailureNotification(context, "Matching Algorithm", searchId, repeatSearchId);
+                    requestInfo.StageReached = "Matching Algorithm";
+                    await SendFailureNotification(context, requestInfo);
+                    // returning early to prevent unnecessary retries of the search request
                     return null;
                 }
 
-                var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification);
+                var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification, requestInfo);
                 var matchPredictionResultLocations =
-                    await RunMatchPredictionAlgorithm(context, searchId, repeatSearchId, matchPredictionRequestLocations);
-                await PersistSearchResults(context, new SearchActivityFunctions.PersistSearchResultsParameters
-                {
-                    SearchInitiated = orchestrationInitiated,
-                    MatchingResultsNotification = notification,
-                    MatchPredictionResultLocations = matchPredictionResultLocations
-                });
+                    await RunMatchPredictionAlgorithm(context, requestInfo, matchPredictionRequestLocations);
+                await PersistSearchResults(
+                    context,
+                    new PersistSearchResultsFunctionParameters
+                    {
+                        SearchInitiated = orchestrationInitiated,
+                        MatchingResultsNotification = notification,
+                        MatchPredictionResultLocations = matchPredictionResultLocations
+                    },
+                    requestInfo);
 
                 // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
                 return new SearchOrchestrationOutput
@@ -77,8 +81,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             catch (Exception e)
             {
                 logger.SendTrace($"Failure during orchestration. Exception: {e.Message}, {e.InnerException?.Message}");
+
                 // An unexpected exception occurred in the *orchestration* code. Ensure we send a failure notification
-                await SendFailureNotification(context, "Orchestrator", searchId, repeatSearchId);
+                requestInfo.StageReached = "Orchestrator";
+                await SendFailureNotification(context, requestInfo);
                 throw;
             }
         }
@@ -87,35 +93,30 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         public async Task<SearchOrchestrationOutput> RepeatSearchOrchestrator([OrchestrationTrigger] IDurableOrchestrationContext context)
         {
             var notification = context.GetInput<MatchingResultsNotification>();
-            var searchRequestId = notification.SearchRequestId;
+            var requestInfo = mapper.Map<FailureNotificationRequestInfo>(notification);
 
             try
             {
                 var orchestrationInitiated = context.CurrentUtcDateTime;
                 if (!notification.WasSuccessful)
                 {
-                    await SendFailureNotification(
-                        context,
-                        "Matching Algorithm",
-                        searchRequestId,
-                        notification.RepeatSearchRequestId,
-                        notification.ValidationError
-                    );
+                    requestInfo.StageReached = "Matching Algorithm";
+                    await SendFailureNotification(context, requestInfo);
+                    // returning early to avoid unnecessary retries of the search request
                     return null;
                 }
 
-                var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification);
-                var matchPredictionResultLocations = await RunMatchPredictionAlgorithm(
+                var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification, requestInfo);
+                var matchPredictionResultLocations = await RunMatchPredictionAlgorithm(context, requestInfo, matchPredictionRequestLocations);
+                await PersistSearchResults(
                     context,
-                    searchRequestId,
-                    notification.RepeatSearchRequestId,
-                    matchPredictionRequestLocations);
-                await PersistSearchResults(context, new SearchActivityFunctions.PersistSearchResultsParameters
-                {
-                    SearchInitiated = orchestrationInitiated,
-                    MatchingResultsNotification = notification,
-                    MatchPredictionResultLocations = matchPredictionResultLocations
-                });
+                    new PersistSearchResultsFunctionParameters
+                    {
+                        SearchInitiated = orchestrationInitiated,
+                        MatchingResultsNotification = notification,
+                        MatchPredictionResultLocations = matchPredictionResultLocations
+                    },
+                    requestInfo);
 
                 // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
                 return new SearchOrchestrationOutput
@@ -133,16 +134,21 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             catch (Exception e)
             {
                 logger.SendTrace($"Failure during orchestration. Exception: {e.Message}, {e.InnerException?.Message}");
+
                 // An unexpected exception occurred in the *orchestration* code. Ensure we send a failure notification
-                await SendFailureNotification(context, "Orchestrator", searchRequestId, notification.RepeatSearchRequestId);
+                requestInfo.StageReached = "Orchestrator";
+                await SendFailureNotification(context, requestInfo);
                 throw;
             }
         }
 
         private async Task<TimedResultSet<IList<string>>> PrepareMatchPrediction(
             IDurableOrchestrationContext context,
-            MatchingResultsNotification notification)
+            MatchingResultsNotification notification,
+            FailureNotificationRequestInfo requestInfo)
         {
+            requestInfo.StageReached = nameof(SearchActivityFunctions.PrepareMatchPredictionBatches);
+
             var batchIds = await RunStageAndHandleFailures(async () =>
                     await context.CallActivityWithRetryAsync<TimedResultSet<IList<string>>>(
                         nameof(SearchActivityFunctions.PrepareMatchPredictionBatches),
@@ -150,9 +156,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                         notification
                     ),
                 context,
-                nameof(SearchActivityFunctions.PrepareMatchPredictionBatches),
-                notification.SearchRequestId,
-                notification.RepeatSearchRequestId
+                requestInfo
             );
 
             context.SetCustomStatus(new OrchestrationStatus
@@ -166,18 +170,17 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
         private async Task<TimedResultSet<IReadOnlyDictionary<int, string>>> RunMatchPredictionAlgorithm(
             IDurableOrchestrationContext context,
-            string searchId,
-            string repeatSearchId,
+            FailureNotificationRequestInfo requestInfo,
             TimedResultSet<IList<string>> matchPredictionRequestLocations
         )
         {
+            requestInfo.StageReached = nameof(RunMatchPredictionAlgorithm);
+
             var matchPredictionTasks = matchPredictionRequestLocations.ResultSet.Select(r => RunMatchPredictionForDonorBatch(context, r)).ToList();
             var matchPredictionResultLocations = (await RunStageAndHandleFailures(
                     async () => await Task.WhenAll(matchPredictionTasks),
                     context,
-                    nameof(RunMatchPredictionAlgorithm),
-                    searchId,
-                    repeatSearchId
+                    requestInfo
                 ))
                 .SelectMany(x => x)
                 .ToDictionary();
@@ -223,16 +226,17 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
         private async Task PersistSearchResults(
             IDurableOrchestrationContext context,
-            SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters
+            PersistSearchResultsFunctionParameters parameters,
+            FailureNotificationRequestInfo requestInfo
         )
         {
+            requestInfo.StageReached = nameof(PersistSearchResults);
+
             await RunStageAndHandleFailures(
                 async () => await context.CallActivityWithRetryAsync(nameof(SearchActivityFunctions.PersistSearchResults), RetryOptions,
-                    persistSearchResultsParameters),
+                    parameters),
                 context,
-                nameof(PersistSearchResults),
-                persistSearchResultsParameters.MatchingResultsNotification.SearchRequestId,
-                persistSearchResultsParameters.MatchingResultsNotification.RepeatSearchRequestId
+                requestInfo
             );
 
             context.SetCustomStatus(new OrchestrationStatus
@@ -245,21 +249,17 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         private async Task RunStageAndHandleFailures(
             Func<Task> runStage,
             IDurableOrchestrationContext context,
-            string stageName,
-            string searchId,
-            string repeatSearchId) =>
+            FailureNotificationRequestInfo requestInfo) =>
             await RunStageAndHandleFailures(async () =>
             {
                 await runStage();
                 return true;
-            }, context, stageName, searchId, repeatSearchId);
+            }, context, requestInfo);
 
         private async Task<T> RunStageAndHandleFailures<T>(
             Func<Task<T>> runStage,
             IDurableOrchestrationContext context,
-            string stageName,
-            string searchId,
-            string repeatSearchId)
+            FailureNotificationRequestInfo requestInfo)
         {
             try
             {
@@ -267,26 +267,23 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
             catch (Exception e)
             {
-                logger.SendTrace($"Failure at stage: {stageName}. Exception: {e.Message}, {e.InnerException?.Message}");
-                await SendFailureNotification(context, stageName, searchId, repeatSearchId);
+                logger.SendTrace($"Failure at stage: {requestInfo.StageReached}. Exception: {e.Message}, {e.InnerException?.Message}");
+                await SendFailureNotification(context, requestInfo);
                 throw new HandledOrchestrationException(e);
             }
         }
 
         private static async Task SendFailureNotification(
             IDurableOrchestrationContext context,
-            string failedStage,
-            string searchId,
-            string repeatSearchId,
-            string validationError = null)
+            FailureNotificationRequestInfo requestInfo)
         {
             await context.CallActivityWithRetryAsync(
                 nameof(SearchActivityFunctions.SendFailureNotification),
                 RetryOptions,
-                (searchId, failedStage, repeatSearchId, validationError)
+                requestInfo
             );
 
-            context.SetCustomStatus($"Search failed, during stage: {failedStage}");
+            context.SetCustomStatus($"Search failed, during stage: {requestInfo.StageReached}");
         }
     }
 }
