@@ -16,7 +16,7 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
   tags = var.general.common_tags
 
   app_settings = {
-    "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
+    "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
     "AzureStorage:ConnectionString"       = var.azure_storage.primary_connection_string,
     "AzureStorage:DonorFileBlobContainer" = azurerm_storage_container.donor_blob_storage.name
