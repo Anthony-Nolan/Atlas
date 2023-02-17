@@ -11,6 +11,7 @@ using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
+using Atlas.DonorImport.Services.DonorIdChecker;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -82,6 +83,9 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
                 return new MessageBatchPublisher<SearchableDonorUpdate>(serviceBusSettings.ConnectionString, serviceBusSettings.UpdatedSearchableDonorsTopic);
             });
             services.AddScoped<IDonorUpdatesCleaner, DonorUpdatesCleaner>();
+
+            services.AddScoped<IDonorIdChecker, DonorIdChecker>();
+            services.AddScoped<IDonorIdCheckerFileParser, DonorIdCheckerFileParser>();
         }
 
         private static void RegisterDonorReaderServices(this IServiceCollection services)
