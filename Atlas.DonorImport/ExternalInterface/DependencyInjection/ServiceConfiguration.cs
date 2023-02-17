@@ -84,8 +84,8 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             });
             services.AddScoped<IDonorUpdatesCleaner, DonorUpdatesCleaner>();
 
-            services.AddScoped<IDonorIdChecker, DonorIdChecker>();
-            services.AddScoped<IDonorIdCheckerFileParser, DonorIdCheckerFileParser>();
+            services.AddScoped<IDonorRecordIdChecker, DonorRecordIdChecker>();
+            services.AddScoped<IDonorRecordIdCheckerFileParser, DonorRecordIdCheckerFileParser>();
         }
 
         private static void RegisterDonorReaderServices(this IServiceCollection services)

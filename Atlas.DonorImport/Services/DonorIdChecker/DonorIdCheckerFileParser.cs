@@ -6,21 +6,21 @@ using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Services.DonorIdChecker
 {
-    internal interface IDonorIdCheckerFileParser
+    public interface IDonorRecordIdCheckerFileParser
     {
-        public LazilyParsingDonorIdFile PrepareToLazilyParsingDonorIdFile(Stream stream);
+        public LazilyParsingDonorRecordIdFile PrepareToLazilyParsingDonorIdFile(Stream stream);
     }
 
-    internal class DonorIdCheckerFileParser : IDonorIdCheckerFileParser
+    public class DonorRecordIdCheckerFileParser : IDonorRecordIdCheckerFileParser
     {
-        public LazilyParsingDonorIdFile PrepareToLazilyParsingDonorIdFile(Stream stream) => new(stream);
+        public LazilyParsingDonorRecordIdFile PrepareToLazilyParsingDonorIdFile(Stream stream) => new(stream);
     }
 
-    internal class LazilyParsingDonorIdFile
+    public class LazilyParsingDonorRecordIdFile
     {
         private readonly Stream underlyingDataStream;
 
-        public LazilyParsingDonorIdFile(Stream stream)
+        public LazilyParsingDonorRecordIdFile(Stream stream)
         {
             underlyingDataStream = stream;
         }

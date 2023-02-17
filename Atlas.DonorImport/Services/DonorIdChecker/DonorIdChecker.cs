@@ -7,24 +7,24 @@ using MoreLinq;
 
 namespace Atlas.DonorImport.Services.DonorIdChecker
 {
-    internal interface IDonorIdChecker
+    public interface IDonorRecordIdChecker
     {
-        Task CheckDonorIdsFromFile(DonorImportFile file);
+        Task CheckDonorIdsFromFile(BlobImportFile file);
     }
 
-    internal class DonorIdChecker : IDonorIdChecker
+    public class DonorRecordIdChecker : IDonorRecordIdChecker
     {
         private const int BatchSize = 10000;
-        private readonly IDonorIdCheckerFileParser fileParser;
+        private readonly IDonorRecordIdCheckerFileParser fileParser;
         private readonly IDonorReader donorReader;
 
-        public DonorIdChecker(IDonorIdCheckerFileParser fileParser, IDonorReader donorReader)
+        public DonorRecordIdChecker(IDonorRecordIdCheckerFileParser fileParser, IDonorReader donorReader)
         {
             this.fileParser = fileParser;
             this.donorReader = donorReader;
         }
 
-        public async Task CheckDonorIdsFromFile(DonorImportFile file)
+        public async Task CheckDonorIdsFromFile(BlobImportFile file)
         {
             var lazyFile = fileParser.PrepareToLazilyParsingDonorIdFile(file.Contents);
 
