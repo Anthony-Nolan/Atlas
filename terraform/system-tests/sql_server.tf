@@ -1,5 +1,5 @@
 resource "azurerm_mssql_server" "atlas_sql_server" {
-  name                         = "${lower(replace(local.name_prefix, "/\\W/", ""))}-atlas-system-test-sql-server"
+  name                         = "${lower(replace(local.name_prefix, "/\\W/", ""))}-system-test-sql-server"
   resource_group_name          = azurerm_resource_group.atlas_system_tests_resource_group.name
   location                     = local.location
   tags                         = local.common_tags
