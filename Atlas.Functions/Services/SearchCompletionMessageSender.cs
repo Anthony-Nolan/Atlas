@@ -85,7 +85,7 @@ namespace Atlas.Functions.Services
         /// <inheritdoc />
         public async Task PublishFailureMessage(FailureNotificationRequestInfo requestInfo)
         {
-            var validationMessage = string.IsNullOrEmpty(requestInfo.MatchingAlgorithmFailureInfo.ValidationError) ? "" : $" With validation error: {requestInfo.MatchingAlgorithmFailureInfo.ValidationError}";
+            var validationMessage = string.IsNullOrEmpty(requestInfo.MatchingAlgorithmFailureInfo?.ValidationError) ? "" : $" With validation error: {requestInfo.MatchingAlgorithmFailureInfo.ValidationError}";
             var failureMessage = $"Search failed at stage: {requestInfo.StageReached}{validationMessage}. See Application Insights for failure details.";
 
             var searchResultsNotification = new SearchResultsNotification
