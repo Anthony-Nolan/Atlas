@@ -27,13 +27,14 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, StalledFileSettings> fetchStalledFileSettings,
             Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, string> fetchSqlConnectionString)
         {
             // Perform static Dapper set up that should be performed once before any SQL requests are made.
             Initialise.InitaliseDapper();
 
             services.RegisterSettings(
-                fetchNotificationConfigurationSettings, fetchStalledFileSettings, fetchPublishDonorUpdatesSettings);
+                fetchNotificationConfigurationSettings, fetchStalledFileSettings, fetchPublishDonorUpdatesSettings, fetchAzureStorageSettings);
             services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices(fetchMessagingServiceBusSettings);
@@ -55,11 +56,13 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, NotificationConfigurationSettings> fetchNotificationConfigurationSettings,
             Func<IServiceProvider, StalledFileSettings> fetchStalledFileSettings,
-            Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings)
+            Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
         {
             services.MakeSettingsAvailableForUse(fetchStalledFileSettings);
             services.MakeSettingsAvailableForUse(fetchNotificationConfigurationSettings);
             services.MakeSettingsAvailableForUse(fetchPublishDonorUpdatesSettings);
+            services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
         }
 
         private static void RegisterServices(
@@ -86,6 +89,8 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
 
             services.AddScoped<IDonorRecordIdChecker, DonorRecordIdChecker>();
             services.AddScoped<IDonorRecordIdCheckerFileParser, DonorRecordIdCheckerFileParser>();
+            services.AddScoped<IDonorRecordIdCheckerBlobStorageClient, DonorRecordIdCheckerBlobStorageClient>();
+            services.AddScoped<IDonorRecordIdCheckerNotificationSender, DonorRecordIdCheckerNotificationSender>();
         }
 
         private static void RegisterDonorReaderServices(this IServiceCollection services)

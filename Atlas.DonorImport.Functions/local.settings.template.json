@@ -4,6 +4,7 @@
     "ApplicationInsights:LogLevel": "Info",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:DonorFileBlobContainer": "donors",
+    "AzureStorage:DonorIdCheckerResultsBlobContainer": "donors",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "DonorImport:FileCheckCronSchedule": "0 */30 * * * *",
     "DonorImport:HoursToCheckStalledFiles": "2",

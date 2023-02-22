@@ -16,6 +16,7 @@ namespace Atlas.DonorImport.Data.Repositories
         public Task<IReadOnlyDictionary<int, Donor>> GetDonorsByIds(ICollection<int> donorIds);
         public Task<IReadOnlyDictionary<string, int>> GetDonorIdsByExternalDonorCodes(ICollection<string> externalDonorCodes);
         public Task<IReadOnlyDictionary<string, int>> GetDonorIdsUpdatedSince(DateTimeOffset cutoffDate);
+        public Task<IReadOnlyCollection<string>> GetExistingExternalDonorCodes(IEnumerable<string> externalDonorCodes);
     }
 
     public class DonorReadRepository : DonorRepositoryBase, IDonorReadRepository
@@ -115,6 +116,21 @@ WHERE LastUpdated >= @{nameof(cutoffDate)}
             {
                 var donors = await connection.QueryAsync<Donor>(sql, new {cutoffDate});
                 return donors.ToDictionary(d => d.ExternalDonorCode, d => d.AtlasId);
+            }
+        }
+
+        public async Task<IReadOnlyCollection<string>> GetExistingExternalDonorCodes(IEnumerable<string> externalDonorCodes)
+        {
+            var sql = @$"
+SELECT {nameof(Donor.ExternalDonorCode)} FROM {Donor.QualifiedTableName}
+WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
+";
+            await using (var connection = NewConnection())
+            {
+                return (await externalDonorCodes.ProcessInBatchesAsync(
+                    DonorReadBatchSize,
+                    async codes => await connection.QueryAsync<string>(sql, new { codes })
+                )).ToList();
             }
         }
     }

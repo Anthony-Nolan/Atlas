@@ -5,7 +5,7 @@
     /// </summary>
     public class DonorIdCheckerResults
     {
-        public IEnumerable<DonorIdCheckerResult> Results { get; set; }
+        public List<DonorIdCheckerResult> Results { get; set; } = new();
     }
 
     public class DonorIdCheckerResult

@@ -5,5 +5,6 @@ namespace Atlas.Common.Notifications
         public string ConnectionString { get; set; }
         public string AlertsTopic { get; set; }
         public string NotificationsTopic { get; set; }
+        public string DonorIdCheckerResultsTopic { get; set; }
     }
 }
