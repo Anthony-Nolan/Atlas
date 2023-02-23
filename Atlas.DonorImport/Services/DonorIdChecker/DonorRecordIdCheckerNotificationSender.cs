@@ -41,6 +41,7 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
             }
             catch
             {
+                // ignored
             }
         }
     }

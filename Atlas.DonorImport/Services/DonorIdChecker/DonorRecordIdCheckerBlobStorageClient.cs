@@ -24,6 +24,7 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
 
     public class DonorRecordIdCheckerBlobStorageClient : BlobUploader, IDonorRecordIdCheckerBlobStorageClient
     {
+        private readonly string donorBlobContainer;
         private readonly string checkerResultsContainerName;
 
         private CloudBlockBlob blob;
@@ -31,19 +32,20 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
 
         public DonorRecordIdCheckerBlobStorageClient(AzureStorageSettings azureStorageSettings,ILogger logger) : base(azureStorageSettings.ConnectionString, logger)
         {
+            donorBlobContainer = azureStorageSettings.DonorFileBlobContainer;
             checkerResultsContainerName = azureStorageSettings.DonorIdCheckerResultsBlobContainer;
         }
 
         public async Task UploadResults(DonorIdCheckerResults idCheckerResults, string filename)
         {
             var serialisedResults = JsonConvert.SerializeObject(idCheckerResults);
-            await Upload(checkerResultsContainerName, filename, serialisedResults);
+            await Upload(donorBlobContainer, $"{checkerResultsContainerName}/{filename}", serialisedResults);
         }
 
         public async Task InitiateUpload(string filename)
         {
-            var containerRef = await GetBlobContainer(checkerResultsContainerName);
-            blob = containerRef.GetBlockBlobReference(filename);
+            var containerRef = await GetBlobContainer(donorBlobContainer);
+            blob = containerRef.GetBlockBlobReference($"{checkerResultsContainerName}/{filename}");
             blob.Properties.ContentType = "text/plain";
 
             blockList = new List<string>();
@@ -65,7 +67,11 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
 
         public async Task CancelUpload()
         {
-            await blob.PutBlockListAsync(blockList);
+            if (blockList != null)
+            {
+                await blob.PutBlockListAsync(blockList);
+            }
+
             await blob.DeleteIfExistsAsync();
         }
     }

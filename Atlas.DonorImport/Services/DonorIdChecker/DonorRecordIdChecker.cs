@@ -17,7 +17,6 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
     public class DonorRecordIdChecker : IDonorRecordIdChecker
     {
         private const int BatchSize = 2;
-        //private const int BatchSize = 25000;
         private readonly IDonorRecordIdCheckerFileParser fileParser;
         private readonly IDonorReader donorReader;
         private readonly IDonorRecordIdCheckerBlobStorageClient blobStorageClient;
@@ -49,12 +48,13 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
 
                 await blobStorageClient.UploadResults(donorIdCheckResults, "id-checker-results.json");
 
-                await notificationSender.SendNotification($"Donor Record Id check was successful: {file.FileLocation}",
-                    "Donors were checked for presence");
+                await notificationSender.SendNotification($"Donor Id check was successful: {file.FileLocation}",
+                    "Success description");
             }
             catch
             {
-
+                await notificationSender.SendNotification($"An error has occurred during Donor Id check: {file.FileLocation}",
+                    "Error description");
             }
         }
 
