@@ -2,25 +2,26 @@
 using System.Collections.Generic;
 using System.IO;
 using Atlas.DonorImport.Exceptions;
+using Atlas.DonorImport.FileSchema.Models.DonorIdChecker;
 using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Services.DonorIdChecker
 {
-    public interface IDonorRecordIdCheckerFileParser
+    public interface IDonorIdCheckerFileParser
     {
-        public LazilyParsingDonorRecordIdFile PrepareToLazilyParsingDonorIdFile(Stream stream);
+        public LazilyParsingDonorIdFile PrepareToLazilyParsingDonorIdFile(Stream stream);
     }
 
-    public class DonorRecordIdCheckerFileParser : IDonorRecordIdCheckerFileParser
+    public class DonorIdCheckerFileParser : IDonorIdCheckerFileParser
     {
-        public LazilyParsingDonorRecordIdFile PrepareToLazilyParsingDonorIdFile(Stream stream) => new(stream);
+        public LazilyParsingDonorIdFile PrepareToLazilyParsingDonorIdFile(Stream stream) => new(stream);
     }
 
-    public class LazilyParsingDonorRecordIdFile
+    public class LazilyParsingDonorIdFile
     {
         private readonly Stream underlyingDataStream;
 
-        public LazilyParsingDonorRecordIdFile(Stream stream)
+        public LazilyParsingDonorIdFile(Stream stream)
         {
             underlyingDataStream = stream;
         }
@@ -44,9 +45,9 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
 
                     var propertyName = reader.Value?.ToString();
 
-                    if (propertyName != "recordIds")
+                    if (propertyName != nameof(DonorIdCheckerRequest.RecordIds))
                     {
-                        throw new Exception("RecordIds property must be the first property provided in donor id checker JSON file.");
+                        throw new MalformedDonorFileException("RecordIds property must be the first property provided in donor id JSON file.");
                     }
 
                     TryRead(reader); // Read into property
@@ -55,8 +56,6 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
                     do
                     {
                         var donorId = reader.Value.ToString();
-
-                        // do checks if needed/save last processed donor id?
 
                         yield return donorId;
                     } while (TryRead(reader) && reader.TokenType != JsonToken.EndArray);

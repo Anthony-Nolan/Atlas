@@ -11,9 +11,9 @@ namespace Atlas.DonorImport.Functions.Functions
 {
     public class DonorIdCheckerFunctions
     {
-        private readonly IDonorRecordIdChecker donorIdChecker;
+        private readonly IDonorIdChecker donorIdChecker;
 
-        public DonorIdCheckerFunctions(IDonorRecordIdChecker donorIdChecker)
+        public DonorIdCheckerFunctions(IDonorIdChecker donorIdChecker)
         {
             this.donorIdChecker = donorIdChecker;
         }
