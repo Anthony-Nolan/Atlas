@@ -18,9 +18,9 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
         Task CheckDonorIdsFromFile(BlobImportFile file);
     }
 
-    public class DonorIdChecker : IDonorIdChecker
+    internal class DonorIdChecker : IDonorIdChecker
     {
-        private const int BatchSize = 2;
+        private const int BatchSize = 10000;
         private readonly IDonorIdCheckerFileParser fileParser;
         private readonly IDonorReader donorReader;
         private readonly IDonorIdCheckerBlobStorageClient blobStorageClient;
@@ -40,9 +40,11 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
 
         public async Task CheckDonorIdsFromFile(BlobImportFile file)
         {
+            logger.SendTrace($"Beginning Donor Id Check for file '{file.FileLocation}'.");
             var lazyFile = fileParser.PrepareToLazilyParsingDonorIdFile(file.Contents);
             var donorIdCheckResults = new DonorIdCheckerResults();
             var filename = GetResultFilename(file.FileLocation);
+            var checkedDonorIdsCount = 0;
 
             try
             {
@@ -51,9 +53,14 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
                     var donorIdsList = donorIdsBatch.ToList();
                     var externalDonorCodes = await donorReader.GetExistingExternalDonorCodes(donorIdsList);
                     donorIdCheckResults.MissingDonorIds.AddRange(donorIdsList.Except(externalDonorCodes));
+
+                    checkedDonorIdsCount += donorIdsList.Count;
+                    logger.SendTrace($"Batch complete - checked {donorIdsList.Count} donor(s) this batch. Cumulatively {checkedDonorIdsCount} donor(s). ");
                 }
 
                 await blobStorageClient.UploadResults(donorIdCheckResults, filename);
+
+                logger.SendTrace($"Donor Id Check for file '{file.FileLocation}' complete. Checked {checkedDonorIdsCount} donor(s). Found {donorIdCheckResults.MissingDonorIds.Count} absent donor(s).");
 
                 await messageSender.SendSuccessCheckMessage(file.FileLocation, filename);
             }
@@ -67,9 +74,7 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
             }
             catch (Exception e)
             {
-                var donorIdCheckFailureEventModel = new DonorIdCheckFailureEventModel(file, e);
-
-                logger.SendEvent(donorIdCheckFailureEventModel);
+                logger.SendEvent(new DonorIdCheckFailureEventModel(file, e));
 
                 throw;
             }

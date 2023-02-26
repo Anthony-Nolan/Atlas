@@ -7,17 +7,22 @@ using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Services.DonorIdChecker
 {
-    public interface IDonorIdCheckerFileParser
+    internal interface IDonorIdCheckerFileParser
     {
-        public LazilyParsingDonorIdFile PrepareToLazilyParsingDonorIdFile(Stream stream);
+        public ILazilyParsingDonorIdFile PrepareToLazilyParsingDonorIdFile(Stream stream);
     }
 
-    public class DonorIdCheckerFileParser : IDonorIdCheckerFileParser
+    internal class DonorIdCheckerFileParser : IDonorIdCheckerFileParser
     {
-        public LazilyParsingDonorIdFile PrepareToLazilyParsingDonorIdFile(Stream stream) => new(stream);
+        public ILazilyParsingDonorIdFile PrepareToLazilyParsingDonorIdFile(Stream stream) => new LazilyParsingDonorIdFile(stream);
     }
 
-    public class LazilyParsingDonorIdFile
+    internal interface ILazilyParsingDonorIdFile
+    {
+        IEnumerable<string> ReadLazyDonorIds();
+    }
+
+    internal class LazilyParsingDonorIdFile : ILazilyParsingDonorIdFile
     {
         private readonly Stream underlyingDataStream;
 
@@ -50,15 +55,14 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
                         throw new MalformedDonorFileException("RecordIds property must be the first property provided in donor id JSON file.");
                     }
 
-                    TryRead(reader); // Read into property
-                    TryRead(reader); // Read into array
+                    TryRead(reader);
 
-                    do
+                    while (TryRead(reader) &&  reader.TokenType != JsonToken.EndArray)
                     {
-                        var donorId = reader.Value.ToString();
+                        var donorId = reader.Value?.ToString();
 
                         yield return donorId;
-                    } while (TryRead(reader) && reader.TokenType != JsonToken.EndArray);
+                    }
                 }
             }
         }
