@@ -68,6 +68,18 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
 
             await donorReader.Received().GetExistingExternalDonorCodes(Arg.Any<IEnumerable<string>>());
         }
+        
+        [Test]
+        public async Task CheckDonorIdsFromFile_ReadsExternalDonorCodesBatches()
+        {
+            const int batchSize = 10000;
+            const int numberOfCalls = 2;
+            donorIdFile.ReadLazyDonorIds().Returns(Enumerable.Range(0, batchSize * numberOfCalls).Select(id => $"donor-id-{id}"));
+
+            await donorIdChecker.CheckDonorIdsFromFile(BlobImportFileBuilder.New.Build());
+
+            await donorReader.Received(numberOfCalls).GetExistingExternalDonorCodes(Arg.Any<IEnumerable<string>>());
+        }
 
         [Test]
         public async Task CheckDonorIdsFromFile_UploadsResults()
