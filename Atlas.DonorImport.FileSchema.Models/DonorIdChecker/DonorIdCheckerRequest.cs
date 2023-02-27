@@ -8,6 +8,6 @@
         /// <summary>
         /// List of alphanumeric donor record Ids.
         /// </summary>
-        public IEnumerable<string> RecordIds { get; set; }
+        public IEnumerable<string> recordIds { get; set; }
     }
 }

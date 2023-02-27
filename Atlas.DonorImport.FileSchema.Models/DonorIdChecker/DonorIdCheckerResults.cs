@@ -1,4 +1,6 @@
-﻿namespace Atlas.DonorImport.FileSchema.Models.DonorIdChecker
+﻿using System.Text.Json.Serialization;
+
+namespace Atlas.DonorImport.FileSchema.Models.DonorIdChecker
 {
     /// <summary>
     /// Results for the donor ID checker
@@ -8,6 +10,7 @@
         /// <summary>
         /// List of donor ids that are not present in a system
         /// </summary>
+        [JsonPropertyName("results")]
         public List<string> MissingDonorIds { get; set; } = new();
     }
 }
