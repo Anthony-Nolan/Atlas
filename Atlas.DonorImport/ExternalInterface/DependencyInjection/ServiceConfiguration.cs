@@ -34,7 +34,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Initialise.InitaliseDapper();
 
             services.RegisterSettings(
-                fetchNotificationConfigurationSettings, fetchStalledFileSettings, fetchPublishDonorUpdatesSettings, fetchAzureStorageSettings);
+                fetchNotificationConfigurationSettings, fetchStalledFileSettings, fetchPublishDonorUpdatesSettings, fetchAzureStorageSettings, fetchMessagingServiceBusSettings);
             services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices(fetchMessagingServiceBusSettings);
@@ -57,12 +57,14 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, NotificationConfigurationSettings> fetchNotificationConfigurationSettings,
             Func<IServiceProvider, StalledFileSettings> fetchStalledFileSettings,
             Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
             services.MakeSettingsAvailableForUse(fetchStalledFileSettings);
             services.MakeSettingsAvailableForUse(fetchNotificationConfigurationSettings);
             services.MakeSettingsAvailableForUse(fetchPublishDonorUpdatesSettings);
             services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
+            services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
         }
 
         private static void RegisterServices(

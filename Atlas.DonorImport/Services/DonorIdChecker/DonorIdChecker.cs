@@ -15,7 +15,7 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
 {
     public interface IDonorIdChecker
     {
-        Task CheckDonorIdsFromFile(BlobImportFile file);
+        Task CheckDonorIdsFromFile(DonorIdCheckFile file);
     }
 
     internal class DonorIdChecker : IDonorIdChecker
@@ -38,7 +38,7 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
             this.logger = logger;
         }
 
-        public async Task CheckDonorIdsFromFile(BlobImportFile file)
+        public async Task CheckDonorIdsFromFile(DonorIdCheckFile file)
         {
             logger.SendTrace($"Beginning Donor Id Check for file '{file.FileLocation}'.");
             var lazyFile = fileParser.PrepareToLazilyParsingDonorIdFile(file.Contents);

@@ -10,7 +10,7 @@ namespace Atlas.DonorImport.FileSchema.Models.DonorIdChecker
         /// <summary>
         /// List of donor ids that are not present in a system
         /// </summary>
-        [JsonPropertyName("results")]
+        [JsonPropertyName("missingDonorIds")]
         public List<string> MissingDonorIds { get; set; } = new();
     }
 }

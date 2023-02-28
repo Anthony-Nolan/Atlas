@@ -6,7 +6,7 @@ namespace Atlas.DonorImport.ApplicationInsights
 {
     internal class DonorIdCheckFailureEventModel : EventModel
     {
-        public DonorIdCheckFailureEventModel(BlobImportFile file, Exception exception) : base("Donor Id Check Failed")
+        public DonorIdCheckFailureEventModel(DonorIdCheckFile file, Exception exception) : base("Donor Id Check Failed")
         {
             Level = LogLevel.Warn;
             Properties.Add(nameof(file.FileLocation), file.FileLocation);

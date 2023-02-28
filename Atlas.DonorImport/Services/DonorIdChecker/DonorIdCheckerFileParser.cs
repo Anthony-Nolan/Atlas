@@ -50,7 +50,8 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
 
                     var propertyName = reader.Value?.ToString();
 
-                    if (propertyName != nameof(DonorIdCheckerRequest.recordIds))
+                    if (propertyName != "recordIds")
+                    //if (propertyName != nameof(DonorIdCheckerRequest.RecordIds))
                     {
                         throw new MalformedDonorFileException("recordIds property must be the first property provided in donor id JSON file.");
                     }

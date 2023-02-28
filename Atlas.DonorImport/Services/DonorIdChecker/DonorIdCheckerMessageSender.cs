@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Atlas.DonorImport.FileSchema.Models.DonorIdChecker;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.ApplicationInsights;
+using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 
 namespace Atlas.DonorImport.Services.DonorIdChecker
 {
@@ -23,11 +24,11 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
         private readonly ITopicClient topicClient;
         private readonly ILogger logger;
 
-        public DonorIdCheckerMessageSender(NotificationsServiceBusSettings notificationServiceBusSettings, ITopicClientFactory topicClientFactory, ILogger logger)
+        public DonorIdCheckerMessageSender(MessagingServiceBusSettings messagingServiceBusSettings, ITopicClientFactory topicClientFactory, ILogger logger)
         {
             this.logger = logger;
-            topicClient = topicClientFactory.BuildTopicClient(notificationServiceBusSettings.ConnectionString,
-                notificationServiceBusSettings.DonorIdCheckerResultsTopic);
+            topicClient = topicClientFactory.BuildTopicClient(messagingServiceBusSettings.ConnectionString,
+                messagingServiceBusSettings.DonorIdCheckerResultsTopic);
         }
 
         public async Task SendSuccessCheckMessage(string requestFileLocation, string resultsFilename)

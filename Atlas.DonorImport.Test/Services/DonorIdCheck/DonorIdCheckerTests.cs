@@ -52,7 +52,7 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
         [Test]
         public async Task CheckDonorIdsFromFile_ParsesInputFile()
         {
-            var file = BlobImportFileBuilder.New.Build();
+            var file = DonorIdCheckFileBuilder.New.Build();
 
             await donorIdChecker.CheckDonorIdsFromFile(file);
             
@@ -64,7 +64,7 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
         {
             donorIdFile.ReadLazyDonorIds().Returns(Enumerable.Range(0, 100).Select(id => $"donor-id-{id}"));
 
-            await donorIdChecker.CheckDonorIdsFromFile(BlobImportFileBuilder.New.Build());
+            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
             await donorReader.Received().GetExistingExternalDonorCodes(Arg.Any<IEnumerable<string>>());
         }
@@ -76,7 +76,7 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
             const int numberOfCalls = 2;
             donorIdFile.ReadLazyDonorIds().Returns(Enumerable.Range(0, batchSize * numberOfCalls).Select(id => $"donor-id-{id}"));
 
-            await donorIdChecker.CheckDonorIdsFromFile(BlobImportFileBuilder.New.Build());
+            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
             await donorReader.Received(numberOfCalls).GetExistingExternalDonorCodes(Arg.Any<IEnumerable<string>>());
         }
@@ -84,7 +84,7 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
         [Test]
         public async Task CheckDonorIdsFromFile_UploadsResults()
         {
-            await donorIdChecker.CheckDonorIdsFromFile(BlobImportFileBuilder.New.Build());
+            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
             await blobStorageClient.Received().UploadResults(Arg.Any<DonorIdCheckerResults>(), Arg.Any<string>());
         }
@@ -92,7 +92,7 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
         [Test]
         public async Task CheckDonorIdsFromFile_SendsResultMessage()
         {
-            await donorIdChecker.CheckDonorIdsFromFile(BlobImportFileBuilder.New.Build());
+            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
             await messageSender.Received().SendSuccessCheckMessage(Arg.Any<string>(), Arg.Any<string>());
         }
@@ -102,7 +102,7 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
         {
             donorIdFile.ReadLazyDonorIds().Throws<EmptyDonorFileException>();
 
-            await donorIdChecker.CheckDonorIdsFromFile(BlobImportFileBuilder.New.Build());
+            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
             await notificationSender.Received().SendAlert("Donor Ids file was present but it was empty.", Arg.Any<string>(), Priority.Medium, Arg.Any<string>());
         }
@@ -113,7 +113,7 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
             var exception = new MalformedDonorFileException("Error message");
             donorIdFile.ReadLazyDonorIds().Throws(exception);
 
-            await donorIdChecker.CheckDonorIdsFromFile(BlobImportFileBuilder.New.Build());
+            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
             await notificationSender.Received().SendAlert(exception.Message, Arg.Any<string>(), Priority.Medium, Arg.Any<string>());
         }
@@ -124,7 +124,7 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
             var exception = new Exception("Error message");
             donorIdFile.ReadLazyDonorIds().Throws(exception);
             
-            donorIdChecker.Invoking(p => p.CheckDonorIdsFromFile(BlobImportFileBuilder.New.Build()))
+            donorIdChecker.Invoking(p => p.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build()))
                 .Should().Throw<Exception>();
 
             logger.Received().SendEvent(Arg.Any<DonorIdCheckFailureEventModel>());

@@ -5,12 +5,12 @@ using LochNessBuilder;
 namespace Atlas.DonorImport.Test.TestHelpers.Builders
 {
     [Builder]
-    internal static class BlobImportFileBuilder
+    internal static class DonorIdCheckFileBuilder
     {
-        public static Builder<BlobImportFile> New => Builder<BlobImportFile>.New
+        public static Builder<DonorIdCheckFile> New => Builder<DonorIdCheckFile>.New
             .With(f => f.FileLocation, "file-location");
 
-        public static Builder<BlobImportFile> WithContents(this Builder<BlobImportFile> builder, Stream contents) =>
+        public static Builder<DonorIdCheckFile> WithContents(this Builder<DonorIdCheckFile> builder, Stream contents) =>
             builder.With(f => f.Contents, contents);
     }
 }

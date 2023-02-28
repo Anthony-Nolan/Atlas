@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Atlas.DonorImport.ExternalInterface.Models
 {
-    public class BlobImportFile : IDisposable
+    public abstract class BlobImportFile : IDisposable
     {
         public string FileLocation { get; set; }
         public Stream Contents { get; set; }
