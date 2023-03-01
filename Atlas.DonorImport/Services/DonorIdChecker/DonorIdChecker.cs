@@ -52,7 +52,7 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
                 {
                     var donorIdsList = donorIdsBatch.ToList();
                     var externalDonorCodes = await donorReader.GetExistingExternalDonorCodes(donorIdsList);
-                    donorIdCheckResults.MissingDonorIds.AddRange(donorIdsList.Except(externalDonorCodes));
+                    donorIdCheckResults.MissingRecordIds.AddRange(donorIdsList.Except(externalDonorCodes));
 
                     checkedDonorIdsCount += donorIdsList.Count;
                     logger.SendTrace($"Batch complete - checked {donorIdsList.Count} donor(s) this batch. Cumulatively {checkedDonorIdsCount} donor(s). ");
@@ -60,7 +60,7 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
 
                 await blobStorageClient.UploadResults(donorIdCheckResults, filename);
 
-                logger.SendTrace($"Donor Id Check for file '{file.FileLocation}' complete. Checked {checkedDonorIdsCount} donor(s). Found {donorIdCheckResults.MissingDonorIds.Count} absent donor(s).");
+                logger.SendTrace($"Donor Id Check for file '{file.FileLocation}' complete. Checked {checkedDonorIdsCount} donor(s). Found {donorIdCheckResults.MissingRecordIds.Count} absent donor(s).");
 
                 await messageSender.SendSuccessCheckMessage(file.FileLocation, filename);
             }
