@@ -43,6 +43,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
                 sp => new NotificationsServiceBusSettings(),
                 sp => new StalledFileSettings { HoursToCheckStalledFiles = 2 },
                 sp => new PublishDonorUpdatesSettings(),
+                sp => new AzureStorageSettings(),
                 ConnectionStringReader(DonorStoreSqlConnectionString)
             );
             RegisterIntegrationTestServices(services);

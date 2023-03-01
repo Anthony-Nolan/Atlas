@@ -11,6 +11,7 @@ using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
+using Atlas.DonorImport.Services.DonorIdChecker;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -26,13 +27,14 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, StalledFileSettings> fetchStalledFileSettings,
             Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, string> fetchSqlConnectionString)
         {
             // Perform static Dapper set up that should be performed once before any SQL requests are made.
             Initialise.InitaliseDapper();
 
             services.RegisterSettings(
-                fetchNotificationConfigurationSettings, fetchStalledFileSettings, fetchPublishDonorUpdatesSettings);
+                fetchNotificationConfigurationSettings, fetchStalledFileSettings, fetchPublishDonorUpdatesSettings, fetchAzureStorageSettings, fetchMessagingServiceBusSettings);
             services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices(fetchMessagingServiceBusSettings);
@@ -54,11 +56,15 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, NotificationConfigurationSettings> fetchNotificationConfigurationSettings,
             Func<IServiceProvider, StalledFileSettings> fetchStalledFileSettings,
-            Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings)
+            Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
             services.MakeSettingsAvailableForUse(fetchStalledFileSettings);
             services.MakeSettingsAvailableForUse(fetchNotificationConfigurationSettings);
             services.MakeSettingsAvailableForUse(fetchPublishDonorUpdatesSettings);
+            services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
+            services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
         }
 
         private static void RegisterServices(
@@ -82,6 +88,11 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
                 return new MessageBatchPublisher<SearchableDonorUpdate>(serviceBusSettings.ConnectionString, serviceBusSettings.UpdatedSearchableDonorsTopic);
             });
             services.AddScoped<IDonorUpdatesCleaner, DonorUpdatesCleaner>();
+
+            services.AddScoped<IDonorIdChecker, DonorIdChecker>();
+            services.AddScoped<IDonorIdCheckerFileParser, DonorIdCheckerFileParser>();
+            services.AddScoped<IDonorIdCheckerBlobStorageClient, DonorIdCheckerBlobStorageClient>();
+            services.AddScoped<IDonorIdCheckerMessageSender, DonorIdCheckerMessageSender>();
         }
 
         private static void RegisterDonorReaderServices(this IServiceCollection services)

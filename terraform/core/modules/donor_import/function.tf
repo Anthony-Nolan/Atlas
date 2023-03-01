@@ -16,7 +16,7 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
   tags = var.general.common_tags
 
   app_settings = {
-    "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
+    "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
     "AzureStorage:ConnectionString"       = var.azure_storage.primary_connection_string,
     "AzureStorage:DonorFileBlobContainer" = azurerm_storage_container.donor_blob_storage.name
@@ -28,6 +28,9 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
     "MessagingServiceBus:ImportFileSubscription"       = azurerm_servicebus_subscription.donor-import-file-processor.name
     "MessagingServiceBus:ImportFileTopic"              = azurerm_servicebus_topic.donor-import-file-uploads.name
     "MessagingServiceBus:UpdatedSearchableDonorsTopic" = azurerm_servicebus_topic.updated-searchable-donors.name
+    "MessagingServiceBus:DonorIdCheckerTopic"          = azurerm_servicebus_topic.donor-id-checker-requests.name
+    "MessagingServiceBus:DonorIdCheckerSubscription"   = azurerm_servicebus_subscription.donor-id-checker.name
+    "MessagingServiceBus:DonorIdCheckerResultsTopic"   = azurerm_servicebus_topic.donor-id-checker-results.name
 
     "NotificationConfiguration:NotifyOnSuccessfulDonorImport"             = var.NOTIFICATIONS_ON_SUCCESSFUL_IMPORT
     "NotificationConfiguration:NotifyOnAttemptedDeletionOfUntrackedDonor" = var.NOTIFICATIONS_ON_DELETION_OF_INVALID_DONOR
