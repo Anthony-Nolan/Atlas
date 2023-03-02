@@ -7,12 +7,12 @@ resource "azurerm_eventgrid_event_subscription" "donor-file-upload-to-service-bu
   
   advanced_filter {
 	string_begins_with {
-		key = "Subject"
+		key = "subject"
 		values = ["/blobServices/default/containers/${azurerm_storage_container.donor_blob_storage.name}"]
 	}
 	string_not_begins_with {
-		key = "Subject"
-		values = ["/blobServices/default/containers/${azurerm_storage_container.donor_blob_storage.name}/donor-id-checker"]
+		key = "subject"
+		values = ["/blobServices/default/containers/${azurerm_storage_container.donor_blob_storage.name}/blobs/donor-id-checker"]
 	}
   }  
 
@@ -27,7 +27,7 @@ resource "azurerm_eventgrid_event_subscription" "donor-id-checker-request-to-ser
   ]
 
   subject_filter {
-    subject_begins_with = "/blobServices/default/containers/${azurerm_storage_container.donor_blob_storage.name}/donor-id-checker/requests"
+    subject_begins_with = "/blobServices/default/containers/${azurerm_storage_container.donor_blob_storage.name}/blobs/donor-id-checker/requests"
   }
 
   service_bus_topic_endpoint_id = azurerm_servicebus_topic.donor-id-checker-requests.id
