@@ -20,6 +20,7 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
 
     "AzureStorage:ConnectionString"       = var.azure_storage.primary_connection_string,
     "AzureStorage:DonorFileBlobContainer" = azurerm_storage_container.donor_blob_storage.name
+    "AzureStorage:DonorIdCheckerResultsBlobContainer" = local.donor_id_checker_results_container_name
 
     "DonorImport:FileCheckCronSchedule"    = var.STALLED_FILE_CHECK_CRONTAB
     "DonorImport:HoursToCheckStalledFiles" = var.STALLED_FILE_DURATION
