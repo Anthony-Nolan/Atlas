@@ -3,8 +3,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Requests;
-using System.Xml;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.ApplicationInsights;
@@ -25,12 +23,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         /// <param name="identifiedSearchRequest"></param>
         /// <param name="attemptNumber">The number of times this <paramref name="identifiedSearchRequest"/> has been attempted, including the current attempt.</param>
         Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest, int attemptNumber);
-
-        /// <param name="searchRequestId"></param>
-        /// <param name="attemptNumber">The number of times this <paramref name="searchRequestId"/> has been attempted, including the current attempt.</param>
-        /// <param name="remainingRetriesCount">The number of times this <paramref name="searchRequestId"/> will be retried until it completes successfully.</param>
-        /// <param name="errorMessage"></param>
-        Task SetSearchFailure(string searchRequestId, int attemptNumber, int remainingRetriesCount, string errorMessage);
     }
 
     public class SearchRunner : ISearchRunner
@@ -41,6 +33,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly ILogger searchLogger;
         private readonly MatchingAlgorithmSearchLoggingContext searchLoggingContext;
         private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
+        private readonly IMatchingFailureNotificationSender matchingFailureNotificationSender;
         private readonly int searchRequestMaxRetryCount;
 
         public SearchRunner(
@@ -51,7 +44,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             IMatchingAlgorithmSearchLogger searchLogger,
             MatchingAlgorithmSearchLoggingContext searchLoggingContext,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
-            MessagingServiceBusSettings messagingServiceBusSettings)
+            MessagingServiceBusSettings messagingServiceBusSettings,
+            IMatchingFailureNotificationSender matchingFailureNotificationSender)
         {
             this.searchServiceBusClient = searchServiceBusClient;
             this.searchService = searchService;
@@ -59,6 +53,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.searchLogger = searchLogger;
             this.searchLoggingContext = searchLoggingContext;
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
+            this.matchingFailureNotificationSender = matchingFailureNotificationSender;
             searchRequestMaxRetryCount = messagingServiceBusSettings.SearchRequestsMaxDeliveryCount;
         }
 
@@ -96,7 +91,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 {
                     SearchRequest = identifiedSearchRequest.SearchRequest,
                     SearchRequestId = searchRequestId,
-                    MatchingAlgorithmServiceVersion = SearchAlgorithmServiceVersion,
+                    MatchingAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString(),
                     MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
                     WasSuccessful = true,
                     NumberOfResults = results.Count,
@@ -112,7 +107,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 searchLogger.SendTrace($"Failed to lookup HLA for search with id {searchRequestId}. Exception: {hmdException}", LogLevel.Error);
                 
-                await SetSearchFailure(searchRequestId, attemptNumber, 0, hmdException.Message);
+                await matchingFailureNotificationSender.SendFailureNotification(searchRequestId, attemptNumber, 0, hmdException.Message);
                 
                 // Do not re-throw the HMD exception to prevent the search being retried or dead-lettered.
             }
@@ -121,34 +116,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 searchLogger.SendTrace($"Failed to run search with id {searchRequestId}. Exception: {e}", LogLevel.Error);
 
-                await SetSearchFailure(searchRequestId, attemptNumber, searchRequestMaxRetryCount - attemptNumber, null);
+                await matchingFailureNotificationSender.SendFailureNotification(searchRequestId, attemptNumber, searchRequestMaxRetryCount - attemptNumber);
 
                 throw;
             }
         }
-
-        public async Task SetSearchFailure(string searchRequestId, int attemptNumber, int remainingRetriesCount, string errorMessage)
-        {
-            var failureInfo = new MatchingAlgorithmFailureInfo
-            {
-                ValidationError = errorMessage,
-                AttemptNumber = attemptNumber,
-                RemainingRetriesCount = remainingRetriesCount
-            };
-
-            var notification = new MatchingResultsNotification
-            {
-                WasSuccessful = false,
-                SearchRequestId = searchRequestId,
-                MatchingAlgorithmServiceVersion = SearchAlgorithmServiceVersion,
-                MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion(),
-                ValidationError = failureInfo.ValidationError,
-                FailureInfo = failureInfo
-            };
-
-            await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
-        }
-
-        private string SearchAlgorithmServiceVersion => Assembly.GetExecutingAssembly().GetName().Version?.ToString();
     }
 }
