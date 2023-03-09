@@ -43,6 +43,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             resultsBlobStorageClient = Substitute.For<IResultsBlobStorageClient>();
             hlaNomenclatureVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
             var logger = Substitute.For<IMatchingAlgorithmSearchLogger>();
+            var matchingFailureNotificationSender = Substitute.For<IMatchingFailureNotificationSender>();
 
             searchRunner = new SearchRunner(
                 searchServiceBusClient,
@@ -51,7 +52,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                 logger,
                 new MatchingAlgorithmSearchLoggingContext(),
                 hlaNomenclatureVersionAccessor,
-                new MessagingServiceBusSettings { SearchRequestsMaxDeliveryCount = MaxRetryCount });
+                new MessagingServiceBusSettings { SearchRequestsMaxDeliveryCount = MaxRetryCount },
+                matchingFailureNotificationSender);
         }
 
         [Test]
@@ -172,14 +174,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             await searchRunner.Invoking(r => r.RunSearch(new IdentifiedSearchRequest { Id = "id", SearchRequest = DefaultMatchingRequest }, default))
                 .Should().ThrowAsync<Exception>();
-        }
-
-        [Test]
-        public async Task SetSearchFailure_PublishesFailureNotification()
-        {
-            await searchRunner.SetSearchFailure("search_id", 7, 3, "error message");
-
-            await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Any<MatchingResultsNotification>());
         }
     }
 }
