@@ -9,6 +9,7 @@ using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.FileSchema.Models.DonorIdChecker;
+using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Services.DonorIdChecker;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using FluentAssertions;
@@ -23,8 +24,8 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
     {
         private IDonorIdCheckerFileParser fileParser;
         private IDonorReader donorReader;
-        private IDonorIdCheckerBlobStorageClient blobStorageClient;
-        private IDonorIdCheckerMessageSender messageSender;
+        private IDonorCheckerBlobStorageClient blobStorageClient;
+        private IDonorCheckerMessageSender messageSender;
         private INotificationSender notificationSender;
         private ILogger logger;
         private ILazilyParsingDonorIdFile donorIdFile;
@@ -36,8 +37,8 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
         {
             fileParser = Substitute.For<IDonorIdCheckerFileParser>();
             donorReader = Substitute.For<IDonorReader>();
-            blobStorageClient = Substitute.For<IDonorIdCheckerBlobStorageClient>();
-            messageSender = Substitute.For<IDonorIdCheckerMessageSender>();
+            blobStorageClient = Substitute.For<IDonorCheckerBlobStorageClient>();
+            messageSender = Substitute.For<IDonorCheckerMessageSender>();
             notificationSender = Substitute.For<INotificationSender>();
             logger = Substitute.For<ILogger>();
 
@@ -94,7 +95,7 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
         {
             await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await messageSender.Received().SendSuccessCheckMessage(Arg.Any<string>(), Arg.Any<string>());
+            await messageSender.Received().SendSuccessCheckMessage(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
         }
 
         [Test]

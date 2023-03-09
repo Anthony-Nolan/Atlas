@@ -11,6 +11,7 @@ using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
+using Atlas.DonorImport.Services.DonorComparer;
 using Atlas.DonorImport.Services.DonorIdChecker;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Microsoft.Extensions.DependencyInjection;
@@ -91,8 +92,10 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
 
             services.AddScoped<IDonorIdChecker, DonorIdChecker>();
             services.AddScoped<IDonorIdCheckerFileParser, DonorIdCheckerFileParser>();
-            services.AddScoped<IDonorIdCheckerBlobStorageClient, DonorIdCheckerBlobStorageClient>();
-            services.AddScoped<IDonorIdCheckerMessageSender, DonorIdCheckerMessageSender>();
+            services.AddScoped<IDonorCheckerBlobStorageClient, DonorCheckerBlobStorageClient>();
+            services.AddScoped<IDonorCheckerMessageSender, DonorCheckerMessageSender>();
+
+            services.AddScoped<IDonorComparer, DonorComparer>();
         }
 
         private static void RegisterDonorReaderServices(this IServiceCollection services)
