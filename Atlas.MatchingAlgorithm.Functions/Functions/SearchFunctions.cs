@@ -57,5 +57,17 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         {
             await searchRunner.RunSearch(request, deliveryCount);
         }
+
+        [FunctionName(nameof(DeadLetterQueueListener))]
+        public async Task DeadLetterQueueListener(
+            [ServiceBusTrigger(
+                "%MessagingServiceBus:SearchRequestsTopic%/Subscriptions/%MessagingServiceBus:SearchRequestsSubscription%/$DeadLetterQueue",
+                "%MessagingServiceBus:SearchRequestsSubscription%",
+                Connection = "MessagingServiceBus:ConnectionString")]
+            IdentifiedSearchRequest request,
+            int deliveryCount)
+        {
+            await searchRunner.SetSearchFailure(request.Id, deliveryCount, 0, null);
+        }
     }
 }

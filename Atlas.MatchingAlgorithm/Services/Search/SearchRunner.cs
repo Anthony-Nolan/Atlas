@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
+using System.Xml;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.ApplicationInsights;
@@ -23,6 +25,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         /// <param name="identifiedSearchRequest"></param>
         /// <param name="attemptNumber">The number of times this <paramref name="identifiedSearchRequest"/> has been attempted, including the current attempt.</param>
         Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest, int attemptNumber);
+
+        /// <param name="searchRequestId"></param>
+        /// <param name="attemptNumber">The number of times this <paramref name="searchRequestId"/> has been attempted, including the current attempt.</param>
+        /// <param name="remainingRetriesCount">The number of times this <paramref name="searchRequestId"/> will be retried until it completes successfully.</param>
+        /// <param name="errorMessage"></param>
+        Task SetSearchFailure(string searchRequestId, int attemptNumber, int remainingRetriesCount, string errorMessage);
     }
 
     public class SearchRunner : ISearchRunner
@@ -58,7 +66,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         {
             var searchRequestId = identifiedSearchRequest.Id;
             searchLoggingContext.SearchRequestId = searchRequestId;
-            var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
             searchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
 
@@ -89,7 +96,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 {
                     SearchRequest = identifiedSearchRequest.SearchRequest,
                     SearchRequestId = searchRequestId,
-                    MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
+                    MatchingAlgorithmServiceVersion = SearchAlgorithmServiceVersion,
                     MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
                     WasSuccessful = true,
                     NumberOfResults = results.Count,
@@ -104,26 +111,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             catch (HlaMetadataDictionaryException hmdException)
             {
                 searchLogger.SendTrace($"Failed to lookup HLA for search with id {searchRequestId}. Exception: {hmdException}", LogLevel.Error);
-
-                var failureInfo = new MatchingAlgorithmFailureInfo
-                {
-                    ValidationError = hmdException.Message,
-                    AttemptNumber = attemptNumber,
-                    RemainingRetriesCount = 0
-                };
-
-                var notification = new MatchingResultsNotification
-                {
-                    WasSuccessful = false,
-                    SearchRequestId = searchRequestId,
-                    MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
-                    MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
-                    ValidationError = failureInfo.ValidationError,
-                    FailureInfo = failureInfo
-                };
                 
-                await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
-
+                await SetSearchFailure(searchRequestId, attemptNumber, 0, hmdException.Message);
+                
                 // Do not re-throw the HMD exception to prevent the search being retried or dead-lettered.
             }
             // "Unexpected" exceptions will be re-thrown to ensure that the request will be retried or dead-lettered, as appropriate.
@@ -131,25 +121,34 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 searchLogger.SendTrace($"Failed to run search with id {searchRequestId}. Exception: {e}", LogLevel.Error);
 
-                var failureInfo = new MatchingAlgorithmFailureInfo
-                {
-                    AttemptNumber = attemptNumber,
-                    RemainingRetriesCount = searchRequestMaxRetryCount - attemptNumber
-                };
-
-                var notification = new MatchingResultsNotification
-                {
-                    WasSuccessful = false,
-                    SearchRequestId = searchRequestId,
-                    MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
-                    MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
-                    FailureInfo = failureInfo
-                };
-
-                await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
+                await SetSearchFailure(searchRequestId, attemptNumber, searchRequestMaxRetryCount - attemptNumber, null);
 
                 throw;
             }
         }
+
+        public async Task SetSearchFailure(string searchRequestId, int attemptNumber, int remainingRetriesCount, string errorMessage)
+        {
+            var failureInfo = new MatchingAlgorithmFailureInfo
+            {
+                ValidationError = errorMessage,
+                AttemptNumber = attemptNumber,
+                RemainingRetriesCount = remainingRetriesCount
+            };
+
+            var notification = new MatchingResultsNotification
+            {
+                WasSuccessful = false,
+                SearchRequestId = searchRequestId,
+                MatchingAlgorithmServiceVersion = SearchAlgorithmServiceVersion,
+                MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion(),
+                ValidationError = failureInfo.ValidationError,
+                FailureInfo = failureInfo
+            };
+
+            await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
+        }
+
+        private string SearchAlgorithmServiceVersion => Assembly.GetExecutingAssembly().GetName().Version?.ToString();
     }
 }
