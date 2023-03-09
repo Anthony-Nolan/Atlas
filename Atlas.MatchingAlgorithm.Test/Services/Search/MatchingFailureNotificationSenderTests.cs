@@ -29,15 +29,18 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         {
             const string searchRequestId = "search_id";
             const string validationError = "error message";
+            const int attemptNumber = 7;
+            const int remainingRetriesCount = 3;
 
-            await matchingFailureNotificationSender.SendFailureNotification(searchRequestId, 7, 3, validationError);
-
-            await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Any<MatchingResultsNotification>());
+            await matchingFailureNotificationSender.SendFailureNotification(searchRequestId, attemptNumber, remainingRetriesCount, validationError);
 
             await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r => 
                 !r.WasSuccessful
                 && r.SearchRequestId.Equals(searchRequestId)
-                && r.ValidationError.Equals(validationError)));
+                && r.ValidationError.Equals(validationError)
+                && r.FailureInfo.AttemptNumber == attemptNumber
+                && r.FailureInfo.RemainingRetriesCount == remainingRetriesCount
+            ));
         }
     }
 }

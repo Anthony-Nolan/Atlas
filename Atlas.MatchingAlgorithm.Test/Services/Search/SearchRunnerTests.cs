@@ -32,6 +32,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         private ISearchService searchService;
         private IResultsBlobStorageClient resultsBlobStorageClient;
         private IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
+        private IMatchingFailureNotificationSender matchingFailureNotificationSender;
 
         private ISearchRunner searchRunner;
 
@@ -43,7 +44,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             resultsBlobStorageClient = Substitute.For<IResultsBlobStorageClient>();
             hlaNomenclatureVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
             var logger = Substitute.For<IMatchingAlgorithmSearchLogger>();
-            var matchingFailureNotificationSender = Substitute.For<IMatchingFailureNotificationSender>();
+            matchingFailureNotificationSender = Substitute.For<IMatchingFailureNotificationSender>();
 
             searchRunner = new SearchRunner(
                 searchServiceBusClient,
@@ -83,7 +84,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default);
 
-            await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
+            await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
                 r.WasSuccessful && r.SearchRequestId == id
             ));
         }
@@ -96,7 +97,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = "id", SearchRequest = DefaultMatchingRequest }, default);
 
-            await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
+            await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
                 r.MatchingAlgorithmHlaNomenclatureVersion == hlaNomenclatureVersion
             ));
         }
@@ -120,13 +121,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             }
             finally
             {
-                await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
-                    !r.WasSuccessful &&
-                    r.SearchRequestId == id &&
-                    r.FailureInfo.ValidationError == validationError &&
-                    r.FailureInfo.AttemptNumber == attemptNumber &&
-                    r.FailureInfo.RemainingRetriesCount == 0
-                ));
+                await matchingFailureNotificationSender.Received().SendFailureNotification(id, attemptNumber, 0, validationError);
             }
         }
 
@@ -157,13 +152,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             }
             finally
             {
-                await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
-                    !r.WasSuccessful &&
-                    r.SearchRequestId == id &&
-                    r.FailureInfo.ValidationError == null &&
-                    r.FailureInfo.AttemptNumber == attemptNumber &&
-                    r.FailureInfo.RemainingRetriesCount == MaxRetryCount - attemptNumber
-                ));
+                await matchingFailureNotificationSender.Received().SendFailureNotification(id, attemptNumber, MaxRetryCount - attemptNumber);
             }
         }
 
