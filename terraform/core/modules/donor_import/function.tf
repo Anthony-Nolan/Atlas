@@ -21,6 +21,7 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
     "AzureStorage:ConnectionString"       = var.azure_storage.primary_connection_string,
     "AzureStorage:DonorFileBlobContainer" = azurerm_storage_container.donor_blob_storage.name
     "AzureStorage:DonorIdCheckerResultsBlobContainer" = local.donor_id_checker_results_container_name
+    "AzureStorage:CompareDonorsResultsBlobContainer" = local.compare_donors_results_container_name
 
     "DonorImport:FileCheckCronSchedule"    = var.STALLED_FILE_CHECK_CRONTAB
     "DonorImport:HoursToCheckStalledFiles" = var.STALLED_FILE_DURATION
@@ -32,6 +33,9 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
     "MessagingServiceBus:DonorIdCheckerTopic"          = azurerm_servicebus_topic.donor-id-checker-requests.name
     "MessagingServiceBus:DonorIdCheckerSubscription"   = azurerm_servicebus_subscription.donor-id-checker.name
     "MessagingServiceBus:DonorIdCheckerResultsTopic"   = azurerm_servicebus_topic.donor-id-checker-results.name
+    "MessagingServiceBus:CompareDonorsTopic"          = azurerm_servicebus_topic.compare-donors-requests.name
+    "MessagingServiceBus:CompareDonorsSubscription"   = azurerm_servicebus_subscription.compare-donors.name
+    "MessagingServiceBus:CompareDonorsResultsTopic"   = azurerm_servicebus_topic.compare-donors-results.name
 
     "NotificationConfiguration:NotifyOnSuccessfulDonorImport"             = var.NOTIFICATIONS_ON_SUCCESSFUL_IMPORT
     "NotificationConfiguration:NotifyOnAttemptedDeletionOfUntrackedDonor" = var.NOTIFICATIONS_ON_DELETION_OF_INVALID_DONOR

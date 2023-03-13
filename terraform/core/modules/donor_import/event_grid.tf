@@ -12,7 +12,10 @@ resource "azurerm_eventgrid_event_subscription" "donor-file-upload-to-service-bu
 	}
 	string_not_begins_with {
 		key = "subject"
-		values = ["/blobServices/default/containers/${azurerm_storage_container.donor_blob_storage.name}/blobs/donor-id-checker"]
+		values = [
+		  "/blobServices/default/containers/${azurerm_storage_container.donor_blob_storage.name}/blobs/donor-id-checker",
+		  "/blobServices/default/containers/${azurerm_storage_container.donor_blob_storage.name}/blobs/compare-donors"
+		]
 	}
   }  
 
@@ -31,4 +34,18 @@ resource "azurerm_eventgrid_event_subscription" "donor-id-checker-request-to-ser
   }
 
   service_bus_topic_endpoint_id = azurerm_servicebus_topic.donor-id-checker-requests.id
+}
+
+resource "azurerm_eventgrid_event_subscription" "donor-compare-request-to-service-bus" {
+  name  = "${lower(var.general.environment)}-donor-compare-request-to-service-bus"
+  scope = var.azure_storage.id
+  included_event_types = [
+    "Microsoft.Storage.BlobCreated"
+  ]
+
+  subject_filter {
+    subject_begins_with = "/blobServices/default/containers/${azurerm_storage_container.donor_blob_storage.name}/blobs/compare-donors/requests"
+  }
+
+  service_bus_topic_endpoint_id = azurerm_servicebus_topic.compare-donors-requests.id
 }
