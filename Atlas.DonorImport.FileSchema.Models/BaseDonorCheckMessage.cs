@@ -12,7 +12,7 @@
 
         public string Summary { get; }
         public string RequestFileLocation { get; }
-        public string ResultsFilename { get; }
         public int NumberOfMismatches { get; }
+        public string ResultsFilename { get; }
     }
 }
