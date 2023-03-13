@@ -85,9 +85,24 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
         [Test]
         public async Task CheckDonorIdsFromFile_UploadsResults()
         {
+            donorIdFile.ReadLazyDonorIds().Returns(Enumerable.Range(0, 100).Select(id => $"missed-id-{id}"));
+            donorReader.GetExistingExternalDonorCodes(Arg.Any<IEnumerable<string>>()).Returns(new List<string>());
+
             await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
             await blobStorageClient.Received().UploadResults(Arg.Any<DonorIdCheckerResults>(), Arg.Any<string>());
+        }
+
+        [Test]
+        public async Task CheckDonorIdsFromFile_WhenNoMismatches_NotUploadsResults()
+        {
+            var donorRecordIds = Enumerable.Range(0, 100).Select(id => $"donor-id-{id}").ToList();
+            donorIdFile.ReadLazyDonorIds().Returns(donorRecordIds);
+            donorReader.GetExistingExternalDonorCodes(Arg.Any<IEnumerable<string>>()).Returns(donorRecordIds);
+
+            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
+
+            await blobStorageClient.DidNotReceive().UploadResults(Arg.Any<DonorIdCheckerResults>(), Arg.Any<string>());
         }
 
         [Test]

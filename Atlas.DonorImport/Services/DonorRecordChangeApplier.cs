@@ -28,6 +28,8 @@ namespace Atlas.DonorImport.Services
         /// This must be passed in here as we need to apply donor updates and logs in the same transaction.
         /// </param>
         Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, DonorImportFile file, int skippedDonors);
+
+        Donor MapToDatabaseDonor(DonorUpdate fileUpdate, string fileLocation);
     }
 
     internal class DonorRecordChangeApplier : IDonorRecordChangeApplier
@@ -256,7 +258,7 @@ namespace Atlas.DonorImport.Services
             return donorUpdates.First().UpdateMode;
         }
 
-        private Donor MapToDatabaseDonor(DonorUpdate fileUpdate, string fileLocation)
+        public Donor MapToDatabaseDonor(DonorUpdate fileUpdate, string fileLocation)
         {
             Dictionary<string, string> CreateLogContext(Locus locus) =>
                 new Dictionary<string, string>
