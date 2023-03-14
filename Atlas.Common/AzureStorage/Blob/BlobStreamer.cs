@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Azure.Storage.Blob;
 
 namespace Atlas.Common.AzureStorage.Blob
 {
@@ -17,19 +16,9 @@ namespace Atlas.Common.AzureStorage.Blob
 
         public async Task<Stream> GetBlobContents(string containerName, string blobName)
         {
-            return await GetContentStream(containerName, blobName);
-        }
-
-        private async Task<Stream> GetContentStream(string containerName, string fileName)
-        {
-            var blob = await GetCloudBlob(containerName, fileName);
+            var container = GetBlobContainer(containerName);
+            var blob = container.GetBlobClient(blobName);
             return await blob.OpenReadAsync();
-        }
-
-        private async Task<CloudBlob> GetCloudBlob(string containerName, string fileName)
-        {
-            var container = await GetBlobContainer(containerName);
-            return container.GetBlobReference(fileName);
         }
     }
 }
