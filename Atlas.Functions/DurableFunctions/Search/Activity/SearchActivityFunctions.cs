@@ -65,7 +65,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             stopwatch.Start();
 
             var matchingResults = await logger.RunTimedAsync("Download matching results", async () =>
-                await matchingResultsDownloader.Download(matchingResultsNotification.ResultsFileName, matchingResultsNotification.IsRepeatSearch)
+                await matchingResultsDownloader.Download(
+                    matchingResultsNotification.ResultsFileName,
+                    matchingResultsNotification.IsRepeatSearch,
+                    matchingResultsNotification.ResultBatched ?  matchingResultsNotification.BatchFolder : null)
             );
 
             var donorInfo = await logger.RunTimedAsync("Fetch donor data", async () =>
@@ -113,7 +116,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             var matchingResultsNotification = parameters.MatchingResultsNotification;
 
             var matchingResults = await logger.RunTimedAsync("Download matching results", async () =>
-                await matchingResultsDownloader.Download(matchingResultsNotification.ResultsFileName, matchingResultsNotification.IsRepeatSearch)
+                await matchingResultsDownloader.Download(
+                    matchingResultsNotification.ResultsFileName,
+                    matchingResultsNotification.IsRepeatSearch,
+                    matchingResultsNotification.ResultBatched ? matchingResultsNotification.BatchFolder : null)
             );
 
             // TODO: ATLAS-965 - use the lookup in matching to populate this and avoid a second SQL fetch

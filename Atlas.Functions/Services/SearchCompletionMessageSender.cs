@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
@@ -28,17 +29,20 @@ namespace Atlas.Functions.Services
         private readonly string connectionString;
         private readonly string resultsNotificationTopicName;
         private readonly string repeatResultsNotificationTopicName;
+        private readonly bool resultBatched;
 
         public SearchCompletionMessageSender(
             IOptions<MessagingServiceBusSettings> messagingServiceBusSettings,
             ILogger logger,
-            IMapper mapper)
+            IMapper mapper,
+            IOptions<AzureStorageSettings> azureStorageSettings)
         {
             this.logger = logger;
             this.mapper = mapper;
             connectionString = messagingServiceBusSettings.Value.ConnectionString;
             resultsNotificationTopicName = messagingServiceBusSettings.Value.SearchResultsTopic;
             repeatResultsNotificationTopicName = messagingServiceBusSettings.Value.RepeatSearchResultsTopic;
+            resultBatched = azureStorageSettings.Value.ResultBatched;
         }
 
         public async Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime) where T : SearchResultSet
@@ -76,7 +80,9 @@ namespace Atlas.Functions.Services
                     BlobStorageContainerName = searchResultSet.BlobStorageContainerName,
                     MatchingAlgorithmTime = searchResultSet.MatchingAlgorithmTime,
                     MatchPredictionTime = searchResultSet.MatchPredictionTime,
-                    OverallSearchTime = searchTime
+                    OverallSearchTime = searchTime,
+                    ResultBatched = resultBatched,
+                    BatchFolder = resultBatched ? searchResultSet.SearchRequestId : null
                 };
                 await SendNotificationMessage(searchResultsNotification);
             }

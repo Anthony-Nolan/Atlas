@@ -10,30 +10,31 @@ namespace Atlas.RepeatSearch.Clients.AzureStorage
 {
     public interface IRepeatSearchResultsBlobStorageClient
     {
-        Task UploadResults(ResultSet<MatchingAlgorithmResult> repeatSearchResultSet);
+        Task UploadResults(BatchedResultSet<MatchingAlgorithmResult> repeatSearchResultSet);
         string GetResultsContainerName();
     }
 
     public class RepeatSearchResultsBlobStorageClient : BlobUploader, IRepeatSearchResultsBlobStorageClient
     {
-        private readonly string resultsContainerName;
+        private readonly AzureStorageSettings azureStorageSettings;
 
         // ReSharper disable once SuggestBaseTypeForParameter
         public RepeatSearchResultsBlobStorageClient(AzureStorageSettings azureStorageSettings, IMatchingAlgorithmSearchLogger logger)
             : base(azureStorageSettings.ConnectionString, logger)
         {
-            resultsContainerName = azureStorageSettings.MatchingResultsBlobContainer;
+            this.azureStorageSettings = azureStorageSettings;
         }
 
-        public async Task UploadResults(ResultSet<MatchingAlgorithmResult> repeatSearchResultSet)
+        public async Task UploadResults(BatchedResultSet<MatchingAlgorithmResult> repeatSearchResultSet)
         {
+            repeatSearchResultSet.BatchedResult = azureStorageSettings.ResultBatched;
             var serialisedResults = JsonConvert.SerializeObject(repeatSearchResultSet);
-            await Upload(resultsContainerName, repeatSearchResultSet.ResultsFileName, serialisedResults);
+            await Upload(azureStorageSettings.MatchingResultsBlobContainer, repeatSearchResultSet.ResultsFileName, serialisedResults);
         }
 
         public string GetResultsContainerName()
         {
-            return resultsContainerName;
+            return azureStorageSettings.MatchingResultsBlobContainer;
         }
     }
 }

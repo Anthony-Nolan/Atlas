@@ -54,7 +54,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                 new MatchingAlgorithmSearchLoggingContext(),
                 hlaNomenclatureVersionAccessor,
                 new MessagingServiceBusSettings { SearchRequestsMaxDeliveryCount = MaxRetryCount },
-                matchingFailureNotificationSender);
+                matchingFailureNotificationSender,
+                new Settings.Azure.AzureStorageSettings());
         }
 
         [Test]
@@ -74,7 +75,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default);
 
-            await resultsBlobStorageClient.Received().UploadResults(Arg.Any<ResultSet<MatchingAlgorithmResult>>());
+            await resultsBlobStorageClient.Received().UploadResults(Arg.Any<BatchedResultSet<MatchingAlgorithmResult>>());
         }
 
         [Test]

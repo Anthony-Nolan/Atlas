@@ -1,6 +1,9 @@
 ﻿using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.ApplicationInsights;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs.Models;
 
@@ -29,5 +32,19 @@ namespace Atlas.Common.AzureStorage.Blob
             azureStorageEventModel.EndAzureStorageCommunication(UploadLogLabel);
             Logger.SendEvent(azureStorageEventModel);
         }
+
+        public async Task BatchUpload<T>(IEnumerable<T> list, int batchSize, string blobContainer, string blobFolder)
+        {
+            var batchNumber = 0;
+            var listSize = list.Count();
+            while (listSize > batchNumber * batchSize)
+            {
+                var serializedBatch = JsonConvert.SerializeObject(GetBatch(list, batchNumber++, batchSize));
+                await Upload(blobContainer, $"{blobFolder}/{batchNumber}.json", serializedBatch);
+            }
+        }
+
+        private IEnumerable<T> GetBatch<T>(IEnumerable<T> list, int batchNumber, int batchSize) =>
+            list.Skip(batchNumber * batchSize).Take(batchSize);
     }
 }

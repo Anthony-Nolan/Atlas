@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
@@ -12,7 +13,7 @@ namespace Atlas.Functions.Services.BlobStorageClients
 {
     public interface IMatchingResultsDownloader
     {
-        public Task<ResultSet<MatchingAlgorithmResult>> Download(string blobName, bool isRepeatSearch);
+        public Task<ResultSet<MatchingAlgorithmResult>> Download(string blobName, bool isRepeatSearch, string batchFolder);
     }
 
     internal class MatchingResultsDownloader : IMatchingResultsDownloader
@@ -29,7 +30,7 @@ namespace Atlas.Functions.Services.BlobStorageClients
         }
 
         /// <inheritdoc />
-        public async Task<ResultSet<MatchingAlgorithmResult>> Download(string blobName, bool isRepeatSearch)
+        public async Task<ResultSet<MatchingAlgorithmResult>> Download(string blobName, bool isRepeatSearch, string batchFolder)
         {
             using (logger.RunTimed($"Downloading matching results: {blobName}"))
             {
@@ -40,8 +41,14 @@ namespace Atlas.Functions.Services.BlobStorageClients
                     ? await blobDownloader.Download<RepeatMatchingAlgorithmResultSet>(matchingResultsBlobContainer, blobName) as ResultSet<MatchingAlgorithmResult>
                     : await blobDownloader.Download<OriginalMatchingAlgorithmResultSet>(matchingResultsBlobContainer, blobName);
 
+                if (!string.IsNullOrEmpty(batchFolder))
+                {
+                    matchingResults.Results = await blobDownloader.BatchDownload<MatchingAlgorithmResult>(matchingResultsBlobContainer, batchFolder);
+                }
+
                 return matchingResults;
             }
         }
+
     }
 }
