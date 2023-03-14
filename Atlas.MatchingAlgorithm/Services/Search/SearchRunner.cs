@@ -12,6 +12,7 @@ using Atlas.MatchingAlgorithm.Clients.AzureStorage;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using FluentValidation;
@@ -34,6 +35,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly MatchingAlgorithmSearchLoggingContext searchLoggingContext;
         private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
         private readonly IMatchingFailureNotificationSender matchingFailureNotificationSender;
+        private readonly bool resultBatched;
         private readonly int searchRequestMaxRetryCount;
 
         public SearchRunner(
@@ -45,7 +47,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             MatchingAlgorithmSearchLoggingContext searchLoggingContext,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             MessagingServiceBusSettings messagingServiceBusSettings,
-            IMatchingFailureNotificationSender matchingFailureNotificationSender)
+            IMatchingFailureNotificationSender matchingFailureNotificationSender,
+            AzureStorageSettings azureStorageSettings)
         {
             this.searchServiceBusClient = searchServiceBusClient;
             this.searchService = searchService;
@@ -55,6 +58,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
             this.matchingFailureNotificationSender = matchingFailureNotificationSender;
             searchRequestMaxRetryCount = messagingServiceBusSettings.SearchRequestsMaxDeliveryCount;
+            resultBatched = azureStorageSettings.ResultBatched;
         }
 
         public async Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest, int attemptNumber)
@@ -97,7 +101,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     NumberOfResults = results.Count,
                     BlobStorageContainerName = blobContainerName,
                     ResultsFileName = searchResultSet.ResultsFileName,
-                    ElapsedTime = stopwatch.Elapsed
+                    ElapsedTime = stopwatch.Elapsed,
+                    ResultBatched = resultBatched,
+                    BatchFolder = resultBatched ? searchRequestId : null
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
             }

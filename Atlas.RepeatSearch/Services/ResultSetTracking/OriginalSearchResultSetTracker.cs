@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.Common.Utils.Extensions;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Services.Search;
 
@@ -30,6 +31,11 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
             var resultSet = await blobDownloader.Download<OriginalMatchingAlgorithmResultSet>(
                 notification.BlobStorageContainerName,
                 notification.ResultsFileName);
+
+            if (notification.ResultBatched && !string.IsNullOrEmpty(notification.BatchFolder))
+            {
+                resultSet.Results = await blobDownloader.BatchDownload<MatchingAlgorithmResult>(notification.BlobStorageContainerName, notification.BatchFolder);
+            }
 
             var donorIds = resultSet.Results.Select(r => r.DonorCode).ToList();
             await canonicalResultSetRepository.CreateCanonicalResultSet(resultSet.SearchRequestId, donorIds);

@@ -2,7 +2,7 @@
 
 namespace Atlas.Client.Models.Search.Results.Matching.ResultSet
 {
-    public class OriginalMatchingAlgorithmResultSet : ResultSet<MatchingAlgorithmResult>
+    public class OriginalMatchingAlgorithmResultSet : BatchedResultSet<MatchingAlgorithmResult>
     {
         public override bool IsRepeatSearchSet => false;
 

@@ -18,6 +18,7 @@ using Atlas.RepeatSearch.Data.Models;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Models;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
+using Atlas.RepeatSearch.Settings.Azure;
 
 namespace Atlas.RepeatSearch.Services.Search
 {
@@ -38,6 +39,7 @@ namespace Atlas.RepeatSearch.Services.Search
         private readonly IRepeatSearchValidator repeatSearchValidator;
         private readonly IRepeatSearchDifferentialCalculator repeatSearchDifferentialCalculator;
         private readonly IOriginalSearchResultSetTracker originalSearchResultSetTracker;
+        private readonly bool resultBatched;
 
         public RepeatSearchRunner(
             IRepeatSearchServiceBusClient repeatSearchServiceBusClient,
@@ -50,7 +52,8 @@ namespace Atlas.RepeatSearch.Services.Search
             IRepeatSearchHistoryRepository repeatSearchHistoryRepository,
             IRepeatSearchValidator repeatSearchValidator,
             IRepeatSearchDifferentialCalculator repeatSearchDifferentialCalculator,
-            IOriginalSearchResultSetTracker originalSearchResultSetTracker)
+            IOriginalSearchResultSetTracker originalSearchResultSetTracker,
+            AzureStorageSettings azureStorageSettings)
         {
             this.repeatSearchServiceBusClient = repeatSearchServiceBusClient;
             this.searchService = searchService;
@@ -62,6 +65,7 @@ namespace Atlas.RepeatSearch.Services.Search
             this.repeatSearchValidator = repeatSearchValidator;
             this.repeatSearchDifferentialCalculator = repeatSearchDifferentialCalculator;
             this.originalSearchResultSetTracker = originalSearchResultSetTracker;
+            resultBatched = azureStorageSettings.ResultBatched;
         }
 
         public async Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
@@ -118,7 +122,9 @@ namespace Atlas.RepeatSearch.Services.Search
                     NumberOfResults = results.Count,
                     BlobStorageContainerName = blobContainerName,
                     ResultsFileName = searchResultSet.ResultsFileName,
-                    ElapsedTime = stopwatch.Elapsed
+                    ElapsedTime = stopwatch.Elapsed,
+                    ResultBatched = resultBatched,
+                    BatchFolder = resultBatched ? searchRequestId : null
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
                 return searchResultSet;

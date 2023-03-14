@@ -51,6 +51,8 @@ namespace Atlas.Client.Models.Search.Results.ResultSet
 
         public IEnumerable<TResult> Results { get; set; }
 
+        public virtual bool ShouldSerializeResults() => true;
+
         /// <summary>
         /// The <see cref="SearchRequest"/> that this result set is for. Not strictly necessary for consuming results, but can be very useful for
         /// debugging / support purposes, removing the need to cross reference result sets to request details.  

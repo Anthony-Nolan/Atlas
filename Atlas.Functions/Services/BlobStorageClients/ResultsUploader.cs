@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
@@ -17,15 +16,13 @@ namespace Atlas.Functions.Services.BlobStorageClients
 
     internal class ResultsUploader : BlobUploader, IResultsUploader
     {
-        private readonly string resultsContainer;
-        private readonly string repeatResultsContainer;
+        private readonly AzureStorageSettings azureStorageSettings;
 
         /// <inheritdoc />
         public ResultsUploader(IOptions<AzureStorageSettings> azureStorageSettings, ILogger logger)
             : base(azureStorageSettings.Value.MatchingConnectionString, logger)
         {
-            resultsContainer = azureStorageSettings.Value.SearchResultsBlobContainer;
-            repeatResultsContainer = azureStorageSettings.Value.RepeatSearchResultsBlobContainer;
+            this.azureStorageSettings = azureStorageSettings.Value;
         }
 
         /// <inheritdoc />
@@ -33,9 +30,15 @@ namespace Atlas.Functions.Services.BlobStorageClients
         {
             using (Logger.RunTimed($"Uploading results: {searchResultSet.SearchRequestId}"))
             {
+                searchResultSet.BatchedResult = azureStorageSettings.ResultBatched;
                 var serialisedResults = JsonConvert.SerializeObject(searchResultSet);
-                var container = searchResultSet.IsRepeatSearchSet ? repeatResultsContainer : resultsContainer;
+                var container = searchResultSet.IsRepeatSearchSet ? azureStorageSettings.RepeatSearchResultsBlobContainer : azureStorageSettings.SearchResultsBlobContainer;
                 await Upload(container, searchResultSet.ResultsFileName, serialisedResults);
+
+                if (azureStorageSettings.ResultBatched)
+                {
+                    await BatchUpload(searchResultSet.Results, azureStorageSettings.BatchSize, azureStorageSettings.SearchResultsBlobContainer, searchResultSet.SearchRequestId);
+                }
             }
         }
     }

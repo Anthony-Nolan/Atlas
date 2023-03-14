@@ -6,6 +6,7 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:MatchingResultsBlobContainer": "repeat-search-matching-results",
+    "AzureStorage:BatchSize": 10000,
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",

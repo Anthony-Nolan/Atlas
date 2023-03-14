@@ -10,30 +10,36 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureStorage
 {
     public interface IResultsBlobStorageClient
     {
-        Task UploadResults(ResultSet<MatchingAlgorithmResult> searchResultSet);
+        Task UploadResults(BatchedResultSet<MatchingAlgorithmResult> searchResultSet);
         string GetResultsContainerName();
     }
 
     public class ResultsBlobStorageClient : BlobUploader, IResultsBlobStorageClient
     {
-        private readonly string resultsContainerName;
+        private readonly AzureStorageSettings azureStorageSettings;
 
         // ReSharper disable once SuggestBaseTypeForParameter
         public ResultsBlobStorageClient(AzureStorageSettings azureStorageSettings, IMatchingAlgorithmSearchLogger logger)
             : base(azureStorageSettings.ConnectionString, logger)
         {
-            resultsContainerName = azureStorageSettings.SearchResultsBlobContainer;
+            this.azureStorageSettings = azureStorageSettings;
         }
 
-        public async Task UploadResults(ResultSet<MatchingAlgorithmResult> searchResultSet)
+        public async Task UploadResults(BatchedResultSet<MatchingAlgorithmResult> searchResultSet)
         {
+            searchResultSet.BatchedResult = azureStorageSettings.ResultBatched;
             var serialisedResults = JsonConvert.SerializeObject(searchResultSet);
-            await Upload(resultsContainerName, searchResultSet.ResultsFileName, serialisedResults);
+            await Upload(azureStorageSettings.SearchResultsBlobContainer, searchResultSet.ResultsFileName, serialisedResults);
+
+            if (azureStorageSettings.ResultBatched)
+            {
+                await BatchUpload(searchResultSet.Results, azureStorageSettings.BatchSize, azureStorageSettings.SearchResultsBlobContainer, searchResultSet.SearchRequestId);
+            }
         }
 
         public string GetResultsContainerName()
         {
-            return resultsContainerName;
+            return azureStorageSettings.SearchResultsBlobContainer;
         }
     }
 }
