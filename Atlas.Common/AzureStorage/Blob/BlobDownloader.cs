@@ -29,10 +29,16 @@ namespace Atlas.Common.AzureStorage.Blob
             var azureStorageEventModel = new AzureStorageEventModel(filename, container);
             azureStorageEventModel.StartAzureStorageCommunication();
 
-            var containerRef = await GetBlobContainer(container);
-            var blockBlob = containerRef.GetBlockBlobReference(filename);
+            var containerClient = GetBlobContainer(container);
+            var blobClient = containerClient.GetBlobClient(filename);
+            var downloadedBlob = await blobClient.DownloadContentAsync();
 
-            var data = JsonConvert.DeserializeObject<T>(await blockBlob.DownloadTextAsync());
+            if (downloadedBlob is not { HasValue: true })
+            {
+                throw new BlobNotFoundException(container, filename);
+            }
+
+            var data = JsonConvert.DeserializeObject<T>(downloadedBlob.Value.Content.ToString());
             
             azureStorageEventModel.EndAzureStorageCommunication(UploadLogLabel);
             logger.SendEvent(azureStorageEventModel);
