@@ -31,7 +31,7 @@ namespace Atlas.DonorImport.Functions.Functions
             [Blob("{data.url}", FileAccess.Read)] Stream blobStream // Raw JSON Text file containing donor updates in expected schema
         )
         {
-            await donorComparer.CompareDonorsFromFile(new DonorImportFile()
+            await donorComparer.CompareDonorInfoInFileToAtlasDonorStore(new DonorImportFile()
             {
                 Contents = blobStream,
                 FileLocation = blobCreatedEvent.Subject

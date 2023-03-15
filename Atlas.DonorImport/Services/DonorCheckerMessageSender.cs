@@ -1,23 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using Atlas.Common.ServiceBus;
 using Microsoft.Azure.ServiceBus;
 using System.Threading.Tasks;
-using System.Transactions;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.Utils;
 using Newtonsoft.Json;
-using Atlas.DonorImport.FileSchema.Models.DonorIdChecker;
 using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
-using Atlas.DonorImport.FileSchema.Models.DonorComparer;
+using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 
 namespace Atlas.DonorImport.Services
 {
     public interface IDonorCheckerMessageSender
     {
-        Task SendSuccessCheckMessage(string requestFileLocation, string resultsFilename, int numberOfMismatches);
-        Task SendSuccessDonorCompareMessage(string requestFileLocation, string resultsFilename, int numberOfMismatches);
+        Task SendSuccessDonorIdCheckMessage(string requestFileLocation, int resultsCount, string resultsFilename);
+        Task SendSuccessDonorInfoCheckMessage(string requestFileLocation, int resultsCount, string resultsFilename);
     }
 
     internal class DonorCheckerMessageSender : IDonorCheckerMessageSender
@@ -35,39 +33,30 @@ namespace Atlas.DonorImport.Services
                 messagingServiceBusSettings.CompareDonorsResultsTopic);
         }
 
-        public async Task SendSuccessCheckMessage(string requestFileLocation, string resultsFilename, int numberOfMismatches)
+        public async Task SendSuccessDonorIdCheckMessage(string requestFileLocation, int resultsCount, string resultsFilename) =>
+            await SendSuccessCheckMessage(idCheckerTopicClient, requestFileLocation, resultsCount, resultsFilename);
+
+        public async Task SendSuccessDonorInfoCheckMessage(string requestFileLocation, int resultsCount, string resultsFilename) =>
+            await SendSuccessCheckMessage(donorComparerTopicClient, requestFileLocation, resultsCount, resultsFilename);
+
+
+        private async Task SendSuccessCheckMessage(ITopicClient topicClient, string requestFileLocation, int resultsCount, string resultsFilename)
         {
-            var donorIdCheckerMessage = new DonorIdCheckerMessage(requestFileLocation, resultsFilename, numberOfMismatches);
-            var stringMessage = JsonConvert.SerializeObject(donorIdCheckerMessage);
+            var donorCheckerMessage = new DonorCheckerMessage(requestFileLocation, resultsCount, resultsFilename);
+            var stringMessage = JsonConvert.SerializeObject(donorCheckerMessage);
 
             try
             {
-                logger.SendTrace($"{nameof(DonorIdCheckerMessage)} sent. {nameof(DonorIdCheckerMessage.Summary)}: {donorIdCheckerMessage.Summary}. {nameof(DonorIdCheckerMessage.RequestFileLocation)}: {donorIdCheckerMessage.RequestFileLocation}. {nameof(DonorIdCheckerMessage.ResultsFilename)}: {donorIdCheckerMessage.ResultsFilename}");
-                var message = new Message(Encoding.UTF8.GetBytes(stringMessage));
-                using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
+                logger.SendTrace($"{nameof(DonorCheckerMessage)} sent.", LogLevel.Info, new Dictionary<string, string>
                 {
-                    await idCheckerTopicClient.SendAsync(message);
-                }
-            }
-            catch (Exception e)
-            {
-                logger.SendEvent(new DonorCheckMessageSenderFailureEvent(e, stringMessage));
-            }
-        }
+                    { nameof(DonorCheckerMessage.RequestFileLocation), donorCheckerMessage.RequestFileLocation },
+                    { nameof(DonorCheckerMessage.ResultsCount), donorCheckerMessage.ResultsCount.ToString() },
+                    { nameof(DonorCheckerMessage.ResultsFilename), donorCheckerMessage.ResultsFilename },
 
-        public async Task SendSuccessDonorCompareMessage(string requestFileLocation, string resultsFilename, int numberOfMismatches)
-        {
-            var donorComparerMessage = new DonorComparerMessage(requestFileLocation, resultsFilename, numberOfMismatches);
-            var stringMessage = JsonConvert.SerializeObject(donorComparerMessage);
-
-            try
-            {
-                logger.SendTrace($"{nameof(DonorComparerMessage)} sent. {nameof(DonorComparerMessage.Summary)}: {donorComparerMessage.Summary}. {nameof(DonorComparerMessage.RequestFileLocation)}: {donorComparerMessage.RequestFileLocation}. {nameof(DonorComparerMessage.ResultsFilename)}: {donorComparerMessage.ResultsFilename}");
+                });
                 var message = new Message(Encoding.UTF8.GetBytes(stringMessage));
-                using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
-                {
-                    await donorComparerTopicClient.SendAsync(message);
-                }
+                
+                await topicClient.SendAsync(message);
             }
             catch (Exception e)
             {

@@ -17,6 +17,11 @@ namespace Atlas.DonorImport.Data.Repositories
         public Task<IReadOnlyDictionary<string, int>> GetDonorIdsByExternalDonorCodes(ICollection<string> externalDonorCodes);
         public Task<IReadOnlyDictionary<string, int>> GetDonorIdsUpdatedSince(DateTimeOffset cutoffDate);
         public Task<IReadOnlyCollection<string>> GetExistingExternalDonorCodes(IEnumerable<string> externalDonorCodes);
+        /// <summary>
+        /// Fetch donors hashes by *external* donor codes
+        /// </summary>
+        /// <param name="externalDonorCodes"></param>
+        /// <returns>A dictionary of External Donor Code to donor hash.</returns>
         public Task<IReadOnlyDictionary<string, string>> GetDonorsHashes(IEnumerable<string> externalDonorCodes);
     }
 
@@ -135,7 +140,7 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
             }
         }
 
-
+        /// <inheritdoc />
         public async Task<IReadOnlyDictionary<string, string>> GetDonorsHashes(IEnumerable<string> externalDonorCodes)
         {
             var sql = @$"

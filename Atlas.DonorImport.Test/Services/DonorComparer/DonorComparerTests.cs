@@ -8,7 +8,6 @@ using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.FileSchema.Models;
-using Atlas.DonorImport.FileSchema.Models.DonorComparer;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Services.DonorComparer;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
@@ -55,7 +54,7 @@ namespace Atlas.DonorImport.Test.Services.DonorComparer
             var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(donors.ToArray()).Build();
             fileParser.PrepareToLazilyParseDonorUpdates(file.Contents).Returns(new LazilyParsingDonorFile(file.Contents));
 
-            await donorComparer.CompareDonorsFromFile(file);
+            await donorComparer.CompareDonorInfoInFileToAtlasDonorStore(file);
 
             await donorReader.Received().GetDonorsHashes(Arg.Any<IEnumerable<string>>());
         }
@@ -69,7 +68,7 @@ namespace Atlas.DonorImport.Test.Services.DonorComparer
             var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(donors.ToArray()).Build();
             fileParser.PrepareToLazilyParseDonorUpdates(file.Contents).Returns(new LazilyParsingDonorFile(file.Contents));
 
-            await donorComparer.CompareDonorsFromFile(file);
+            await donorComparer.CompareDonorInfoInFileToAtlasDonorStore(file);
 
             await donorReader.Received(numberOfButches).GetDonorsHashes(Arg.Any<IEnumerable<string>>());
         }
@@ -82,7 +81,7 @@ namespace Atlas.DonorImport.Test.Services.DonorComparer
             var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(donors.ToArray()).Build();
             fileParser.PrepareToLazilyParseDonorUpdates(file.Contents).Returns(new LazilyParsingDonorFile(file.Contents));
 
-            await donorComparer.CompareDonorsFromFile(file);
+            await donorComparer.CompareDonorInfoInFileToAtlasDonorStore(file);
 
             donorRecordChangeApplier.Received(numberOfDonors).MapToDatabaseDonor(Arg.Any<DonorUpdate>(), Arg.Any<string>());
         }
@@ -96,9 +95,9 @@ namespace Atlas.DonorImport.Test.Services.DonorComparer
             donorReader.GetDonorsHashes(Arg.Any<IEnumerable<string>>()).Returns(new Dictionary<string, string> { { donor.RecordId, "donorHash1" } });
             donorRecordChangeApplier.MapToDatabaseDonor(Arg.Any<DonorUpdate>(), Arg.Any<string>()).Returns(new Donor { Hash = "donorHash2" });
 
-            await donorComparer.CompareDonorsFromFile(file);
+            await donorComparer.CompareDonorInfoInFileToAtlasDonorStore(file);
 
-            await blobStorageClient.Received().UploadResults(Arg.Any<DonorComparerResults>(), Arg.Any<string>());
+            await blobStorageClient.Received().UploadDonorInfoCheckerResults(Arg.Any<DonorComparerResults>(), Arg.Any<string>());
         }
 
         [Test]
@@ -111,9 +110,9 @@ namespace Atlas.DonorImport.Test.Services.DonorComparer
             donorReader.GetDonorsHashes(Arg.Any<IEnumerable<string>>()).Returns(new Dictionary<string, string> { { donor.RecordId, donorHash } });
             donorRecordChangeApplier.MapToDatabaseDonor(Arg.Any<DonorUpdate>(), Arg.Any<string>()).Returns(new Donor { Hash = donorHash });
             
-            await donorComparer.CompareDonorsFromFile(file);
+            await donorComparer.CompareDonorInfoInFileToAtlasDonorStore(file);
 
-            await blobStorageClient.DidNotReceive().UploadResults(Arg.Any<DonorComparerResults>(), Arg.Any<string>());
+            await blobStorageClient.DidNotReceive().UploadDonorInfoCheckerResults(Arg.Any<DonorComparerResults>(), Arg.Any<string>());
         }
 
         [Test]
@@ -123,9 +122,9 @@ namespace Atlas.DonorImport.Test.Services.DonorComparer
             var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(donor).Build();
             fileParser.PrepareToLazilyParseDonorUpdates(file.Contents).Returns(new LazilyParsingDonorFile(file.Contents));
 
-            await donorComparer.CompareDonorsFromFile(file);
+            await donorComparer.CompareDonorInfoInFileToAtlasDonorStore(file);
 
-            await messageSender.Received().SendSuccessDonorCompareMessage(file.FileLocation, Arg.Any<string>(), Arg.Any<int>());
+            await messageSender.Received().SendSuccessDonorInfoCheckMessage(file.FileLocation, Arg.Any<int>(), Arg.Any<string>());
         }
 
 
@@ -137,7 +136,7 @@ namespace Atlas.DonorImport.Test.Services.DonorComparer
             fileParser.PrepareToLazilyParseDonorUpdates(file.Contents).Returns(new LazilyParsingDonorFile(file.Contents));
             donorReader.GetDonorsHashes(Arg.Any<IEnumerable<string>>()).Throws(new Exception("Error message"));
             
-            donorComparer.Invoking(c => c.CompareDonorsFromFile(file)).Should().Throw<Exception>();
+            donorComparer.Invoking(c => c.CompareDonorInfoInFileToAtlasDonorStore(file)).Should().Throw<Exception>();
 
             logger.Received().SendEvent(Arg.Any<DonorComparerFailureEventModel>());
         }
