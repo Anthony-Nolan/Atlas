@@ -39,8 +39,6 @@ namespace Atlas.DonorImport.ExternalInterface
         /// <param name="externalDonorCodes">External Donor Codes to fetch</param>
         /// <returns>A dictionary of External Donor Codes.</returns>
         Task<IReadOnlyCollection<string>> GetExistingExternalDonorCodes(IEnumerable<string> externalDonorCodes);
-
-        Task<IReadOnlyDictionary<string, string>> GetDonorsHashes(IEnumerable<string> externalDonorCodes);
     }
 
     public class DonorReader : IDonorReader
@@ -79,9 +77,5 @@ namespace Atlas.DonorImport.ExternalInterface
         /// <inheritdoc />
         public async Task<IReadOnlyCollection<string>> GetExistingExternalDonorCodes(IEnumerable<string> externalDonorCodes) =>
             await donorReadRepository.GetExistingExternalDonorCodes(externalDonorCodes);
-
-        /// <inheritdoc />
-        public async Task<IReadOnlyDictionary<string, string>> GetDonorsHashes(IEnumerable<string> externalDonorCodes) =>
-            await donorReadRepository.GetDonorsHashes(externalDonorCodes);
     }
 }

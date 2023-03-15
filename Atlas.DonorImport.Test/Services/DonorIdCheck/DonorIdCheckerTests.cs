@@ -8,7 +8,7 @@ using Atlas.Common.Notifications;
 using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface;
-using Atlas.DonorImport.FileSchema.Models.DonorIdChecker;
+using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Services.DonorIdChecker;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
@@ -90,7 +90,7 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
 
             await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await blobStorageClient.Received().UploadResults(Arg.Any<DonorIdCheckerResults>(), Arg.Any<string>());
+            await blobStorageClient.Received().UploadDonorIdCheckerResults(Arg.Any<DonorCheckerResults>(), Arg.Any<string>());
         }
 
         [Test]
@@ -102,7 +102,7 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
 
             await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await blobStorageClient.DidNotReceive().UploadResults(Arg.Any<DonorIdCheckerResults>(), Arg.Any<string>());
+            await blobStorageClient.DidNotReceive().UploadDonorIdCheckerResults(Arg.Any<DonorCheckerResults>(), Arg.Any<string>());
         }
 
         [Test]
@@ -110,7 +110,7 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
         {
             await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await messageSender.Received().SendSuccessCheckMessage(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
+            await messageSender.Received().SendSuccessDonorIdCheckMessage(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string>());
         }
 
         [Test]

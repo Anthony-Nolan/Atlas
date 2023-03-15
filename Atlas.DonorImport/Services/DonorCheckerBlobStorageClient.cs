@@ -2,16 +2,15 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.DonorImport.ExternalInterface.Settings;
-using Atlas.DonorImport.FileSchema.Models.DonorComparer;
-using Atlas.DonorImport.FileSchema.Models.DonorIdChecker;
+using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Services
 {
     public interface IDonorCheckerBlobStorageClient
     {
-        Task UploadResults(DonorIdCheckerResults idCheckerResults, string filename);
-        Task UploadResults(DonorComparerResults donorComparerResults, string filename);
+        Task UploadDonorIdCheckerResults(DonorCheckerResults checkerResults, string filename);
+        Task UploadDonorInfoCheckerResults(DonorCheckerResults checkerResults, string filename);
     }
 
     internal class DonorCheckerBlobStorageClient : BlobUploader, IDonorCheckerBlobStorageClient
@@ -27,16 +26,16 @@ namespace Atlas.DonorImport.Services
             donorComparerResultsContainerName = azureStorageSettings.CompareDonorsResultsBlobContainer;
         }
 
-        public async Task UploadResults(DonorIdCheckerResults idCheckerResults, string filename)
-        {
-            var serialisedResults = JsonConvert.SerializeObject(idCheckerResults);
-            await Upload(donorBlobContainer, $"{idCheckerResultsContainerName}/{filename}", serialisedResults);
-        }
+        public async Task UploadDonorIdCheckerResults(DonorCheckerResults checkerResults, string filename) =>
+            await UploadResults(checkerResults, $"{idCheckerResultsContainerName}/{filename}");
 
-        public async Task UploadResults(DonorComparerResults donorComparerResults, string filename)
+        public async Task UploadDonorInfoCheckerResults(DonorCheckerResults checkerResults, string filename) =>
+            await UploadResults(checkerResults, $"{donorComparerResultsContainerName}/{filename}");
+
+        private async Task UploadResults(DonorCheckerResults checkerResults, string fileLocation)
         {
-            var serialisedResults = JsonConvert.SerializeObject(donorComparerResults);
-            await Upload(donorBlobContainer, $"{donorComparerResultsContainerName}/{filename}", serialisedResults);
+            var serialisedResults = JsonConvert.SerializeObject(checkerResults);
+            await Upload(donorBlobContainer, fileLocation, serialisedResults);
         }
     }
 }

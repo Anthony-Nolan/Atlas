@@ -8,7 +8,7 @@ using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
-using Atlas.DonorImport.FileSchema.Models.DonorIdChecker;
+using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 using MoreLinq;
 
 namespace Atlas.DonorImport.Services.DonorIdChecker
@@ -40,9 +40,9 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
 
         public async Task CheckDonorIdsFromFile(DonorIdCheckFile file)
         {
-            logger.SendTrace($"Beginning Donor Id Check for file '{file.FileLocation}'.");
+            LogMessage($"Beginning Donor Id Check for file '{file.FileLocation}'.");
             var lazyFile = fileParser.PrepareToLazilyParsingDonorIdFile(file.Contents);
-            var donorIdCheckResults = new DonorIdCheckerResults();
+            var donorIdCheckResults = new DonorCheckerResults();
             var filename = GetResultFilename(file.FileLocation);
             var checkedDonorIdsCount = 0;
 
@@ -52,20 +52,20 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
                 {
                     var donorIdsList = donorIdsBatch.ToList();
                     var externalDonorCodes = await donorReader.GetExistingExternalDonorCodes(donorIdsList);
-                    donorIdCheckResults.MissingRecordIds.AddRange(donorIdsList.Except(externalDonorCodes));
+                    donorIdCheckResults.DonorRecordIds.AddRange(donorIdsList.Except(externalDonorCodes));
 
                     checkedDonorIdsCount += donorIdsList.Count;
-                    logger.SendTrace($"Batch complete - checked {donorIdsList.Count} donor(s) this batch. Cumulatively {checkedDonorIdsCount} donor(s). ");
+                    LogMessage($"Batch complete - checked {donorIdsList.Count} donor(s) this batch. Cumulatively {checkedDonorIdsCount} donor(s). ");
                 }
 
-                if (donorIdCheckResults.MissingRecordIds.Count > 0)
+                if (donorIdCheckResults.DonorRecordIds.Count > 0)
                 {
-                    await blobStorageClient.UploadResults(donorIdCheckResults, filename);
+                    await blobStorageClient.UploadDonorIdCheckerResults(donorIdCheckResults, filename);
                 }
 
-                logger.SendTrace($"Donor Id Check for file '{file.FileLocation}' complete. Checked {checkedDonorIdsCount} donor(s). Found {donorIdCheckResults.MissingRecordIds.Count} absent donor(s).");
+                LogMessage($"Donor Id Check for file '{file.FileLocation}' complete. Checked {checkedDonorIdsCount} donor(s). Found {donorIdCheckResults.DonorRecordIds.Count} absent donor(s).");
 
-                await messageSender.SendSuccessCheckMessage(file.FileLocation, filename, donorIdCheckResults.MissingRecordIds.Count);
+                await messageSender.SendSuccessDonorIdCheckMessage(file.FileLocation, donorIdCheckResults.DonorRecordIds.Count, filename);
             }
             catch (EmptyDonorFileException e)
             {
@@ -91,5 +91,9 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
             logger.SendTrace(message, LogLevel.Warn);
             await notificationSender.SendAlert(message, description, Priority.Medium, nameof(CheckDonorIdsFromFile));
         }
+
+        private void LogMessage(string message) =>
+            logger.SendTrace($"{nameof(DonorIdChecker)}: {message}");
+
     }
 }
