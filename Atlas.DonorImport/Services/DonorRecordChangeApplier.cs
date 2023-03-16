@@ -48,7 +48,8 @@ namespace Atlas.DonorImport.Services
             IDonorImportLogService donorImportLogService,
             IDonorImportFileHistoryService donorImportHistoryService,
             INotificationSender notificationSender,
-            NotificationConfigurationSettings notificationConfigSettings, IDonorUpdateMapper donorUpdateMapper)
+            NotificationConfigurationSettings notificationConfigSettings,
+            IDonorUpdateMapper donorUpdateMapper)
         {
             this.donorImportRepository = donorImportRepository;
             this.donorInspectionRepository = donorInspectionRepository;

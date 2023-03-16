@@ -21,7 +21,7 @@ using NUnit.Framework;
 namespace Atlas.DonorImport.Test.Services.DonorChecker
 {
     [TestFixture]
-    public class DonorComparerTests
+    public class DonorInfoCheckerTests
     {
         private IDonorImportFileParser fileParser;
         private IDonorReadRepository donorReadRepository;
@@ -114,7 +114,6 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
             await donorInfoChecker.CompareDonorInfoInFileToAtlasDonorStore(file);
 
             await blobStorageClient.DidNotReceive().UploadResults(Arg.Any<DonorCheckerResults>(), Arg.Any<string>());
-            await messageSender.Received().SendSuccessDonorCheckMessage(file.FileLocation, 0, Arg.Any<string>());
         }
 
         [Test]
@@ -126,9 +125,23 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
 
             await donorInfoChecker.CompareDonorInfoInFileToAtlasDonorStore(file);
 
-            await messageSender.Received().SendSuccessDonorCheckMessage(file.FileLocation, Arg.Any<int>(), Arg.Any<string>());
+            await messageSender.Received().SendSuccessDonorCheckMessage(file.FileLocation, Arg.Is<int>(v => v > 0), Arg.Any<string>());
         }
 
+        [Test]
+        public async Task CompareDonorInfoInFileToAtlasDonorStore_WhenNoResults_SendsResultMessage()
+        {
+            const string donorHash = "donorHash";
+            var donor = DonorUpdateBuilder.New.Build();
+            var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(donor).Build();
+            fileParser.PrepareToLazilyParseDonorUpdates(file.Contents).Returns(new LazilyParsingDonorFile(file.Contents));
+            donorReadRepository.GetDonorsHashes(Arg.Any<IEnumerable<string>>()).Returns(new Dictionary<string, string> { { donor.RecordId, donorHash } });
+            donorUpdateMapper.MapToDatabaseDonor(Arg.Any<DonorUpdate>(), Arg.Any<string>()).Returns(new Donor { ExternalDonorCode = donor.RecordId, Hash = donorHash });
+
+            await donorInfoChecker.CompareDonorInfoInFileToAtlasDonorStore(file);
+            
+            await messageSender.Received().SendSuccessDonorCheckMessage(file.FileLocation, 0, Arg.Any<string>());
+        }
 
         [Test]
         public void CompareDonorInfoInFileToAtlasDonorStore_WhenUnexpectedException_LogsFailureEvent()
