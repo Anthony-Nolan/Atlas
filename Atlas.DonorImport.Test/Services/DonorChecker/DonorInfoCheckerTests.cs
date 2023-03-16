@@ -153,7 +153,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
 
             donorInfoChecker.Invoking(c => c.CompareDonorInfoInFileToAtlasDonorStore(file)).Should().Throw<Exception>();
 
-            logger.Received().SendEvent(Arg.Any<DonorComparerFailureEventModel>());
+            logger.Received().SendEvent(Arg.Any<DonorInfoCheckerFailureEventModel>());
         }
     }
 }

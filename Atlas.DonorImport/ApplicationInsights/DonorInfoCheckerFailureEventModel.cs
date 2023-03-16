@@ -4,9 +4,9 @@ using Atlas.DonorImport.ExternalInterface.Models;
 
 namespace Atlas.DonorImport.ApplicationInsights
 {
-    internal class DonorComparerFailureEventModel : EventModel
+    internal class DonorInfoCheckerFailureEventModel : EventModel
     {
-        public DonorComparerFailureEventModel(DonorImportFile file, Exception exception) : base("Donor Comparison Failed")
+        public DonorInfoCheckerFailureEventModel(DonorImportFile file, Exception exception) : base("Donor Info Check Failed")
         {
             Level = LogLevel.Warn;
             Properties.Add(nameof(file.FileLocation), file.FileLocation);
