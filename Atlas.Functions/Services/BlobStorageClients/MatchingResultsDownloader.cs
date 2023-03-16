@@ -1,4 +1,4 @@
-using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
@@ -41,10 +41,9 @@ namespace Atlas.Functions.Services.BlobStorageClients
                     ? await blobDownloader.Download<RepeatMatchingAlgorithmResultSet>(matchingResultsBlobContainer, blobName) as ResultSet<MatchingAlgorithmResult>
                     : await blobDownloader.Download<OriginalMatchingAlgorithmResultSet>(matchingResultsBlobContainer, blobName);
 
-                if (!string.IsNullOrEmpty(batchFolder))
-                {
-                    matchingResults.Results = await blobDownloader.BatchDownload<MatchingAlgorithmResult>(matchingResultsBlobContainer, batchFolder);
-                }
+                matchingResults.Results ??= !string.IsNullOrEmpty(batchFolder)
+                    ? await blobDownloader.BatchDownload<MatchingAlgorithmResult>(matchingResultsBlobContainer, batchFolder)
+                    : new List<MatchingAlgorithmResult>();
 
                 return matchingResults;
             }

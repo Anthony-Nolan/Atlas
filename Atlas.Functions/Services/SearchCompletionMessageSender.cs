@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
@@ -82,7 +81,7 @@ namespace Atlas.Functions.Services
                     MatchPredictionTime = searchResultSet.MatchPredictionTime,
                     OverallSearchTime = searchTime,
                     ResultBatched = resultBatched,
-                    BatchFolder = resultBatched ? searchResultSet.SearchRequestId : null
+                    BatchFolder = resultBatched && searchResultSet.TotalResults > 0 ? searchResultSet.SearchRequestId : null
                 };
                 await SendNotificationMessage(searchResultsNotification);
             }

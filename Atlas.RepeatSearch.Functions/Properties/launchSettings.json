@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Atlas.RepeatSearch.Functions": {
+      "commandName": "Project",
+      "commandLineArgs": "host start --port 7087 --nodeDebugPort 5860"
+    }
+  }
+}
