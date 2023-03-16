@@ -1,6 +1,8 @@
-﻿using Atlas.Common.ApplicationInsights;
+﻿using System;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.ApplicationInsights;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs.Models;
 
 namespace Atlas.Common.AzureStorage.Blob
 {
@@ -14,15 +16,15 @@ namespace Atlas.Common.AzureStorage.Blob
             Logger = logger;
         }
 
-        public async Task Upload(string container, string filename, string messageBody)
+        public async Task Upload(string container, string filename, string fileContents)
         {
             var azureStorageEventModel = new AzureStorageEventModel(filename, container);
             azureStorageEventModel.StartAzureStorageCommunication();
 
-            var containerRef = await GetBlobContainer(container);
-            var blockBlob = containerRef.GetBlockBlobReference(filename);
-            blockBlob.Properties.ContentType = "text/plain";
-            await blockBlob.UploadTextAsync(messageBody);
+            var containerClient = await CreateAndGetBlobContainer(container);
+            var blobClient = containerClient.GetBlobClient(filename);
+            var uploadOptions = new BlobUploadOptions { HttpHeaders = new BlobHttpHeaders { ContentType = "text/plain" } };
+            await blobClient.UploadAsync(BinaryData.FromString(fileContents), uploadOptions);
 
             azureStorageEventModel.EndAzureStorageCommunication(UploadLogLabel);
             Logger.SendEvent(azureStorageEventModel);

@@ -20,11 +20,13 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
     {
         private readonly ISearchDispatcher searchDispatcher;
         private readonly ISearchRunner searchRunner;
+        private readonly IMatchingFailureNotificationSender matchingFailureNotificationSender;
 
-        public SearchFunctions(ISearchDispatcher searchDispatcher, ISearchRunner searchRunner)
+        public SearchFunctions(ISearchDispatcher searchDispatcher, ISearchRunner searchRunner, IMatchingFailureNotificationSender matchingFailureNotificationSender)
         {
             this.searchDispatcher = searchDispatcher;
             this.searchRunner = searchRunner;
+            this.matchingFailureNotificationSender = matchingFailureNotificationSender;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -56,6 +58,18 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             int deliveryCount)
         {
             await searchRunner.RunSearch(request, deliveryCount);
+        }
+
+        [FunctionName(nameof(MatchingRequestsDeadLetterQueueListener))]
+        public async Task MatchingRequestsDeadLetterQueueListener(
+            [ServiceBusTrigger(
+                "%MessagingServiceBus:SearchRequestsTopic%/Subscriptions/%MessagingServiceBus:SearchRequestsSubscription%/$DeadLetterQueue",
+                "%MessagingServiceBus:SearchRequestsSubscription%",
+                Connection = "MessagingServiceBus:ConnectionString")]
+            IdentifiedSearchRequest request,
+            int deliveryCount)
+        {
+            await matchingFailureNotificationSender.SendFailureNotification(request.Id, deliveryCount, 0);
         }
     }
 }

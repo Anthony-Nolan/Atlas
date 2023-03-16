@@ -273,6 +273,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IDonorDetailsResultFilterer, DonorDetailsResultFilterer>();
             services.AddScoped<IMatchCriteriaMapper, MatchCriteriaMapper>();
+            services.AddScoped<IMatchingFailureNotificationSender, MatchingFailureNotificationSender>();
 
             services.AddApplicationInsightsTelemetryWorkerService();
             services.AddScoped<MatchingAlgorithmSearchLoggingContext>();
