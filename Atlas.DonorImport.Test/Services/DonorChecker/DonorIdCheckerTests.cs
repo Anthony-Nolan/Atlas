@@ -9,7 +9,7 @@ using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
-using Atlas.DonorImport.Services;
+using Atlas.DonorImport.Services.DonorChecker;
 using Atlas.DonorImport.Services.DonorIdChecker;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using FluentAssertions;
@@ -17,15 +17,15 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 
-namespace Atlas.DonorImport.Test.Services.DonorIdCheck
+namespace Atlas.DonorImport.Test.Services.DonorChecker
 {
     [TestFixture]
     internal class DonorIdCheckerTests
     {
         private IDonorIdCheckerFileParser fileParser;
         private IDonorReader donorReader;
-        private IDonorCheckerBlobStorageClient blobStorageClient;
-        private IDonorCheckerMessageSender messageSender;
+        private IDonorIdCheckerBlobStorageClient blobStorageClient;
+        private IDonorIdCheckerMessageSender messageSender;
         private INotificationSender notificationSender;
         private ILogger logger;
         private ILazilyParsingDonorIdFile donorIdFile;
@@ -37,8 +37,8 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
         {
             fileParser = Substitute.For<IDonorIdCheckerFileParser>();
             donorReader = Substitute.For<IDonorReader>();
-            blobStorageClient = Substitute.For<IDonorCheckerBlobStorageClient>();
-            messageSender = Substitute.For<IDonorCheckerMessageSender>();
+            blobStorageClient = Substitute.For<IDonorIdCheckerBlobStorageClient>();
+            messageSender = Substitute.For<IDonorIdCheckerMessageSender>();
             notificationSender = Substitute.For<INotificationSender>();
             logger = Substitute.For<ILogger>();
 
@@ -90,11 +90,11 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
 
             await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await blobStorageClient.Received().UploadDonorIdCheckerResults(Arg.Any<DonorCheckerResults>(), Arg.Any<string>());
+            await blobStorageClient.Received().UploadResults(Arg.Any<DonorCheckerResults>(), Arg.Any<string>());
         }
 
         [Test]
-        public async Task CheckDonorIdsFromFile_WhenNoMismatches_NotUploadsResults()
+        public async Task CheckDonorIdsFromFile_WhenNoResults_DoesNotUploadResults()
         {
             var donorRecordIds = Enumerable.Range(0, 100).Select(id => $"donor-id-{id}").ToList();
             donorIdFile.ReadLazyDonorIds().Returns(donorRecordIds);
@@ -102,7 +102,8 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
 
             await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await blobStorageClient.DidNotReceive().UploadDonorIdCheckerResults(Arg.Any<DonorCheckerResults>(), Arg.Any<string>());
+            await blobStorageClient.DidNotReceive().UploadResults(Arg.Any<DonorCheckerResults>(), Arg.Any<string>());
+            await messageSender.Received().SendSuccessDonorCheckMessage(Arg.Any<string>(), 0, Arg.Any<string>());
         }
 
         [Test]
@@ -110,7 +111,7 @@ namespace Atlas.DonorImport.Test.Services.DonorIdCheck
         {
             await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await messageSender.Received().SendSuccessDonorIdCheckMessage(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string>());
+            await messageSender.Received().SendSuccessDonorCheckMessage(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string>());
         }
 
         [Test]

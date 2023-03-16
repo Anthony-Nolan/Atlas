@@ -10,37 +10,30 @@ using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 
-namespace Atlas.DonorImport.Services
+namespace Atlas.DonorImport.Services.DonorChecker
 {
     public interface IDonorCheckerMessageSender
     {
-        Task SendSuccessDonorIdCheckMessage(string requestFileLocation, int resultsCount, string resultsFilename);
-        Task SendSuccessDonorInfoCheckMessage(string requestFileLocation, int resultsCount, string resultsFilename);
+        Task SendSuccessDonorCheckMessage(string requestFileLocation, int resultsCount, string resultsFilename);
     }
 
-    internal class DonorCheckerMessageSender : IDonorCheckerMessageSender
+    public interface IDonorInfoCheckerMessageSender : IDonorCheckerMessageSender { }
+    public interface IDonorIdCheckerMessageSender : IDonorCheckerMessageSender { }
+
+    internal class DonorCheckerMessageSender : IDonorInfoCheckerMessageSender, IDonorIdCheckerMessageSender
     {
         private readonly ITopicClient idCheckerTopicClient;
         private readonly ITopicClient donorComparerTopicClient;
+        private readonly ITopicClient topicClient;
         private readonly ILogger logger;
 
-        public DonorCheckerMessageSender(MessagingServiceBusSettings messagingServiceBusSettings, ITopicClientFactory topicClientFactory, ILogger logger)
+        public DonorCheckerMessageSender(ILogger logger, ITopicClientFactory topicClientFactory, string connectionString, string topicName)
         {
             this.logger = logger;
-            idCheckerTopicClient = topicClientFactory.BuildTopicClient(messagingServiceBusSettings.ConnectionString,
-                messagingServiceBusSettings.DonorIdCheckerResultsTopic);
-            donorComparerTopicClient = topicClientFactory.BuildTopicClient(messagingServiceBusSettings.ConnectionString,
-                messagingServiceBusSettings.CompareDonorsResultsTopic);
+            topicClient = topicClientFactory.BuildTopicClient(connectionString, topicName);
         }
 
-        public async Task SendSuccessDonorIdCheckMessage(string requestFileLocation, int resultsCount, string resultsFilename) =>
-            await SendSuccessCheckMessage(idCheckerTopicClient, requestFileLocation, resultsCount, resultsFilename);
-
-        public async Task SendSuccessDonorInfoCheckMessage(string requestFileLocation, int resultsCount, string resultsFilename) =>
-            await SendSuccessCheckMessage(donorComparerTopicClient, requestFileLocation, resultsCount, resultsFilename);
-
-
-        private async Task SendSuccessCheckMessage(ITopicClient topicClient, string requestFileLocation, int resultsCount, string resultsFilename)
+        public async Task SendSuccessDonorCheckMessage(string requestFileLocation, int resultsCount, string resultsFilename)
         {
             var donorCheckerMessage = new DonorCheckerMessage(requestFileLocation, resultsCount, resultsFilename);
             var stringMessage = JsonConvert.SerializeObject(donorCheckerMessage);
@@ -55,7 +48,7 @@ namespace Atlas.DonorImport.Services
 
                 });
                 var message = new Message(Encoding.UTF8.GetBytes(stringMessage));
-                
+
                 await topicClient.SendAsync(message);
             }
             catch (Exception e)

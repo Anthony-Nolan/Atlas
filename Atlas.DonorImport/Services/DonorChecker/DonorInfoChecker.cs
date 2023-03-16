@@ -12,25 +12,25 @@ using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 using MoreLinq;
 using Donor = Atlas.DonorImport.Data.Models.Donor;
 
-namespace Atlas.DonorImport.Services.DonorComparer
+namespace Atlas.DonorImport.Services.DonorChecker
 {
-    public interface IDonorComparer
+    public interface IDonorInfoChecker
     {
         Task CompareDonorInfoInFileToAtlasDonorStore(DonorImportFile file);
     }
 
-    internal class DonorComparer : IDonorComparer
+    internal class DonorInfoChecker : IDonorInfoChecker
     {
         private const int BatchSize = 10000;
         private readonly IDonorImportFileParser fileParser;
         private readonly IDonorReadRepository donorReadRepository;
-        private readonly IDonorCheckerBlobStorageClient blobStorageClient;
-        private readonly IDonorCheckerMessageSender messageSender;
+        private readonly IDonorInfoCheckerBlobStorageClient blobStorageClient;
+        private readonly IDonorInfoCheckerMessageSender messageSender;
         private readonly INotificationSender notificationSender;
         private readonly ILogger logger;
-        private readonly IDonorRecordChangeApplier donorRecordChangeApplier;
+        private readonly IDonorUpdateMapper donorUpdateMapper;
 
-        public DonorComparer(IDonorImportFileParser fileParser, IDonorReadRepository donorReadRepository, IDonorCheckerBlobStorageClient blobStorageClient, IDonorCheckerMessageSender messageSender, INotificationSender notificationSender, ILogger logger, IDonorRecordChangeApplier donorRecordChangeApplier)
+        public DonorInfoChecker(IDonorImportFileParser fileParser, IDonorReadRepository donorReadRepository, IDonorInfoCheckerBlobStorageClient blobStorageClient, IDonorInfoCheckerMessageSender messageSender, INotificationSender notificationSender, ILogger logger, IDonorUpdateMapper donorUpdateMapper)
         {
             this.fileParser = fileParser;
             this.donorReadRepository = donorReadRepository;
@@ -38,7 +38,7 @@ namespace Atlas.DonorImport.Services.DonorComparer
             this.messageSender = messageSender;
             this.notificationSender = notificationSender;
             this.logger = logger;
-            this.donorRecordChangeApplier = donorRecordChangeApplier;
+            this.donorUpdateMapper = donorUpdateMapper;
         }
 
         public async Task CompareDonorInfoInFileToAtlasDonorStore(DonorImportFile file)
@@ -56,26 +56,24 @@ namespace Atlas.DonorImport.Services.DonorComparer
                     var donors = donorsBatch.ToList();
                     var donorsHashes = await donorReadRepository.GetDonorsHashes(donors.Select(d => d.RecordId));
 
-                    var diffs = donors.Select(d => donorRecordChangeApplier.MapToDatabaseDonor(d, file.FileLocation))
-                        .Where(DonorIsAbsentOrHashIsDifferent);
-
-                    checkerResults.DonorRecordIds.AddRange(diffs.Select(d => d.ExternalDonorCode));
+                    checkerResults.DonorRecordIds.AddRange(donors.Select(d => donorUpdateMapper.MapToDatabaseDonor(d, file.FileLocation))
+                        .Where(DonorIsAbsentOrHashIsDifferent).Select(d => d.ExternalDonorCode));
 
                     checkedDonorsCount += donors.Count;
                     LogMessage($"Batch complete - compared {donors.Count} donor(s) this batch. Cumulatively {checkedDonorsCount} donor(s). ");
-                    
+
                     bool DonorIsAbsentOrHashIsDifferent(Donor donor) =>
                         !donorsHashes.ContainsKey(donor.ExternalDonorCode) || !string.Equals(donor.Hash, donorsHashes[donor.ExternalDonorCode]);
                 }
 
                 if (checkerResults.DonorRecordIds.Count > 0)
                 {
-                    await blobStorageClient.UploadDonorInfoCheckerResults(checkerResults, filename);
+                    await blobStorageClient.UploadResults(checkerResults, filename);
                 }
 
                 LogMessage($"Donor Info Check for file '{file.FileLocation}' complete. Checked {checkedDonorsCount} donor(s). Found {checkerResults.DonorRecordIds.Count} differences.");
 
-                await messageSender.SendSuccessDonorInfoCheckMessage(file.FileLocation, checkerResults.DonorRecordIds.Count, filename);
+                await messageSender.SendSuccessDonorCheckMessage(file.FileLocation, checkerResults.DonorRecordIds.Count, filename);
             }
             catch (EmptyDonorFileException e)
             {
@@ -104,6 +102,6 @@ namespace Atlas.DonorImport.Services.DonorComparer
         }
 
         private void LogMessage(string message) =>
-            logger.SendTrace($"{nameof(DonorComparer)}: {message}");
+            logger.SendTrace($"{nameof(DonorInfoChecker)}: {message}");
     }
 }

@@ -21,6 +21,6 @@ namespace Atlas.DonorImport.ExternalInterface.Settings.ServiceBus
         public string DonorIdCheckerResultsTopic { get; set; }
 
         // ReSharper disable once UnusedMember.Global - Used in function binding, and included here for completeness
-        public string CompareDonorsResultsTopic { get; set; }
+        public string DonorInfoCheckerResultsTopic { get; set; }
     }
 }
