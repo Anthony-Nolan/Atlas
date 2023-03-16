@@ -18,6 +18,9 @@ The project version will be appropriately incremented with each change to the pr
 #### Search
 * Ensure all failed search requests are reported as completed by routing dead-lettered search request messages to the `search-results-ready` topic, with the appropriate failure information.
 
+#### Donor Import
+* Added new function `CheckDonorIdsFromFile` that checks absence of donors in Atlas storage
+* Added new function `CompareDonorsFromFile` that compares donor/CBU fields with Atlas
 
 ### 1.5.0
 
