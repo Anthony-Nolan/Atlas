@@ -11,7 +11,7 @@ using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
-using Atlas.DonorImport.Services.DonorComparer;
+using Atlas.DonorImport.Services.DonorChecker;
 using Atlas.DonorImport.Services.DonorIdChecker;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,7 +38,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
                 fetchNotificationConfigurationSettings, fetchStalledFileSettings, fetchPublishDonorUpdatesSettings, fetchAzureStorageSettings, fetchMessagingServiceBusSettings);
             services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
-            services.RegisterServices(fetchMessagingServiceBusSettings);
+            services.RegisterServices(fetchMessagingServiceBusSettings, fetchAzureStorageSettings);
             services.RegisterImportDatabaseTypes(fetchSqlConnectionString);
         }
 
@@ -70,7 +70,8 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
 
         private static void RegisterServices(
             this IServiceCollection services,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
         {
             services.AddScoped<IDonorFileImporter, DonorFileImporter>();
             services.AddScoped<IDonorImportFileParser, DonorImportFileParser>();
@@ -92,10 +93,40 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
 
             services.AddScoped<IDonorIdChecker, DonorIdChecker>();
             services.AddScoped<IDonorIdCheckerFileParser, DonorIdCheckerFileParser>();
-            services.AddScoped<IDonorCheckerBlobStorageClient, DonorCheckerBlobStorageClient>();
-            services.AddScoped<IDonorCheckerMessageSender, DonorCheckerMessageSender>();
+            services.AddScoped<IDonorInfoCheckerMessageSender, DonorCheckerMessageSender>(sp =>
+            {
+                var messagingServiceBusSettings = fetchMessagingServiceBusSettings(sp);
+                var logger = sp.GetService<ILogger>();
+                var topicClientFactory = sp.GetService<ITopicClientFactory>();
+                return new DonorCheckerMessageSender(logger, topicClientFactory, messagingServiceBusSettings.ConnectionString,
+                    messagingServiceBusSettings.DonorInfoCheckerResultsTopic);
+            });
+            services.AddScoped<IDonorIdCheckerMessageSender, DonorCheckerMessageSender>(sp =>
+            {
+                var messagingServiceBusSettings = fetchMessagingServiceBusSettings(sp);
+                var logger = sp.GetService<ILogger>();
+                var topicClientFactory = sp.GetService<ITopicClientFactory>();
+                return new DonorCheckerMessageSender(logger, topicClientFactory, messagingServiceBusSettings.ConnectionString,
+                    messagingServiceBusSettings.DonorIdCheckerResultsTopic);
+            });
 
-            services.AddScoped<IDonorComparer, DonorComparer>();
+            services.AddScoped<IDonorIdCheckerBlobStorageClient, DonorCheckerBlobStorageClient>(sp =>
+            {
+                var storageSettings = fetchAzureStorageSettings(sp);
+                var logger = sp.GetService<ILogger>();
+                return new DonorCheckerBlobStorageClient(logger, storageSettings.ConnectionString, storageSettings.DonorFileBlobContainer,
+                    storageSettings.DonorIdCheckerResultsBlobContainer);
+            });
+            services.AddScoped<IDonorInfoCheckerBlobStorageClient, DonorCheckerBlobStorageClient>(sp =>
+            {
+                var storageSettings = fetchAzureStorageSettings(sp);
+                var logger = sp.GetService<ILogger>();
+                return new DonorCheckerBlobStorageClient(logger, storageSettings.ConnectionString, storageSettings.DonorFileBlobContainer,
+                    storageSettings.DonorInfoCheckerResultsBlobContainer);
+            });
+
+            services.AddScoped<IDonorInfoChecker, DonorInfoChecker>();
+            services.AddScoped<IDonorUpdateMapper, DonorUpdateMapper>();
         }
 
         private static void RegisterDonorReaderServices(this IServiceCollection services)

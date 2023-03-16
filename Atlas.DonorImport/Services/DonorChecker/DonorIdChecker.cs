@@ -9,6 +9,7 @@ using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
+using Atlas.DonorImport.Services.DonorChecker;
 using MoreLinq;
 
 namespace Atlas.DonorImport.Services.DonorIdChecker
@@ -23,12 +24,12 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
         private const int BatchSize = 10000;
         private readonly IDonorIdCheckerFileParser fileParser;
         private readonly IDonorReader donorReader;
-        private readonly IDonorCheckerBlobStorageClient blobStorageClient;
-        private readonly IDonorCheckerMessageSender messageSender;
+        private readonly IDonorIdCheckerBlobStorageClient blobStorageClient;
+        private readonly IDonorIdCheckerMessageSender messageSender;
         private readonly INotificationSender notificationSender;
         private readonly ILogger logger;
 
-        public DonorIdChecker(IDonorIdCheckerFileParser fileParser, IDonorReader donorReader, IDonorCheckerBlobStorageClient blobStorageClient, IDonorCheckerMessageSender messageSender, INotificationSender notificationSender, ILogger logger)
+        public DonorIdChecker(IDonorIdCheckerFileParser fileParser, IDonorReader donorReader, IDonorIdCheckerBlobStorageClient blobStorageClient, IDonorIdCheckerMessageSender messageSender, INotificationSender notificationSender, ILogger logger)
         {
             this.fileParser = fileParser;
             this.donorReader = donorReader;
@@ -60,12 +61,12 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
 
                 if (donorIdCheckResults.DonorRecordIds.Count > 0)
                 {
-                    await blobStorageClient.UploadDonorIdCheckerResults(donorIdCheckResults, filename);
+                    await blobStorageClient.UploadResults(donorIdCheckResults, filename);
                 }
 
                 LogMessage($"Donor Id Check for file '{file.FileLocation}' complete. Checked {checkedDonorIdsCount} donor(s). Found {donorIdCheckResults.DonorRecordIds.Count} absent donor(s).");
 
-                await messageSender.SendSuccessDonorIdCheckMessage(file.FileLocation, donorIdCheckResults.DonorRecordIds.Count, filename);
+                await messageSender.SendSuccessDonorCheckMessage(file.FileLocation, donorIdCheckResults.DonorRecordIds.Count, filename);
             }
             catch (EmptyDonorFileException e)
             {

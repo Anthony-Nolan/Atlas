@@ -94,8 +94,8 @@ resource "azurerm_servicebus_subscription" "audit-donor-id-checker-results" {
   dead_lettering_on_message_expiration = false
 }
 
-resource "azurerm_servicebus_topic" "compare-donors-requests" {
-  name                  = "compare-donors-requests"
+resource "azurerm_servicebus_topic" "donor-info-checker-requests" {
+  name                  = "donor-info-checker-requests"
   namespace_id          = var.servicebus_namespace.id
   auto_delete_on_idle   = var.default_servicebus_settings.long-expiry
   default_message_ttl   = var.default_servicebus_settings.long-expiry
@@ -103,9 +103,9 @@ resource "azurerm_servicebus_topic" "compare-donors-requests" {
   support_ordering      = true
 }
 
-resource "azurerm_servicebus_subscription" "compare-donors" {
-  name                                 = "compare-donors"
-  topic_id                             = azurerm_servicebus_topic.compare-donors-requests.id
+resource "azurerm_servicebus_subscription" "donor-info-checker" {
+  name                                 = "donor-info-checker"
+  topic_id                             = azurerm_servicebus_topic.donor-info-checker-requests.id
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
   default_message_ttl                  = var.default_servicebus_settings.long-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
@@ -113,9 +113,9 @@ resource "azurerm_servicebus_subscription" "compare-donors" {
   dead_lettering_on_message_expiration = false
 }
 
-resource "azurerm_servicebus_subscription" "audit-compare-donors" {
+resource "azurerm_servicebus_subscription" "audit-donor-info-checker" {
   name                                 = "audit"
-  topic_id                             = azurerm_servicebus_topic.compare-donors-requests.id
+  topic_id                             = azurerm_servicebus_topic.donor-info-checker-requests.id
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
   default_message_ttl                  = var.default_servicebus_settings.audit-subscription-ttl-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
@@ -123,8 +123,8 @@ resource "azurerm_servicebus_subscription" "audit-compare-donors" {
   dead_lettering_on_message_expiration = false
 }
 
-resource "azurerm_servicebus_topic" "compare-donors-results" {
-  name                  = "compare-donors-results"
+resource "azurerm_servicebus_topic" "donor-info-checker-results" {
+  name                  = "donor-info-checker-results"
   namespace_id          = var.servicebus_namespace.id
   auto_delete_on_idle   = var.default_servicebus_settings.long-expiry
   default_message_ttl   = var.default_servicebus_settings.long-expiry
@@ -132,9 +132,9 @@ resource "azurerm_servicebus_topic" "compare-donors-results" {
   support_ordering      = true
 }
 
-resource "azurerm_servicebus_subscription" "audit-compare-donors-results" {
+resource "azurerm_servicebus_subscription" "audit-donor-info-checker-results" {
   name                                 = "audit"
-  topic_id                             = azurerm_servicebus_topic.compare-donors-results.id
+  topic_id                             = azurerm_servicebus_topic.donor-info-checker-results.id
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
   default_message_ttl                  = var.default_servicebus_settings.audit-subscription-ttl-expiry
   lock_duration                        = var.default_servicebus_settings.default-read-lock
