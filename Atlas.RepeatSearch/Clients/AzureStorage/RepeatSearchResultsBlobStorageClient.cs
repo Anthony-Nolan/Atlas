@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
@@ -10,7 +11,7 @@ namespace Atlas.RepeatSearch.Clients.AzureStorage
 {
     public interface IRepeatSearchResultsBlobStorageClient
     {
-        Task UploadResults(BatchedResultSet<MatchingAlgorithmResult> repeatSearchResultSet);
+        Task UploadResults(RepeatMatchingAlgorithmResultSet repeatSearchResultSet);
         string GetResultsContainerName();
     }
 
@@ -25,11 +26,16 @@ namespace Atlas.RepeatSearch.Clients.AzureStorage
             this.azureStorageSettings = azureStorageSettings;
         }
 
-        public async Task UploadResults(BatchedResultSet<MatchingAlgorithmResult> repeatSearchResultSet)
+        public async Task UploadResults(RepeatMatchingAlgorithmResultSet repeatSearchResultSet)
         {
             repeatSearchResultSet.BatchedResult = azureStorageSettings.ResultBatched;
             var serialisedResults = JsonConvert.SerializeObject(repeatSearchResultSet);
             await Upload(azureStorageSettings.MatchingResultsBlobContainer, repeatSearchResultSet.ResultsFileName, serialisedResults);
+
+            if (azureStorageSettings.ResultBatched)
+            {
+                await BatchUpload(repeatSearchResultSet.Results, azureStorageSettings.BatchSize, azureStorageSettings.MatchingResultsBlobContainer, $"{repeatSearchResultSet.SearchRequestId}/{repeatSearchResultSet.RepeatSearchId}");
+            }
         }
 
         public string GetResultsContainerName()

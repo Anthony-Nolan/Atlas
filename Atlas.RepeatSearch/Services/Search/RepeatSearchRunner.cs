@@ -124,7 +124,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     ResultsFileName = searchResultSet.ResultsFileName,
                     ElapsedTime = stopwatch.Elapsed,
                     ResultBatched = resultBatched,
-                    BatchFolder = resultBatched ? searchRequestId : null
+                    BatchFolder = resultBatched && results.Any() ? $"{searchRequestId}/{repeatSearchId}" : null
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
                 return searchResultSet;

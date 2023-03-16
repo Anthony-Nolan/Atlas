@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs;
+using MoreLinq;
 
 namespace Atlas.Common.AzureStorage.Blob
 {
@@ -25,9 +27,7 @@ namespace Atlas.Common.AzureStorage.Blob
             azureStorageEventModel.StartAzureStorageCommunication();
 
             var containerClient = await CreateAndGetBlobContainer(container);
-            var blobClient = containerClient.GetBlobClient(filename);
-            var uploadOptions = new BlobUploadOptions { HttpHeaders = new BlobHttpHeaders { ContentType = "text/plain" } };
-            await blobClient.UploadAsync(BinaryData.FromString(fileContents), uploadOptions);
+            await UploadBlob(containerClient, filename, fileContents);
 
             azureStorageEventModel.EndAzureStorageCommunication(UploadLogLabel);
             Logger.SendEvent(azureStorageEventModel);
@@ -35,16 +35,27 @@ namespace Atlas.Common.AzureStorage.Blob
 
         public async Task BatchUpload<T>(IEnumerable<T> list, int batchSize, string blobContainer, string blobFolder)
         {
+            var azureStorageEventModel = new AzureStorageEventModel(blobFolder, blobContainer);
+            azureStorageEventModel.StartAzureStorageCommunication();
+
+            var containerClient = await CreateAndGetBlobContainer(blobContainer);
+
             var batchNumber = 0;
-            var listSize = list.Count();
-            while (listSize > batchNumber * batchSize)
+            foreach (var batch in list.Batch(batchSize))
             {
-                var serializedBatch = JsonConvert.SerializeObject(GetBatch(list, batchNumber++, batchSize));
-                await Upload(blobContainer, $"{blobFolder}/{batchNumber}.json", serializedBatch);
+                var serializedBatch = JsonConvert.SerializeObject(batch);
+                await UploadBlob(containerClient, $"{blobFolder}/{++batchNumber}.json", serializedBatch);
             }
+
+            azureStorageEventModel.EndAzureStorageCommunication(UploadLogLabel);
+            Logger.SendEvent(azureStorageEventModel);
         }
 
-        private IEnumerable<T> GetBatch<T>(IEnumerable<T> list, int batchNumber, int batchSize) =>
-            list.Skip(batchNumber * batchSize).Take(batchSize);
+        private async Task UploadBlob(BlobContainerClient containerClient, string filename, string fileContents)
+        {
+            var blobClient = containerClient.GetBlobClient(filename);
+            var uploadOptions = new BlobUploadOptions { HttpHeaders = new BlobHttpHeaders { ContentType = "text/plain" } };
+            await blobClient.UploadAsync(BinaryData.FromString(fileContents), uploadOptions);
+        }
     }
 }

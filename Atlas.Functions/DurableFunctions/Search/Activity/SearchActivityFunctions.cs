@@ -68,7 +68,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 await matchingResultsDownloader.Download(
                     matchingResultsNotification.ResultsFileName,
                     matchingResultsNotification.IsRepeatSearch,
-                    matchingResultsNotification.ResultBatched ?  matchingResultsNotification.BatchFolder : null)
+                    matchingResultsNotification.ResultBatched ? matchingResultsNotification.BatchFolder : null)
             );
 
             var donorInfo = await logger.RunTimedAsync("Fetch donor data", async () =>

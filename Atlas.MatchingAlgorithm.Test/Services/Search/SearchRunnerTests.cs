@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
@@ -33,6 +34,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         private IResultsBlobStorageClient resultsBlobStorageClient;
         private IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
         private IMatchingFailureNotificationSender matchingFailureNotificationSender;
+        private IMatchingAlgorithmSearchLogger logger;
 
         private ISearchRunner searchRunner;
 
@@ -43,7 +45,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             searchService = Substitute.For<ISearchService>();
             resultsBlobStorageClient = Substitute.For<IResultsBlobStorageClient>();
             hlaNomenclatureVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
-            var logger = Substitute.For<IMatchingAlgorithmSearchLogger>();
+            logger = Substitute.For<IMatchingAlgorithmSearchLogger>();
             matchingFailureNotificationSender = Substitute.For<IMatchingFailureNotificationSender>();
 
             searchRunner = new SearchRunner(
@@ -86,7 +88,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default);
 
             await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
-                r.WasSuccessful && r.SearchRequestId == id
+                r.WasSuccessful && r.SearchRequestId == id && !r.ResultBatched && string.IsNullOrEmpty(r.BatchFolder)
             ));
         }
 
@@ -100,6 +102,36 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
                 r.MatchingAlgorithmHlaNomenclatureVersion == hlaNomenclatureVersion
+            ));
+        }
+
+        [Test]
+        public async Task RunSearch_PublishesBatchInfoInNotification()
+        {
+            var identifiedSearchRequest = new IdentifiedSearchRequest
+            {
+                Id = "id",
+                SearchRequest = DefaultMatchingRequest
+            };
+
+            searchService.Search(identifiedSearchRequest.SearchRequest, default)
+                .Returns(new List<MatchingAlgorithmResult> { new MatchingAlgorithmResult () });
+
+            var searchRunnerLocal = new SearchRunner(
+                searchServiceBusClient,
+                searchService,
+                resultsBlobStorageClient,
+                logger,
+                new MatchingAlgorithmSearchLoggingContext(),
+                hlaNomenclatureVersionAccessor,
+                new MessagingServiceBusSettings { SearchRequestsMaxDeliveryCount = MaxRetryCount },
+                matchingFailureNotificationSender,
+                new Settings.Azure.AzureStorageSettings { BatchSize = 100 } );
+
+            await searchRunnerLocal.RunSearch(identifiedSearchRequest, default);
+
+            await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
+                r.ResultBatched && r.BatchFolder.Equals(identifiedSearchRequest.Id)
             ));
         }
 

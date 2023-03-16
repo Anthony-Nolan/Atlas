@@ -103,7 +103,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     ResultsFileName = searchResultSet.ResultsFileName,
                     ElapsedTime = stopwatch.Elapsed,
                     ResultBatched = resultBatched,
-                    BatchFolder = resultBatched ? searchRequestId : null
+                    BatchFolder = resultBatched && results.Any() ? searchRequestId : null
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
             }

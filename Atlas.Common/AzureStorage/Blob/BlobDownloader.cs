@@ -3,8 +3,7 @@ using Atlas.Common.AzureStorage.ApplicationInsights;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Azure.Storage.Blob;
+using Azure.Storage.Blobs;
 
 namespace Atlas.Common.AzureStorage.Blob
 {
@@ -30,16 +29,8 @@ namespace Atlas.Common.AzureStorage.Blob
             azureStorageEventModel.StartAzureStorageCommunication();
 
             var containerClient = GetBlobContainer(container);
-            var blobClient = containerClient.GetBlobClient(filename);
-            var downloadedBlob = await blobClient.DownloadContentAsync();
+            var data = await GetBlobData<T>(containerClient, filename);
 
-            if (downloadedBlob is not { HasValue: true })
-            {
-                throw new BlobNotFoundException(container, filename);
-            }
-
-            var data = JsonConvert.DeserializeObject<T>(downloadedBlob.Value.Content.ToString());
-            
             azureStorageEventModel.EndAzureStorageCommunication(UploadLogLabel);
             logger.SendEvent(azureStorageEventModel);
 
@@ -53,24 +44,31 @@ namespace Atlas.Common.AzureStorage.Blob
             var azureStorageEventModel = new AzureStorageEventModel(folderName, container);
             azureStorageEventModel.StartAzureStorageCommunication();
 
-            var containerRef = await GetBlobContainer(container);
+            var containerClient = GetBlobContainer(container);
+            var blobs =  containerClient.GetBlobsAsync(prefix: $"{folderName}/");
 
-            var blobs = containerRef.ListBlobs(prefix: $"{folderName}/", useFlatBlobListing: true);
-
-            if (blobs?.Any() == true)
+            await foreach (var blob in blobs)
             {
-                var fileNames = blobs.OfType<CloudBlockBlob>().Select(b => b.Name);
-                foreach (var fileName in fileNames)
-                {
-                    var blockBlob = containerRef.GetBlockBlobReference(fileName);
-                    data.AddRange(JsonConvert.DeserializeObject<IEnumerable<T>>(await blockBlob.DownloadTextAsync()));
-                }
+                data.AddRange(await GetBlobData<IEnumerable<T>>(containerClient, blob.Name));
             }
 
             azureStorageEventModel.EndAzureStorageCommunication(UploadLogLabel);
             logger.SendEvent(azureStorageEventModel);
 
             return data;
+        }
+
+        private async Task<T> GetBlobData<T>(BlobContainerClient containerClient, string filename)
+        {
+            var blobClient = containerClient.GetBlobClient(filename);
+            var downloadedBlob = await blobClient.DownloadContentAsync();
+
+            if (downloadedBlob is not { HasValue: true })
+            {
+                throw new BlobNotFoundException(containerClient.Name, filename);
+            }
+
+            return JsonConvert.DeserializeObject<T>(downloadedBlob.Value.Content.ToString());
         }
     }
 }
