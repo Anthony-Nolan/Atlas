@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Newtonsoft.Json;
 using Atlas.DonorImport.ApplicationInsights;
-using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 
 namespace Atlas.DonorImport.Services.DonorChecker
@@ -22,8 +21,6 @@ namespace Atlas.DonorImport.Services.DonorChecker
 
     internal class DonorCheckerMessageSender : IDonorInfoCheckerMessageSender, IDonorIdCheckerMessageSender
     {
-        private readonly ITopicClient idCheckerTopicClient;
-        private readonly ITopicClient donorComparerTopicClient;
         private readonly ITopicClient topicClient;
         private readonly ILogger logger;
 

@@ -10,6 +10,6 @@ namespace Atlas.DonorImport.FileSchema.Models
     {
         [EnumMember(Value = "diff")] Differential,
         [EnumMember(Value = "full")] Full,
-        [EnumMember(Value = "cmpr")] Compare
+        [EnumMember(Value = "check")] InfoCheck
     }
 }

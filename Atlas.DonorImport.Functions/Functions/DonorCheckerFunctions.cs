@@ -37,9 +37,9 @@ namespace Atlas.DonorImport.Functions.Functions
             });
         }
 
-        [FunctionName(nameof(CompareDonorsFromFile))]
+        [FunctionName(nameof(CheckDonorInfoFromFile))]
         [StorageAccount("AzureStorage:ConnectionString")]
-        public async Task CompareDonorsFromFile(
+        public async Task CheckDonorInfoFromFile(
             [ServiceBusTrigger(
                 "%MessagingServiceBus:DonorInfoCheckerTopic%",
                 "%MessagingServiceBus:DonorInfoCheckerSubscription%",

@@ -20,7 +20,7 @@ The project version will be appropriately incremented with each change to the pr
 
 #### Donor Import
 * Added new function `CheckDonorIdsFromFile` that checks absence of donors in Atlas storage
-* Added new function `CompareDonorsFromFile` that compares donor/CBU fields with Atlas
+* Added new function `CheckDonorInfoFromFile` that compares donor/CBU fields with Atlas
 
 ### 1.5.0
 

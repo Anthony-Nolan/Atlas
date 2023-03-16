@@ -89,7 +89,7 @@ namespace Atlas.DonorImport.Services.DonorChecker
             }
             catch (Exception e)
             {
-                logger.SendEvent(new DonorComparerFailureEventModel(file, e));
+                logger.SendEvent(new DonorInfoCheckerFailureEventModel(file, e));
 
                 throw;
             }
