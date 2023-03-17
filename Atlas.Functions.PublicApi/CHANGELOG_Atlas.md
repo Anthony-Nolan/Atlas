@@ -18,6 +18,11 @@ The project version will be appropriately incremented with each change to the pr
 #### Search
 * Ensure all failed search requests are reported as completed by routing dead-lettered search request messages to the `search-results-ready` topic, with the appropriate failure information.
 
+#### Search/Repeat Search: 
+Added an ability to save search results in multiple files. Result files will now be split into two types:
+ - Search summary - this will be a single file containing all search result metadata, e.g., number of matches, the original search request, etc.
+ - Search results - these will be written to 1 or more files, each containing a maximum number of results (this is a configurable setting AzureStorage:BatchSize).
+
 #### Donor Import
 * Added new function `CheckDonorIdsFromFile` that checks absence of donors in Atlas storage
 * Added new function `CheckDonorInfoFromFile` that compares donor/CBU fields with Atlas
