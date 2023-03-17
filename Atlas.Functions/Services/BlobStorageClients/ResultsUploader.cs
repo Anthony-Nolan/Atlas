@@ -11,7 +11,7 @@ namespace Atlas.Functions.Services.BlobStorageClients
 {
     public interface IResultsUploader
     {
-        Task UploadResults(SearchResultSet searchResultSet);
+        Task UploadResults(SearchResultSet searchResultSet, string batchFolder);
     }
 
     internal class ResultsUploader : BlobUploader, IResultsUploader
@@ -26,7 +26,7 @@ namespace Atlas.Functions.Services.BlobStorageClients
         }
 
         /// <inheritdoc />
-        public async Task UploadResults(SearchResultSet searchResultSet)
+        public async Task UploadResults(SearchResultSet searchResultSet, string batchFolder)
         {
             using (Logger.RunTimed($"Uploading results: {searchResultSet.SearchRequestId}"))
             {
@@ -37,7 +37,7 @@ namespace Atlas.Functions.Services.BlobStorageClients
 
                 if (azureStorageSettings.ResultBatched)
                 {
-                    await BatchUpload(searchResultSet.Results, azureStorageSettings.BatchSize, azureStorageSettings.SearchResultsBlobContainer, searchResultSet.SearchRequestId);
+                    await BatchUpload(searchResultSet.Results, azureStorageSettings.BatchSize, container, batchFolder);
                 }
             }
         }

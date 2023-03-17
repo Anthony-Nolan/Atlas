@@ -134,7 +134,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 parameters.MatchingResultsNotification.ElapsedTime
             );
             
-            await searchResultsBlobUploader.UploadResults(resultSet);
+            await searchResultsBlobUploader.UploadResults(resultSet, matchingResultsNotification.BatchFolder);
             await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated);
         }
 
