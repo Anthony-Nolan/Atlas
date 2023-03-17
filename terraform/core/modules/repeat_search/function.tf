@@ -22,6 +22,7 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
 
     "AzureStorage:ConnectionString"             = var.azure_storage.primary_connection_string
     "AzureStorage:MatchingResultsBlobContainer" = azurerm_storage_container.repeat_search_matching_results_container.name
+    "AzureStorage:BatchSize"                    = local.batch_size
 
     "HlaMetadataDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
 
