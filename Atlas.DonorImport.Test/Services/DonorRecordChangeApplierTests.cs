@@ -32,7 +32,8 @@ namespace Atlas.DonorImport.Test.Services
         private INotificationSender notificationSender;
 
         private IDonorRecordChangeApplier donorOperationApplier;
-        private IImportedLocusInterpreter naiveDnaLocusInterpreter;
+
+        private IDonorUpdateMapper donorUpdateMapper;
 
         private readonly DonorImportFile defaultFile = new DonorImportFile { FileLocation = "file", UploadTime = DateTime.Now };
 
@@ -45,11 +46,14 @@ namespace Atlas.DonorImport.Test.Services
             donorImportLogService = Substitute.For<IDonorImportLogService>();
             donorImportHistoryService = Substitute.For<IDonorImportFileHistoryService>();
             notificationSender = Substitute.For<INotificationSender>();
-            naiveDnaLocusInterpreter = Substitute.For<IImportedLocusInterpreter>();
-            naiveDnaLocusInterpreter.Interpret(default, default).ReturnsForAnyArgs((call) =>
+            donorUpdateMapper = Substitute.For<IDonorUpdateMapper>();
+            donorUpdateMapper.MapToDatabaseDonor(default, default).ReturnsForAnyArgs((call) =>
             {
-                var arg = call.Arg<ImportedLocus>();
-                return new LocusInfo<string>(arg?.Dna?.Field1, arg?.Dna?.Field2);
+                var arg = call.Arg<DonorUpdate>();
+                return new Donor
+                {
+                    ExternalDonorCode = arg.RecordId
+                };
             });
 
             donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>());
@@ -57,12 +61,12 @@ namespace Atlas.DonorImport.Test.Services
             donorOperationApplier = new DonorRecordChangeApplier(
                 donorImportRepository,
                 donorInspectionRepository,
-                naiveDnaLocusInterpreter,
                 updatesSaver,
                 donorImportLogService,
                 donorImportHistoryService,
                 notificationSender,
-                new NotificationConfigurationSettings { NotifyOnAttemptedDeletionOfUntrackedDonor = true }
+                new NotificationConfigurationSettings { NotifyOnAttemptedDeletionOfUntrackedDonor = true },
+                donorUpdateMapper
             );
         }
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Atlas.DonorImport.Exceptions;
-using Atlas.DonorImport.FileSchema.Models.DonorIdChecker;
+using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Services.DonorIdChecker

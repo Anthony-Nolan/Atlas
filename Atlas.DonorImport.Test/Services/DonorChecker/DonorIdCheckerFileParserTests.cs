@@ -5,7 +5,7 @@ using Atlas.DonorImport.Test.TestHelpers.Builders.DonorIdCheck;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.DonorImport.Test.Services.DonorIdCheck
+namespace Atlas.DonorImport.Test.Services.DonorChecker
 {
     [TestFixture]
     internal class DonorIdCheckerFileParserTests

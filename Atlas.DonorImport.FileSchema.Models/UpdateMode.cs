@@ -9,6 +9,7 @@ namespace Atlas.DonorImport.FileSchema.Models
     public enum UpdateMode
     {
         [EnumMember(Value = "diff")] Differential,
-        [EnumMember(Value = "full")] Full
+        [EnumMember(Value = "full")] Full,
+        [EnumMember(Value = "check")] InfoCheck
     }
 }
