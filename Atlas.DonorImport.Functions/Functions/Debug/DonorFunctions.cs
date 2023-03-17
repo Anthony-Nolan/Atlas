@@ -1,7 +1,5 @@
 ﻿using Atlas.Common.Debugging.Donors;
 using Atlas.Common.Utils.Http;
-using Atlas.DonorImport.ExternalInterface;
-using Atlas.DonorImport.ExternalInterface.Models;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,20 +10,21 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Atlas.DonorImport.Data.Repositories;
 
 namespace Atlas.DonorImport.Functions.Functions.Debug
 {
     public class DonorFunctions
     {
-        private readonly IDonorReader donorReader;
+        private readonly IDonorReadRepository donorReadRepository;
 
-        public DonorFunctions(IDonorReader donorReader)
+        public DonorFunctions(IDonorReadRepository donorReadRepository)
         {
-            this.donorReader = donorReader;
+            this.donorReadRepository = donorReadRepository;
         }
 
         [FunctionName(nameof(GetDonors))]
-        [ProducesResponseType(typeof(DebugDonorsResult<Donor, string>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(DebugDonorsResult<Data.Models.Donor, string>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetDonors(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/donors")]
             [RequestBodyType(typeof(string[]), "Donor Record Ids")]
@@ -33,7 +32,7 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
         {
             var recordIds = JsonConvert.DeserializeObject<string[]>(await new StreamReader(request.Body).ReadToEndAsync());
 
-            var donors = await donorReader.GetDonorsByExternalDonorCodes(recordIds);
+            var donors = await donorReadRepository.GetDonorsByExternalDonorCodes(recordIds);
 
             return new JsonResult(
                 DebugDonorsHelper.BuildDebugDonorsResult(recordIds, donors.Values.ToList(), d => d.ExternalDonorCode));
