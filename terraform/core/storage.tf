@@ -1,5 +1,5 @@
 locals {
-  batch_size = "10000"
+  batch_size = "0"
 }
 
 // shared storage account for non-performance critical functions apps.

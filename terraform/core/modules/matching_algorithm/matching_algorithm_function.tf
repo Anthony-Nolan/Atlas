@@ -14,7 +14,7 @@ locals {
 
     "AzureStorage:ConnectionString"           = var.azure_storage.primary_connection_string
     "AzureStorage:SearchResultsBlobContainer" = azurerm_storage_container.search_matching_results_blob_container.name
-    "AzureStorage:BatchSize"                  = "10000"
+    "AzureStorage:BatchSize"                  = "0"
 
     "DataRefresh:ActiveDatabaseAutoPauseTimeout"                                            = var.DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE
     "DataRefresh:ActiveDatabaseSize"                                                        = var.DATA_REFRESH_DB_SIZE_ACTIVE
