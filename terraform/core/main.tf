@@ -141,6 +141,7 @@ module "matching_algorithm" {
   MESSAGING_BUS_DONOR_CRON_SCHEDULE                = var.MATCHING_MESSAGING_BUS_DONOR_CRON_SCHEDULE
   WEBSITE_RUN_FROM_PACKAGE                         = var.WEBSITE_RUN_FROM_PACKAGE
   WMDA_FILE_URL                                    = var.WMDA_FILE_URL
+  RESULTS_BATCH_SIZE                               = var.RESULTS_BATCH_SIZE
 }
 
 module "match_prediction" {
@@ -233,6 +234,7 @@ module "repeat_search" {
   MATCHING_BATCH_SIZE                 = var.MATCHING_BATCH_SIZE
   MAX_CONCURRENT_SERVICEBUS_FUNCTIONS = var.REPEAT_SEARCH_MATCHING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE
   MAX_SCALE_OUT                       = var.REPEAT_SEARCH_MATCHING_MAX_SCALE_OUT
+  RESULTS_BATCH_SIZE                  = var.RESULTS_BATCH_SIZE
 }
 
 module "support" {

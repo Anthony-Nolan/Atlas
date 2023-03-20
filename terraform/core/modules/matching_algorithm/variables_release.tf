@@ -120,3 +120,7 @@ variable "WEBSITE_RUN_FROM_PACKAGE" {
 variable "WMDA_FILE_URL" {
   type = string
 }
+
+variable "RESULTS_BATCH_SIZE" {
+  type = number
+}

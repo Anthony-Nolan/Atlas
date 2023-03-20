@@ -376,3 +376,9 @@ variable "WEBSITE_RUN_FROM_PACKAGE" {
   type    = string
   default = "1"
 }
+
+variable "RESULTS_BATCH_SIZE" {
+  type        = number
+  default     = 10
+  description = "Batch size (number of donors for one batch) for saving search/matching results"
+}
