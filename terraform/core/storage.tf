@@ -1,7 +1,3 @@
-locals {
-  batch_size = "0"
-}
-
 // shared storage account for non-performance critical functions apps.
 // Documentation recommends a separate account for each functions app, for optimal performance - especially for durable functions 
 // https://docs.microsoft.com/en-us/azure/azure-functions/storage-considerations 

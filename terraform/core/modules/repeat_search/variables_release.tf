@@ -28,3 +28,7 @@ variable MAX_CONCURRENT_SERVICEBUS_FUNCTIONS {
 variable MAX_SCALE_OUT {
   type = number
 }
+
+variable "RESULTS_BATCH_SIZE" {
+  type    = number
+}
