@@ -1,4 +1,4 @@
-# Summary
+# Donor Import
 
 Donor JSON Files are uploaded to BlobStorage, where they are picked up for processing by the Donor Import Function. Records are inserted directly into the master Donor Database.
 
@@ -117,3 +117,40 @@ The three operations - create, update and delete - will cause problems if the fi
 | Delete  | Update | No donor, error       | Donor updated and not deleted, no error            | In this and the case below this is fine as should be deleted                                           |
 | Delete  | Upsert | New donor       | Donor updated and not deleted, no error            | In this and the case below this is fine as should be deleted                                           |
 | Delete  | Delete | No donor, error       | No donor, no error            |                                                                                                        |
+
+## Donor Checker Functions
+
+### Check donor presence in Atlas store
+
+* Upload json input file to `donor-id-checker/requests` subfolder in `donors` blob container 
+  * Json file must contain a string array of donors IDs ([link to request model](/Atlas.DonorImport.FileSchema.Models/DonorChecker/DonorIdCheckerRequest.cs))
+
+  E.g.,
+	```json
+	{
+		"recordIds": [
+			"record-id-1",
+			...
+			"record-id-N"
+		]
+	}
+	```
+* If absent donors are detected, a results file listing the ids of all absent donors is uploaded to `donor-id-checker/results` subfolder in `donors` blob container with filename `original filename + timestamp`
+* `donor-id-checker-results` service bus topic recieves success check messages with filename and result count (i.e., total number of absent donors)
+* `alerts` topic recieves messages if handled exceptions are thrown
+
+### Compare donor fields in set with Atlas store
+
+* Upload json file to `donor-info-checker/requests` subfolder in `donors` blob container 
+  * Json file format is same as for `donor-import` ([link to schema](/Schemas/DonorUpdateFileSchema.json); [link to model](/Atlas.DonorImport.FileSchema.Models/DonorImportFileSchema.cs))
+  * Important: `updateMode` must be set to `check`
+* If donors differences are found or if donors are absent, a results file listing the record ids of such donors is uploaded to `donor-info-checker/results` subfolder in `donors` blob container with filename `original filename + timestamp`
+* `donor-info-checker-results` topic recieves success check messages with filename and result count (i.e., total number of existing donors with differences plus absent donors)
+* `alerts` topic recieves messages if handled exceptions are thrown
+
+### Common Client Models
+Models used by both checker functions:
+* [Results model](/Atlas.DonorImport.FileSchema.Models/DonorChecker/DonorCheckerResults.cs)
+* [Success Notification model](/Atlas.DonorImport.FileSchema.Models/DonorChecker/DonorCheckerMessage.cs)
+
+
