@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Versions
 
+### 1.6.0
+* Models have been added for new `Donor Checker` functionality.
+* Donor import enum, UpdateMode, has been extended with a new option: `check`, to be used when info in the import file should only be checked against the donor store but not imported.
+
 ### 1.5.0
 * No outward change to schema definition.
 * Models moved from main Atlas.DonorImport project to new, standalone project, with versioning & changelog, to allow publishing as NuGet package.

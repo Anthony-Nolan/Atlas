@@ -37,6 +37,7 @@ Due to the size and complexity of the project, the README has been split into va
     - [Configuration](README_Configuration.md) - configuring resources / settings of Atlas to fine tune your installation
     - [Integration](README_Integration.md) - processing reference data, and integrating your non-Atlas systems into Atlas
     - [Support](README_Support.md) - resources for assisting with any issues when running an installation of Atlas
+    - [Maintenance](README_Maintenance.md) - guide to how to keep Atlas up-to-date and in-sync with external data sources
 
 - Component READMEs
     - [Donor Import](README_DonorImport.md) 
