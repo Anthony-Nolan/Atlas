@@ -117,3 +117,32 @@ The three operations - create, update and delete - will cause problems if the fi
 | Delete  | Update | No donor, error       | Donor updated and not deleted, no error            | In this and the case below this is fine as should be deleted                                           |
 | Delete  | Upsert | New donor       | Donor updated and not deleted, no error            | In this and the case below this is fine as should be deleted                                           |
 | Delete  | Delete | No donor, error       | No donor, no error            |                                                                                                        |
+
+## Donor Checker Functions
+
+### Check donor presence in Atlas store
+
+* Upload json file to `donor-id-checker/requests` subfolder in `donors` blob container 
+* Json file must contain a string array of donors IDs
+
+	```json
+	{
+		"recordIds": [
+			"record-id-1",
+			...
+			"record-id-N"
+		]
+	}
+	```
+* If absent donors are detected, result file is uploaded to `donor-id-checker/results` subfolder in `donors` blob container with filename `original filename + timestamp`
+* `donor-id-checker-results` topic recieves success check messages with result count and filename
+* `alerts` topic recieves messages if handled exceptions are thrown
+
+### Compare donor fields in set with Atlas store
+
+* Upload json file to `donor-info-checker/requests` subfolder in `donors` blob container 
+* Json file format is same as for `donor-import`. `updateMode` must be equal to `check`
+* If donors differences are found, result file is uploaded to `donor-info-checker/results` subfolder in `donors` blob container with filename `original filename + timestamp`
+* `donor-info-checker-results` topic recieves success check messages with result count and filename
+* `alerts` topic recieves messages if handled exceptions are thrown
+
