@@ -50,13 +50,6 @@ Alternatively, an older file can be re-uploaded, which will automatically become
 for the desired rollback, and will take longer than the manual SQL approach - especially for large sets (order of minutes).   
 
 
-### Deleting old sets
-
-As there is no hard delete in the upload process, no sets will ever be deleted during ongoing operation. 
-
-It may be desirable to manually delete older sets, to free up database space and keep database operations quick.
-
-
 ## Data Refresh 
 
 ## Manual Trigger

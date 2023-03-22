@@ -6,7 +6,7 @@
 			"type": "integer"
 		},
 		"donPool": {
-			"type": "array",
+			"type": ["array","null"],
 			"minItems": 1,
 			"items": {
 				"type": "integer"

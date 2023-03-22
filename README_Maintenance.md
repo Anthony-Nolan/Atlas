@@ -23,3 +23,13 @@ Further reading:
 * [Configuration README](/README_Configuration.md) for various settings that control how the job is run and resource allocation.
 * [Matching Algorithm README](/README_MatchingAlgorithm.md#pre-processing) for info about the data processing itself.
 
+## HLA Haplotype Frequency Set (HFS) Import
+- After the initial load of HFS files, new files can be imported at any time to update the data held by Atlas. [File schema](/Schemas/HFSetSchema.json) is identical to that of initial upload.
+- If the combination of `donPool` and `ethn` within the new file already exists in the Atlas HFS store, then the previous set will be made inactive, and the new set will be used in match prediction for that population
+- To update the "global" HFS, then upload a new file with `donPool` and `ethn` each set to `null` or `[]` (empty array).
+- As there is no hard delete in the upload process, no sets will ever be deleted during ongoing operation. It may be desirable to manually delete older sets, to free up database space and keep database operations quick.
+
+Further reading:
+* [Integration README](/README_Integration.md#haplotype-frequency-sets) for information on how to import HFS files.
+* [Match Prediction README](/README_MatchPredictionAlgorithm.md#haplotype-frequency-set-selection) for how HFS are selected during match prediction.
+* [Support README](/README_Support.md) for how to handle failures during HFS import and rollback advice.
