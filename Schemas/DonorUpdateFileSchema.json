@@ -6,9 +6,10 @@
 			"type": "string",
 			"enum": [
 				"diff",
-				"full"
+				"full",
+				"check"
 			],
-			"description": "Differential or Full"
+			"description": "For donor import, use `diff` or `full`, as required. To check info in file against the Atlas donor store, use `check`"
 		},
 		"donors": {
 			"type": "array",

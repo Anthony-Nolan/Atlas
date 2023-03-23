@@ -160,12 +160,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InstallationAndUsage", "Ins
 		README_Configuration.md = README_Configuration.md
 		README_Deployment.md = README_Deployment.md
 		README_Integration.md = README_Integration.md
+		README_Maintenance.md = README_Maintenance.md
 		README_Support.md = README_Support.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.Common.Public.Models", "Atlas.Common.Public.Models\Atlas.Common.Public.Models.csproj", "{01BA6FE0-B631-4262-A8B8-9EC27636A65D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.DonorImport.FileSchema.Models", "Atlas.DonorImport.FileSchema.Models\Atlas.DonorImport.FileSchema.Models.csproj", "{9BCED4DF-9197-4B94-B7A9-ACBA42F6CB61}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.DonorImport.FileSchema.Models", "Atlas.DonorImport.FileSchema.Models\Atlas.DonorImport.FileSchema.Models.csproj", "{9BCED4DF-9197-4B94-B7A9-ACBA42F6CB61}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

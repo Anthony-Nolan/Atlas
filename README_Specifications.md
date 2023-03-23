@@ -54,6 +54,7 @@ Below is a list of features and requirements for the Atlas product. This is not 
 
 - Imports donor data via JSON file and persists it to a database.
 - Files can be `Full` (when first loading the donor store, or when wanting to fully wipe over existing records) or `Diff` (for frequent updates).
+- Checks stored donor data against `check` request files and reports any differences found.
 
 ## Performance
 
