@@ -32,9 +32,9 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
                 notification.BlobStorageContainerName,
                 notification.ResultsFileName);
 
-            if (notification.ResultBatched && !string.IsNullOrEmpty(notification.BatchFolder))
+            if (notification.ResultsBatched && !string.IsNullOrEmpty(notification.BatchFolderName))
             {
-                resultSet.Results = await blobDownloader.BatchDownload<MatchingAlgorithmResult>(notification.BlobStorageContainerName, notification.BatchFolder);
+                resultSet.Results = await blobDownloader.DownloadFolderContents<MatchingAlgorithmResult>(notification.BlobStorageContainerName, notification.BatchFolderName);
             }
 
             var donorIds = resultSet.Results.Select(r => r.DonorCode).ToList();

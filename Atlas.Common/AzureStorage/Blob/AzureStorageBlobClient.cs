@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.AzureStorage.ApplicationInsights;
 using Azure.Storage.Blobs;
 
 namespace Atlas.Common.AzureStorage.Blob
@@ -6,10 +9,12 @@ namespace Atlas.Common.AzureStorage.Blob
     public abstract class AzureStorageBlobClient
     {
         private readonly BlobServiceClient blobClient;
+        private readonly ILogger logger;
 
-        protected AzureStorageBlobClient(string azureStorageConnectionString)
+        protected AzureStorageBlobClient(string azureStorageConnectionString, ILogger logger)
         {
             blobClient = new BlobServiceClient(azureStorageConnectionString);
+            this.logger = logger;
         }
 
         /// <summary>
@@ -36,6 +41,19 @@ namespace Atlas.Common.AzureStorage.Blob
 
             await container.CreateAsync();
             return container;
+        }
+
+        protected AzureStorageEventModel StartAzureStorageCommunication(string filename, string container)
+        {
+            var azureStorageEventModel = new AzureStorageEventModel(filename, container);
+            azureStorageEventModel.StartAzureStorageCommunication();
+            return azureStorageEventModel;
+        }
+
+        protected void EndAzureStorageCommunication(AzureStorageEventModel azureStorageEventModel, string logLabel)
+        {
+            azureStorageEventModel.EndAzureStorageCommunication(logLabel);
+            logger.SendEvent(azureStorageEventModel);
         }
     }
 }

@@ -65,7 +65,7 @@ namespace Atlas.RepeatSearch.Services.Search
             this.repeatSearchValidator = repeatSearchValidator;
             this.repeatSearchDifferentialCalculator = repeatSearchDifferentialCalculator;
             this.originalSearchResultSetTracker = originalSearchResultSetTracker;
-            resultBatched = azureStorageSettings.ResultBatched;
+            resultBatched = azureStorageSettings.ShouldBatchResults;
         }
 
         public async Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
@@ -123,8 +123,8 @@ namespace Atlas.RepeatSearch.Services.Search
                     BlobStorageContainerName = blobContainerName,
                     ResultsFileName = searchResultSet.ResultsFileName,
                     ElapsedTime = stopwatch.Elapsed,
-                    ResultBatched = resultBatched,
-                    BatchFolder = resultBatched && results.Any() ? $"{searchRequestId}/{repeatSearchId}" : null
+                    ResultsBatched = resultBatched,
+                    BatchFolderName = resultBatched && results.Any() ? $"{searchRequestId}/{repeatSearchId}" : null
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
                 return searchResultSet;

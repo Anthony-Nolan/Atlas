@@ -3,7 +3,7 @@ using Atlas.Common.ApplicationInsights;
 
 namespace Atlas.Common.AzureStorage.ApplicationInsights
 {
-    class AzureStorageEventModel : EventModel
+    public class AzureStorageEventModel : EventModel
     {
         private readonly Stopwatch azureStorageUploadTimer;
 

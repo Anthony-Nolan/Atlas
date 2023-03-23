@@ -100,7 +100,7 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             services.AddScoped<IBlobStreamer, BlobStreamer>(sp =>
             {
                 var settings = fetchVerificationAzureStorageSettings(sp);
-                return new BlobStreamer(settings.ConnectionString);
+                return new BlobStreamer(settings.ConnectionString, sp.GetService<ILogger>());
             });
 
             services.AddScoped<IMacExpander, MacExpander>();
