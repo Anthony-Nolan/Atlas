@@ -333,6 +333,12 @@ variable "REPEAT_SEARCH_MATCHING_MAX_SCALE_OUT" {
   description = "The maximum number of instances of the repeat search's matching algorithm that can be scaled out."
 }
 
+variable "RESULTS_BATCH_SIZE" {
+  type        = number
+  default     = 0
+  description = "Batch size (number of donors for one batch) for saving search/matching results"
+}
+
 variable "SERVICE_PLAN_MAX_SCALE_OUT" {
   type        = number
   default     = 50
@@ -375,10 +381,4 @@ variable "WMDA_FILE_URL" {
 variable "WEBSITE_RUN_FROM_PACKAGE" {
   type    = string
   default = "1"
-}
-
-variable "RESULTS_BATCH_SIZE" {
-  type        = number
-  default     = 10
-  description = "Batch size (number of donors for one batch) for saving search/matching results"
 }
