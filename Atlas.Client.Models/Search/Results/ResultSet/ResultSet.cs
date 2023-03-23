@@ -57,7 +57,7 @@ namespace Atlas.Client.Models.Search.Results.ResultSet
         /// When this method returns true - <see cref="Results" /> will be serialized, when it's false - <see cref="Results" /> won't be serialized
         /// https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm
         /// </summary>
-        public bool ShouldSerializeResults() => BatchedResult;
+        public bool ShouldSerializeResults() => !BatchedResult;
 
 
         /// <summary>
