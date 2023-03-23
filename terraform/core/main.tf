@@ -139,9 +139,9 @@ module "matching_algorithm" {
   MAX_SCALE_OUT                                    = var.MATCHING_MAX_SCALE_OUT
   MESSAGING_BUS_DONOR_BATCH_SIZE                   = var.MATCHING_MESSAGING_BUS_DONOR_BATCH_SIZE
   MESSAGING_BUS_DONOR_CRON_SCHEDULE                = var.MATCHING_MESSAGING_BUS_DONOR_CRON_SCHEDULE
+  RESULTS_BATCH_SIZE                               = var.RESULTS_BATCH_SIZE
   WEBSITE_RUN_FROM_PACKAGE                         = var.WEBSITE_RUN_FROM_PACKAGE
   WMDA_FILE_URL                                    = var.WMDA_FILE_URL
-  RESULTS_BATCH_SIZE                               = var.RESULTS_BATCH_SIZE
 }
 
 module "match_prediction" {
