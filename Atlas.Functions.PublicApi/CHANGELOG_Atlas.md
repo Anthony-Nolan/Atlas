@@ -23,6 +23,9 @@ Added an ability to save search results in multiple files. Result files will now
  - Search summary - this will be a single file containing all search result metadata, e.g., number of matches, the original search request, etc.
  - Search results - these will be written to 1 or more files, each containing a maximum number of results (this is a configurable setting AzureStorage:BatchSize).
 
+Search results will still be written to one file along with search summary if batch size (SearchResultsBatchSize) is set to a value less than or equal to '0'. 
+Default value for 'SearchResultsBatchSize' is '0'.
+
 #### Donor Import
 * Added new function `CheckDonorIdsFromFile` that checks absence of donors in Atlas storage
 * Added new function `CheckDonorInfoFromFile` that compares donor/CBU fields with Atlas
