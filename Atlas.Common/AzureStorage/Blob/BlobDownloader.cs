@@ -1,5 +1,4 @@
 ﻿using Atlas.Common.ApplicationInsights;
-using Atlas.Common.AzureStorage.ApplicationInsights;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -10,39 +9,34 @@ namespace Atlas.Common.AzureStorage.Blob
     public interface IBlobDownloader
     {
         Task<T> Download<T>(string container, string filename);
-        Task<IEnumerable<T>> BatchDownload<T>(string container, string folderName);
+        Task<IEnumerable<T>> DownloadFolderContents<T>(string container, string folderName);
     }
     
     public class BlobDownloader : AzureStorageBlobClient, IBlobDownloader
     {
-        private const string UploadLogLabel = "Download";
-        private readonly ILogger logger;
+        private const string DownloadLogLabel = "Download";
 
-        public BlobDownloader(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString)
+        public BlobDownloader(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString, logger)
         {
-            this.logger = logger;
         }
 
         public async Task<T> Download<T>(string container, string filename)
         {
-            var azureStorageEventModel = new AzureStorageEventModel(filename, container);
-            azureStorageEventModel.StartAzureStorageCommunication();
+            var azureStorageEventModel = StartAzureStorageCommunication(filename, container);
 
             var containerClient = GetBlobContainer(container);
             var data = await GetBlobData<T>(containerClient, filename);
 
-            azureStorageEventModel.EndAzureStorageCommunication(UploadLogLabel);
-            logger.SendEvent(azureStorageEventModel);
+            EndAzureStorageCommunication(azureStorageEventModel, DownloadLogLabel);
 
             return data;
         }
 
-        public async Task<IEnumerable<T>> BatchDownload<T>(string container, string folderName)
+        public async Task<IEnumerable<T>> DownloadFolderContents<T>(string container, string folderName)
         {
             var data = new List<T>();
 
-            var azureStorageEventModel = new AzureStorageEventModel(folderName, container);
-            azureStorageEventModel.StartAzureStorageCommunication();
+            var azureStorageEventModel = StartAzureStorageCommunication(folderName, container);
 
             var containerClient = GetBlobContainer(container);
             var blobs =  containerClient.GetBlobsAsync(prefix: $"{folderName}/");
@@ -52,8 +46,7 @@ namespace Atlas.Common.AzureStorage.Blob
                 data.AddRange(await GetBlobData<IEnumerable<T>>(containerClient, blob.Name));
             }
 
-            azureStorageEventModel.EndAzureStorageCommunication(UploadLogLabel);
-            logger.SendEvent(azureStorageEventModel);
+            EndAzureStorageCommunication(azureStorageEventModel, DownloadLogLabel);
 
             return data;
         }

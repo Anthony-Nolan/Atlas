@@ -7,6 +7,7 @@ using Atlas.MatchPrediction.Test.Validation.Models;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
+using Atlas.Common.ApplicationInsights;
 
 namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
 {
@@ -58,7 +59,7 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
             services.AddScoped<IBlobStreamer, BlobStreamer>(sp =>
             {
                 var settings = fetchValidationAzureStorageSettings(sp);
-                return new BlobStreamer(settings.ConnectionString);
+                return new BlobStreamer(settings.ConnectionString, sp.GetService<ILogger>());
             });
             services.AddScoped<IResultsProcessor, ResultsProcessor>();
             services.AddScoped<IMessageSender, MessageSender>();

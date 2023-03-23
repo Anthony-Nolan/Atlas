@@ -3,7 +3,7 @@ using Atlas.Client.Models.Search.Results.ResultSet;
 
 namespace Atlas.Client.Models.Search.Results.Matching.ResultSet
 {
-    public class RepeatMatchingAlgorithmResultSet : BatchedResultSet<MatchingAlgorithmResult>
+    public class RepeatMatchingAlgorithmResultSet : ResultSet<MatchingAlgorithmResult>
     {
         public string RepeatSearchId { get; set; }
         public override bool IsRepeatSearchSet => true;

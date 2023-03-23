@@ -11,7 +11,7 @@
     "AzureManagement:Database:SubscriptionId": "6114522f-eea5-44ab-94ab-af37ffffc4d3",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:SearchResultsBlobContainer": "matching-algorithm-results",
-    "AzureStorage:BatchSize": 10000,
+    "AzureStorage:SearchResultsBatchSize": 0,
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "DataRefresh:ActiveDatabaseSize": "S3",
     "DataRefresh:AutoRunDataRefresh": "false",

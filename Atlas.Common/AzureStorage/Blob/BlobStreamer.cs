@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Atlas.Common.ApplicationInsights;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Atlas.Common.AzureStorage.Blob
@@ -10,7 +11,7 @@ namespace Atlas.Common.AzureStorage.Blob
 
     public class BlobStreamer : AzureStorageBlobClient, IBlobStreamer
     {
-        public BlobStreamer(string azureStorageConnectionString) : base(azureStorageConnectionString)
+        public BlobStreamer(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString, logger)
         {
         }
 

@@ -41,7 +41,7 @@ namespace Atlas.Functions.Services
             connectionString = messagingServiceBusSettings.Value.ConnectionString;
             resultsNotificationTopicName = messagingServiceBusSettings.Value.SearchResultsTopic;
             repeatResultsNotificationTopicName = messagingServiceBusSettings.Value.RepeatSearchResultsTopic;
-            resultBatched = azureStorageSettings.Value.ResultBatched;
+            resultBatched = azureStorageSettings.Value.ShouldBatchResults;
         }
 
         public async Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime) where T : SearchResultSet
@@ -80,8 +80,8 @@ namespace Atlas.Functions.Services
                     MatchingAlgorithmTime = searchResultSet.MatchingAlgorithmTime,
                     MatchPredictionTime = searchResultSet.MatchPredictionTime,
                     OverallSearchTime = searchTime,
-                    ResultBatched = resultBatched,
-                    BatchFolder = resultBatched && searchResultSet.TotalResults > 0 ? searchResultSet.SearchRequestId : null
+                    ResultsBatched = resultBatched,
+                    BatchFolderName = resultBatched && searchResultSet.TotalResults > 0 ? searchResultSet.SearchRequestId : null
                 };
                 await SendNotificationMessage(searchResultsNotification);
             }

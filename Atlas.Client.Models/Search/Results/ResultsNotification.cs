@@ -17,7 +17,8 @@
         public string BlobStorageContainerName { get; set; }
 
         /// <summary>
-        /// Name of the file in which results are stored in blob storage. 
+        /// Name of the file where results are stored in blob storage.
+        /// When <see cref="ResultsBatched" /> is true, it contains only search summary, results are stored in a folder <see cref="BatchFolderName" />
         /// </summary>
         public string ResultsFileName { get; set; }
 
@@ -28,8 +29,14 @@
         /// </summary>
         public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
 
-        public bool ResultBatched { get; set; }
+        /// <summary>
+        /// Indicates if results were batched (i.e. saved in multiple files separately from the search summary) or not
+        /// </summary>
+        public bool ResultsBatched { get; set; }
 
-        public string BatchFolder { get; set; }
+        /// <summary>
+        /// Name of the folder in blob storage where files with results are stored. It's populated only when ResultsBatched is true and <see cref="NumberOfResults" /> is greater than 0, otherwise it will be null
+        /// </summary>
+        public string BatchFolderName { get; set; }
     }
 }

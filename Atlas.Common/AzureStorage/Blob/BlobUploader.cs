@@ -1,9 +1,7 @@
 ﻿using System;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.AzureStorage.ApplicationInsights;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs;
@@ -14,29 +12,27 @@ namespace Atlas.Common.AzureStorage.Blob
     public class BlobUploader : AzureStorageBlobClient
     {
         private const string UploadLogLabel = "Upload";
-        protected readonly ILogger Logger;
 
-        public BlobUploader(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString)
+        public ILogger Logger { get; }
+
+        public BlobUploader(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString, logger)
         {
             Logger = logger;
         }
 
         public async Task Upload(string container, string filename, string fileContents)
         {
-            var azureStorageEventModel = new AzureStorageEventModel(filename, container);
-            azureStorageEventModel.StartAzureStorageCommunication();
+            var azureStorageEventModel = StartAzureStorageCommunication(filename, container);
 
             var containerClient = await CreateAndGetBlobContainer(container);
             await UploadBlob(containerClient, filename, fileContents);
 
-            azureStorageEventModel.EndAzureStorageCommunication(UploadLogLabel);
-            Logger.SendEvent(azureStorageEventModel);
+            EndAzureStorageCommunication(azureStorageEventModel, UploadLogLabel);
         }
 
         public async Task BatchUpload<T>(IEnumerable<T> list, int batchSize, string blobContainer, string blobFolder)
         {
-            var azureStorageEventModel = new AzureStorageEventModel(blobFolder, blobContainer);
-            azureStorageEventModel.StartAzureStorageCommunication();
+            var azureStorageEventModel = StartAzureStorageCommunication(blobFolder, blobContainer);
 
             var containerClient = await CreateAndGetBlobContainer(blobContainer);
 
@@ -47,8 +43,7 @@ namespace Atlas.Common.AzureStorage.Blob
                 await UploadBlob(containerClient, $"{blobFolder}/{++batchNumber}.json", serializedBatch);
             }
 
-            azureStorageEventModel.EndAzureStorageCommunication(UploadLogLabel);
-            Logger.SendEvent(azureStorageEventModel);
+            EndAzureStorageCommunication(azureStorageEventModel, UploadLogLabel);
         }
 
         private async Task UploadBlob(BlobContainerClient containerClient, string filename, string fileContents)

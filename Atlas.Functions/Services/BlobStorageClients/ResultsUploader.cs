@@ -30,14 +30,14 @@ namespace Atlas.Functions.Services.BlobStorageClients
         {
             using (Logger.RunTimed($"Uploading results: {searchResultSet.SearchRequestId}"))
             {
-                searchResultSet.BatchedResult = azureStorageSettings.ResultBatched;
+                searchResultSet.BatchedResult = azureStorageSettings.ShouldBatchResults;
                 var serialisedResults = JsonConvert.SerializeObject(searchResultSet);
                 var container = searchResultSet.IsRepeatSearchSet ? azureStorageSettings.RepeatSearchResultsBlobContainer : azureStorageSettings.SearchResultsBlobContainer;
                 await Upload(container, searchResultSet.ResultsFileName, serialisedResults);
 
-                if (azureStorageSettings.ResultBatched)
+                if (azureStorageSettings.ShouldBatchResults)
                 {
-                    await BatchUpload(searchResultSet.Results, azureStorageSettings.BatchSize, container, batchFolder);
+                    await BatchUpload(searchResultSet.Results, azureStorageSettings.SearchResultsBatchSize, container, batchFolder);
                 }
             }
         }

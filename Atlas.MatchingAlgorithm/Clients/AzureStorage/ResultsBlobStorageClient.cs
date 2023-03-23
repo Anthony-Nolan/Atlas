@@ -10,7 +10,7 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureStorage
 {
     public interface IResultsBlobStorageClient
     {
-        Task UploadResults(BatchedResultSet<MatchingAlgorithmResult> searchResultSet);
+        Task UploadResults(ResultSet<MatchingAlgorithmResult> searchResultSet);
         string GetResultsContainerName();
     }
 
@@ -24,16 +24,15 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureStorage
         {
             this.azureStorageSettings = azureStorageSettings;
         }
-
-        public async Task UploadResults(BatchedResultSet<MatchingAlgorithmResult> searchResultSet)
+        public async Task UploadResults(ResultSet<MatchingAlgorithmResult> searchResultSet)
         {
-            searchResultSet.BatchedResult = azureStorageSettings.ResultBatched;
+            searchResultSet.BatchedResult = azureStorageSettings.ShouldBatchResults;  // Results will not be serialised if results are being batched
             var serialisedResults = JsonConvert.SerializeObject(searchResultSet);
             await Upload(azureStorageSettings.SearchResultsBlobContainer, searchResultSet.ResultsFileName, serialisedResults);
 
-            if (azureStorageSettings.ResultBatched)
+            if (azureStorageSettings.ShouldBatchResults)
             {
-                await BatchUpload(searchResultSet.Results, azureStorageSettings.BatchSize, azureStorageSettings.SearchResultsBlobContainer, searchResultSet.SearchRequestId);
+                await BatchUpload(searchResultSet.Results, azureStorageSettings.SearchResultsBatchSize, azureStorageSettings.SearchResultsBlobContainer, searchResultSet.SearchRequestId);
             }
         }
 
