@@ -19,23 +19,21 @@ We recommend routing these to different channels, so that alerts can always be a
 
 ## Haplotype Frequency Upload
 
-### Allele lookup error
+### HLA Metadata Dictionary lookup errors
 
-The haplotype frequency import process involves validating and converting the provided hla data.
+The haplotype frequency set (HFS) import process involves validating and converting the provided HLA data.
 
-> Is lookup failing for the first allele in the file?
+> Is lookup failing for the first allele in the file, or import failing with a dictionary error?
 
-If the failed lookup is a very common allele e.g. `01:01:01G` - and is the first one in the uploaded file - it is likely that the **HLA Metadata Dictionary** has not been generated for
-the given nomenclature version. Check the version used in the file, and trigger a Metadata refresh.
+If the failed lookup is the first typing listed in the uploaded HFS file, or if the error states "The given key 'A' was not present in the dictionary" (or some other dictionary related error), it is likely that the **HLA Metadata Dictionary** (HMD) has not been generated for the given HLA nomenclature version (or something went wrong during HMD creation). Check the [`nomenclatureVersion` used in the file](/Schemas/HFSetSchema.json#5), and trigger recreation of the HMD using the endpoint [`RefreshHlaMetadataDictionaryToSpecificVersion` on the matching-algorithm functions app](/Atlas.MatchingAlgorithm.Functions/Functions/HlaMetadataDictionaryFunctions.cs#47).
 
-Both algorithms have an in-memory cache of the metadata dictionary, which lasts ~24 hours. To ensure the new version of the HMD is used, the algorithm functions apps will need restarting.
+Atlas components have an in-memory cache of the HMD which lasts ~24 hours. Restart the relevant functions app (in the case of HFS import, the match prediction app) to ensure the new version of the HMD is used.
 
-// TODO: ATLAS-727: Improve error messaging in this scenario
+// TODO: #775: Improve error messaging in this scenario
 
-> Is the allele valid, and a G-Group?
+> Is the typing in the HFS a valid allele and also part of a G-Group?
 
-ATLAS only supports haplotype frequency data as G-Groups. This means that if you provide an allele that is valid, and represented by a G-Group (and was perhaps a G-Group of one in a 
-previous nomenclature version) - the file will be rejected.
+ATLAS only supports haplotype frequency data encoded as G-Groups ("large", e.g., `01:01:01G` or "small", e.g., `01:01g`). The import will fail if the file contains an allele name that is actually part of a wider G group. E.g., if a "large" G group HFS file contains the allele `A*01:01:01:01`, the file will be rejected because the allele is part of `A*01:01:01G`. Another example for "small" G group is the allele `A*43:02N` which should be submitted as the g group named, `43:01`.
 
 
 ### Rolling back an upload
