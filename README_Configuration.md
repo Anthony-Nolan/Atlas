@@ -97,6 +97,11 @@ Most Atlas functions apps run on a shared service plan, which will also impact t
 | MAX-CONCURRENT-ACTIVITY-FUNCTIONS | ATLAS-FUNCTIONS | AzureFunctionsJobHost--extensions--durableTask--maxConcurrentActivityFunctions | *Per instance*, dictates the number of parallel match prediction batches that can be run. It is recommended that this stay very small (ideally 1), as match prediction is a very memory intensive process - and allowing more concurrent processes significantly increases the risk of hitting out of memory exceptions, causing match prediction to slow down significantly (or worse, never finish) |
 | ORCHESTRATION-MATCH-PREDICTION-BATCH-SIZE | ATLAS-FUNCTIONS | AtlasFunction-Orchestration-MatchPredictionBatchSize | The number of donors that will be processed in each batch of match prediction. Should be kept reasonably low, to engender horizontal scaling, and to reduce risk of running out of memory. When reduced too much, we may see that orchestration overhead starts to outweigh the benefits of engendering more horizontal scaling, and searches may start to slow down a bit overall. |
 
+### Search Results
+
+| Terraform Setting          | Functions App Name                 |Functions App Setting Name | Description 
+| -------------------------- | ------------------                 | -------------------------- | -----------                |                |
+| RESULTS_BATCH_SIZE | ATLAS-FUNCTIONS, ATLAS-MATCHING-ALGORITHM-FUNCTIONS, ATLAS-REPEAT-SEARCH-FUNCTION | AzureStorage-SearchResultsBatchSize | Batch size (number of results written per file) for saving search/matching results |
 
 ## Search Concurrency Configuration
 

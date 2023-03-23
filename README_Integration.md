@@ -199,9 +199,10 @@ When a search is complete, a message will be sent to the `search-results-ready` 
 Consumers of ATLAS should set up a subscription for their application, and a listener for messages on said subscription.
 
 The message contains the search ID for identification, some metadata about the search request - i.e. how many donors were matched, how long the search took - as well as a blob storage 
-container and filename at which the results can be found. 
+container and filename at which the results can be found, indicator was results batched or not and a folder name for batched results. 
 
 The results can then be downloaded from this blob storage container. They will be stored as JSON objects, [in the format described in this model](Atlas.Client.Models/Search/Results/SearchResultSet.cs)
+If results were batched, the search summary data should be downloaded from the same file, but search results should be downloaded from the files in the folder with batched results: each file contains some number of results, to load all results data from all files should be read. 
 
 **A consumer of ATLAS results notifications will need to be granted access to the following:**
 
