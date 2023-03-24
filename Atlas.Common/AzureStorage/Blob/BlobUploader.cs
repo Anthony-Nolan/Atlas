@@ -11,11 +11,8 @@ namespace Atlas.Common.AzureStorage.Blob
 {
     public class BlobUploader : AzureStorageBlobClient
     {
-        protected ILogger Logger { get; }
-
         public BlobUploader(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString, logger, "Upload")
         {
-            Logger = logger;
         }
 
         public async Task Upload(string container, string filename, string fileContents)
