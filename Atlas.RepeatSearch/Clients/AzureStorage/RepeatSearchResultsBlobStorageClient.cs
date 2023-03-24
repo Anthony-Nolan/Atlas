@@ -28,7 +28,8 @@ namespace Atlas.RepeatSearch.Clients.AzureStorage
 
         public async Task UploadResults(RepeatMatchingAlgorithmResultSet repeatSearchResultSet)
         {
-            repeatSearchResultSet.BatchedResult = azureStorageSettings.ShouldBatchResults;  // Results will not be serialised if results are being batched
+            repeatSearchResultSet.BatchedResult = azureStorageSettings.ShouldBatchResults;
+            // Results will not be serialised if results are being batched
             var serialisedResults = JsonConvert.SerializeObject(repeatSearchResultSet);
             await Upload(azureStorageSettings.MatchingResultsBlobContainer, repeatSearchResultSet.ResultsFileName, serialisedResults);
 
