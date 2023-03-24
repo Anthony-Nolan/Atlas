@@ -28,7 +28,7 @@ namespace Atlas.Functions.Services.BlobStorageClients
         /// <inheritdoc />
         public async Task UploadResults(SearchResultSet searchResultSet, string batchFolder)
         {
-            using (Logger.RunTimed($"Uploading results: {searchResultSet.SearchRequestId}"))
+            using (logger.RunTimed($"Uploading results: {searchResultSet.SearchRequestId}"))
             {
                 searchResultSet.BatchedResult = azureStorageSettings.ShouldBatchResults;
                 var serialisedResults = JsonConvert.SerializeObject(searchResultSet);
