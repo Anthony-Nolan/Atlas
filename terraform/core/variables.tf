@@ -336,7 +336,7 @@ variable "REPEAT_SEARCH_MATCHING_MAX_SCALE_OUT" {
 variable "RESULTS_BATCH_SIZE" {
   type        = number
   default     = 0
-  description = "Batch size (number of donors for one batch) for saving search/matching results"
+  description = "Batch size (number of results written per file) for saving search/matching results"
 }
 
 variable "SERVICE_PLAN_MAX_SCALE_OUT" {
