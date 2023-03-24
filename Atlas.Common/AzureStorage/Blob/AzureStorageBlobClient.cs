@@ -11,10 +11,13 @@ namespace Atlas.Common.AzureStorage.Blob
         private readonly BlobServiceClient blobClient;
         private readonly ILogger logger;
 
-        protected AzureStorageBlobClient(string azureStorageConnectionString, ILogger logger)
+        private readonly string logLabel;
+
+        protected AzureStorageBlobClient(string azureStorageConnectionString, ILogger logger, string logLabel)
         {
             blobClient = new BlobServiceClient(azureStorageConnectionString);
             this.logger = logger;
+            this.logLabel = logLabel;
         }
 
         /// <summary>
@@ -50,7 +53,7 @@ namespace Atlas.Common.AzureStorage.Blob
             return azureStorageEventModel;
         }
 
-        protected void EndAzureStorageCommunication(AzureStorageEventModel azureStorageEventModel, string logLabel)
+        protected void EndAzureStorageCommunication(AzureStorageEventModel azureStorageEventModel)
         {
             azureStorageEventModel.EndAzureStorageCommunication(logLabel);
             logger.SendEvent(azureStorageEventModel);

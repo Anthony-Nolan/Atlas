@@ -35,7 +35,7 @@
         public bool ResultsBatched { get; set; }
 
         /// <summary>
-        /// Name of the folder in blob storage where files with results are stored. It's populated only when ResultsBatched is true and <see cref="NumberOfResults" /> is greater than 0, otherwise it will be null
+        /// Name of the folder in blob storage where files with results are stored. It's populated only when <see cref="ResultsBatched" /> is true and <see cref="NumberOfResults" /> is greater than 0, otherwise it will be null
         /// </summary>
         public string BatchFolderName { get; set; }
     }

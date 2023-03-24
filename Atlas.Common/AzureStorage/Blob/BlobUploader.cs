@@ -11,11 +11,9 @@ namespace Atlas.Common.AzureStorage.Blob
 {
     public class BlobUploader : AzureStorageBlobClient
     {
-        private const string UploadLogLabel = "Upload";
+        protected ILogger Logger { get; }
 
-        public ILogger Logger { get; }
-
-        public BlobUploader(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString, logger)
+        public BlobUploader(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString, logger, "Upload")
         {
             Logger = logger;
         }
@@ -27,7 +25,7 @@ namespace Atlas.Common.AzureStorage.Blob
             var containerClient = await CreateAndGetBlobContainer(container);
             await UploadBlob(containerClient, filename, fileContents);
 
-            EndAzureStorageCommunication(azureStorageEventModel, UploadLogLabel);
+            EndAzureStorageCommunication(azureStorageEventModel);
         }
 
         public async Task BatchUpload<T>(IEnumerable<T> list, int batchSize, string blobContainer, string blobFolder)
@@ -43,7 +41,7 @@ namespace Atlas.Common.AzureStorage.Blob
                 await UploadBlob(containerClient, $"{blobFolder}/{++batchNumber}.json", serializedBatch);
             }
 
-            EndAzureStorageCommunication(azureStorageEventModel, UploadLogLabel);
+            EndAzureStorageCommunication(azureStorageEventModel);
         }
 
         private async Task UploadBlob(BlobContainerClient containerClient, string filename, string fileContents)

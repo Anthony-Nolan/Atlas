@@ -13,6 +13,9 @@ namespace Atlas.Functions.Services.BlobStorageClients
 {
     public interface IMatchingResultsDownloader
     {
+        /// <summary>
+        /// if "batchFolder" is not null, results will be loaded from all files within this folder, otherwise - results will be loaded along with search summary from "blobName" file
+        /// <summary>
         public Task<ResultSet<MatchingAlgorithmResult>> Download(string blobName, bool isRepeatSearch, string batchFolder = null);
     }
 
@@ -29,9 +32,6 @@ namespace Atlas.Functions.Services.BlobStorageClients
             this.logger = logger;
         }
 
-        /// <summary>
-        /// if "batchFolder" is not null, results will be loaded from all files within this folder, otherwise - results will be loaded along with search summary from "blobName" file
-        /// <summary>
         public async Task<ResultSet<MatchingAlgorithmResult>> Download(string blobName, bool isRepeatSearch, string batchFolder = null)
         {
             using (logger.RunTimed($"Downloading matching results: {blobName}"))

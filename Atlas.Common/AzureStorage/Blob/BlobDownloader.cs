@@ -14,9 +14,7 @@ namespace Atlas.Common.AzureStorage.Blob
     
     public class BlobDownloader : AzureStorageBlobClient, IBlobDownloader
     {
-        private const string DownloadLogLabel = "Download";
-
-        public BlobDownloader(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString, logger)
+        public BlobDownloader(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString, logger, "Download")
         {
         }
 
@@ -27,7 +25,7 @@ namespace Atlas.Common.AzureStorage.Blob
             var containerClient = GetBlobContainer(container);
             var data = await GetBlobData<T>(containerClient, filename);
 
-            EndAzureStorageCommunication(azureStorageEventModel, DownloadLogLabel);
+            EndAzureStorageCommunication(azureStorageEventModel);
 
             return data;
         }
@@ -46,7 +44,7 @@ namespace Atlas.Common.AzureStorage.Blob
                 data.AddRange(await GetBlobData<IEnumerable<T>>(containerClient, blob.Name));
             }
 
-            EndAzureStorageCommunication(azureStorageEventModel, DownloadLogLabel);
+            EndAzureStorageCommunication(azureStorageEventModel);
 
             return data;
         }
