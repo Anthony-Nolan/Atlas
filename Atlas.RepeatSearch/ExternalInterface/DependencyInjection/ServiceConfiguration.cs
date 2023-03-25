@@ -7,7 +7,6 @@ using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.RepeatSearch.Clients;
-using Atlas.RepeatSearch.Clients.AzureStorage;
 using Atlas.RepeatSearch.Services.Search;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +17,7 @@ using Atlas.RepeatSearch.Data.Context;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
 using ConnectionStrings = Atlas.RepeatSearch.Data.Settings.ConnectionStrings;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 
 namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
 {
@@ -27,6 +27,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, RepeatSearch.Settings.Azure.AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchMatchingAlgorithmAzureStorageSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings,
@@ -41,15 +42,15 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             services.RegisterSettings(
                 fetchApplicationInsightsSettings,
                 fetchAzureStorageSettings,
+                fetchMatchingAlgorithmAzureStorageSettings,
                 fetchMessagingServiceBusSettings,
                 fetchRepeatSqlConnectionString);
             
-            services.RegisterServices(fetchRepeatSqlConnectionString);
+            services.RegisterServices(fetchRepeatSqlConnectionString, fetchAzureStorageSettings);
 
             services.RegisterSearch(
                 fetchApplicationInsightsSettings,
-                // Matching algorithm doesn't require an azure storage connection, as results upload is handled by repeat search.
-                _ => new AzureStorageSettings(),
+                fetchMatchingAlgorithmAzureStorageSettings,
                 fetchHlaMetadataDictionarySettings,
                 fetchMacDictionarySettings,
                 // Matching algorithm doesn't require a service bus setting as results notifications are handled by repeat search.
@@ -68,17 +69,22 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, RepeatSearch.Settings.Azure.AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchMatchingAlgorithmAzureStorageSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, string> fetchRepeatSqlConnectionString)
         {
             services.MakeSettingsAvailableForUse(fetchApplicationInsightsSettings);
             services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
+            services.MakeSettingsAvailableForUse(fetchMatchingAlgorithmAzureStorageSettings);
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
 
             services.AddSingleton(sp => new ConnectionStrings {RepeatSearchSqlConnectionString = fetchRepeatSqlConnectionString(sp)});
         }
 
-        private static void RegisterServices(this IServiceCollection services, Func<IServiceProvider, string> fetchRepeatSqlConnectionString)
+        private static void RegisterServices(
+            this IServiceCollection services, 
+            Func<IServiceProvider, string> fetchRepeatSqlConnectionString, 
+            Func<IServiceProvider, Settings.Azure.AzureStorageSettings> fetchAzureStorageSettings)
         {
             services.AddScoped<IOriginalSearchResultSetTracker, OriginalSearchResultSetTracker>();
             services.AddSingleton<IBlobDownloader>(sp =>
@@ -94,8 +100,13 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
 
             services.AddScoped<IRepeatSearchDispatcher, RepeatSearchDispatcher>();
             services.AddScoped<IRepeatSearchRunner, RepeatSearchRunner>();
-            services.AddScoped<IRepeatSearchResultsBlobStorageClient, RepeatSearchResultsBlobStorageClient>();
             services.AddScoped<IRepeatSearchServiceBusClient, RepeatSearchServiceBusClient>();
+            services.AddScoped<ISearchResultsBlobStorageClient, SearchResultsBlobStorageClient>(sp =>
+            {
+                var settings = fetchAzureStorageSettings(sp);
+                var logger = sp.GetService<IMatchingAlgorithmSearchLogger>();
+                return new SearchResultsBlobStorageClient(settings.ConnectionString, settings.SearchResultsBatchSize, logger);
+            });
 
             services.AddScoped<IRepeatSearchValidator, RepeatSearchValidator>();
             

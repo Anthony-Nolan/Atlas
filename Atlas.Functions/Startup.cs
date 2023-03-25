@@ -7,6 +7,7 @@ using Atlas.Functions.Config;
 using Atlas.Functions.Services;
 using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
@@ -87,8 +88,13 @@ namespace Atlas.Functions
             services.RegisterAtlasLogger(OptionsReaderFor<ApplicationInsightsSettings>());
             services.AddScoped<IMatchPredictionInputBuilder, MatchPredictionInputBuilder>();
             services.AddScoped<IResultsCombiner, ResultsCombiner>();
-            services.AddScoped<IResultsUploader, ResultsUploader>();
             services.AddScoped<ISearchCompletionMessageSender, SearchCompletionMessageSender>();
+            services.AddScoped<ISearchResultsBlobStorageClient, SearchResultsBlobStorageClient>(sp =>
+            {
+                var settings = sp.GetService<IOptions<Settings.AzureStorageSettings>>().Value;
+                var logger = sp.GetService<ILogger>();
+                return new SearchResultsBlobStorageClient(settings.MatchingConnectionString, settings.SearchResultsBatchSize, logger);
+            });
             services.AddSingleton<IMatchingResultsDownloader, MatchingResultsDownloader>(sp =>
             {
                 var logger = sp.GetService<ILogger>();

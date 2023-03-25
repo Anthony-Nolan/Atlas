@@ -19,7 +19,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
 
         public async Task UploadResult(string fileName, MatchProbabilityResponse matchProbabilityResponse)
         {
-            using (Logger.RunTimed("Uploading match prediction results", LogLevel.Verbose))
+            using (logger.RunTimed("Uploading match prediction results", LogLevel.Verbose))
             {
                 var serialisedResult = JsonConvert.SerializeObject(matchProbabilityResponse);
                 await Upload(ResultsContainer, fileName, serialisedResult);

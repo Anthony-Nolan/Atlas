@@ -4,15 +4,19 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.Common.AzureStorage.Blob;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.Functions.Models;
 using Atlas.Functions.Services;
 using Atlas.Functions.Services.BlobStorageClients;
+using Atlas.Functions.Settings;
 using Atlas.MatchPrediction.ExternalInterface;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Options;
 
 namespace Atlas.Functions.DurableFunctions.Search.Activity
 {
@@ -28,10 +32,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         private readonly IMatchPredictionInputBuilder matchPredictionInputBuilder;
         private readonly ISearchCompletionMessageSender searchCompletionMessageSender;
         private readonly IMatchingResultsDownloader matchingResultsDownloader;
-        private readonly IResultsUploader searchResultsBlobUploader;
+        private readonly ISearchResultsBlobStorageClient searchResultsBlobUploader;
         private readonly IResultsCombiner resultsCombiner;
         private readonly ILogger logger;
         private readonly IMatchPredictionRequestBlobClient matchPredictionRequestBlobClient;
+        private readonly AzureStorageSettings azureStorageSettings;
 
         public SearchActivityFunctions(
             // Donor Import services
@@ -41,10 +46,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             IMatchPredictionInputBuilder matchPredictionInputBuilder,
             ISearchCompletionMessageSender searchCompletionMessageSender,
             IMatchingResultsDownloader matchingResultsDownloader,
-            IResultsUploader searchResultsBlobUploader,
+            ISearchResultsBlobStorageClient searchResultsBlobUploader,
             IResultsCombiner resultsCombiner,
             ILogger logger,
-            IMatchPredictionRequestBlobClient matchPredictionRequestBlobClient)
+            IMatchPredictionRequestBlobClient matchPredictionRequestBlobClient,
+            IOptions<AzureStorageSettings> azureStorageSettings)
         {
             this.donorReader = donorReader;
             this.matchPredictionAlgorithm = matchPredictionAlgorithm;
@@ -55,6 +61,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             this.resultsCombiner = resultsCombiner;
             this.logger = logger;
             this.matchPredictionRequestBlobClient = matchPredictionRequestBlobClient;
+            this.azureStorageSettings = azureStorageSettings.Value;
         }
 
         [FunctionName(nameof(PrepareMatchPredictionBatches))]
@@ -133,7 +140,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 parameters.MatchPredictionResultLocations,
                 parameters.MatchingResultsNotification.ElapsedTime
             );
-            
+
+            resultSet.BlobStorageContainerName = resultSet.IsRepeatSearchSet ? azureStorageSettings.RepeatSearchResultsBlobContainer : azureStorageSettings.SearchResultsBlobContainer;
+            resultSet.BatchedResult = azureStorageSettings.ShouldBatchResults;
+
             await searchResultsBlobUploader.UploadResults(resultSet, matchingResultsNotification.BatchFolderName);
             await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated);
         }
