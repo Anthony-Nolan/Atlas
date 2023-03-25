@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.AzureStorage.Blob;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
-using Atlas.MatchingAlgorithm.Clients.AzureStorage;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
@@ -30,18 +30,18 @@ namespace Atlas.MatchingAlgorithm.Services.Search
     {
         private readonly ISearchServiceBusClient searchServiceBusClient;
         private readonly ISearchService searchService;
-        private readonly IResultsBlobStorageClient resultsBlobStorageClient;
+        private readonly ISearchResultsBlobStorageClient resultsBlobStorageClient;
         private readonly ILogger searchLogger;
         private readonly MatchingAlgorithmSearchLoggingContext searchLoggingContext;
         private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
         private readonly IMatchingFailureNotificationSender matchingFailureNotificationSender;
-        private readonly bool resultsBatched;
         private readonly int searchRequestMaxRetryCount;
+        private readonly AzureStorageSettings azureStorageSettings;
 
         public SearchRunner(
             ISearchServiceBusClient searchServiceBusClient,
             ISearchService searchService,
-            IResultsBlobStorageClient resultsBlobStorageClient,
+            ISearchResultsBlobStorageClient resultsBlobStorageClient,
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchingAlgorithmSearchLogger searchLogger,
             MatchingAlgorithmSearchLoggingContext searchLoggingContext,
@@ -58,7 +58,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
             this.matchingFailureNotificationSender = matchingFailureNotificationSender;
             searchRequestMaxRetryCount = messagingServiceBusSettings.SearchRequestsMaxDeliveryCount;
-            resultsBatched = azureStorageSettings.ShouldBatchResults;
+            this.azureStorageSettings = azureStorageSettings;
         }
 
         public async Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest, int attemptNumber)
@@ -77,19 +77,18 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 var results = (await searchService.Search(identifiedSearchRequest.SearchRequest, null)).ToList();
                 stopwatch.Stop();
 
-                var blobContainerName = resultsBlobStorageClient.GetResultsContainerName();
-
                 var searchResultSet = new OriginalMatchingAlgorithmResultSet
                 {
                     SearchRequestId = searchRequestId,
                     Results = results,
                     TotalResults = results.Count,
                     MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
-                    BlobStorageContainerName = blobContainerName,
-                    SearchRequest = identifiedSearchRequest.SearchRequest
+                    BlobStorageContainerName = azureStorageSettings.SearchResultsBlobContainer,
+                    SearchRequest = identifiedSearchRequest.SearchRequest,
+                    BatchedResult = azureStorageSettings.ShouldBatchResults
                 };
 
-                await resultsBlobStorageClient.UploadResults(searchResultSet);
+                await resultsBlobStorageClient.UploadResults(searchResultSet, searchResultSet.SearchRequestId);
 
                 var notification = new MatchingResultsNotification
                 {
@@ -99,11 +98,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
                     WasSuccessful = true,
                     NumberOfResults = results.Count,
-                    BlobStorageContainerName = blobContainerName,
+                    BlobStorageContainerName = azureStorageSettings.SearchResultsBlobContainer,
                     ResultsFileName = searchResultSet.ResultsFileName,
                     ElapsedTime = stopwatch.Elapsed,
-                    ResultsBatched = resultsBatched,
-                    BatchFolderName = resultsBatched && results.Any() ? searchRequestId : null
+                    ResultsBatched = azureStorageSettings.ShouldBatchResults,
+                    BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? searchRequestId : null
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
             }

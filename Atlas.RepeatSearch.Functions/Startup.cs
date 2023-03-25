@@ -22,6 +22,7 @@ namespace Atlas.RepeatSearch.Functions
             builder.Services.RegisterRepeatSearch(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<RepeatSearch.Settings.Azure.AzureStorageSettings>(),
+                OptionsReaderFor<MatchingAlgorithm.Settings.Azure.AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MatchingConfigurationSettings>(),
@@ -39,6 +40,7 @@ namespace Atlas.RepeatSearch.Functions
         {
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<RepeatSearch.Settings.Azure.AzureStorageSettings>("AzureStorage");
+            services.RegisterAsOptions<MatchingAlgorithm.Settings.Azure.AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
             services.RegisterAsOptions<MatchingConfigurationSettings>("MatchingConfiguration");

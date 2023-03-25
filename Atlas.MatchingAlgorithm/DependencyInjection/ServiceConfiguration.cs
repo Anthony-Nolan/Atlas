@@ -1,5 +1,6 @@
 using System;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Matching.Services;
@@ -11,7 +12,6 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
-using Atlas.MatchingAlgorithm.Clients.AzureStorage;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Config;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
@@ -158,7 +158,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
 
-            services.RegisterSearchServices(fetchMatchingConfigurationSettings);
+            services.RegisterSearchServices(fetchMatchingConfigurationSettings, fetchAzureStorageSettings);
         }
 
 
@@ -264,10 +264,12 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         /// </summary>
         private static void RegisterSearchServices(
             this IServiceCollection services,
-            Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings)
+            Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
         {
             services.RegisterSettingsForMatching(
-                fetchMatchingConfigurationSettings
+                fetchMatchingConfigurationSettings,
+                fetchAzureStorageSettings
             );
 
             services.AddScoped<ISearchService, SearchService>();
@@ -304,7 +306,13 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>();
             services.AddScoped<ISearchDispatcher, SearchDispatcher>();
             services.AddScoped<ISearchRunner, SearchRunner>();
-            services.AddScoped<IResultsBlobStorageClient, ResultsBlobStorageClient>();
+            services.AddScoped<ISearchResultsBlobStorageClient, SearchResultsBlobStorageClient>(sp =>
+            {
+                var settings = fetchAzureStorageSettings(sp);
+                var logger = sp.GetService<IMatchingAlgorithmSearchLogger>();
+                return new SearchResultsBlobStorageClient(settings.ConnectionString, settings.SearchResultsBatchSize, logger);
+            });
+
 
             // Repositories
             services.AddScoped<IScoringWeightingRepository, ScoringWeightingRepository>();
@@ -403,9 +411,11 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
         private static void RegisterSettingsForMatching(
             this IServiceCollection services,
-            Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings)
+            Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
         {
             services.MakeSettingsAvailableForUse(fetchMatchingConfigurationSettings);
+            services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
         }
 
         private static void RegisterSettingsForDataRefresh(
