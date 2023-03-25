@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.ResultSet;
+using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils.Http;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
-using Atlas.MatchingAlgorithm.Clients.AzureStorage;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
@@ -32,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         private ISearchServiceBusClient searchServiceBusClient;
         private ISearchService searchService;
         private ISearchService batchedResultsSearchService;
-        private IResultsBlobStorageClient resultsBlobStorageClient;
+        private ISearchResultsBlobStorageClient resultsBlobStorageClient;
         private IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
         private IMatchingFailureNotificationSender matchingFailureNotificationSender;
 
@@ -44,7 +44,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         {
             searchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
             searchService = Substitute.For<ISearchService>();
-            resultsBlobStorageClient = Substitute.For<IResultsBlobStorageClient>();
+            resultsBlobStorageClient = Substitute.For<ISearchResultsBlobStorageClient>();
             hlaNomenclatureVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
             var logger = Substitute.For<IMatchingAlgorithmSearchLogger>();
             matchingFailureNotificationSender = Substitute.For<IMatchingFailureNotificationSender>();
@@ -87,13 +87,23 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         }
 
         [Test]
-        public async Task RunSearch_StoresResultsInBlobStorage()
+        public async Task RunSearch_WhenResultsAreNotBatched_StoresResultsInBlobStorage()
         {
             const string id = "id";
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default);
 
-            await resultsBlobStorageClient.Received().UploadResults(Arg.Any<ResultSet<MatchingAlgorithmResult>>());
+            await resultsBlobStorageClient.Received().UploadResults(Arg.Is<ResultSet<MatchingAlgorithmResult>>(r => !r.BatchedResult), id);
+        }
+
+        [Test]
+        public async Task RunSearch_WhenResultsAreBatched_StoresResultsInBlobStorage()
+        {
+            const string id = "id";
+
+            await batchedResultsSearchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default);
+
+            await resultsBlobStorageClient.Received().UploadResults(Arg.Is<ResultSet<MatchingAlgorithmResult>>(r => r.BatchedResult), id);
         }
 
         [Test]
