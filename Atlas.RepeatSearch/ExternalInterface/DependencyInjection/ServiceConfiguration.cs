@@ -50,6 +50,8 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
 
             services.RegisterSearch(
                 fetchApplicationInsightsSettings,
+                // Only passing in azure storage settings here to avoid build errors - results upload is handled by repeat search.
+                // TODO #924: Clean up registration of search services needed for repeat search
                 fetchMatchingAlgorithmAzureStorageSettings,
                 fetchHlaMetadataDictionarySettings,
                 fetchMacDictionarySettings,
