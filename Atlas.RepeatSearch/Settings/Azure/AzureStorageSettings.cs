@@ -1,11 +1,10 @@
-﻿namespace Atlas.RepeatSearch.Settings.Azure
+﻿using Atlas.Common.AzureStorage.Blob;
+
+namespace Atlas.RepeatSearch.Settings.Azure
 {
-    public class AzureStorageSettings
+    public class AzureStorageSettings : SearchResultsUploadSettings
     {
         public string ConnectionString { get; set; }
         public string MatchingResultsBlobContainer { get; set; }
-        public int SearchResultsBatchSize { get; set; }
-
-        public bool ShouldBatchResults => SearchResultsBatchSize > 0;
     }
 }

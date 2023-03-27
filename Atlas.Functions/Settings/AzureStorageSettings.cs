@@ -1,6 +1,8 @@
+using Atlas.Common.AzureStorage.Blob;
+
 namespace Atlas.Functions.Settings
 {
-    public class AzureStorageSettings
+    public class AzureStorageSettings : SearchResultsUploadSettings
     {
         public string MatchingConnectionString { get; set; }
         public string MatchingResultsBlobContainer { get; set; }
@@ -11,8 +13,5 @@ namespace Atlas.Functions.Settings
         public string MatchPredictionConnectionString { get; set; }
         public string MatchPredictionRequestsBlobContainer { get; set; }
         public string MatchPredictionResultsBlobContainer { get; set; }
-        public int SearchResultsBatchSize { get; set; }
-
-        public bool ShouldBatchResults => SearchResultsBatchSize > 0;
     }
 }

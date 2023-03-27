@@ -23,6 +23,7 @@ namespace Atlas.Common.AzureStorage.Blob
 
         public async Task UploadResults<T>(ResultSet<T> searchResultSet, string batchFolder) where T : Result
         {
+            // Results will not be serialised if results are being batched
             var serialisedResults = JsonConvert.SerializeObject(searchResultSet);
             await Upload(searchResultSet.BlobStorageContainerName, searchResultSet.ResultsFileName, serialisedResults);
 
