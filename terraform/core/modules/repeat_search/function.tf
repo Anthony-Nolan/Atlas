@@ -16,13 +16,13 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
   tags = var.general.common_tags
 
   app_settings = {
-    "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
+    "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
     "AzureFunctionsJobHost__extensions__serviceBus__messageHandlerOptions__maxConcurrentCalls" = var.MAX_CONCURRENT_SERVICEBUS_FUNCTIONS
 
     "AzureStorage:ConnectionString"             = var.azure_storage.primary_connection_string
     "AzureStorage:MatchingResultsBlobContainer" = azurerm_storage_container.repeat_search_matching_results_container.name
-    "AzureStorage:BatchSize"                    = var.RESULTS_BATCH_SIZE
+    "AzureStorage:SearchResultsBatchSize"       = var.RESULTS_BATCH_SIZE
 
     "HlaMetadataDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
 
