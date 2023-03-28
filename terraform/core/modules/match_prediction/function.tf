@@ -10,13 +10,13 @@ resource "azurerm_windows_function_app" "atlas_match_prediction_function" {
   client_certificate_mode     = "Required"
   https_only                  = true
   functions_extension_version = "~4"
-  storage_account_access_key = var.shared_function_storage.primary_access_key
-  storage_account_name       = var.shared_function_storage.name
+  storage_account_access_key  = var.shared_function_storage.primary_access_key
+  storage_account_name        = var.shared_function_storage.name
 
   tags = var.general.common_tags
 
   app_settings = {
-    "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
+    "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
     "AzureStorage:ConnectionString"                    = var.azure_storage.primary_connection_string
     "AzureStorage:MatchPredictionResultsBlobContainer" = azurerm_storage_container.match_prediction_results_container.name

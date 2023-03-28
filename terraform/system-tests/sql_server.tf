@@ -15,7 +15,7 @@ resource "azurerm_mssql_server" "atlas_sql_server" {
     tenant_id                   = var.DATABASE_SERVER_AZUREAD_ADMINISTRATOR_TENANTID
   }
 
-    lifecycle {
+  lifecycle {
     prevent_destroy = true
     ignore_changes  = [administrator_login_password]
   }

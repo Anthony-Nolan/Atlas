@@ -5,6 +5,6 @@ resource "azurerm_storage_container" "donor_blob_storage" {
 }
 
 locals {
-  donor_id_checker_results_container_name = "donor-id-checker/results"
+  donor_id_checker_results_container_name   = "donor-id-checker/results"
   donor_info_checker_results_container_name = "donor-info-checker/results"
 }

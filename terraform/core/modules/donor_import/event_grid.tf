@@ -4,20 +4,20 @@ resource "azurerm_eventgrid_event_subscription" "donor-file-upload-to-service-bu
   included_event_types = [
     "Microsoft.Storage.BlobCreated"
   ]
-  
+
   advanced_filter {
-	string_begins_with {
-		key = "subject"
-		values = ["/blobServices/default/containers/${azurerm_storage_container.donor_blob_storage.name}"]
-	}
-	string_not_begins_with {
-		key = "subject"
-		values = [
-		  "/blobServices/default/containers/${azurerm_storage_container.donor_blob_storage.name}/blobs/donor-id-checker",
-		  "/blobServices/default/containers/${azurerm_storage_container.donor_blob_storage.name}/blobs/donor-info-checker"
-		]
-	}
-  }  
+    string_begins_with {
+      key    = "subject"
+      values = ["/blobServices/default/containers/${azurerm_storage_container.donor_blob_storage.name}"]
+    }
+    string_not_begins_with {
+      key = "subject"
+      values = [
+        "/blobServices/default/containers/${azurerm_storage_container.donor_blob_storage.name}/blobs/donor-id-checker",
+        "/blobServices/default/containers/${azurerm_storage_container.donor_blob_storage.name}/blobs/donor-info-checker"
+      ]
+    }
+  }
 
   service_bus_topic_endpoint_id = azurerm_servicebus_topic.donor-import-file-uploads.id
 }
