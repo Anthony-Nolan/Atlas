@@ -1,10 +1,12 @@
 ﻿using Atlas.DonorImport.FileSchema.Models;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.DonorImport.Validators;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ApplicationInsights;
+using Atlas.DonorImport.ExternalInterface;
 
 namespace Atlas.DonorImport.Services
 {
@@ -14,7 +16,7 @@ namespace Atlas.DonorImport.Services
         /// Categorises donor updates into two groups: "valid" and "invalid", as determined by <see cref="SearchableDonorValidator"/>.
         /// Validation errors are logged as events.
         /// </summary>
-        DonorUpdateCategoriserResults Categorise(IEnumerable<DonorUpdate> donorUpdates);
+        Task<DonorUpdateCategoriserResults> Categorise(IEnumerable<DonorUpdate> donorUpdates);
     }
 
     internal class DonorUpdateCategoriserResults
@@ -32,23 +34,27 @@ namespace Atlas.DonorImport.Services
 
     internal class DonorUpdateCategoriser : IDonorUpdateCategoriser
     {
-        private readonly SearchableDonorValidator searchableDonorValidator;
+        //private readonly SearchableDonorValidator searchableDonorValidator;
         private readonly ILogger logger;
+        private readonly IDonorReader donorReader;
 
-        public DonorUpdateCategoriser(ILogger logger)
+        public DonorUpdateCategoriser(ILogger logger, IDonorReader donorReader)
         {
-            searchableDonorValidator = new SearchableDonorValidator();
+            //searchableDonorValidator = new SearchableDonorValidator();
             this.logger = logger;
+            this.donorReader = donorReader;
         }
         
         /// <inheritdoc />
-        public DonorUpdateCategoriserResults Categorise(IEnumerable<DonorUpdate> donorUpdates)
+        public async Task<DonorUpdateCategoriserResults> Categorise(IEnumerable<DonorUpdate> donorUpdates)
         {
             if (!donorUpdates.Any())
             {
                 return new DonorUpdateCategoriserResults();
             }
 
+            var existingExternalDonorCodes = await donorReader.GetExistingExternalDonorCodes(donorUpdates.Select(d => d.RecordId));
+            var searchableDonorValidator = new SearchableDonorValidator(existingExternalDonorCodes);
             var validationResults = donorUpdates.Select(ValidateDonorIsSearchable).ToList();
             var (validDonors, invalidDonors) = validationResults.ReifyAndSplit(vr => vr.IsValid);
 
@@ -59,19 +65,32 @@ namespace Atlas.DonorImport.Services
                 ValidDonors = validDonors.Select(d => d.DonorUpdate).ToList(),
                 InvalidDonors = invalidDonors.Select(d => d.DonorUpdate).ToList()
             };
-        }
 
-        private SearchableDonorValidationResult ValidateDonorIsSearchable(DonorUpdate donorUpdate)
-        {
-            var validationResult = searchableDonorValidator.Validate(donorUpdate);
-
-            return new SearchableDonorValidationResult
+            SearchableDonorValidationResult ValidateDonorIsSearchable(DonorUpdate donorUpdate)
             {
-                DonorUpdate = donorUpdate,
-                IsValid = validationResult.IsValid,
-                ErrorMessage = !validationResult.IsValid ? string.Join(";", validationResult.Errors.Select(e => e.ErrorMessage)) : null
-            };
+                var validationResult = searchableDonorValidator.Validate(donorUpdate);
+
+                return new SearchableDonorValidationResult
+                {
+                    DonorUpdate = donorUpdate,
+                    IsValid = validationResult.IsValid,
+                    ErrorMessage = !validationResult.IsValid ? string.Join(";", validationResult.Errors.Select(e => e.ErrorMessage)) : null
+                };
+            }
         }
+
+        //private SearchableDonorValidationResult ValidateDonorIsSearchable(DonorUpdate donorUpdate, IReadOnlyCollection<string> externalDonorCodes)
+        //{
+        //    //var validationResult = searchableDonorValidator.Validate(donorUpdate);
+        //    var validationResult = new SearchableDonorValidator(externalDonorCodes).Validate(donorUpdate);
+
+        //    return new SearchableDonorValidationResult
+        //    {
+        //        DonorUpdate = donorUpdate,
+        //        IsValid = validationResult.IsValid,
+        //        ErrorMessage = !validationResult.IsValid ? string.Join(";", validationResult.Errors.Select(e => e.ErrorMessage)) : null
+        //    };
+        //}
 
         private void LogErrors(IEnumerable<SearchableDonorValidationResult> validationResults)
         {

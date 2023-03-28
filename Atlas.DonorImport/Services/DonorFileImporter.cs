@@ -79,7 +79,7 @@ namespace Atlas.DonorImport.Services
 
                 foreach (var donorUpdateBatch in donorUpdates.Skip(donorUpdatesToSkip).Batch(BatchSize))
                 {
-                    var categoriserResults = donorUpdateCategoriser.Categorise(donorUpdateBatch);
+                    var categoriserResults = await donorUpdateCategoriser.Categorise(donorUpdateBatch);
                     var donorUpdatesToApply = donorLogService.FilterDonorUpdatesBasedOnUpdateTime(categoriserResults.ValidDonors, file.UploadTime);
 
                     var reifiedDonorBatch = await donorUpdatesToApply.ToListAsync();

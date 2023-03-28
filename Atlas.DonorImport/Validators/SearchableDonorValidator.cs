@@ -1,4 +1,6 @@
-﻿using Atlas.Common.Public.Models.GeneticData;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.FileSchema.Models;
 using FluentValidation;
@@ -7,13 +9,20 @@ namespace Atlas.DonorImport.Validators
 {
     internal class SearchableDonorValidator : AbstractValidator<DonorUpdate>
     {
-        public SearchableDonorValidator()
+        public SearchableDonorValidator(IReadOnlyCollection<string> externalDonorCodes)
         {
             When(donorUpdate => donorUpdate.ChangeType != ImportDonorChangeType.Delete, () =>
             {
                 RuleFor(d => d.Hla)
                     .NotNull()
                     .SetValidator(new SearchableHlaValidator());
+            });
+
+            When(donorUpdate => donorUpdate.ChangeType == ImportDonorChangeType.Edit, () =>
+            {
+                RuleFor(d => d.RecordId)
+                    .Must(externalDonorCodes.Contains)
+                    .WithMessage("Donor with {PropertyName} '{PropertyValue}' is not presented in the database.");
             });
         }
     }
