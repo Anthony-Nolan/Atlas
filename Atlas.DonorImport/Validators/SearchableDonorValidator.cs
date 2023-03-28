@@ -9,7 +9,7 @@ namespace Atlas.DonorImport.Validators
 {
     internal class SearchableDonorValidator : AbstractValidator<DonorUpdate>
     {
-        public SearchableDonorValidator(IReadOnlyCollection<string> externalDonorCodes)
+        public SearchableDonorValidator(SearchableDonorValidatorContext context)
         {
             When(donorUpdate => donorUpdate.ChangeType != ImportDonorChangeType.Delete, () =>
             {
@@ -21,7 +21,7 @@ namespace Atlas.DonorImport.Validators
             When(donorUpdate => donorUpdate.ChangeType == ImportDonorChangeType.Edit, () =>
             {
                 RuleFor(d => d.RecordId)
-                    .Must(externalDonorCodes.Contains)
+                    .Must(context.ExternalDonorCodes.Contains)
                     .WithMessage("Donor with {PropertyName} '{PropertyValue}' is not presented in the database.");
             });
         }
@@ -96,5 +96,15 @@ namespace Atlas.DonorImport.Validators
                 .When(d => !d.Field2.IsNullOrEmpty())
                 .WithMessage($"Optional locus {locus}, {hlaFieldType}: Field1 cannot be empty when Field2 is provided");
         }
+    }
+    
+    internal class SearchableDonorValidatorContext
+    {
+        public SearchableDonorValidatorContext(IReadOnlyCollection<string> externalDonorCodes)
+        {
+            ExternalDonorCodes = externalDonorCodes;
+        }
+
+        public IReadOnlyCollection<string> ExternalDonorCodes { get; }
     }
 }

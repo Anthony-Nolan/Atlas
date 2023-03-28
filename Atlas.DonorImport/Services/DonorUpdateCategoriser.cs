@@ -34,13 +34,11 @@ namespace Atlas.DonorImport.Services
 
     internal class DonorUpdateCategoriser : IDonorUpdateCategoriser
     {
-        //private readonly SearchableDonorValidator searchableDonorValidator;
         private readonly ILogger logger;
         private readonly IDonorReader donorReader;
 
         public DonorUpdateCategoriser(ILogger logger, IDonorReader donorReader)
         {
-            //searchableDonorValidator = new SearchableDonorValidator();
             this.logger = logger;
             this.donorReader = donorReader;
         }
@@ -54,7 +52,7 @@ namespace Atlas.DonorImport.Services
             }
 
             var existingExternalDonorCodes = await donorReader.GetExistingExternalDonorCodes(donorUpdates.Select(d => d.RecordId));
-            var searchableDonorValidator = new SearchableDonorValidator(existingExternalDonorCodes);
+            var searchableDonorValidator = new SearchableDonorValidator(new SearchableDonorValidatorContext(existingExternalDonorCodes));
             var validationResults = donorUpdates.Select(ValidateDonorIsSearchable).ToList();
             var (validDonors, invalidDonors) = validationResults.ReifyAndSplit(vr => vr.IsValid);
 
@@ -78,19 +76,6 @@ namespace Atlas.DonorImport.Services
                 };
             }
         }
-
-        //private SearchableDonorValidationResult ValidateDonorIsSearchable(DonorUpdate donorUpdate, IReadOnlyCollection<string> externalDonorCodes)
-        //{
-        //    //var validationResult = searchableDonorValidator.Validate(donorUpdate);
-        //    var validationResult = new SearchableDonorValidator(externalDonorCodes).Validate(donorUpdate);
-
-        //    return new SearchableDonorValidationResult
-        //    {
-        //        DonorUpdate = donorUpdate,
-        //        IsValid = validationResult.IsValid,
-        //        ErrorMessage = !validationResult.IsValid ? string.Join(";", validationResult.Errors.Select(e => e.ErrorMessage)) : null
-        //    };
-        //}
 
         private void LogErrors(IEnumerable<SearchableDonorValidationResult> validationResults)
         {
