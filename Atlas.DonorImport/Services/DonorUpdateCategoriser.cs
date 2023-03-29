@@ -7,6 +7,7 @@ using Atlas.DonorImport.Validators;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.ExternalInterface;
+using Atlas.DonorImport.Data.Repositories;
 
 namespace Atlas.DonorImport.Services
 {
@@ -35,12 +36,12 @@ namespace Atlas.DonorImport.Services
     internal class DonorUpdateCategoriser : IDonorUpdateCategoriser
     {
         private readonly ILogger logger;
-        private readonly IDonorReader donorReader;
+        private readonly IDonorReadRepository donorReadRepository;
 
-        public DonorUpdateCategoriser(ILogger logger, IDonorReader donorReader)
+        public DonorUpdateCategoriser(ILogger logger, IDonorReadRepository donorReadRepository)
         {
             this.logger = logger;
-            this.donorReader = donorReader;
+            this.donorReadRepository = donorReadRepository;
         }
         
         /// <inheritdoc />
@@ -51,7 +52,7 @@ namespace Atlas.DonorImport.Services
                 return new DonorUpdateCategoriserResults();
             }
 
-            var existingExternalDonorCodes = await donorReader.GetExistingExternalDonorCodes(donorUpdates.Select(d => d.RecordId));
+            var existingExternalDonorCodes = await donorReadRepository.GetExistingExternalDonorCodes(donorUpdates.Select(d => d.RecordId));
             var searchableDonorValidator = new SearchableDonorValidator(new SearchableDonorValidatorContext(existingExternalDonorCodes));
             var validationResults = donorUpdates.Select(ValidateDonorIsSearchable).ToList();
             var (validDonors, invalidDonors) = validationResults.ReifyAndSplit(vr => vr.IsValid);

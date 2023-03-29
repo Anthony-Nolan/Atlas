@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.DonorImport.ApplicationInsights;
-using Atlas.DonorImport.ExternalInterface;
+using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
@@ -18,15 +18,15 @@ namespace Atlas.DonorImport.Test.Services
     {
         private IDonorUpdateCategoriser categoriser;
         private ILogger logger;
-        private IDonorReader donorReader;
+        private IDonorReadRepository donorReadRepository;
 
 
         [SetUp]
         public void SetUp()
         {
             logger = Substitute.For<ILogger>();
-            donorReader = Substitute.For<IDonorReader>();
-            categoriser = new DonorUpdateCategoriser(logger, donorReader);
+            donorReadRepository = Substitute.For<IDonorReadRepository>();
+            categoriser = new DonorUpdateCategoriser(logger, donorReadRepository);
         }
 
         [Test]
@@ -65,7 +65,7 @@ namespace Atlas.DonorImport.Test.Services
 
             await categoriser.Categorise(new [] { donorUpdate });
 
-            await donorReader.Received().GetExistingExternalDonorCodes(Arg.Is<IEnumerable<string>>(l => l.Contains(donorUpdate.RecordId)));
+            await donorReadRepository.Received().GetExistingExternalDonorCodes(Arg.Is<IEnumerable<string>>(l => l.Contains(donorUpdate.RecordId)));
         }
     }
 }

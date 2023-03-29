@@ -68,6 +68,8 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
 
             services.AddScoped<IPublishableDonorUpdatesInspectionRepository>(sp =>
                 new PublishableDonorUpdatesInspectionRepository(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
+
+            //services.AddScoped<IDonorReadRepository>(sp => new DonorReadRepository(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
         }
 
         private static void SetUpConfiguration(IServiceCollection services)
@@ -98,13 +100,21 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
             services.AddScoped(sp => Substitute.For<ILogger>());
             services.AddScoped(sp => Substitute.For<IMessageBatchPublisher<SearchableDonorUpdate>>());
 
-            var mockDonorReader = Substitute.For<IDonorReader>();
-            mockDonorReader.GetExistingExternalDonorCodes(default).ReturnsForAnyArgs((call) =>
-            {
-                var donorRecordIds = call.Arg<IEnumerable<string>>();
-                return donorRecordIds.ToList();
-            });
-            services.AddScoped(sp => mockDonorReader);
+            //var mockDonorReader = Substitute.For<IDonorReader>();
+            //mockDonorReader.GetExistingExternalDonorCodes(default).ReturnsForAnyArgs((call) =>
+            //{
+            //    var donorRecordIds = call.Arg<IEnumerable<string>>();
+            //    return donorRecordIds.ToList();
+            //});
+            //services.AddScoped(sp => mockDonorReader);
+
+            //var mockDonorReadRepository = Substitute.For<IDonorReadRepository>();
+            //mockDonorReadRepository.GetExistingExternalDonorCodes(default).ReturnsForAnyArgs((call) =>
+            //{
+            //    var donorRecordIds = call.Arg<IEnumerable<string>>();
+            //    return donorRecordIds.ToList();
+            //});
+            //services.AddScoped(sp => mockDonorReadRepository);
         }
 
         private static void ThrowIfInTransaction()
