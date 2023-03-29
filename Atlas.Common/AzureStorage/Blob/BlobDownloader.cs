@@ -10,6 +10,7 @@ namespace Atlas.Common.AzureStorage.Blob
     {
         Task<T> Download<T>(string container, string filename);
         Task<IEnumerable<T>> DownloadFolderContents<T>(string container, string folderName);
+        Task<Dictionary<int, T>> DownloadMultipleBlobs<T>(string container, IReadOnlyDictionary<int, string> locations);
     }
     
     public class BlobDownloader : AzureStorageBlobClient, IBlobDownloader
@@ -42,6 +43,24 @@ namespace Atlas.Common.AzureStorage.Blob
             await foreach (var blob in blobs)
             {
                 data.AddRange(await GetBlobData<IEnumerable<T>>(containerClient, blob.Name));
+            }
+
+            EndAzureStorageCommunication(azureStorageEventModel);
+
+            return data;
+        }
+
+        public async Task<Dictionary<int, T>> DownloadMultipleBlobs<T>(string container, IReadOnlyDictionary<int, string> locations)
+        {
+            var data = new Dictionary<int, T>();
+
+            var azureStorageEventModel = StartAzureStorageCommunication(container, container);
+
+            var containerClient = GetBlobContainer(container);
+
+            foreach (var location in locations)
+            {
+                data[location.Key] = await GetBlobData<T>(containerClient, location.Value);
             }
 
             EndAzureStorageCommunication(azureStorageEventModel);

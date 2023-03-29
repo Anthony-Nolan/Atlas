@@ -25,7 +25,7 @@ namespace Atlas.Common.AzureStorage.Blob
             EndAzureStorageCommunication(azureStorageEventModel);
         }
 
-        public async Task BatchUpload<T>(IEnumerable<T> list, int batchSize, string blobContainer, string blobFolder)
+        public async Task ChunkAndUpload<T>(IEnumerable<T> list, int batchSize, string blobContainer, string blobFolder)
         {
             var azureStorageEventModel = StartAzureStorageCommunication(blobFolder, blobContainer);
 
@@ -36,6 +36,21 @@ namespace Atlas.Common.AzureStorage.Blob
             {
                 var serializedBatch = JsonConvert.SerializeObject(batch);
                 await UploadBlob(containerClient, $"{blobFolder}/{++batchNumber}.json", serializedBatch);
+            }
+
+            EndAzureStorageCommunication(azureStorageEventModel);
+        }
+
+        public async Task UploadMultiple<T>(string blobContainer, Dictionary<string, T> fileContentsWithNames)
+        {
+            var azureStorageEventModel = StartAzureStorageCommunication(blobContainer, blobContainer);
+
+            var containerClient = await CreateAndGetBlobContainer(blobContainer);
+
+            foreach (var file in fileContentsWithNames)
+            {
+                var fileContent = JsonConvert.SerializeObject(file.Value);
+                await UploadBlob(containerClient, file.Key, fileContent);
             }
 
             EndAzureStorageCommunication(azureStorageEventModel);

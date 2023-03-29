@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
-using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
@@ -93,14 +92,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 
             using (logger.RunTimed("Uploading match prediction requests"))
             {
-                var matchPredictionRequestFileNames = new List<string>();
-                foreach (var matchPredictionInput in matchPredictionInputs)
-                {
-                    var fileName = await matchPredictionRequestBlobClient.UploadBatchRequest(matchingResultsNotification.SearchRequestId,
-                        matchPredictionInput);
-                    matchPredictionRequestFileNames.Add(fileName);
-                }
-
+                var matchPredictionRequestFileNames = await matchPredictionRequestBlobClient.UploadBatchRequests(matchingResultsNotification.SearchRequestId, matchPredictionInputs.ToList());
+                
                 return new TimedResultSet<IList<string>>
                 {
                     ElapsedTime = stopwatch.Elapsed,

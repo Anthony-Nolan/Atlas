@@ -10,6 +10,7 @@ using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using LoggingStopwatch;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.MatchPrediction.ExternalInterface
 {
@@ -66,11 +67,8 @@ namespace Atlas.MatchPrediction.ExternalInterface
                     using (logger.RunTimed("Run Match Prediction Algorithm per donor"))
                     {
                         var result = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
-                        foreach (var donorId in matchProbabilityInput.Donor.DonorIds)
-                        {
-                            var fileName = await resultUploader.UploadSearchDonorResult(searchRequestId, donorId, result);
-                            fileNames[donorId] = fileName;
-                        }
+                        var matchProbabilityInputFileNames = await resultUploader.UploadSearchDonorResults(searchRequestId, matchProbabilityInput.Donor.DonorIds, result);
+                        fileNames = EnumerableExtensions.ToDictionary(fileNames.Merge(matchProbabilityInputFileNames));
                     }
                 }
 

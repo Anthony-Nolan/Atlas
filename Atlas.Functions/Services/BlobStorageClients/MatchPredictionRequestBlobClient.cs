@@ -1,16 +1,18 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.Common.Utils.Extensions;
 using Atlas.Functions.Settings;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 
 namespace Atlas.Functions.Services.BlobStorageClients
 {
     public interface IMatchPredictionRequestBlobClient
     {
-        Task<string> UploadBatchRequest(string searchRequestId, MultipleDonorMatchProbabilityInput batchRequest);
+        Task<List<string>> UploadBatchRequests(string searchRequestId, IEnumerable<MultipleDonorMatchProbabilityInput> batchRequests);
         Task<MultipleDonorMatchProbabilityInput> DownloadBatchRequest(string blobLocation);
     }
 
@@ -27,13 +29,11 @@ namespace Atlas.Functions.Services.BlobStorageClients
             container = azureStorageSettings.Value.MatchPredictionRequestsBlobContainer;
         }
 
-        /// <inheritdoc />
-        public async Task<string> UploadBatchRequest(string searchRequestId, MultipleDonorMatchProbabilityInput batchRequest)
+        public async Task<List<string>> UploadBatchRequests(string searchRequestId, IEnumerable<MultipleDonorMatchProbabilityInput> batchRequests)
         {
-            var serialisedResult = JsonConvert.SerializeObject(batchRequest);
-            var fileName = $"{searchRequestId}/{batchRequest.MatchProbabilityRequestId}.json";
-            await blobUploader.Upload(container, fileName, serialisedResult);
-            return fileName;
+            var batchRequestsWithNames = batchRequests.Select(r => new KeyValuePair<string, MultipleDonorMatchProbabilityInput>($"{searchRequestId}/{r.MatchProbabilityRequestId}.json", r)).ToDictionary();
+            await blobUploader.UploadMultiple(container, batchRequestsWithNames);
+            return batchRequestsWithNames.Select(f => f.Key).ToList();
         }
 
         /// <inheritdoc />

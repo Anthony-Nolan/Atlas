@@ -14,7 +14,6 @@ using Atlas.Functions.Models;
 using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.Functions.Settings;
 using Microsoft.Extensions.Options;
-using MoreLinq.Extensions;
 
 namespace Atlas.Functions.Services
 {
@@ -88,19 +87,7 @@ namespace Atlas.Functions.Services
             using (logger.RunTimed("Download match prediction algorithm results"))
             {
                 logger.SendTrace($"{matchPredictionResultLocations.Count} donor results to download");
-
-                var results = new List<KeyValuePair<int, MatchProbabilityResponse>>();
-
-                // Batch downloads to avoid using too many outbound connections
-                foreach (var resultLocationBatch in matchPredictionResultLocations.Batch(100))
-                {
-                    var resultBatch = await Task.WhenAll(resultLocationBatch.Select(async l =>
-                        new KeyValuePair<int, MatchProbabilityResponse>(l.Key, await matchPredictionResultsDownloader.Download(l.Value)))
-                    );
-                    results.AddRange(resultBatch);
-                }
-
-                return results.ToList().ToDictionary();
+                return await matchPredictionResultsDownloader.Download(matchPredictionResultLocations);
             }
         }
     }

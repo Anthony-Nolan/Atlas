@@ -109,7 +109,7 @@ namespace Atlas.Functions
                 var options = sp.GetService<IOptions<Settings.AzureStorageSettings>>();
                 var connectionString = options.Value.MatchPredictionConnectionString;
                 var downloader = new BlobDownloader(connectionString, logger);
-                return new MatchPredictionResultsDownloader(options, downloader, logger);
+                return new MatchPredictionResultsDownloader(options, downloader);
             });
             services.AddScoped<IMatchPredictionRequestBlobClient, MatchPredictionRequestBlobClient>();
 
