@@ -6,7 +6,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.DonorImport.Validators;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ApplicationInsights;
-using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.Data.Repositories;
 
 namespace Atlas.DonorImport.Services

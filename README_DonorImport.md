@@ -97,10 +97,12 @@ Final command on multiple lines (for ease of reading):
 
 The three operations - create, update and delete - will cause problems if the files are processed in an incorrect order. The following table explains the outcomes we expect.
 
+[^1]: Invalid donor update is logged, rest file is continue to be processed.
+
 | File 1  | File 2 | Behaviour if in order | Behaviour if out of order     | Notes                                                                                                  |
 |---------|--------|-----------------------|-------------------------------|--------------------------------------------------------------------------------------------------------|
 | Create  | Create | Error                 | Error                         | The first create will work correctly, then throw an error on the second import, not changing the data  |
-| Create  | Update | Updated donor         | Error, then out of date donor | This will throw an error and update support, and the donor will be out of date.                        |
+| Create  | Update | Updated donor         | AI logged[^1], then out of date donor | This will not throw an error and the donor will be out of date.                        |
 | Create  | Upsert | Updated donor         | Error                         | The first upsert operation will create donor correctly, then throw an error on the attempt to create the same donor, not changing the data |
 | Create  | Delete | No change             | Error, then out of date donor | Error attempting to delete non-existing donor, then will create donor in the database that shouldn't be there   |
 | Create* | Delete | Error, donor deleted  | Donor deleted & recreated     | *Where donor already existed. in the out-of-order case this donor should not be present, but is        |
@@ -114,7 +116,7 @@ The three operations - create, update and delete - will cause problems if the fi
 | Upsert  | Upsert | 2nd update stands     | 1st update stands             | We guard against this. Updates will not be applied if the upload time is before the most recent update |
 | Upsert  | Delete | No donor              | Donor deleted & recreated     | In the out-of-order case this donor should not be present, but is                                                                |
 | Delete  | Create | New donor             | Error, then delete            | This is ok, even though the data ends up incorrect, as support get alerted                             |
-| Delete  | Update | No donor, error       | Donor updated and not deleted, no error            | In this and the case below this is fine as should be deleted                                           |
+| Delete  | Update | No donor, AI logged[^1] | Donor updated and deleted, no error            | In this and the case below this is fine as should be deleted                                           |
 | Delete  | Upsert | New donor       | Donor updated and not deleted, no error            | In this and the case below this is fine as should be deleted                                           |
 | Delete  | Delete | No donor, error       | No donor, no error            |                                                                                                        |
 
