@@ -1,9 +1,9 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.AzureStorage.Blob;
-using Atlas.Common.Utils.Extensions;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Services.Search;
 
@@ -32,12 +32,21 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
                 notification.BlobStorageContainerName,
                 notification.ResultsFileName);
 
+            var donorIds = new List<string>();
+
             if (notification.ResultsBatched && !string.IsNullOrEmpty(notification.BatchFolderName))
             {
-                resultSet.Results = await blobDownloader.DownloadFolderContents<MatchingAlgorithmResult>(notification.BlobStorageContainerName, notification.BatchFolderName);
+                var matchingAlgorithmResults = blobDownloader.DownloadFolderContentsFileByFile<MatchingAlgorithmResult>(notification.BlobStorageContainerName, notification.BatchFolderName);
+                await foreach (var resultsList in matchingAlgorithmResults)
+                {
+                    donorIds.AddRange(resultsList.Select(r => r.DonorCode));
+                }
+            }
+            else
+            {
+                donorIds = resultSet.Results.Select(r => r.DonorCode).ToList();
             }
 
-            var donorIds = resultSet.Results.Select(r => r.DonorCode).ToList();
             await canonicalResultSetRepository.CreateCanonicalResultSet(resultSet.SearchRequestId, donorIds);
         }
 
