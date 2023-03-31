@@ -8,9 +8,40 @@ namespace Atlas.Common.AzureStorage.Blob
 {
     public interface IBlobDownloader
     {
+        /// <summary>
+        /// Downloads a single file with the name <paramref name="filename"/> from blob container <paramref name="container"/>
+        /// </summary>
+        /// <typeparam name="T">Type of the entry stored in the file</typeparam>
+        /// <param name="container">Blob container</param>
+        /// <param name="filename">Name of the file to download</param>
+        /// <returns>A single object of type <typeparamref name="T"></returns>
         Task<T> Download<T>(string container, string filename);
+
+        /// <summary>
+        /// Downloads all files within the folder <paramref name="folderName"/> from blob container <paramref name="container"/>
+        /// </summary>
+        /// <typeparam name="T">Type of the entries stored in the file</typeparam>
+        /// <param name="container">Blob container</param>
+        /// <param name="folderName">Name of the folder to download files from</param>
+        /// <returns>A collection of objects of type <typeparamref name="T"></returns>
         Task<IEnumerable<T>> DownloadFolderContents<T>(string container, string folderName);
+
+        /// <summary>
+        /// Dowload files from all the locations specified in <paramref name="locations"/ from blob container <paramref name="container"/>
+        /// </summary>
+        /// <typeparam name="T">Type of the entries stored in the file</typeparam>
+        /// <param name="container">Blob container</param>
+        /// <param name="locations">A dictionary where Key is an id of the entry and Value is a file name where this entry is stored</param>
+        /// <returns>A dictionary where Key is an id of the entry and Value is an object of type <typeparamref name="T"></returns>
         Task<Dictionary<int, T>> DownloadMultipleBlobs<T>(string container, IReadOnlyDictionary<int, string> locations);
+
+        /// <summary>
+        /// Downloads all files within the folder <paramref name="folderName"/> from blob container <paramref name="container"/> file by file (i.e. it serializes and keeps in memory data from one file only)
+        /// </summary>
+        /// <typeparam name="T">Type of the entries stored in the file</typeparam>
+        /// <param name="container">Blob container</param>
+        /// <param name="folderName">Name of the folder to download files from</param>
+        /// <returns>An enumerator with collection of objects of type <typeparamref name="T"></returns>
         IAsyncEnumerable<IEnumerable<T>> DownloadFolderContentsFileByFile<T>(string container, string folderName);
     }
     

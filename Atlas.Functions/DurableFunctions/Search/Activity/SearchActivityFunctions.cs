@@ -92,12 +92,12 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 
             using (logger.RunTimed("Uploading match prediction requests"))
             {
-                var matchPredictionRequestFileNames = await matchPredictionRequestBlobClient.UploadBatchRequests(matchingResultsNotification.SearchRequestId, matchPredictionInputs.ToList());
+                var matchPredictionRequestFileNames = await matchPredictionRequestBlobClient.UploadMatchProbabilityRequests(matchingResultsNotification.SearchRequestId, matchPredictionInputs);
                 
                 return new TimedResultSet<IList<string>>
                 {
                     ElapsedTime = stopwatch.Elapsed,
-                    ResultSet = matchPredictionRequestFileNames,
+                    ResultSet = matchPredictionRequestFileNames.ToList(),
                     FinishedTimeUtc = DateTime.UtcNow
                 };
             }

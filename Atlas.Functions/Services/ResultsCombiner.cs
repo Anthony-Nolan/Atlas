@@ -9,9 +9,9 @@ using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.Common.AzureStorage.Blob;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.Models;
-using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.Functions.Settings;
 using Microsoft.Extensions.Options;
 
@@ -30,17 +30,19 @@ namespace Atlas.Functions.Services
     internal class ResultsCombiner : IResultsCombiner
     {
         private readonly ILogger logger;
-        private readonly IMatchPredictionResultsDownloader matchPredictionResultsDownloader;
+        private readonly IBlobDownloader blobDownloader;
         private readonly string resultsContainer;
+        private readonly string matchPredictionResultsContainer;
 
         public ResultsCombiner(
             IOptions<AzureStorageSettings> azureStorageSettings,
             ILogger logger,
-            IMatchPredictionResultsDownloader matchPredictionResultsDownloader)
+            IBlobDownloader blobDownloader)
         {
             this.logger = logger;
-            this.matchPredictionResultsDownloader = matchPredictionResultsDownloader;
+            this.blobDownloader = blobDownloader;
             resultsContainer = azureStorageSettings.Value.SearchResultsBlobContainer;
+            matchPredictionResultsContainer = azureStorageSettings.Value.MatchPredictionResultsBlobContainer;
         }
 
         /// <inheritdoc />
@@ -87,7 +89,7 @@ namespace Atlas.Functions.Services
             using (logger.RunTimed("Download match prediction algorithm results"))
             {
                 logger.SendTrace($"{matchPredictionResultLocations.Count} donor results to download");
-                return await matchPredictionResultsDownloader.Download(matchPredictionResultLocations);
+                return await blobDownloader.DownloadMultipleBlobs<MatchProbabilityResponse>(matchPredictionResultsContainer, matchPredictionResultLocations);
             }
         }
     }

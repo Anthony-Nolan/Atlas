@@ -12,7 +12,7 @@ namespace Atlas.Functions.Services.BlobStorageClients
 {
     public interface IMatchPredictionRequestBlobClient
     {
-        Task<List<string>> UploadBatchRequests(string searchRequestId, IEnumerable<MultipleDonorMatchProbabilityInput> batchRequests);
+        Task<IEnumerable<string>> UploadMatchProbabilityRequests(string searchRequestId, IEnumerable<MultipleDonorMatchProbabilityInput> requests);
         Task<MultipleDonorMatchProbabilityInput> DownloadBatchRequest(string blobLocation);
     }
 
@@ -29,11 +29,11 @@ namespace Atlas.Functions.Services.BlobStorageClients
             container = azureStorageSettings.Value.MatchPredictionRequestsBlobContainer;
         }
 
-        public async Task<List<string>> UploadBatchRequests(string searchRequestId, IEnumerable<MultipleDonorMatchProbabilityInput> batchRequests)
+        public async Task<IEnumerable<string>> UploadMatchProbabilityRequests(string searchRequestId, IEnumerable<MultipleDonorMatchProbabilityInput> requests)
         {
-            var batchRequestsWithNames = batchRequests.Select(r => new KeyValuePair<string, MultipleDonorMatchProbabilityInput>($"{searchRequestId}/{r.MatchProbabilityRequestId}.json", r)).ToDictionary();
-            await blobUploader.UploadMultiple(container, batchRequestsWithNames);
-            return batchRequestsWithNames.Select(f => f.Key).ToList();
+            var requestsWithNames = requests.Select(r => new KeyValuePair<string, MultipleDonorMatchProbabilityInput>($"{searchRequestId}/{r.MatchProbabilityRequestId}.json", r)).ToDictionary();
+            await blobUploader.UploadMultiple(container, requestsWithNames);
+            return requestsWithNames.Select(f => f.Key);
         }
 
         /// <inheritdoc />

@@ -7,7 +7,6 @@ using Atlas.Functions.Config;
 using Atlas.Functions.Services;
 using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
-using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
@@ -87,7 +86,14 @@ namespace Atlas.Functions
         {
             services.RegisterAtlasLogger(OptionsReaderFor<ApplicationInsightsSettings>());
             services.AddScoped<IMatchPredictionInputBuilder, MatchPredictionInputBuilder>();
-            services.AddScoped<IResultsCombiner, ResultsCombiner>();
+            services.AddScoped<IResultsCombiner, ResultsCombiner>(sp =>
+            {
+                var logger = sp.GetService<ILogger>();
+                var options = sp.GetService<IOptions<Settings.AzureStorageSettings>>();
+                var connectionString = options.Value.MatchPredictionConnectionString;
+                var downloader = new BlobDownloader(connectionString, logger);
+                return new ResultsCombiner(options, logger, downloader);
+            });
             services.AddScoped<ISearchCompletionMessageSender, SearchCompletionMessageSender>();
             services.AddScoped<ISearchResultsBlobStorageClient, SearchResultsBlobStorageClient>(sp =>
             {
@@ -102,14 +108,6 @@ namespace Atlas.Functions
                 var connectionString = options.Value.MatchingConnectionString;
                 var downloader = new BlobDownloader(connectionString, logger);
                 return new MatchingResultsDownloader(options, downloader, logger);
-            });
-            services.AddSingleton<IMatchPredictionResultsDownloader, MatchPredictionResultsDownloader>(sp =>
-            {
-                var logger = sp.GetService<ILogger>();
-                var options = sp.GetService<IOptions<Settings.AzureStorageSettings>>();
-                var connectionString = options.Value.MatchPredictionConnectionString;
-                var downloader = new BlobDownloader(connectionString, logger);
-                return new MatchPredictionResultsDownloader(options, downloader);
             });
             services.AddScoped<IMatchPredictionRequestBlobClient, MatchPredictionRequestBlobClient>();
 

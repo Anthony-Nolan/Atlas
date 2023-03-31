@@ -68,7 +68,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
                     {
                         var result = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
                         var matchProbabilityInputFileNames = await resultUploader.UploadSearchDonorResults(searchRequestId, matchProbabilityInput.Donor.DonorIds, result);
-                        fileNames = EnumerableExtensions.ToDictionary(fileNames.Merge(matchProbabilityInputFileNames));
+                        fileNames = fileNames.Merge(matchProbabilityInputFileNames).ToDictionary();
                     }
                 }
 
