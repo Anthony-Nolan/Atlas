@@ -9,12 +9,11 @@ using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.Common.AzureStorage.Blob;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.Models;
-using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.Functions.Settings;
 using Microsoft.Extensions.Options;
-using MoreLinq.Extensions;
 
 namespace Atlas.Functions.Services
 {
@@ -31,17 +30,19 @@ namespace Atlas.Functions.Services
     internal class ResultsCombiner : IResultsCombiner
     {
         private readonly ILogger logger;
-        private readonly IMatchPredictionResultsDownloader matchPredictionResultsDownloader;
+        private readonly IBlobDownloader blobDownloader;
         private readonly string resultsContainer;
+        private readonly string matchPredictionResultsContainer;
 
         public ResultsCombiner(
             IOptions<AzureStorageSettings> azureStorageSettings,
             ILogger logger,
-            IMatchPredictionResultsDownloader matchPredictionResultsDownloader)
+            IBlobDownloader blobDownloader)
         {
             this.logger = logger;
-            this.matchPredictionResultsDownloader = matchPredictionResultsDownloader;
+            this.blobDownloader = blobDownloader;
             resultsContainer = azureStorageSettings.Value.SearchResultsBlobContainer;
+            matchPredictionResultsContainer = azureStorageSettings.Value.MatchPredictionResultsBlobContainer;
         }
 
         /// <inheritdoc />
@@ -88,19 +89,7 @@ namespace Atlas.Functions.Services
             using (logger.RunTimed("Download match prediction algorithm results"))
             {
                 logger.SendTrace($"{matchPredictionResultLocations.Count} donor results to download");
-
-                var results = new List<KeyValuePair<int, MatchProbabilityResponse>>();
-
-                // Batch downloads to avoid using too many outbound connections
-                foreach (var resultLocationBatch in matchPredictionResultLocations.Batch(100))
-                {
-                    var resultBatch = await Task.WhenAll(resultLocationBatch.Select(async l =>
-                        new KeyValuePair<int, MatchProbabilityResponse>(l.Key, await matchPredictionResultsDownloader.Download(l.Value)))
-                    );
-                    results.AddRange(resultBatch);
-                }
-
-                return results.ToList().ToDictionary();
+                return await blobDownloader.DownloadMultipleBlobs<MatchProbabilityResponse>(matchPredictionResultsContainer, matchPredictionResultLocations);
             }
         }
     }

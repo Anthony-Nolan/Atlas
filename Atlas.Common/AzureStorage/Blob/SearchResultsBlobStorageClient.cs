@@ -29,7 +29,7 @@ namespace Atlas.Common.AzureStorage.Blob
 
             if (searchResultSet.BatchedResult)
             {
-                await BatchUpload(searchResultSet.Results, searchResultsBatchSize, searchResultSet.BlobStorageContainerName, batchFolder);
+                await ChunkAndUpload(searchResultSet.Results, searchResultsBatchSize, searchResultSet.BlobStorageContainerName, batchFolder);
             }
         }
     }

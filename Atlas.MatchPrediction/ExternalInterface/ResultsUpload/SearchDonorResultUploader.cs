@@ -1,6 +1,9 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 
 namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
@@ -10,8 +13,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
         /// <summary>
         /// Uploads match probability result calculated for a Atlas donor found via a search request.
         /// </summary>
-        /// <returns>Filename of results file</returns>
-        Task<string> UploadSearchDonorResult(string searchRequestId, int atlasDonorId, MatchProbabilityResponse matchProbabilityResponse);
+        /// <returns>List of filenames of results files</returns>
+        Task<Dictionary<int, string>> UploadSearchDonorResults(string searchRequestId, IEnumerable<int> atlasDonorIds, MatchProbabilityResponse matchProbabilityResponse);
     }
 
     internal class SearchDonorResultUploader : MatchProbabilityResultUploader, ISearchDonorResultUploader
@@ -20,12 +23,11 @@ namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
         {
         }
 
-        /// <inheritdoc />
-        public async Task<string> UploadSearchDonorResult(string searchRequestId, int atlasDonorId, MatchProbabilityResponse matchProbabilityResponse)
+        public async Task<Dictionary<int, string>> UploadSearchDonorResults(string searchRequestId, IEnumerable<int> atlasDonorIds, MatchProbabilityResponse matchProbabilityResponse)
         {
-            var fileName = $"{searchRequestId}/{atlasDonorId}.json";
-            await UploadResult(fileName, matchProbabilityResponse);
-            return fileName;
+            var fileNames = atlasDonorIds.Select(id => new KeyValuePair<int, string> (id, $"{searchRequestId}/{id}.json") ).ToDictionary();
+            await UploadResults(fileNames.Select(f => f.Value), matchProbabilityResponse);
+            return fileNames;
         }
     }
 }
