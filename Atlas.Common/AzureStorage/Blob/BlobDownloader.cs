@@ -27,7 +27,7 @@ namespace Atlas.Common.AzureStorage.Blob
         Task<IEnumerable<T>> DownloadFolderContents<T>(string container, string folderName);
 
         /// <summary>
-        /// Dowload files from all the locations specified in <paramref name="locations"/ from blob container <paramref name="container"/>
+        /// Dowload files from all the locations specified in <paramref name="locations"/> from blob container <paramref name="container"/>
         /// </summary>
         /// <typeparam name="T">Type of the entries stored in the file</typeparam>
         /// <param name="container">Blob container</param>
@@ -36,7 +36,7 @@ namespace Atlas.Common.AzureStorage.Blob
         Task<Dictionary<int, T>> DownloadMultipleBlobs<T>(string container, IReadOnlyDictionary<int, string> locations);
 
         /// <summary>
-        /// Downloads all files within the folder <paramref name="folderName"/> from blob container <paramref name="container"/> file by file (i.e. it serializes and keeps in memory data from one file only)
+        /// Downloads all files within the folder <paramref name="folderName"/> from blob container <paramref name="container"/> file by file (i.e. it deserializes and keeps in memory data from one file only)
         /// </summary>
         /// <typeparam name="T">Type of the entries stored in the file</typeparam>
         /// <param name="container">Blob container</param>
