@@ -1053,7 +1053,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var result1 = await donorRepository.GetDonor(donorExternalCode);
             result1.Should().BeNull();
             
-            // import File 2, Error, still no Donor
+            // import File 2, No error, still no Donor
             await donorFileImporter.ImportDonorFile(deleteFile2);
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.Should().BeNull();

@@ -29,7 +29,7 @@ namespace Atlas.DonorImport.Validators
             {
                 RuleFor(d => d.RecordId)
                     .Must(id => !context.ExternalDonorCodes.Contains(id))
-                    .WithMessage("Donor with {PropertyName} '{PropertyValue}' already presents in the database.");
+                    .WithMessage("Donor with {PropertyName} '{PropertyValue}' is already present in the database.");
             });
         }
     }
