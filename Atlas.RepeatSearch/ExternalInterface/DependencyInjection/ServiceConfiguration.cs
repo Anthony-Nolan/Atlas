@@ -27,7 +27,6 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, RepeatSearch.Settings.Azure.AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchMatchingAlgorithmAzureStorageSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings,
@@ -42,7 +41,6 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             services.RegisterSettings(
                 fetchApplicationInsightsSettings,
                 fetchAzureStorageSettings,
-                fetchMatchingAlgorithmAzureStorageSettings,
                 fetchMessagingServiceBusSettings,
                 fetchRepeatSqlConnectionString);
             
@@ -50,9 +48,8 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
 
             services.RegisterSearch(
                 fetchApplicationInsightsSettings,
-                // Only passing in azure storage settings here to avoid build errors - results upload is handled by repeat search.
-                // TODO #924: Clean up registration of search services needed for repeat search
-                fetchMatchingAlgorithmAzureStorageSettings,
+                // Matching algorithm doesn't require an azure storage connection, as results upload is handled by repeat search.
+                _ => new AzureStorageSettings(),
                 fetchHlaMetadataDictionarySettings,
                 fetchMacDictionarySettings,
                 // Matching algorithm doesn't require a service bus setting as results notifications are handled by repeat search.
@@ -71,13 +68,11 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, RepeatSearch.Settings.Azure.AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchMatchingAlgorithmAzureStorageSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, string> fetchRepeatSqlConnectionString)
         {
             services.MakeSettingsAvailableForUse(fetchApplicationInsightsSettings);
             services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
-            services.MakeSettingsAvailableForUse(fetchMatchingAlgorithmAzureStorageSettings);
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
 
             services.AddSingleton(sp => new ConnectionStrings {RepeatSearchSqlConnectionString = fetchRepeatSqlConnectionString(sp)});

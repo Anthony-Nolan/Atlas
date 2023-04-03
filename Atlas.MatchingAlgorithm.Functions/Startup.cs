@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Functions
         public override void Configure(IFunctionsHostBuilder builder)
         {
             RegisterSettings(builder.Services);
-            builder.Services.RegisterSearch(OptionsReaderFor<ApplicationInsightsSettings>(),
+            builder.Services.RegisterSearchForMatchingAlgorithm(OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),

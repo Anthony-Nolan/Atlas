@@ -49,7 +49,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.AddSingleton<IConfiguration>(sp => configuration);
 
             services.RegisterSettings();
-            services.RegisterSearch(OptionsReaderFor<ApplicationInsightsSettings>(),
+            services.RegisterSearchForMatchingAlgorithm(OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 _ => new MacDictionarySettings(),
