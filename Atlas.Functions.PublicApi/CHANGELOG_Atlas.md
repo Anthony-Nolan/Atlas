@@ -21,7 +21,8 @@ The project version will be appropriately incremented with each change to the pr
 #### Donor Import
 * Added new function `CheckDonorIdsFromFile` that checks absence of donors in Atlas storage
 * Added new function `CheckDonorInfoFromFile` that compares donor/CBU fields with Atlas
-* Updated `ImportDonorFile` function to log invalid donor updates to AI if donor is not presented in Atlas storage instead of throwing error
+* Updated `ImportDonorFile` function to log invalid donor updates to AI if donor is not present in Atlas storage instead of throwing error
+* Updated `ImportDonorFile` function to log invalid donor creates for `diff` update mode to AI if donor is present in Atlas storage instead of throwing error
 
 ### 1.5.0
 

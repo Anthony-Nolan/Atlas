@@ -68,7 +68,7 @@ namespace Atlas.DonorImport.Test.Validators
                 .With(x => x.ChangeType, changeType)
                 .Build();
 
-            var result = CreateValidatorWithContext(donorUpdate.RecordId).Validate(donorUpdate);
+            var result = CreateValidatorWithContext(changeType != ImportDonorChangeType.Create ? donorUpdate.RecordId : string.Empty).Validate(donorUpdate);
 
             result.IsValid.Should().BeTrue();
         }
@@ -95,6 +95,32 @@ namespace Atlas.DonorImport.Test.Validators
             var result = CreateValidatorWithContext(string.Empty).Validate(donorUpdate);
 
             result.IsValid.Should().BeFalse();
+        }
+
+        [Test]
+        public void Validate_ChangeTypeIsCreate_AndDonorRecordIdIsInContext_ReturnsInvalid()
+        {
+            var donorUpdate = DonorUpdateBuilder.New
+                .With(x => x.ChangeType, ImportDonorChangeType.Create)
+                .Build();
+
+            var result = CreateValidatorWithContext(donorUpdate.RecordId).Validate(donorUpdate);
+
+            result.IsValid.Should().BeFalse();
+        }
+
+
+        [Test]
+        public void Validate_ChangeTypeIsCreate_AndUpdateModeIsFull_AndDonorRecordIdIsInContext_ReturnsValid()
+        {
+            var donorUpdate = DonorUpdateBuilder.New
+                .With(x => x.ChangeType, ImportDonorChangeType.Create)
+                .With(x => x.UpdateMode, UpdateMode.Full)
+                .Build();
+
+            var result = CreateValidatorWithContext(donorUpdate.RecordId).Validate(donorUpdate);
+
+            result.IsValid.Should().BeTrue();
         }
 
         private SearchableDonorValidator CreateValidatorWithContext(string donorRecordId) =>

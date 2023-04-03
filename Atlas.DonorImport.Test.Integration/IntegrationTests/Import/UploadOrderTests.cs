@@ -75,7 +75,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task DonorImportOrder_CreateThenCreateImport_PostsError()
+        public async Task DonorImportOrder_CreateThenCreateImport_LogsInvalidDonor()
         {
             // File 1 = Create
             var donorExternalCode = "1";
@@ -93,13 +93,13 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             
             // import File 2, it should post error and donor remain unchanged.
             await donorFileImporter.ImportDonorFile(createFile2);
-            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            mockLogger.Received().SendTrace(Arg.Any<string>(), LogLevel.Info, Arg.Is<Dictionary<string, string>>(d => d.ContainsKey("FailedDonorIds") && d["FailedDonorIds"] == $"[{donorExternalCode}]"));
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.UpdateFile.Should().Be(file1Name);
         }
         
         [Test]
-        public async Task DonorImportOrder_CreateThenCreateImportOutOfOrder_PostsError()
+        public async Task DonorImportOrder_CreateThenCreateImportOutOfOrder_LogsInvalidDonor()
         {
             // File 1 = Create
             var donorExternalCode = "1";
@@ -117,7 +117,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             
             // import File 1, it should post error and donor remain unchanged.
             await donorFileImporter.ImportDonorFile(createFile1);
-            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            mockLogger.Received().SendTrace(Arg.Any<string>(), LogLevel.Info, Arg.Is<Dictionary<string, string>>(d => d.ContainsKey("FailedDonorIds") && d["FailedDonorIds"] == $"[{donorExternalCode}]"));
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.UpdateFile.Should().Be(file2Name);
         }
@@ -194,7 +194,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task DonorImportOrder_CreateThenUpsertOutOfOrder_DonorCreatedAndPostsError()
+        public async Task DonorImportOrder_CreateThenUpsertOutOfOrder_DonorCreatedAndInvalidDonorLogged()
         {
             // File 1 = Create
             var donorExternalCode = "1";
@@ -212,7 +212,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             // Import File 1, it should post error and donor remain unchanged
             await donorFileImporter.ImportDonorFile(createFile);
-            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            mockLogger.Received().SendTrace(Arg.Any<string>(), LogLevel.Info, Arg.Is<Dictionary<string, string>>(d => d.ContainsKey("FailedDonorIds") && d["FailedDonorIds"] == $"[{donorExternalCode}]"));
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.UpdateFile.Should().Be(file2Name);
         }
@@ -314,7 +314,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
         
         [Test]
-        public async Task DonorImportOrder_EditThenCreateWithExistingDonor_Creates()
+        public async Task DonorImportOrder_EditThenCreateWithExistingDonor_LogsInvalidDonor()
         {
             var donorExternalCode = "1";
             
@@ -339,13 +339,13 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             // import File 2, Error and unchanged donor
             await donorFileImporter.ImportDonorFile(createFile);
-            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            mockLogger.Received().SendTrace(Arg.Any<string>(), LogLevel.Info, Arg.Is<Dictionary<string, string>>(d => d.ContainsKey("FailedDonorIds") && d["FailedDonorIds"] == $"[{donorExternalCode}]"));
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.UpdateFile.Should().Be(file1Name);
         }
         
         [Test]
-        public async Task DonorImportOrder_EditThenCreateWithExistingDonorOutOfOrder_Creates()
+        public async Task DonorImportOrder_EditThenCreateWithExistingDonorOutOfOrder_LogsInvalidDonor()
         {
             var donorExternalCode = "1";
             var initialFileName = "file-0";
@@ -363,7 +363,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             // import File 2, Posts Error, donor is unchanged.
             await donorFileImporter.ImportDonorFile(createFile);
-            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            mockLogger.Received().SendTrace(Arg.Any<string>(), LogLevel.Info, Arg.Is<Dictionary<string, string>>(d => d.ContainsKey("FailedDonorIds") && d["FailedDonorIds"] == $"[{donorExternalCode}]"));
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.UpdateFile.Should().Be(initialFileName);
             
@@ -590,7 +590,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task DonorImportOrder_UpsertThenCreateWithoutExistingDonor_DonorCreatedThenPostsError()
+        public async Task DonorImportOrder_UpsertThenCreateWithoutExistingDonor_DonorCreatedThenLogsInvalidDonor()
         {
             var donorExternalCode = "1";
 
@@ -609,7 +609,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             // Import File 2, Error and donor unchanged
             await donorFileImporter.ImportDonorFile(createFile);
-            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            mockLogger.Received().SendTrace(Arg.Any<string>(), LogLevel.Info, Arg.Is<Dictionary<string, string>>(d => d.ContainsKey("FailedDonorIds") && d["FailedDonorIds"] == $"[{donorExternalCode}]"));
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.UpdateFile.Should().Be(file1Name);
         }
@@ -639,7 +639,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task DonorImportOrder_UpsertThenCreateWithExistingDonor_DonorUpdatedThenPostsError()
+        public async Task DonorImportOrder_UpsertThenCreateWithExistingDonor_DonorUpdatedThenLogsInvalidDonor()
         {
             var donorExternalCode = "1";
 
@@ -662,13 +662,13 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             
             // Import File 2, Error and donor unchanged
             await donorFileImporter.ImportDonorFile(createFile);
-            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            mockLogger.Received().SendTrace(Arg.Any<string>(), LogLevel.Info, Arg.Is<Dictionary<string, string>>(d => d.ContainsKey("FailedDonorIds") && d["FailedDonorIds"] == $"[{donorExternalCode}]"));
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.UpdateFile.Should().Be(file1Name);
         }
 
         [Test]
-        public async Task DonorImportOrder_UpsertThenCreateWithExistingDonorOutOfOrder_PostsErrorThenDonorUpdated()
+        public async Task DonorImportOrder_UpsertThenCreateWithExistingDonorOutOfOrder_LogsInvalidDonorThenDonorUpdated()
         {
             var donorExternalCode = "1";
 
@@ -687,7 +687,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             // Import File 2, Error and donor unchanged
             await donorFileImporter.ImportDonorFile(createFile);
-            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            mockLogger.Received().SendTrace(Arg.Any<string>(), LogLevel.Info, Arg.Is<Dictionary<string, string>>(d => d.ContainsKey("FailedDonorIds") && d["FailedDonorIds"] == $"[{donorExternalCode}]"));
             var result1 = await donorRepository.GetDonor(donorExternalCode);
             result1.UpdateFile.Should().Be(initialFileName);
 
@@ -894,7 +894,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
         
         [Test]
-        public async Task DonorImportOrder_DeleteThenCreateOutOfOrder_DonorDeletedWithError()
+        public async Task DonorImportOrder_DeleteThenCreateOutOfOrder_InvalidDonorLoggedAndDonorDeleted()
         {
             var donorExternalCode = "1";
             var preExitingFileName = "file-0";
@@ -912,7 +912,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             // import File 2, Error
             await donorFileImporter.ImportDonorFile(createFile);
-            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            mockLogger.Received().SendTrace(Arg.Any<string>(), LogLevel.Info, Arg.Is<Dictionary<string, string>>(d => d.ContainsKey("FailedDonorIds") && d["FailedDonorIds"] == $"[{donorExternalCode}]"));
             var result1 = await donorRepository.GetDonor(donorExternalCode);
             result1.UpdateFile.Should().Be(preExitingFileName);
             

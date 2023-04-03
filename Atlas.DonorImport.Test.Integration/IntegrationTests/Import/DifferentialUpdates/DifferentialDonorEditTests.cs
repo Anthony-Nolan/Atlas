@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
 using Donor = Atlas.DonorImport.Data.Models.Donor;
+using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.DifferentialUpdates
 {
@@ -230,12 +231,12 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         {
             var badEditBuilder = donorEditBuilderForInitialDonors.With(update => update.RecordId, "Unknown");
 
-            var goodDonorEditUpdates = donorEditBuilderForInitialDonors.Build(4).ToArray();
+            const int goodDonorEditsCount = 4;
+            var goodDonorEditUpdates = donorEditBuilderForInitialDonors.WithHla(HlaBuilder.Default.WithMolecularHlaAtAllLoci("*01:03", "*01:03").Build()).Build(goodDonorEditsCount).ToArray();
             var badDonorEditUpdates = badEditBuilder.Build(3).ToArray();
             var mixedDonorUpdates = goodDonorEditUpdates.Union(badDonorEditUpdates).ToArray();
 
             var mixedDonorUpdateFile = fileBuilder.WithDonors(mixedDonorUpdates).Build();
-
             var updatesCountBeforeImport = await updatesInspectionRepository.Count();
 
             //ACT
@@ -244,7 +245,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
             mockLogger.Received().SendTrace(Arg.Any<string>(), LogLevel.Info, Arg.Is<Dictionary<string, string>>(d => d.ContainsKey("FailedDonorIds")));
 
             var updatesCountAfterImport = await updatesInspectionRepository.Count();
-            updatesCountAfterImport.Should().BeGreaterThan(updatesCountBeforeImport);
+            updatesCountAfterImport.Should().Be(updatesCountBeforeImport + goodDonorEditsCount);
         }
     }
 }
