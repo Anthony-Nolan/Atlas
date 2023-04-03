@@ -46,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Api
         public void ConfigureServices(IServiceCollection services)
         {
             RegisterSettings(services);
-            services.RegisterSearch(OptionsReaderFor<ApplicationInsightsSettings>(),
+            services.RegisterSearchForMatchingAlgorithm(OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
