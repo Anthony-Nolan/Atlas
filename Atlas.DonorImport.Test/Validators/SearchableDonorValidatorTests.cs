@@ -21,14 +21,6 @@ namespace Atlas.DonorImport.Test.Validators
             new ImportedHla()
         };
 
-        private SearchableDonorValidator validator;
-
-        [SetUp]
-        public void SetUp()
-        {
-            validator = new SearchableDonorValidator();
-        }
-
         [TestCaseSource(nameof(EmptyHla))]
         public void Validate_ChangeTypeIsDelete_AndHlaIsEmpty_ReturnsValid(ImportedHla emptyHla)
         {
@@ -37,7 +29,7 @@ namespace Atlas.DonorImport.Test.Validators
                 .WithHla(emptyHla)
                 .Build();
 
-            var result = validator.Validate(donorUpdate);
+            var result = CreateValidatorWithContext(donorUpdate.RecordId).Validate(donorUpdate);
 
             result.IsValid.Should().BeTrue();
         }
@@ -49,7 +41,7 @@ namespace Atlas.DonorImport.Test.Validators
                 .With(x => x.ChangeType, ImportDonorChangeType.Delete)
                 .Build();
 
-            var result = validator.Validate(donorUpdate);
+            var result = CreateValidatorWithContext(donorUpdate.RecordId).Validate(donorUpdate);
 
             result.IsValid.Should().BeTrue();
         }
@@ -64,7 +56,7 @@ namespace Atlas.DonorImport.Test.Validators
                 .WithHla(emptyHla)
                 .Build();
 
-            var result = validator.Validate(donorUpdate);
+            var result = CreateValidatorWithContext(donorUpdate.RecordId).Validate(donorUpdate);
 
             result.IsValid.Should().BeFalse();
         }
@@ -76,9 +68,62 @@ namespace Atlas.DonorImport.Test.Validators
                 .With(x => x.ChangeType, changeType)
                 .Build();
 
-            var result = validator.Validate(donorUpdate);
+            var result = CreateValidatorWithContext(changeType != ImportDonorChangeType.Create ? donorUpdate.RecordId : string.Empty).Validate(donorUpdate);
 
             result.IsValid.Should().BeTrue();
         }
+
+        [Test]
+        public void Validate_ChangeTypeIsEdit_AndDonorRecordIdIsInContext_ReturnsValid()
+        {
+            var donorUpdate = DonorUpdateBuilder.New
+                .With(x => x.ChangeType, ImportDonorChangeType.Edit)
+                .Build();
+
+            var result = CreateValidatorWithContext(donorUpdate.RecordId).Validate(donorUpdate);
+
+            result.IsValid.Should().BeTrue();
+        }
+
+        [Test]
+        public void Validate_ChangeTypeIsEdit_AndDonorRecordIdIsNotInContext_ReturnsInvalid()
+        {
+            var donorUpdate = DonorUpdateBuilder.New
+                .With(x => x.ChangeType, ImportDonorChangeType.Edit)
+                .Build();
+
+            var result = CreateValidatorWithContext(string.Empty).Validate(donorUpdate);
+
+            result.IsValid.Should().BeFalse();
+        }
+
+        [Test]
+        public void Validate_ChangeTypeIsCreate_AndDonorRecordIdIsInContext_ReturnsInvalid()
+        {
+            var donorUpdate = DonorUpdateBuilder.New
+                .With(x => x.ChangeType, ImportDonorChangeType.Create)
+                .Build();
+
+            var result = CreateValidatorWithContext(donorUpdate.RecordId).Validate(donorUpdate);
+
+            result.IsValid.Should().BeFalse();
+        }
+
+
+        [Test]
+        public void Validate_ChangeTypeIsCreate_AndUpdateModeIsFull_AndDonorRecordIdIsInContext_ReturnsValid()
+        {
+            var donorUpdate = DonorUpdateBuilder.New
+                .With(x => x.ChangeType, ImportDonorChangeType.Create)
+                .With(x => x.UpdateMode, UpdateMode.Full)
+                .Build();
+
+            var result = CreateValidatorWithContext(donorUpdate.RecordId).Validate(donorUpdate);
+
+            result.IsValid.Should().BeTrue();
+        }
+
+        private SearchableDonorValidator CreateValidatorWithContext(string donorRecordId) =>
+            new(new SearchableDonorValidatorContext(new[] { donorRecordId }));
     }
 }

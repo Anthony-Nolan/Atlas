@@ -1,4 +1,6 @@
-﻿using Atlas.Common.Public.Models.GeneticData;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.FileSchema.Models;
 using FluentValidation;
@@ -7,13 +9,27 @@ namespace Atlas.DonorImport.Validators
 {
     internal class SearchableDonorValidator : AbstractValidator<DonorUpdate>
     {
-        public SearchableDonorValidator()
+        public SearchableDonorValidator(SearchableDonorValidatorContext context)
         {
             When(donorUpdate => donorUpdate.ChangeType != ImportDonorChangeType.Delete, () =>
             {
                 RuleFor(d => d.Hla)
                     .NotNull()
                     .SetValidator(new SearchableHlaValidator());
+            });
+
+            When(donorUpdate => donorUpdate.ChangeType == ImportDonorChangeType.Edit, () =>
+            {
+                RuleFor(d => d.RecordId)
+                    .Must(context.ExternalDonorCodes.Contains)
+                    .WithMessage("Donor with {PropertyName} '{PropertyValue}' is not present in the database.");
+            });
+
+            When(donorUpdate => donorUpdate.ChangeType == ImportDonorChangeType.Create && donorUpdate.UpdateMode == UpdateMode.Differential, () =>
+            {
+                RuleFor(d => d.RecordId)
+                    .Must(id => !context.ExternalDonorCodes.Contains(id))
+                    .WithMessage("Donor with {PropertyName} '{PropertyValue}' is already present in the database.");
             });
         }
     }
@@ -87,5 +103,15 @@ namespace Atlas.DonorImport.Validators
                 .When(d => !d.Field2.IsNullOrEmpty())
                 .WithMessage($"Optional locus {locus}, {hlaFieldType}: Field1 cannot be empty when Field2 is provided");
         }
+    }
+    
+    internal class SearchableDonorValidatorContext
+    {
+        public SearchableDonorValidatorContext(IReadOnlyCollection<string> externalDonorCodes)
+        {
+            ExternalDonorCodes = externalDonorCodes;
+        }
+
+        public IReadOnlyCollection<string> ExternalDonorCodes { get; }
     }
 }

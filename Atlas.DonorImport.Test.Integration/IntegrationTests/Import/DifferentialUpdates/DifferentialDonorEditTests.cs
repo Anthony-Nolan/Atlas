@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.ExternalInterface.Models;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
 using Donor = Atlas.DonorImport.Data.Models.Donor;
+using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.DifferentialUpdates
 {
@@ -23,6 +25,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
     public class DifferentialDonorEditTests
     {
         private INotificationSender mockNotificationSender;
+        private ILogger mockLogger;
         private const string DonorCodePrefix = "external-donor-code-";
         private IDonorInspectionRepository donorRepository;
         private IPublishableDonorUpdatesInspectionRepository updatesInspectionRepository;
@@ -50,8 +53,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
                 mockNotificationSender = Substitute.For<INotificationSender>();
+                mockLogger = Substitute.For<ILogger>();
                 var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
                 services.AddScoped(sp => mockNotificationSender);
+                services.AddScoped(sp => mockLogger);
                 DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
 
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
@@ -198,21 +203,21 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         }
 
         [Test]
-        public async Task ImportDonors_ForEdits_IfRecordIsNotFound_Throws_AndDoesNotAffectExistingRecords_NorSavesUpdates()
+        public async Task ImportDonors_ForEdits_IfRecordIsNotFound_LogsInvalidDonorUpdate_AndDoesNotAffectExistingRecords_NorSavesUpdates()
         {
-            var deletionCount = 4;
-            var donorDeletes = donorEditBuilderForInitialDonors
+            var editsCount = 4;
+            var donorEdits = donorEditBuilderForInitialDonors
                 .With(update => update.RecordId, "Unknown")
-                .Build(deletionCount).ToArray();
+                .Build(editsCount).ToArray();
 
-            var donorDeleteFile = fileBuilder.WithDonors(donorDeletes);
+            var donorEditFile = fileBuilder.WithDonors(donorEdits);
 
             var updatesCountBeforeImport = await updatesInspectionRepository.Count();
 
             //ACT
-            await donorFileImporter.ImportDonorFile(donorDeleteFile);
+            await donorFileImporter.ImportDonorFile(donorEditFile);
 
-            await mockNotificationSender.ReceivedWithAnyArgs(1).SendAlert(default, default, default, default);
+            mockLogger.Received().SendTrace(Arg.Any<string>(), LogLevel.Info, Arg.Is<Dictionary<string, string>>(d => d.ContainsKey("FailedDonorIds")));
 
             var unchangedDonors = donorRepository.StreamAllDonors().ToList();
             unchangedDonors.Should().BeEquivalentTo(InitialDonors);
@@ -222,28 +227,25 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         }
 
         [Test]
-        public async Task ImportDonors_ForEdits_IfSomeRecordsAreNotFoundButOthersAre_Throws_AndDoesNotAffectExistingRecords_NorSendMessages()
+        public async Task ImportDonors_ForEdits_IfSomeRecordsAreNotFoundButOthersAre_LogsInvalidDonorUpdateAndContinuesProcessing()
         {
             var badEditBuilder = donorEditBuilderForInitialDonors.With(update => update.RecordId, "Unknown");
 
-            var goodDonorEditUpdates = donorEditBuilderForInitialDonors.Build(4).ToArray();
+            const int goodDonorEditsCount = 4;
+            var goodDonorEditUpdates = donorEditBuilderForInitialDonors.WithHla(HlaBuilder.Default.WithMolecularHlaAtAllLoci("*01:03", "*01:03").Build()).Build(goodDonorEditsCount).ToArray();
             var badDonorEditUpdates = badEditBuilder.Build(3).ToArray();
             var mixedDonorUpdates = goodDonorEditUpdates.Union(badDonorEditUpdates).ToArray();
 
             var mixedDonorUpdateFile = fileBuilder.WithDonors(mixedDonorUpdates).Build();
-
             var updatesCountBeforeImport = await updatesInspectionRepository.Count();
 
             //ACT
             await donorFileImporter.ImportDonorFile(mixedDonorUpdateFile);
 
-            await mockNotificationSender.ReceivedWithAnyArgs(1).SendAlert(default, default, default, default);
-
-            var unchangedDonors = donorRepository.StreamAllDonors().ToList();
-            unchangedDonors.Should().BeEquivalentTo(InitialDonors);
+            mockLogger.Received().SendTrace(Arg.Any<string>(), LogLevel.Info, Arg.Is<Dictionary<string, string>>(d => d.ContainsKey("FailedDonorIds")));
 
             var updatesCountAfterImport = await updatesInspectionRepository.Count();
-            updatesCountAfterImport.Should().Be(updatesCountBeforeImport);
+            updatesCountAfterImport.Should().Be(updatesCountBeforeImport + goodDonorEditsCount);
         }
     }
 }

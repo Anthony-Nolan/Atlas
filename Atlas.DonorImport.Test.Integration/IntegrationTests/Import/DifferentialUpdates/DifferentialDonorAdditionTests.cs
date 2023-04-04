@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.ExternalInterface.Models;
@@ -15,6 +16,7 @@ using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.DifferentialUpdates
 {
@@ -22,6 +24,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
     public class DifferentialDonorAdditionTests
     {
         private INotificationSender mockNotificationsSender;
+        private ILogger mockLogger;
 
         private IDonorInspectionRepository donorRepository;
         private IPublishableDonorUpdatesInspectionRepository updatesInspectionRepository;
@@ -39,8 +42,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
                 mockNotificationsSender = Substitute.For<INotificationSender>();
+                mockLogger = Substitute.For<ILogger>();
                 var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
                 services.AddScoped(sp => mockNotificationsSender);
+                services.AddScoped(sp => mockLogger);
                 DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
 
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
@@ -167,31 +172,33 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
         }
 
         [Test]
-        public async Task ImportDonors_IfSomeAdditionsAlreadyExistButOthersDoNot_ThrowsError_AndDoesNotAdd_NorChangeExisting_NorSavesUpdates()
+        public async Task ImportDonors_IfSomeAdditionsAlreadyExistButOthersDoNot_LogsInvalidDonors_AndContinuesProcessing_AndSavesUpdates()
         {
             const string donorCodePrefix = "test6-";
-            var updateBuilder = DonorCreationBuilder.WithRecordIdPrefix(donorCodePrefix);
+            var createBuilder = DonorCreationBuilder.WithRecordIdPrefix(donorCodePrefix);
 
-            var donorUpdates_Set1 = updateBuilder.Build(4).ToArray();
-            var donorUpdates_Set2 = updateBuilder.Build(3).ToArray();
-            var donorUpdates_Sets1And2 = donorUpdates_Set1.Union(donorUpdates_Set2).ToArray();
+            const int set1Count = 4;
+            const int set2Count = 3;
+            var donorCreates_Set1 = createBuilder.Build(set1Count).ToArray();
+            var donorCreates_Set2 = createBuilder.Build(set2Count).ToArray();
+            var donorCretes_Sets1And2 = donorCreates_Set1.Union(donorCreates_Set2).ToArray();
 
-            var donorUpdateFile_DonorSet1 = fileBuilder.WithDonors(donorUpdates_Set1).With(d => d.UploadTime, DateTime.UtcNow.AddDays(-1)).Build();
-            var donorUpdateFile_DonorSets1And2 = fileBuilder.WithDonors(donorUpdates_Sets1And2).With(d => d.UploadTime, DateTime.UtcNow).Build();
+            var donorCreateFile_DonorSet1 = fileBuilder.WithDonors(donorCreates_Set1).With(d => d.UploadTime, DateTime.UtcNow.AddDays(-1)).Build();
+            var donorCreateFile_DonorSets1And2 = fileBuilder.WithDonors(donorCretes_Sets1And2).With(d => d.UploadTime, DateTime.UtcNow).Build();
 
-            await donorFileImporter.ImportDonorFile(donorUpdateFile_DonorSet1);
+            await donorFileImporter.ImportDonorFile(donorCreateFile_DonorSet1);
 
-            var updateCountBeforeSecondImport = await updatesInspectionRepository.Count();
+            var donorCountBeforeSecondImport = await updatesInspectionRepository.Count();
 
             //ACT
-            await donorFileImporter.ImportDonorFile(donorUpdateFile_DonorSets1And2);
+            await donorFileImporter.ImportDonorFile(donorCreateFile_DonorSets1And2);
+            
+            mockLogger.Received().SendTrace(Arg.Any<string>(), LogLevel.Info, Arg.Is<Dictionary<string, string>>(d => d.ContainsKey("FailedDonorIds") && donorCreates_Set1.All(donor => d["FailedDonorIds"].Contains(donor.RecordId))));
 
-            await mockNotificationsSender.ReceivedWithAnyArgs(1).SendAlert(default, default, default, default);
-
-            donorRepository.StreamAllDonors().Where(donor => donor.ExternalDonorCode.StartsWith(donorCodePrefix)).Should().HaveCount(4);
+            donorRepository.StreamAllDonors().Where(donor => donor.ExternalDonorCode.StartsWith(donorCodePrefix)).Should().HaveCount(set1Count + set2Count);
 
             var updateCountAfterSecondImport = await updatesInspectionRepository.Count();
-            updateCountAfterSecondImport.Should().Be(updateCountBeforeSecondImport);
+            updateCountAfterSecondImport.Should().Be(donorCountBeforeSecondImport + set2Count);
         }
     }
 }
