@@ -108,7 +108,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     BatchedResult = azureStorageSettings.ShouldBatchResults
                 };
 
-                await repeatResultsBlobStorageClient.UploadResults(searchResultSet, $"{searchRequestId}/{repeatSearchId}");
+                await repeatResultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize, $"{searchRequestId}/{repeatSearchId}");
 
                 var notification = new MatchingResultsNotification
                 {

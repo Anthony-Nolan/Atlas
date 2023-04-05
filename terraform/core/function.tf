@@ -48,7 +48,7 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "AtlasFunction:AzureStorage:MatchPredictionConnectionString"          = azurerm_storage_account.azure_storage.primary_connection_string
     "AtlasFunction:AzureStorage:MatchPredictionRequestsBlobContainer"     = module.match_prediction.storage.match_prediction_requests_container_name
     "AtlasFunction:AzureStorage:MatchPredictionResultsBlobContainer"      = module.match_prediction.storage.match_prediction_results_container_name
-    "AtlasFunction:AzureStorage:BatchSize"                                = var.RESULTS_BATCH_SIZE
+    "AtlasFunction:AzureStorage:ResultsShouldBeBatched"                   = var.RESULTS_SHOULD_BE_BATCHED
 
     "AtlasFunction:MessagingServiceBus:ConnectionString"                        = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
     "AtlasFunction:MessagingServiceBus:MatchingResultsSubscription"             = azurerm_servicebus_subscription.match-prediction-orchestration-search-results-ready.name

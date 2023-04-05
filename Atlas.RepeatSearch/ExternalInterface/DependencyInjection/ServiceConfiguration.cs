@@ -102,7 +102,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             {
                 var settings = fetchAzureStorageSettings(sp);
                 var logger = sp.GetService<IMatchingAlgorithmSearchLogger>();
-                return new SearchResultsBlobStorageClient(settings.ConnectionString, settings.SearchResultsBatchSize, logger);
+                return new SearchResultsBlobStorageClient(settings.ConnectionString, logger);
             });
 
             services.AddScoped<IRepeatSearchValidator, RepeatSearchValidator>();

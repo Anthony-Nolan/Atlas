@@ -17,7 +17,7 @@ namespace Atlas.Functions.Services
 {
     public interface ISearchCompletionMessageSender
     {
-        Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime) where T : SearchResultSet;
+        Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime, string resultsBatchFolder) where T : SearchResultSet;
         Task PublishFailureMessage(FailureNotificationRequestInfo requestInfo);
     }
 
@@ -28,23 +28,20 @@ namespace Atlas.Functions.Services
         private readonly string connectionString;
         private readonly string resultsNotificationTopicName;
         private readonly string repeatResultsNotificationTopicName;
-        private readonly bool resultBatched;
 
         public SearchCompletionMessageSender(
             IOptions<MessagingServiceBusSettings> messagingServiceBusSettings,
             ILogger logger,
-            IMapper mapper,
-            IOptions<AzureStorageSettings> azureStorageSettings)
+            IMapper mapper)
         {
             this.logger = logger;
             this.mapper = mapper;
             connectionString = messagingServiceBusSettings.Value.ConnectionString;
             resultsNotificationTopicName = messagingServiceBusSettings.Value.SearchResultsTopic;
             repeatResultsNotificationTopicName = messagingServiceBusSettings.Value.RepeatSearchResultsTopic;
-            resultBatched = azureStorageSettings.Value.ShouldBatchResults;
         }
 
-        public async Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime) where T : SearchResultSet
+        public async Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime, string resultsBatchFolder) where T : SearchResultSet
         {
             using (logger.RunTimed($"Publishing results message: {searchResultSet.SearchRequestId}"))
             {
@@ -80,8 +77,8 @@ namespace Atlas.Functions.Services
                     MatchingAlgorithmTime = searchResultSet.MatchingAlgorithmTime,
                     MatchPredictionTime = searchResultSet.MatchPredictionTime,
                     OverallSearchTime = searchTime,
-                    ResultsBatched = resultBatched,
-                    BatchFolderName = resultBatched && searchResultSet.TotalResults > 0 ? searchResultSet.SearchRequestId : null
+                    ResultsBatched = searchResultSet.BatchedResult,
+                    BatchFolderName = searchResultSet.BatchedResult && searchResultSet.TotalResults > 0 ? resultsBatchFolder : null
                 };
                 await SendNotificationMessage(searchResultsNotification);
             }
