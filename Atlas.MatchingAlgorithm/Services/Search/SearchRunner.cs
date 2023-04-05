@@ -88,7 +88,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     BatchedResult = azureStorageSettings.ShouldBatchResults
                 };
 
-                await resultsBlobStorageClient.UploadResults(searchResultSet, searchResultSet.SearchRequestId);
+                await resultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize, searchResultSet.SearchRequestId);
 
                 var notification = new MatchingResultsNotification
                 {

@@ -99,7 +99,7 @@ namespace Atlas.Functions
             {
                 var settings = sp.GetService<IOptions<Settings.AzureStorageSettings>>().Value;
                 var logger = sp.GetService<ILogger>();
-                return new SearchResultsBlobStorageClient(settings.MatchingConnectionString, settings.SearchResultsBatchSize, logger);
+                return new SearchResultsBlobStorageClient(settings.MatchingConnectionString, logger);
             });
             services.AddSingleton<IMatchingResultsDownloader, MatchingResultsDownloader>(sp =>
             {

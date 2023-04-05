@@ -8,29 +8,32 @@ namespace Atlas.Common.AzureStorage.Blob
 {
     public interface ISearchResultsBlobStorageClient
     {
-        Task UploadResults<T>(ResultSet<T> searchResultSet, string batchFolder) where T : Result;
+        Task UploadResults<T>(ResultSet<T> searchResultSet, int searchResultsBatchSize, string batchFolder) where T : Result;
+        Task UploadResults<T>(T results, string blobContainerName, string fileName);
     }
 
     public class SearchResultsBlobStorageClient : BlobUploader, ISearchResultsBlobStorageClient
     {
-        private readonly int searchResultsBatchSize;
-
-        public SearchResultsBlobStorageClient(string connectionString, int searchResultsBatchSize, ILogger logger)
+        public SearchResultsBlobStorageClient(string connectionString, ILogger logger)
             : base(connectionString, logger)
         {
-            this.searchResultsBatchSize = searchResultsBatchSize;
         }
 
-        public async Task UploadResults<T>(ResultSet<T> searchResultSet, string batchFolder) where T : Result
+        public async Task UploadResults<T>(ResultSet<T> searchResultSet, int searchResultsBatchSize, string batchFolder) where T : Result
         {
-            // Results will not be serialised if results are being batched
-            var serialisedResults = JsonConvert.SerializeObject(searchResultSet);
-            await Upload(searchResultSet.BlobStorageContainerName, searchResultSet.ResultsFileName, serialisedResults);
+            await UploadResults(searchResultSet, searchResultSet.BlobStorageContainerName, searchResultSet.ResultsFileName);
 
             if (searchResultSet.BatchedResult)
             {
                 await ChunkAndUpload(searchResultSet.Results, searchResultsBatchSize, searchResultSet.BlobStorageContainerName, batchFolder);
             }
+        }
+
+        public async Task UploadResults<T>(T results, string blobContainerName, string fileName)
+        {
+            // Results will not be serialised if results are being batched
+            var serialisedResults = JsonConvert.SerializeObject(results);
+            await Upload(blobContainerName, fileName, serialisedResults);
         }
     }
 }

@@ -354,7 +354,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             {
                 var settings = fetchAzureStorageSettings(sp);
                 var logger = sp.GetService<IMatchingAlgorithmSearchLogger>();
-                return new SearchResultsBlobStorageClient(settings.ConnectionString, settings.SearchResultsBatchSize, logger);
+                return new SearchResultsBlobStorageClient(settings.ConnectionString, logger);
             });
         }
 

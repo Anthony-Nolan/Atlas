@@ -93,7 +93,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default);
 
-            await resultsBlobStorageClient.Received().UploadResults(Arg.Is<ResultSet<MatchingAlgorithmResult>>(r => !r.BatchedResult), id);
+            await resultsBlobStorageClient.Received().UploadResults(Arg.Is<ResultSet<MatchingAlgorithmResult>>(r => !r.BatchedResult), Arg.Any<int>(), id);
         }
 
         [Test]
@@ -103,7 +103,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             await batchedResultsSearchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default);
 
-            await resultsBlobStorageClient.Received().UploadResults(Arg.Is<ResultSet<MatchingAlgorithmResult>>(r => r.BatchedResult), id);
+            await resultsBlobStorageClient.Received().UploadResults(Arg.Is<ResultSet<MatchingAlgorithmResult>>(r => r.BatchedResult), Arg.Any<int>(), id);
         }
 
         [Test]

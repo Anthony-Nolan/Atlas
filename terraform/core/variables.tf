@@ -357,6 +357,12 @@ variable "SERVICE_PLAN_SKU" {
   description = "The SKU size for the *non-elastic* service plan. This only hosts the donor import functions, all other services live on the elastic plan."
 }
 
+variable "SHOULD_BATCH_RESULTS" {
+  type        = bool
+  default     = false
+  description = "Inidicates whether final search/repeat search results should be batched or not"
+}
+
 variable "TERRAFORM_RESOURCE_GROUP_NAME" {
   type        = string
   description = "Resource group in which the terraform backend is deployed."

@@ -11,7 +11,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.DonorImport.ExternalInterface.Models;
-using Atlas.Functions.Models;
 using Atlas.Functions.Settings;
 using Microsoft.Extensions.Options;
 
@@ -19,12 +18,13 @@ namespace Atlas.Functions.Services
 {
     public interface IResultsCombiner
     {
-        Task<SearchResultSet> CombineResults(
-            ResultSet<MatchingAlgorithmResult> matchingAlgorithmResultSet,
+        Task<IEnumerable<SearchResult>> CombineResults(
+            string searchRequestId,
+            IEnumerable<MatchingAlgorithmResult> matchingAlgorithmResults,
             IReadOnlyDictionary<int, Donor> donorInformation,
-            TimedResultSet<IReadOnlyDictionary<int, string>> matchPredictionResultLocations,
-            TimeSpan matchingTime
-        );
+            IReadOnlyDictionary<int, string> matchPredictionResultLocations);
+
+        SearchResultSet BuildResultsSummary(ResultSet<MatchingAlgorithmResult> matchingAlgorithmResultSet, TimeSpan matchPredictionTime, TimeSpan matchingTime);
     }
 
     internal class ResultsCombiner : IResultsCombiner
@@ -45,18 +45,10 @@ namespace Atlas.Functions.Services
             matchPredictionResultsContainer = azureStorageSettings.Value.MatchPredictionResultsBlobContainer;
         }
 
-        /// <inheritdoc />
-        public async Task<SearchResultSet> CombineResults(
-            ResultSet<MatchingAlgorithmResult> matchingAlgorithmResultSet,
-            IReadOnlyDictionary<int, Donor> donorInformation,
-            TimedResultSet<IReadOnlyDictionary<int, string>> matchPredictionResultLocations,
-            TimeSpan matchingTime
-        )
+        public SearchResultSet BuildResultsSummary(ResultSet<MatchingAlgorithmResult> matchingAlgorithmResultSet, TimeSpan matchPredictionTime, TimeSpan matchingTime)
         {
-            using (logger.RunTimed($"Combine search results: {matchingAlgorithmResultSet.SearchRequestId}"))
+            using (logger.RunTimed($"Build results summary: {matchingAlgorithmResultSet.SearchRequestId}"))
             {
-                var matchPredictionResults = await DownloadMatchPredictionResults(matchPredictionResultLocations.ResultSet);
-
                 var resultSet = matchingAlgorithmResultSet is RepeatMatchingAlgorithmResultSet repeatSet
                     ? new RepeatSearchResultSet
                     {
@@ -65,21 +57,34 @@ namespace Atlas.Functions.Services
                     } as SearchResultSet
                     : new OriginalSearchResultSet();
 
-                resultSet.Results = matchingAlgorithmResultSet.Results.Select(r => new SearchResult
-                {
-                    DonorCode = donorInformation[r.AtlasDonorId].ExternalDonorCode,
-                    MatchingResult = r,
-                    MatchPredictionResult = matchPredictionResults[r.AtlasDonorId]
-                });
                 resultSet.TotalResults = matchingAlgorithmResultSet.TotalResults;
                 resultSet.MatchingAlgorithmHlaNomenclatureVersion = matchingAlgorithmResultSet.MatchingAlgorithmHlaNomenclatureVersion;
                 resultSet.SearchRequestId = matchingAlgorithmResultSet.SearchRequestId;
                 resultSet.BlobStorageContainerName = resultsContainer;
                 resultSet.MatchingAlgorithmTime = matchingTime;
-                resultSet.MatchPredictionTime = matchPredictionResultLocations.ElapsedTime;
+                resultSet.MatchPredictionTime = matchPredictionTime;
                 resultSet.SearchRequest = matchingAlgorithmResultSet.SearchRequest;
 
                 return resultSet;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<SearchResult>> CombineResults(
+            string searchRequestId,
+            IEnumerable<MatchingAlgorithmResult> matchingAlgorithmResults,
+            IReadOnlyDictionary<int, Donor> donorInformation,
+            IReadOnlyDictionary<int, string> matchPredictionResultLocations)
+        {
+            using (logger.RunTimed($"Combine search results: {searchRequestId}"))
+            {
+                var matchPredictionResults = await DownloadMatchPredictionResults(matchPredictionResultLocations);
+                return matchingAlgorithmResults.Select(r => new SearchResult
+                {
+                    DonorCode = donorInformation[r.AtlasDonorId].ExternalDonorCode,
+                    MatchingResult = r,
+                    MatchPredictionResult = matchPredictionResults[r.AtlasDonorId]
+                });
             }
         }
 
