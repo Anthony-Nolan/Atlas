@@ -339,12 +339,6 @@ variable "RESULTS_BATCH_SIZE" {
   description = "Batch size (number of results written per file) for saving search/matching results"
 }
 
-variable "RESULTS_SHOULD_BE_BATCHED" {
-  type        = bool
-  default     = false
-  description = "Inidicates whether final search/repeat search results should be batched or not"
-}
-
 variable "SERVICE_PLAN_MAX_SCALE_OUT" {
   type        = number
   default     = 50
@@ -361,6 +355,12 @@ variable "SERVICE_PLAN_SKU" {
     size = "S1"
   }
   description = "The SKU size for the *non-elastic* service plan. This only hosts the donor import functions, all other services live on the elastic plan."
+}
+
+variable "SHOULD_BATCH_RESULTS" {
+  type        = bool
+  default     = false
+  description = "Inidicates whether final search/repeat search results should be batched or not"
 }
 
 variable "TERRAFORM_RESOURCE_GROUP_NAME" {

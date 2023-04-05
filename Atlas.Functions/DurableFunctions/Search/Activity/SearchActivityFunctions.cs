@@ -126,7 +126,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             var resultSet = resultsCombiner.BuildResultsSummary(matchingResultsSummary, parameters.MatchPredictionResultLocations.ElapsedTime, parameters.MatchingResultsNotification.ElapsedTime);
 
             resultSet.BlobStorageContainerName = resultSet.IsRepeatSearchSet ? azureStorageSettings.RepeatSearchResultsBlobContainer : azureStorageSettings.SearchResultsBlobContainer;
-            resultSet.BatchedResult = matchingResultsNotification.ResultsBatched && azureStorageSettings.ResultsShouldBeBatched;
+            resultSet.BatchedResult = matchingResultsNotification.ResultsBatched && azureStorageSettings.ShouldBatchResults;
 
             resultSet.Results ??= await logger.RunTimedAsync("Combining search results", async () =>
                 await ProcessSearchResults(
@@ -135,7 +135,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                     parameters.MatchPredictionResultLocations.ResultSet,
                     matchingResultsNotification.BatchFolderName,
                     resultSet.BlobStorageContainerName,
-                    azureStorageSettings.ResultsShouldBeBatched)
+                    azureStorageSettings.ShouldBatchResults)
                 );
 
             await searchResultsBlobUploader.UploadResults(resultSet, resultSet.BlobStorageContainerName, resultSet.ResultsFileName);
@@ -166,7 +166,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                     await donorReader.GetDonors(donorIds)
                 );
 
-                var currentSearchResults = await resultsCombiner.CombineResults(searchRequestId, matchingResults, donorInfo, matchPredictionResultLocations.Where(l => donorIds.Contains(l.Key)).ToDictionary());
+                var matchPredictionResultLocationsForCurrentDonors = matchPredictionResultLocations.Where(l => donorIds.Contains(l.Key)).ToDictionary();
+                var currentSearchResults = await resultsCombiner.CombineResults(searchRequestId, matchingResults, donorInfo, matchPredictionResultLocationsForCurrentDonors);
                 if (resultsShouldBeBatched)
                 {
                     await searchResultsBlobUploader.UploadResults(currentSearchResults, blobStorageContainerName, $"{batchFolder}/{++batchNumber}.json");
