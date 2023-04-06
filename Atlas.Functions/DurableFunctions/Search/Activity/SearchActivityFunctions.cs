@@ -128,15 +128,17 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             resultSet.BlobStorageContainerName = resultSet.IsRepeatSearchSet ? azureStorageSettings.RepeatSearchResultsBlobContainer : azureStorageSettings.SearchResultsBlobContainer;
             resultSet.BatchedResult = matchingResultsNotification.ResultsBatched && azureStorageSettings.ShouldBatchResults;
 
-            resultSet.Results ??= await logger.RunTimedAsync("Combining search results", async () =>
-                await ProcessSearchResults(
+            resultSet.Results = await logger.RunTimedAsync("Combining search results", async () =>
+                matchingResultsNotification.ResultsBatched
+                ? await ProcessBatchedSearchResults(
                     resultSet.SearchRequestId,
                     matchingResultsNotification.IsRepeatSearch,
                     parameters.MatchPredictionResultLocations.ResultSet,
                     matchingResultsNotification.BatchFolderName,
                     resultSet.BlobStorageContainerName,
                     azureStorageSettings.ShouldBatchResults)
-                );
+                : await ProcessSearchResults(resultSet.SearchRequestId, matchingResultsSummary.Results, parameters.MatchPredictionResultLocations.ResultSet)
+            );
 
             await searchResultsBlobUploader.UploadResults(resultSet, resultSet.BlobStorageContainerName, resultSet.ResultsFileName);
             await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated, matchingResultsNotification.BatchFolderName);
@@ -148,7 +150,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             await searchCompletionMessageSender.PublishFailureMessage(requestInfo);
         }
 
-        private async Task<IEnumerable<SearchResult>> ProcessSearchResults(
+        private async Task<IEnumerable<SearchResult>> ProcessBatchedSearchResults(
             string searchRequestId,
             bool isRepeatSearch,
             IReadOnlyDictionary<int, string> matchPredictionResultLocations,
@@ -162,12 +164,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             await foreach (var matchingResults in matchingResultsDownloader.DownloadResults(isRepeatSearch, batchFolder))
             {
                 var donorIds = matchingResults.Select(r => r.AtlasDonorId).ToList();
-                var donorInfo = await logger.RunTimedAsync("Fetch donor data", async () =>
-                    await donorReader.GetDonors(donorIds)
-                );
-
                 var matchPredictionResultLocationsForCurrentDonors = matchPredictionResultLocations.Where(l => donorIds.Contains(l.Key)).ToDictionary();
-                var currentSearchResults = await resultsCombiner.CombineResults(searchRequestId, matchingResults, donorInfo, matchPredictionResultLocationsForCurrentDonors);
+                var currentSearchResults = await ProcessSearchResults(searchRequestId, matchingResults, matchPredictionResultLocationsForCurrentDonors);
                 if (resultsShouldBeBatched)
                 {
                     await searchResultsBlobUploader.UploadResults(currentSearchResults, blobStorageContainerName, $"{batchFolder}/{++batchNumber}.json");
@@ -179,6 +177,15 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             }
 
             return allSearchResults;
+        }
+
+        private async Task<IEnumerable<SearchResult>> ProcessSearchResults(string searchRequestId, IEnumerable<MatchingAlgorithmResult> matchingResults, IReadOnlyDictionary<int, string> matchPredictionResultLocations)
+        {
+            var donorIds = matchingResults.Select(r => r.AtlasDonorId).ToList();
+            var donorInfo = await logger.RunTimedAsync("Fetch donor data", async () =>
+                await donorReader.GetDonors(donorIds)
+            );
+            return await resultsCombiner.CombineResults(searchRequestId, matchingResults, donorInfo, matchPredictionResultLocations);
         }
     }
 }
