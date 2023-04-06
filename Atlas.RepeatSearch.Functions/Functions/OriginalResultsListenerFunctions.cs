@@ -1,12 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.Utils;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
-using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
-using Newtonsoft.Json;
 
 namespace Atlas.RepeatSearch.Functions.Functions
 {
@@ -28,7 +25,10 @@ namespace Atlas.RepeatSearch.Functions.Functions
                 Connection = "MessagingServiceBus:ConnectionString")]
             MatchingResultsNotification resultsNotification)
         {
-            await originalSearchResultSetTracker.StoreOriginalSearchResults(resultsNotification);
+            if (resultsNotification.WasSuccessful)
+            {
+                await originalSearchResultSetTracker.StoreOriginalSearchResults(resultsNotification);
+            }
         }
     }
 }
