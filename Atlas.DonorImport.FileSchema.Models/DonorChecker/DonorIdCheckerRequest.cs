@@ -6,9 +6,11 @@ namespace Atlas.DonorImport.FileSchema.Models.DonorChecker
     /// </summary>
     public class DonorIdCheckerRequest
     {
+        public string donPool { get; set; }
+        public string donorType { get; set; }
         /// <summary>
         /// List of alphanumeric donor record Ids.
         /// </summary>
-        public IEnumerable<string> recordIds { get; set; }
+        public IEnumerable<string> donors { get; set; }
     }
 }

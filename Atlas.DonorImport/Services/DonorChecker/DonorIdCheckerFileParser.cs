@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.IO;
+using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Exceptions;
+using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
+using Atlas.DonorImport.Models;
 using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Services.DonorIdChecker
@@ -19,6 +23,7 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
 
     internal interface ILazilyParsingDonorIdFile
     {
+        (string registryCode, DatabaseDonorType donorType) ReadRegistryCodeAndDonorType();
         IEnumerable<string> ReadLazyDonorIds();
     }
 
@@ -29,6 +34,69 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
         public LazilyParsingDonorIdFile(Stream stream)
         {
             underlyingDataStream = stream;
+        }
+
+        public (string registryCode, DatabaseDonorType donorType) ReadRegistryCodeAndDonorType()
+        {
+            if (underlyingDataStream == null)
+            {
+                throw new EmptyDonorFileException();
+            }
+
+            var registryCode = string.Empty;
+            ImportDonorType? donorType = default;
+
+            using (var streamReader = new StreamReader(underlyingDataStream))
+            using (var reader = new JsonTextReader(streamReader))
+            {
+                while (TryRead(reader))
+                {
+                    if (reader.TokenType != JsonToken.PropertyName)
+                    {
+                        continue;
+                    }
+
+                    var propertyName = reader.Value?.ToString();
+
+                    switch (propertyName)
+                    {
+                        case nameof(DonorIdCheckerRequest.donPool):
+                            TryRead(reader);
+                            registryCode = reader.Value?.ToString();
+                            break;
+                        case nameof(DonorIdCheckerRequest.donorType):
+                            TryRead(reader);
+                            try
+                            {
+                                donorType = new JsonSerializer().Deserialize<ImportDonorType>(reader);
+                            }
+                            catch (JsonSerializationException  e)
+                            {
+                                throw new MalformedDonorFileException($"Error parsing {nameof(DonorIdCheckerRequest.donorType)}.");
+                            }
+                            break;
+                        default:
+                            throw new MalformedDonorFileException($"{nameof(DonorIdCheckerRequest.donPool)} and {nameof(DonorIdCheckerRequest.donorType)} must be first properties in the file.");
+                    }
+
+                    if (!string.IsNullOrEmpty(registryCode) && donorType.HasValue)
+                    {
+                        return (registryCode, donorType.Value.ToDatabaseType());
+                    }
+                }
+            }
+
+            if (string.IsNullOrEmpty(registryCode))
+            {
+                throw new MalformedDonorFileException($"{nameof(DonorIdCheckerRequest.donPool)} cannot be null.");
+            }
+
+            if (!donorType.HasValue)
+            {
+                throw new MalformedDonorFileException($"{nameof(DonorIdCheckerRequest.donorType)} cannot be null.");
+            }
+
+            return (registryCode, donorType.Value.ToDatabaseType());
         }
 
         public IEnumerable<string> ReadLazyDonorIds()
@@ -50,9 +118,9 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
 
                     var propertyName = reader.Value?.ToString();
                     
-                    if (propertyName != nameof(DonorIdCheckerRequest.recordIds))
+                    if (propertyName != nameof(DonorIdCheckerRequest.donors))
                     {
-                        throw new MalformedDonorFileException("recordIds property must be the first property provided in donor id JSON file.");
+                        continue;
                     }
 
                     TryRead(reader);

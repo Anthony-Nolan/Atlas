@@ -23,6 +23,8 @@ namespace Atlas.DonorImport.Data.Repositories
         /// <param name="externalDonorCodes"></param>
         /// <returns>A dictionary of External Donor Code to donor hash.</returns>
         public Task<IReadOnlyDictionary<string, string>> GetDonorsHashes(IEnumerable<string> externalDonorCodes);
+
+        Task<IReadOnlyCollection<string>> GetExternalDonorCodes(string registryCode, DatabaseDonorType donorType);
     }
 
     public class DonorReadRepository : DonorRepositoryBase, IDonorReadRepository
@@ -154,6 +156,18 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
                     async codes => await connection.QueryAsync<(string, string)>(sql, new { codes })
                 )).ToDictionary(d => d.Item1, d=> d.Item2 );
             }
+        }
+
+
+        public async Task<IReadOnlyCollection<string>> GetExternalDonorCodes(string registryCode, DatabaseDonorType donorType)
+        {
+            var sql = @$"
+SELECT {nameof(Donor.ExternalDonorCode)} FROM {Donor.QualifiedTableName}
+WHERE {nameof(Donor.RegistryCode)} = @{nameof(registryCode)} AND {nameof(Donor.DonorType)} = @{nameof(donorType)}
+";
+            await using var connection = NewConnection();
+            var externalDonorCodes = await connection.QueryAsync<string>(sql, new { registryCode, donorType });
+            return externalDonorCodes.ToList();
         }
     }
 }
