@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.Collections.Generic;
 using System.IO;
-using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
-using Atlas.DonorImport.Models;
 using Newtonsoft.Json;
 
-namespace Atlas.DonorImport.Services.DonorIdChecker
+namespace Atlas.DonorImport.Services.DonorChecker
 {
     internal interface IDonorIdCheckerFileParser
     {
@@ -23,7 +19,7 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
 
     internal interface ILazilyParsingDonorIdFile
     {
-        (string registryCode, DatabaseDonorType donorType) ReadRegistryCodeAndDonorType();
+        (string registryCode, ImportDonorType donorType) ReadRegistryCodeAndDonorType();
         IEnumerable<string> ReadLazyDonorIds();
     }
 
@@ -36,7 +32,7 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
             underlyingDataStream = stream;
         }
 
-        public (string registryCode, DatabaseDonorType donorType) ReadRegistryCodeAndDonorType()
+        public (string registryCode, ImportDonorType donorType) ReadRegistryCodeAndDonorType()
         {
             if (underlyingDataStream == null)
             {
@@ -81,7 +77,7 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
 
                     if (!string.IsNullOrEmpty(registryCode) && donorType.HasValue)
                     {
-                        return (registryCode, donorType.Value.ToDatabaseType());
+                        return (registryCode, donorType.Value);
                     }
                 }
             }
@@ -96,7 +92,7 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
                 throw new MalformedDonorFileException($"{nameof(DonorIdCheckerRequest.donorType)} cannot be null.");
             }
 
-            return (registryCode, donorType.Value.ToDatabaseType());
+            return (registryCode, donorType.Value);
         }
 
         public IEnumerable<string> ReadLazyDonorIds()

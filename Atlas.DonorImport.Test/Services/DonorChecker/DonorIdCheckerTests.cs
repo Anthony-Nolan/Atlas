@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.ApplicationInsights;
+using Atlas.DonorImport.Data.Models;
+using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
-using Atlas.DonorImport.ExternalInterface;
+using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 using Atlas.DonorImport.Services.DonorChecker;
-using Atlas.DonorImport.Services.DonorIdChecker;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using FluentAssertions;
 using NSubstitute;
@@ -22,8 +23,10 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
     [TestFixture]
     internal class DonorIdCheckerTests
     {
+        private const string RecordIdPrefix = "record-id-";
+
         private IDonorIdCheckerFileParser fileParser;
-        private IDonorReader donorReader;
+        private IDonorReadRepository donorReadRepository;
         private IDonorIdCheckerBlobStorageClient blobStorageClient;
         private IDonorIdCheckerMessageSender messageSender;
         private INotificationSender notificationSender;
@@ -36,7 +39,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
         public void SetUp()
         {
             fileParser = Substitute.For<IDonorIdCheckerFileParser>();
-            donorReader = Substitute.For<IDonorReader>();
+            donorReadRepository = Substitute.For<IDonorReadRepository>();
             blobStorageClient = Substitute.For<IDonorIdCheckerBlobStorageClient>();
             messageSender = Substitute.For<IDonorIdCheckerMessageSender>();
             notificationSender = Substitute.For<INotificationSender>();
@@ -47,7 +50,18 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
             fileParser.PrepareToLazilyParsingDonorIdFile(Arg.Any<Stream>())
                 .Returns(donorIdFile);
 
-            donorIdChecker = new DonorIdChecker(fileParser, donorReader, blobStorageClient, messageSender, notificationSender, logger);
+            donorIdChecker = new DonorIdChecker(fileParser, donorReadRepository, blobStorageClient, messageSender, notificationSender, logger);
+        }
+
+
+        [Test]
+        public async Task CheckDonorIdsFromFile_ReadsRegistryCodeAndDonorType()
+        {
+            var file = DonorIdCheckFileBuilder.New.Build();
+
+            await donorIdChecker.CheckDonorIdsFromFile(file);
+
+            donorIdFile.Received().ReadRegistryCodeAndDonorType();
         }
 
         [Test]
@@ -63,42 +77,48 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
         [Test]
         public async Task CheckDonorIdsFromFile_ReadsExternalDonorCodes()
         {
-            donorIdFile.ReadLazyDonorIds().Returns(Enumerable.Range(0, 100).Select(id => $"donor-id-{id}"));
+            const string registryCode = "registryCode";
+            const ImportDonorType donorType = ImportDonorType.Adult;
+
+            donorIdFile.ReadRegistryCodeAndDonorType().Returns((registryCode, donorType));
 
             await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await donorReader.Received().GetExistingExternalDonorCodes(Arg.Any<IEnumerable<string>>());
-        }
-        
-        [Test]
-        public async Task CheckDonorIdsFromFile_ReadsExternalDonorCodesBatches()
-        {
-            const int batchSize = 10000;
-            const int numberOfCalls = 2;
-            donorIdFile.ReadLazyDonorIds().Returns(Enumerable.Range(0, batchSize * numberOfCalls).Select(id => $"donor-id-{id}"));
-
-            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
-
-            await donorReader.Received(numberOfCalls).GetExistingExternalDonorCodes(Arg.Any<IEnumerable<string>>());
+            await donorReadRepository.Received().GetExternalDonorCodes(registryCode, DatabaseDonorType.Adult);
         }
 
         [Test]
-        public async Task CheckDonorIdsFromFile_UploadsResults()
+        public async Task CheckDonorIdsFromFile_WhenAbsentDonors_UploadsResults()
         {
-            donorIdFile.ReadLazyDonorIds().Returns(Enumerable.Range(0, 100).Select(id => $"missed-id-{id}"));
-            donorReader.GetExistingExternalDonorCodes(Arg.Any<IEnumerable<string>>()).Returns(new List<string>());
+            var absentDonorIds = Enumerable.Range(0, 100).Select(id => $"absent-id-{id}").ToList();
+            var presentDonorIds = Enumerable.Range(0, 100).Select(id => $"{RecordIdPrefix}{id}").ToList();
+            donorIdFile.ReadLazyDonorIds().Returns(absentDonorIds.Concat(presentDonorIds));
+            donorReadRepository.GetExternalDonorCodes(Arg.Any<string>(), Arg.Any<DatabaseDonorType>()).Returns(presentDonorIds);
 
             await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await blobStorageClient.Received().UploadResults(Arg.Any<DonorCheckerResults>(), Arg.Any<string>());
+            await blobStorageClient.Received().UploadResults(Arg.Is<DonorIdCheckerResults>(r => r.AbsentRecordIds.Count == absentDonorIds.Count && absentDonorIds.All(id => r.AbsentRecordIds.Contains(id))), Arg.Any<string>());
+        }
+
+        [Test]
+        public async Task CheckDonorIdsFromFile_WhenOrphanedDonors_UploadsResults()
+        {
+            var presentDonorIds = Enumerable.Range(0, 100).Select(id => $"{RecordIdPrefix}{id}").ToList();
+            var orphanedDonorIds = Enumerable.Range(100, 100).Select(id => $"absent-id-{id}").ToList();
+            donorIdFile.ReadLazyDonorIds().Returns(presentDonorIds);
+            donorReadRepository.GetExternalDonorCodes(Arg.Any<string>(), Arg.Any<DatabaseDonorType>()).Returns(presentDonorIds.Concat(orphanedDonorIds).ToList());
+
+            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
+
+            await blobStorageClient.Received().UploadResults(Arg.Is<DonorIdCheckerResults>(r => r.OrphanedRecordIds.Count == orphanedDonorIds.Count && orphanedDonorIds.All(id => r.OrphanedRecordIds.Contains(id))), Arg.Any<string>());
         }
 
         [Test]
         public async Task CheckDonorIdsFromFile_WhenNoResults_DoesNotUploadResults()
         {
-            var donorRecordIds = Enumerable.Range(0, 100).Select(id => $"donor-id-{id}").ToList();
+            var donorRecordIds = Enumerable.Range(0, 100).Select(id => $"{RecordIdPrefix}{id}").ToList();
             donorIdFile.ReadLazyDonorIds().Returns(donorRecordIds);
-            donorReader.GetExistingExternalDonorCodes(Arg.Any<IEnumerable<string>>()).Returns(donorRecordIds);
+            donorReadRepository.GetExternalDonorCodes(Arg.Any<string>(), Arg.Any<DatabaseDonorType>()).Returns(donorRecordIds);
 
             await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
@@ -108,9 +128,9 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
         [Test]
         public async Task CheckDonorIdsFromFile_SendsResultMessage()
         {
-            var donorRecordIds = Enumerable.Range(0, 100).Select(id => $"donor-id-{id}").ToList();
+            var donorRecordIds = Enumerable.Range(0, 100).Select(id => $"{RecordIdPrefix}{id}").ToList();
             donorIdFile.ReadLazyDonorIds().Returns(donorRecordIds);
-            donorReader.GetExistingExternalDonorCodes(Arg.Any<IEnumerable<string>>()).Returns(new List<string>());
+            donorReadRepository.GetExternalDonorCodes(Arg.Any<string>(), Arg.Any<DatabaseDonorType>()).Returns(new List<string>());
 
             await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
@@ -120,9 +140,9 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
         [Test]
         public async Task CheckDonorIdsFromFile_WhenNoResults_SendsResultMessage()
         {
-            var donorRecordIds = Enumerable.Range(0, 100).Select(id => $"donor-id-{id}").ToList();
+            var donorRecordIds = Enumerable.Range(0, 100).Select(id => $"{RecordIdPrefix}{id}").ToList();
             donorIdFile.ReadLazyDonorIds().Returns(donorRecordIds);
-            donorReader.GetExistingExternalDonorCodes(Arg.Any<IEnumerable<string>>()).Returns(donorRecordIds);
+            donorReadRepository.GetExternalDonorCodes(Arg.Any<string>(), Arg.Any<DatabaseDonorType>()).Returns(donorRecordIds);
 
             await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
             
