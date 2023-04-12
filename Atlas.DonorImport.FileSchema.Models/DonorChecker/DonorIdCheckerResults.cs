@@ -12,6 +12,5 @@ namespace Atlas.DonorImport.FileSchema.Models.DonorChecker
         public List<string> AbsentRecordIds { get; set; } = new();
         [JsonPropertyName("orphanedRecordIds")]
         public List<string> OrphanedRecordIds { get; set; } = new();
-        
     }
 }

@@ -125,19 +125,21 @@ The three operations - create, update and delete - will cause problems if the fi
 ### Check donor presence in Atlas store
 
 * Upload json input file to `donor-id-checker/requests` subfolder in `donors` blob container 
-  * Json file must contain a string array of donors IDs ([link to request model](/Atlas.DonorImport.FileSchema.Models/DonorChecker/DonorIdCheckerRequest.cs))
+  * Json file must contain donor pool, donor type and a string array of donors IDs ([link to request model](/Atlas.DonorImport.FileSchema.Models/DonorChecker/DonorIdCheckerRequest.cs))
 
   E.g.,
 	```json
 	{
-		"recordIds": [
+		"donPool": "donor-pool",
+		"donorType": "donor-type"
+		"donors": [
 			"record-id-1",
 			...
 			"record-id-N"
 		]
 	}
 	```
-* If absent donors are detected, a results file listing the ids of all absent donors is uploaded to `donor-id-checker/results` subfolder in `donors` blob container with filename `original filename + timestamp`
+* If absent or orphaned donors are detected, a results file listing the two sets of ids is uploaded to `donor-id-checker/results` subfolder in `donors` blob container with filename `original filename + timestamp`
 * `donor-id-checker-results` service bus topic recieves success check messages with filename and result count (i.e., total number of absent donors)
 * `alerts` topic recieves messages if handled exceptions are thrown
 
