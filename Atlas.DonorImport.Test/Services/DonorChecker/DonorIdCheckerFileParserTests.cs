@@ -4,6 +4,7 @@ using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 using Atlas.DonorImport.Services.DonorChecker;
 using Atlas.DonorImport.Test.TestHelpers.Builders.DonorIdCheck;
+using Atlas.DonorImport.Test.TestHelpers.Models.DonorIdCheck;
 using FluentAssertions;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -42,21 +43,32 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
         [Test]
         [TestCase(ImportDonorType.Adult)]
         [TestCase(ImportDonorType.Cord)]
-        public void ReadLazyDonorIds_ReadsRegistryCodeAndDonorType(ImportDonorType donorType)
+        public void ReadLazyDonorIds_ReadsDonorType(ImportDonorType donorType)
         {
-            const string donPool = "donPool";
-
             var fileStream = DonorIdCheckFileContentsBuilder.New
-                .WithDonPool(donPool)
                 .WithDonorType(donorType)
                 .Build().ToStream();
+            var lazyFile = donorIdCheckerFileParser.PrepareToLazilyParsingDonorIdFile(fileStream);
 
-            var (registryCode, parsedDonorType) = donorIdCheckerFileParser.PrepareToLazilyParsingDonorIdFile(fileStream).ReadRegistryCodeAndDonorType();
-
-            registryCode.Should().Be(donPool);
-            parsedDonorType.Should().Be(donorType);
+            lazyFile.ReadLazyDonorIds().ToList();
+            
+            lazyFile.DonorType.Should().Be(donorType);
         }
-        
+
+        [Test]
+        public void ReadLazyDonorIds_ReadsDonorPool()
+        {
+            const string newDonorPool = "newDonorPool";
+            var fileStream = DonorIdCheckFileContentsBuilder.New
+                .WithDonPool(newDonorPool)
+                .Build().ToStream();
+            var lazyFile = donorIdCheckerFileParser.PrepareToLazilyParsingDonorIdFile(fileStream);
+
+            lazyFile.ReadLazyDonorIds().ToList();
+
+            lazyFile.DonorPool.Should().Be(newDonorPool);
+        }
+
         [Test]
         public void ReadLazyDonorIds_WhenInvalidDonorType_ThrowsMalformedDonorFileException()
         {
@@ -66,7 +78,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
                 .ToStream();
             var lazyFile = donorIdCheckerFileParser.PrepareToLazilyParsingDonorIdFile(fileStream);
 
-            lazyFile.Invoking(lf => lf.ReadRegistryCodeAndDonorType())
+            lazyFile.Invoking(lf => lf.ReadLazyDonorIds().ToList())
                 .Should()
                 .Throw<MalformedDonorFileException>()
                 .WithMessage($"Error parsing {nameof(DonorIdCheckerRequest.donorType)}.");
@@ -80,14 +92,13 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
                 .ToStream();
             var lazyFile = donorIdCheckerFileParser.PrepareToLazilyParsingDonorIdFile(fileStream);
 
-            lazyFile.Invoking(lf => lf.ReadRegistryCodeAndDonorType())
+            lazyFile.Invoking(lf => lf.ReadLazyDonorIds().ToList())
                 .Should()
-                .Throw<MalformedDonorFileException>()
-                .WithMessage($"{nameof(DonorIdCheckerRequest.donPool)} and {nameof(DonorIdCheckerRequest.donorType)} must be first properties in the file.");
+                .Throw<MalformedDonorFileException>();
         }
         
         [Test]
-        public void ReadLazyDonorIds_WhenEmptyDonorPool_ThrowsMalformedDonorFileException()
+        public void ReadLazyDonorIds_WhenNoDonorPool_ThrowsMalformedDonorFileException()
         {
             var fileStream = DonorIdCheckFileContentsBuilder.New
                 .WithDonPool(string.Empty)
@@ -95,37 +106,24 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
                 .ToStream();
             var lazyFile = donorIdCheckerFileParser.PrepareToLazilyParsingDonorIdFile(fileStream);
 
-            lazyFile.Invoking(lf => lf.ReadRegistryCodeAndDonorType())
+            lazyFile.Invoking(lf => lf.ReadLazyDonorIds().ToList())
                 .Should()
-                .Throw<MalformedDonorFileException>();
+                .Throw<MalformedDonorFileException>()
+                .WithMessage($"{nameof(DonorIdCheckerRequest.donPool)} property must be defined before list of donors and cannot be null.");
         }
 
         [Test]
-        public void ReadLazyDonorIds_WhenNoDonorType_ThrowsMalformedDonorFileException()
+        public void ReadLazyDonorIds_WhenUnexpectedProperty_ThrowsMalformedDonorFileException()
         {
-            var fileStream = InvalidDonorIdCheckFileContentsBuilder.FileWithDonorPoolOnly
+            var fileStream = InvalidDonorIdCheckFileContentsBuilder.FileWithUnexpectedProperty
                 .Build()
                 .ToStream();
             var lazyFile = donorIdCheckerFileParser.PrepareToLazilyParsingDonorIdFile(fileStream);
 
-            lazyFile.Invoking(lf => lf.ReadRegistryCodeAndDonorType())
+            lazyFile.Invoking(lf => lf.ReadLazyDonorIds().ToList())
                 .Should()
                 .Throw<MalformedDonorFileException>()
-                .WithMessage($"{nameof(DonorIdCheckerRequest.donorType)} cannot be null.");
-        }
-
-        [Test]
-        public void ReadLazyDonorIds_WhenNoDonorPool_ThrowsMalformedDonorFileException()
-        {
-            var fileStream = InvalidDonorIdCheckFileContentsBuilder.FileWithDonorTypeOnly
-                .Build()
-                .ToStream();
-            var lazyFile = donorIdCheckerFileParser.PrepareToLazilyParsingDonorIdFile(fileStream);
-
-            lazyFile.Invoking(lf => lf.ReadRegistryCodeAndDonorType())
-                .Should()
-                .Throw<MalformedDonorFileException>()
-                .WithMessage($"{nameof(DonorIdCheckerRequest.donPool)} cannot be null.");
+                .WithMessage($"Unexpected property '{nameof(SerializableDonorIdCheckerFileContentWithUnexpectedProperty.unexpectedProperty)}' in the file.");
         }
     }
 }

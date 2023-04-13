@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 using Atlas.DonorImport.Models;
 using MoreLinq;
@@ -29,6 +31,8 @@ namespace Atlas.DonorImport.Services.DonorChecker
         private readonly INotificationSender notificationSender;
         private readonly ILogger logger;
 
+        private Dictionary<string, bool> loadedExternalDonorCodes;
+
         public DonorIdChecker(IDonorIdCheckerFileParser fileParser, IDonorReadRepository donorReadRepository, IDonorIdCheckerBlobStorageClient blobStorageClient, IDonorIdCheckerMessageSender messageSender, INotificationSender notificationSender, ILogger logger)
         {
             this.fileParser = fileParser;
@@ -45,20 +49,13 @@ namespace Atlas.DonorImport.Services.DonorChecker
             var lazyFile = fileParser.PrepareToLazilyParsingDonorIdFile(file.Contents);
             var filename = GetResultFilename(file.FileLocation);
             var checkedDonorIdsCount = 0;
+            var absentRecordIds = new List<string>();
 
             try
             {
-                var (registryCode, donorType) = lazyFile.ReadRegistryCodeAndDonorType();
-                var donorIdCheckResults = new DonorIdCheckerResults
-                {
-                    RegistryCode = registryCode,
-                    DonorType = donorType
-                };
-
-                var externalDonorCodes = (await donorReadRepository.GetExternalDonorCodes(registryCode, donorType.ToDatabaseType())).ToDictionary(c => c, _ => false);
-
                 foreach (var recordIdsBatch in lazyFile.ReadLazyDonorIds().Batch(BatchSize))
                 {
+                    var externalDonorCodes = await GetOrReadExternalDonorCodes(lazyFile.DonorPool, lazyFile.DonorType);
                     var recordIdsInBatchChecked = 0;
                     foreach (var recordId in recordIdsBatch)
                     {
@@ -69,7 +66,7 @@ namespace Atlas.DonorImport.Services.DonorChecker
                         }
                         else
                         {
-                            donorIdCheckResults.AbsentRecordIds.Add(recordId);
+                            absentRecordIds.Add(recordId);
                         }
                     }
 
@@ -77,8 +74,17 @@ namespace Atlas.DonorImport.Services.DonorChecker
                     LogMessage($"Batch complete - checked {recordIdsInBatchChecked} donor(s) this batch. Cumulatively {checkedDonorIdsCount} donor(s). ");
                 }
 
-                donorIdCheckResults.OrphanedRecordIds.AddRange(externalDonorCodes.Where(c => !c.Value).Select(c => c.Key));
-
+                var orphanedRecordIds = (await GetOrReadExternalDonorCodes(lazyFile.DonorPool, lazyFile.DonorType)).Where(c => !c.Value)
+                    .Select(c => c.Key);
+                
+                var donorIdCheckResults = new DonorIdCheckerResults
+                {
+                    RegistryCode = lazyFile.DonorPool,
+                    DonorType = lazyFile.DonorType.ToString(),
+                    AbsentRecordIds = absentRecordIds,
+                    OrphanedRecordIds = orphanedRecordIds.ToList()
+                };
+                
                 var resultsCount = donorIdCheckResults.OrphanedRecordIds.Count + donorIdCheckResults.AbsentRecordIds.Count;
 
                 if (resultsCount > 0)
@@ -105,6 +111,9 @@ namespace Atlas.DonorImport.Services.DonorChecker
                 throw;
             }
         }
+
+        private async Task<Dictionary<string, bool>> GetOrReadExternalDonorCodes(string registryCode, ImportDonorType donorType) => 
+            loadedExternalDonorCodes ??= (await donorReadRepository.GetExternalDonorCodes(registryCode, donorType.ToDatabaseType())).ToDictionary(c => c, _ => false);
 
         private string GetResultFilename(string location) =>
             $"{Path.GetFileNameWithoutExtension(location)}-{DateTime.Now:yyyyMMddhhmmssfff}.json";

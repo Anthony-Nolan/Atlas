@@ -19,80 +19,19 @@ namespace Atlas.DonorImport.Services.DonorChecker
 
     internal interface ILazilyParsingDonorIdFile
     {
-        (string registryCode, ImportDonorType donorType) ReadRegistryCodeAndDonorType();
         IEnumerable<string> ReadLazyDonorIds();
+        string DonorPool { get; }
+        ImportDonorType DonorType { get; }
     }
 
     internal class LazilyParsingDonorIdFile : ILazilyParsingDonorIdFile
     {
         private readonly Stream underlyingDataStream;
+        private ImportDonorType? convertedDonorType;
 
         public LazilyParsingDonorIdFile(Stream stream)
         {
             underlyingDataStream = stream;
-        }
-
-        public (string registryCode, ImportDonorType donorType) ReadRegistryCodeAndDonorType()
-        {
-            if (underlyingDataStream == null)
-            {
-                throw new EmptyDonorFileException();
-            }
-
-            var registryCode = string.Empty;
-            ImportDonorType? donorType = default;
-
-            using (var streamReader = new StreamReader(underlyingDataStream))
-            using (var reader = new JsonTextReader(streamReader))
-            {
-                while (TryRead(reader))
-                {
-                    if (reader.TokenType != JsonToken.PropertyName)
-                    {
-                        continue;
-                    }
-
-                    var propertyName = reader.Value?.ToString();
-
-                    switch (propertyName)
-                    {
-                        case nameof(DonorIdCheckerRequest.donPool):
-                            TryRead(reader);
-                            registryCode = reader.Value?.ToString();
-                            break;
-                        case nameof(DonorIdCheckerRequest.donorType):
-                            TryRead(reader);
-                            try
-                            {
-                                donorType = new JsonSerializer().Deserialize<ImportDonorType>(reader);
-                            }
-                            catch (JsonSerializationException  e)
-                            {
-                                throw new MalformedDonorFileException($"Error parsing {nameof(DonorIdCheckerRequest.donorType)}.");
-                            }
-                            break;
-                        default:
-                            throw new MalformedDonorFileException($"{nameof(DonorIdCheckerRequest.donPool)} and {nameof(DonorIdCheckerRequest.donorType)} must be first properties in the file.");
-                    }
-
-                    if (!string.IsNullOrEmpty(registryCode) && donorType.HasValue)
-                    {
-                        return (registryCode, donorType.Value);
-                    }
-                }
-            }
-
-            if (string.IsNullOrEmpty(registryCode))
-            {
-                throw new MalformedDonorFileException($"{nameof(DonorIdCheckerRequest.donPool)} cannot be null.");
-            }
-
-            if (!donorType.HasValue)
-            {
-                throw new MalformedDonorFileException($"{nameof(DonorIdCheckerRequest.donorType)} cannot be null.");
-            }
-
-            return (registryCode, donorType.Value);
         }
 
         public IEnumerable<string> ReadLazyDonorIds()
@@ -113,23 +52,53 @@ namespace Atlas.DonorImport.Services.DonorChecker
                     }
 
                     var propertyName = reader.Value?.ToString();
-                    
-                    if (propertyName != nameof(DonorIdCheckerRequest.donors))
+
+                    switch (propertyName)
                     {
-                        continue;
-                    }
+                        case nameof(DonorIdCheckerRequest.donPool):
+                            TryRead(reader);
+                            DonorPool = reader.Value?.ToString();
+                            break;
+                        case nameof(DonorIdCheckerRequest.donorType):
+                            TryRead(reader);
+                            try
+                            {
+                                convertedDonorType = new JsonSerializer().Deserialize<ImportDonorType>(reader);
+                            }
+                            catch (JsonSerializationException e)
+                            {
+                                throw new MalformedDonorFileException($"Error parsing {nameof(DonorIdCheckerRequest.donorType)}.");
+                            }
+                            break;
+                        case nameof(DonorIdCheckerRequest.donors):
+                            if (string.IsNullOrEmpty(DonorPool))
+                            {
+                                throw new MalformedDonorFileException($"{nameof(DonorIdCheckerRequest.donPool)} property must be defined before list of donors and cannot be null.");
+                            }
 
-                    TryRead(reader);
+                            if (!convertedDonorType.HasValue)
+                            {
+                                throw new MalformedDonorFileException($"{nameof(DonorIdCheckerRequest.donorType)} property must be defined before list of donors and cannot be null.");
+                            }
 
-                    while (TryRead(reader) &&  reader.TokenType != JsonToken.EndArray)
-                    {
-                        var donorId = reader.Value?.ToString();
+                            TryRead(reader);
+                            while (TryRead(reader) && reader.TokenType != JsonToken.EndArray)
+                            {
+                                var donorId = reader.Value?.ToString();
 
-                        yield return donorId;
+                                yield return donorId;
+                            }
+                            break;
+                        default:
+                            throw new MalformedDonorFileException($"Unexpected property '{propertyName}' in the file.");
                     }
                 }
             }
         }
+        
+        public string DonorPool { get; private set; }
+
+        public ImportDonorType DonorType => convertedDonorType.GetValueOrDefault();
 
         private static bool TryRead(JsonReader reader)
         {

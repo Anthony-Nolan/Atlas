@@ -41,14 +41,14 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders.DonorIdCheck
     internal static class InvalidDonorIdCheckFileContentsBuilder
     {
         public static Builder<SerializableDonorIdCheckerFileContentWithInvalidPropertyOrder> FileWithInvalidPropertyOrder => Builder<SerializableDonorIdCheckerFileContentWithInvalidPropertyOrder>.New
+            .With(c => c.donPool, "donPool")
+            .With(c => c.donorType, ImportDonorType.Adult.ToString())
             .With(c => c.donors, Enumerable.Empty<string>());
 
-        public static Builder<SerializableDonorIdCheckerFileContentWithDonorPoolOnly> FileWithDonorPoolOnly =>
-            Builder<SerializableDonorIdCheckerFileContentWithDonorPoolOnly>.New
-                .With(c => c.donPool, "donPool");
-
-        public static Builder<SerializableDonorIdCheckerFileContentWithDonorTypeOnly> FileWithDonorTypeOnly =>
-            Builder<SerializableDonorIdCheckerFileContentWithDonorTypeOnly>.New
-                .With(c => c.donorType, ImportDonorType.Adult.ToString());
+        public static Builder<SerializableDonorIdCheckerFileContentWithUnexpectedProperty> FileWithUnexpectedProperty =>
+            Builder<SerializableDonorIdCheckerFileContentWithUnexpectedProperty>.New
+                .With(c => c.donPool, "donPool")
+                .With(c => c.donorType, ImportDonorType.Adult.ToString())
+                .With(c => c.donors, Enumerable.Empty<string>());
     }
 }

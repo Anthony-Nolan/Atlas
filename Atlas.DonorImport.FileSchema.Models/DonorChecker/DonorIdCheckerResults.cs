@@ -7,7 +7,7 @@ namespace Atlas.DonorImport.FileSchema.Models.DonorChecker
         [JsonPropertyName("donPool")]
         public string RegistryCode { get; set; }
         [JsonPropertyName("donorType")]
-        public ImportDonorType DonorType { get; set; }
+        public string DonorType { get; set; }
         [JsonPropertyName("absentRecordIds")]
         public List<string> AbsentRecordIds { get; set; } = new();
         [JsonPropertyName("orphanedRecordIds")]

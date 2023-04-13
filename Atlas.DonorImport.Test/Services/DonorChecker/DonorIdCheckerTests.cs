@@ -24,6 +24,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
     internal class DonorIdCheckerTests
     {
         private const string RecordIdPrefix = "record-id-";
+        private const int BatchSize = 10000;
 
         private IDonorIdCheckerFileParser fileParser;
         private IDonorReadRepository donorReadRepository;
@@ -53,17 +54,6 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
             donorIdChecker = new DonorIdChecker(fileParser, donorReadRepository, blobStorageClient, messageSender, notificationSender, logger);
         }
 
-
-        [Test]
-        public async Task CheckDonorIdsFromFile_ReadsRegistryCodeAndDonorType()
-        {
-            var file = DonorIdCheckFileBuilder.New.Build();
-
-            await donorIdChecker.CheckDonorIdsFromFile(file);
-
-            donorIdFile.Received().ReadRegistryCodeAndDonorType();
-        }
-
         [Test]
         public async Task CheckDonorIdsFromFile_ParsesInputFile()
         {
@@ -75,16 +65,18 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
         }
 
         [Test]
-        public async Task CheckDonorIdsFromFile_ReadsExternalDonorCodes()
+        public async Task CheckDonorIdsFromFile_ReadsExternalDonorCodesOnlyOnce()
         {
             const string registryCode = "registryCode";
             const ImportDonorType donorType = ImportDonorType.Adult;
 
-            donorIdFile.ReadRegistryCodeAndDonorType().Returns((registryCode, donorType));
+            donorIdFile.DonorPool.Returns(registryCode);
+            donorIdFile.DonorType.Returns(donorType);
+            donorIdFile.ReadLazyDonorIds().Returns(Enumerable.Range(0, BatchSize * 2).Select(id => $"{RecordIdPrefix}{id}"));
 
             await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await donorReadRepository.Received().GetExternalDonorCodes(registryCode, DatabaseDonorType.Adult);
+            await donorReadRepository.Received(1).GetExternalDonorCodes(registryCode, DatabaseDonorType.Adult);
         }
 
         [Test]
