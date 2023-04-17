@@ -168,6 +168,12 @@ variable "MATCH_PREDICTION_DATABASE_USERNAME" {
   default = "match_prediction"
 }
 
+variable "MATCH_PREDICTION_DOWNLOAD_NUMBER_OF_THREADS" {
+  type    = number
+  default = 10
+  description = "Number of threads used to download match prediction resutls"
+}
+
 variable "MATCHING_BATCH_SIZE" {
   type        = number
   default     = 250000
