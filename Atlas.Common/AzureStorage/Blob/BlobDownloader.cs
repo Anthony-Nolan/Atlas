@@ -35,8 +35,9 @@ namespace Atlas.Common.AzureStorage.Blob
         /// <typeparam name="T">Type of the entries stored in the file</typeparam>
         /// <param name="container">Blob container</param>
         /// <param name="locations">A dictionary where Key is an id of the entry and Value is a file name where this entry is stored</param>
+        /// <param name="batchSize">Batch size</param>
         /// <returns>A dictionary where Key is an id of the entry and Value is an object of type <typeparamref name="T"></returns>
-        Task<Dictionary<int, T>> DownloadMultipleBlobs<T>(string container, IReadOnlyDictionary<int, string> locations, int numberOfDownloadThreads);
+        Task<Dictionary<int, T>> DownloadMultipleBlobs<T>(string container, IReadOnlyDictionary<int, string> locations, int batchSize);
 
         /// <summary>
         /// Downloads all files within the folder <paramref name="folderName"/> from blob container <paramref name="container"/> file by file (i.e. it deserializes and keeps in memory data from one file only)
@@ -85,7 +86,7 @@ namespace Atlas.Common.AzureStorage.Blob
             return data;
         }
 
-        public async Task<Dictionary<int, T>> DownloadMultipleBlobs<T>(string container, IReadOnlyDictionary<int, string> locations, int numberOfDownloadThreads)
+        public async Task<Dictionary<int, T>> DownloadMultipleBlobs<T>(string container, IReadOnlyDictionary<int, string> locations, int batchSize)
         {
             var data = new Dictionary<int, T>();
 
@@ -93,7 +94,7 @@ namespace Atlas.Common.AzureStorage.Blob
 
             var containerClient = GetBlobContainer(container);
 
-            foreach (var locationBatch in locations.Batch(GetBatchSize(locations.Count, numberOfDownloadThreads)))
+            foreach (var locationBatch in locations.Batch(batchSize))
             {
                 var getBlobDataTasksDictionary = Enumerable.ToDictionary(locationBatch, location => location.Key,
                     location => Task.Run(() => GetBlobData<T>(containerClient, location.Value)));
@@ -133,8 +134,5 @@ namespace Atlas.Common.AzureStorage.Blob
 
             return JsonConvert.DeserializeObject<T>(downloadedBlob.Value.Content.ToString());
         }
-
-        private int GetBatchSize(int locationsCount, int numberOfDownloadThreads)
-            => locationsCount > 0 && numberOfDownloadThreads > 0 ? (int)Math.Ceiling((double)locationsCount / numberOfDownloadThreads) : 1;
     }
 }
