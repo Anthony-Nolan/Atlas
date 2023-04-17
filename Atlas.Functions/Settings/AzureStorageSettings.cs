@@ -11,7 +11,7 @@ namespace Atlas.Functions.Settings
         public string MatchPredictionConnectionString { get; set; }
         public string MatchPredictionRequestsBlobContainer { get; set; }
         public string MatchPredictionResultsBlobContainer { get; set; }
-        public int MatchPredictionDownloadNumberOfThreads { get; set; }
+        public int MatchPredictionDownloadBatchSize { get; set; }
 
         public bool ShouldBatchResults { get; set; }
     }
