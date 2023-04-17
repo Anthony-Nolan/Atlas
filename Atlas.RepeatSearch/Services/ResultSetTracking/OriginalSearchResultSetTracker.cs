@@ -34,17 +34,20 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
 
             var donorIds = new List<string>();
 
-            if (notification.ResultsBatched && !string.IsNullOrEmpty(notification.BatchFolderName))
+            if (notification.NumberOfResults > 0)
             {
-                var matchingAlgorithmResults = blobDownloader.DownloadFolderContentsFileByFile<MatchingAlgorithmResult>(notification.BlobStorageContainerName, notification.BatchFolderName);
-                await foreach (var resultsList in matchingAlgorithmResults)
+                if (notification.ResultsBatched && !string.IsNullOrEmpty(notification.BatchFolderName))
                 {
-                    donorIds.AddRange(resultsList.Select(r => r.DonorCode));
+                    var matchingAlgorithmResults = blobDownloader.DownloadFolderContentsFileByFile<MatchingAlgorithmResult>(notification.BlobStorageContainerName, notification.BatchFolderName);
+                    await foreach (var resultsList in matchingAlgorithmResults)
+                    {
+                        donorIds.AddRange(resultsList.Select(r => r.DonorCode));
+                    }
                 }
-            }
-            else
-            {
-                donorIds = resultSet.Results.Select(r => r.DonorCode).ToList();
+                else
+                {
+                    donorIds = resultSet.Results.Select(r => r.DonorCode).ToList();
+                }
             }
 
             await canonicalResultSetRepository.CreateCanonicalResultSet(resultSet.SearchRequestId, donorIds);
