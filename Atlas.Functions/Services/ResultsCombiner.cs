@@ -33,7 +33,7 @@ namespace Atlas.Functions.Services
         private readonly IBlobDownloader blobDownloader;
         private readonly string resultsContainer;
         private readonly string matchPredictionResultsContainer;
-        private readonly int MatchPredictionDownloadBatchSize;
+        private readonly int matchPredictionDownloadBatchSize;
 
         public ResultsCombiner(
             IOptions<AzureStorageSettings> azureStorageSettings,
@@ -44,7 +44,7 @@ namespace Atlas.Functions.Services
             this.blobDownloader = blobDownloader;
             resultsContainer = azureStorageSettings.Value.SearchResultsBlobContainer;
             matchPredictionResultsContainer = azureStorageSettings.Value.MatchPredictionResultsBlobContainer;
-            MatchPredictionDownloadBatchSize = azureStorageSettings.Value.MatchPredictionDownloadBatchSize;
+            matchPredictionDownloadBatchSize = azureStorageSettings.Value.MatchPredictionDownloadBatchSize;
         }
 
         public SearchResultSet BuildResultsSummary(ResultSet<MatchingAlgorithmResult> matchingAlgorithmResultSet, TimeSpan matchPredictionTime, TimeSpan matchingTime)
@@ -96,7 +96,7 @@ namespace Atlas.Functions.Services
             using (logger.RunTimed("Download match prediction algorithm results"))
             {
                 logger.SendTrace($"{matchPredictionResultLocations.Count} donor results to download");
-                return await blobDownloader.DownloadMultipleBlobs<MatchProbabilityResponse>(matchPredictionResultsContainer, matchPredictionResultLocations, MatchPredictionDownloadBatchSize);
+                return await blobDownloader.DownloadMultipleBlobs<MatchProbabilityResponse>(matchPredictionResultsContainer, matchPredictionResultLocations, matchPredictionDownloadBatchSize);
             }
         }
     }
