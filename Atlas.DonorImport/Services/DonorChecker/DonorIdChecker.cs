@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Data.Repositories;
@@ -89,7 +90,10 @@ namespace Atlas.DonorImport.Services.DonorChecker
 
                 if (resultsCount > 0)
                 {
-                    await blobStorageClient.UploadResults(donorIdCheckResults, filename);
+                    using (logger.RunTimed("Donor Id Check results were uploaded."))
+                    {
+                        await blobStorageClient.UploadResults(donorIdCheckResults, filename);
+                    }
                 }
 
                 LogMessage($"Donor Id Check for file '{file.FileLocation}' complete. Checked {checkedDonorIdsCount} donor(s). Found {donorIdCheckResults.AbsentRecordIds.Count} absent and {donorIdCheckResults.OrphanedRecordIds.Count} orphaned donor(s).");
@@ -112,8 +116,8 @@ namespace Atlas.DonorImport.Services.DonorChecker
             }
         }
 
-        private async Task<Dictionary<string, bool>> GetOrReadExternalDonorCodes(string registryCode, ImportDonorType donorType) => 
-            loadedExternalDonorCodes ??= (await donorReadRepository.GetExternalDonorCodes(registryCode, donorType.ToDatabaseType())).ToDictionary(c => c, _ => false);
+        private async Task<Dictionary<string, bool>> GetOrReadExternalDonorCodes(string registryCode, ImportDonorType donorType) =>
+            loadedExternalDonorCodes ??= await logger.RunTimedAsync("Donor External Codes were read.", async () => (await donorReadRepository.GetExternalDonorCodes(registryCode, donorType.ToDatabaseType())).ToDictionary(c => c, _ => false), logAtStart: true);
 
         private string GetResultFilename(string location) =>
             $"{Path.GetFileNameWithoutExtension(location)}-{DateTime.Now:yyyyMMddhhmmssfff}.json";

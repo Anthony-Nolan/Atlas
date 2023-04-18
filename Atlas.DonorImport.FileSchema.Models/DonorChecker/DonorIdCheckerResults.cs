@@ -2,7 +2,7 @@
 
 namespace Atlas.DonorImport.FileSchema.Models.DonorChecker
 {
-    public class DonorIdCheckerResults
+    public class DonorIdCheckerResults : IDonorCheckerResults
     {
         [JsonPropertyName("donPool")]
         public string RegistryCode { get; set; }
