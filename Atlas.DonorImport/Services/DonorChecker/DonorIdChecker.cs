@@ -1,18 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.ApplicationInsights;
+using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
-using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
-using Atlas.DonorImport.Services.DonorChecker;
+using Atlas.DonorImport.Models;
 using MoreLinq;
 
-namespace Atlas.DonorImport.Services.DonorIdChecker
+namespace Atlas.DonorImport.Services.DonorChecker
 {
     public interface IDonorIdChecker
     {
@@ -23,16 +26,18 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
     {
         private const int BatchSize = 10000;
         private readonly IDonorIdCheckerFileParser fileParser;
-        private readonly IDonorReader donorReader;
+        private readonly IDonorReadRepository donorReadRepository;
         private readonly IDonorIdCheckerBlobStorageClient blobStorageClient;
         private readonly IDonorIdCheckerMessageSender messageSender;
         private readonly INotificationSender notificationSender;
         private readonly ILogger logger;
 
-        public DonorIdChecker(IDonorIdCheckerFileParser fileParser, IDonorReader donorReader, IDonorIdCheckerBlobStorageClient blobStorageClient, IDonorIdCheckerMessageSender messageSender, INotificationSender notificationSender, ILogger logger)
+        private Dictionary<string, bool> loadedExternalDonorCodes;
+
+        public DonorIdChecker(IDonorIdCheckerFileParser fileParser, IDonorReadRepository donorReadRepository, IDonorIdCheckerBlobStorageClient blobStorageClient, IDonorIdCheckerMessageSender messageSender, INotificationSender notificationSender, ILogger logger)
         {
             this.fileParser = fileParser;
-            this.donorReader = donorReader;
+            this.donorReadRepository = donorReadRepository;
             this.blobStorageClient = blobStorageClient;
             this.messageSender = messageSender;
             this.notificationSender = notificationSender;
@@ -43,30 +48,57 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
         {
             LogMessage($"Beginning Donor Id Check for file '{file.FileLocation}'.");
             var lazyFile = fileParser.PrepareToLazilyParsingDonorIdFile(file.Contents);
-            var donorIdCheckResults = new DonorCheckerResults();
             var filename = GetResultFilename(file.FileLocation);
             var checkedDonorIdsCount = 0;
+            var absentRecordIds = new List<string>();
 
             try
             {
-                foreach (var donorIdsBatch in lazyFile.ReadLazyDonorIds().Batch(BatchSize))
+                foreach (var recordIdsBatch in lazyFile.ReadLazyDonorIds().Batch(BatchSize))
                 {
-                    var donorIdsList = donorIdsBatch.ToList();
-                    var externalDonorCodes = await donorReader.GetExistingExternalDonorCodes(donorIdsList);
-                    donorIdCheckResults.DonorRecordIds.AddRange(donorIdsList.Except(externalDonorCodes));
+                    var externalDonorCodes = await GetOrReadExternalDonorCodes(lazyFile.DonorPool, lazyFile.DonorType);
+                    var recordIdsInBatchChecked = 0;
+                    foreach (var recordId in recordIdsBatch)
+                    {
+                        recordIdsInBatchChecked++;
+                        if (externalDonorCodes.ContainsKey(recordId))
+                        {
+                            externalDonorCodes[recordId] = true;
+                        }
+                        else
+                        {
+                            absentRecordIds.Add(recordId);
+                        }
+                    }
 
-                    checkedDonorIdsCount += donorIdsList.Count;
-                    LogMessage($"Batch complete - checked {donorIdsList.Count} donor(s) this batch. Cumulatively {checkedDonorIdsCount} donor(s). ");
+                    checkedDonorIdsCount += recordIdsInBatchChecked;
+                    LogMessage($"Batch complete - checked {recordIdsInBatchChecked} donor(s) this batch. Cumulatively {checkedDonorIdsCount} donor(s). ");
                 }
 
-                if (donorIdCheckResults.DonorRecordIds.Count > 0)
+                var orphanedRecordIds = (await GetOrReadExternalDonorCodes(lazyFile.DonorPool, lazyFile.DonorType)).Where(c => !c.Value)
+                    .Select(c => c.Key);
+                
+                var donorIdCheckResults = new DonorIdCheckerResults
                 {
-                    await blobStorageClient.UploadResults(donorIdCheckResults, filename);
+                    RegistryCode = lazyFile.DonorPool,
+                    DonorType = lazyFile.DonorType.ToString(),
+                    AbsentRecordIds = absentRecordIds,
+                    OrphanedRecordIds = orphanedRecordIds.ToList()
+                };
+                
+                var resultsCount = donorIdCheckResults.OrphanedRecordIds.Count + donorIdCheckResults.AbsentRecordIds.Count;
+
+                if (resultsCount > 0)
+                {
+                    using (logger.RunTimed("Donor Id Check results were uploaded."))
+                    {
+                        await blobStorageClient.UploadResults(donorIdCheckResults, filename);
+                    }
                 }
 
-                LogMessage($"Donor Id Check for file '{file.FileLocation}' complete. Checked {checkedDonorIdsCount} donor(s). Found {donorIdCheckResults.DonorRecordIds.Count} absent donor(s).");
+                LogMessage($"Donor Id Check for file '{file.FileLocation}' complete. Checked {checkedDonorIdsCount} donor(s). Found {donorIdCheckResults.AbsentRecordIds.Count} absent and {donorIdCheckResults.OrphanedRecordIds.Count} orphaned donor(s).");
 
-                await messageSender.SendSuccessDonorCheckMessage(file.FileLocation, donorIdCheckResults.DonorRecordIds.Count, filename);
+                await messageSender.SendSuccessDonorCheckMessage(file.FileLocation, resultsCount, filename);
             }
             catch (EmptyDonorFileException e)
             {
@@ -83,6 +115,9 @@ namespace Atlas.DonorImport.Services.DonorIdChecker
                 throw;
             }
         }
+
+        private async Task<Dictionary<string, bool>> GetOrReadExternalDonorCodes(string registryCode, ImportDonorType donorType) =>
+            loadedExternalDonorCodes ??= await logger.RunTimedAsync("Donor External Codes were read.", async () => (await donorReadRepository.GetExternalDonorCodes(registryCode, donorType.ToDatabaseType())).ToDictionary(c => c, _ => false), logAtStart: true);
 
         private string GetResultFilename(string location) =>
             $"{Path.GetFileNameWithoutExtension(location)}-{DateTime.Now:yyyyMMddhhmmssfff}.json";

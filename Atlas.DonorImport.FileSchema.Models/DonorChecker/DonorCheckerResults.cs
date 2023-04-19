@@ -3,7 +3,7 @@
     /// <summary>
     /// Results for the donor checker
     /// </summary>
-    public class DonorCheckerResults
+    public class DonorCheckerResults : IDonorCheckerResults
     {
         /// <summary>
         /// List of donor ids that returned by donor checker

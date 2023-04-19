@@ -27,7 +27,7 @@ Search results will still be written to one file along with search summary if ba
 Default value for 'SearchResultsBatchSize' is '0'.
 
 #### Donor Import
-* Added new function `CheckDonorIdsFromFile` that checks absence of donors in Atlas storage
+* Added new function `CheckDonorIdsFromFile` that does symmetric check of donors absence/presence in Atlas storage
 * Added new function `CheckDonorInfoFromFile` that compares donor/CBU fields with Atlas
 * Updated `ImportDonorFile` function to log invalid donor updates to AI if donor is not present in Atlas storage instead of throwing error
 * Updated `ImportDonorFile` function to log invalid donor creates for `diff` update mode to AI if donor is present in Atlas storage instead of throwing error

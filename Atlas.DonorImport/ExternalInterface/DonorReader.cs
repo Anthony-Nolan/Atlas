@@ -32,13 +32,6 @@ namespace Atlas.DonorImport.ExternalInterface
         /// <param name="cutoffDate">Date past which donor must have been updated to be considered</param>
         /// <returns>A dictionary of External Donor Code to Atlas donor id.</returns>
         Task<IReadOnlyDictionary<string, int>> GetDonorIdsUpdatedSince(DateTimeOffset cutoffDate);
-
-        /// <summary>
-        /// Fetch *external* donor codes
-        /// </summary>
-        /// <param name="externalDonorCodes">External Donor Codes to fetch</param>
-        /// <returns>A dictionary of External Donor Codes.</returns>
-        Task<IReadOnlyCollection<string>> GetExistingExternalDonorCodes(IEnumerable<string> externalDonorCodes);
     }
 
     public class DonorReader : IDonorReader
@@ -73,9 +66,5 @@ namespace Atlas.DonorImport.ExternalInterface
         {
             return await donorReadRepository.GetDonorIdsUpdatedSince(cutoffDate);
         }
-
-        /// <inheritdoc />
-        public async Task<IReadOnlyCollection<string>> GetExistingExternalDonorCodes(IEnumerable<string> externalDonorCodes) =>
-            await donorReadRepository.GetExistingExternalDonorCodes(externalDonorCodes);
     }
 }

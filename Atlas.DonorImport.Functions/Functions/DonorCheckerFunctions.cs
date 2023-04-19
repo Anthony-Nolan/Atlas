@@ -3,7 +3,6 @@ using Atlas.DonorImport.ExternalInterface.Models;
 using Microsoft.Azure.WebJobs;
 using System.IO;
 using System.Threading.Tasks;
-using Atlas.DonorImport.Services.DonorIdChecker;
 using Atlas.DonorImport.Services.DonorChecker;
 
 namespace Atlas.DonorImport.Functions.Functions
@@ -26,7 +25,7 @@ namespace Atlas.DonorImport.Functions.Functions
                 "%MessagingServiceBus:DonorIdCheckerTopic%",
                 "%MessagingServiceBus:DonorIdCheckerSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString"
-            )] EventGridSchema blobCreatedEvent, string messageId,
+            )] EventGridSchema blobCreatedEvent,
             [Blob("{data.url}", FileAccess.Read)] Stream blobStream // Raw JSON Text file containing donor updates in expected schema
         )
         {
@@ -44,7 +43,7 @@ namespace Atlas.DonorImport.Functions.Functions
                 "%MessagingServiceBus:DonorInfoCheckerTopic%",
                 "%MessagingServiceBus:DonorInfoCheckerSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString"
-            )] EventGridSchema blobCreatedEvent, string messageId,
+            )] EventGridSchema blobCreatedEvent,
             [Blob("{data.url}", FileAccess.Read)] Stream blobStream // Raw JSON Text file containing donor updates in expected schema
         )
         {

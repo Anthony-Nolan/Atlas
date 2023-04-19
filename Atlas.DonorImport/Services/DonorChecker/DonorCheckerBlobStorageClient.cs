@@ -8,7 +8,7 @@ namespace Atlas.DonorImport.Services.DonorChecker
 {
     public interface IDonorCheckerBlobStorageClient
     {
-        Task UploadResults(DonorCheckerResults checkerResults, string filename);
+        Task UploadResults<T>(T checkerResults, string filename) where T : IDonorCheckerResults;
     }
 
     public interface IDonorIdCheckerBlobStorageClient : IDonorCheckerBlobStorageClient { }
@@ -25,7 +25,7 @@ namespace Atlas.DonorImport.Services.DonorChecker
             this.checkerFolderName = checkerFolderName;
         }
 
-        public async Task UploadResults(DonorCheckerResults checkerResults, string filename)
+        public async Task UploadResults<T>(T checkerResults, string filename) where T : IDonorCheckerResults
         {
             var serialisedResults = JsonConvert.SerializeObject(checkerResults);
             await Upload(donorBlobContainer, $"{checkerFolderName}/{filename}", serialisedResults);
