@@ -13,18 +13,21 @@ The project version will be appropriately incremented with each change to the pr
 ### 1.6.0
 
 #### Blob Storage
-* Bug fix: Stopped excessive number of `CreateContainer` API calls being made during blob download.  
+* Bug fix: Stopped excessive number of `CreateContainer` API calls being made during blob download.
 
 #### Search
 * Ensure all failed search requests are reported as completed by routing dead-lettered search request messages to the `search-results-ready` topic, with the appropriate failure information.
 
-#### Search/Repeat Search: 
-Added an ability to save search results in multiple files. Result files will now be split into two types:
- - Search summary - this will be a single file containing all search result metadata, e.g., number of matches, the original search request, etc.
- - Search results - these will be written to 1 or more files, each containing a maximum number of results (this is a configurable setting AzureStorage:BatchSize).
+##### Writing of Search Results
+* Added an ability to save search results in multiple files. Result files will now be split into two types:
+  * Search summary - this will be a single file containing all search result metadata, e.g., number of matches, the original search request, etc.
+  * Search results - these will be written to 1 or more files, each containing a maximum number of results (this is a configurable setting AzureStorage:BatchSize).
+* Search results will still be written to one file along with search summary if batch size (`SearchResultsBatchSize`) is set to a value less than or equal to '0'. 
+  - Default value for 'SearchResultsBatchSize' is '0'.
 
-Search results will still be written to one file along with search summary if batch size (SearchResultsBatchSize) is set to a value less than or equal to '0'. 
-Default value for 'SearchResultsBatchSize' is '0'.
+#### Repeat Search
+* Bug fix: the `StoreOriginalSearchResults` function can now successfully process failed searches and successful searches with no matching donors.
+* Ability to save search results in multiple files ([see Search section](#writing-of-search-results) for further info).
 
 #### Donor Import
 * Added new function `CheckDonorIdsFromFile` that does symmetric check of donors absence/presence in Atlas storage
