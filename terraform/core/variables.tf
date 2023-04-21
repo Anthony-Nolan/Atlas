@@ -174,6 +174,12 @@ variable "MATCH_PREDICTION_DOWNLOAD_BATCH_SIZE" {
   description = "Batch size for downloading match prediction results"
 }
 
+variable "MATCHING_PREDICTION_PROCESSING_BATCH_SIZE" {
+  type        = number
+  default     = 1000
+  description = "Batch size for processing match prediction requests. Batching will not be used if the value is less than or equal to 0."
+}
+
 variable "MATCHING_BATCH_SIZE" {
   type        = number
   default     = 250000

@@ -12,6 +12,7 @@
     "AtlasFunction:AzureStorage:MatchPredictionRequestsBlobContainer": "match-prediction-requests",
     "AtlasFunction:AzureStorage:MatchPredictionResultsBlobContainer": "match-prediction-results",
     "AtlasFunction:AzureStorage:MatchPredictionDownloadBatchSize": 10,
+    "AtlasFunction:AzureStorage:MatchPredictionProcessingBatchSize": 1000,
     "AtlasFunction:AzureStorage:ShouldBatchResults": false,
 
     "AtlasFunction:MessagingServiceBus:ConnectionString": "override-this",
