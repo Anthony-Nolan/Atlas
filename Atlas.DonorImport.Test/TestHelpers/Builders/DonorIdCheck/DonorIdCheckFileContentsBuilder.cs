@@ -44,11 +44,5 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders.DonorIdCheck
             .With(c => c.donPool, "donPool")
             .With(c => c.donorType, ImportDonorType.Adult.ToString())
             .With(c => c.donors, Enumerable.Empty<string>());
-
-        public static Builder<SerializableDonorIdCheckerFileContentWithUnexpectedProperty> FileWithUnexpectedProperty =>
-            Builder<SerializableDonorIdCheckerFileContentWithUnexpectedProperty>.New
-                .With(c => c.donPool, "donPool")
-                .With(c => c.donorType, ImportDonorType.Adult.ToString())
-                .With(c => c.donors, Enumerable.Empty<string>());
     }
 }

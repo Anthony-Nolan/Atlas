@@ -89,8 +89,6 @@ namespace Atlas.DonorImport.Services.DonorChecker
                                 yield return donorId;
                             }
                             break;
-                        default:
-                            throw new MalformedDonorFileException($"Unexpected property '{propertyName}' in the file.");
                     }
                 }
             }
