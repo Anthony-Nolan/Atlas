@@ -4,6 +4,7 @@ using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 using Atlas.DonorImport.Services.DonorChecker;
 using Atlas.DonorImport.Test.TestHelpers.Builders.DonorIdCheck;
+using Atlas.DonorImport.Test.TestHelpers.Models.DonorIdCheck;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -108,6 +109,19 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
                 .Should()
                 .Throw<MalformedDonorFileException>()
                 .WithMessage($"{nameof(DonorIdCheckerRequest.donPool)} property must be defined before list of donors and cannot be null.");
+        }
+
+        [Test]
+        public void ReadLazyDonorIds_WhenUnexpectedProperty_DoesNotThrowException()
+        {
+            var fileStream = InvalidDonorIdCheckFileContentsBuilder.FileWithUnexpectedProperty
+                .Build()
+                .ToStream();
+            var lazyFile = donorIdCheckerFileParser.PrepareToLazilyParsingDonorIdFile(fileStream);
+
+            lazyFile.Invoking(lf => lf.ReadLazyDonorIds().ToList())
+                .Should()
+                .NotThrow<MalformedDonorFileException>();
         }
     }
 }
