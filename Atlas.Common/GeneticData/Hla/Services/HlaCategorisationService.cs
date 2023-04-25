@@ -31,7 +31,7 @@ namespace Atlas.Common.GeneticData.Hla.Services
         private static readonly string AlleleDesignationPattern =
             $"{MolecularFirstFieldPattern}(:{SingleFieldPattern}){{1,3}}{OptionalExpressionSuffixPattern}";
 
-        private static readonly List<(Regex, HlaTypingCategory)> TypingCategoryRegexes = new List<(Regex, HlaTypingCategory)>
+        private static readonly List<(Regex, HlaTypingCategory)> TypingCategoryRegexes = new()
         {
             (
                 CompiledRegex($"^{MolecularFirstFieldPattern}:(?!XX$)[A-Z]{{2,}}$"),

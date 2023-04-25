@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
@@ -32,28 +30,28 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
     /// </summary>
     public class Dpb1ScoringTests
     {
-        private const string AlleleInTceGroup3 = "01:01:01:01";
-        private const string AlleleInTceGroup3_Other = "02:01:02:01";
-        private const string AlleleInTceGroup2 = "03:01:01:01";
-        private const string AlleleInTceGroup2_Other = "08:01";
         private const string AlleleInTceGroup1 = "10:01:01:01";
         private const string AlleleInTceGroup1_Other = "09:01:01";
+        private const string AlleleInTceGroup2 = "03:01:01:01";
+        private const string AlleleInTceGroup2_Other = "08:01";
+        private const string AlleleInTceGroup3 = "01:01:01:01";
+        private const string AlleleInTceGroup3_Other = "02:01:02:01";
         private const string AlleleWithoutTceGroup = "679:01";
-        private const string AlleleWithoutTceGroup_Other = "1029:01";
+        private const string NonExpressingDpb1Allele = "64:01N";
 
-        private readonly Dictionary<int?, string> PatientDpb1Hla = new Dictionary<int?, string>
+        private readonly Dictionary<int?, string> PatientDpb1Hla = new()
         {
             { 1, AlleleInTceGroup1 },
             { 2, AlleleInTceGroup2 },
-            { 3, AlleleInTceGroup3 },
+            { 3, AlleleInTceGroup3 }
         };
 
-        private readonly Dictionary<int?, string> DonorDpb1Hla = new Dictionary<int?, string>
+        private readonly Dictionary<int?, string> DonorDpb1Hla = new()
         {
             { 1, AlleleInTceGroup1_Other },
             { 2, AlleleInTceGroup2_Other },
             { 3, AlleleInTceGroup3_Other },
-            { 4, AlleleInTceGroup1 },
+            { 4, AlleleInTceGroup1 }
         };
 
         private ISearchService searchService;
@@ -154,6 +152,118 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             scoringResult.SearchResultAtLocusDpb1.MatchCategory.Should().Be(expectedMatchCategory);
         }
 
+        /// <summary>
+        /// Regression test for bug where DPB1 typed with a null allele was not being treated as homozygous.
+        /// Integers used in tandem with <see cref="PatientDpb1Hla"/> and <see cref="DonorDpb1Hla"/> to allow the test cases here to be
+        /// very easily compared to the TCE group functional specification, which uses the group integers
+        /// </summary>
+        [TestCase(1, 1, 1, LocusMatchCategory.PermissiveMismatch, MismatchDirection.NotApplicable)]
+        [TestCase(2, 1, 1, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveHvG)]
+        [TestCase(3, 1, 1, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveHvG)]
+        [TestCase(1, 1, 2, LocusMatchCategory.PermissiveMismatch, MismatchDirection.NotApplicable)]
+        [TestCase(2, 1, 2, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveHvG)]
+        [TestCase(3, 1, 2, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveHvG)]
+        [TestCase(1, 1, 3, LocusMatchCategory.PermissiveMismatch, MismatchDirection.NotApplicable)]
+        [TestCase(2, 1, 3, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveHvG)]
+        [TestCase(3, 1, 3, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveHvG)]
+        [TestCase(1, 2, 2, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveGvH)]
+        [TestCase(2, 2, 2, LocusMatchCategory.PermissiveMismatch, MismatchDirection.NotApplicable)]
+        [TestCase(3,  2, 2, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveHvG)]
+        [TestCase(1, 2, 3, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveGvH)]
+        [TestCase(2, 2, 3, LocusMatchCategory.PermissiveMismatch, MismatchDirection.NotApplicable)]
+        [TestCase(3, 2, 3, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveHvG)]
+        [TestCase(1, 3, 3, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveGvH)]
+        [TestCase(2, 3, 3, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveGvH)]
+        [TestCase(3, 3, 3, LocusMatchCategory.PermissiveMismatch, MismatchDirection.NotApplicable)]
+        public async Task Dpb1Scoring_PatientHasNonExpressingDpb1Allele_TreatsPatientLocusAsHomozygous(
+            int expressingPatientAlleleTceGroup,
+            int donorTceGroup1,
+            int donorTceGroup2,
+            LocusMatchCategory expectedMatchCategory,
+            MismatchDirection expectedMismatchDirection
+        )
+        {
+            var donorPhenotype = GetDefaultPhenotype()
+                .SetPosition(Locus.Dpb1, LocusPosition.One, DonorDpb1Hla[donorTceGroup1])
+                .SetPosition(Locus.Dpb1, LocusPosition.Two, DonorDpb1Hla[donorTceGroup2]);
+
+            var patientPhenotype = GetDefaultPhenotype()
+                .SetPosition(Locus.Dpb1, LocusPosition.One, PatientDpb1Hla[expressingPatientAlleleTceGroup])
+                .SetPosition(Locus.Dpb1, LocusPosition.Two, NonExpressingDpb1Allele);
+
+            var scoringResult = await scoringRequestService.Score(new DonorHlaScoringRequest
+            {
+                DonorHla = donorPhenotype.ToPhenotypeInfoTransfer(),
+                PatientHla = patientPhenotype.ToPhenotypeInfoTransfer(),
+                ScoringCriteria = new ScoringCriteria
+                {
+                    LociToScore = new List<Locus> { Locus.Dpb1 },
+                    LociToExcludeFromAggregateScore = new List<Locus>()
+                }
+            });
+
+            var dpb1Score = scoringResult.SearchResultAtLocusDpb1;
+                
+            dpb1Score.MatchCategory.Should().Be(expectedMatchCategory);
+            dpb1Score.MismatchDirection.Should().Be(expectedMismatchDirection);
+        }
+
+        /// <summary>
+        /// Regression test for bug where DPB1 typed with a null allele was not being treated as homozygous.
+        /// Integers used in tandem with <see cref="PatientDpb1Hla"/> and <see cref="DonorDpb1Hla"/> to allow the test cases here to be
+        /// very easily compared to the TCE group functional specification, which uses the group integers
+        /// </summary>
+        [TestCase(1, 1, 1, LocusMatchCategory.PermissiveMismatch, MismatchDirection.NotApplicable)]
+        [TestCase(2, 1, 1, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveGvH)]
+        [TestCase(3, 1, 1, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveGvH)]
+        [TestCase(1, 1, 2, LocusMatchCategory.PermissiveMismatch, MismatchDirection.NotApplicable)]
+        [TestCase(2, 1, 2, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveGvH)]
+        [TestCase(3, 1, 2, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveGvH)]
+        [TestCase(1, 1, 3, LocusMatchCategory.PermissiveMismatch, MismatchDirection.NotApplicable)]
+        [TestCase(2, 1, 3, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveGvH)]
+        [TestCase(3, 1, 3, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveGvH)]
+        [TestCase(1, 2, 2, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveHvG)]
+        [TestCase(2, 2, 2, LocusMatchCategory.PermissiveMismatch, MismatchDirection.NotApplicable)]
+        [TestCase(3, 2, 2, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveGvH)]
+        [TestCase(1, 2, 3, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveHvG)]
+        [TestCase(2, 2, 3, LocusMatchCategory.PermissiveMismatch, MismatchDirection.NotApplicable)]
+        [TestCase(3, 2, 3, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveGvH)]
+        [TestCase(1, 3, 3, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveHvG)]
+        [TestCase(2, 3, 3, LocusMatchCategory.Mismatch, MismatchDirection.NonPermissiveHvG)]
+        [TestCase(3, 3, 3, LocusMatchCategory.PermissiveMismatch, MismatchDirection.NotApplicable)]
+        public async Task Dpb1Scoring_DonorHasNonExpressingDpb1Allele_TreatsDonorLocusAsHomozygous(
+            int expressingDonorAlleleTceGroup,
+            int patientTceGroup1,
+            int patientTceGroup2,
+            LocusMatchCategory expectedMatchCategory,
+            MismatchDirection expectedMismatchDirection
+        )
+        {
+            var donorPhenotype = GetDefaultPhenotype()
+                .SetPosition(Locus.Dpb1, LocusPosition.One, DonorDpb1Hla[expressingDonorAlleleTceGroup])
+                .SetPosition(Locus.Dpb1, LocusPosition.Two, NonExpressingDpb1Allele);
+
+            var patientPhenotype = GetDefaultPhenotype()
+                .SetPosition(Locus.Dpb1, LocusPosition.One, PatientDpb1Hla[patientTceGroup1])
+                .SetPosition(Locus.Dpb1, LocusPosition.Two, PatientDpb1Hla[patientTceGroup2]);
+
+            var scoringResult = await scoringRequestService.Score(new DonorHlaScoringRequest
+            {
+                DonorHla = donorPhenotype.ToPhenotypeInfoTransfer(),
+                PatientHla = patientPhenotype.ToPhenotypeInfoTransfer(),
+                ScoringCriteria = new ScoringCriteria
+                {
+                    LociToScore = new List<Locus> { Locus.Dpb1 },
+                    LociToExcludeFromAggregateScore = new List<Locus>()
+                }
+            });
+
+            var dpb1Score = scoringResult.SearchResultAtLocusDpb1;
+
+            dpb1Score.MatchCategory.Should().Be(expectedMatchCategory);
+            dpb1Score.MismatchDirection.Should().Be(expectedMismatchDirection);
+        }
+
         [Test]
         public async Task Dpb1BatchScoring_AssignsCorrectPerLocusMatchCategory()
         {
@@ -180,16 +290,16 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 { "22", LocusMatchCategory.Mismatch },
                 { "44", LocusMatchCategory.Match }
             };
-            var expectedDonorIds = new List<string>() { "11", "12", "13", "22", "44" };
+            var expectedDonorIds = new List<string> { "11", "12", "13", "22", "44" };
 
             // Patient 11
             var patientPhenotype = GetDefaultPhenotype();
             patientPhenotype = patientPhenotype.SetLocus(Locus.Dpb1, PatientDpb1Hla[1], PatientDpb1Hla[1]);
 
             var scoringResults = await scoringRequestService.ScoreBatch(
-                new BatchScoringRequest()
+                new BatchScoringRequest
                 {
-                    DonorsHla = new List<IdentifiedDonorHla>()
+                    DonorsHla = new List<IdentifiedDonorHla>
                     {
                         ToIdentifiedDonorHlaData("11", donor11Phenotype),
                         ToIdentifiedDonorHlaData("12", donor12Phenotype),
@@ -216,7 +326,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Dpb1BatchScoring_WhenScoringFailsForSomeDonors_ReturnsNullScoringResultForFailedDonors()
         {
-            PhenotypeInfo<string> GetIncorrectPhenotype()
+            static PhenotypeInfo<string> GetIncorrectPhenotype()
             {
                 var donorHlaWithFailure = GetDefaultPhenotype();
                 donorHlaWithFailure = donorHlaWithFailure.SetLocus(Locus.Dpb1, "incorrect-hla", "incorrect-hla");
@@ -224,15 +334,15 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 return donorHlaWithFailure;
             }
 
-            var expectedDonorIds = new List<string>() { "donor-1", "donor-2", "donor-3-failed", "donor-4", "donor-5-failed" };
-            var donorIdsWithNullResults = new List<string>() { "donor-3-failed", "donor-5-failed" };
+            var expectedDonorIds = new List<string> { "donor-1", "donor-2", "donor-3-failed", "donor-4", "donor-5-failed" };
+            var donorIdsWithNullResults = new List<string> { "donor-3-failed", "donor-5-failed" };
 
             var patientPhenotype = GetDefaultPhenotype();
 
             var scoringResults = await scoringRequestService.ScoreBatch(
-                new BatchScoringRequest()
+                new BatchScoringRequest
                 {
-                    DonorsHla = new List<IdentifiedDonorHla>()
+                    DonorsHla = new List<IdentifiedDonorHla>
                     {
                         ToIdentifiedDonorHlaData("donor-1", GetDefaultPhenotype()),
                         ToIdentifiedDonorHlaData("donor-2", GetDefaultPhenotype()),
@@ -279,7 +389,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var patientPhenotype = GetDefaultPhenotype();
             patientPhenotype = patientPhenotype.SetLocus(Locus.Dpb1, PatientDpb1Hla[1], PatientDpb1Hla[1]);
 
-            var scoringResult = await scoringRequestService.Score(new DonorHlaScoringRequest()
+            var scoringResult = await scoringRequestService.Score(new DonorHlaScoringRequest
             {
                 DonorHla = donorPhenotype.ToPhenotypeInfoTransfer(),
                 PatientHla = patientPhenotype.ToPhenotypeInfoTransfer(),
@@ -312,14 +422,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var patientPhenotype = GetDefaultPhenotype();
             patientPhenotype = patientPhenotype.SetLocus(Locus.Dpb1, PatientDpb1Hla[1], PatientDpb1Hla[1]);
 
-            var scoringResult = await scoringRequestService.Score(new DonorHlaScoringRequest()
+            var scoringResult = await scoringRequestService.Score(new DonorHlaScoringRequest
             {
                 DonorHla = donorPhenotype.ToPhenotypeInfoTransfer(),
                 PatientHla = patientPhenotype.ToPhenotypeInfoTransfer(),
-                ScoringCriteria = new ScoringCriteria()
+                ScoringCriteria = new ScoringCriteria
                 {
                     LociToScore = new[] { Locus.Dpb1, Locus.A },
-                    LociToExcludeFromAggregateScore = new List<Locus>() { Locus.Dpb1 }
+                    LociToExcludeFromAggregateScore = new List<Locus> { Locus.Dpb1 }
                 }
             });
 
@@ -347,12 +457,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 { "donor-permissive-mismatch-id", MatchCategory.PermissiveMismatch },
                 { "donor-mismatch-id", MatchCategory.Mismatch }
             };
-            var expectedDonorIds = new List<string>() { "donor-definite-id", "donor-permissive-mismatch-id", "donor-mismatch-id" };
+            var expectedDonorIds = new List<string> { "donor-definite-id", "donor-permissive-mismatch-id", "donor-mismatch-id" };
 
             var scoringResults = await scoringRequestService.ScoreBatch(
-                new BatchScoringRequest()
+                new BatchScoringRequest
                 {
-                    DonorsHla = new List<IdentifiedDonorHla>()
+                    DonorsHla = new List<IdentifiedDonorHla>
                     {
                         ToIdentifiedDonorHlaData("donor-definite-id", donorDefinitePhenotype),
                         ToIdentifiedDonorHlaData("donor-permissive-mismatch-id", donorPermissiveMismatchPhenotype),
@@ -460,7 +570,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             new PhenotypeInfo<string>(defaultPhenotype).SetLocus(Locus.Dpb1, dpb1Hla);
 
         private static IdentifiedDonorHla ToIdentifiedDonorHlaData(string donorId, PhenotypeInfo<string> phenotypeInfo) =>
-            new IdentifiedDonorHla()
+            new()
             {
                 DonorId = donorId,
                 A = phenotypeInfo.A.ToLocusInfoTransfer(),
@@ -468,7 +578,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 C = phenotypeInfo.C.ToLocusInfoTransfer(),
                 Dpb1 = phenotypeInfo.Dpb1.ToLocusInfoTransfer(),
                 Dqb1 = phenotypeInfo.Dqb1.ToLocusInfoTransfer(),
-                Drb1 = phenotypeInfo.Drb1.ToLocusInfoTransfer(),
+                Drb1 = phenotypeInfo.Drb1.ToLocusInfoTransfer()
             };
 
         private async Task<MatchingAlgorithmResult> RunSixOutOfSixSearchWithAllLociScored(PhenotypeInfo<string> patientPhenotype)
