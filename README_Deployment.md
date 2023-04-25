@@ -141,7 +141,17 @@ Once terraform has created ATLAS resources for the first time, certain actions m
     - The default configuration will use the Standard SKU pricing model for Atlas databases. In some cases, when very varied load is expected, a "serverless" database tier may be appropriate, which auto-scales with load. In such cases, 
     terraform will automatically create a database with an "auto-pause" time of one hour - i.e. after one hour of inactivity, the database will shut off, saving on provisioned CPU cost. This comes with the trade-off that cold starts become
     much slower, and the first few requests to the database will fail as it "wakes up". To increase the auto-pause delay, or to disable it entirely, is not currently an available feature of terraform, so must be done manually.
-    Any manual configuration of this setting will not be overridden by later terraform releases.    
+    Any manual configuration of this setting will not be overridden by later terraform releases. 
+- Auto-Heal disabling
+	- By default Auto-Heal feature is enabled, but it should be disabled on matching functions app to allow memory/resource related exceptions to be thrown in the case of difficult searches which would allow search to be reported as failed.
+	- Please follow steps: 
+		- Go to "atlas-matching-algorithm-functions" Function App
+		- Go to "Diagnose and solve problems"
+		- Select "Diagnostic Tools"
+		- Under "Proactive tools" click "Auto-Heal"
+		- Select "Proactive Auto-Heal" tab
+		- Click "Off" 
+		- Click "Save"
 
 ## System Tests
 
