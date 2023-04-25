@@ -61,6 +61,8 @@ locals {
     // See README_Integration.md for more details on concurrency configuration.
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = var.MAX_SCALE_OUT
     "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
+
+    "WEBSITE_PROACTIVE_AUTOHEAL_ENABLED"        = false
   }
   matching_algorithm_function_app_name = "${var.general.environment}-ATLAS-MATCHING-ALGORITHM-FUNCTIONS"
 }
