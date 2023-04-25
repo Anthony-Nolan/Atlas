@@ -35,6 +35,12 @@ The project version will be appropriately incremented with each change to the pr
 * Updated `ImportDonorFile` function to log invalid donor updates to AI if donor is not present in Atlas storage instead of throwing error
 * Updated `ImportDonorFile` function to log invalid donor creates for `diff` update mode to AI if donor is present in Atlas storage instead of throwing error
 
+#### Match Prediction
+* Changed a way match prediction requests are queued for processing by activity functions. Now they will be queued in batches (batch by batch) instead of queuing them all at the same time. Batch size is controlled by 'MatchPredictionProcessingBatchSize' setting (default value is 1000, 0 means no batching).
+
+#### Auto-Heal
+* Auto-Heal is disabled on matching algorithm function app
+
 ### 1.5.0
 
 #### API Documentation
