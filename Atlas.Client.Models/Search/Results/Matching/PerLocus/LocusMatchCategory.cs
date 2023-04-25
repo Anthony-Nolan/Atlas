@@ -4,7 +4,7 @@ using Newtonsoft.Json.Converters;
 namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
 {
     /// <summary>
-    /// This enum represents the same type of data as <see cref="Atlas.Client.Models.Search.Results.Matching.MatchCategory"/>,
+    /// This enum represents the same type of data as <see cref="MatchCategory"/>,
     /// but in a per-locus context (aggregated from the locus' data) rather then aggregated over the whole donor.
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]

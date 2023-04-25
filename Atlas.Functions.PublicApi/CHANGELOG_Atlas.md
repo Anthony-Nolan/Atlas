@@ -32,6 +32,9 @@ The project version will be appropriately incremented with each change to the pr
 * Bug fix: the `StoreOriginalSearchResults` function can now successfully process failed searches and successful searches with no matching donors.
 * Ability to save search results in multiple files ([see Search section](#writing-of-search-results) for further info).
 
+#### Scoring
+* Fixed bug where DPB1 match category was not being calculated when the locus typing contained a single null allele, by treating the locus as homozygous for the expressing allele.
+
 #### Donor Import
 * Added new function `CheckDonorIdsFromFile` that does symmetric check of donors absence/presence in Atlas storage
 * Added new function `CheckDonorInfoFromFile` that compares donor/CBU fields with Atlas
