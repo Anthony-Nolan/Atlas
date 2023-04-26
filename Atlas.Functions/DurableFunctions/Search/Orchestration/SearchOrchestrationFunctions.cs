@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Functions.DurableFunctions.Search.Activity;
@@ -38,6 +39,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         [FunctionName(nameof(SearchOrchestrator))]
         public async Task<SearchOrchestrationOutput> SearchOrchestrator([OrchestrationTrigger] IDurableOrchestrationContext context)
         {
+            var searchStartTime = DateTimeOffset.UtcNow;
             var notification = context.GetInput<MatchingResultsNotification>();
             var requestInfo = mapper.Map<FailureNotificationRequestInfo>(notification);
 
@@ -61,7 +63,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     {
                         SearchInitiated = orchestrationInitiated,
                         MatchingResultsNotification = notification,
-                        MatchPredictionResultLocations = matchPredictionResultLocations
+                        MatchPredictionResultLocations = matchPredictionResultLocations,
+                        SearchStartTime = searchStartTime
                     },
                     requestInfo);
 

@@ -67,7 +67,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
                 Connection = "AtlasFunction:MessagingServiceBus:ConnectionString"
             )]
             MatchingResultsNotification resultsNotification,
-            [DurableClient] IDurableOrchestrationClient starter)
+            [DurableClient] IDurableOrchestrationClient starter,
+            DateTime enqueuedTimeUtc)
         {
             var repeatSearchId = resultsNotification.RepeatSearchRequestId;
             if (!resultsNotification.SearchRequest?.RunMatchPrediction ?? false)

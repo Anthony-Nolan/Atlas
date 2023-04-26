@@ -20,5 +20,7 @@ namespace Atlas.Functions.Models
         /// The time the *orchestration function* was initiated. Used to calculate an overall search time for Atlas search requests.
         /// </summary>
         public DateTime SearchInitiated { get; set; }
+
+        public DateTimeOffset SearchStartTime { get; set; }
     }
 }

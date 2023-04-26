@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
@@ -142,6 +144,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 
             await searchResultsBlobUploader.UploadResults(resultSet, resultSet.BlobStorageContainerName, resultSet.ResultsFileName);
             await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated, matchingResultsNotification.BatchFolderName);
+
+            await UploadLogFile(parameters, resultSet.SearchRequestId);
         }
 
         [FunctionName(nameof(SendFailureNotification))]
@@ -186,6 +190,31 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 await donorReader.GetDonors(donorIds)
             );
             return await resultsCombiner.CombineResults(searchRequestId, matchingResults, donorInfo, matchPredictionResultLocations);
+        }
+
+        private async Task UploadLogFile(PersistSearchResultsFunctionParameters parameters, string searchRequestId)
+        {
+            if (parameters.MatchingResultsNotification.IsRepeatSearch)
+            {
+                return;
+            }
+
+            try
+            {
+                var logResults = new RequestPerformanceMetrics
+                {
+                    InitiationTime = parameters.SearchInitiated,
+                    StartTime = parameters.SearchStartTime,
+                    CompletionTime = DateTimeOffset.UtcNow
+                };
+
+                await searchResultsBlobUploader.UploadResults(logResults, azureStorageSettings.SearchResultsBlobContainer,
+                    $"{searchRequestId}-log.json");
+            }
+            catch
+            {
+                logger.SendTrace($"Failed to write performance log file for search with id {searchRequestId}.", LogLevel.Error);
+            }
         }
     }
 }

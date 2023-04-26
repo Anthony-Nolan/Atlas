@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
@@ -55,9 +56,10 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
                 "%MessagingServiceBus:SearchRequestsSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString")]
             IdentifiedSearchRequest request,
-            int deliveryCount)
+            int deliveryCount,
+            DateTime enqueuedTimeUtc)
         {
-            await searchRunner.RunSearch(request, deliveryCount);
+            await searchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc);
         }
 
         [FunctionName(nameof(MatchingRequestsDeadLetterQueueListener))]
