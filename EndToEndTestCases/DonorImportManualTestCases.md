@@ -1,6 +1,6 @@
 # Donor Import Manual Test Cases
 
-## <u>Positive Scenarious</u>
+## <u>Positive Scenarios</u>
 
 ### 1. Donor Import [`Create`]
 
@@ -20,7 +20,6 @@
             "donorType": "D",
             "donPool": "AN",
             "ethn": null,
-            "updateMode": "Diff",
             "hla": {
                 "a": {
                     "dna": {
@@ -77,7 +76,6 @@
       "donorType": "D",
       "donPool": null,
       "ethn": null,
-      "updateMode": "Diff",
       "hla": null
     },
     {
@@ -86,7 +84,6 @@
       "donorType": "D",
       "donPool": null,
       "ethn": null,
-      "updateMode": "Diff",
       "hla": null
     },
     {
@@ -95,7 +92,6 @@
       "donorType": "D",
       "donPool": null,
       "ethn": null,
-      "updateMode": "Diff",
       "hla": null
     }
   ]
@@ -138,7 +134,6 @@ Request body: `["recordId_value1","recordId_value2"]`
       "donorType": "D",
       "donPool": null,
       "ethn": null,
-      "updateMode": "Diff",
       "hla": null
     },
     {
@@ -147,7 +142,6 @@ Request body: `["recordId_value1","recordId_value2"]`
       "donorType": "D",
       "donPool": null,
       "ethn": null,
-      "updateMode": "Diff",
       "hla": null
     },
     {
@@ -156,7 +150,6 @@ Request body: `["recordId_value1","recordId_value2"]`
       "donorType": "D",
       "donPool": null,
       "ethn": null,
-      "updateMode": "Diff",
       "hla": null
     }
   ]
@@ -198,7 +191,6 @@ Request body: `["recordId_value1","recordId_value2"]`
             "donorType": "D",
             "donPool": "AN",
             "ethn": null,
-            "updateMode": "Diff",
             "hla": {
                 "a": {
                     "dna": {
@@ -255,7 +247,6 @@ Request body: `["recordId_value1","recordId_value2"]`
       "donorType": "D",
       "donPool": null,
       "ethn": null,
-      "updateMode": "Diff",
       "hla": null
     },
     {
@@ -264,7 +255,6 @@ Request body: `["recordId_value1","recordId_value2"]`
       "donorType": "D",
       "donPool": null,
       "ethn": null,
-      "updateMode": "Diff",
       "hla": null
     },
     {
@@ -273,7 +263,6 @@ Request body: `["recordId_value1","recordId_value2"]`
       "donorType": "D",
       "donPool": null,
       "ethn": null,
-      "updateMode": "Diff",
       "hla": null
     }
   ]
@@ -297,7 +286,7 @@ Request body: `["recordId_value1","recordId_value2"]`
 ---
 <br>
 
-## <u>Negative Scenarious</u>
+## <u>Negative Scenarios</u>
 
 ### 4. Donor Import [`Create`] when some donors in import file are already exist in db
 
@@ -319,7 +308,6 @@ Request body: `["recordId_value1","recordId_value2"]`
             "donorType": "D",
             "donPool": "AN",
             "ethn": null,
-            "updateMode": "Diff",
             "hla": {
                 "a": {
                     "dna": {
@@ -376,7 +364,6 @@ Request body: `["recordId_value1","recordId_value2"]`
       "donorType": "D",
       "donPool": null,
       "ethn": null,
-      "updateMode": "Diff",
       "hla": null
     },
     {
@@ -385,7 +372,6 @@ Request body: `["recordId_value1","recordId_value2"]`
       "donorType": "D",
       "donPool": null,
       "ethn": null,
-      "updateMode": "Diff",
       "hla": null
     },
     {
@@ -394,7 +380,6 @@ Request body: `["recordId_value1","recordId_value2"]`
       "donorType": "D",
       "donPool": null,
       "ethn": null,
-      "updateMode": "Diff",
       "hla": null
     }
   ]
@@ -437,7 +422,6 @@ Request body: `["recordId_value1","recordId_value2"]`
       "donorType": "D",
       "donPool": null,
       "ethn": null,
-      "updateMode": "Diff",
       "hla": null
     },
     {
@@ -446,7 +430,6 @@ Request body: `["recordId_value1","recordId_value2"]`
       "donorType": "D",
       "donPool": null,
       "ethn": null,
-      "updateMode": "Diff",
       "hla": null
     },
     {
@@ -455,7 +438,6 @@ Request body: `["recordId_value1","recordId_value2"]`
       "donorType": "D",
       "donPool": null,
       "ethn": null,
-      "updateMode": "Diff",
       "hla": null
     }
   ]

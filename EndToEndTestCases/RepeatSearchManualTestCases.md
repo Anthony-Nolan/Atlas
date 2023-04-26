@@ -1,6 +1,6 @@
 # Donor Import Manual Test Cases
 
-## <u>Positive Scenarious</u>
+## <u>Positive Scenarios</u>
 
 ### 1. Repeat Search Request (10/10 - no mismatch, batching: off)
 
