@@ -18,6 +18,9 @@ The project version will be appropriately incremented with each change to the pr
 #### Search
 * Ensure all failed search requests are reported as completed by routing dead-lettered search request messages to the `search-results-ready` topic, with the appropriate failure information.
 
+##### Auto-Heal
+* Auto-Heal is disabled on matching algorithm function app
+
 ##### Writing of Search Results
 * Added an ability to save search results in multiple files. Result files will now be split into two types:
   * Search summary - this will be a single file containing all search result metadata, e.g., number of matches, the original search request, etc.
@@ -36,10 +39,8 @@ The project version will be appropriately incremented with each change to the pr
 * Updated `ImportDonorFile` function to log invalid donor creates for `diff` update mode to AI if donor is present in Atlas storage instead of throwing error
 
 #### Match Prediction
-* Changed a way match prediction requests are queued for processing by activity functions. Now they will be queued in batches (batch by batch) instead of queuing them all at the same time. Batch size is controlled by 'MatchPredictionProcessingBatchSize' setting (default value is 1000, 0 means no batching).
+* Changed the way match prediction requests are queued for processing by activity functions, to prevent search requests with many donors from blocking the completion of smaller search requests.
 
-#### Auto-Heal
-* Auto-Heal is disabled on matching algorithm function app
 
 ### 1.5.0
 
