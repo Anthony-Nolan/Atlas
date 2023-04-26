@@ -1,6 +1,6 @@
 # Donor Import Manual Test Cases
 
-## <u>Positive Scenarious</u>
+## <u>Positive Scenarios</u>
 
 ### 1. Donor Search Request (10/10 - no mismatch, batching: off)
 
@@ -458,7 +458,7 @@ Request body example
 
 <br></br>
 
-### 6. Cord Search Request (8/10 - no mismatch, batching: off)
+### 7. Cord Search Request (8/10 - no mismatch, batching: off)
 
 <b>Description:</b> Check Search request results in `<env>atlasstorage`
 
