@@ -133,14 +133,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 try
                 {
-                    var logResults = new RequestPerformanceMetrics
+                    var performanceMetrics = new RequestPerformanceMetrics
                     {
                         InitiationTime = enqueuedTimeUtc,
                         StartTime = searchStartTime,
                         CompletionTime = DateTimeOffset.UtcNow
                     };
 
-                    await resultsBlobStorageClient.UploadResults(logResults, azureStorageSettings.SearchResultsBlobContainer, $"{searchRequestId}-log.json");
+                    await resultsBlobStorageClient.UploadResults(performanceMetrics, azureStorageSettings.SearchResultsBlobContainer, $"{searchRequestId}-log.json");
                 }
                 catch
                 {

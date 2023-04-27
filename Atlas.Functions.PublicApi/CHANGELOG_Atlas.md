@@ -17,6 +17,7 @@ The project version will be appropriately incremented with each change to the pr
 
 #### Search
 * Ensure all failed search requests are reported as completed by routing dead-lettered search request messages to the `search-results-ready` topic, with the appropriate failure information.
+* Added performance logs for initial search.
 
 ##### Writing of Search Results
 * Added an ability to save search results in multiple files. Result files will now be split into two types:

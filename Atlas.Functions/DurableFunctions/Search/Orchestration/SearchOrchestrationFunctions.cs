@@ -3,14 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.AzureStorage.Blob;
 using Atlas.Functions.DurableFunctions.Search.Activity;
 using Atlas.Functions.Exceptions;
 using Atlas.Functions.Models;
+using Atlas.Functions.Settings;
 using AutoMapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Options;
 using MoreLinq.Extensions;
 
 namespace Atlas.Functions.DurableFunctions.Search.Orchestration
@@ -42,10 +46,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             var searchStartTime = DateTimeOffset.UtcNow;
             var notification = context.GetInput<MatchingResultsNotification>();
             var requestInfo = mapper.Map<FailureNotificationRequestInfo>(notification);
+            var orchestrationInitiated = context.CurrentUtcDateTime;
 
             try
             {
-                var orchestrationInitiated = context.CurrentUtcDateTime;
                 if (!notification.WasSuccessful)
                 {
                     requestInfo.StageReached = "Matching Algorithm";
@@ -63,8 +67,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     {
                         SearchInitiated = orchestrationInitiated,
                         MatchingResultsNotification = notification,
-                        MatchPredictionResultLocations = matchPredictionResultLocations,
-                        SearchStartTime = searchStartTime
+                        MatchPredictionResultLocations = matchPredictionResultLocations
                     },
                     requestInfo);
 
@@ -89,6 +92,17 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 requestInfo.StageReached = "Orchestrator";
                 await SendFailureNotification(context, requestInfo);
                 throw;
+            }
+            finally
+            {
+                var performanceMetrics = new RequestPerformanceMetrics
+                {
+                    InitiationTime = orchestrationInitiated,
+                    StartTime = searchStartTime,
+                    CompletionTime = DateTimeOffset.UtcNow
+                };
+
+                await UploadPerformanceLogFile(context, new UploadPerformanceLogsFunctionParameters { PerformanceMetrics = performanceMetrics, SearchRequestId = notification.SearchRequestId});
             }
         }
 
@@ -288,5 +302,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
             context.SetCustomStatus($"Search failed, during stage: {requestInfo.StageReached}");
         }
+
+        private static async Task UploadPerformanceLogFile(
+            IDurableOrchestrationContext context,
+            UploadPerformanceLogsFunctionParameters parameters) =>
+            await context.CallActivityWithRetryAsync(
+                nameof(SearchActivityFunctions.UploadPerformanceLogs),
+                RetryOptions,
+                parameters
+            );
     }
 }

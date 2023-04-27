@@ -144,14 +144,26 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 
             await searchResultsBlobUploader.UploadResults(resultSet, resultSet.BlobStorageContainerName, resultSet.ResultsFileName);
             await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated, matchingResultsNotification.BatchFolderName);
-
-            await UploadLogFile(parameters, resultSet.SearchRequestId);
         }
 
         [FunctionName(nameof(SendFailureNotification))]
         public async Task SendFailureNotification([ActivityTrigger] FailureNotificationRequestInfo requestInfo)
         {
             await searchCompletionMessageSender.PublishFailureMessage(requestInfo);
+        }
+
+        [FunctionName(nameof(UploadPerformanceLogs))]
+        public async Task UploadPerformanceLogs([ActivityTrigger] UploadPerformanceLogsFunctionParameters parameters)
+        {
+            try
+            {
+                await searchResultsBlobUploader.UploadResults(parameters.PerformanceMetrics, azureStorageSettings.SearchResultsBlobContainer,
+                    $"{parameters.SearchRequestId}-log.json");
+            }
+            catch
+            {
+                logger.SendTrace($"Failed to write performance log file for search with id {parameters.SearchRequestId}.", LogLevel.Error);
+            }
         }
 
         private async Task<IEnumerable<SearchResult>> ProcessBatchedSearchResults(
@@ -190,31 +202,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 await donorReader.GetDonors(donorIds)
             );
             return await resultsCombiner.CombineResults(searchRequestId, matchingResults, donorInfo, matchPredictionResultLocations);
-        }
-
-        private async Task UploadLogFile(PersistSearchResultsFunctionParameters parameters, string searchRequestId)
-        {
-            if (parameters.MatchingResultsNotification.IsRepeatSearch)
-            {
-                return;
-            }
-
-            try
-            {
-                var logResults = new RequestPerformanceMetrics
-                {
-                    InitiationTime = parameters.SearchInitiated,
-                    StartTime = parameters.SearchStartTime,
-                    CompletionTime = DateTimeOffset.UtcNow
-                };
-
-                await searchResultsBlobUploader.UploadResults(logResults, azureStorageSettings.SearchResultsBlobContainer,
-                    $"{searchRequestId}-log.json");
-            }
-            catch
-            {
-                logger.SendTrace($"Failed to write performance log file for search with id {searchRequestId}.", LogLevel.Error);
-            }
         }
     }
 }
