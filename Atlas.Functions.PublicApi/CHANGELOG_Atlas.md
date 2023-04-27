@@ -19,6 +19,9 @@ The project version will be appropriately incremented with each change to the pr
 * Ensure all failed search requests are reported as completed by routing dead-lettered search request messages to the `search-results-ready` topic, with the appropriate failure information.
 * Added performance logs for initial search.
 
+##### Auto-Heal
+* Auto-Heal is disabled on matching algorithm function app
+
 ##### Writing of Search Results
 * Added an ability to save search results in multiple files. Result files will now be split into two types:
   * Search summary - this will be a single file containing all search result metadata, e.g., number of matches, the original search request, etc.
@@ -30,11 +33,18 @@ The project version will be appropriately incremented with each change to the pr
 * Bug fix: the `StoreOriginalSearchResults` function can now successfully process failed searches and successful searches with no matching donors.
 * Ability to save search results in multiple files ([see Search section](#writing-of-search-results) for further info).
 
+#### Scoring
+* Fixed bug where DPB1 match category was not being calculated when the locus typing contained a single null allele, by treating the locus as homozygous for the expressing allele.
+
 #### Donor Import
 * Added new function `CheckDonorIdsFromFile` that does symmetric check of donors absence/presence in Atlas storage
 * Added new function `CheckDonorInfoFromFile` that compares donor/CBU fields with Atlas
 * Updated `ImportDonorFile` function to log invalid donor updates to AI if donor is not present in Atlas storage instead of throwing error
 * Updated `ImportDonorFile` function to log invalid donor creates for `diff` update mode to AI if donor is present in Atlas storage instead of throwing error
+
+#### Match Prediction
+* Changed the way match prediction requests are queued for processing by activity functions, to prevent search requests with many donors from blocking the completion of smaller search requests.
+
 
 ### 1.5.0
 

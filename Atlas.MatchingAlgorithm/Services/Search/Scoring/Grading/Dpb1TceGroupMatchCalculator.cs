@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Models;
@@ -20,6 +21,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
     internal class Dpb1TceGroupMatchCalculator : IDpb1TceGroupMatchCalculator
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
+        private readonly IHlaCategorisationService categoriser;
         private readonly ILogger logger;
 
         private const string TceGroup1 = "1";
@@ -41,7 +43,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         /// is agreed. 
         /// </summary>
         private readonly Dictionary<UnorderedPair<string>, Dictionary<UnorderedPair<string>, Dpb1TceGroupMatchType>> tceGroupMatchTypeLookups =
-            new Dictionary<UnorderedPair<string>, Dictionary<UnorderedPair<string>, Dpb1TceGroupMatchType>>
+            new()
             {
                 {
                     new UnorderedPair<string>(TceGroup1, TceGroup1),
@@ -120,39 +122,23 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         public Dpb1TceGroupMatchCalculator(
             IHlaMetadataDictionaryFactory hmdFactory,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
+            IHlaCategorisationService categoriser,
             ILogger logger)
         {
             hlaMetadataDictionary = hmdFactory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
+            this.categoriser = categoriser;
             this.logger = logger;
         }
 
         public async Task<Dpb1TceGroupMatchType> CalculateDpb1TceGroupMatchType(LocusInfo<string> patientHla, LocusInfo<string> donorHla)
         {
-            if (patientHla == null
-                || patientHla.Position1 == null
-                || patientHla.Position2 == null
-                || donorHla == null
-                || donorHla.Position1 == null
-                || donorHla.Position2 == null)
+            var patientTceGroups = await GetTceGroupsForMatchCalculation(patientHla);
+            var donorTceGroups = await GetTceGroupsForMatchCalculation(donorHla);
+
+            if (patientTceGroups is null || donorTceGroups is null)
             {
                 return Dpb1TceGroupMatchType.Unknown;
             }
-
-            var patientTceGroup1 = await GetDpb1TceGroup(patientHla.Position1);
-            var patientTceGroup2 = await GetDpb1TceGroup(patientHla.Position2);
-            var donorTceGroup1 = await GetDpb1TceGroup(donorHla.Position1);
-            var donorTceGroup2 = await GetDpb1TceGroup(donorHla.Position2);
-
-            if (patientTceGroup1 == null
-                || patientTceGroup2 == null
-                || donorTceGroup1 == null
-                || donorTceGroup2 == null)
-            {
-                return Dpb1TceGroupMatchType.Unknown;
-            }
-
-            var patientTceGroups = new UnorderedPair<string>(patientTceGroup1, patientTceGroup2);
-            var donorTceGroups = new UnorderedPair<string>(donorTceGroup1, donorTceGroup2);
 
             if (!tceGroupMatchTypeLookups.TryGetValue(donorTceGroups, out var donorLookup))
             {
@@ -175,6 +161,44 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
             return result;
         }
 
-        private Task<string> GetDpb1TceGroup(string alleleName) => hlaMetadataDictionary.GetDpb1TceGroup(alleleName);
+        ///<summary>Note: typings with a single null allele will be treated as homozygous for the remaining expressing typing.</summary>
+        /// <returns>Will return `null` in the following cases where match calculation would not be possible:
+        /// 1) <paramref name="typing"/> is `null` or is empty at one or both positions.
+        /// 2) Both positions are null expressing alleles.
+        /// 3) After TCE group lookup, either position does not have a TCE group assigned.
+        /// </returns>
+        private async Task<UnorderedPair<string>> GetTceGroupsForMatchCalculation(LocusInfo<string> typing)
+        {
+            if (typing?.Position1 is null || typing.Position2 is null)
+            {
+                return null;
+            }
+
+            var isHla1ANullAllele = IsNullAllele(typing.Position1);
+            var isHla2ANullAllele = IsNullAllele(typing.Position2);
+
+            if (isHla1ANullAllele && isHla2ANullAllele)
+            {
+                return null;
+            }
+
+            // if either position is a null allele then use the tce group for the expressing allele in the other position
+            var tceGroupResult1 = await LookupDpb1TceGroup(isHla1ANullAllele ? typing.Position2 : typing.Position1);
+            var tceGroupResult2 = await LookupDpb1TceGroup(isHla2ANullAllele ? typing.Position1 : typing.Position2);
+
+            if (NoTceGroupAssigned(tceGroupResult1) || NoTceGroupAssigned(tceGroupResult2))
+            {
+                return null;
+            }
+
+            static bool NoTceGroupAssigned(string lookupResult) => string.IsNullOrEmpty(lookupResult);
+
+            return new UnorderedPair<string>(tceGroupResult1, tceGroupResult2);
+        }
+
+        private bool IsNullAllele(string hlaName) => categoriser.GetHlaTypingCategory(hlaName) == HlaTypingCategory.Allele &&
+                                                     AlleleSplitter.GetExpressionSuffix(hlaName) == "N";
+
+        private Task<string> LookupDpb1TceGroup(string hlaName) => hlaMetadataDictionary.GetDpb1TceGroup(hlaName);
     }
 }

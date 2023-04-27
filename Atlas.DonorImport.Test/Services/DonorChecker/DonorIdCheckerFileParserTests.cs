@@ -6,7 +6,6 @@ using Atlas.DonorImport.Services.DonorChecker;
 using Atlas.DonorImport.Test.TestHelpers.Builders.DonorIdCheck;
 using Atlas.DonorImport.Test.TestHelpers.Models.DonorIdCheck;
 using FluentAssertions;
-using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 
 namespace Atlas.DonorImport.Test.Services.DonorChecker
@@ -113,7 +112,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
         }
 
         [Test]
-        public void ReadLazyDonorIds_WhenUnexpectedProperty_ThrowsMalformedDonorFileException()
+        public void ReadLazyDonorIds_WhenUnexpectedProperty_DoesNotThrowException()
         {
             var fileStream = InvalidDonorIdCheckFileContentsBuilder.FileWithUnexpectedProperty
                 .Build()
@@ -122,8 +121,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
 
             lazyFile.Invoking(lf => lf.ReadLazyDonorIds().ToList())
                 .Should()
-                .Throw<MalformedDonorFileException>()
-                .WithMessage($"Unexpected property '{nameof(SerializableDonorIdCheckerFileContentWithUnexpectedProperty.unexpectedProperty)}' in the file.");
+                .NotThrow<MalformedDonorFileException>();
         }
     }
 }

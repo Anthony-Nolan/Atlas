@@ -27,13 +27,12 @@ namespace Atlas.DonorImport.Test.TestHelpers.Models.DonorIdCheck
             return new MemoryStream(Encoding.Default.GetBytes(fileJson));
         }
     }
-
     internal class SerializableDonorIdCheckerFileContentWithUnexpectedProperty
     {
         public string donPool { get; set; }
+        public string unexpectedProperty { get; set; }
         public string donorType { get; set; }
         public IEnumerable<string> donors { get; set; }
-        public string unexpectedProperty { get; set; }
 
         public Stream ToStream()
         {

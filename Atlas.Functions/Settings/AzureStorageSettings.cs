@@ -12,6 +12,7 @@ namespace Atlas.Functions.Settings
         public string MatchPredictionRequestsBlobContainer { get; set; }
         public string MatchPredictionResultsBlobContainer { get; set; }
         public int MatchPredictionDownloadBatchSize { get; set; }
+        public int MatchPredictionProcessingBatchSize { get; set; }
 
         public bool ShouldBatchResults { get; set; }
     }

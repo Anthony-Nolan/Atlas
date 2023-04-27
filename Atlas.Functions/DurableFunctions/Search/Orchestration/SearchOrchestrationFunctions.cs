@@ -33,11 +33,13 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
         private readonly ILogger logger;
         private readonly IMapper mapper;
+        private readonly int matchPredictionProcessingBatchSize;
 
-        public SearchOrchestrationFunctions(ILogger logger, IMapper mapper)
+        public SearchOrchestrationFunctions(ILogger logger, IMapper mapper, IOptions<AzureStorageSettings> azureStorageSettings)
         {
             this.logger = logger;
             this.mapper = mapper;
+            matchPredictionProcessingBatchSize = azureStorageSettings.Value.MatchPredictionProcessingBatchSize;
         }
 
         [FunctionName(nameof(SearchOrchestrator))]
@@ -193,15 +195,19 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         {
             requestInfo.StageReached = nameof(RunMatchPredictionAlgorithm);
 
-            var matchPredictionTasks = matchPredictionRequestLocations.ResultSet.Select(r => RunMatchPredictionForDonorBatch(context, r)).ToList();
-            var matchPredictionResultLocations = (await RunStageAndHandleFailures(
-                    async () => await Task.WhenAll(matchPredictionTasks),
-                    context,
-                    requestInfo
-                ))
-                .SelectMany(x => x)
-                .ToDictionary();
+            var matchPredictionTasksList = matchPredictionRequestLocations.ResultSet.Select(r => RunMatchPredictionForDonorBatch(context, r)).ToList();
+            var matchPredictionResultLocations = new List<KeyValuePair<int, string>>();
 
+            foreach (var matchPredictionTasks in matchPredictionTasksList.Batch(matchPredictionProcessingBatchSize > 0 ? matchPredictionProcessingBatchSize : matchPredictionRequestLocations.ResultSet.Count))
+            {
+                matchPredictionResultLocations.AddRange(
+                    (await RunStageAndHandleFailures(
+                        async () => await Task.WhenAll(matchPredictionTasks),
+                        context,
+                        requestInfo
+                    ))
+                    .SelectMany(x => x));
+            }
 
             // We cannot use a stopwatch, as orchestration functions must be deterministic, and may be called multiple times.
             // Results of activity functions are constant across multiple invocations, so we can trust that finished time of the previous stage will remain constant 
@@ -220,7 +226,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
             return new TimedResultSet<IReadOnlyDictionary<int, string>>
             {
-                ResultSet = matchPredictionResultLocations,
+                ResultSet = matchPredictionResultLocations.ToDictionary(),
                 // If the previous stage did not successfully report a timespan, we do not want to report an error - so we allow it to be null.
                 // TimedResultSet promises a non-null timestamp, so return MaxValue to be clear that this timing was not successful
                 ElapsedTime = totalElapsedTime ?? TimeSpan.MaxValue
