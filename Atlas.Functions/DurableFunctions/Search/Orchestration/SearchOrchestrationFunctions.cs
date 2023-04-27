@@ -45,8 +45,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         [FunctionName(nameof(SearchOrchestrator))]
         public async Task<SearchOrchestrationOutput> SearchOrchestrator([OrchestrationTrigger] IDurableOrchestrationContext context)
         {
-            var searchStartTime = DateTimeOffset.UtcNow;
-            var notification = context.GetInput<MatchingResultsNotification>();
+            var parameters = context.GetInput<SearchOrchestratorParameters>();
+            var notification = parameters.MatchingResultsNotification;
             var requestInfo = mapper.Map<FailureNotificationRequestInfo>(notification);
             var orchestrationInitiated = context.CurrentUtcDateTime;
 
@@ -99,9 +99,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             {
                 var performanceMetrics = new RequestPerformanceMetrics
                 {
-                    InitiationTime = orchestrationInitiated,
-                    StartTime = searchStartTime,
-                    CompletionTime = DateTimeOffset.UtcNow
+                    InitiationTime = parameters.InitiationTime,
+                    StartTime = orchestrationInitiated,
+                    CompletionTime = context.CurrentUtcDateTime
                 };
 
                 await UploadPerformanceLogFile(context, new UploadPerformanceLogsFunctionParameters { PerformanceMetrics = performanceMetrics, SearchRequestId = notification.SearchRequestId});

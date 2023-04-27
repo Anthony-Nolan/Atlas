@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Functions.DurableFunctions.Search.Orchestration;
+using Atlas.Functions.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Newtonsoft.Json;
@@ -34,7 +35,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
                 Connection = "AtlasFunction:MessagingServiceBus:ConnectionString"
             )]
             MatchingResultsNotification resultsNotification,
-            [DurableClient] IDurableOrchestrationClient starter)
+            [DurableClient] IDurableOrchestrationClient starter,
+            DateTime enqueuedTimeUtc)
         {
             var searchId = resultsNotification.SearchRequestId;
             if (!resultsNotification.SearchRequest?.RunMatchPrediction ?? false)
@@ -44,7 +46,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
                 return;
             }
 
-            var instanceId = await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.SearchOrchestrator), resultsNotification);
+            var instanceId = await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.SearchOrchestrator), new SearchOrchestratorParameters{ MatchingResultsNotification = resultsNotification, InitiationTime = enqueuedTimeUtc });
 
             try
             {
