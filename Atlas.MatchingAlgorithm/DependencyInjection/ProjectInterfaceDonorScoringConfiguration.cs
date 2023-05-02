@@ -10,6 +10,7 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
@@ -87,6 +88,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IGradingService, GradingService>();
             services.AddScoped<IConfidenceService, ConfidenceService>();
             services.AddScoped<IConfidenceCalculator, ConfidenceCalculator>();
+            services.AddScoped<IAntigenMatchingService, AntigenMatchingService>();
+            services.AddScoped<IAntigenMatchCalculator, AntigenMatchCalculator>();
             services.AddScoped<IMatchScoreCalculator, MatchScoreCalculator>();
             services.AddScoped<IScoringRequestService, ScoringRequestService>();
             services.AddScoped<IScoreResultAggregator, ScoreResultAggregator>();

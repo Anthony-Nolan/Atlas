@@ -12,6 +12,7 @@ using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Helpers;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
@@ -34,6 +35,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IGradingService gradingService,
             IConfidenceService confidenceService,
+            IAntigenMatchingService antigenMatchingService,
             IRankingService rankingService,
             IMatchScoreCalculator matchScoreCalculator,
             IScoreResultAggregator scoreResultAggregator,
@@ -45,6 +47,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                 hlaNomenclatureVersionAccessor,
                 gradingService,
                 confidenceService,
+                antigenMatchingService,
                 matchScoreCalculator,
                 scoreResultAggregator,
                 dpb1TceGroupMatchCalculator, 

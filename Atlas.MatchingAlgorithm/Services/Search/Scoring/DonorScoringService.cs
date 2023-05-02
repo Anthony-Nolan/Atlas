@@ -5,8 +5,6 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
@@ -14,12 +12,12 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
-using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
@@ -41,6 +39,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
         private readonly IGradingService gradingService;
         private readonly IConfidenceService confidenceService;
+        private readonly IAntigenMatchingService antigenMatchingService;
         private readonly IMatchScoreCalculator matchScoreCalculator;
         private readonly IScoreResultAggregator scoreResultAggregator;
         private readonly IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator;
@@ -51,6 +50,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IGradingService gradingService,
             IConfidenceService confidenceService,
+            IAntigenMatchingService antigenMatchingService,
             IMatchScoreCalculator matchScoreCalculator,
             IScoreResultAggregator scoreResultAggregator,
             IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator,
@@ -59,6 +59,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
             this.gradingService = gradingService;
             this.confidenceService = confidenceService;
+            this.antigenMatchingService = antigenMatchingService;
             this.matchScoreCalculator = matchScoreCalculator;
             this.scoreResultAggregator = scoreResultAggregator;
             this.dpb1TceGroupMatchCalculator = dpb1TceGroupMatchCalculator;
@@ -115,24 +116,34 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             ScoringCriteria scoringCriteria,
             PhenotypeInfo<IHlaScoringMetadata> patientScoringMetadata)
         {
+            var donorScoringInfo = await CalculateDonorScoringInfo(donorHla, scoringCriteria, patientScoringMetadata);
+
+            var dpb1TceGroupMatchType = await dpb1TceGroupMatchCalculator.CalculateDpb1TceGroupMatchType(
+                patientScoringMetadata.Dpb1.Map(x => x?.LookupName),
+                donorHla.Dpb1);
+
+            return BuildScoreResult(scoringCriteria, donorScoringInfo, dpb1TceGroupMatchType);
+        }
+
+        private async Task<PhenotypeInfo<DonorScoringInfo>> CalculateDonorScoringInfo(
+            PhenotypeInfo<string> donorHla, 
+            ScoringCriteria scoringCriteria, 
+            PhenotypeInfo<IHlaScoringMetadata> patientScoringMetadata)
+        {
             var donorScoringMetadata = await GetHlaScoringMetadata(donorHla, scoringCriteria.LociToScore);
 
             var grades = gradingService.CalculateGrades(patientScoringMetadata, donorScoringMetadata);
             var confidences = confidenceService.CalculateMatchConfidences(patientScoringMetadata, donorScoringMetadata, grades);
+            var antigenMatches = antigenMatchingService.CalculateAntigenMatches(patientScoringMetadata, donorScoringMetadata, grades);
 
-            var dpb1TceGroupMatchType = await dpb1TceGroupMatchCalculator.CalculateDpb1TceGroupMatchType(
-                patientScoringMetadata.Dpb1.Map(x => x?.LookupName),
-                donorHla.Dpb1
-            );
-
-            var donorScoringInfo = new DonorScoringInfo
-            {
-                Grades = grades,
-                Confidences = confidences,
-                DonorHla = donorHla
-            };
-
-            return BuildScoreResult(scoringCriteria, donorScoringInfo, dpb1TceGroupMatchType);
+            return donorHla.Map((locus, position, hlaName) => scoringCriteria.LociToScore.Contains(locus) ? 
+                new DonorScoringInfo
+                {
+                    HlaName = hlaName,
+                    Grade = grades.GetPosition(locus, position).GradeResult,
+                    Confidence = confidences.GetPosition(locus, position),
+                    IsAntigenMatch = antigenMatches.GetPosition(locus, position)
+                } : null);
         }
 
         protected async Task<PhenotypeInfo<IHlaScoringMetadata>> GetHlaScoringMetadata(PhenotypeInfo<string> hlaNames, IEnumerable<Locus> lociToScore)
@@ -150,18 +161,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                 });
         }
 
-        private ScoreResult BuildScoreResult(ScoringCriteria criteria, DonorScoringInfo donorScoringInfo, Dpb1TceGroupMatchType dpb1TceGroupMatchType)
+        private ScoreResult BuildScoreResult(ScoringCriteria criteria, PhenotypeInfo<DonorScoringInfo> donorScoringInfo, Dpb1TceGroupMatchType dpb1TceGroupMatchType)
         {
             var scoreResult = new ScoreResult();
 
             foreach (var locus in criteria.LociToScore)
             {
-                var gradeResults = donorScoringInfo.Grades.GetLocus(locus).Map(x => x.GradeResult);
-                var confidences = donorScoringInfo.Confidences.GetLocus(locus);
-
-                var scoreDetailsPerPosition = new LocusInfo<LocusPositionScoreDetails>(p =>
-                    BuildScoreDetailsForPosition(gradeResults.GetAtPosition(p), confidences.GetAtPosition(p))
-                );
+                var scoreDetailsPerPosition = new LocusInfo<LocusPositionScoreDetails>(p => 
+                    BuildScoreDetailsForPosition(donorScoringInfo.GetPosition(locus, p)));
 
                 var matchCategory = locus == Locus.Dpb1
                     ? LocusMatchCategoryAggregator.Dpb1MatchCategoryFromPositionScores(scoreDetailsPerPosition, dpb1TceGroupMatchType)
@@ -169,7 +176,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
                 var scoreDetails = new LocusScoreDetails
                 {
-                    IsLocusTyped = donorScoringInfo.DonorHla.GetLocus(locus).Position1And2NotNull(),
+                    IsLocusTyped = donorScoringInfo.GetLocus(locus).Map(x => x.HlaName).Position1And2NotNull(),
                     ScoreDetailsAtPosition1 = scoreDetailsPerPosition.Position1,
                     ScoreDetailsAtPosition2 = scoreDetailsPerPosition.Position2,
                     MatchCategory = matchCategory,
@@ -189,14 +196,15 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             return scoreResult;
         }
 
-        private LocusPositionScoreDetails BuildScoreDetailsForPosition(MatchGrade matchGrade, MatchConfidence matchConfidence)
+        private LocusPositionScoreDetails BuildScoreDetailsForPosition(DonorScoringInfo scoringInfo)
         {
             return new LocusPositionScoreDetails
             {
-                MatchGrade = matchGrade,
-                MatchGradeScore = matchScoreCalculator.CalculateScoreForMatchGrade(matchGrade),
-                MatchConfidence = matchConfidence,
-                MatchConfidenceScore = matchScoreCalculator.CalculateScoreForMatchConfidence(matchConfidence),
+                MatchGrade = scoringInfo.Grade,
+                MatchGradeScore = matchScoreCalculator.CalculateScoreForMatchGrade(scoringInfo.Grade),
+                MatchConfidence = scoringInfo.Confidence,
+                MatchConfidenceScore = matchScoreCalculator.CalculateScoreForMatchConfidence(scoringInfo.Confidence),
+                IsAntigenMatch = scoringInfo.IsAntigenMatch
             };
         }
 
@@ -220,9 +228,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         
         private class DonorScoringInfo
         {
-            public PhenotypeInfo<MatchGradeResult> Grades { get; set; }
-            public PhenotypeInfo<MatchConfidence> Confidences { get; set; }
-            public PhenotypeInfo<string> DonorHla { get; set; }
+            public string HlaName { get; init; }
+            public MatchGrade Grade { get; init; }
+            public MatchConfidence Confidence { get; init; }
+            public bool? IsAntigenMatch { get; init; }
         }
     }
 }
