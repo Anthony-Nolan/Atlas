@@ -6,9 +6,14 @@ namespace Atlas.MatchingAlgorithm.Common.Models.Scoring
     [JsonConverter(typeof(StringEnumConverter))]
     public enum MatchOrientation
     {
-        // Locus matches positions 1 vs 2, and 2 vs 1
+        /// <summary>
+        /// Locus matches patient position 1 vs donor position 2, and patient position 2 vs donor position 1
+        /// </summary>
         Cross,
-        // Locus matches positions 1 vs 1, and 2 vs 2
+
+        /// <summary>
+        /// Locus matches patient position 1 vs donor position 1, and patient position 2 vs donor position 2
+        /// </summary>
         Direct
     }
 }

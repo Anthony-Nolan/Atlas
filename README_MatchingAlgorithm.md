@@ -183,7 +183,12 @@ Each locus/position will be assigned a confidence, which indicates how likely th
 |Potential|Applies to all other pairs of matching types not described above, of any typing resolution.|
 |Mismatch|The two types are mismatched; they can be of any typing resolution.|
 
-#### (c) Ranking
+#### (c) Antigen-level matching
+
+Each scored position will be assessed for whether it is an antigen match or not.
+See `Atlas.Client.Models.Search.Results.Matching.PerLocus.LocusPositionScoreDetails.IsAntigenMatch` for documentation of how this is calculated.
+
+#### (d) Ranking
 
 The results will be ordered by a number of factors, including:
 
@@ -198,7 +203,7 @@ This is currently not planned to occur in this service, but could be added in fu
 
 #### Additional
 
-Scoring of P- and G-group typings has been implemented, but not yet been scientifically validated (TODO: ATLAS-454).
+Scoring of P- and G-group typings has been implemented, but not yet been scientifically validated (TODO: #748).
 
 ## Testing
 

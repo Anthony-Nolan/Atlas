@@ -30,7 +30,7 @@ Below is a list of features and requirements for the Atlas product. This is not 
 
 ### Donor Scoring
 
-- Six loci scoring to assess match quality, including HLA-DPB1 permissive mismatches.
+- Six loci scoring to assess match quality, including HLA-DPB1 permissive mismatches and antigen matching of allele mismatches.
 
 ### Match Prediction
 

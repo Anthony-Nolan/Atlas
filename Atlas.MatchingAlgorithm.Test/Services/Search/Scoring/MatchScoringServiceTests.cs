@@ -24,6 +24,7 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 {
@@ -33,6 +34,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
         private IHlaScoringMetadataService scoringMetadataService;
         private IGradingService gradingService;
         private IConfidenceService confidenceService;
+        private IAntigenMatchingService antigenMatchingService;
         private IRankingService rankingService;
         private IMatchScoreCalculator matchScoreCalculator;
         private IScoreResultAggregator scoreResultAggregator;
@@ -45,6 +47,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
             scoringMetadataService = Substitute.For<IHlaScoringMetadataService>();
             gradingService = Substitute.For<IGradingService>();
             confidenceService = Substitute.For<IConfidenceService>();
+            antigenMatchingService = Substitute.For<IAntigenMatchingService>();
+
             rankingService = Substitute.For<IRankingService>();
             matchScoreCalculator = Substitute.For<IMatchScoreCalculator>();
             scoreResultAggregator = Substitute.For<IScoreResultAggregator>();
@@ -54,6 +58,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
                 .Returns(callInfo => (IEnumerable<MatchAndScoreResult>) callInfo.Args().First());
             gradingService.CalculateGrades(null, null).ReturnsForAnyArgs(new PhenotypeInfo<MatchGradeResult>(new MatchGradeResult()));
             confidenceService.CalculateMatchConfidences(null, null, null).ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>());
+            antigenMatchingService.CalculateAntigenMatches(default, default, default).ReturnsForAnyArgs(new PhenotypeInfo<bool?>());
 
             var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(scoringMetadataService);
 
@@ -62,6 +67,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
                 hlaVersionAccessor,
                 gradingService,
                 confidenceService,
+                antigenMatchingService,
                 rankingService,
                 matchScoreCalculator,
                 scoreResultAggregator,
@@ -356,6 +362,43 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
             await scoringService.ScoreMatchesAgainstPatientHla(request);
 
             confidenceService.ReceivedWithAnyArgs(2).CalculateMatchConfidences(null, null, null);
+        }
+
+        [Test]
+        public async Task ScoreMatchesAgainstPatientHla_ReturnsIsAntigenMatchForMatchResults()
+        {
+            bool? expectedValueAtA1 = true;
+            bool? expectedValueAtB2 = false;
+            bool? expectedValueAtDrb11 = null;
+
+            antigenMatchingService.CalculateAntigenMatches(default, default, default)
+                .ReturnsForAnyArgs(new PhenotypeInfo<bool?>
+                (
+                    valueA: new LocusInfo<bool?>(expectedValueAtA1, default),
+                    valueB: new LocusInfo<bool?>(default, expectedValueAtB2),
+                    valueDrb1: new LocusInfo<bool?>(expectedValueAtDrb11, default)
+                ));
+
+            var results = await scoringService.ScoreMatchesAgainstPatientHla(
+                MatchResultsScoringRequestBuilder.ScoreDefaultMatchAtAllLoci.Build());
+
+            // Check across multiple loci and positions
+            var result = results.Single();
+            result.ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.IsAntigenMatch.Should().Be(expectedValueAtA1);
+            result.ScoreResult.ScoreDetailsAtLocusB.ScoreDetailsAtPosition2.IsAntigenMatch.Should().Be(expectedValueAtB2);
+            result.ScoreResult.ScoreDetailsAtLocusDrb1.ScoreDetailsAtPosition1.IsAntigenMatch.Should().Be(expectedValueAtDrb11);
+        }
+
+        [Test]
+        public async Task ScoreMatchesAgainstPatientHla_CalculatesIsAntigenMatchForEachMatchResult()
+        {
+            var request = MatchResultsScoringRequestBuilder.ScoreAtAllLoci
+                .With(x => x.MatchResults, new[] { new MatchResultBuilder().Build(), new MatchResultBuilder().Build() })
+                .Build();
+
+            await scoringService.ScoreMatchesAgainstPatientHla(request);
+
+            antigenMatchingService.ReceivedWithAnyArgs(2).CalculateAntigenMatches(default, default, default);
         }
 
         [Test]
