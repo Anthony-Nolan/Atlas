@@ -30,12 +30,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
         private readonly ILogger logger;
         private readonly IMapper mapper;
+        private readonly SearchLoggingContext loggingContext;
         private readonly int matchPredictionProcessingBatchSize;
 
-        public SearchOrchestrationFunctions(ILogger logger, IMapper mapper, IOptions<AzureStorageSettings> azureStorageSettings)
+        public SearchOrchestrationFunctions(ISearchLogger<SearchLoggingContext> logger, IMapper mapper, IOptions<AzureStorageSettings> azureStorageSettings, SearchLoggingContext loggingContext)
         {
             this.logger = logger;
             this.mapper = mapper;
+            this.loggingContext = loggingContext;
             matchPredictionProcessingBatchSize = azureStorageSettings.Value.MatchPredictionProcessingBatchSize;
         }
 
@@ -44,6 +46,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         {
             var notification = context.GetInput<MatchingResultsNotification>();
             var requestInfo = mapper.Map<FailureNotificationRequestInfo>(notification);
+
+            loggingContext.SearchRequestId = requestInfo.SearchRequestId;
 
             try
             {

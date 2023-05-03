@@ -84,11 +84,11 @@ namespace Atlas.Functions
 
         private static void RegisterTopLevelFunctionServices(IServiceCollection services)
         {
-            services.RegisterAtlasLogger(OptionsReaderFor<ApplicationInsightsSettings>());
+            RegisterSearchLogger(services);
             services.AddScoped<IMatchPredictionInputBuilder, MatchPredictionInputBuilder>();
             services.AddScoped<IResultsCombiner, ResultsCombiner>(sp =>
             {
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<ISearchLogger<SearchLoggingContext>>();
                 var options = sp.GetService<IOptions<Settings.AzureStorageSettings>>();
                 var connectionString = options.Value.MatchPredictionConnectionString;
                 var downloader = new BlobDownloader(connectionString, logger);
@@ -101,9 +101,10 @@ namespace Atlas.Functions
                 var logger = sp.GetService<ILogger>();
                 return new SearchResultsBlobStorageClient(settings.MatchingConnectionString, logger);
             });
-            services.AddSingleton<IMatchingResultsDownloader, MatchingResultsDownloader>(sp =>
+
+            services.AddScoped<IMatchingResultsDownloader, MatchingResultsDownloader>(sp =>
             {
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<ISearchLogger<SearchLoggingContext>>();
                 var options = sp.GetService<IOptions<Settings.AzureStorageSettings>>();
                 var connectionString = options.Value.MatchingConnectionString;
                 var downloader = new BlobDownloader(connectionString, logger);
@@ -112,6 +113,13 @@ namespace Atlas.Functions
             services.AddScoped<IMatchPredictionRequestBlobClient, MatchPredictionRequestBlobClient>();
 
             services.AddSingleton(sp => AutoMapperConfig.CreateMapper());
+        }
+
+        private static void RegisterSearchLogger(IServiceCollection services)
+        {
+            services.AddApplicationInsightsTelemetryWorkerService();
+            services.AddScoped<SearchLoggingContext>();
+            services.AddScoped(typeof(ISearchLogger<>), typeof(SearchLogger<>));
         }
     }
 }
