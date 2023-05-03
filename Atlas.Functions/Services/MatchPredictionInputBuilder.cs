@@ -41,7 +41,7 @@ namespace Atlas.Functions.Services
         private readonly int matchPredictionBatchSize;
 
         public MatchPredictionInputBuilder(
-            ILogger logger,
+            ISearchLogger<SearchLoggingContext> logger,
             IDonorInputBatcher donorInputBatcher,
             IOptions<OrchestrationSettings> orchestrationSettings)
         {
