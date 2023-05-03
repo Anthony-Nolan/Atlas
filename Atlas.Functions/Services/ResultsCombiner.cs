@@ -37,7 +37,7 @@ namespace Atlas.Functions.Services
 
         public ResultsCombiner(
             IOptions<AzureStorageSettings> azureStorageSettings,
-            ILogger logger,
+            ISearchLogger<SearchLoggingContext> logger,
             IBlobDownloader blobDownloader)
         {
             this.logger = logger;
