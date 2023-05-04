@@ -157,7 +157,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         {
             try
             {
-                await searchResultsBlobUploader.UploadResults(searchLogs.RequestPerformanceMetrics, azureStorageSettings.SearchResultsBlobContainer,
+                await searchResultsBlobUploader.UploadResults(searchLogs, azureStorageSettings.SearchResultsBlobContainer,
                     $"{searchLogs.SearchRequestId}-log.json");
             }
             catch
