@@ -1,7 +1,6 @@
 using System;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.Caching;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using LazyCache;
@@ -17,6 +16,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
     {
         MatchGrade GetOrAddMatchGrade(Locus locus, string patientHlaName, string donorHlaName, Func<ICacheEntry, MatchGrade> func);
         MatchConfidence GetOrAddMatchConfidence(Locus? locus, string patientHlaName, string donorHlaName, Func<ICacheEntry, MatchConfidence> func);
+        bool? GetOrAddIsAntigenMatch(Locus? locus, string patientHlaName, string donorHlaName, Func<ICacheEntry, bool?> func);
     }
 
     public class ScoringCache : IScoringCache
@@ -28,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             IPersistentCacheProvider cacheProvider,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
         {
-            this.cache = cacheProvider.Cache;
+            cache = cacheProvider.Cache;
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
         }
 
@@ -45,6 +45,17 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             Func<ICacheEntry, MatchConfidence> func)
         {
             var cacheKey = $"MatchConfidence:v{hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion()};l{locus};d{donorHlaName};p{patientHlaName}";
+            return cache.GetOrAdd(cacheKey, func);
+        }
+
+        /// <inheritdoc />
+        public bool? GetOrAddIsAntigenMatch(
+            Locus? locus, 
+            string patientHlaName, 
+            string donorHlaName, 
+            Func<ICacheEntry, bool?> func)
+        {
+            var cacheKey = $"IsAntigenMatch:v{hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion()};l{locus};d{donorHlaName};p{patientHlaName}";
             return cache.GetOrAdd(cacheKey, func);
         }
     }

@@ -140,6 +140,7 @@ The three operations - create, update and delete - will cause problems if the fi
 	}
 	```
 * If absent or orphaned donors are detected, a results file listing the two sets of ids is uploaded to `donor-id-checker/results` subfolder in `donors` blob container with filename `original filename + timestamp`
+  * [Results model](/Atlas.DonorImport.FileSchema.Models/DonorChecker/DonorIdCheckerResults.cs)
 * `donor-id-checker-results` service bus topic recieves success check messages with filename and result count (i.e., total number of absent donors)
 * `alerts` topic recieves messages if handled exceptions are thrown
 
@@ -149,12 +150,12 @@ The three operations - create, update and delete - will cause problems if the fi
   * Json file format is same as for `donor-import` ([link to schema](/Schemas/DonorUpdateFileSchema.json); [link to model](/Atlas.DonorImport.FileSchema.Models/DonorImportFileSchema.cs))
   * Important: `updateMode` must be set to `check`
 * If donors differences are found or if donors are absent, a results file listing the record ids of such donors is uploaded to `donor-info-checker/results` subfolder in `donors` blob container with filename `original filename + timestamp`
+  * [Results model](/Atlas.DonorImport.FileSchema.Models/DonorChecker/DonorCheckerResults.cs)
 * `donor-info-checker-results` topic recieves success check messages with filename and result count (i.e., total number of existing donors with differences plus absent donors)
 * `alerts` topic recieves messages if handled exceptions are thrown
 
 ### Common Client Models
 Models used by both checker functions:
-* [Results model](/Atlas.DonorImport.FileSchema.Models/DonorChecker/DonorCheckerResults.cs)
 * [Success Notification model](/Atlas.DonorImport.FileSchema.Models/DonorChecker/DonorCheckerMessage.cs)
 
 

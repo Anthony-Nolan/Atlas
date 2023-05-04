@@ -31,7 +31,7 @@ namespace Atlas.Functions.Services
 
         public SearchCompletionMessageSender(
             IOptions<MessagingServiceBusSettings> messagingServiceBusSettings,
-            ILogger logger,
+            ISearchLogger<SearchLoggingContext> logger,
             IMapper mapper)
         {
             this.logger = logger;

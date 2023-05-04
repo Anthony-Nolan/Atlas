@@ -39,6 +39,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         private readonly IResultsCombiner resultsCombiner;
         private readonly ILogger logger;
         private readonly IMatchPredictionRequestBlobClient matchPredictionRequestBlobClient;
+        private readonly SearchLoggingContext loggingContext;
         private readonly AzureStorageSettings azureStorageSettings;
 
         public SearchActivityFunctions(
@@ -51,9 +52,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             IMatchingResultsDownloader matchingResultsDownloader,
             ISearchResultsBlobStorageClient searchResultsBlobUploader,
             IResultsCombiner resultsCombiner,
-            ILogger logger,
+            ISearchLogger<SearchLoggingContext> logger,
             IMatchPredictionRequestBlobClient matchPredictionRequestBlobClient,
-            IOptions<AzureStorageSettings> azureStorageSettings)
+            IOptions<AzureStorageSettings> azureStorageSettings,
+            SearchLoggingContext loggingContext)
         {
             this.donorReader = donorReader;
             this.matchPredictionAlgorithm = matchPredictionAlgorithm;
@@ -64,6 +66,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             this.resultsCombiner = resultsCombiner;
             this.logger = logger;
             this.matchPredictionRequestBlobClient = matchPredictionRequestBlobClient;
+            this.loggingContext = loggingContext;
             this.azureStorageSettings = azureStorageSettings.Value;
         }
 
@@ -71,6 +74,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         public async Task<TimedResultSet<IList<string>>> PrepareMatchPredictionBatches(
             [ActivityTrigger] MatchingResultsNotification matchingResultsNotification)
         {
+            InitializeLoggingContext(matchingResultsNotification.SearchRequestId);
+
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -117,6 +122,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         [FunctionName(nameof(PersistSearchResults))]
         public async Task PersistSearchResults([ActivityTrigger] PersistSearchResultsFunctionParameters parameters)
         {
+            InitializeLoggingContext(parameters.MatchingResultsNotification.SearchRequestId);
+
             var matchingResultsNotification = parameters.MatchingResultsNotification;
 
             var matchingResultsSummary = await logger.RunTimedAsync("Download matching results summary", async () =>
@@ -202,6 +209,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 await donorReader.GetDonors(donorIds)
             );
             return await resultsCombiner.CombineResults(searchRequestId, matchingResults, donorInfo, matchPredictionResultLocations);
+        }
+
+        private void InitializeLoggingContext(string searchRequestId)
+        {
+            loggingContext.SearchRequestId = searchRequestId;
         }
     }
 }

@@ -34,7 +34,8 @@ The project version will be appropriately incremented with each change to the pr
 * Ability to save search results in multiple files ([see Search section](#writing-of-search-results) for further info).
 
 #### Scoring
-* Fixed bug where DPB1 match category was not being calculated when the locus typing contained a single null allele, by treating the locus as homozygous for the expressing allele.
+* Bug fix: DPB1 match category is now being calculated when the locus typing contained a single null allele, by treating the locus as homozygous for the expressing allele.
+* Scoring feature now also calculates whether a position is antigen matched or not.
 
 #### Donor Import
 * Added new function `CheckDonorIdsFromFile` that does symmetric check of donors absence/presence in Atlas storage
