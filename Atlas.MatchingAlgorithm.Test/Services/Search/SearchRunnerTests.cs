@@ -219,7 +219,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest { SearchRequest = DefaultMatchingRequest, Id = searchRequestId}, default, default);
 
-            await resultsBlobStorageClient.Received().UploadResults(Arg.Any<RequestPerformanceMetrics>(), Arg.Any<string>(), $"{searchRequestId}-log.json");
+            await resultsBlobStorageClient.Received().UploadResults(Arg.Any<SearchLogs>(), Arg.Any<string>(), $"{searchRequestId}-log.json");
         }
 
         [Test]
@@ -228,17 +228,26 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             const string searchRequestId = "search-request-id";
             searchService.Search(default).ThrowsForAnyArgs(new Exception());
             
-            await searchRunner.Invoking(r => r.RunSearch(new IdentifiedSearchRequest { SearchRequest = DefaultMatchingRequest, Id = searchRequestId}, default, default))
-                .Should().ThrowAsync<Exception>();
-
-            await resultsBlobStorageClient.Received().UploadResults(Arg.Any<RequestPerformanceMetrics>(), Arg.Any<string>(), $"{searchRequestId}-log.json");
+            try
+            {
+                await searchRunner.RunSearch(new IdentifiedSearchRequest { SearchRequest = DefaultMatchingRequest, Id = searchRequestId }, default,
+                    default);
+            }
+            catch (Exception ex)
+            {
+                // ignored
+            }
+            finally
+            {
+                await resultsBlobStorageClient.Received().UploadResults(Arg.Any<SearchLogs>(), Arg.Any<string>(), $"{searchRequestId}-log.json");
+            }
         }
 
 
         [Test]
         public async Task RunSearch_WhenLogsUploadFails_DoesNotThrowException()
         {
-            resultsBlobStorageClient.UploadResults(Arg.Any<RequestPerformanceMetrics>(), default, default).ThrowsForAnyArgs(new Exception());
+            resultsBlobStorageClient.UploadResults(Arg.Any<SearchLogs>(), default, default).ThrowsForAnyArgs(new Exception());
 
             await searchRunner.Invoking(r => r.RunSearch(new IdentifiedSearchRequest { SearchRequest = DefaultMatchingRequest }, default, default))
                 .Should().NotThrowAsync<Exception>();

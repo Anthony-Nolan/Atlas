@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.AzureStorage.Blob;
 using Atlas.Functions.DurableFunctions.Search.Activity;
 using Atlas.Functions.Exceptions;
 using Atlas.Functions.Models;
@@ -48,7 +46,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             var parameters = context.GetInput<SearchOrchestratorParameters>();
             var notification = parameters.MatchingResultsNotification;
             var requestInfo = mapper.Map<FailureNotificationRequestInfo>(notification);
-            var orchestrationInitiated = context.CurrentUtcDateTime;
+            var orchestrationStartTime = context.CurrentUtcDateTime;
 
             try
             {
@@ -67,7 +65,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     context,
                     new PersistSearchResultsFunctionParameters
                     {
-                        SearchInitiated = orchestrationInitiated,
+                        SearchInitiated = orchestrationStartTime,
                         MatchingResultsNotification = notification,
                         MatchPredictionResultLocations = matchPredictionResultLocations
                     },
@@ -76,7 +74,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
                 return new SearchOrchestrationOutput
                 {
-                    TotalSearchTime = context.CurrentUtcDateTime.Subtract(orchestrationInitiated),
+                    TotalSearchTime = context.CurrentUtcDateTime.Subtract(orchestrationStartTime),
                     MatchingDonorCount = notification.NumberOfResults ?? -1,
                 };
             }
@@ -100,11 +98,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 var performanceMetrics = new RequestPerformanceMetrics
                 {
                     InitiationTime = parameters.InitiationTime,
-                    StartTime = orchestrationInitiated,
+                    StartTime = orchestrationStartTime,
                     CompletionTime = context.CurrentUtcDateTime
                 };
 
-                await UploadPerformanceLogFile(context, new UploadPerformanceLogsFunctionParameters { PerformanceMetrics = performanceMetrics, SearchRequestId = notification.SearchRequestId});
+                await UploadSearchLogs(context, new SearchLogs { RequestPerformanceMetrics = performanceMetrics, SearchRequestId = notification.SearchRequestId});
             }
         }
 
@@ -309,13 +307,13 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             context.SetCustomStatus($"Search failed, during stage: {requestInfo.StageReached}");
         }
 
-        private static async Task UploadPerformanceLogFile(
+        private static async Task UploadSearchLogs(
             IDurableOrchestrationContext context,
-            UploadPerformanceLogsFunctionParameters parameters) =>
+            SearchLogs searchLogs) =>
             await context.CallActivityWithRetryAsync(
-                nameof(SearchActivityFunctions.UploadPerformanceLogs),
+                nameof(SearchActivityFunctions.UploadSearchLogs),
                 RetryOptions,
-                parameters
+                searchLogs
             );
     }
 }

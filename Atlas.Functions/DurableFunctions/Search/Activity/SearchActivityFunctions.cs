@@ -152,17 +152,17 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             await searchCompletionMessageSender.PublishFailureMessage(requestInfo);
         }
 
-        [FunctionName(nameof(UploadPerformanceLogs))]
-        public async Task UploadPerformanceLogs([ActivityTrigger] UploadPerformanceLogsFunctionParameters parameters)
+        [FunctionName(nameof(UploadSearchLogs))]
+        public async Task UploadSearchLogs([ActivityTrigger] SearchLogs searchLogs)
         {
             try
             {
-                await searchResultsBlobUploader.UploadResults(parameters.PerformanceMetrics, azureStorageSettings.SearchResultsBlobContainer,
-                    $"{parameters.SearchRequestId}-log.json");
+                await searchResultsBlobUploader.UploadResults(searchLogs.RequestPerformanceMetrics, azureStorageSettings.SearchResultsBlobContainer,
+                    $"{searchLogs.SearchRequestId}-log.json");
             }
             catch
             {
-                logger.SendTrace($"Failed to write performance log file for search with id {parameters.SearchRequestId}.", LogLevel.Error);
+                logger.SendTrace($"Failed to write performance log file for search with id {searchLogs.SearchRequestId}.", LogLevel.Error);
             }
         }
 

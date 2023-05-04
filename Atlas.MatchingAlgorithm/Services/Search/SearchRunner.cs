@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
@@ -131,22 +132,28 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             }
             finally
             {
-                try
+                await UploadSearchLogs(new SearchLogs
                 {
-                    var performanceMetrics = new RequestPerformanceMetrics
+                    SearchRequestId = searchRequestId,
+                    RequestPerformanceMetrics = new RequestPerformanceMetrics
                     {
                         InitiationTime = enqueuedTimeUtc,
                         StartTime = searchStartTime,
                         CompletionTime = DateTimeOffset.UtcNow
-                    };
+                    }
+                });
+            }
+        }
 
-                    await resultsBlobStorageClient.UploadResults(performanceMetrics, azureStorageSettings.SearchResultsBlobContainer, $"{searchRequestId}-log.json");
-                }
-                catch
-                {
-                    searchLogger.SendTrace($"Failed to write performance log file for search with id {searchRequestId}.", LogLevel.Error);
-                }
-                
+        public async Task UploadSearchLogs(SearchLogs searchLogs)
+        {
+            try
+            {
+                await resultsBlobStorageClient.UploadResults(searchLogs, azureStorageSettings.SearchResultsBlobContainer, $"{searchLogs.SearchRequestId}-log.json");
+            }
+            catch
+            {
+                searchLogger.SendTrace($"Failed to write performance log file for search with id {searchLogs.SearchRequestId}.", LogLevel.Error);
             }
         }
     }
