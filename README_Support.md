@@ -206,6 +206,10 @@ If a search has not yet returned results after a reasonable period of time, ther
         * (a) reducing the number of concurrent activity functions
         * (b) increasing the amount of memory available by scaling up the app service plan
 
+### Search logs
+
+[Log files](/Atlas.Client.Models/Search/Results/SearchLogs.cs) named `{search-request-id}-log.json` are uploaded to `matching-algorithm-results` and `atlas-search-results` containers. 
+
 ## MACs
 
 ### New MAC is showing as unrecognised

@@ -17,6 +17,7 @@ The project version will be appropriately incremented with each change to the pr
 
 #### Search
 * Ensure all failed search requests are reported as completed by routing dead-lettered search request messages to the `search-results-ready` topic, with the appropriate failure information.
+* Added performance logs for initial search.
 
 ##### Auto-Heal
 * Auto-Heal is disabled on matching algorithm function app

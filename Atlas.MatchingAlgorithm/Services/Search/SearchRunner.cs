@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.ApplicationInsights;
@@ -23,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
     {
         /// <param name="identifiedSearchRequest"></param>
         /// <param name="attemptNumber">The number of times this <paramref name="identifiedSearchRequest"/> has been attempted, including the current attempt.</param>
-        Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest, int attemptNumber);
+        Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest, int attemptNumber, DateTimeOffset enqueuedTimeUtc);
     }
 
     public class SearchRunner : ISearchRunner
@@ -61,8 +63,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.azureStorageSettings = azureStorageSettings;
         }
 
-        public async Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest, int attemptNumber)
+        public async Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest, int attemptNumber, DateTimeOffset enqueuedTimeUtc)
         {
+            var searchStartTime = DateTimeOffset.UtcNow;
             var searchRequestId = identifiedSearchRequest.Id;
             searchLoggingContext.SearchRequestId = searchRequestId;
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
@@ -88,7 +91,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     BatchedResult = azureStorageSettings.ShouldBatchResults
                 };
 
-                await resultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize, searchResultSet.SearchRequestId);
+                await resultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,
+                    searchResultSet.SearchRequestId);
 
                 var notification = new MatchingResultsNotification
                 {
@@ -111,9 +115,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             catch (HlaMetadataDictionaryException hmdException)
             {
                 searchLogger.SendTrace($"Failed to lookup HLA for search with id {searchRequestId}. Exception: {hmdException}", LogLevel.Error);
-                
+
                 await matchingFailureNotificationSender.SendFailureNotification(searchRequestId, attemptNumber, 0, hmdException.Message);
-                
+
                 // Do not re-throw the HMD exception to prevent the search being retried or dead-lettered.
             }
             // "Unexpected" exceptions will be re-thrown to ensure that the request will be retried or dead-lettered, as appropriate.
@@ -121,9 +125,35 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 searchLogger.SendTrace($"Failed to run search with id {searchRequestId}. Exception: {e}", LogLevel.Error);
 
-                await matchingFailureNotificationSender.SendFailureNotification(searchRequestId, attemptNumber, searchRequestMaxRetryCount - attemptNumber);
+                await matchingFailureNotificationSender.SendFailureNotification(searchRequestId, attemptNumber,
+                    searchRequestMaxRetryCount - attemptNumber);
 
                 throw;
+            }
+            finally
+            {
+                await UploadSearchLogs(new SearchLogs
+                {
+                    SearchRequestId = searchRequestId,
+                    RequestPerformanceMetrics = new RequestPerformanceMetrics
+                    {
+                        InitiationTime = enqueuedTimeUtc,
+                        StartTime = searchStartTime,
+                        CompletionTime = DateTimeOffset.UtcNow
+                    }
+                });
+            }
+        }
+
+        public async Task UploadSearchLogs(SearchLogs searchLogs)
+        {
+            try
+            {
+                await resultsBlobStorageClient.UploadResults(searchLogs, azureStorageSettings.SearchResultsBlobContainer, $"{searchLogs.SearchRequestId}-log.json");
+            }
+            catch
+            {
+                searchLogger.SendTrace($"Failed to write performance log file for search with id {searchLogs.SearchRequestId}.", LogLevel.Error);
             }
         }
     }

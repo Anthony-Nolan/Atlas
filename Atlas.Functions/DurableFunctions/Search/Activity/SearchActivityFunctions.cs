@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
@@ -155,6 +157,20 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         public async Task SendFailureNotification([ActivityTrigger] FailureNotificationRequestInfo requestInfo)
         {
             await searchCompletionMessageSender.PublishFailureMessage(requestInfo);
+        }
+
+        [FunctionName(nameof(UploadSearchLogs))]
+        public async Task UploadSearchLogs([ActivityTrigger] SearchLogs searchLogs)
+        {
+            try
+            {
+                await searchResultsBlobUploader.UploadResults(searchLogs, azureStorageSettings.SearchResultsBlobContainer,
+                    $"{searchLogs.SearchRequestId}-log.json");
+            }
+            catch
+            {
+                logger.SendTrace($"Failed to write performance log file for search with id {searchLogs.SearchRequestId}.", LogLevel.Error);
+            }
         }
 
         private async Task<IEnumerable<SearchResult>> ProcessBatchedSearchResults(
