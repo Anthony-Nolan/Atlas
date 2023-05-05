@@ -89,7 +89,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     BlobStorageContainerName = azureStorageSettings.SearchResultsBlobContainer,
                     SearchRequest = identifiedSearchRequest.SearchRequest,
                     BatchedResult = azureStorageSettings.ShouldBatchResults,
-                    SearchStartTime = searchStartTime
+                    MatchingStartTime = searchStartTime
                 };
 
                 await resultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,

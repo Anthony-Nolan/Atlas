@@ -66,6 +66,7 @@ namespace Atlas.Functions.Services
                 resultSet.MatchingAlgorithmTime = matchingTime;
                 resultSet.MatchPredictionTime = matchPredictionTime;
                 resultSet.SearchRequest = matchingAlgorithmResultSet.SearchRequest;
+                resultSet.MatchingStartTime = matchingAlgorithmResultSet.MatchingStartTime;
 
                 return resultSet;
             }
