@@ -76,6 +76,6 @@ namespace Atlas.Client.Models.Search.Results.ResultSet
         /// <summary>
         /// DateTime that the request was picked up for processing (equivalent to dequeued time for queued requests)
         /// </summary>
-        public DateTimeOffset SearchStartTime { get; set; }
+        public DateTimeOffset MatchingStartTime { get; set; }
     }
 }

@@ -107,7 +107,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     BlobStorageContainerName = azureStorageSettings.MatchingResultsBlobContainer,
                     NoLongerMatchingDonors = diff.RemovedResults.ToList(),
                     BatchedResult = azureStorageSettings.ShouldBatchResults,
-                    SearchStartTime = searchStartTime
+                    MatchingStartTime = searchStartTime
                 };
 
                 await repeatResultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize, $"{searchRequestId}/{repeatSearchId}");
