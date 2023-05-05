@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Newtonsoft.Json;
@@ -71,5 +72,10 @@ namespace Atlas.Client.Models.Search.Results.ResultSet
         /// debugging / support purposes, removing the need to cross reference result sets to request details.  
         /// </summary>
         public SearchRequest SearchRequest { get; set; }
+
+        /// <summary>
+        /// DateTime that the request was picked up for processing (equivalent to dequeued time for queued requests)
+        /// </summary>
+        public DateTimeOffset SearchStartTime { get; set; }
     }
 }
