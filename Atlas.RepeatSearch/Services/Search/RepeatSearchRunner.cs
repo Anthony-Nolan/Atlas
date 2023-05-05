@@ -70,6 +70,7 @@ namespace Atlas.RepeatSearch.Services.Search
 
         public async Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
         {
+            var searchStartTime = DateTimeOffset.UtcNow;
             await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
 
             var searchRequestId = identifiedRepeatSearchRequest.OriginalSearchId;
@@ -105,7 +106,8 @@ namespace Atlas.RepeatSearch.Services.Search
                     MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
                     BlobStorageContainerName = azureStorageSettings.MatchingResultsBlobContainer,
                     NoLongerMatchingDonors = diff.RemovedResults.ToList(),
-                    BatchedResult = azureStorageSettings.ShouldBatchResults
+                    BatchedResult = azureStorageSettings.ShouldBatchResults,
+                    SearchStartTime = searchStartTime
                 };
 
                 await repeatResultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize, $"{searchRequestId}/{repeatSearchId}");
