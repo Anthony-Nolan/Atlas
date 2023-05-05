@@ -19,7 +19,7 @@ The project version will be appropriately incremented with each change to the pr
 * Ensure all failed search requests are reported as completed by routing dead-lettered search request messages to the `search-results-ready` topic, with the appropriate failure information.
 * Added performance logs for initial search.
 * Bug fix: all search-related logs are now being tagged with the search request ID to allow complete end-to-end tracking of a search request via Application Insights.
-* Added search and repeat search start time to matching result set
+* Added matching request start time to result set.
 
 ##### Auto-Heal
 * Auto-Heal is disabled on matching algorithm function app
