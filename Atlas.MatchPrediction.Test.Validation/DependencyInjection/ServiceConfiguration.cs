@@ -8,6 +8,7 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.Common.ApplicationInsights;
+using Atlas.ManualTesting.Common.SubjectImport;
 
 namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
 {
