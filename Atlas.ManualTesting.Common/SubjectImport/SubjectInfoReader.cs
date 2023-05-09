@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.MatchPrediction.Test.Validation.Models;
-using CsvHelper;
+﻿using CsvHelper;
 
-namespace Atlas.MatchPrediction.Test.Validation.Services
+namespace Atlas.ManualTesting.Common.SubjectImport
 {
-    internal interface ISubjectInfoReader
+    public interface ISubjectInfoReader
     {
         Task<IReadOnlyCollection<ImportedSubject>> Read(string filePath);
     }
 
-    internal class SubjectInfoReader : ISubjectInfoReader
+    public class SubjectInfoReader : ISubjectInfoReader
     {
         public async Task<IReadOnlyCollection<ImportedSubject>> Read(string filePath)
         {
