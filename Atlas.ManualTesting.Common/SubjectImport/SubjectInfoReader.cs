@@ -11,23 +11,26 @@ namespace Atlas.ManualTesting.Common.SubjectImport
     {
         public async Task<IReadOnlyCollection<ImportedSubject>> Read(string filePath)
         {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new ArgumentNullException(nameof(filePath));
+            }
+
             if (!File.Exists(filePath))
             {
                 throw new ArgumentException($"File not found at {filePath}.");
             }
-            
-            await using (var stream = File.OpenRead(filePath))
-            {
-                using (var reader = new StreamReader(stream))
-                using (var csv = new CsvReader(reader))
-                {
-                    csv.Configuration.Delimiter = ";";
-                    csv.Configuration.HeaderValidated = null;
-                    csv.Configuration.MissingFieldFound = null;
-                    csv.Configuration.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("");
-                    return csv.GetRecords<ImportedSubject>().ToList();
-                }
-            }
+
+            await using var stream = File.OpenRead(filePath);
+            using var reader = new StreamReader(stream);
+            using var csv = new CsvReader(reader);
+
+            csv.Configuration.Delimiter = ";";
+            csv.Configuration.HeaderValidated = null;
+            csv.Configuration.MissingFieldFound = null;
+            csv.Configuration.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("");
+
+            return csv.GetRecords<ImportedSubject>().ToList();
         }
     }
 }

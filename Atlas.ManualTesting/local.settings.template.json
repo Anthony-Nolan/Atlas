@@ -10,6 +10,8 @@
     "Matching:DonorManagement:Topic": "updated-searchable-donors",
     "Matching:DonorManagement:Subscription": "audit",
 
+    "Scoring:ScoreBatchRequestUrl": "override-this", 
+
     "Search:ResultsTopic": "search-results-ready",
     "Search:ResultsSubscription": "audit"
   },
