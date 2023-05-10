@@ -5,7 +5,9 @@ using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.ManualTesting.Common.SubjectImport;
 using Atlas.ManualTesting.Services;
+using Atlas.ManualTesting.Services.Scoring;
 using Atlas.ManualTesting.Services.ServiceBus;
 using Atlas.ManualTesting.Settings;
 using Atlas.MatchingAlgorithm.Common.Models;
@@ -34,6 +36,7 @@ namespace Atlas.ManualTesting.DependencyInjection
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<MatchingSettings>("Matching");
             services.RegisterAsOptions<DonorManagementSettings>("Matching:DonorManagement");
+            services.RegisterAsOptions<ScoringSettings>("Scoring");
             services.RegisterAsOptions<SearchSettings>("Search");
         }
 
@@ -80,6 +83,10 @@ namespace Atlas.ManualTesting.DependencyInjection
             services.AddScoped<ISearchableDonorUpdatesPeeker, SearchableDonorUpdatesPeeker>();
 
             services.AddScoped<IDonorStoresInspector, DonorStoresInspector>();
+
+            services.AddScoped<ISubjectInfoReader, SubjectInfoReader>();
+            services.AddScoped<IScoreBatchRequester, ScoreBatchRequester>();
+            services.AddScoped<IScoreRequestProcessor, ScoreRequestProcessor>();
         }
 
         private static void RegisterDatabaseServices(
