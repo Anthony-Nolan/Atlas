@@ -1,13 +1,10 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
-using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.ManualTesting.Models;
 using Atlas.ManualTesting.Services.Scoring;
-using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
@@ -17,13 +14,13 @@ using Newtonsoft.Json;
 namespace Atlas.ManualTesting.Functions
 {
     /// <summary>
-    /// Functions that process the WMDA consensus datasets for exercises that involve the counting of mismatches.
+    /// Functions that run the mismatch counting exercises of the WMDA consensus dataset.
     /// </summary>
-    public class WmdaConsensusDatasetScoringFunctions
+    public class WmdaConsensusDatasetFunctions
     {
         private readonly IScoreRequestProcessor scoreRequestProcessor;
 
-        public WmdaConsensusDatasetScoringFunctions(IScoreRequestProcessor scoreRequestProcessor)
+        public WmdaConsensusDatasetFunctions(IScoreRequestProcessor scoreRequestProcessor)
         {
             this.scoreRequestProcessor = scoreRequestProcessor;
         }
@@ -40,7 +37,7 @@ namespace Atlas.ManualTesting.Functions
             {
                 ImportAndScoreRequest = importAndScoreRequest,
                 ScoringCriteria = BuildThreeLocusScoringCriteria(),
-                ResultTransformer = TransformScoringResultForExercise1
+                ResultTransformer = (patientId, donorId, result) => new WmdaConsensusResultsFile(patientId, donorId, result).ToString()
             });
         }
 
@@ -56,7 +53,7 @@ namespace Atlas.ManualTesting.Functions
             {
                 ImportAndScoreRequest = importAndScoreRequest,
                 ScoringCriteria = BuildThreeLocusScoringCriteria(),
-                ResultTransformer = TransformScoringResultForExercise2
+                ResultTransformer = (patientId, donorId, result) => new WmdaConsensusResultsFileSetTwo(patientId, donorId, result).ToString()
             });
         }
 
@@ -67,34 +64,6 @@ namespace Atlas.ManualTesting.Functions
                 LociToScore = new[] { Locus.A, Locus.B, Locus.Drb1 },
                 LociToExcludeFromAggregateScore = new List<Locus>()
             };
-        }
-
-        private static string TransformScoringResultForExercise1(string patientId, string donorId, ScoringResult result)
-        {
-            static string CountMismatches(LocusSearchResult locusResult) => $"{2-locusResult.MatchCount}";
-
-            return $"{patientId};{donorId};" +
-                   $"{CountMismatches(result.SearchResultAtLocusA)};" +
-                   $"{CountMismatches(result.SearchResultAtLocusB)};" +
-                   $"{CountMismatches(result.SearchResultAtLocusDrb1)}";
-        }
-
-        private static string TransformScoringResultForExercise2(string patientId, string donorId, ScoringResult result)
-        {
-            static string CountMismatches(LocusSearchResult locusResult) => $"{2 - locusResult.MatchCount}";
-            static int CountAntigenMismatches(LocusSearchResult locusResult)
-            {
-                return new List<bool?>
-                {
-                    locusResult.ScoreDetailsAtPositionOne.IsAntigenMatch,
-                    locusResult.ScoreDetailsAtPositionTwo.IsAntigenMatch
-                }.Count(x => x.HasValue && !x.Value);
-            }
-
-            return $"{patientId};{donorId};" +
-                   $"{CountMismatches(result.SearchResultAtLocusA)};{CountAntigenMismatches(result.SearchResultAtLocusA)};" +
-                   $"{CountMismatches(result.SearchResultAtLocusB)};{CountAntigenMismatches(result.SearchResultAtLocusB)};" +
-                   $"{CountMismatches(result.SearchResultAtLocusDrb1)};{CountAntigenMismatches(result.SearchResultAtLocusDrb1)}";
         }
     }
 }

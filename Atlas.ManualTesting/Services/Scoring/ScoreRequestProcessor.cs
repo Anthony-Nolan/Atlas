@@ -18,13 +18,17 @@ namespace Atlas.ManualTesting.Services.Scoring
         public ScoringCriteria ScoringCriteria { get; set; }
 
         /// <summary>
-        /// Arguments: patientId, donorId and scoring result.
+        /// Transforms a <see cref="ScoringResult"/> for a patient and donor into a <see cref="string"/> so it can be written to the results file.
+        /// Arguments: `patientId`, `donorId` and the scoring result to transform.
         /// </summary>
         public Func<string, string, ScoringResult, string> ResultTransformer { get; set; }
     }
 
     public interface IScoreRequestProcessor
     {
+        /// <summary>
+        /// Scores patients and donors imported from specified input files, and then writes the results to an output text file.
+        /// </summary>
         Task ProcessScoreRequest(ScoreRequestProcessorInput input);
     }
 
@@ -41,6 +45,7 @@ namespace Atlas.ManualTesting.Services.Scoring
             this.scoreBatchRequester = scoreBatchRequester;
         }
 
+        /// <inheritdoc />
         public async Task ProcessScoreRequest(ScoreRequestProcessorInput input)
         {
             var patients = await subjectInfoReader.Read(input.ImportAndScoreRequest.PatientFilePath);
