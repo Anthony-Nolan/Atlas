@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.ManualTesting.Common.SubjectImport;
 using Atlas.ManualTesting.Models;
 using Atlas.ManualTesting.Settings;
@@ -26,7 +27,6 @@ namespace Atlas.ManualTesting.Services.Scoring
 
     public interface IScoreBatchRequester
     {
-        /// <returns>Id for Verification Run</returns>
         Task<IEnumerable<DonorScoringResult>> ScoreBatch(ScoreBatchRequest request);
     }
 
@@ -75,7 +75,7 @@ namespace Atlas.ManualTesting.Services.Scoring
         {
             return new BatchScoringRequest
             {
-                PatientHla = request.Patient.ToPhenotypeInfoTransfer(),
+                PatientHla = request.Patient.ToPhenotypeInfo().ToPhenotypeInfoTransfer(),
                 DonorsHla = request.Donors.Select(ToIdentifiedDonorHla),
                 ScoringCriteria = request.ScoringCriteria
             };
@@ -83,7 +83,7 @@ namespace Atlas.ManualTesting.Services.Scoring
 
         private static IdentifiedDonorHla ToIdentifiedDonorHla(ImportedSubject donor)
         {
-            var donorHla = donor.ToPhenotypeInfoTransfer();
+            var donorHla = donor.ToPhenotypeInfo().ToPhenotypeInfoTransfer();
 
             return new IdentifiedDonorHla
             {

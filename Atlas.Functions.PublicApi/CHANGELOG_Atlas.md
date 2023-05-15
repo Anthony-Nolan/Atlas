@@ -49,7 +49,7 @@ The project version will be appropriately incremented with each change to the pr
 * Changed the way match prediction requests are queued for processing by activity functions, to prevent search requests with many donors from blocking the completion of smaller search requests.
 
 #### Manual Testing
-- Two locally-running functions added to `Atlas.ManualTesting.Functions` to allow running of exercises 1 and 2 of the WMDA consensus dataset.
+- Locally-running functions added to `Atlas.ManualTesting.Functions.WmdaConsensusDatasetFunctions` to allow running of exercises 1 and 2 of the WMDA consensus dataset.
 
 ### 1.5.0
 

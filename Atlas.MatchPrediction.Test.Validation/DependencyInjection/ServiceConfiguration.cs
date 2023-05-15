@@ -8,6 +8,7 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.Common.ApplicationInsights;
+using Atlas.ManualTesting.Common;
 using Atlas.ManualTesting.Common.SubjectImport;
 
 namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
@@ -55,7 +56,7 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
             Func<IServiceProvider, ValidationAzureStorageSettings> fetchValidationAzureStorageSettings)
         {
             services.AddScoped<ISubjectInfoImporter, SubjectInfoImporter>();
-            services.AddScoped<ISubjectInfoReader, SubjectInfoReader>();
+            services.AddScoped<IFileReader<ImportedSubject>, FileReader<ImportedSubject>>();
             services.AddScoped<IMatchPredictionRequester, MatchPredictionRequester>();
             services.AddScoped<IBlobStreamer, BlobStreamer>(sp =>
             {
