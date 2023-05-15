@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
+using Atlas.ManualTesting.Common;
 using Atlas.ManualTesting.Common.SubjectImport;
 using Atlas.ManualTesting.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
@@ -36,20 +37,21 @@ namespace Atlas.ManualTesting.Services.Scoring
     {
         // Value should be large enough for good throughput, but small enough to avoid very large http request payload.
         private const int DonorBatchSize = 1000;
-        private readonly ISubjectInfoReader subjectInfoReader;
+        private const string FileDelimiter = ";";
+        private readonly IFileReader<ImportedSubject> subjectReader;
         private readonly IScoreBatchRequester scoreBatchRequester;
 
-        public ScoreRequestProcessor(ISubjectInfoReader subjectInfoReader, IScoreBatchRequester scoreBatchRequester)
+        public ScoreRequestProcessor(IFileReader<ImportedSubject> subjectReader, IScoreBatchRequester scoreBatchRequester)
         {
-            this.subjectInfoReader = subjectInfoReader;
+            this.subjectReader = subjectReader;
             this.scoreBatchRequester = scoreBatchRequester;
         }
 
         /// <inheritdoc />
         public async Task ProcessScoreRequest(ScoreRequestProcessorInput input)
         {
-            var patients = await subjectInfoReader.Read(input.ImportAndScoreRequest.PatientFilePath);
-            var donors = await subjectInfoReader.Read(input.ImportAndScoreRequest.DonorFilePath);
+            var patients = await subjectReader.ReadAllLines(FileDelimiter, input.ImportAndScoreRequest.PatientFilePath);
+            var donors = await subjectReader.ReadAllLines(FileDelimiter, input.ImportAndScoreRequest.DonorFilePath);
 
             if (patients.Count == 0 || donors.Count == 0)
             {

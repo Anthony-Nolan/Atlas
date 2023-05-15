@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
+using Atlas.ManualTesting.Common;
 using Atlas.ManualTesting.Common.SubjectImport;
 using Atlas.MatchPrediction.Test.Validation.Data.Models;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories;
@@ -20,11 +21,12 @@ namespace Atlas.MatchPrediction.Test.Validation.Services
 
     internal class SubjectInfoImporter : ISubjectInfoImporter
     {
-        private readonly ISubjectInfoReader fileReader;
+        private const string FileDelimiter = ";";
+        private readonly IFileReader<ImportedSubject> fileReader;
         private readonly IValidationRepository validationRepository;
         private readonly ISubjectRepository subjectRepository;
 
-        public SubjectInfoImporter(ISubjectInfoReader fileReader, IValidationRepository validationRepository, ISubjectRepository subjectRepository)
+        public SubjectInfoImporter(IFileReader<ImportedSubject> fileReader, IValidationRepository validationRepository, ISubjectRepository subjectRepository)
         {
             this.fileReader = fileReader;
             this.validationRepository = validationRepository;
@@ -41,7 +43,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services
 
         private async Task ImportSubjects(string filePath, SubjectType subjectType)
         {
-            var importedSubjects = await fileReader.Read(filePath);
+            var importedSubjects = await fileReader.ReadAllLines(FileDelimiter, filePath);
 
             var filteredSubjects = importedSubjects
                 .Where(s => IsTyped(s.A_1, s.A_2) && IsTyped(s.B_1, s.B_2) && IsTyped(s.DRB1_1, s.DRB1_2))

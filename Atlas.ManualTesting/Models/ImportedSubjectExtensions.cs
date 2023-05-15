@@ -1,12 +1,11 @@
 ﻿using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
-using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.ManualTesting.Common.SubjectImport;
 
 namespace Atlas.ManualTesting.Models
 {
     internal static class ImportedSubjectExtensions
     {
-        public static PhenotypeInfoTransfer<string> ToPhenotypeInfoTransfer(this ImportedSubject subject)
+        public static PhenotypeInfo<string> ToPhenotypeInfo(this ImportedSubject subject)
         {
             return new PhenotypeInfo<string>(
                     valueA_1: subject.A_1,
@@ -18,8 +17,7 @@ namespace Atlas.ManualTesting.Models
                     valueDqb1_1: subject.DQB1_1,
                     valueDqb1_2: subject.DQB1_2,
                     valueDrb1_1: subject.DRB1_1,
-                    valueDrb1_2: subject.DRB1_2)
-                .ToPhenotypeInfoTransfer();
+                    valueDrb1_2: subject.DRB1_2);
         }
     }
 }

@@ -5,10 +5,11 @@ using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
-using Atlas.ManualTesting.Common.SubjectImport;
+using Atlas.ManualTesting.Common;
 using Atlas.ManualTesting.Services;
 using Atlas.ManualTesting.Services.Scoring;
 using Atlas.ManualTesting.Services.ServiceBus;
+using Atlas.ManualTesting.Services.WmdaConsensusResults;
 using Atlas.ManualTesting.Settings;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +34,7 @@ namespace Atlas.ManualTesting.DependencyInjection
 
         private static void RegisterSettings(this IServiceCollection services)
         {
+            services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<MatchingSettings>("Matching");
             services.RegisterAsOptions<DonorManagementSettings>("Matching:DonorManagement");
@@ -84,9 +86,12 @@ namespace Atlas.ManualTesting.DependencyInjection
 
             services.AddScoped<IDonorStoresInspector, DonorStoresInspector>();
 
-            services.AddScoped<ISubjectInfoReader, SubjectInfoReader>();
+            services.AddScoped(typeof(IFileReader<>), typeof(FileReader<>));
             services.AddScoped<IScoreBatchRequester, ScoreBatchRequester>();
             services.AddScoped<IScoreRequestProcessor, ScoreRequestProcessor>();
+            services.AddScoped<IWmdaResultsComparer, WmdaResultsComparer>();
+            services.AddScoped<IWmdaDiscrepantResultsReporter, WmdaDiscrepantResultsReporter>();
+            services.AddScoped<IConvertHlaRequester, ConvertHlaRequester>();
         }
 
         private static void RegisterDatabaseServices(

@@ -3,6 +3,8 @@
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
 
+    "HlaMetadataDictionary:ConvertHlaRequestUrl": "override-this",
+
     "MessagingServiceBus:ConnectionString": "override-this",
 
     "Matching:RequestsTopic": "matching-requests",
@@ -10,7 +12,7 @@
     "Matching:DonorManagement:Topic": "updated-searchable-donors",
     "Matching:DonorManagement:Subscription": "audit",
 
-    "Scoring:ScoreBatchRequestUrl": "override-this", 
+    "Scoring:ScoreBatchRequestUrl": "override-this",
 
     "Search:ResultsTopic": "search-results-ready",
     "Search:ResultsSubscription": "audit"

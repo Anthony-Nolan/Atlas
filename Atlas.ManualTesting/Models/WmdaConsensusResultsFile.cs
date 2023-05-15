@@ -9,13 +9,20 @@ namespace Atlas.ManualTesting.Models
     {
         public string PatientId { get; set; }
         public string DonorId { get; set; }
-        public int? MismatchCountAtA { get; set; }
-        public int? MismatchCountAtB { get; set; }
-        public int? MismatchCountAtDrb1 { get; set; }
+        public string MismatchCountAtA { get; set; }
+        public string MismatchCountAtB { get; set; }
+        public string MismatchCountAtDrb1 { get; set; }
+
+        /// <summary>
+        /// Empty constructor needed for reading results from files
+        /// </summary>
+        public WmdaConsensusResultsFile()
+        {
+        }
 
         public WmdaConsensusResultsFile(string patientId, string donorId, ScoringResult result)
         {
-            static int? CountMismatches(LocusSearchResult locusResult) => 2 - locusResult.MatchCount;
+            static string CountMismatches(LocusSearchResult locusResult) => $"{2 - locusResult.MatchCount}";
 
             PatientId = patientId;
             DonorId = donorId;
@@ -32,19 +39,19 @@ namespace Atlas.ManualTesting.Models
 
     public class WmdaConsensusResultsFileSetTwo : WmdaConsensusResultsFile
     {
-        public int AntigenMismatchCountAtA { get; set; }
-        public int AntigenMismatchCountAtB { get; set; }
-        public int AntigenMismatchCountAtDrb1 { get; set; }
+        public string AntigenMismatchCountAtA { get; set; }
+        public string AntigenMismatchCountAtB { get; set; }
+        public string AntigenMismatchCountAtDrb1 { get; set; }
 
         public WmdaConsensusResultsFileSetTwo(string patientId, string donorId, ScoringResult result) : base(patientId, donorId, result)
         {
-            static int CountAntigenMismatches(LocusSearchResult locusResult)
+            static string CountAntigenMismatches(LocusSearchResult locusResult)
             {
                 return new List<bool?>
                 {
                     locusResult.ScoreDetailsAtPositionOne.IsAntigenMatch,
                     locusResult.ScoreDetailsAtPositionTwo.IsAntigenMatch
-                }.Count(x => x.HasValue && !x.Value);
+                }.Count(x => x.HasValue && !x.Value).ToString();
             }
 
             AntigenMismatchCountAtA = CountAntigenMismatches(result.SearchResultAtLocusA);

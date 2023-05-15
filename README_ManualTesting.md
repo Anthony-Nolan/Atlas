@@ -38,19 +38,23 @@ Projects dedicated to manual, non-automated testing of various aspects of the At
   - analysis of any discrepancies.
 
 ### Generating mismatch results files
-- The Atlas `ScoreBatch` function can be used to generate the required mismatch data:
-  - `Atlas.ManualTesting.Functions.WmdaConsensusDatasetScoringFunctions` contains two locally-running http-triggered functions, one for each exercise.
-  - Local setting: `Scoring:ScoreBatchRequestUrl` should be overridden with the `ScoreBatch` function URL for the instance of Atlas under test.
+- The Atlas `ScoreBatch` function (under `MatchingAlgorithm.Functions`) is used to generate the required mismatch data:
+  - Locally run the functions, `ProcessWmdaConsensusDataset_Exercise1` and `_Exercise2`, both within the `Atlas.ManualTesting.Functions.WmdaConsensusDatasetFunctions` namespace.
+  - Local setting `Scoring:ScoreBatchRequestUrl` should be overridden with the `ScoreBatch` function URL for the instance of Atlas under test.
   - The patient and donor input files will first need to be modified to allow import:
     - The variety of field delimiters should all be replaced with a single character: `;`.
     - A header row should be added: `ID;A_1;A_2;B_1;B_2;DRB1_1;DRB1_2`
     - Locus names should be removed from the HLA typings (locus will be inferred by column name instead).
 
-### Data analysis
-- Comparing the set1 results file to the consensus is very simple, and can be done using the following bash command:
-  `diff --strip-trailing-cr --side-by-side --suppress-common-lines [path-to-set-1-consensus-file] [path-to-set-1-results-file] > differences.txt`
-- Comparing set2 results is not as simple, as the reference file contains letters to identify where a consensus cannot be reached.
-  - // TODO - point to script/function that compares set2 file to reference
+### Report and explanation of discrepant mismatch counts
+- Exercise 1 - analysis of discrepant allele-level (a.k.a. "total") mismatch counts:
+  - Locally run the function, `ReportDiscrepantResults_Exercise1` within the `Atlas.ManualTesting.Functions.WmdaConsensusDatasetFunctions` namespace.
+  - Local setting `HlaMetadataDictionary:ConvertHlaRequestUrl` should be overridden with the `ConvertHla` function URL (under `MatchingAlgorithm.Functions`) for the instance of Atlas under test.
+  - The following header line will need to be manually added to both the WMDA consensus text file and the Atlas results text file before import:
+    - `PatientId;DonorId;MismatchCountAtA;MismatchCountAtB;MismatchCountAtDrb1`
+  - The output file listing all the discrepant results (and the PGroup mappings that explain them) will be written to the same directory as the input Atlas results file, and will be named: "<Atlas-results-file-name>-discrepancies.txt".
+- Exercise 2: Comparing set2 results is not as simple, as the reference file contains letters to identify where a consensus cannot be reached.
+  - // TODO - point to function that compares set2 file to reference
 
 ### Important considerations for data analysis
 - The exercise datasets include ARD and rel-dna-ser definitions, but using these would require setting up a new HLA nomenclature source and re-building the HLA Metadata Dictionary (HMD) using that source URL.
