@@ -21,7 +21,7 @@ namespace Atlas.Client.Models.Search.Results
 
         /// <summary>
         /// Time taken to run the matching algorithm search step
-        ///     - Does not include results uploading
+        ///     - Does not include results upload
         /// </summary>
         public TimeSpan MatchingAlgorithmTime { get; set; }
 
