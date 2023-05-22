@@ -1323,6 +1323,85 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
             }
             this.ScenarioCleanup();
         }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("[Regression] Patient and donor are completely allele mismatched at DRB1 but have " +
+            "one antigen match")]
+        public virtual void RegressionPatientAndDonorAreCompletelyAlleleMismatchedAtDRB1ButHaveOneAntigenMatch()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("[Regression] Patient and donor are completely allele mismatched at DRB1 but have " +
+                    "one antigen match", null, tagsOfScenario, argumentsOfScenario);
+#line 198
+  this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 199
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+                TechTalk.SpecFlow.Table table35 = new TechTalk.SpecFlow.Table(new string[] {
+                            "A_1",
+                            "A_2",
+                            "B_1",
+                            "B_2",
+                            "DRB1_1",
+                            "DRB1_2"});
+                table35.AddRow(new string[] {
+                            "*01:YAG",
+                            "*03:ANPZ",
+                            "*44:AJVH",
+                            "*52:01",
+                            "*04:AFNC",
+                            "*15:APKE"});
+#line 200
+    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table35, "And ");
+#line hidden
+                TechTalk.SpecFlow.Table table36 = new TechTalk.SpecFlow.Table(new string[] {
+                            "A_1",
+                            "A_2",
+                            "B_1",
+                            "B_2",
+                            "DRB1_1",
+                            "DRB1_2"});
+                table36.AddRow(new string[] {
+                            "*01:YAG",
+                            "*03:ANPZ",
+                            "*44:AJVH",
+                            "*52:01",
+                            "*03:YMP",
+                            "*04:AMCV"});
+#line 203
+    testRunner.And("the patient has the following HLA:", ((string)(null)), table36, "And ");
+#line hidden
+#line 206
+    testRunner.And("scoring is enabled at locus DRB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 207
+    testRunner.When("I run a 4/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 208
+    testRunner.Then("antigen match should be false in position 1 and true in position 2 of locus DRB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
     }
 }
 #pragma warning restore
