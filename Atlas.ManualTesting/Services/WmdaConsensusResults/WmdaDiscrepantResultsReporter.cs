@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Caching;
@@ -14,38 +13,56 @@ namespace Atlas.ManualTesting.Services.WmdaConsensusResults
     public interface IWmdaDiscrepantResultsReporter
     {
         /// <summary>
-        /// Compares WMDA consensus file to Atlas results file to identify discrepant mismatch counts,
-        /// and writes them to a text file within the same directory as the Atlas results file.
+        /// Compares WMDA consensus file to Atlas results file to identify discrepant mismatch counts.
         /// </summary>
-        Task ReportDiscrepantResults(ReportDiscrepanciesRequest request);
+        Task<DiscrepantResultsReport> ReportDiscrepantResults(ReportDiscrepanciesRequest request);
     }
 
-    internal class WmdaDiscrepantResultsReporter : IWmdaDiscrepantResultsReporter
+    /// <summary>
+    /// Reports discrepant allele (total) mismatch counts.
+    /// </summary>
+    public interface IWmdaDiscrepantAlleleResultsReporter : IWmdaDiscrepantResultsReporter
     {
-        private readonly IAppCache pGroupsCache;
-        private readonly IWmdaResultsComparer resultsComparer;
-        private readonly IConvertHlaRequester hlaConverter;
+    }
 
-        private record CommonPGroupInfo(string PatientHla, string DonorHla, IReadOnlyCollection<string> CommonPGroups);
-        private record AnalysedDiscrepancy(
-            Locus Locus,
-            LocusInfo<string> PatientHla,
-            LocusInfo<string> DonorHla,
-            LocusInfo<CommonPGroupInfo> CommonPGroups,
-            IReadOnlyCollection<MismatchCountDetails> MismatchedCounts);
+    /// <summary>
+    /// Reports discrepant antigen mismatch counts.
+    /// </summary>
+    public interface IWmdaDiscrepantAntigenResultsReporter : IWmdaDiscrepantResultsReporter
+    {
+    }
+
+    public record DiscrepantResultsReport(TargetHlaCategory CommonHlaCategory, IEnumerable<AnalysedDiscrepancy> AnalysedDiscrepancies);
+    public record CommonHlaMetadataInfo(string PatientHla, string DonorHla, IReadOnlyCollection<string> CommonHlaMetadata);
+    public record AnalysedDiscrepancy(
+        Locus Locus,
+        LocusInfo<string> PatientHla,
+        LocusInfo<string> DonorHla,
+        LocusInfo<CommonHlaMetadataInfo> CommonHlaMetadata,
+        IReadOnlyCollection<MismatchCountDetails> MismatchedCounts);
+
+    internal class WmdaDiscrepantResultsReporter : IWmdaDiscrepantAlleleResultsReporter, IWmdaDiscrepantAntigenResultsReporter
+    {
+        private readonly IAppCache convertedHlaCache;
+        private readonly IWmdaResultsComparer resultsComparer;
+        private readonly IConvertHlaRequester hlaConversionRequester;
+        private readonly TargetHlaCategory targetHlaCategory;
 
         public WmdaDiscrepantResultsReporter(
             IWmdaResultsComparer resultsComparer,
+            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             ITransientCacheProvider cacheProvider,
-            IConvertHlaRequester hlaConverter)
+            IConvertHlaRequester hlaConversionRequester,
+            TargetHlaCategory targetHlaCategory)
         {
             this.resultsComparer = resultsComparer;
-            pGroupsCache = cacheProvider.Cache;
-            this.hlaConverter = hlaConverter;
+            convertedHlaCache = cacheProvider.Cache;
+            this.hlaConversionRequester = hlaConversionRequester;
+            this.targetHlaCategory = targetHlaCategory;
         }
 
         /// <inheritdoc />
-        public async Task ReportDiscrepantResults(ReportDiscrepanciesRequest request)
+        public async Task<DiscrepantResultsReport> ReportDiscrepantResults(ReportDiscrepanciesRequest request)
         {
             var discrepantResults = await resultsComparer.GetDiscrepantResults(request);
             var groupedResults = discrepantResults.GroupBy(x => new { x.Locus, x.PatientHla, x.DonorHla });
@@ -56,133 +73,93 @@ namespace Atlas.ManualTesting.Services.WmdaConsensusResults
                 var locus = discrepancy.Key.Locus;
                 var patientHla = discrepancy.Key.PatientHla;
                 var donorHla = discrepancy.Key.DonorHla;
-                var commonPGroups = await GetCommonPGroupInfo(locus, patientHla, donorHla);
+                var commonHlaMetadata = await GetCommonHlaMetadataInfo(locus, patientHla, donorHla);
 
                 analysedDiscrepancies.Add(new AnalysedDiscrepancy(
-                    locus, patientHla, donorHla, commonPGroups, discrepancy.Select(x => x.MismatchCountDetails).ToList()));
+                    locus, patientHla, donorHla, commonHlaMetadata, discrepancy.Select(x => x.MismatchCountDetails).ToList()));
             }
 
-            await WriteAnalysedDiscrepanciesToFile(request.ResultsFilePath, analysedDiscrepancies);
+            return new DiscrepantResultsReport(targetHlaCategory, analysedDiscrepancies);
         }
 
-        public async Task<IEnumerable<string>> GetOrAddPGroups(Locus locus, string hlaName)
+        private async Task<IEnumerable<string>> GetOrAddConvertedHla(Locus locus, string hlaName)
         {
             var cacheKey = $"l{locus};hla{hlaName}";
-            return await pGroupsCache.GetOrAdd(cacheKey, () => hlaConverter.ConvertHla(new ConvertHlaRequest
+            return await convertedHlaCache.GetOrAdd(cacheKey, () => hlaConversionRequester.ConvertHla(new ConvertHlaRequest
             {
                 Locus = locus,
                 HlaName = hlaName,
-                TargetHlaCategory = TargetHlaCategory.PGroup
+                TargetHlaCategory = targetHlaCategory
             }));
         }
 
-        private async Task<LocusInfo<CommonPGroupInfo>> GetCommonPGroupInfo(
+        private async Task<LocusInfo<CommonHlaMetadataInfo>> GetCommonHlaMetadataInfo(
             Locus locus,
             LocusInfo<string> patientHla,
             LocusInfo<string> donorHla)
         {
-            Task<LocusInfo<IEnumerable<string>>> ConvertToPGroups(LocusInfo<string> typing) => typing.MapAsync(hla => GetOrAddPGroups(locus, hla));
-            var patientPGroups = await ConvertToPGroups(patientHla);
-            var donorPGroups = await ConvertToPGroups(donorHla);
+            Task<LocusInfo<IEnumerable<string>>> ConvertToTargetHlaCategory(LocusInfo<string> typing) => typing.MapAsync(hla => GetOrAddConvertedHla(locus, hla));
+            var patientHlaMetadata = await ConvertToTargetHlaCategory(patientHla);
+            var donorHlaMetadata = await ConvertToTargetHlaCategory(donorHla);
 
-            var (isDirectOrientation, commonPGroups) = CalculateCommonPGroups(patientPGroups, donorPGroups);
+            var (isDirectOrientation, commonHlaMetadata) = CalculateCommonHlaMetadata(patientHlaMetadata, donorHlaMetadata);
 
-            return new LocusInfo<CommonPGroupInfo>(
-                    new CommonPGroupInfo(patientHla.Position1, isDirectOrientation ? donorHla.Position1 : donorHla.Position2, commonPGroups.Position1),
-                    new CommonPGroupInfo(patientHla.Position2, isDirectOrientation ? donorHla.Position2 : donorHla.Position1, commonPGroups.Position2)
+            return new LocusInfo<CommonHlaMetadataInfo>(
+                    new CommonHlaMetadataInfo(patientHla.Position1, isDirectOrientation ? donorHla.Position1 : donorHla.Position2, commonHlaMetadata.Position1),
+                    new CommonHlaMetadataInfo(patientHla.Position2, isDirectOrientation ? donorHla.Position2 : donorHla.Position1, commonHlaMetadata.Position2)
                 );
         }
 
-        /// <returns>(Is direct orientation?, common P groups)</returns>
-        private static (bool, LocusInfo<IReadOnlyCollection<string>>) CalculateCommonPGroups(
-            LocusInfo<IEnumerable<string>> patientPGroups,
-            LocusInfo<IEnumerable<string>> donorPGroups)
+        /// <returns>(Is direct orientation?, common HLA metadata)</returns>
+        private static (bool, LocusInfo<IReadOnlyCollection<string>>) CalculateCommonHlaMetadata(
+            LocusInfo<IEnumerable<string>> patientHlaMetadata,
+            LocusInfo<IEnumerable<string>> donorHlaMetadata)
         {
-            var directCommonPGroups = CommonPGroupsInDirectOrientation(patientPGroups, donorPGroups);
-            var crossCommonPGroups = CommonPGroupsInCrossOrientation(patientPGroups, donorPGroups);
+            var directCommonHlaMetadata = CommonHlaMetadataInDirectOrientation(patientHlaMetadata, donorHlaMetadata);
+            var crossCommonHlaMetadata = CommonHlaMetadataInCrossOrientation(patientHlaMetadata, donorHlaMetadata);
 
-            static bool BothPositionsHaveCommonPGroups(LocusInfo<IReadOnlyCollection<string>> commonPGroups) =>
-                commonPGroups.Position1.Any() && commonPGroups.Position2.Any();
+            static bool BothPositionsHaveCommonHlaMetadata(LocusInfo<IReadOnlyCollection<string>> commonHlaMetadata) =>
+                commonHlaMetadata.Position1.Any() && commonHlaMetadata.Position2.Any();
 
-            if (BothPositionsHaveCommonPGroups(directCommonPGroups))
+            if (BothPositionsHaveCommonHlaMetadata(directCommonHlaMetadata))
             {
-                return (true, directCommonPGroups);
+                return (true, directCommonHlaMetadata);
             }
 
-            if (BothPositionsHaveCommonPGroups(crossCommonPGroups))
+            if (BothPositionsHaveCommonHlaMetadata(crossCommonHlaMetadata))
             {
-                return (false, crossCommonPGroups);
+                return (false, crossCommonHlaMetadata);
             }
 
-            static int TotalPGroupCount(LocusInfo<IReadOnlyCollection<string>> pGroups) => pGroups.Position1.Count + pGroups.Position2.Count;
-            return TotalPGroupCount(directCommonPGroups) >= TotalPGroupCount(crossCommonPGroups)
-                ? (true, directCommonPGroups)
-                : (false, crossCommonPGroups);
+            static int TotalHlaMetadataCount(LocusInfo<IReadOnlyCollection<string>> pGroups) => pGroups.Position1.Count + pGroups.Position2.Count;
+            return TotalHlaMetadataCount(directCommonHlaMetadata) >= TotalHlaMetadataCount(crossCommonHlaMetadata)
+                ? (true, directCommonHlaMetadata)
+                : (false, crossCommonHlaMetadata);
         }
 
-        private static LocusInfo<IReadOnlyCollection<string>> CommonPGroupsInDirectOrientation(
-            LocusInfo<IEnumerable<string>> patientPGroups,
-            LocusInfo<IEnumerable<string>> donorPGroups)
+        private static LocusInfo<IReadOnlyCollection<string>> CommonHlaMetadataInDirectOrientation(
+            LocusInfo<IEnumerable<string>> patientHlaMetadata,
+            LocusInfo<IEnumerable<string>> donorHlaMetadata)
         {
             return new LocusInfo<IReadOnlyCollection<string>>(
-                CommonPGroups(patientPGroups.Position1, donorPGroups.Position1),
-                CommonPGroups(patientPGroups.Position2, donorPGroups.Position2)
+                CommonHlaMetadata(patientHlaMetadata.Position1, donorHlaMetadata.Position1),
+                CommonHlaMetadata(patientHlaMetadata.Position2, donorHlaMetadata.Position2)
             );
         }
 
-        private static LocusInfo<IReadOnlyCollection<string>> CommonPGroupsInCrossOrientation(
-            LocusInfo<IEnumerable<string>> patientPGroups,
-            LocusInfo<IEnumerable<string>> donorPGroups)
+        private static LocusInfo<IReadOnlyCollection<string>> CommonHlaMetadataInCrossOrientation(
+            LocusInfo<IEnumerable<string>> patientHlaMetadata,
+            LocusInfo<IEnumerable<string>> donorHlaMetadata)
         {
             return new LocusInfo<IReadOnlyCollection<string>>(
-                CommonPGroups(patientPGroups.Position1, donorPGroups.Position2),
-                CommonPGroups(patientPGroups.Position2, donorPGroups.Position1)
+                CommonHlaMetadata(patientHlaMetadata.Position1, donorHlaMetadata.Position2),
+                CommonHlaMetadata(patientHlaMetadata.Position2, donorHlaMetadata.Position1)
             );
         }
 
-        private static IReadOnlyCollection<string> CommonPGroups(IEnumerable<string> patientPGroups, IEnumerable<string> donorPGroups)
+        private static IReadOnlyCollection<string> CommonHlaMetadata(IEnumerable<string> patientHlaMetadata, IEnumerable<string> donorHlaMetadata)
         {
-            return patientPGroups.Intersect(donorPGroups).ToList();
-        }
-
-        private static async Task WriteAnalysedDiscrepanciesToFile(string resultsFilePath, IEnumerable<AnalysedDiscrepancy> analysedDiscrepancies)
-        {
-            var outputPath =
-                $"{Path.GetDirectoryName(resultsFilePath)}/" +
-                $"{Path.GetFileNameWithoutExtension(resultsFilePath)}-discrepancies.txt";
-
-            var contents = BuildFileContents(analysedDiscrepancies);
-            const string headerText = "Locus;Patient HLA Typing;Donor HLA Typing;Consensus Count;Atlas Count;([Patient HLA-Donor HLA] Common PGroups [Common PGroup Count]);PDP Count;PDP Ids";
-            await File.WriteAllLinesAsync(outputPath, new[] { headerText }.Concat(contents));
-        }
-
-        private static IEnumerable<string> BuildFileContents(IEnumerable<AnalysedDiscrepancy> analysedDiscrepancies)
-        {
-            static string PGroupsToString(CommonPGroupInfo info)
-            {
-                if (!info.CommonPGroups.Any())
-                {
-                    return "_";
-                }
-
-                const int maxLength = 24;
-                var concatPGroups = ConcatenateStrings(info.CommonPGroups);
-                var pGroupStr = concatPGroups.Length > maxLength ? $"{concatPGroups[..maxLength]}..." : concatPGroups;
-                return $"([{info.PatientHla}-{info.DonorHla}] {pGroupStr} [{info.CommonPGroups.Count}])";
-            }
-
-            static string ConcatenateStrings(IEnumerable<string> strings) => string.Join(",", strings);
-
-            return analysedDiscrepancies.Select(d =>
-                $"{d.Locus};" +
-                $"{d.PatientHla.Position1} + {d.PatientHla.Position2};" +
-                $"{d.DonorHla.Position1} + {d.DonorHla.Position2};" +
-                $"{d.MismatchedCounts.First().ConsensusMismatchCount};" +
-                $"{d.MismatchedCounts.First().AtlasMismatchCount};" +
-                $"{PGroupsToString(d.CommonPGroups.Position1)} + {PGroupsToString(d.CommonPGroups.Position2)};" +
-                $"{d.MismatchedCounts.Count};" +
-                $"{ConcatenateStrings(d.MismatchedCounts.Select(mc => $"{mc.PatientId}:{mc.DonorId}"))}"
-            );
+            return patientHlaMetadata.Intersect(donorHlaMetadata).ToList();
         }
     }
 }
