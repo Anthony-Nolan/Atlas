@@ -3,8 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Requests;
-using Atlas.Client.Models.Search.Results;
+using Atlas.Client.Models.Search.Results.LogFile;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.ApplicationInsights;
@@ -70,15 +69,16 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             searchLoggingContext.SearchRequestId = searchRequestId;
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
             searchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
+            var requestCompletedSuccessfully = false;
+            var searchStopWatch = new Stopwatch();
 
             try
             {
                 await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.SearchRequest);
 
-                var stopwatch = new Stopwatch();
-                stopwatch.Start();
+                searchStopWatch.Start();
                 var results = (await searchService.Search(identifiedSearchRequest.SearchRequest, null)).ToList();
-                stopwatch.Stop();
+                searchStopWatch.Stop();
 
                 var searchResultSet = new OriginalMatchingAlgorithmResultSet
                 {
@@ -105,11 +105,13 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     NumberOfResults = results.Count,
                     BlobStorageContainerName = azureStorageSettings.SearchResultsBlobContainer,
                     ResultsFileName = searchResultSet.ResultsFileName,
-                    ElapsedTime = stopwatch.Elapsed,
+                    ElapsedTime = searchStopWatch.Elapsed,
                     ResultsBatched = azureStorageSettings.ShouldBatchResults,
                     BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? searchRequestId : null
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
+
+                requestCompletedSuccessfully = true;
             }
             // Invalid HLA is treated as an "Expected error" pathway and will not be retried.
             // This means only a single failure notification will be sent out, and the request message will be completed and not dead-lettered.
@@ -133,28 +135,30 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             }
             finally
             {
-                await UploadSearchLogs(new SearchLogs
+                await UploadSearchLog(new SearchLog
                 {
                     SearchRequestId = searchRequestId,
+                    WasSuccessful = requestCompletedSuccessfully,
                     RequestPerformanceMetrics = new RequestPerformanceMetrics
                     {
                         InitiationTime = enqueuedTimeUtc,
                         StartTime = searchStartTime,
-                        CompletionTime = DateTimeOffset.UtcNow
+                        CompletionTime = DateTimeOffset.UtcNow,
+                        AlgorithmCoreStepDuration = searchStopWatch.Elapsed
                     }
                 });
             }
         }
 
-        public async Task UploadSearchLogs(SearchLogs searchLogs)
+        public async Task UploadSearchLog(SearchLog searchLog)
         {
             try
             {
-                await resultsBlobStorageClient.UploadResults(searchLogs, azureStorageSettings.SearchResultsBlobContainer, $"{searchLogs.SearchRequestId}-log.json");
+                await resultsBlobStorageClient.UploadResults(searchLog, azureStorageSettings.SearchResultsBlobContainer, $"{searchLog.SearchRequestId}-log.json");
             }
             catch
             {
-                searchLogger.SendTrace($"Failed to write performance log file for search with id {searchLogs.SearchRequestId}.", LogLevel.Error);
+                searchLogger.SendTrace($"Failed to write performance log file for search with id {searchLog.SearchRequestId}.", LogLevel.Error);
             }
         }
     }
