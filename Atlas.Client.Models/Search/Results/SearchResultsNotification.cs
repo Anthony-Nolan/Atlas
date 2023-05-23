@@ -21,7 +21,8 @@ namespace Atlas.Client.Models.Search.Results
         public SearchFailureInfo FailureInfo { get; set; }
 
         /// <summary>
-        /// Time taken to run the matching algorithm - currently includes matching, and scoring.
+        /// Time taken to run the matching algorithm search step
+        ///     - Does not include results upload
         /// </summary>
         [Obsolete($"Superseded by {nameof(RequestPerformanceMetrics.AlgorithmCoreStepDuration)} in matching-algorithm-results log file")]
         public TimeSpan MatchingAlgorithmTime { get; set; }
@@ -36,13 +37,15 @@ namespace Atlas.Client.Models.Search.Results
         public TimeSpan MatchPredictionTime { get; set; }
 
         /// <summary>
-        /// Total time between search initiation and results notification.
+        /// Time taken to run the matching algorithm search step added to search orchestration time
         /// 
-        /// Will exceed the sum of matching algorithm and match prediction, as this time also includes:
+        /// Will exceed the sum of matching algorithm search step and match prediction, as this time also includes:
         ///     - Fetching donor metadata to use in the match prediction algorithm
         ///     - Conversion of search results
         ///     - Persisting results to Azure storage
         ///     - Any other plumbing / orchestration time.
+        ///
+        /// Does not track the queue time
         /// </summary>
         [Obsolete($"Superseded by {nameof(RequestPerformanceMetrics.Duration)}")]
         public TimeSpan OverallSearchTime { get; set; }
