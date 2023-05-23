@@ -194,3 +194,15 @@
     And scoring is enabled at locus DPB1
     When I run a 6/6 search
     Then antigen match should be empty at locus DPB1 at both positions
+
+  Scenario: [Regression] Patient and donor are completely allele mismatched at DRB1 but have one antigen match
+    Given a patient has a match
+    And the matching donor has the following HLA:
+    |A_1     |A_2      |B_1      |B_2    |DRB1_1   |DRB1_2   |
+    |*01:YAG |*03:ANPZ |*44:AJVH |*52:01 |*04:AFNC |*15:APKE |
+    And the patient has the following HLA:
+    |A_1      |A_2     |B_1      |B_2    |DRB1_1   |DRB1_2   |
+    |*01:YAG |*03:ANPZ |*44:AJVH |*52:01 |*03:YMP  |*04:AMCV |
+    And scoring is enabled at locus DRB1
+    When I run a 4/6 search
+    Then antigen match should be false in position 1 and true in position 2 of locus DRB1

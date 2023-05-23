@@ -9,6 +9,7 @@ This package contains all client models utilised by the Atlas Public API to requ
     * `Matching` - matching result per donor/locus, and notification to allow early retrieval of match results
     * `MatchPrediction` - match prediction results per donor/locus
     * `ResultSet` - search results for a set of donors
+    * `LogFile` - log file for a completed search request (note: a completely separate feature to Application Insights logging)
 
 ## Changelog
 
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 1.6.0
 * `Search.Results.Matching.PerLocus.LocusPositionScoreDetails` has been extended with a new field: `IsAntigenMatch`, which indicates whether the match grade for a position is an antigen match (`true`) or not (`false`).
 * Added `MatchingStartTime` property to `ResultSet` model.
+* Added models representing the search request log file that is written after a search completes.
 
 ### 1.5.0
 * `ResultSet` model has been extended with new properties, `MatchCriteriaDenominator` and `ScoringCriteriaDenominator`, which represent the match count denominator for matching results and scoring results, respectively.

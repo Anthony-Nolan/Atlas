@@ -5,6 +5,7 @@ using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.ManualTesting.Common;
 using Atlas.ManualTesting.Services;
 using Atlas.ManualTesting.Services.Scoring;
@@ -89,9 +90,26 @@ namespace Atlas.ManualTesting.DependencyInjection
             services.AddScoped(typeof(IFileReader<>), typeof(FileReader<>));
             services.AddScoped<IScoreBatchRequester, ScoreBatchRequester>();
             services.AddScoped<IScoreRequestProcessor, ScoreRequestProcessor>();
-            services.AddScoped<IWmdaResultsComparer, WmdaResultsComparer>();
-            services.AddScoped<IWmdaDiscrepantResultsReporter, WmdaDiscrepantResultsReporter>();
+            services.AddScoped<IWmdaResultsTotalMismatchComparer, WmdaResultsTotalMismatchComparer>();
+            services.AddScoped<IWmdaResultsAntigenMismatchComparer, WmdaResultsAntigenMismatchComparer>();
             services.AddScoped<IConvertHlaRequester, ConvertHlaRequester>();
+            services.AddScoped<IWmdaDiscrepantResultsWriter, WmdaDiscrepantResultsWriter>();
+
+            services.AddScoped<IWmdaDiscrepantAlleleResultsReporter, WmdaDiscrepantResultsReporter>(sp =>
+            {
+                var resultsComparer = sp.GetService<IWmdaResultsTotalMismatchComparer>();
+                var cacheProvider = sp.GetService<ITransientCacheProvider>();
+                var hlaConverter = sp.GetService<IConvertHlaRequester>();
+                return new WmdaDiscrepantResultsReporter(resultsComparer, cacheProvider, hlaConverter, TargetHlaCategory.PGroup);
+            });
+
+            services.AddScoped<IWmdaDiscrepantAntigenResultsReporter, WmdaDiscrepantResultsReporter>(sp =>
+            {
+                var resultsComparer = sp.GetService<IWmdaResultsAntigenMismatchComparer>();
+                var cacheProvider = sp.GetService<ITransientCacheProvider>();
+                var hlaConverter = sp.GetService<IConvertHlaRequester>();
+                return new WmdaDiscrepantResultsReporter(resultsComparer, cacheProvider, hlaConverter, TargetHlaCategory.Serology);
+            });
         }
 
         private static void RegisterDatabaseServices(

@@ -85,6 +85,24 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             scenarioContext.Set(await AlgorithmTestingService.Search(searchRequest));
         }
 
+        [When(@"I run a 4/6 search")]
+        public async Task WhenIRunAFourOutOfSixSearch()
+        {
+            var patientDataProvider = scenarioContext.Get<IPatientDataProvider>();
+            var searchRequestBuilder = scenarioContext.Get<SearchRequestBuilder>();
+            var searchHla = patientDataProvider.GetPatientHla();
+
+            var searchRequest = searchRequestBuilder
+                .WithTotalMismatchCount(2)
+                .WithLocusMismatchCount(Locus.A, 2)
+                .WithLocusMismatchCount(Locus.B, 2)
+                .WithLocusMismatchCount(Locus.Drb1, 2)
+                .WithSearchHla(searchHla)
+                .Build();
+
+            scenarioContext.Set(await AlgorithmTestingService.Search(searchRequest));
+        }
+
         [When(@"I run a 8/8 search")]
         [When(@"I run an 8/8 search")]
         public async Task WhenIRunAnEightOutOfEightSearch()

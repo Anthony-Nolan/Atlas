@@ -2,6 +2,7 @@
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.ManualTesting.Models
 {
@@ -12,6 +13,13 @@ namespace Atlas.ManualTesting.Models
         public string MismatchCountAtA { get; set; }
         public string MismatchCountAtB { get; set; }
         public string MismatchCountAtDrb1 { get; set; }
+
+        public IDictionary<Locus, string> TotalMismatchCounts => new Dictionary<Locus, string>
+        {
+            { Locus.A, MismatchCountAtA },
+            { Locus.B , MismatchCountAtB },
+            { Locus.Drb1 , MismatchCountAtDrb1 }
+        };
 
         /// <summary>
         /// Empty constructor needed for reading results from files
@@ -43,6 +51,20 @@ namespace Atlas.ManualTesting.Models
         public string AntigenMismatchCountAtB { get; set; }
         public string AntigenMismatchCountAtDrb1 { get; set; }
 
+        public IDictionary<Locus, string> AntigenMismatchCounts => new Dictionary<Locus, string>
+        {
+            { Locus.A, AntigenMismatchCountAtA },
+            { Locus.B , AntigenMismatchCountAtB },
+            { Locus.Drb1 , AntigenMismatchCountAtDrb1 }
+        };
+
+        /// <summary>
+        /// Empty constructor needed for reading results from files
+        /// </summary>
+        public WmdaConsensusResultsFileSetTwo()
+        {
+        }
+
         public WmdaConsensusResultsFileSetTwo(string patientId, string donorId, ScoringResult result) : base(patientId, donorId, result)
         {
             static string CountAntigenMismatches(LocusSearchResult locusResult)
@@ -61,9 +83,9 @@ namespace Atlas.ManualTesting.Models
 
         public override string ToString()
         {
-            return $"{PatientId};{DonorId};" + 
-                   $"{MismatchCountAtA};{AntigenMismatchCountAtA};" + 
-                   $"{MismatchCountAtB};{AntigenMismatchCountAtB};" + 
+            return $"{PatientId};{DonorId};" +
+                   $"{MismatchCountAtA};{AntigenMismatchCountAtA};" +
+                   $"{MismatchCountAtB};{AntigenMismatchCountAtB};" +
                    $"{MismatchCountAtDrb1};{AntigenMismatchCountAtDrb1}";
         }
     }

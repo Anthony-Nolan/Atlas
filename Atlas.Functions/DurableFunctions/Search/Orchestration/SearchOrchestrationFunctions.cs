@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Results;
+using Atlas.Client.Models.Search.Results.LogFile;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Functions.DurableFunctions.Search.Activity;
@@ -49,6 +49,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             var notification = parameters.MatchingResultsNotification;
             var requestInfo = mapper.Map<FailureNotificationRequestInfo>(notification);
             var orchestrationStartTime = context.CurrentUtcDateTime;
+            var requestCompletedSuccessfully = false;
+            TimedResultSet<IReadOnlyDictionary<int, string>> matchPredictionResultLocations = null;
 
             loggingContext.SearchRequestId = requestInfo.SearchRequestId;
 
@@ -63,8 +65,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 }
 
                 var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification, requestInfo);
-                var matchPredictionResultLocations =
-                    await RunMatchPredictionAlgorithm(context, requestInfo, matchPredictionRequestLocations);
+                matchPredictionResultLocations = await RunMatchPredictionAlgorithm(context, requestInfo, matchPredictionRequestLocations);
                 await PersistSearchResults(
                     context,
                     new PersistSearchResultsFunctionParameters
@@ -74,6 +75,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                         MatchPredictionResultLocations = matchPredictionResultLocations
                     },
                     requestInfo);
+
+                requestCompletedSuccessfully = true;
 
                 // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
                 return new SearchOrchestrationOutput
@@ -103,10 +106,16 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 {
                     InitiationTime = parameters.InitiationTime,
                     StartTime = orchestrationStartTime,
-                    CompletionTime = context.CurrentUtcDateTime
+                    CompletionTime = context.CurrentUtcDateTime,
+                    AlgorithmCoreStepDuration = matchPredictionResultLocations?.ElapsedTime
                 };
 
-                await UploadSearchLogs(context, new SearchLogs { RequestPerformanceMetrics = performanceMetrics, SearchRequestId = notification.SearchRequestId});
+                await UploadSearchLogs(context, new SearchLog
+                {
+                    SearchRequestId = notification.SearchRequestId,
+                    WasSuccessful = requestCompletedSuccessfully,
+                    RequestPerformanceMetrics = performanceMetrics
+                });
             }
         }
 
@@ -313,11 +322,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
         private static async Task UploadSearchLogs(
             IDurableOrchestrationContext context,
-            SearchLogs searchLogs) =>
+            SearchLog searchLog) =>
             await context.CallActivityWithRetryAsync(
-                nameof(SearchActivityFunctions.UploadSearchLogs),
+                nameof(SearchActivityFunctions.UploadSearchLog),
                 RetryOptions,
-                searchLogs
+                searchLog
             );
     }
 }

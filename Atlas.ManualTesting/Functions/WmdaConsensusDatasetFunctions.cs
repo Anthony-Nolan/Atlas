@@ -20,14 +20,20 @@ namespace Atlas.ManualTesting.Functions
     public class WmdaConsensusDatasetFunctions
     {
         private readonly IScoreRequestProcessor scoreRequestProcessor;
-        private readonly IWmdaDiscrepantResultsReporter wmdaDiscrepantResultsReporter;
+        private readonly IWmdaDiscrepantAlleleResultsReporter alleleResultsReporter;
+        private readonly IWmdaDiscrepantAntigenResultsReporter antigenResultsReporter;
+        private readonly IWmdaDiscrepantResultsWriter resultsWriter;
 
         public WmdaConsensusDatasetFunctions(
             IScoreRequestProcessor scoreRequestProcessor,
-            IWmdaDiscrepantResultsReporter wmdaDiscrepantResultsReporter)
+            IWmdaDiscrepantAlleleResultsReporter alleleResultsReporter, 
+            IWmdaDiscrepantAntigenResultsReporter antigenResultsReporter,
+            IWmdaDiscrepantResultsWriter resultsWriter)
         {
             this.scoreRequestProcessor = scoreRequestProcessor;
-            this.wmdaDiscrepantResultsReporter = wmdaDiscrepantResultsReporter;
+            this.alleleResultsReporter = alleleResultsReporter;
+            this.antigenResultsReporter = antigenResultsReporter;
+            this.resultsWriter = resultsWriter;
         }
 
         [FunctionName(nameof(ProcessWmdaConsensusDataset_Exercise1))]
@@ -62,14 +68,32 @@ namespace Atlas.ManualTesting.Functions
             });
         }
 
-        [FunctionName(nameof(ReportDiscrepantResults_Exercise1))]
-        public async Task ReportDiscrepantResults_Exercise1(
+        /// <summary>
+        /// Report discrepant total mismatches - can be used on results from both exercise 1 and 2.
+        /// </summary>
+        [FunctionName(nameof(ReportDiscrepantResults_TotalMismatches))]
+        public async Task ReportDiscrepantResults_TotalMismatches(
             [RequestBodyType(typeof(ReportDiscrepanciesRequest), nameof(ReportDiscrepanciesRequest))]
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             HttpRequest request)
         {
-            var importAndCompareRequest = JsonConvert.DeserializeObject<ReportDiscrepanciesRequest>(await new StreamReader(request.Body).ReadToEndAsync());
-            await wmdaDiscrepantResultsReporter.ReportDiscrepantResults(importAndCompareRequest);
+            var reportRequest = JsonConvert.DeserializeObject<ReportDiscrepanciesRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+            var report = await alleleResultsReporter.ReportDiscrepantResults(reportRequest);
+            await resultsWriter.WriteToFile(BuildDiscrepantResultsFilePath(reportRequest.ResultsFilePath, "total"), report);
+        }
+
+        /// <summary>
+        /// Report discrepant antigen mismatches - can only be used on results from exercise 2.
+        /// </summary>
+        [FunctionName(nameof(ReportDiscrepantResults_AntigenMismatches))]
+        public async Task ReportDiscrepantResults_AntigenMismatches(
+            [RequestBodyType(typeof(ReportDiscrepanciesRequest), nameof(ReportDiscrepanciesRequest))]
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            HttpRequest request)
+        {
+            var reportRequest = JsonConvert.DeserializeObject<ReportDiscrepanciesRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+            var report = await antigenResultsReporter.ReportDiscrepantResults(reportRequest);
+            await resultsWriter.WriteToFile(BuildDiscrepantResultsFilePath(reportRequest.ResultsFilePath, "antigen"), report);
         }
 
         private static ScoringCriteria BuildThreeLocusScoringCriteria()
@@ -79,6 +103,13 @@ namespace Atlas.ManualTesting.Functions
                 LociToScore = new[] { Locus.A, Locus.B, Locus.Drb1 },
                 LociToExcludeFromAggregateScore = new List<Locus>()
             };
+        }
+
+        private static string BuildDiscrepantResultsFilePath(string resultsPath, string mismatchCountKeyword)
+        {
+            return 
+                $"{Path.GetDirectoryName(resultsPath)}/" +
+                $"{Path.GetFileNameWithoutExtension(resultsPath)}-{mismatchCountKeyword}-discrepancies.txt";
         }
     }
 }

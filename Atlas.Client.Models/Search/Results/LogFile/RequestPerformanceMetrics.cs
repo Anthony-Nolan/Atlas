@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Atlas.Client.Models.Search.Results
+namespace Atlas.Client.Models.Search.Results.LogFile
 {
     /// <summary>
     /// Performance metrics related to request processing
@@ -26,5 +26,12 @@ namespace Atlas.Client.Models.Search.Results
         /// Time taken to complete the request (from <see cref="StartTime"/> to <see cref="CompletionTime"/>).
         /// </summary>
         public TimeSpan Duration => CompletionTime.Subtract(StartTime);
+
+        /// <summary>
+        /// Time taken for the core step of the algorithm to complete.
+        /// For matching, this will cover the main donor search step, but will exclude extra steps, like results batching and upload.
+        /// For match prediction, this will cover the time taken to process match prediction requests for all donors, but will exclude any orchestration steps, such as downloading of matching results, or persisting of the final results.
+        /// </summary>
+        public TimeSpan? AlgorithmCoreStepDuration { get; set; }
     }
 }

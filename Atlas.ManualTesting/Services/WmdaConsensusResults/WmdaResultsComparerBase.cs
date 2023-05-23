@@ -34,16 +34,14 @@ namespace Atlas.ManualTesting.Services.WmdaConsensusResults
         Task<IEnumerable<WmdaComparerResult>> GetDiscrepantResults(ReportDiscrepanciesRequest request);
     }
 
-    internal class WmdaResultsComparer : IWmdaResultsComparer
+    internal abstract class WmdaResultsComparerBase<TResultsFile> : IWmdaResultsComparer where TResultsFile : WmdaConsensusResultsFile
     {
         private const string FileDelimiter = ";";
-        private readonly IFileReader<WmdaConsensusResultsFile> resultsFileReader;
+        private readonly IFileReader<TResultsFile> resultsFileReader;
         private readonly IFileReader<ImportedSubject> subjectFileReader;
-        private record CombinedScoringResult(WmdaConsensusResultsFile Consensus, WmdaConsensusResultsFile Result);
+        private record CombinedScoringResult(TResultsFile Consensus, TResultsFile Result);
 
-        public WmdaResultsComparer(
-            IFileReader<WmdaConsensusResultsFile> resultsFileReader,
-            IFileReader<ImportedSubject> subjectFileReader)
+        protected WmdaResultsComparerBase(IFileReader<TResultsFile> resultsFileReader, IFileReader<ImportedSubject> subjectFileReader)
         {
             this.resultsFileReader = resultsFileReader;
             this.subjectFileReader = subjectFileReader;
@@ -96,27 +94,68 @@ namespace Atlas.ManualTesting.Services.WmdaConsensusResults
             return (await subjectFileReader.ReadAllLines(FileDelimiter, filePath)).ToDictionary(s => s.ID, s => s);
         }
 
-        private static IEnumerable<(Locus, MismatchCountDetails)> GetLociWithDifferentMismatchCounts(WmdaConsensusResultsFile consensus, WmdaConsensusResultsFile atlasResult)
+        private IEnumerable<(Locus, MismatchCountDetails)> GetLociWithDifferentMismatchCounts(TResultsFile consensus, TResultsFile atlasResult)
         {
             var details = new List<(Locus, MismatchCountDetails)>();
 
-            void CheckLocusMismatchCounts(string consensusMismatchCount, string resultMismatchCount, Locus locus)
+            var lociToCompare = new[] { Locus.A, Locus.B, Locus.Drb1 };
+            var consensusCounts = SelectLocusMismatchCounts(consensus);
+            var atlasCounts = SelectLocusMismatchCounts(atlasResult);
+
+            foreach (var locus in lociToCompare)
             {
-                if (consensusMismatchCount != resultMismatchCount) details.Add(new ValueTuple<Locus, MismatchCountDetails>(locus,
+                var consensusMismatchCount = consensusCounts[locus];
+                var interpretedConsensusCounts = InterpretConsensusMismatchCount(consensusMismatchCount);
+                var atlasMismatchCount = atlasCounts[locus];
+
+                if (!interpretedConsensusCounts.Contains(atlasMismatchCount)) details.Add((
+                    locus,
                     new MismatchCountDetails
                     {
                         PatientId = consensus.PatientId,
                         DonorId = consensus.DonorId,
                         ConsensusMismatchCount = consensusMismatchCount,
-                        AtlasMismatchCount = resultMismatchCount
+                        AtlasMismatchCount = atlasMismatchCount
                     }));
             }
 
-            CheckLocusMismatchCounts(consensus.MismatchCountAtA, atlasResult.MismatchCountAtA, Locus.A);
-            CheckLocusMismatchCounts(consensus.MismatchCountAtB, atlasResult.MismatchCountAtB, Locus.B);
-            CheckLocusMismatchCounts(consensus.MismatchCountAtDrb1, atlasResult.MismatchCountAtDrb1, Locus.Drb1);
-
             return details;
         }
+
+        private static IEnumerable<string> InterpretConsensusMismatchCount(string consensusMismatchCount)
+        {
+            switch (consensusMismatchCount)
+            {
+                case "0":
+                case "1":
+                case "2":
+                    return new[] { consensusMismatchCount };
+                case "A":
+                case "C":
+                case "G":
+                    return new[] { "0", "1" };
+                case "B":
+                case "E":
+                case "H":
+                    return new[] { "0", "2" };
+                case "D":
+                case "F":
+                case "I":
+                    return new[] { "1", "2" };
+                case "U":
+                case "V":
+                case "W":
+                case "Z":
+                    return new[] { "0", "1", "2" };
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(consensusMismatchCount), consensusMismatchCount);
+            }
+        }
+
+        /// <summary>
+        /// Select out locus mismatch counts for comparison
+        /// </summary>
+        /// <returns>Dictionary with Locus as key, and mismatch count as value</returns>
+        protected abstract IDictionary<Locus, string> SelectLocusMismatchCounts(TResultsFile results);
     }
 }

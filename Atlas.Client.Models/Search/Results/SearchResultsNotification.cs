@@ -1,4 +1,5 @@
 using System;
+using Atlas.Client.Models.Search.Results.LogFile;
 
 // ReSharper disable MemberCanBeInternal
 // ReSharper disable UnusedAutoPropertyAccessor.Global
@@ -23,6 +24,7 @@ namespace Atlas.Client.Models.Search.Results
         /// Time taken to run the matching algorithm search step
         ///     - Does not include results upload
         /// </summary>
+        [Obsolete($"Superseded by {nameof(RequestPerformanceMetrics.AlgorithmCoreStepDuration)} in matching-algorithm-results log file")]
         public TimeSpan MatchingAlgorithmTime { get; set; }
 
         /// <summary>
@@ -31,6 +33,7 @@ namespace Atlas.Client.Models.Search.Results
         /// Note that this can run in parallel - the logged time is the time between starting running MPA requests, and getting the last results.
         /// The sum of all MPA processing time may exceed this, if donors were calculated in parallel.
         /// </summary>
+        [Obsolete($"Superseded by {nameof(RequestPerformanceMetrics.AlgorithmCoreStepDuration)} in atlas-search-results log file")]
         public TimeSpan MatchPredictionTime { get; set; }
 
         /// <summary>
@@ -44,6 +47,7 @@ namespace Atlas.Client.Models.Search.Results
         ///
         /// Does not track the queue time
         /// </summary>
+        [Obsolete($"Superseded by {nameof(RequestPerformanceMetrics.Duration)}")]
         public TimeSpan OverallSearchTime { get; set; }
     }
 }
