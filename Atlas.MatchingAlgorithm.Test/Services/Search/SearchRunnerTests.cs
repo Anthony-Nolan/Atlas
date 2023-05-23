@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
-using Atlas.Client.Models.Search.Results;
+using Atlas.Client.Models.Search.Results.LogFile;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.AzureStorage.Blob;
@@ -210,16 +210,17 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             await searchRunner.Invoking(r => r.RunSearch(new IdentifiedSearchRequest { Id = "id", SearchRequest = DefaultMatchingRequest }, default, default))
                 .Should().ThrowAsync<Exception>();
         }
-        
+
         [Test]
         public async Task RunSearch_StorePerformanceLogsInBlobStorage()
         {
             const string searchRequestId = "search-request-id";
-            var searchRequest = new SearchRequestBuilder().Build();
+            await searchRunner.RunSearch(new IdentifiedSearchRequest { SearchRequest = DefaultMatchingRequest, Id = searchRequestId }, default, default);
 
-            await searchRunner.RunSearch(new IdentifiedSearchRequest { SearchRequest = DefaultMatchingRequest, Id = searchRequestId}, default, default);
-
-            await resultsBlobStorageClient.Received().UploadResults(Arg.Any<SearchLogs>(), Arg.Any<string>(), $"{searchRequestId}-log.json");
+            await resultsBlobStorageClient.Received().UploadResults(
+                Arg.Is<SearchLog>(x => x.SearchRequestId == searchRequestId && x.WasSuccessful),
+                Arg.Any<string>(),
+                $"{searchRequestId}-log.json");
         }
 
         [Test]
@@ -227,7 +228,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         {
             const string searchRequestId = "search-request-id";
             searchService.Search(default).ThrowsForAnyArgs(new Exception());
-            
+
             try
             {
                 await searchRunner.RunSearch(new IdentifiedSearchRequest { SearchRequest = DefaultMatchingRequest, Id = searchRequestId }, default,
@@ -239,7 +240,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             }
             finally
             {
-                await resultsBlobStorageClient.Received().UploadResults(Arg.Any<SearchLogs>(), Arg.Any<string>(), $"{searchRequestId}-log.json");
+                await resultsBlobStorageClient.Received().UploadResults(
+                    Arg.Is<SearchLog>(x => x.SearchRequestId == searchRequestId && !x.WasSuccessful),
+                    Arg.Any<string>(),
+                    $"{searchRequestId}-log.json");
             }
         }
 
@@ -247,7 +251,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_WhenLogsUploadFails_DoesNotThrowException()
         {
-            resultsBlobStorageClient.UploadResults(Arg.Any<SearchLogs>(), default, default).ThrowsForAnyArgs(new Exception());
+            resultsBlobStorageClient.UploadResults(Arg.Any<SearchLog>(), default, default).ThrowsForAnyArgs(new Exception());
 
             await searchRunner.Invoking(r => r.RunSearch(new IdentifiedSearchRequest { SearchRequest = DefaultMatchingRequest }, default, default))
                 .Should().NotThrowAsync<Exception>();
