@@ -53,6 +53,12 @@ Projects dedicated to manual, non-automated testing of various aspects of the At
 - The following header lines will need to be manually added to both the WMDA consensus text files and the Atlas results text files before import:
   - Exercise 1: `PatientId;DonorId;MismatchCountAtA;MismatchCountAtB;MismatchCountAtDrb1`
   - Exercise 2: `PatientId;DonorId;MismatchCountAtA;AntigenMismatchCountAtA;MismatchCountAtB;AntigenMismatchCountAtB;MismatchCountAtDrb1;AntigenMismatchCountAtDrb1`
+- Ensure that both Atlas results files contain 10,000,000 lines each (excluding the header line).
+  - If the count is lower, this is most likely due to scoring request failures.
+  - Check the results file directory for a file named `failedScoringRequests.txt`, which will list the {Patient ID: Donor ID batch} for which scoring failed.
+  - The `ProcessWmdaConsensusDataset_ExerciseX` functions can be re-run, with a "startFromPatientId" and "startFromDonorId" in the request body, to skip over Patient-Donor pairs that have already been processed.
+  - Terminate the function once the missing information has been generated, and manually paste in the required rows into the main results file at the correct points (files are ordered by PatientId, then DonorId).
+  - Alternatively, create new patient and donor files with only those subjects for which information is missing to serve as inputs.
 
 ##### Analysis of discrepant allele-level (a.k.a. "total") mismatch counts
 - This should be run for both exercise 1 and 2 results files.
@@ -66,7 +72,7 @@ Projects dedicated to manual, non-automated testing of various aspects of the At
 
 ### Important considerations for data analysis
 - The exercise datasets include ARD and rel-dna-ser definitions, but using these would require setting up a new HLA nomenclature source and re-building the HLA Metadata Dictionary (HMD) using that source URL.
-  - It is likely easier to use the latest HLA nomenclature version published by IMGT/HLA, and explain any discrepancies caused by using different HLA reference material.
+  - It is easier to use the latest HLA nomenclature version published by IMGT/HLA, and explain any discrepancies caused by using different HLA reference material.
   - This is a bigger issue for exercise 2 which involves antigen mismatch counting.
 - Patient and donor HLA typings were encoded to HLA nomenclature version 2.16, which is too early a version for HMD creation.
   - As HMD lookup logic takes into account allele name changes over time, it should be ok to use a HMD created from the latest HLA nomenclature version available.
