@@ -31,7 +31,8 @@
 | Test step | Expected Result |
 | --------- | --------------- |
 | 1. Upload donor-id-checker request file to `donors/donor-id-checker/requests` directory of `devatlasstorage`.<br> Uploaded file should have <b>unique name</b> and contain:<br> - `"donPool"` value equal to specific registry (e.g. `"AN"` or `"GB"`),<br> - `"donors"` list should contain same set of donor ids as presented in DB for specific registry defined in `"donPool"` parameter. | Donor-id-checker request file uploaded to `donors/donor-id-checker/requests` directory of `devatlasstorage` |
-| 2. Check `donor-id-checker-results` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message which contain: `"RequestFileLocation"` value with uploaded file filename, `"ResultsCount"` (should be `0`) and `"ResultsFilename"` (should be empty - `""`) |
+| 2. Check `audit` subscription of `donor-id-checker-requests` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message with uploaded file name |
+| 3. Check `audit` subscription of `donor-id-checker-results` topic of `dev-atlas` service bus | There is a new message which contains: `"RequestFileLocation"` value with uploaded file filename, `"ResultsCount"` (should be `0`) and `"ResultsFilename"` (should be empty - `""`) |
 ---
 
 <br></br>
@@ -65,15 +66,16 @@
 | Test step | Expected Result |
 | --------- | --------------- |
 | 1. Upload donor-id-checker request file to `donors/donor-id-checker/requests` directory of `devatlasstorage`.<br> Uploaded file should have <b>unique name</b> and contain:<br> - `"donPool"` value equal to specific registry (e.g. `"AN"` or `"GB"`),<br> - `"donors"` list should contain same set of donor ids as presented in DB for specific registry defined in `"donPool"` parameter and <b>have few additional donor ids</b> which absent in DB | Donor-id-checker request file uploaded to `donors/donor-id-checker/requests` directory of `devatlasstorage` |
-| 2. Check `donors/donor-id-checker/requests` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message which contain: `"RequestFileLocation"` value with uploaded file filename, `"ResultsCount"` and `"ResultsFilename"` |
-| 3. Check processing result file in `donors/donor-id-checker/requests` directory of `devatlasstorage`<br> - To identify needed file you could use `"ResultsFilename"` from previous step | - Result file presents in `donors/donor-id-checker/requests` directory of `devatlasstorage`<br> - `"AbsentRecordIds"` list contains donor ids which are missing in DB but present in uploaded donor-id-checker request file |
+| 2. Check `audit` subscription of `donor-id-checker-requests` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message with uploaded file name |
+| 3. Check `audit` subscription of `donors/donor-id-checker/results` topic of `dev-atlas` service bus | There is a new message which contains: `"RequestFileLocation"` value with uploaded file filename, `"ResultsCount"` and `"ResultsFilename"` |
+| 4. Check processing result file in `donors/donor-id-checker/results` directory of `devatlasstorage`<br> - To identify needed file you could use `"ResultsFilename"` from previous step | - Result file presents in `donors/donor-id-checker/results` directory of `devatlasstorage`<br> - `"AbsentRecordIds"` list contains donor ids which are missing in DB but present in uploaded donor-id-checker request file |
 ---
 
 <br></br>
 
-### 3. Uploaded donor-id-checker request file has missing donor ids comparing to Atlas set of donors
+### 3. Atlas set of donors has additional donor ids when compared to uploaded donor-id-checker request file
 
-<b>Description:</b> Check that result of submitted file processing, in case when uploaded donor-id-checker request file has missing donor ids comparing to Atlas set of donors (in DB), return 0 absent donor records (don't exist in DB) and X orphaned donor records (don't exist in submitted file)
+<b>Description:</b> Check that result of submitted file processing, in case when Atlas set of donors (in DB) has additional donor ids compared to uploaded donor-id-checker request file, return 0 absent donor records (don't exist in DB) and X orphaned donor records (don't exist in submitted file)
 
 <b>Preconditions:</b> To make testing easier in Atlas DB should exist short list of donors in specific "test" registry (e.g. "ST" aka SymmetricTest)
 
@@ -100,15 +102,16 @@
 | Test step | Expected Result |
 | --------- | --------------- |
 | 1. Upload donor-id-checker request file to `donors/donor-id-checker/requests` directory of `devatlasstorage`.<br> Uploaded file should have <b>unique name</b> and contain:<br> - `"donPool"` value equal to specific registry (e.g. `"AN"` or `"GB"`),<br> - `"donors"` list should contain same set of donor ids as presented in DB for specific registry defined in `"donPool"` parameter but <b>without few additional donor ids</b> which present in DB | Donor-id-checker request file uploaded to `donors/donor-id-checker/requests` directory of `devatlasstorage` |
-| 2. Check `donors/donor-id-checker/requests` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message which contain: `"RequestFileLocation"` value with uploaded file filename, `"ResultsCount"` and `"ResultsFilename"` |
-| 3. Check processing result file in `donors/donor-id-checker/requests` directory of `devatlasstorage`<br> - To identify needed file you could use `"ResultsFilename"` from previous step | - Result file presents in `donors/donor-id-checker/requests` directory of `devatlasstorage`<br> - `"OrphanedRecordIds"` list contains donor ids which are missing in uploaded donor-id-checker request file but present in DB |
+| 2. Check `audit` subscription of `donor-id-checker-requests` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message with uploaded file name |
+| 3. Check `donors/donor-id-checker/results` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message which contain: `"RequestFileLocation"` value with uploaded file filename, `"ResultsCount"` and `"ResultsFilename"` |
+| 4. Check processing result file in `donors/donor-id-checker/requests` directory of `devatlasstorage`<br> - To identify needed file you could use `"ResultsFilename"` from previous step | - Result file presents in `donors/donor-id-checker/requests` directory of `devatlasstorage`<br> - `"OrphanedRecordIds"` list contains donor ids which are missing in uploaded donor-id-checker request file but present in DB |
 ---
 
 <br></br>
 
-### 4. Uploaded donor-id-checker request file has missing donor ids comparing to Atlas set of donors but Atlas set of donors also has missing donor ids comparing to uploaded donor-id-checker request file
+### 4. Atlas set of donors has missing donor ids AND additional donor ids when compared to uploaded donor-id-checker request file
 
-<b>Description:</b> Check that result of submitted file processing, in case when uploaded donor-id-checker request file has missing donor ids comparing to Atlas set of donors (in DB) but Atlas set of donors also has missing donor ids comparing to uploaded donor-id-checker request file, return X absent donor records (don't exist in DB) and X orphaned donor records (don't exist in submitted file)
+<b>Description:</b> Check that result of submitted file processing, in case when Atlas set of donors (in DB) has missing donor ids AND additional donor ids compared to uploaded donor-id-checker request file, return X absent donor records (don't exist in DB) and X orphaned donor records (don't exist in submitted file)
 
 <b>Preconditions:</b> To make testing easier in Atlas DB should exist short list of donors in specific "test" registry (e.g. "ST" aka SymmetricTest)
 
@@ -135,8 +138,9 @@
 | Test step | Expected Result |
 | --------- | --------------- |
 | 1. Upload donor-id-checker request file to `donors/donor-id-checker/requests` directory of `devatlasstorage`.<br> Uploaded file should have <b>unique name</b> and contain:<br> - `"donPool"` value equal to specific registry (e.g. `"AN"` or `"GB"`),<br> - `"donors"` list should contain same set of donor ids as presented in DB for specific registry defined in `"donPool"` parameter but <b>without few additional donor ids</b> which present in DB, and also it <b>should contain few donor ids which absent in DB</b> | Donor-id-checker request file uploaded to `donors/donor-id-checker/requests` directory of `devatlasstorage` |
-| 2. Check `donors/donor-id-checker/requests` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message which contain: `"RequestFileLocation"` value with uploaded file filename, `"ResultsCount"` and `"ResultsFilename"` |
-| 3. Check processing result file in `donors/donor-id-checker/requests` directory of `devatlasstorage`<br> - To identify needed file you could use `"ResultsFilename"` from previous step | - Result file presents in `donors/donor-id-checker/requests` directory of `devatlasstorage`<br> - `"AbsentRecordIds"` list contains donor ids which are missing in DB but present in uploaded donor-id-checker request file <br> - `"OrphanedRecordIds"` list contains donor ids which are missing in uploaded donor-id-checker request file but present in DB |
+| 2. Check `audit` subscription of `donor-id-checker-requests` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message with uploaded file name |
+| 3. Check `donors/donor-id-checker/requests` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message which contains: `"RequestFileLocation"` value with uploaded file filename, `"ResultsCount"` and `"ResultsFilename"` |
+| 4. Check processing result file in `donors/donor-id-checker/requests` directory of `devatlasstorage`<br> - To identify needed file you could use `"ResultsFilename"` from previous step | - Result file presents in `donors/donor-id-checker/requests` directory of `devatlasstorage`<br> - `"AbsentRecordIds"` list contains donor ids which are missing in DB but present in uploaded donor-id-checker request file <br> - `"OrphanedRecordIds"` list contains donor ids which are missing in uploaded donor-id-checker request file but present in DB |
 ---
 
 <br></br>
@@ -170,8 +174,9 @@
 | Test step | Expected Result |
 | --------- | --------------- |
 | 1. Upload donor-id-checker request file to `donors/donor-id-checker/requests` directory of `devatlasstorage`.<br> Uploaded file should have <b>unique name</b> and contain:<br> - `"donPool"` value equal to specific registry (e.g. `"AN"` or `"GB"`),<br> - `"donors"` list should be empty | Donor-id-checker request file uploaded to `donors/donor-id-checker/requests` directory of `devatlasstorage` |
-| 2. Check `donors/donor-id-checker/requests` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message which contain: `"RequestFileLocation"` value with uploaded file filename, `"ResultsCount"` and `"ResultsFilename"` |
-| 3. Check processing result file in `donors/donor-id-checker/requests` directory of `devatlasstorage`<br> - To identify needed file you could use `"ResultsFilename"` from previous step | - Result file presents in `donors/donor-id-checker/requests` directory of `devatlasstorage`<br> - `"AbsentRecordIds"` list doen't contain donor ids<br> - `"OrphanedRecordIds"` list contains donor ids which are missing in uploaded donor-id-checker request file but present in DB |
+| 2. Check `audit` subscription of `donor-id-checker-requests` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message with uploaded file name |
+| 3. Check `donors/donor-id-checker/results` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message which contains: `"RequestFileLocation"` value with uploaded file filename, `"ResultsCount"` and `"ResultsFilename"` |
+| 4. Check processing result file in `donors/donor-id-checker/requests` directory of `devatlasstorage`<br> - To identify needed file you could use `"ResultsFilename"` from previous step | - Result file presents in `donors/donor-id-checker/requests` directory of `devatlasstorage`<br> - `"AbsentRecordIds"` list doen't contain donor ids<br> - `"OrphanedRecordIds"` list contains donor ids which are missing in uploaded donor-id-checker request file but present in DB |
 ---
 
 <br></br>
@@ -205,14 +210,15 @@
 | Test step | Expected Result |
 | --------- | --------------- |
 | 1. Upload donor-id-checker request file to `donors/donor-id-checker/requests` directory of `devatlasstorage`.<br> Uploaded file should have <b>unique name</b> and contain:<br> - `"donPool"` value equal to specific registry (e.g. `"AN"` or `"GB"`),<br> - `"donors"` list should be empty | Donor-id-checker request file uploaded to `donors/donor-id-checker/requests` directory of `devatlasstorage` |
-| 2. Check `donor-id-checker-results` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message which contain: `"RequestFileLocation"` value with uploaded file filename, `"ResultsCount"` (should be `0`) and `"ResultsFilename"` (should be empty - `""`) |
+| 2. Check `audit` subscription of `donor-id-checker-requests` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message with uploaded file name |
+| 3. Check `donor-id-checker-results` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message which contains: `"RequestFileLocation"` value with uploaded file filename, `"ResultsCount"` (should be `0`) and `"ResultsFilename"` (should be empty - `""`) |
 ---
 
 <br></br>
 
-### 7. Atlas set of donors has missing donor ids comparing to uploaded donor-id-checker request file, donor-id-checker request file contain unrequired "checkingMode" parameter
+### 7. Uploaded donor-id-checker request file contains unrequired "checkingMode" property
 
-<b>Description:</b> Check that result of submitted file processing, in case when Atlas set of donors (in DB) has missing donor ids comparing to uploaded donor-id-checker request file and donor-id-checker request file contain unrequired "checkingMode" parameter, return X absent donor records (don't exist in DB) and 0 orphaned donor records (don't exist in submitted file)
+<b>Description:</b> Check that result of submitted file processing, in case donor-id-checker request file contain unrequired "checkingMode" parameter, file is still processed as expected, without error.
 
 <b>Preconditions:</b> To make testing easier in Atlas DB should exist short list of donors in specific "test" registry (e.g. "ST" aka SymmetricTest)
 
@@ -240,7 +246,8 @@
 | Test step | Expected Result |
 | --------- | --------------- |
 | 1. Upload donor-id-checker request file to `donors/donor-id-checker/requests` directory of `devatlasstorage`.<br> Uploaded file should have <b>unique name</b> and contain:<br> - Unrequired parameter `"checkingMode"` (look for example in Test Data section) <br> - `"donPool"` value equal to specific registry (e.g. `"AN"` or `"GB"`),<br> - `"donors"` list should contain same set of donor ids as presented in DB for specific registry defined in `"donPool"` parameter and <b>have few additional donor ids</b> which absent in DB | Donor-id-checker request file uploaded to `donors/donor-id-checker/requests` directory of `devatlasstorage` |
-| 2. Check `donors/donor-id-checker/requests` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message which contain: `"RequestFileLocation"` value with uploaded file filename, `"ResultsCount"` and `"ResultsFilename"` |
+| 2. Check `audit` subscription of `donor-id-checker-requests` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message with uploaded file name |
+| 2. Check `donors/donor-id-checker/results` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message which contains: `"RequestFileLocation"` value with uploaded file filename, `"ResultsCount"` and `"ResultsFilename"` |
 | 3. Check processing result file in `donors/donor-id-checker/requests` directory of `devatlasstorage`<br> - To identify needed file you could use `"ResultsFilename"` from previous step | - Result file presents in `donors/donor-id-checker/requests` directory of `devatlasstorage`<br> - `"AbsentRecordIds"` list contains donor ids which are missing in DB but present in uploaded donor-id-checker request file |
 ---
 
@@ -248,9 +255,9 @@
 
 ## <u>Negative Scenarios</u>
 
-### 8. Uploaded donor-id-checker request file has invalid schema
+### 1. Uploaded donor-id-checker request file has invalid schema
 
-<b>Description:</b> Check that result of submitted file processing, in case when uploaded donor-id-checker request file has empty donor ids list and Atlas set also doesn't contain donors (in DB), return 0 absent donor records (don't exist in DB) and 0 orphaned donor records (don't exist in submitted file)
+<b>Description:</b> Check that alert message is sent and no result message created.
 
 <b>Preconditions:</b> There is no donors in DB for registry that will be used in donor-id-checker request file
 
@@ -277,4 +284,4 @@
 | Test step | Expected Result |
 | --------- | --------------- |
 | 1. Upload donor-id-checker request file to `donors/donor-id-checker/requests` directory of `devatlasstorage`.<br> - Uploaded file should have <b>unique name</b> and invalid schema (e.g. name if required value, as `"donPool"`, could contain errors or file could have scherma of another type of the file) | Donor-id-checker request file uploaded to `donors/donor-id-checker/requests` directory of `devatlasstorage` |
-| 2. Check `alerts` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message which contain: `"Priority"`, `"Summary"` (error summary), `"Description"`, `"Originator"`. |
+| 2. Check `alerts` topic of `dev-atlas` service bus | - No new deadlettered messages,<br> - There is a new message which contains: `"Priority"`, `"Summary"` (error summary), `"Description"`, `"Originator"`. |
