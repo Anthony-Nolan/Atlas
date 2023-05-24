@@ -109,7 +109,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         public void ThenAntigenMatchShouldBe(string isAntigenMatch, string locus, string position)
         {
             var expectedAntigenMatch = ParseExpectedAntigenMatch(isAntigenMatch);
-            var donorResult = GetSearchResultForSingleDonor();
             AssertLocusScoresAreExpectedValues(locus, position, new[] { expectedAntigenMatch }, nameof(LocusPositionScoreDetails.IsAntigenMatch));
         }
 
@@ -118,7 +117,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         {
             var expectedAntigenMatch1 = ParseExpectedAntigenMatch(isAntigenMatch1);
             var expectedAntigenMatch2 = ParseExpectedAntigenMatch(isAntigenMatch2);
-            var donorResult = GetSearchResultForSingleDonor();
             const string scoreFieldName = nameof(LocusPositionScoreDetails.IsAntigenMatch);
 
             AssertLocusScoresAreExpectedValues(locus, Position1Text, new[] { expectedAntigenMatch1 }, scoreFieldName);
