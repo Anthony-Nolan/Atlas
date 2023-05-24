@@ -64,7 +64,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
                 new("patient-only-serology", SerologySubtype.Associated, true)
             };
             var patientMetadata = new HlaScoringMetadataBuilder()
-                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(patientSerologies).Build())
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(patientSerologies).Build())
                 .Build();
 
             var donorSerologies = new List<SerologyEntry>
@@ -86,7 +86,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
         {
             var patientSerologies = new List<SerologyEntry> { new("patient-only-serology", SerologySubtype.Associated, true) };
             var patientMetadata = new HlaScoringMetadataBuilder()
-                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(patientSerologies).Build())
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(patientSerologies).Build())
                 .Build();
 
             var donorSerologies = new List<SerologyEntry> { new("donor-only-serology", SerologySubtype.Associated, true) };
@@ -100,10 +100,44 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
         }
 
         [Test]
-        public void IsAntigenMatch_PatientHasNoAssignedSerologies_ReturnsNull()
+        public void IsAntigenMatch_PatientIsNonExpressing_ReturnsFalse()
         {
             var patientMetadata = new HlaScoringMetadataBuilder()
-                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().Build())
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder().Build())
+                .Build();
+
+            var donorSerologies = new List<SerologyEntry> { new("donor-only-serology", SerologySubtype.Associated, true) };
+            var donorMetadata = new HlaScoringMetadataBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(donorSerologies).Build())
+                .Build();
+
+            var result = antigenMatchCalculator.IsAntigenMatch(patientMetadata, donorMetadata);
+
+            result.Should().BeFalse();
+        }
+
+        [Test]
+        public void IsAntigenMatch_DonorIsNonExpressing_ReturnsFalse()
+        {
+            var patientSerologies = new List<SerologyEntry> { new("patient-only-serology", SerologySubtype.Associated, true) };
+            var patientMetadata = new HlaScoringMetadataBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(patientSerologies).Build())
+                .Build();
+
+            var donorMetadata = new HlaScoringMetadataBuilder()
+                .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder().Build())
+                .Build();
+
+            var result = antigenMatchCalculator.IsAntigenMatch(patientMetadata, donorMetadata);
+
+            result.Should().BeFalse();
+        }
+
+        [Test]
+        public void IsAntigenMatch_PatientIsExpressing_AndNoAssignedSerologies_ReturnsNull()
+        {
+            var patientMetadata = new HlaScoringMetadataBuilder()
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().Build())
                 .Build();
 
             var donorSerologies = new List<SerologyEntry> { new("donor-only-serology", SerologySubtype.Associated, true) };
@@ -117,11 +151,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
         }
 
         [Test]
-        public void IsAntigenMatch_DonorHasNoAssignedSerologies_ReturnsNull()
+        public void IsAntigenMatch_DonorIsExpressing_AndNoAssignedSerologies_ReturnsNull()
         {
             var patientSerologies = new List<SerologyEntry> { new("patient-only-serology", SerologySubtype.Associated, true) };
             var patientMetadata = new HlaScoringMetadataBuilder()
-                .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(patientSerologies).Build())
+                .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(patientSerologies).Build())
                 .Build();
 
             var donorMetadata = new HlaScoringMetadataBuilder()

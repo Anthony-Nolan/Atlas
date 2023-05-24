@@ -75,14 +75,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient and donor are allele-level matched at A and both typings have assigned se" +
-            "rologies")]
-        public virtual void PatientAndDonorAreAllele_LevelMatchedAtAAndBothTypingsHaveAssignedSerologies()
+        [NUnit.Framework.DescriptionAttribute("Patient and donor are matched at A and have assigned serologies")]
+        public virtual void PatientAndDonorAreMatchedAtAAndHaveAssignedSerologies()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient and donor are allele-level matched at A and both typings have assigned se" +
-                    "rologies", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient and donor are matched at A and have assigned serologies", null, tagsOfScenario, argumentsOfScenario);
 #line 5
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -154,14 +152,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient and donor are allele-level mismatched at A and both typings have assigned" +
-            " serologies")]
-        public virtual void PatientAndDonorAreAllele_LevelMismatchedAtAAndBothTypingsHaveAssignedSerologies()
+        [NUnit.Framework.DescriptionAttribute("Patient and donor are mismatched at A and have assigned serologies")]
+        public virtual void PatientAndDonorAreMismatchedAtAAndHaveAssignedSerologies()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient and donor are allele-level mismatched at A and both typings have assigned" +
-                    " serologies", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient and donor are mismatched at A and have assigned serologies", null, tagsOfScenario, argumentsOfScenario);
 #line 17
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -233,12 +229,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient and donor are allele-level matched at A and one allele is non-expressing")]
-        public virtual void PatientAndDonorAreAllele_LevelMatchedAtAAndOneAlleleIsNon_Expressing()
+        [NUnit.Framework.DescriptionAttribute("Patient and donor are matched at A and one allele is non-expressing")]
+        public virtual void PatientAndDonorAreMatchedAtAAndOneAlleleIsNon_Expressing()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient and donor are allele-level matched at A and one allele is non-expressing", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient and donor are matched at A and one allele is non-expressing", null, tagsOfScenario, argumentsOfScenario);
 #line 29
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -303,7 +299,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 39
-    testRunner.Then("antigen match should be empty in position 1 and true in position 2 of locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("antigen match should be false in position 1 and true in position 2 of locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();

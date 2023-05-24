@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
@@ -53,7 +52,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringM
         public IEnumerable<string> MatchingGGroups => new List<string> {MatchingGGroup};
 
         [JsonIgnore]
-        public IEnumerable<string> MatchingPGroups => new List<string> {MatchingPGroup};
+        public IEnumerable<string> MatchingPGroups => MatchingPGroup == null ? new List<string>() : new[] { MatchingPGroup };
 
         [JsonIgnore]
         public bool IsNullExpresser { get; }
@@ -97,7 +96,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringM
             );
         }
 
-        public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo() => new List<SingleAlleleScoringInfo> {this};
+        public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo() => new() { this };
 
         public AlleleTyping GenerateTypingAtLocus(Locus locus)
         {
@@ -123,7 +122,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringM
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((SingleAlleleScoringInfo) obj);
+            return Equals((SingleAlleleScoringInfo)obj);
         }
 
         public override int GetHashCode()

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
+using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 
@@ -21,7 +22,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
                 return MatchConfidence.Potential;
             }
 
-            if (!IsMatch(patientMetadata, donorMetadata))
+            if (IsMismatched(patientMetadata, donorMetadata))
             {
                 return MatchConfidence.Mismatch;
             }
@@ -39,23 +40,27 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
             return MatchConfidence.Potential;
         }
 
-        private static bool IsMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
+        private static bool IsMismatched(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
         {
             if (patientMetadata.HlaScoringInfo is SerologyScoringInfo ||
                 donorMetadata.HlaScoringInfo is SerologyScoringInfo)
             {
-                return IsSerologyMatch(patientMetadata, donorMetadata);
+                return !IsSerologyMatch(patientMetadata, donorMetadata);
             }
 
-            return IsMolecularMatch(patientMetadata, donorMetadata);
+            return !IsPotentiallyAMolecularMatch(patientMetadata, donorMetadata);
         }
 
-        private static bool IsMolecularMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
+        private static bool IsPotentiallyAMolecularMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
         {
-            var patientPGroups = patientMetadata.HlaScoringInfo.MatchingPGroups;
-            var donorPGroups = donorMetadata.HlaScoringInfo.MatchingPGroups;
+            var patientPGroups = patientMetadata.HlaScoringInfo.MatchingPGroups.ToList();
+            var donorPGroups = donorMetadata.HlaScoringInfo.MatchingPGroups.ToList();
 
-            return patientPGroups.Intersect(donorPGroups).Any();
+            return 
+                // potential non-expressing match
+                patientPGroups.IsNullOrEmpty() && donorPGroups.IsNullOrEmpty() ||
+                // check for expressing match
+                patientPGroups.Intersect(donorPGroups).Any();
         }
 
         private static bool IsSerologyMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
