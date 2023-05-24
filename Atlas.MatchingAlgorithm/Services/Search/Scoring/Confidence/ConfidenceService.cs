@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.Public.Models.GeneticData;
@@ -13,7 +14,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
         PhenotypeInfo<MatchConfidence> CalculateMatchConfidences(
             PhenotypeInfo<IHlaScoringMetadata> patientMetadata,
             PhenotypeInfo<IHlaScoringMetadata> donorMetadata,
-            PhenotypeInfo<MatchGradeResult> matchGrades);
+            LociInfo<List<MatchOrientation>> orientations);
     }
 
     public class ConfidenceService : IConfidenceService
@@ -30,16 +31,15 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
         public PhenotypeInfo<MatchConfidence> CalculateMatchConfidences(
             PhenotypeInfo<IHlaScoringMetadata> patientMetadata,
             PhenotypeInfo<IHlaScoringMetadata> donorMetadata,
-            PhenotypeInfo<MatchGradeResult> matchGrades)
+            LociInfo<List<MatchOrientation>> orientations)
         {
             var confidenceResults = new PhenotypeInfo<MatchConfidence>();
 
             patientMetadata.EachLocus((locus, patientMetadataAtLocus) =>
             {
-                var matchGradesAtLocus = matchGrades.GetLocus(locus);
-                var orientations = matchGradesAtLocus.Position1.Orientations;
+                var orientationsAtLocus = orientations.GetLocus(locus);
 
-                var confidences = orientations.Select(o => new LocusInfo<MatchConfidence>(
+                var confidences = orientationsAtLocus.Select(o => new LocusInfo<MatchConfidence>(
                     CalculateConfidenceForOrientation(locus, LocusPosition.One, patientMetadataAtLocus.Position1, donorMetadata, o),
                     CalculateConfidenceForOrientation(locus, LocusPosition.Two, patientMetadataAtLocus.Position2, donorMetadata, o)
                 ));

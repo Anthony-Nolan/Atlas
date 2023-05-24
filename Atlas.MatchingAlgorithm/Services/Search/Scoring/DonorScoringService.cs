@@ -133,8 +133,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             var donorScoringMetadata = await GetHlaScoringMetadata(donorHla, scoringCriteria.LociToScore);
 
             var grades = gradingService.CalculateGrades(patientScoringMetadata, donorScoringMetadata);
-            var confidences = confidenceService.CalculateMatchConfidences(patientScoringMetadata, donorScoringMetadata, grades);
             var orientations = grades.ToLociInfo((_, pos1, _) => pos1?.Orientations?.ToList());
+            var confidences = confidenceService.CalculateMatchConfidences(patientScoringMetadata, donorScoringMetadata, orientations);
             var antigenMatches = antigenMatchingService.CalculateAntigenMatches(orientations, patientScoringMetadata, donorScoringMetadata);
 
             return donorHla.Map((locus, position, hlaName) => scoringCriteria.LociToScore.Contains(locus) ? 
