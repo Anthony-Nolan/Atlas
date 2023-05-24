@@ -1,11 +1,8 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Requests;
-using Atlas.Common.Public.Models.GeneticData;
 using Atlas.ManualTesting.Models;
-using Atlas.ManualTesting.Services.Scoring;
 using Atlas.ManualTesting.Services.WmdaConsensusResults;
+using Atlas.ManualTesting.Services.WmdaConsensusResults.Scorers;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
@@ -19,18 +16,21 @@ namespace Atlas.ManualTesting.Functions
     /// </summary>
     public class WmdaConsensusDatasetFunctions
     {
-        private readonly IScoreRequestProcessor scoreRequestProcessor;
+        private readonly IWmdaExerciseOneScorer scorerOne;
+        private readonly IWmdaExerciseTwoScorer scorerTwo;
         private readonly IWmdaDiscrepantAlleleResultsReporter alleleResultsReporter;
         private readonly IWmdaDiscrepantAntigenResultsReporter antigenResultsReporter;
         private readonly IWmdaDiscrepantResultsWriter resultsWriter;
 
         public WmdaConsensusDatasetFunctions(
-            IScoreRequestProcessor scoreRequestProcessor,
+            IWmdaExerciseOneScorer scorerOne, 
+            IWmdaExerciseTwoScorer scorerTwo,
             IWmdaDiscrepantAlleleResultsReporter alleleResultsReporter, 
             IWmdaDiscrepantAntigenResultsReporter antigenResultsReporter,
             IWmdaDiscrepantResultsWriter resultsWriter)
         {
-            this.scoreRequestProcessor = scoreRequestProcessor;
+            this.scorerOne = scorerOne;
+            this.scorerTwo = scorerTwo;
             this.alleleResultsReporter = alleleResultsReporter;
             this.antigenResultsReporter = antigenResultsReporter;
             this.resultsWriter = resultsWriter;
@@ -43,13 +43,7 @@ namespace Atlas.ManualTesting.Functions
             HttpRequest request)
         {
             var importAndScoreRequest = JsonConvert.DeserializeObject<ImportAndScoreRequest>(await new StreamReader(request.Body).ReadToEndAsync());
-
-            await scoreRequestProcessor.ProcessScoreRequest(new ScoreRequestProcessorInput
-            {
-                ImportAndScoreRequest = importAndScoreRequest,
-                ScoringCriteria = BuildThreeLocusScoringCriteria(),
-                ResultTransformer = (patientId, donorId, result) => new WmdaConsensusResultsFile(patientId, donorId, result).ToString()
-            });
+            await scorerOne.ProcessScoreRequest(importAndScoreRequest);
         }
 
         [FunctionName(nameof(ProcessWmdaConsensusDataset_Exercise2))]
@@ -59,13 +53,7 @@ namespace Atlas.ManualTesting.Functions
             HttpRequest request)
         {
             var importAndScoreRequest = JsonConvert.DeserializeObject<ImportAndScoreRequest>(await new StreamReader(request.Body).ReadToEndAsync());
-
-            await scoreRequestProcessor.ProcessScoreRequest(new ScoreRequestProcessorInput
-            {
-                ImportAndScoreRequest = importAndScoreRequest,
-                ScoringCriteria = BuildThreeLocusScoringCriteria(),
-                ResultTransformer = (patientId, donorId, result) => new WmdaConsensusResultsFileSetTwo(patientId, donorId, result).ToString()
-            });
+            await scorerTwo.ProcessScoreRequest(importAndScoreRequest);
         }
 
         /// <summary>
@@ -94,15 +82,6 @@ namespace Atlas.ManualTesting.Functions
             var reportRequest = JsonConvert.DeserializeObject<ReportDiscrepanciesRequest>(await new StreamReader(request.Body).ReadToEndAsync());
             var report = await antigenResultsReporter.ReportDiscrepantResults(reportRequest);
             await resultsWriter.WriteToFile(BuildDiscrepantResultsFilePath(reportRequest.ResultsFilePath, "antigen"), report);
-        }
-
-        private static ScoringCriteria BuildThreeLocusScoringCriteria()
-        {
-            return new ScoringCriteria
-            {
-                LociToScore = new[] { Locus.A, Locus.B, Locus.Drb1 },
-                LociToExcludeFromAggregateScore = new List<Locus>()
-            };
         }
 
         private static string BuildDiscrepantResultsFilePath(string resultsPath, string mismatchCountKeyword)

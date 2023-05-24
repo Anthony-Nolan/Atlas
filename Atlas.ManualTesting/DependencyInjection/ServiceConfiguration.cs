@@ -11,6 +11,7 @@ using Atlas.ManualTesting.Services;
 using Atlas.ManualTesting.Services.Scoring;
 using Atlas.ManualTesting.Services.ServiceBus;
 using Atlas.ManualTesting.Services.WmdaConsensusResults;
+using Atlas.ManualTesting.Services.WmdaConsensusResults.Scorers;
 using Atlas.ManualTesting.Settings;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -88,8 +89,9 @@ namespace Atlas.ManualTesting.DependencyInjection
             services.AddScoped<IDonorStoresInspector, DonorStoresInspector>();
 
             services.AddScoped(typeof(IFileReader<>), typeof(FileReader<>));
+            services.AddScoped<IWmdaExerciseOneScorer, WmdaExerciseOneScorer>();
+            services.AddScoped<IWmdaExerciseTwoScorer, WmdaExerciseTwoScorer>();
             services.AddScoped<IScoreBatchRequester, ScoreBatchRequester>();
-            services.AddScoped<IScoreRequestProcessor, ScoreRequestProcessor>();
             services.AddScoped<IWmdaResultsTotalMismatchComparer, WmdaResultsTotalMismatchComparer>();
             services.AddScoped<IWmdaResultsAntigenMismatchComparer, WmdaResultsAntigenMismatchComparer>();
             services.AddScoped<IConvertHlaRequester, ConvertHlaRequester>();
