@@ -13,27 +13,15 @@ using Atlas.MatchingAlgorithm.Extensions;
 
 namespace Atlas.ManualTesting.Services.Scoring
 {
-    public class ScoreRequestProcessorInput
-    {
-        public ImportAndScoreRequest ImportAndScoreRequest { get; set; }
-        public ScoringCriteria ScoringCriteria { get; set; }
-
-        /// <summary>
-        /// Transforms a <see cref="ScoringResult"/> for a patient and donor into a <see cref="string"/> so it can be written to the results file.
-        /// Arguments: `patientId`, `donorId` and the scoring result to transform.
-        /// </summary>
-        public Func<string, string, ScoringResult, string> ResultTransformer { get; set; }
-    }
-
     public interface IScoreRequestProcessor
     {
         /// <summary>
         /// Scores patients and donors imported from specified input files, and then writes the results to an output text file.
         /// </summary>
-        Task ProcessScoreRequest(ScoreRequestProcessorInput input);
+        Task ProcessScoreRequest(ImportAndScoreRequest request);
     }
 
-    internal class ScoreRequestProcessor : IScoreRequestProcessor
+    internal abstract class ScoreRequestProcessor : IScoreRequestProcessor
     {
         // Value should be large enough for good throughput, but small enough to avoid very large http request payload.
         private const int DonorBatchSize = 1000;
@@ -41,17 +29,17 @@ namespace Atlas.ManualTesting.Services.Scoring
         private readonly IFileReader<ImportedSubject> subjectReader;
         private readonly IScoreBatchRequester scoreBatchRequester;
 
-        public ScoreRequestProcessor(IFileReader<ImportedSubject> subjectReader, IScoreBatchRequester scoreBatchRequester)
+        protected ScoreRequestProcessor(IFileReader<ImportedSubject> subjectReader, IScoreBatchRequester scoreBatchRequester)
         {
             this.subjectReader = subjectReader;
             this.scoreBatchRequester = scoreBatchRequester;
         }
 
         /// <inheritdoc />
-        public async Task ProcessScoreRequest(ScoreRequestProcessorInput input)
+        public async Task ProcessScoreRequest(ImportAndScoreRequest request)
         {
-            var patients = await subjectReader.ReadAllLines(FileDelimiter, input.ImportAndScoreRequest.PatientFilePath);
-            var donors = await subjectReader.ReadAllLines(FileDelimiter, input.ImportAndScoreRequest.DonorFilePath);
+            var patients = await subjectReader.ReadAllLines(FileDelimiter, request.PatientFilePath);
+            var donors = await subjectReader.ReadAllLines(FileDelimiter, request.DonorFilePath);
 
             if (patients.Count == 0 || donors.Count == 0)
             {
@@ -59,44 +47,71 @@ namespace Atlas.ManualTesting.Services.Scoring
                 return;
             }
 
-            var startFromFirstPatient = string.IsNullOrEmpty(input.ImportAndScoreRequest.StartFromPatientId);
+            var startFromFirstPatient = string.IsNullOrEmpty(request.StartFromPatientId);
             var startFromPatientId = startFromFirstPatient
-                ? patients.First().ID 
-                : input.ImportAndScoreRequest.StartFromPatientId;
+                ? patients.First().ID
+                : request.StartFromPatientId;
 
-            var resultsDirectory = Path.GetDirectoryName(input.ImportAndScoreRequest.ResultsFilePath); 
-            
+            var resultsFileDirectory = Path.GetDirectoryName(request.ResultsFilePath);
+            var logFileDirectory = GetLogFileDirectory(request.ResultsFilePath);
             var processedPatientCount = 0;
+            
             foreach (var patient in patients.SkipWhile(p => p.ID != startFromPatientId))
             {
-                var startFromDonorId = processedPatientCount > 0 || startFromFirstPatient || string.IsNullOrEmpty(input.ImportAndScoreRequest.StartFromDonorId)
+                var startFromDonorId = processedPatientCount > 0 || startFromFirstPatient || string.IsNullOrEmpty(request.StartFromDonorId)
                     ? donors.First().ID
-                    : input.ImportAndScoreRequest.StartFromDonorId;
+                    : request.StartFromDonorId;
 
                 // Not sending out multiple donor scoring requests in parallel to keep things simple.
                 // Also, it means results will be written in the order that patients and donors were read from file which makes it easier to restart the request, if required.
                 foreach (var donorBatch in donors.SkipWhile(d => d.ID != startFromDonorId).Batch(DonorBatchSize))
                 {
-                    var results = await ScoreDonors(patient, donorBatch, resultsDirectory, input.ScoringCriteria);
-                    var transformedResults = results.Select(r => input.ResultTransformer(patient.ID, r.DonorId, r.ScoringResult));
-                    await File.AppendAllLinesAsync(input.ImportAndScoreRequest.ResultsFilePath, transformedResults);
+                    var donorBatchList = donorBatch.ToList();
+                    var results = (await ScoreDonors(patient, donorBatchList, resultsFileDirectory, BuildScoringCriteria())).ToList();
+                    await AppendToFile(results, TransformResultForReporting, patient, request.ResultsFilePath);
+                    await AppendToFile(results, TransformResultForLogging, patient, $"{logFileDirectory}/{patient.ID}-{donorBatchList.First().ID}.txt");
                 }
 
                 processedPatientCount++;
             }
         }
 
+        protected abstract ScoringCriteria BuildScoringCriteria();
+        protected abstract string TransformResultForReporting(string patientId, string donorId, ScoringResult scoringResult);
+        protected abstract string TransformResultForLogging(string patientId, string donorId, ScoringResult scoringResult);
+
+        private static string GetLogFileDirectory(string resultsFilePath)
+        {
+            var directory = $"{Path.GetDirectoryName(resultsFilePath)}/{Path.GetFileNameWithoutExtension(resultsFilePath)}_scoringLogs";
+
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            return directory;
+        }
+
+        private static async Task AppendToFile(
+            IEnumerable<DonorScoringResult> results,
+            Func<string, string, ScoringResult, string> resultTransformer,
+            ImportedSubject patient, string filePath)
+        {
+            var lines = results.Select(r => resultTransformer(patient.ID, r.DonorId, r.ScoringResult));
+            await File.AppendAllLinesAsync(filePath, lines);
+        }
+
         private async Task<IEnumerable<DonorScoringResult>> ScoreDonors(
             ImportedSubject patient,
             IEnumerable<ImportedSubject> donors,
-            string resultsDirectory,
+            string resultsFileDirectory,
             ScoringCriteria scoringCriteria)
         {
             return await scoreBatchRequester.ScoreBatch(new ScoreBatchRequest
             {
                 Patient = patient,
                 Donors = donors,
-                ResultsDirectory = resultsDirectory,
+                ResultsFileDirectory = resultsFileDirectory,
                 ScoringCriteria = scoringCriteria
             });
         }

@@ -21,7 +21,7 @@ namespace Atlas.ManualTesting.Services.Scoring
     {
         public ImportedSubject Patient { get; set; }
         public IEnumerable<ImportedSubject> Donors { get; set; }
-        public string ResultsDirectory { get; set; }
+        public string ResultsFileDirectory { get; set; }
         public ScoringCriteria ScoringCriteria { get; set; }
     }
 
@@ -44,7 +44,7 @@ namespace Atlas.ManualTesting.Services.Scoring
         {
             if (request?.Patient is null ||
                 !request.Donors.Any() ||
-                string.IsNullOrWhiteSpace(request.ResultsDirectory) ||
+                string.IsNullOrWhiteSpace(request.ResultsFileDirectory) ||
                 request.ScoringCriteria is null)
             {
                 throw new ArgumentException("ScoreBatch request is missing required data.");
@@ -122,7 +122,7 @@ namespace Atlas.ManualTesting.Services.Scoring
 
         private static async Task WriteFailuresToFile(ScoreBatchRequest scoreBatchRequest)
         {
-            var failedRequestsPath = scoreBatchRequest.ResultsDirectory + "\\failedScoringRequests.txt";
+            var failedRequestsPath = scoreBatchRequest.ResultsFileDirectory + "\\failedScoringRequests.txt";
             var contents = $"{scoreBatchRequest.Patient.ID}:{string.Join(",", scoreBatchRequest.Donors.Select(d => d.ID))}";
             await File.AppendAllTextAsync(failedRequestsPath, contents);
         }

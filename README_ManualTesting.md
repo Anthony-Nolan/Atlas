@@ -71,12 +71,17 @@ Projects dedicated to manual, non-automated testing of various aspects of the At
 - The output file listing all the discrepant results (and the **serology** mappings that explain them) will be written to the same directory as the input Atlas results file, and will be named: `<Atlas-results-file-name>-antigen-discrepancies.txt`.
 
 ### Important considerations for data analysis
+- In the event of discrepant results, consult the "scoringLog" files that were written out during the processing step that capture some of the original scoring results.
+  - The `ScoreBatch` function can also be called directly with the patient-donor pair of interest to see the full scoring result.
 - The exercise datasets include ARD and rel-dna-ser definitions, but using these would require setting up a new HLA nomenclature source and re-building the HLA Metadata Dictionary (HMD) using that source URL.
   - It is easier to use the latest HLA nomenclature version published by IMGT/HLA, and explain any discrepancies caused by using different HLA reference material.
   - This is a bigger issue for exercise 2 which involves antigen mismatch counting.
 - Patient and donor HLA typings were encoded to HLA nomenclature version 2.16, which is too early a version for HMD creation.
   - As HMD lookup logic takes into account allele name changes over time, it should be ok to use a HMD created from the latest HLA nomenclature version available.
   - However, the presence of renamed/deleted alleles in the datasets may cause some discrepant results.
+- Exercise 2 processer uses the `IsAntigenMatch` property on the positional scoring result to count antigen mismatches.
+  - A count of 1 is assigned if the property is either `false` or `null`.
+  - Value of `null` is assigned when either the patient or donor typing has no assigned serologies in referenced IMGT/HLA `rel_dna_ser` file, and so antigen match could not be determined.
 - The exercise 2 reference file uses a letter-based code where a consensus on mismatch count could not be reached.
   - The Atlas mismatch count was deemed discrepant if it did not map to one of the mismatch counts represented by the letter.
   - E.g., if the reference count was `A` which represents `0` or `1` mismatches, but the Atlas count was `2`, then this would be reported as a discrepancy.
