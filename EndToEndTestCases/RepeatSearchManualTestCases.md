@@ -1,14 +1,14 @@
-# Donor Import Manual Test Cases
+# Donor Repeat Search Test Cases
 
 ## <u>Positive Scenarios</u>
 
-### 1. Repeat Search Request (10/10 - no mismatch, batching: off)
+### 1. Repeat Search Request for newly matched donors (10/10 - no mismatch, batching: off)
 
 <b>Description:</b> Check Repeat Search request results in `<env>atlasstorage`
 
 <b>Preconditions:</b><br>Repeat Search results shouldn't be batched:<br>
 `<ENV>-ATLAS-REPEAT-SEARCH-FUNCTIONS` AzureStorage:SearchResultsBatchSize: `0`<br>
-`<ENV>-ATLAS-FUNCTIONS` AtlasFunction:AzureStorage:ShouldBatchResuls: `False`
+`<ENV>-ATLAS-FUNCTIONS` AtlasFunction:AzureStorage:ShouldBatchResults: `False`
 
 <b>Test Data:</b>
 
@@ -132,7 +132,7 @@ Request body example
 - Repeat Search request
 
 ```
-POST https://dev-atlas-api.azurewebsites.net/api/RepeatSearch
+POST https://<env>-atlas-api.azurewebsites.net/api/RepeatSearch
 ```
 Request body example
 ```json
@@ -190,21 +190,21 @@ Request body example
 
 | Test step | Expected Result |
 | --------- | --------------- |
-| 1. Run Search Request, but set in request body:<br> - `"DonorMismatchCount"` value to `0`<br> - All HLA mismatch values in `"LocusMismatchCriteria"` should be `0`<br> - Note `searchIdentifier` from request response | - Result code: 200.<br> - `searchIdentifier` in request response: has `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` format.<br> - `searchIdentifier` from request response noted |
+| 1. Run Search Request, but set in request body:<br> - `"DonorMismatchCount"` value to `0`<br> - `SearchRequest` should be copied from the request body of the search submitted in step 1. <br> - Note `searchIdentifier` from request response | - Result code: 200.<br> - `searchIdentifier` in request response: has `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` format.<br> - `searchIdentifier` from request response noted |
 | 2. Upload Donor Import .json file with few donors to `donors` folder of `<env>atlasstorage`, you can use donor import file content example from Test Data section, but you should change `"recordId"`,`"changeType"` should be `"NU"` (Create or Update), donor import file name should be unique. | Donor Import file with few donors uploaded to `donors` folder of `<env>atlasstorage`|
 | 3. Run Repeat Search Request, but set in request body:<br> - `"OriginalSearchId"` value to `searchIdentifier` value, noted in step 1. <br> - `"SearchCutoffDate"` value to today's date in format `"YYYY-MM-DD"`(in order to show in results only donors that were imported today).<br> - All HLA mismatch values in `"LocusMismatchCriteria"` should be `0`<br> - Note `searchIdentifier` from request response | - Result code: 200.<br> - `searchIdentifier` in request response: has `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` format.<br> - `repeatSerchIdentifier` in request response: has `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` format. |
-| 3. Check Repeat Search results in `<env>atlasstorage`: `repeat-search-results` blob container (use `searchIdentifier` from step 1) | - There is a folder with name equal to `searchIdentifier` from step 1 in `repeat-search-results`.<br> - There is a .json file with name equal to `repeatSearchIdentifier` from step 3.<br> - This file contains donors imported in step 2 in `Results` list.|
+| 4. Check Repeat Search results in `<env>atlasstorage`: `repeat-search-results` blob container (use `searchIdentifier` from step 1) | - There is a folder with name equal to `searchIdentifier` from step 1 in `repeat-search-results`.<br> - There is a .json file with name equal to `repeatSearchIdentifier` from step 3.<br> - This file contains donors imported in step 2 in `Results` list.|
 ---
 
 <br></br>
 
-### 2. Repeat Search Request (10/10 - no mismatch, batching: on)
+### 2. Repeat Search Request for newly matched donors (10/10 - no mismatch, batching: on)
 
 <b>Description:</b> Check Repeat Search request results in `<env>atlasstorage`
 
 <b>Preconditions:</b><br>Repeat Search results shouldn't be batched:<br>
 `<ENV>-ATLAS-REPEAT-SEARCH-FUNCTIONS` AzureStorage:SearchResultsBatchSize: `2`<br>
-`<ENV>-ATLAS-FUNCTIONS` AtlasFunction:AzureStorage:ShouldBatchResuls: `True`
+`<ENV>-ATLAS-FUNCTIONS` AtlasFunction:AzureStorage:ShouldBatchResults: `True`
 
 <b>Test Data:</b>
 
@@ -328,7 +328,7 @@ Request body example
 - Repeat Search request
 
 ```
-POST https://dev-atlas-api.azurewebsites.net/api/RepeatSearch
+POST https://<env>-atlas-api.azurewebsites.net/api/RepeatSearch
 ```
 Request body example
 ```json
@@ -388,8 +388,8 @@ Request body example
 | --------- | --------------- |
 | 1. Run Search Request, but set in request body:<br> - `"DonorMismatchCount"` value to `0`<br> - All HLA mismatch values in `"LocusMismatchCriteria"` should be `0`<br> - Note `searchIdentifier` from request response | - Result code: 200.<br> - `searchIdentifier` in request response: has `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` format.<br> - `searchIdentifier` from request response noted |
 | 2. Upload Donor Import .json file with few donors to `donors` folder of `<env>atlasstorage`, you can use donor import file content example from Test Data section, but you should change `"recordId"`,`"changeType"` should be `"NU"` (Create or Update), donor import file name should be unique. | Donor Import file with few donors uploaded to `donors` folder of `<env>atlasstorage`|
-| 3. Run Repeat Search Request, but set in request body:<br> - `"OriginalSearchId"` value to `searchIdentifier` value, noted in step 1. <br> - `"SearchCutoffDate"` value to today's date in format `"YYYY-MM-DD"`(in order to show in results only donors that were imported today).<br> - All HLA mismatch values in `"LocusMismatchCriteria"` should be `0`<br> - Note `searchIdentifier` from request response | - Result code: 200.<br> - `searchIdentifier` in request response: has `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` format.<br> - `repeatSerchIdentifier` in request response: has `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` format. |
-| 3. Check Repeat Search results in `<env>atlasstorage`: `repeat-search-results` blob container (use `searchIdentifier` from step 1) | - There is a folder with name equal to `searchIdentifier` from step 1 in `repeat-search-results`.<br> - There is a .json file with name equal to `repeatSearchIdentifier` from step 3.<br> - This file contain only general information related to request (e.g. as `TotalResults` amount) and doesn't contain `Results` list with donors.<br> - There is also a folder with name equal to `repeat-search-results` from step 3 which contains .json files of donors divided to .json files according to `BatchSize` value defined in preconditions, where `BatchSize` value = `max amount` of donors in each .json file in this folder. |
+| 3. Run Repeat Search Request, but set in request body:<br> - `"OriginalSearchId"` value to `searchIdentifier` value, noted in step 1. <br> - `"SearchCutoffDate"` value to today's date in format `"YYYY-MM-DD"`(in order to show in results only donors that were imported today).<br> - `SearchRequest` should be copied from the request body of the search submitted in step 1. <br> - Note `searchIdentifier` from request response | - Result code: 200.<br> - `searchIdentifier` in request response: has `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` format.<br> - `repeatSerchIdentifier` in request response: has `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` format. |
+| 4. Check Repeat Search results in `<env>atlasstorage`: `repeat-search-results` blob container (use `searchIdentifier` from step 1) | - There is a folder with name equal to `searchIdentifier` from step 1 in `repeat-search-results`.<br> - There is a .json file with name equal to `repeatSearchIdentifier` from step 3.<br> - This file contain only general information related to request (e.g. as `TotalResults` amount) and doesn't contain `Results` list with donors.<br> - There is also a folder with name equal to `repeat-search-results` from step 3 which contains .json files of donors divided to .json files according to `BatchSize` value defined in preconditions, where `BatchSize` value = `max amount` of donors in each .json file in this folder. |
 ---
 
 <br></br>
