@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 
@@ -10,9 +10,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching
     public interface IAntigenMatchingService
     {
         PhenotypeInfo<bool?> CalculateAntigenMatches(
+            LociInfo<List<MatchOrientation>> orientations,
             PhenotypeInfo<IHlaScoringMetadata> patientMetadata,
-            PhenotypeInfo<IHlaScoringMetadata> donorMetadata,
-            PhenotypeInfo<MatchGradeResult> matchGrades);
+            PhenotypeInfo<IHlaScoringMetadata> donorMetadata);
     }
 
     internal class AntigenMatchingService : IAntigenMatchingService
@@ -27,30 +27,27 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching
         }
 
         public PhenotypeInfo<bool?> CalculateAntigenMatches(
+            LociInfo<List<MatchOrientation>> orientations,
             PhenotypeInfo<IHlaScoringMetadata> patientMetadata,
-            PhenotypeInfo<IHlaScoringMetadata> donorMetadata,
-            PhenotypeInfo<MatchGradeResult> matchGrades)
+            PhenotypeInfo<IHlaScoringMetadata> donorMetadata)
         {
             var results = new PhenotypeInfo<bool?>();
 
-            matchGrades.EachLocus((locus, matchGradeResultAtLocus) =>
+            orientations.ForEachLocus((locus, orientationsAtLocus) =>
             {
-                var patientLocusData = patientMetadata.GetLocus(locus);
-                var donorLocusData = donorMetadata.GetLocus(locus);
+                var patientLocus = patientMetadata.GetLocus(locus);
+                var donorLocus = donorMetadata.GetLocus(locus);
 
                 static bool IsLocusInfoNull<T>(LocusInfo<T> locusInfo) => locusInfo is null || locusInfo.Position1And2Null();
-                if (IsLocusInfoNull(matchGradeResultAtLocus) || IsLocusInfoNull(patientLocusData) || IsLocusInfoNull(donorLocusData))
+                if (orientationsAtLocus.IsNullOrEmpty() || IsLocusInfoNull(patientLocus) || IsLocusInfoNull(donorLocus))
                 {
                     results.SetLocus(locus, null);
                     return;
                 }
 
-                var matchGradesAtLocus = matchGradeResultAtLocus.Map(m => m.GradeResult);
-
                 // need to calculate antigen match according to the orientation provided in grading result
-                var orientations = matchGradeResultAtLocus.Position1.Orientations.ToList();
-                var locusResults = CalculateLocusAntigenMatchInBestOrientation(orientations, matchGradesAtLocus, patientLocusData, donorLocusData);
-                
+                var locusResults = CalculateLocusAntigenMatchInBestOrientation(orientationsAtLocus, patientLocus, donorLocus);
+
                 results = results.SetLocus(locus, locusResults.Position1, locusResults.Position2);
             });
 
@@ -59,7 +56,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching
 
         private LocusInfo<bool?> CalculateLocusAntigenMatchInBestOrientation(
             IReadOnlyCollection<MatchOrientation> orientations,
-            LocusInfo<MatchGrade> matchGradesAtLocus,
             LocusInfo<IHlaScoringMetadata> patientLocusData,
             LocusInfo<IHlaScoringMetadata> donorLocusData)
         {
@@ -70,11 +66,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching
 
             if (orientations.Count == 1)
             {
-                return CalculateLocusAntigenMatch(orientations.Single(), matchGradesAtLocus, patientLocusData, donorLocusData);
+                return CalculateLocusAntigenMatch(orientations.Single(), patientLocusData, donorLocusData);
             }
 
-            var directAntigenMatches = CalculateLocusAntigenMatch(MatchOrientation.Direct, matchGradesAtLocus, patientLocusData, donorLocusData);
-            var crossAntigenMatches = CalculateLocusAntigenMatch(MatchOrientation.Cross, matchGradesAtLocus, patientLocusData, donorLocusData);
+            var directAntigenMatches = CalculateLocusAntigenMatch(MatchOrientation.Direct, patientLocusData, donorLocusData);
+            var crossAntigenMatches = CalculateLocusAntigenMatch(MatchOrientation.Cross, patientLocusData, donorLocusData);
 
             static int CountAntigenMatches(LocusInfo<bool?> input) => new[] { input.Position1, input.Position2 }.Count(r => r.HasValue && r.Value);
             var directMatchCount = CountAntigenMatches(directAntigenMatches);
@@ -85,26 +81,25 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching
 
         private LocusInfo<bool?> CalculateLocusAntigenMatch(
             MatchOrientation orientation,
-            LocusInfo<MatchGrade> matchGradesAtLocus,
             LocusInfo<IHlaScoringMetadata> patientLocusData,
             LocusInfo<IHlaScoringMetadata> donorLocusData)
         {
             var isGradeOneAntigenMatched = IsAntigenMatch(
-                matchGradesAtLocus.Position1, patientLocusData.Position1, orientation == MatchOrientation.Cross ? donorLocusData.Position2 : donorLocusData.Position1);
+                patientLocusData.Position1, orientation == MatchOrientation.Cross ? donorLocusData.Position2 : donorLocusData.Position1);
 
             var isGradeTwoAntigenMatched = IsAntigenMatch(
-                matchGradesAtLocus.Position2, patientLocusData.Position2, orientation == MatchOrientation.Cross ? donorLocusData.Position1 : donorLocusData.Position2);
+                patientLocusData.Position2, orientation == MatchOrientation.Cross ? donorLocusData.Position1 : donorLocusData.Position2);
 
             return new LocusInfo<bool?>(isGradeOneAntigenMatched, isGradeTwoAntigenMatched);
         }
 
-        private bool? IsAntigenMatch(MatchGrade? matchGrade, IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
+        private bool? IsAntigenMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
         {
             return scoringCache.GetOrAddIsAntigenMatch(
                 patientMetadata?.Locus,
                 patientMetadata?.LookupName,
                 donorMetadata?.LookupName,
-                c => calculator.IsAntigenMatch(matchGrade, patientMetadata, donorMetadata));
+                c => calculator.IsAntigenMatch(patientMetadata, donorMetadata));
         }
     }
 }

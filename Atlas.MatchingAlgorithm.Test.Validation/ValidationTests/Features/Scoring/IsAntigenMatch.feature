@@ -2,11 +2,41 @@
   As a member of the search team
   I want search results to report whether a position is antigen matched or not.
 
-  Scenario: Patient and donor are allele-level matched
+  Scenario: Patient and donor are allele-level matched at A and both typings have assigned serologies
     Given a patient has a match
-    And scoring is enabled at all loci
+    And the matching donor has the following HLA:
+    |A_1    |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |
+    |*02:01 |*02:01 |*08:01 |*08:01 |*07:01 |*07:01 |
+    And the patient has the following HLA:
+    |A_1    |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |
+    |*02:01 |*02:01 |*08:01 |*08:01 |*07:01 |*07:01 |
+    And scoring is enabled at locus A
     When I run a 6/6 search
-    Then antigen match should be true at all loci at both positions
+    Then antigen match should be true at locus A at both positions
+
+  Scenario: Patient and donor are allele-level mismatched at A and both typings have assigned serologies
+    Given a patient has a match
+    And the matching donor has the following HLA:
+    |A_1    |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |
+    |*02:01 |*02:01 |*08:01 |*08:01 |*07:01 |*07:01 |
+    And the patient has the following HLA:
+    |A_1    |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |
+    |*03:01 |*03:01 |*08:01 |*08:01 |*07:01 |*07:01 |
+    And scoring is enabled at locus A
+    When I run a 4/6 search
+    Then antigen match should be false at locus A at both positions
+
+  Scenario: Patient and donor are allele-level matched at A and one allele is non-expressing
+    Given a patient has a match
+    And the matching donor has the following HLA:
+    |A_1           |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |
+    |*01:01:01:02N |*02:01 |*08:01 |*08:01 |*07:01 |*07:01 |
+    And the patient has the following HLA:
+    |A_1           |A_2    |B_1    |B_2    |DRB1_1 |DRB1_2 |
+    |*01:01:01:02N |*02:01 |*08:01 |*08:01 |*07:01 |*07:01 |
+    And scoring is enabled at locus A
+    When I run a 6/6 search
+    Then antigen match should be empty in position 1 and true in position 2 of locus A
 
   Scenario: Patient has broad serology and donor has the same broad
     Given a patient has a match

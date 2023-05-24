@@ -23,10 +23,8 @@
         public int? MatchGradeScore;
 
         /// <summary>
-        /// Will be `true`, except for:
-        ///     - If <see cref="MatchGrade"/> is `Mismatch` AND the mismatch is also antigen mismatched, then it will be `false`
-        ///     - If <see cref="MatchGrade"/> is `Unknown`, then it will be `null`
-        ///     - If <see cref="MatchGrade"/> is any of the Null vs. Null allele grades, then it will be `false`
+        /// Will be `true` if patient and donor overlap in their matching serologies.
+        /// Will be `null` if either patient or donor is a typing that does not have any serologies assigned within IMGT/HLA `rel_dna_ser`, e.g.,  non-expressing alleles, alleles with only "?" assignment, etc.
         /// </summary>
         public bool? IsAntigenMatch;
     }
