@@ -74,6 +74,7 @@ Below is a list of features and requirements for the Atlas product. This is not 
 
 - Code review on every pull request. 
 - Automated tests used throughout the solution: unit, integration and some BDD tests.
-- Match prediction component has been validated using the WMDA consensus dataset ([external link to write up](https://drive.google.com/drive/folders/1vI1pgqwiqZCFaJlAfzq41v3loWH6SqP7)).
+- Match prediction component has been validated using exercise 3 of the WMDA consensus dataset ([external link to write up](https://drive.google.com/drive/folders/1vI1pgqwiqZCFaJlAfzq41v3loWH6SqP7)).
+- Allele and antigen matching features have been validation using exercise 1 and 2 of the WMDA consensus dataset ([internal link to test results](https://github.com/Anthony-Nolan/Atlas/issues/964)).
 - User Acceptance Testing (UAT) and Clinical Validation completed for MUD search by the Anthony Nolan Search team.
   - UAT of remaining features is ongoing during late 2022/ early 2023, to be completed prior to Atlas going live in WMDA Search & Match service.
