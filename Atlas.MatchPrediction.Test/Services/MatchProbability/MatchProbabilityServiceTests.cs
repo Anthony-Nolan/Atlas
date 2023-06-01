@@ -1,14 +1,11 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Results.MatchPrediction;
-using Atlas.Common.GeneticData.PhenotypeInfo;
+﻿using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
+using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -16,11 +13,14 @@ using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
+using AutoFixture;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
-using AutoFixture;
 
 namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 {

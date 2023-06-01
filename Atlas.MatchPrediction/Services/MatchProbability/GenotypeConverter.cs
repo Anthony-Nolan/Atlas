@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
+﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.ExternalInterface.Models;
-using TypedGenotype = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<Atlas.MatchPrediction.ExternalInterface.Models.HlaAtKnownTypingCategory>;
+using Atlas.MatchPrediction.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using StringGenotype = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
+using TypedGenotype = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<Atlas.MatchPrediction.ExternalInterface.Models.HlaAtKnownTypingCategory>;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
