@@ -9,6 +9,7 @@ using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.ExternalInterface.Settings;
+using Atlas.DonorImport.Logger;
 using Dasync.Collections;
 using MoreLinq;
 
@@ -30,6 +31,7 @@ namespace Atlas.DonorImport.Services
         private readonly INotificationSender notificationSender;
         private readonly IDonorImportLogService donorLogService;
         private readonly IDonorUpdateCategoriser donorUpdateCategoriser;
+        private readonly DonorImportLoggingContext loggingContext;
         private readonly ILogger logger;
         private readonly NotificationConfigurationSettings notificationConfigSettings;
 
@@ -40,7 +42,8 @@ namespace Atlas.DonorImport.Services
             INotificationSender notificationSender,
             IDonorImportLogService donorLogService,
             IDonorUpdateCategoriser donorUpdateCategoriser,
-            ILogger logger,
+            DonorImportLoggingContext loggingContext,
+            IDonorImportLogger<DonorImportLoggingContext> logger,
             NotificationConfigurationSettings notificationConfigSettings)
         {
             this.fileParser = fileParser;
@@ -49,12 +52,15 @@ namespace Atlas.DonorImport.Services
             this.notificationSender = notificationSender;
             this.donorLogService = donorLogService;
             this.donorUpdateCategoriser = donorUpdateCategoriser;
+            this.loggingContext = loggingContext;
             this.logger = logger;
             this.notificationConfigSettings = notificationConfigSettings;
         }
 
         public async Task ImportDonorFile(DonorImportFile file)
         {
+            loggingContext.Filename = file.FileLocation;
+
             logger.SendTrace($"Beginning Donor Import for file '{file.FileLocation}'.");
             var importRecord = await donorImportFileHistoryService.RegisterStartOfDonorImport(file);
 
