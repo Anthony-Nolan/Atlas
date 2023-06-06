@@ -9,6 +9,7 @@ using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
+using Atlas.DonorImport.Logger;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Services.DonorChecker;
@@ -33,10 +34,11 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             // Perform static Dapper set up that should be performed once before any SQL requests are made.
             Initialise.InitaliseDapper();
 
+            RegisterDonorImportLogger(services);
+
             services.RegisterSettings(
                 fetchNotificationConfigurationSettings, fetchStalledFileSettings, fetchPublishDonorUpdatesSettings, fetchAzureStorageSettings, fetchMessagingServiceBusSettings);
             services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
-            services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices(fetchMessagingServiceBusSettings, fetchAzureStorageSettings);
             services.RegisterImportDatabaseTypes(fetchSqlConnectionString);
         }
@@ -150,6 +152,13 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IDonorImportHistoryRepository>(sp => new DonorImportHistoryRepository(fetchDonorImportDatabaseConnectionString(sp)));
             services.AddScoped<IDonorImportLogRepository>(sp => new DonorImportLogRepository(fetchDonorImportDatabaseConnectionString(sp)));
             services.AddScoped<IPublishableDonorUpdatesRepository>(sp => new PublishableDonorUpdatesRepository(fetchDonorImportDatabaseConnectionString(sp)));
+        }
+
+        private static void RegisterDonorImportLogger(IServiceCollection services)
+        {
+            services.AddApplicationInsightsTelemetryWorkerService();
+            services.AddScoped<DonorImportLoggingContext>();
+            services.AddScoped(typeof(IDonorImportLogger<>), typeof(DonorImportLogger<>));
         }
     }
 }
