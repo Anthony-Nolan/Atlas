@@ -12,6 +12,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Settings;
 using EnumStringValues;
+using Microsoft.Data.SqlClient;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 {
@@ -114,6 +115,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 await ScaleDownDatabaseToDormantLevel(previouslyActiveDatabase);
                 await dataRefreshCompletionNotifier.NotifyOfSuccess(dataRefreshRecordId);
                 logger.SendTrace("Data Refresh Succeeded.");
+            }
+            catch (SqlException)
+            {
+                throw;
             }
             catch (Exception e)
             {
