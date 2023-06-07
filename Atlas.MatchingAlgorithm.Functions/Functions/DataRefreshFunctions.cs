@@ -77,6 +77,17 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             await dataRefreshOrchestrator.OrchestrateDataRefresh(request.DataRefreshRecordId);
         }
 
+        [FunctionName(nameof(DataRefreshDeadLetterQueueListener))]
+        public async Task DataRefreshDeadLetterQueueListener(
+            [ServiceBusTrigger(
+                "%DataRefresh:RequestsTopic%/Subscriptions/%DataRefresh:RequestsTopicSubscription%/$DeadLetterQueue",
+                "%DataRefresh:RequestsTopicSubscription%",
+                Connection = "MessagingServiceBus:ConnectionString")]
+            ValidatedDataRefreshRequest request)
+        {
+            await dataRefreshCleanupService.RunDataRefreshCleanup();
+        }
+
         /// <summary>
         /// Manually triggers cleanup after the data refresh.
         /// This clean up covers scaling down the database that was scaled up for the refresh, and re-enabling donor update functions.
