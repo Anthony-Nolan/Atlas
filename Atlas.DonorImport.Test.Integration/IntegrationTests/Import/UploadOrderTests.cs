@@ -7,6 +7,7 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.FileSchema.Models;
+using Atlas.DonorImport.Logger;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
@@ -23,7 +24,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
     public class UploadOrderTests
     {
         private INotificationSender mockNotificationSender;
-        private ILogger mockLogger;
+        private IDonorImportLogger<DonorImportLoggingContext> mockLogger;
         
         private Builder<DonorUpdate> createUpdateBuilder;
         private Builder<DonorUpdate> editUpdateBuilder;
@@ -45,7 +46,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
                 mockNotificationSender = Substitute.For<INotificationSender>();
-                mockLogger = Substitute.For<ILogger>();
+                mockLogger = Substitute.For<IDonorImportLogger<DonorImportLoggingContext>>();
                 var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
                 services.AddScoped(sp => mockNotificationSender);
                 services.AddScoped(sp => mockLogger);
