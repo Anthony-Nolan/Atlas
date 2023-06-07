@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Atlas.MatchPrediction.Models.FileSchema
 {
@@ -24,6 +26,30 @@ namespace Atlas.MatchPrediction.Models.FileSchema
         /// <summary>
         /// Haplotype frequency sets are support at multiple resolutions - the resolutions within a given set must be consistent.
         /// </summary>
+        [JsonConverter(typeof(ImportTypingCategoryStringEnumConverter))]
         public ImportTypingCategory? TypingCategory { get; set; }
+    }
+
+    public class ImportTypingCategoryStringEnumConverter : StringEnumConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(ImportTypingCategory) || objectType == typeof(ImportTypingCategory?);
+        }
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (reader.TokenType != JsonToken.String)
+            {
+                return null;
+            }
+
+            var enumString = (reader.Value?.ToString() ?? string.Empty).Trim().ToLower();
+            return enumString switch
+            {
+                "small_g" => ImportTypingCategory.SmallGGroup,
+                "large_g" => ImportTypingCategory.LargeGGroup,
+                _ => base.ReadJson(reader, objectType, existingValue, serializer)
+            };
+        }
     }
 }
