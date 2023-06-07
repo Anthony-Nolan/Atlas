@@ -77,8 +77,8 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             await dataRefreshOrchestrator.OrchestrateDataRefresh(request.DataRefreshRecordId);
         }
 
-        [FunctionName(nameof(DataRefreshDeadLetterQueueListener))]
-        public async Task DataRefreshDeadLetterQueueListener(
+        [FunctionName(nameof(RunDataRefreshCleanupAfterJobRequestDeadLetters))]
+        public async Task RunDataRefreshCleanupAfterJobRequestDeadLetters(
             [ServiceBusTrigger(
                 "%DataRefresh:RequestsTopic%/Subscriptions/%DataRefresh:RequestsTopicSubscription%/$DeadLetterQueue",
                 "%DataRefresh:RequestsTopicSubscription%",

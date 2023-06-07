@@ -116,9 +116,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 await dataRefreshCompletionNotifier.NotifyOfSuccess(dataRefreshRecordId);
                 logger.SendTrace("Data Refresh Succeeded.");
             }
-            catch (SqlException)
+            catch (SqlException e)
             {
-                throw;
+                logger.SendTrace($"Data Refresh Error: ${e}", LogLevel.Error);
+                throw; // we are re-throwing the exception to allow automatic retry of the job
             }
             catch (Exception e)
             {
