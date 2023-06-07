@@ -18,6 +18,7 @@ using NSubstitute;
 using NUnit.Framework;
 using Donor = Atlas.DonorImport.Data.Models.Donor;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.DonorImport.Logger;
 
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.DifferentialUpdates
 {
@@ -25,7 +26,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
     public class DifferentialDonorEditTests
     {
         private INotificationSender mockNotificationSender;
-        private ILogger mockLogger;
+        private IDonorImportLogger<DonorImportLoggingContext> mockLogger;
         private const string DonorCodePrefix = "external-donor-code-";
         private IDonorInspectionRepository donorRepository;
         private IPublishableDonorUpdatesInspectionRepository updatesInspectionRepository;
@@ -53,7 +54,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
                 mockNotificationSender = Substitute.For<INotificationSender>();
-                mockLogger = Substitute.For<ILogger>();
+                mockLogger = Substitute.For<IDonorImportLogger<DonorImportLoggingContext>>();
                 var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
                 services.AddScoped(sp => mockNotificationSender);
                 services.AddScoped(sp => mockLogger);

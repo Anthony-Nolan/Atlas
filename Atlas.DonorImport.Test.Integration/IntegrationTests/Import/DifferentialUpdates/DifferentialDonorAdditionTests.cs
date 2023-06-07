@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Atlas.DonorImport.Logger;
 
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.DifferentialUpdates
 {
@@ -24,7 +25,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
     public class DifferentialDonorAdditionTests
     {
         private INotificationSender mockNotificationsSender;
-        private ILogger mockLogger;
+        private IDonorImportLogger<DonorImportLoggingContext> mockLogger;
 
         private IDonorInspectionRepository donorRepository;
         private IPublishableDonorUpdatesInspectionRepository updatesInspectionRepository;
@@ -42,7 +43,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.Differentia
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
                 mockNotificationsSender = Substitute.For<INotificationSender>();
-                mockLogger = Substitute.For<ILogger>();
+                mockLogger = Substitute.For<IDonorImportLogger<DonorImportLoggingContext>>();
                 var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
                 services.AddScoped(sp => mockNotificationsSender);
                 services.AddScoped(sp => mockLogger);
