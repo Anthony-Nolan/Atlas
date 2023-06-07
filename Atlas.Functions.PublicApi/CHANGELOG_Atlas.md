@@ -51,6 +51,9 @@ The project version will be appropriately incremented with each change to the pr
 #### Manual Testing
 - Locally-running functions added to `Atlas.ManualTesting.Functions.WmdaConsensusDatasetFunctions` to allow running of exercises 1 and 2 of the WMDA consensus dataset.
 
+#### Donor Import
+- Tagged donor import logs with the donor import file name.
+
 ### 1.5.0
 
 #### API Documentation
