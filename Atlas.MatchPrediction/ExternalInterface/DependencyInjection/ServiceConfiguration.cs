@@ -58,11 +58,18 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, string> fetchMatchPredictionDatabaseConnectionString)
         {
-            services.RegisterHaplotypeFrequenciesReaderServices();
+            services.AddScoped<IHaplotypeFrequencySetReader, HaplotypeFrequencySetReader>();
+            services.AddScoped<IFrequencySetValidator, FrequencySetValidator>();
+            services.RegisterFrequencyFileReader();
 
             services.AddScoped<IHaplotypeFrequencySetReadRepository>(sp =>
                 new HaplotypeFrequencySetReadRepository(fetchMatchPredictionDatabaseConnectionString(sp))
             );
+        }
+
+        public static void RegisterFrequencyFileReader(this IServiceCollection services)
+        {
+            services.AddScoped<IFrequencyFileParser, FrequencyFileParser>();
         }
 
         public static void RegisterMatchPredictionRequester(
@@ -121,13 +128,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.AddTransient<IHaplotypeFrequenciesRepository, HaplotypeFrequenciesRepository>(sp =>
                 new HaplotypeFrequenciesRepository(fetchSqlConnectionString(sp))
             );
-        }
-
-        private static void RegisterHaplotypeFrequenciesReaderServices(this IServiceCollection services)
-        {
-            services.AddScoped<IHaplotypeFrequencySetReader, HaplotypeFrequencySetReader>();
-            services.AddScoped<IFrequencyFileParser, FrequencyFileParser>();
-            services.AddScoped<IFrequencySetValidator, FrequencySetValidator>();
         }
 
         private static void RegisterClientServices(this IServiceCollection services)
