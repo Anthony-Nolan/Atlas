@@ -269,7 +269,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         {
             var errorName = $"{SupportSummaryPrefix} Failure";
 
-            logger.SendEvent(new ErrorEventModel(errorName, ex));
+            logger.SendEvent(new UploadErrorEventModel(file.FileName, errorName, ex));
 
             await notificationSender.SendAlert(
                 errorName,
