@@ -51,6 +51,7 @@ The project version will be appropriately incremented with each change to the pr
 
 #### Manual Testing
 - Locally-running functions added to `Atlas.ManualTesting.Functions.WmdaConsensusDatasetFunctions` to allow running of exercises 1 and 2 of the WMDA consensus dataset.
+- Locally-running function added to `Atlas.ManualTesting.Functions.HaplotypeFrequencySetFunctions` to transform haplotype frequency dataset files that failed import due to the presence of an invalid typing.
 
 ### 1.5.0
 
