@@ -35,6 +35,8 @@ Atlas components have an in-memory cache of the HMD which lasts ~24 hours. Resta
 
 ATLAS only supports haplotype frequency data encoded as G-Groups ("large", e.g., `01:01:01G` or "small", e.g., `01:01g`). The import will fail if the file contains an allele name that is actually part of a wider G group. E.g., if a "large" G group HFS file contains the allele `A*01:01:01:01`, the file will be rejected because the allele is part of `A*01:01:01G`. Another example for "small" G group is the allele `A*43:02N` which should be submitted as the g group named, `43:01`.
 
+In this case, the local function, `TransformHaplotypeFrequencySet`, can be used to correct the HFS. [See this README for further details](/README_ManualTesting.md/#transform-a-haplotype-frequency-set-file-to-findreplace-an-invalid-typing).
+
 
 ### Rolling back an upload
 
