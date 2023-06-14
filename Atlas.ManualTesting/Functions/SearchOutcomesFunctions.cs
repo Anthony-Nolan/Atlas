@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs;
 using System.Threading.Tasks;
+using AzureFunctions.Extensions.Swashbuckle.Attribute;
+using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace Atlas.ManualTesting.Functions
 {
@@ -19,10 +23,12 @@ namespace Atlas.ManualTesting.Functions
         [FunctionName(nameof(GetSearchOutcomes))]
         public async Task<IActionResult> GetSearchOutcomes(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
-            SearchOutcomesPeekRequest request
+            [RequestBodyType(typeof(SearchOutcomesPeekRequest), nameof(SearchOutcomesPeekRequest))]
+            HttpRequest request
         )
         {
-            var resultedFileNames = await searchOutcomesProcessor.ProcessSearchMessages(request);
+            var peekRequest = JsonConvert.DeserializeObject<SearchOutcomesPeekRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+            var resultedFileNames = await searchOutcomesProcessor.ProcessSearchMessages(peekRequest);
             return new JsonResult(new { resultedFileNames.PerformanceInfoFileName, resultedFileNames.FailedSearchesFileName, resultedFileNames.ProcessingErrorsFileName });
         }
     }
