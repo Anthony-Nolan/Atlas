@@ -128,7 +128,7 @@ namespace Atlas.ManualTesting.DependencyInjection
                 return new BlobDownloader(storageSettings.ConnectionString, logger);
             });
 
-            services.AddScoped<IWmdaParallelRunResultsHandler, WmdaParallelRunResultsHandler>();
+            services.AddScoped<ISearchOutcomesProcessor, SearchOutcomesProcessor>();
         }
 
         private static void RegisterDatabaseServices(

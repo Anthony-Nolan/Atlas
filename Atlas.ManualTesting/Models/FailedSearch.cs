@@ -1,6 +1,6 @@
 ﻿namespace Atlas.ManualTesting.Models
 {
-    public class WmdaParallelRunFailedSearch
+    public class FailedSearch
     {
         public string SearchRequestId { get; set; }
         public string FailureInfo { get; set; }

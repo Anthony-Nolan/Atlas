@@ -18,7 +18,7 @@ namespace Atlas.ManualTesting.Models
         public IEnumerable<int> AtlasDonorIds { get; set; }
     }
 
-    public class WmdaParallelSearchInfoPeekRequest : PeekRequest
+    public class SearchOutcomesPeekRequest : PeekRequest
     {
         public string Directory { get; set; }
     }
