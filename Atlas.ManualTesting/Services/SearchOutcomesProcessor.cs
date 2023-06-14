@@ -24,7 +24,10 @@ namespace Atlas.ManualTesting.Services
         private readonly ISearchResultNotificationsPeeker notificationsPeeker;
         private readonly IBlobDownloader blobDownloader;
 
-        public SearchOutcomesProcessor(ISearchResultNotificationsPeeker notificationsPeeker, IOptions<AzureStorageSettings> azureStorageSettings, IBlobDownloader blobDownloader)
+        public SearchOutcomesProcessor(
+            ISearchResultNotificationsPeeker notificationsPeeker,
+            IOptions<AzureStorageSettings> azureStorageSettings,
+            IBlobDownloader blobDownloader)
         {
             this.azureStorageSettings = azureStorageSettings.Value;
             this.notificationsPeeker = notificationsPeeker;
@@ -50,7 +53,7 @@ namespace Atlas.ManualTesting.Services
 
                 if (!notification.WasSuccessful)
                 {
-                    failedSearchResults.Add(new () 
+                    failedSearchResults.Add(new()
                     {
                         SearchRequestId = notification.SearchRequestId,
                         FailureInfo = JsonConvert.SerializeObject(notification.FailureInfo)
@@ -80,7 +83,7 @@ namespace Atlas.ManualTesting.Services
                 performanceInfoResults.Add(resultItem);
             }
 
-            return await SaveResults( request, performanceInfoResults, failedSearchResults, processingErrors);
+            return await SaveResults(request, performanceInfoResults, failedSearchResults, processingErrors);
         }
 
         private async Task SetMatchingPerformanceInfo(SearchPerformanceInfo searchPerformanceInfo, string logFilename)
@@ -99,61 +102,64 @@ namespace Atlas.ManualTesting.Services
             searchPerformanceInfo.MatchPredictionCompletionTime = searchResultsLog.RequestPerformanceMetrics.CompletionTime;
         }
 
-        private async Task<(string PerformanceInfoFileName, string FailedSearchesFileName, string ProcessingErrorsFileName)> SaveResults(SearchOutcomesPeekRequest request,
-            List<SearchPerformanceInfo> performanceInfoResults, List<FailedSearch> failedSearchResults, List<SearchOutcomesProcessingError> processingErrors)
+        private static async Task<(string PerformanceInfoFileName, string FailedSearchesFileName, string ProcessingErrorsFileName)> SaveResults(
+            SearchOutcomesPeekRequest request,
+            List<SearchPerformanceInfo> performanceInfoResults, 
+            List<FailedSearch> failedSearchResults, 
+            List<SearchOutcomesProcessingError> processingErrors)
         {
-            var targetDirectory = request.Directory ?? Directory.GetCurrentDirectory();
+            var targetDirectory = request.OutputDirectory ?? Directory.GetCurrentDirectory();
             return (await WritePerformanceInfo(request, performanceInfoResults, targetDirectory)
                 , await WriteFailureInfo(request, failedSearchResults, targetDirectory)
                 , await WriteProcessingErrors(request, processingErrors, targetDirectory));
         }
 
-        private async Task<string> WritePerformanceInfo(SearchOutcomesPeekRequest request, List<SearchPerformanceInfo> performanceInfoResults, string targetDirectory)
+        private static async Task<string> WritePerformanceInfo(SearchOutcomesPeekRequest request, List<SearchPerformanceInfo> performanceInfoResults, string targetDirectory)
         {
             if (!performanceInfoResults.Any())
                 return null;
 
-            var performanceInfoFileName = Path.Combine(targetDirectory, $"search-info_{request.FromSequenceNumber}-{request.MessageCount}_performance-info.csv");
+            var performanceInfoFileName = Path.Combine(targetDirectory, $"search-info_{request.FromSequenceNumber}-{request.MessageCount}_performance-info.txt");
 
             if (!Directory.Exists(targetDirectory))
                 Directory.CreateDirectory(targetDirectory);
 
-            var performanceInfoCsv = new StringBuilder(
-                "request ID,was successful,matching queue duration,matching request duration,match prediction queue duration,match predition request duration,matching initiation time,match prediction completion time,donor count\n");
-            performanceInfoResults.ForEach(r => performanceInfoCsv.AppendLine(
-                $"{r.SearchRequestId},{r.WasSuccessful},{r.MatchingQueueDuration},{r.MatchingRequestDuration},{r.MatchPredictionQueueDuration},{r.MatchPredictionRequestDuration},{r.MatchingInitiationTime},{r.MatchPredictionCompletionTime},{r.DonorCount}"));
-            await File.WriteAllTextAsync(performanceInfoFileName, performanceInfoCsv.ToString());
+            var performanceInfoFile = new StringBuilder(
+                "request ID;was successful;matching queue duration;matching request duration;match prediction queue duration;match prediction request duration;matching initiation time;match prediction completion time;donor count\n");
+            performanceInfoResults.ForEach(r => performanceInfoFile.AppendLine(
+                $"{r.SearchRequestId};{r.WasSuccessful};{r.MatchingQueueDuration};{r.MatchingRequestDuration};{r.MatchPredictionQueueDuration};{r.MatchPredictionRequestDuration};{r.MatchingInitiationTime};{r.MatchPredictionCompletionTime};{r.DonorCount}"));
+            await File.WriteAllTextAsync(performanceInfoFileName, performanceInfoFile.ToString());
 
             return performanceInfoFileName;
         }
 
-        private async Task<string> WriteFailureInfo(SearchOutcomesPeekRequest request, List<FailedSearch> failedSearchResults, string targetDirectory)
+        private static async Task<string> WriteFailureInfo(SearchOutcomesPeekRequest request, List<FailedSearch> failedSearchResults, string targetDirectory)
         {
             if (!failedSearchResults.Any())
                 return null;
 
-            var failedSearchesFileName = Path.Combine(targetDirectory, $"search-info_{request.FromSequenceNumber}-{request.MessageCount}_failed-searches.csv");
-            var failedSearchesCsv = new StringBuilder("request ID,failure info\n");
-            failedSearchResults.ForEach(r => failedSearchesCsv.AppendLine($"{r.SearchRequestId},{r.FailureInfo}"));
-            await File.WriteAllTextAsync(failedSearchesFileName, failedSearchesCsv.ToString());
+            var failedSearchesFileName = Path.Combine(targetDirectory, $"search-info_{request.FromSequenceNumber}-{request.MessageCount}_failed-searches.txt");
+            var failedSearchesFile = new StringBuilder("request ID;failure info\n");
+            failedSearchResults.ForEach(r => failedSearchesFile.AppendLine($"{r.SearchRequestId};{r.FailureInfo}"));
+            await File.WriteAllTextAsync(failedSearchesFileName, failedSearchesFile.ToString());
 
             return failedSearchesFileName;
         }
 
-        private async Task<string> WriteProcessingErrors(SearchOutcomesPeekRequest request, List<SearchOutcomesProcessingError> processingErrors, string targetDirectory)
+        private static async Task<string> WriteProcessingErrors(SearchOutcomesPeekRequest request, List<SearchOutcomesProcessingError> processingErrors, string targetDirectory)
         {
             if (!processingErrors.Any())
                 return null;
 
-            var failedSearchesFileName = Path.Combine(targetDirectory, $"search-info_{request.FromSequenceNumber}-{request.MessageCount}_file-errors.csv");
-            var failedSearchesCsv = new StringBuilder("blob container,log file name, exception message\n");
-            processingErrors.ForEach(r => failedSearchesCsv.AppendLine($"{r.BlobContainer},{r.LogFileName},{r.ExceptionMessage}"));
-            await File.WriteAllTextAsync(failedSearchesFileName, failedSearchesCsv.ToString());
+            var failedSearchesFileName = Path.Combine(targetDirectory, $"search-info_{request.FromSequenceNumber}-{request.MessageCount}_file-errors.txt");
+            var failedSearchesFile = new StringBuilder("blob container;log file name;exception message\n");
+            processingErrors.ForEach(r => failedSearchesFile.AppendLine($"{r.BlobContainer};{r.LogFileName};{r.ExceptionMessage}"));
+            await File.WriteAllTextAsync(failedSearchesFileName, failedSearchesFile.ToString());
 
             return failedSearchesFileName;
         }
 
-        private SearchOutcomesProcessingError BuildProcessingError(string blobContainer, string logFileName, string exceptionMessage)
+        private static SearchOutcomesProcessingError BuildProcessingError(string blobContainer, string logFileName, string exceptionMessage)
             => new()
             {
                 BlobContainer = blobContainer,

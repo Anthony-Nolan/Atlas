@@ -20,6 +20,9 @@ namespace Atlas.ManualTesting.Models
 
     public class SearchOutcomesPeekRequest : PeekRequest
     {
-        public string Directory { get; set; }
+        /// <summary>
+        /// Directory where files should be written to
+        /// </summary>
+        public string OutputDirectory { get; set; }
     }
 }
