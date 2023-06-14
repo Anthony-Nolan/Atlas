@@ -15,7 +15,11 @@
     "Scoring:ScoreBatchRequestUrl": "override-this",
 
     "Search:ResultsTopic": "search-results-ready",
-    "Search:ResultsSubscription": "audit"
+    "Search:ResultsSubscription": "audit",
+
+    "AzureStorage:ConnectionString": "override-this",
+    "AzureStorage:SearchResultsBlobContainer": "atlas-search-results",
+    "AzureStorage:MatchingAlgorithmResultsBlobContainer": "matching-algorithm-results"
   },
   "ConnectionStrings": {
     "ActiveMatchingSql": "Data Source=(local);Initial Catalog=AtlasMatchingA;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",

@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Atlas.Client.Models\Atlas.Client.Models.csproj" />
+    <ProjectReference Include="..\Atlas.Common.Test\Atlas.Common.Test.csproj" />
     <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
     <ProjectReference Include="..\Atlas.DonorImport\Atlas.DonorImport.csproj" />
     <ProjectReference Include="..\Atlas.ManualTesting.Common\Atlas.ManualTesting.Common.csproj" />
