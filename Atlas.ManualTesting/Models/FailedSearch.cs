@@ -4,5 +4,6 @@
     {
         public string SearchRequestId { get; set; }
         public string FailureInfo { get; set; }
+        public bool WillRetry { get; set; }
     }
 }
