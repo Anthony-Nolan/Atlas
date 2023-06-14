@@ -56,7 +56,8 @@ namespace Atlas.ManualTesting.Services
                     failedSearchResults.Add(new()
                     {
                         SearchRequestId = notification.SearchRequestId,
-                        FailureInfo = JsonConvert.SerializeObject(notification.FailureInfo)
+                        FailureInfo = JsonConvert.SerializeObject(notification.FailureInfo),
+                        WillRetry = notification.FailureInfo.WillRetry
                     });
                 }
 
@@ -104,8 +105,8 @@ namespace Atlas.ManualTesting.Services
 
         private static async Task<(string PerformanceInfoFileName, string FailedSearchesFileName, string ProcessingErrorsFileName)> SaveResults(
             SearchOutcomesPeekRequest request,
-            List<SearchPerformanceInfo> performanceInfoResults, 
-            List<FailedSearch> failedSearchResults, 
+            List<SearchPerformanceInfo> performanceInfoResults,
+            List<FailedSearch> failedSearchResults,
             List<SearchOutcomesProcessingError> processingErrors)
         {
             var targetDirectory = request.OutputDirectory ?? Directory.GetCurrentDirectory();
@@ -133,20 +134,26 @@ namespace Atlas.ManualTesting.Services
             return performanceInfoFileName;
         }
 
-        private static async Task<string> WriteFailureInfo(SearchOutcomesPeekRequest request, List<FailedSearch> failedSearchResults, string targetDirectory)
+        private static async Task<string> WriteFailureInfo(
+            SearchOutcomesPeekRequest request,
+            List<FailedSearch> failedSearchResults,
+            string targetDirectory)
         {
             if (!failedSearchResults.Any())
                 return null;
 
             var failedSearchesFileName = Path.Combine(targetDirectory, $"search-info_{request.FromSequenceNumber}-{request.MessageCount}_failed-searches.txt");
-            var failedSearchesFile = new StringBuilder("request ID;failure info\n");
-            failedSearchResults.ForEach(r => failedSearchesFile.AppendLine($"{r.SearchRequestId};{r.FailureInfo}"));
+            var failedSearchesFile = new StringBuilder("request ID;failure info;will retry\n");
+            failedSearchResults.ForEach(r => failedSearchesFile.AppendLine($"{r.SearchRequestId};{r.FailureInfo};{r.WillRetry}"));
             await File.WriteAllTextAsync(failedSearchesFileName, failedSearchesFile.ToString());
 
             return failedSearchesFileName;
         }
 
-        private static async Task<string> WriteProcessingErrors(SearchOutcomesPeekRequest request, List<SearchOutcomesProcessingError> processingErrors, string targetDirectory)
+        private static async Task<string> WriteProcessingErrors(
+            SearchOutcomesPeekRequest request, 
+            List<SearchOutcomesProcessingError> processingErrors, 
+            string targetDirectory)
         {
             if (!processingErrors.Any())
                 return null;
