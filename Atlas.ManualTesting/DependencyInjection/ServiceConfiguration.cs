@@ -1,7 +1,10 @@
 ﻿using System;
 using Atlas.Client.Models.Search.Results;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Caching;
 using Atlas.Common.ServiceBus.BatchReceiving;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
@@ -28,7 +31,8 @@ namespace Atlas.ManualTesting.DependencyInjection
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<MatchingSettings>(),
                 OptionsReaderFor<SearchSettings>(),
-                OptionsReaderFor<DonorManagementSettings>()
+                OptionsReaderFor<DonorManagementSettings>(),
+                OptionsReaderFor<AzureStorageSettings>()
             );
             services.RegisterDatabaseServices(ConnectionStringReader("ActiveMatchingSql"), ConnectionStringReader("DonorImportSql"));
             services.RegisterLifeTimeScopedCacheTypes();
@@ -42,6 +46,7 @@ namespace Atlas.ManualTesting.DependencyInjection
             services.RegisterAsOptions<DonorManagementSettings>("Matching:DonorManagement");
             services.RegisterAsOptions<ScoringSettings>("Scoring");
             services.RegisterAsOptions<SearchSettings>("Search");
+            services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
         }
 
         private static void RegisterServices(
@@ -49,7 +54,8 @@ namespace Atlas.ManualTesting.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, MatchingSettings> fetchMatchingSettings,
             Func<IServiceProvider, SearchSettings> fetchSearchSettings,
-            Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings
+            Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings
         )
         {
             services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
@@ -112,6 +118,17 @@ namespace Atlas.ManualTesting.DependencyInjection
                 var hlaConverter = sp.GetService<IConvertHlaRequester>();
                 return new WmdaDiscrepantResultsReporter(resultsComparer, cacheProvider, hlaConverter, TargetHlaCategory.Serology);
             });
+
+            services.AddSingleton<ILogger, FileBasedLogger>();
+
+            services.AddSingleton<IBlobDownloader>(sp =>
+            {
+                var storageSettings = fetchAzureStorageSettings(sp);
+                var logger = sp.GetService<ILogger>();
+                return new BlobDownloader(storageSettings.ConnectionString, logger);
+            });
+
+            services.AddScoped<IWmdaParallelRunResultsHandler, WmdaParallelRunResultsHandler>();
         }
 
         private static void RegisterDatabaseServices(
