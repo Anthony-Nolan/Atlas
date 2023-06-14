@@ -2,7 +2,7 @@
 
 namespace Atlas.ManualTesting.Models
 {
-    public class WmdaParallelRunPerformanceInfo
+    public class SearchPerformanceInfo
     {
         public string SearchRequestId { get; set; }
         public bool WasSuccessful { get; set; }
