@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Atlas.MatchPrediction.Models.FileSchema;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Models
 {
@@ -30,6 +31,7 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Models
 
         /// <see cref="FrequencySetFileSchema.TypingCategory"/>
         [JsonProperty(Order = 5)]
+        [JsonConverter(typeof(StringEnumConverter))]
         public ImportTypingCategory? TypingCategory { get; set; } = ImportTypingCategory.LargeGGroup;
 
         /// <see cref="FrequencySetFileSchema.Frequencies"/>
