@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Data.Context;
@@ -24,7 +22,7 @@ namespace Atlas.MatchPrediction.Data.Models
         public decimal Frequency { get; set; }
 
         [NotMapped]
-        public LociInfo<string> Hla { get; set; } = new LociInfo<string>();
+        public LociInfo<string> Hla { get; set; } = new();
 
         [Required]
         [MaxLength(64)]
@@ -110,21 +108,6 @@ namespace Atlas.MatchPrediction.Data.Models
                     f.Frequency,
                     f.TypingCategory
                 });
-        }
-    }
-
-    internal static class HaplotypeFrequencyExtensions
-    {
-        public static LociInfo<string> Haplotype(this HaplotypeFrequency haplotypeFrequency)
-        {
-            return new LociInfo<string>
-            (
-                valueA: haplotypeFrequency.A,
-                valueB: haplotypeFrequency.B,
-                valueC: haplotypeFrequency.C,
-                valueDqb1: haplotypeFrequency.DQB1,
-                valueDrb1: haplotypeFrequency.DRB1
-            );
         }
     }
 }

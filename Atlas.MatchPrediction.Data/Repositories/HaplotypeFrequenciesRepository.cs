@@ -112,7 +112,7 @@ WHERE {HaplotypeFrequency.SetIdColumnName} = @setId";
                 {
                     var frequencyModels = await conn.QueryAsync<HaplotypeFrequency>(sql, new {setId}, commandTimeout: 600);
                     return frequencyModels.ToDictionary(
-                        f => f.Haplotype(),
+                        f => f.Hla,
                         f => f
                     );
                 }
