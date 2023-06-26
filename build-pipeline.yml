@@ -35,6 +35,7 @@ jobs:
             Atlas.Common.Public.Models
             Atlas.Functions
             Atlas.Functions.PublicApi
+            Atlas.Functions.Test
             Atlas.DonorImport.Data
             Atlas.DonorImport.FileSchema.Models
             Atlas.DonorImport.Functions
