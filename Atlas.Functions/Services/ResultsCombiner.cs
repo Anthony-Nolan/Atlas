@@ -11,6 +11,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.Functions.Services.MatchCategories;
 using Atlas.Functions.Settings;
 using Microsoft.Extensions.Options;
 
@@ -31,6 +32,7 @@ namespace Atlas.Functions.Services
     {
         private readonly ILogger logger;
         private readonly IBlobDownloader blobDownloader;
+        private readonly IPositionalMatchCategoryService matchCategoryService;
         private readonly string resultsContainer;
         private readonly string matchPredictionResultsContainer;
         private readonly int matchPredictionDownloadBatchSize;
@@ -38,10 +40,12 @@ namespace Atlas.Functions.Services
         public ResultsCombiner(
             IOptions<AzureStorageSettings> azureStorageSettings,
             ISearchLogger<SearchLoggingContext> logger,
-            IBlobDownloader blobDownloader)
+            IBlobDownloader blobDownloader,
+            IPositionalMatchCategoryService matchCategoryService)
         {
             this.logger = logger;
             this.blobDownloader = blobDownloader;
+            this.matchCategoryService = matchCategoryService;
             resultsContainer = azureStorageSettings.Value.SearchResultsBlobContainer;
             matchPredictionResultsContainer = azureStorageSettings.Value.MatchPredictionResultsBlobContainer;
             matchPredictionDownloadBatchSize = azureStorageSettings.Value.MatchPredictionDownloadBatchSize;
@@ -86,7 +90,7 @@ namespace Atlas.Functions.Services
                 {
                     DonorCode = donorInformation[r.AtlasDonorId].ExternalDonorCode,
                     MatchingResult = r,
-                    MatchPredictionResult = matchPredictionResults[r.AtlasDonorId]
+                    MatchPredictionResult = matchCategoryService.ReOrientatePositionalMatchCategories(matchPredictionResults[r.AtlasDonorId], r.ScoringResult)
                 });
             }
         }

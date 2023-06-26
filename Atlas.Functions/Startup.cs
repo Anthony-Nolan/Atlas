@@ -6,6 +6,7 @@ using Atlas.Functions;
 using Atlas.Functions.Config;
 using Atlas.Functions.Services;
 using Atlas.Functions.Services.BlobStorageClients;
+using Atlas.Functions.Services.MatchCategories;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
@@ -92,7 +93,8 @@ namespace Atlas.Functions
                 var options = sp.GetService<IOptions<Settings.AzureStorageSettings>>();
                 var connectionString = options.Value.MatchPredictionConnectionString;
                 var downloader = new BlobDownloader(connectionString, logger);
-                return new ResultsCombiner(options, logger, downloader);
+                var matchCategoryService = new PositionalMatchCategoryService(new PositionalMatchCategoryOrientator());
+                return new ResultsCombiner(options, logger, downloader, matchCategoryService);
             });
             services.AddScoped<ISearchCompletionMessageSender, SearchCompletionMessageSender>();
             services.AddScoped<ISearchResultsBlobStorageClient, SearchResultsBlobStorageClient>(sp =>
