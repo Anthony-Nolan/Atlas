@@ -8,15 +8,7 @@ namespace Atlas.Client.Models.Search.Results.MatchPrediction
     {
         private MatchProbabilities matchProbabilities;
 
-        public MatchProbabilities MatchProbabilities
-        {
-            get => matchProbabilities;
-            set
-            {
-                matchProbabilities = value;
-                PositionalMatchCategories = CalculatePositionalMatchCategories(matchProbabilities);
-            }
-        }
+        public MatchProbabilities MatchProbabilities { get; set; }
 
         public PredictiveMatchCategory? MatchCategory => MatchProbabilities.MatchCategory;
 
@@ -24,40 +16,47 @@ namespace Atlas.Client.Models.Search.Results.MatchPrediction
 
         #region Constructors
 
+        /// <summary>
+        /// Needed for JSON deserialisation
+        /// </summary>
         public MatchProbabilityPerLocusResponse()
         {
         }
 
-        public MatchProbabilityPerLocusResponse(Probability sharedProbability)
+        /// <summary>
+        /// Sets <see cref="MatchProbabilities"/>, and also <see cref="PositionalMatchCategories"/> as a function of <see cref="MatchProbabilities"/>.
+        /// </summary>
+        public MatchProbabilityPerLocusResponse(MatchProbabilities matchProbabilities)
         {
-            MatchProbabilities = new MatchProbabilities(sharedProbability);
+            MatchProbabilities = matchProbabilities;
+            PositionalMatchCategories = CalculatePositionalMatchCategories();
         }
 
-        public MatchProbabilityPerLocusResponse(MatchProbabilities sharedMatchProbabilities)
+        /// <summary>
+        /// Initialises all probabilities within <see cref="MatchProbabilities"/> with the same <paramref name="probability"/> value.
+        /// <inheritdoc cref="MatchProbabilityPerLocusResponse(MatchProbabilities)"/>
+        /// </summary>
+        public MatchProbabilityPerLocusResponse(Probability probability) : this(new MatchProbabilities(probability))
         {
-            MatchProbabilities = sharedMatchProbabilities;
         }
 
         #endregion
 
         public MatchProbabilityPerLocusResponse Round(int decimalPlaces)
         {
-            return new MatchProbabilityPerLocusResponse
-            {
-                MatchProbabilities = MatchProbabilities?.Round(decimalPlaces)
-            };
+            return new MatchProbabilityPerLocusResponse(MatchProbabilities?.Round(decimalPlaces));
         }
 
         /// <returns>Predictive match categories for each position, assigned arbitrarily to pos1 and pos2.</returns>
-        private static LocusMatchCategories CalculatePositionalMatchCategories(MatchProbabilities matchProbabilities)
+        private LocusMatchCategories CalculatePositionalMatchCategories()
         {
-            return matchProbabilities.MatchCategory switch
+            return MatchProbabilities.MatchCategory switch
             {
                 PredictiveMatchCategory.Exact => new LocusMatchCategories(PredictiveMatchCategory.Exact),
                 PredictiveMatchCategory.Mismatch => new LocusMatchCategories(PredictiveMatchCategory.Mismatch,
-                    GetSecondMatchCategoryWhenFirstIsMismatch(matchProbabilities)),
+                    GetSecondMatchCategoryWhenFirstIsMismatch()),
                 PredictiveMatchCategory.Potential => new LocusMatchCategories(PredictiveMatchCategory.Potential,
-                    GetSecondMatchCategoryWhenFirstIsPotential(matchProbabilities)),
+                    GetSecondMatchCategoryWhenFirstIsPotential()),
                 null => null,
                 _ => throw new ArgumentOutOfRangeException()
             };
@@ -71,9 +70,9 @@ namespace Atlas.Client.Models.Search.Results.MatchPrediction
         /// AND 0% chance of two mismatches, then other category must be Exact.
         /// </summary>
         /// <returns></returns>
-        private static PredictiveMatchCategory? GetSecondMatchCategoryWhenFirstIsMismatch(MatchProbabilities matchProbabilities)
+        private PredictiveMatchCategory? GetSecondMatchCategoryWhenFirstIsMismatch()
         {
-            return matchProbabilities.TwoMismatchProbability.Percentage switch
+            return MatchProbabilities.TwoMismatchProbability.Percentage switch
             {
                 100 => PredictiveMatchCategory.Mismatch,
                 0 => PredictiveMatchCategory.Exact,
@@ -88,9 +87,9 @@ namespace Atlas.Client.Models.Search.Results.MatchPrediction
         /// If first category is Potential,
         /// AND there is a chance of two mismatches, then neither of them can be Exact so match category is Potential.
         /// </summary>
-        private static PredictiveMatchCategory? GetSecondMatchCategoryWhenFirstIsPotential(MatchProbabilities matchProbabilities)
+        private PredictiveMatchCategory? GetSecondMatchCategoryWhenFirstIsPotential()
         {
-            return matchProbabilities.TwoMismatchProbability.Percentage == 0 ? PredictiveMatchCategory.Exact : PredictiveMatchCategory.Potential;
+            return MatchProbabilities.TwoMismatchProbability.Percentage == 0 ? PredictiveMatchCategory.Exact : PredictiveMatchCategory.Potential;
         }
     }
 }
