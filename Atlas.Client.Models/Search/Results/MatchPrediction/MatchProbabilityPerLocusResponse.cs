@@ -1,24 +1,33 @@
 ﻿using System;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Public.Models.MatchPrediction;
+using Newtonsoft.Json;
 using LocusMatchCategories = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LocusInfo<Atlas.Client.Models.Search.Results.MatchPrediction.PredictiveMatchCategory?>;
 
 namespace Atlas.Client.Models.Search.Results.MatchPrediction
 {
     public class MatchProbabilityPerLocusResponse
     {
-        private MatchProbabilities matchProbabilities;
-
         public MatchProbabilities MatchProbabilities { get; set; }
 
         public PredictiveMatchCategory? MatchCategory => MatchProbabilities.MatchCategory;
 
+        [JsonIgnore]
         public LocusMatchCategories PositionalMatchCategories { get; set; }
+
+        /// <summary>
+        /// Used when serializing and deserializing <see cref="PositionalMatchCategories"/>
+        /// </summary>
+        [JsonProperty(nameof(PositionalMatchCategories))]
+        public LocusInfoTransfer<PredictiveMatchCategory?> PositionalMatchCategoriesTransfer
+        {
+            get => PositionalMatchCategories?.ToLocusInfoTransfer();
+            set => PositionalMatchCategories = value?.ToLocusInfo();
+        }
 
         #region Constructors
 
-        /// <summary>
-        /// Needed for JSON deserialisation
-        /// </summary>
+        [JsonConstructor]
         public MatchProbabilityPerLocusResponse()
         {
         }
