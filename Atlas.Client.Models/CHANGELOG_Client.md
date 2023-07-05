@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `Search.Results.Matching.PerLocus.LocusPositionScoreDetails` has been extended with a new field: `IsAntigenMatch`, which indicates whether the match grade for a position is an antigen match (`true`) or not (`false`).
 * Added `MatchingStartTime` property to `ResultSet` model.
 * Added models representing the search request log file that is written after a search completes.
+* `Search.Results.MatchPrediction.MatchProbabilityPerLocusResponse.PositionalMatchCategories` are now overridable, in case they need to be re-orientated.
 
 ### 1.5.0
 * `ResultSet` model has been extended with new properties, `MatchCriteriaDenominator` and `ScoringCriteriaDenominator`, which represent the match count denominator for matching results and scoring results, respectively.

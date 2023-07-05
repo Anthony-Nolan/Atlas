@@ -48,6 +48,7 @@ The project version will be appropriately incremented with each change to the pr
 
 #### Match Prediction
 * Changed the way match prediction requests are queued for processing by activity functions, to prevent search requests with many donors from blocking the completion of smaller search requests.
+* Bug fix: Locus `PositionalMatchCategories` are now re-orientated in line with scoring results.
 
 #### Manual Testing
 - Locally-running functions added to `Atlas.ManualTesting.Functions.WmdaConsensusDatasetFunctions` to allow running of exercises 1 and 2 of the WMDA consensus dataset.
