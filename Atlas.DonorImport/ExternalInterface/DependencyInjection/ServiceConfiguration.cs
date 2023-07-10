@@ -128,6 +128,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
 
             services.AddScoped<IDonorInfoChecker, DonorInfoChecker>();
             services.AddScoped<IDonorUpdateMapper, DonorUpdateMapper>();
+            services.AddScoped<IDonorImportFailureService, DonorImportFailureService>();
         }
 
         private static void RegisterDonorReaderServices(this IServiceCollection services)
@@ -152,6 +153,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IDonorImportHistoryRepository>(sp => new DonorImportHistoryRepository(fetchDonorImportDatabaseConnectionString(sp)));
             services.AddScoped<IDonorImportLogRepository>(sp => new DonorImportLogRepository(fetchDonorImportDatabaseConnectionString(sp)));
             services.AddScoped<IPublishableDonorUpdatesRepository>(sp => new PublishableDonorUpdatesRepository(fetchDonorImportDatabaseConnectionString(sp)));
+            services.AddScoped<IDonorImportFailureRepository>(sp => new DonorImportFailureRepository(fetchDonorImportDatabaseConnectionString(sp)));
         }
 
         private static void RegisterDonorImportLogger(IServiceCollection services)

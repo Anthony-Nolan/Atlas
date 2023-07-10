@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.DonorImport.ApplicationInsights;
+using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
@@ -19,6 +20,7 @@ namespace Atlas.DonorImport.Test.Services
         private IDonorUpdateCategoriser categoriser;
         private ILogger logger;
         private IDonorReadRepository donorReadRepository;
+        private IDonorImportFailureService donorImportFailureService;
 
 
         [SetUp]
@@ -26,7 +28,8 @@ namespace Atlas.DonorImport.Test.Services
         {
             logger = Substitute.For<ILogger>();
             donorReadRepository = Substitute.For<IDonorReadRepository>();
-            categoriser = new DonorUpdateCategoriser(logger, donorReadRepository);
+            donorImportFailureService = Substitute.For<IDonorImportFailureService>();
+            categoriser = new DonorUpdateCategoriser(logger, donorReadRepository, donorImportFailureService);
         }
 
         [Test]
@@ -35,7 +38,7 @@ namespace Atlas.DonorImport.Test.Services
             var validDonorUpdate = DonorUpdateBuilder.New.Build(1).ToList();
             var invalidDonorUpdate = DonorUpdateBuilder.New.WithHla(null).Build(1).ToList();
 
-            var result = await categoriser.Categorise(validDonorUpdate.Concat(invalidDonorUpdate));
+            var result = await categoriser.Categorise(validDonorUpdate.Concat(invalidDonorUpdate), string.Empty);
 
             result.ValidDonors.Select(d => d.RecordId).Should().BeEquivalentTo(validDonorUpdate.Select(d => d.RecordId));
             result.InvalidDonors.Select(d => d.RecordId).Should().BeEquivalentTo(invalidDonorUpdate.Select(d => d.RecordId));
@@ -51,7 +54,7 @@ namespace Atlas.DonorImport.Test.Services
             var hlaMissingDrb1 = HlaBuilder.Default.WithValidHlaAtAllLoci().With(x => x.DRB1, (ImportedLocus)null).Build();
             var invalidMissingDrb1 = DonorUpdateBuilder.New.WithHla(hlaMissingDrb1).Build(noDrb1Count);
 
-            var result = await categoriser.Categorise(invalidNoHla.Concat(invalidMissingDrb1));
+            var result = await categoriser.Categorise(invalidNoHla.Concat(invalidMissingDrb1), string.Empty);
 
             result.ValidDonors.Should().BeEmpty();
             result.InvalidDonors.Should().HaveCount(noHlaCount + noDrb1Count);
@@ -63,9 +66,23 @@ namespace Atlas.DonorImport.Test.Services
         {
             var donorUpdate = DonorUpdateBuilder.New.Build();
 
-            await categoriser.Categorise(new [] { donorUpdate });
+            await categoriser.Categorise(new [] { donorUpdate }, string.Empty);
 
             await donorReadRepository.Received().GetExistingExternalDonorCodes(Arg.Is<IEnumerable<string>>(l => l.Contains(donorUpdate.RecordId)));
+        }
+
+
+        [Test]
+        public async Task Categorise_SavesDonorImportFailureForInvalidDonor()
+        {
+            const string fileName = "fileName";
+            var validDonorUpdate = DonorUpdateBuilder.New.Build(1).ToList();
+            var invalidDonorUpdate = DonorUpdateBuilder.New.WithHla(null).Build();
+
+            await categoriser.Categorise(validDonorUpdate.Concat(new[] { invalidDonorUpdate }), fileName);
+            
+            await donorImportFailureService.SaveFailures(
+                Arg.Is<IReadOnlyCollection<DonorImportFailure>>(l => l.Any(f => f.ExternalDonorCode == invalidDonorUpdate.RecordId && f.UpdateFile == fileName)));
         }
     }
 }

@@ -18,6 +18,7 @@ namespace Atlas.DonorImport.Data.Context
             modelBuilder.Entity<DonorImportHistoryRecord>().SetUpModel();
             modelBuilder.Entity<DonorLog>().SetUpModel();
             modelBuilder.Entity<PublishableDonorUpdate>().SetUpModel();
+            modelBuilder.Entity<DonorImportFailure>().SetUpModel();
             modelBuilder.HasDefaultSchema("Donors");
         }
 

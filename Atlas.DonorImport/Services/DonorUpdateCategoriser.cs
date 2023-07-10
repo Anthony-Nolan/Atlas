@@ -1,4 +1,5 @@
-﻿using Atlas.DonorImport.FileSchema.Models;
+﻿using System;
+using Atlas.DonorImport.FileSchema.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,7 +7,9 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.DonorImport.Validators;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ApplicationInsights;
+using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
+using Atlas.DonorImport.Models;
 
 namespace Atlas.DonorImport.Services
 {
@@ -16,7 +19,7 @@ namespace Atlas.DonorImport.Services
         /// Categorises donor updates into two groups: "valid" and "invalid", as determined by <see cref="SearchableDonorValidator"/>.
         /// Validation errors are logged as events.
         /// </summary>
-        Task<DonorUpdateCategoriserResults> Categorise(IEnumerable<DonorUpdate> donorUpdates);
+        Task<DonorUpdateCategoriserResults> Categorise(IEnumerable<DonorUpdate> donorUpdates, string fileName);
     }
 
     internal class DonorUpdateCategoriserResults
@@ -36,15 +39,17 @@ namespace Atlas.DonorImport.Services
     {
         private readonly ILogger logger;
         private readonly IDonorReadRepository donorReadRepository;
+        private readonly IDonorImportFailureService donorImportFailureService;
 
-        public DonorUpdateCategoriser(ILogger logger, IDonorReadRepository donorReadRepository)
+        public DonorUpdateCategoriser(ILogger logger, IDonorReadRepository donorReadRepository, IDonorImportFailureService donorImportFailureService)
         {
             this.logger = logger;
             this.donorReadRepository = donorReadRepository;
+            this.donorImportFailureService = donorImportFailureService;
         }
         
         /// <inheritdoc />
-        public async Task<DonorUpdateCategoriserResults> Categorise(IEnumerable<DonorUpdate> donorUpdates)
+        public async Task<DonorUpdateCategoriserResults> Categorise(IEnumerable<DonorUpdate> donorUpdates, string fileName)
         {
             if (!donorUpdates.Any())
             {
@@ -57,6 +62,7 @@ namespace Atlas.DonorImport.Services
             var (validDonors, invalidDonors) = validationResults.ReifyAndSplit(vr => vr.IsValid);
 
             LogErrors(validationResults);
+            await LogDonorImportFailures(validationResults, fileName);
 
             return new DonorUpdateCategoriserResults
             {
@@ -72,6 +78,7 @@ namespace Atlas.DonorImport.Services
                 {
                     DonorUpdate = donorUpdate,
                     IsValid = validationResult.IsValid,
+                    Errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList(),
                     ErrorMessage = !validationResult.IsValid ? string.Join(";", validationResult.Errors.Select(e => e.ErrorMessage)) : null
                 };
             }
@@ -95,10 +102,33 @@ namespace Atlas.DonorImport.Services
             }
         }
 
+        private async Task LogDonorImportFailures(IEnumerable<SearchableDonorValidationResult> validationResults, string fileName)
+        {
+            var failureTime = DateTimeOffset.UtcNow;
+            
+            var donorImportFailures = new List<DonorImportFailure>();
+            foreach (var validationResult in validationResults.Where(vr => !vr.IsValid))
+            {
+                donorImportFailures.AddRange(validationResult.Errors.Select(error => new DonorImportFailure
+                {
+                    ExternalDonorCode = validationResult.DonorUpdate.RecordId,
+                    DonorType = validationResult.DonorUpdate.DonorType.ToDatabaseType().ToString(),
+                    EthnicityCode = validationResult.DonorUpdate.Ethnicity,
+                    RegistryCode = validationResult.DonorUpdate.RegistryCode,
+                    UpdateFile = fileName,
+                    FailureReason = error,
+                    FailureTime = failureTime
+                }));
+            }
+
+            await donorImportFailureService.SaveFailures(donorImportFailures);
+        }
+
         private class SearchableDonorValidationResult
         {
             public DonorUpdate DonorUpdate { get; init; }
             public bool IsValid { get; init; }
+            public IReadOnlyCollection<string> Errors { get; init; }
             public string ErrorMessage { get; init; }
         }
     }
