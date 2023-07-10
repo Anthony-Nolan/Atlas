@@ -4,9 +4,9 @@
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
   </PropertyGroup>
 
-  <!--<Target Name="Scaffold local settings file" BeforeTargets="Build" Condition="!EXISTS('$(ProjectDir)\local.settings.json')">
+  <Target Name="Scaffold local settings file" BeforeTargets="Build" Condition="!EXISTS('$(ProjectDir)\local.settings.json')">
     <Copy SourceFiles="$(ProjectDir)\local.settings.template.json" DestinationFiles="$(ProjectDir)\local.settings.json" />
-  </Target>-->
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="AzureExtensions.Swashbuckle" Version="3.2.2" />
