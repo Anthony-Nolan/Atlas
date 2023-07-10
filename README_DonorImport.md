@@ -8,7 +8,10 @@ Donor JSON Files are uploaded to BlobStorage, where they are picked up for proce
 ## File Validation
 
 Contents of the donor import file are validated on import to check that all required fields have been submitted; the [schema file](/Schemas/DonorUpdateFileSchema.json) indicates which fields are required.
-Validation failures are logged as custom events to Application Insights.
+Validation failures are logged as custom events to Application Insights and saved to a database table `DonorImportFailures`.
+
+`DonorImportFailures` table ([link to describing model](/Atlas.DonorImport.Data/Models/DonorImportFailures.cs)) contains donor information and error details.
+In case of multiple errors for one donor, one row per each error is created.
 
 Note: HLA typings themselves are not verified at this stage, as this would involve HLA metadata dictionary lookups, which would slow down the import process.
 "Bad" HLA will be caught and reported at the point where the donor is added to the Matching Donor Database (either via Service Bus, or Data Refresh).

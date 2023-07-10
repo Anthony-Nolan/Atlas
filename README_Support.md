@@ -250,3 +250,9 @@ If the error mentions "The specified entity already exists." - check the followi
 If the MAC import catastrophically fails between inserting new MACs and updating the "last seen" MAC (e.g. due to a platform failure), these can stray out of sync. 
 
 In this case, identify the *actual* last imported MAC manually, and update the "LastUpdated" row to be correct. From this point onwards the import job should work as expected. 
+
+## Donor Import
+
+### Donors are failed to import
+
+All donors that didn't pass validation are logged not only to AI, but also to a database table ([see donor import README](/README_DonorImport.md/#file-validation)).

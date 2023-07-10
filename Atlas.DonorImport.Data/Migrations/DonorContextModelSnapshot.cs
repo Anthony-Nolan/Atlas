@@ -107,6 +107,52 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.ToTable("Donors", "Donors");
                 });
 
+            modelBuilder.Entity("Atlas.DonorImport.Data.Models.DonorImportFailure", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("DonorType")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("EthnicityCode")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("ExternalDonorCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("FailureReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("FailureTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("RegistryCode")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("UpdateFile")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DonorType");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("DonorType"), new[] { "EthnicityCode", "RegistryCode", "FailureReason", "FailureTime" });
+
+                    b.HasIndex("ExternalDonorCode");
+
+                    b.HasIndex("UpdateFile");
+
+                    b.ToTable("DonorImportFailures", "Donors");
+                });
+
             modelBuilder.Entity("Atlas.DonorImport.Data.Models.DonorImportHistoryRecord", b =>
                 {
                     b.Property<string>("Filename")
