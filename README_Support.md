@@ -255,4 +255,4 @@ In this case, identify the *actual* last imported MAC manually, and update the "
 
 ### Donors are failed to import
 
-All donors that didn't pass validation are logged not only to AI, but also to a database table ([see donor import README](/README_DonorImport.md/#file-validation)).
+All donors that didn't pass validation are logged not only to AI, but also to a database table where could be queried ([see donor import README](/README_DonorImport.md/#file-validation)).
