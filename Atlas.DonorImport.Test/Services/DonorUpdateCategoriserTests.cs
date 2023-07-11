@@ -20,7 +20,7 @@ namespace Atlas.DonorImport.Test.Services
         private IDonorUpdateCategoriser categoriser;
         private ILogger logger;
         private IDonorReadRepository donorReadRepository;
-        private IDonorImportFailureService donorImportFailureService;
+        private IDonorImportFailureRepository donorImportFailureRepository;
 
 
         [SetUp]
@@ -28,8 +28,8 @@ namespace Atlas.DonorImport.Test.Services
         {
             logger = Substitute.For<ILogger>();
             donorReadRepository = Substitute.For<IDonorReadRepository>();
-            donorImportFailureService = Substitute.For<IDonorImportFailureService>();
-            categoriser = new DonorUpdateCategoriser(logger, donorReadRepository, donorImportFailureService);
+            donorImportFailureRepository = Substitute.For<IDonorImportFailureRepository>();
+            categoriser = new DonorUpdateCategoriser(logger, donorReadRepository, donorImportFailureRepository);
         }
 
         [Test]
@@ -81,7 +81,7 @@ namespace Atlas.DonorImport.Test.Services
 
             await categoriser.Categorise(validDonorUpdate.Concat(new[] { invalidDonorUpdate }), fileName);
             
-            await donorImportFailureService.SaveFailures(
+            await donorImportFailureRepository.BulkInsert(
                 Arg.Is<IReadOnlyCollection<DonorImportFailure>>(l => l.Any(f => f.ExternalDonorCode == invalidDonorUpdate.RecordId && f.UpdateFile == fileName)));
         }
     }

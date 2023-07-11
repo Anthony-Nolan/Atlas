@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.DonorImport.Data.Migrations
 {
     [DbContext(typeof(DonorContext))]
-    [Migration("20230710094423_AddDonorImportFailures")]
+    [Migration("20230711083039_AddDonorImportFailures")]
     partial class AddDonorImportFailures
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -130,7 +130,7 @@ namespace Atlas.DonorImport.Data.Migrations
                         .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("FailureReason")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTimeOffset>("FailureTime")
                         .HasColumnType("datetimeoffset");
@@ -142,15 +142,16 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.Property<string>("UpdateFile")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("UpdateProperty")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
-
-                    b.HasIndex("DonorType");
-
-                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("DonorType"), new[] { "EthnicityCode", "RegistryCode", "FailureReason", "FailureTime" });
 
                     b.HasIndex("ExternalDonorCode");
 
                     b.HasIndex("UpdateFile");
+
+                    b.HasIndex("DonorType", "EthnicityCode", "RegistryCode", "FailureReason", "FailureTime");
 
                     b.ToTable("DonorImportFailures", "Donors");
                 });

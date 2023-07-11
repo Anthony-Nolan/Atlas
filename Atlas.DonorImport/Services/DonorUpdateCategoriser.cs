@@ -10,6 +10,7 @@ using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Models;
+using FluentValidation.Results;
 
 namespace Atlas.DonorImport.Services
 {
@@ -39,13 +40,13 @@ namespace Atlas.DonorImport.Services
     {
         private readonly ILogger logger;
         private readonly IDonorReadRepository donorReadRepository;
-        private readonly IDonorImportFailureService donorImportFailureService;
+        private readonly IDonorImportFailureRepository donorImportFailureRepository;
 
-        public DonorUpdateCategoriser(ILogger logger, IDonorReadRepository donorReadRepository, IDonorImportFailureService donorImportFailureService)
+        public DonorUpdateCategoriser(ILogger logger, IDonorReadRepository donorReadRepository, IDonorImportFailureRepository donorImportFailureRepository)
         {
             this.logger = logger;
             this.donorReadRepository = donorReadRepository;
-            this.donorImportFailureService = donorImportFailureService;
+            this.donorImportFailureRepository = donorImportFailureRepository;
         }
         
         /// <inheritdoc />
@@ -62,7 +63,7 @@ namespace Atlas.DonorImport.Services
             var (validDonors, invalidDonors) = validationResults.ReifyAndSplit(vr => vr.IsValid);
 
             LogErrors(validationResults);
-            await LogDonorImportFailures(validationResults, fileName);
+            await SaveDonorImportFailures(validationResults, fileName);
 
             return new DonorUpdateCategoriserResults
             {
@@ -78,7 +79,7 @@ namespace Atlas.DonorImport.Services
                 {
                     DonorUpdate = donorUpdate,
                     IsValid = validationResult.IsValid,
-                    Errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList(),
+                    Errors = validationResult.Errors.ToList(),
                     ErrorMessage = !validationResult.IsValid ? string.Join(";", validationResult.Errors.Select(e => e.ErrorMessage)) : null
                 };
             }
@@ -102,7 +103,7 @@ namespace Atlas.DonorImport.Services
             }
         }
 
-        private async Task LogDonorImportFailures(IEnumerable<SearchableDonorValidationResult> validationResults, string fileName)
+        private async Task SaveDonorImportFailures(IEnumerable<SearchableDonorValidationResult> validationResults, string fileName)
         {
             var failureTime = DateTimeOffset.UtcNow;
             
@@ -116,19 +117,20 @@ namespace Atlas.DonorImport.Services
                     EthnicityCode = validationResult.DonorUpdate.Ethnicity,
                     RegistryCode = validationResult.DonorUpdate.RegistryCode,
                     UpdateFile = fileName,
-                    FailureReason = error,
+                    UpdateProperty = error.PropertyName,
+                    FailureReason = error.ErrorMessage,
                     FailureTime = failureTime
                 }));
             }
 
-            await donorImportFailureService.SaveFailures(donorImportFailures);
+            await donorImportFailureRepository.BulkInsert(donorImportFailures);
         }
 
         private class SearchableDonorValidationResult
         {
             public DonorUpdate DonorUpdate { get; init; }
             public bool IsValid { get; init; }
-            public IReadOnlyCollection<string> Errors { get; init; }
+            public IReadOnlyCollection<ValidationFailure> Errors { get; init; }
             public string ErrorMessage { get; init; }
         }
     }
