@@ -25,6 +25,7 @@ namespace Atlas.DonorImport.Data.Models
         [MaxLength(256)]
         public string RegistryCode { get; set; }
         public string UpdateFile { get; set; }
+        public string UpdateProperty { get; set; }
         public string FailureReason { get; set; }
         public DateTimeOffset FailureTime { get; set; }
     }
@@ -37,8 +38,7 @@ namespace Atlas.DonorImport.Data.Models
             donorImportFailureModel.Property(m => m.Id).ValueGeneratedOnAdd();
             donorImportFailureModel.HasIndex(m => m.ExternalDonorCode);
             donorImportFailureModel.HasIndex(m => m.UpdateFile);
-            donorImportFailureModel.HasIndex(m => m.DonorType)
-                .IncludeProperties(m => new { m.EthnicityCode, m.RegistryCode, m.FailureReason, m.FailureTime });
+            donorImportFailureModel.HasIndex(m => new { m.DonorType, m.EthnicityCode, m.RegistryCode, m.FailureReason, m.FailureTime });
         }
     }
 }

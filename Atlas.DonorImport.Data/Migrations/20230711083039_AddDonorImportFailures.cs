@@ -21,7 +21,8 @@ namespace Atlas.DonorImport.Data.Migrations
                     EthnicityCode = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     RegistryCode = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     UpdateFile = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    FailureReason = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UpdateProperty = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FailureReason = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     FailureTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>
@@ -30,11 +31,10 @@ namespace Atlas.DonorImport.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_DonorImportFailures_DonorType",
+                name: "IX_DonorImportFailures_DonorType_EthnicityCode_RegistryCode_FailureReason_FailureTime",
                 schema: "Donors",
                 table: "DonorImportFailures",
-                column: "DonorType")
-                .Annotation("SqlServer:Include", new[] { "EthnicityCode", "RegistryCode", "FailureReason", "FailureTime" });
+                columns: new[] { "DonorType", "EthnicityCode", "RegistryCode", "FailureReason", "FailureTime" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_DonorImportFailures_ExternalDonorCode",
