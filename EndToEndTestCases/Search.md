@@ -1,4 +1,4 @@
-# Donor Search Manual Test Cases
+# Donor Search Test Cases
 
 ## <u>Positive Scenarios</u>
 
