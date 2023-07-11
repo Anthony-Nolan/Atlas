@@ -331,7 +331,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             {
                 logger.SendTrace($"{LoggingPrefix} Teardown failed. Database will need scaling down manually. Exception: {e}", LogLevel.Critical);
                 await dataRefreshNotificationSender.SendTeardownFailureAlert(recordId);
-                throw;
             }
         }
     }
