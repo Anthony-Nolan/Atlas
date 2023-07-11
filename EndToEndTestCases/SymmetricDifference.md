@@ -1,4 +1,4 @@
-# Symmetric Difference Manual Test Cases
+# Symmetric Difference Test Cases
 
 ## <u>Positive Scenarios</u>
 

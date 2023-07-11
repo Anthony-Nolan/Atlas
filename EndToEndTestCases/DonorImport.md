@@ -1,4 +1,4 @@
-# Donor Import Manual Test Cases
+# Donor Import Test Cases
 
 ## <u>Positive Scenarios</u>
 
