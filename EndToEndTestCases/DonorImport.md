@@ -384,6 +384,14 @@ Request body: `["recordId_value1","recordId_value2"]`
   ]
 }
 ```
+<br>
+
+- SQL request to check added rows in DonorImportFailures table
+
+```sql
+SELECT * FROM Donors.DonorImportFailures
+WHERE ExternalDonorCode IN (<replace_with_record_id_1_from_import_file>, <replace_with_record_id_2_from_import_file>)
+```
 
 - Donor import function debug donor endpoint request
 
@@ -398,7 +406,8 @@ Request body: `["recordId_value1","recordId_value2"]`
 | 2. Run donor import function debug donor endpoint (look at test data section), use `string[]` array in it's body with donor record ids. Use in body `recordIds` used in Donor import file from step 1 | - Response code: 200 <br> - `"present"` value in `"donorCounts"` object of response equals to quantity of donors in Donor import file used in step 1.<br> - Donors metadata and hla data in respose equals to donors metadata and hla data in Donor import file used in step 1. |
 |3. Go to Atlas Application Insights Logs ("`<ENV>`-ATLAS") within Azure web portal and check donor import logs by next query:<br>`traces`<br>`\| where message contains "Failed to import"`| There are logs in `<ENV>-ATLAS` where you could find info about failed and imported donors|
 |4. Check the `alerts` topic on `<env>-atlas` service bus | There should **not** be an alert message for this import file |
-|5. [**Clean Up**] Delete imported donors from DB.<br>Upload donor import file in deletion mode (example in test data section) with `recordIds` uploaded in step 1|Donors uploaded in step 1 deleted from DB|
+|5. Check that new rows were added to `Donors.DonorImportFailures` table of `<env>-atlas` db for each donor failed during import process, using request from <b>Test Data</b> section (add donors recordIds from donor import file to request) | - New rows added to `Donors.DonorImportFailures` table <br> - Rows data corresponds to donor import file data <br> - FailureReason columns are filled with corresponding import failure reason |
+|6. [**Clean Up**] Delete imported donors from DB.<br>Upload donor import file in deletion mode (example in test data section) with `recordIds` uploaded in step 1|Donors uploaded in step 1 deleted from DB|
 ---
 <br>
 
@@ -443,6 +452,14 @@ Request body: `["recordId_value1","recordId_value2"]`
   ]
 }
 ```
+<br>
+
+- SQL request to check added rows in DonorImportFailures table
+
+```sql
+SELECT * FROM Donors.DonorImportFailures
+WHERE ExternalDonorCode IN (<replace_with_record_id_1_from_import_file>, <replace_with_record_id_2_from_import_file>)
+```
 
 - Donor import function debug donor endpoint request
 
@@ -456,5 +473,6 @@ Request body: `["recordId_value1","recordId_value2"]`
 | 1. Upload Donor Import .json file with few donors to `donors` folder of `<env>atlasstorage`, you can use donor import file content example from Test Data section, but you should change `"recordId"`(<b>one of donors should be deleted from DB, rest should exist in DB</b>):<br> - Select one or few donors in `<env>atlas` DB, `Donors.Donors` table:<br> - Use it/theirs `ExternalDonorCode` values as `"recordIds"` in import file.<br><br>`"changeType"` should be `"D"` (Delete), donor import file name should be unique. | Donor Import file with few donors uploaded to `donors` folder of `<env>atlasstorage`|
 | 2. Run donor import function debug donor endpoint (look at test data section), use `string[]` array in it's body with donor record ids. Use in body `recordIds` used in Donor import file from step 1 | Response code: 200 <br> - `"present"` value in `"donorCounts"` object of response equals to `0`.<br> - `"absent"` value in `"donorCounts"` object of response equals to quantity of donors in Donor import file used in step 1. |
 |3. Go to Atlas Application Insights Logs ("`<ENV>`-ATLAS") within Azure web portal and check donor import logs by next query:<br>`traces`<br>`\| where message contains "Failed to import"`| There are logs in `<ENV>-ATLAS` where you could find info about failed and imported donors|
-|4. Check the `alerts` topic on `<env>-atlas` service bus | There should **not** be an alert message for this import file |
+|4. Check that new rows were added to `Donors.DonorImportFailures` table of `<env>-atlas` db for each donor failed during import process, using request from <b>Test Data</b> section (add donors recordIds from donor import file to request) | - New rows added to `Donors.DonorImportFailures` table <br> - Rows data corresponds to donor import file data <br> - FailureReason columns are filled with corresponding import failure reason |
+|5. Check the `alerts` topic on `<env>-atlas` service bus | There should **not** be an alert message for this import file |
 ---
