@@ -64,7 +64,7 @@
 ```
 <br>
 
-- Donor Import file content example (deletion mode), should be used in step 3 for added in this test donors deletion
+- Donor Import file content example (deletion mode), should be used in step 3 for deletion of test donors added during this test
 
 ```json
 {
