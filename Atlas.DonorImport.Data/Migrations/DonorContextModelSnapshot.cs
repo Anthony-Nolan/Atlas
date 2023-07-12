@@ -141,7 +141,8 @@ namespace Atlas.DonorImport.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("UpdateProperty")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
 
