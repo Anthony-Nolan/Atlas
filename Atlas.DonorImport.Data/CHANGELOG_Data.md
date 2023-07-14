@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Versions
 
+### 1.6.0
+* New data table added, `DonorImportFailures`, to capture info on individual donor updates that failed to be applied to the donor store.
+  * `Id` - unique PK
+  * Columns holding data captured from the donor update:
+    * `ExternalDonorCode`
+    * `DonorType`
+    * `EthnicityCode`
+    * `RegistryCode`
+  * `UpdateFile` - name of source import file
+  * `UpdateProperty` - donor update property that failed validation, if relevant
+  * `FailureReason` - reason why update was not applied
+  * `FailureTime` - datetime stamp of failure
+
 ### 1.5.0
 
 * New data table added, `PublishableDonorUpdates`. Donor updates are written to the table during donor import; thereafter they are read and published by the new Donor Updates function.
