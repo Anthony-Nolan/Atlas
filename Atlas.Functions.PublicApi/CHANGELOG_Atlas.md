@@ -45,10 +45,15 @@ The project version will be appropriately incremented with each change to the pr
 * Updated `ImportDonorFile` function to log invalid donor updates to AI if donor is not present in Atlas storage instead of throwing error
 * Updated `ImportDonorFile` function to log invalid donor creates for `diff` update mode to AI if donor is present in Atlas storage instead of throwing error
 * Tagged donor import logs with the donor import file name.
+* Improved queryability of import failures by logging failed donor updates to a new table within shared database, `Donor.DonorImportFailures`.
 
 #### Match Prediction
 * Changed the way match prediction requests are queued for processing by activity functions, to prevent search requests with many donors from blocking the completion of smaller search requests.
 * Bug fix: Locus `PositionalMatchCategories` are now re-orientated in line with scoring results.
+* Support: Add file name to AI event that logs a failed HF set import.
+
+#### Data Refresh
+* Allow DF job to automatically retry when the matching algorithm database is asleep/unavailable.
 
 #### Manual Testing
 - Locally-running functions added to `Atlas.ManualTesting.Functions.WmdaConsensusDatasetFunctions` to allow running of exercises 1 and 2 of the WMDA consensus dataset.
