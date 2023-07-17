@@ -1,20 +1,26 @@
 # Donor Import
 
-Donor JSON Files are uploaded to BlobStorage, where they are picked up for processing by the Donor Import Function. Records are inserted directly into the master Donor Database.
+[Donor JSON Files](/Schemas/DonorUpdateFileSchema.json) are uploaded to BlobStorage, where they are picked up for processing by the Donor Import Function. Records are inserted directly into the master Donor Database.
 
-* If the Donor File denotes a *change* to a Donor, then a Donor Update Message is put in the ServiceBusQueue to be processed into the Matching Donor Database.
-* If the Donor File is marked as being part of a "full" upload, then no such Message is Enqueued, and it is expected that a full Donor Refresh will be manually triggered in the near future.
+## Full Mode
 
-## File Validation
+This process is maximally efficient, but does not propagate changes to the matching algorithm as standard - that will need to be manually triggered once all donor files 
+have imported via [Data Refresh](/README_Integration.md#data-refresh).
 
-Contents of the donor import file are validated on import to check that all required fields have been submitted; the [schema file](/Schemas/DonorUpdateFileSchema.json) indicates which fields are required.
-Validation failures are logged as custom events to Application Insights and saved to a database table `DonorImportFailures`.
+This process is expected to be used as a one-off when installing ATLAS for the first time, to import all existing donors at the time of installation.
 
-`DonorImportFailures` table ([link to describing model](/Atlas.DonorImport.Data/Models/DonorImportFailures.cs)) contains donor information and error details.
-In case of multiple errors for one donor, one row per each error is created.
+It should be able to handle millions of donors in a timeframe of hours. Performance can be improved further by manually scaling up the "-atlas" shared SQL database in Azure for
+the duration of the import process.
 
-Note: HLA typings themselves are not verified at this stage, as this would involve HLA metadata dictionary lookups, which would slow down the import process.
-"Bad" HLA will be caught and reported at the point where the donor is added to the Matching Donor Database (either via Service Bus, or Data Refresh).
+Recommended donor file size is 10,000 - 200,000 donors per file.
+
+## Differential Mode
+
+This process is intended for ongoing incremental updates of donors - donors can be added, removed, or updated via this process. You can use "Upsert" change type - it will create the donor if it hasn't created yet or update the existing one. It could be handy if you don't track the state of the imported donors by the Atlas system. 
+
+Differential donors will be automatically pre-processed for the matching algorithm, so there is no need to run a Data Refresh after triggering it.
+
+It should be able to handle tens of thousands of donors in a timeframe of hours.
 
 ## Limitations
 
@@ -27,6 +33,17 @@ There are some cases where this is not enough - e.g. if a donor is created and t
 between uploading files containing the same donor.
 
 A full description of all possible combinations of update files can be found later in this readme.
+
+## File Validation
+
+Contents of the donor import file are validated on import to check that all required fields have been submitted; the [schema file](/Schemas/DonorUpdateFileSchema.json) indicates which fields are required.
+Validation failures are logged as custom events to Application Insights and saved to a database table `DonorImportFailures`.
+
+`DonorImportFailures` table ([link to describing model](/Atlas.DonorImport.Data/Models/DonorImportFailures.cs)) contains donor information and error details.
+In case of multiple errors for one donor, one row per each error is created.
+
+Note: HLA typings themselves are not verified at this stage, as this would involve HLA metadata dictionary lookups, which would slow down the import process.
+"Bad" HLA will be caught and reported at the point where the donor is added to the Matching Donor Database (either via Service Bus, or Data Refresh).
 
 ## File Transfer performance
 
