@@ -2,9 +2,6 @@
 
 This README should cover the necessary steps to integrate ATLAS into another system, assuming it has been fully set up.
 
-
-This document covers tuning the configuration of Atlas to suit your needs.
-
 * PREVIOUS: [Deployment](./README_Deployment.md), [Configuration](./README_Configuration.md) 
 * NEXT: [Support](./README_Support.md)
 
@@ -31,9 +28,13 @@ Azure logic apps can easily be set up to forward the notifications appropriately
 
 Before searches can be run, several sets of data must be imported into the system.
 
-Some reference data is imported from third party services, such as NMDP and WMDA.
-Other data must be provided by the owner of the Atlas installation - donor information, and haplotype frequency data.   
+Due to data dependencies, this is the recommended order for importing data on a fresh install of Atlas - only proceed with the next step after the previous one completes with success:
+1) [Multiple Allele Codes](#multiple-allele-codes) via manual trigger
+2) [Donor Import](#donor-import) in **Full Mode** (Differential mode will **not** succeed on a fresh install)
+3) [Data Refresh](#data-refresh) via manual trigger
+4) [HLA Haplotype Frequency Sets](#haplotype-frequency-sets) via file upload
 
+Atlas should be ready to receive search requests and/or differential mode donor import files once these steps have been completed successfully.
 
 ### Multiple Allele Codes
 
@@ -43,38 +44,14 @@ An import can also be manually triggered, if e.g. you don't want to wait until t
 
 > The function `ManuallyImportMacs` should be called, within the `ATLAS-FUNCTIONS` functions app.
 
-
-### HLA Metadata
-
-HLA "metadata" refers to HLA naming conventions drawn from international HLA nomenclature, [hosted here](https://raw.githubusercontent.com/ANHIG/IMGTHLA/)
-
-HLA metadata will be automatically imported for the latest stable version at the time of a matching algorithm data refresh (see below)
-
-To enforce a recreation (e.g. in the case of a schema change), or to import an older version, manual endpoints can be hit.   
-
-> The function `RefreshHlaMetadataDictionaryToSpecificVersion` should be called, within the `ATLAS-MATCHING-ALGORITHM-FUNCTIONS` functions app.
-
-
-### Haplotype Frequency Sets
-
-Haplotype frequency sets should be provided in the [specified JSON schema](Schemas/HFSetSchema.json).
-
-They should be uploaded to the `haplotype-frequency-import` container within Azure Blob Storage. 
-Anything uploaded here will be automatically processed, stored in the SQL database, and activated if all validation passes.
-
-On success, a notification will be sent, and on failure, an alert.
-
-Donors/patients will use an appropriate set based on the ethnicity/registry codes provided - such codes must be identical strings to those used in HF set import to be used.
-
-A "global" set should be uploaded with `null` ethnicity and registry information - when no appropriate set is found for a patient/donor, this global default will be used.
-
-
 ### Donor Import
 
-There are two supported donor import processes. Both use the [following JSON schema](Schemas/DonorUpdateFileSchema.json), and will be automatically 
-triggered when any files are uploaded to the `donors` container in Azure Blob Storage.
+There are two supported donor import processes: [Full](/README_DonorImport.md#full-mode) or [Differential](/README_DonorImport.md#differential-mode).
+Both use the [following JSON schema](Schemas/DonorUpdateFileSchema.json), and will be automatically triggered when any files are uploaded to the `donors` container in Azure Blob Storage.
 
 In both cases, we expect performance to be better with several smaller files, than with larger ones.
+
+See [Donor Import README](/README_DonorImport.md) for more information.
 
 > On Concurrency: The number of allowed concurrent processes of donor import files is controlled in two places. 
 >
@@ -87,37 +64,6 @@ In both cases, we expect performance to be better with several smaller files, th
 >
 > If set higher, a full import will likely finish a little quicker - but there will be some level of transient failures caused by deadlocks. Auto-retry logic should
 > ensure that all donors are still imported, but any import files that hit the retry limit and are dead-lettered (on the `donor-import-file-uploads` service bus topic) will need to be replayed.      
-
-#### Full Import
-
-This process is maximally efficient, but does not propagate changes to the matching algorithm as standard - that will need to be manually triggered once all donor files 
-have imported - see the "Data Refresh" section below.
-
-This process is expected to be used as a one-off when installing ATLAS for the first time, to import all existing donors at the time of installation.
-
-It should be able to handle millions of donors in a timeframe of hours. Performance can be improved further by manually scaling up the "-atlas" shared SQL database in Azure for
-the duration of the import process.
-
-Recommended donor file size is 10,000 - 200,000 donors per file.
-
-#### Differential Import
-
-This process is intended for ongoing incremental updates of donors - donors can be added, removed, or updated via this process. You can use "Upsert" change type - it will create the donor if it hasn't created yet or update the existing one. It could be handy if you don't track the state of the imported donors by the Atlas system. 
-
-Differential donors will be automatically pre-processed for the matching algorithm, so there is no need to run a Data Refresh after triggering it.
-
-It should be able to handle tens of thousands of donors in a timeframe of hours.
-
-*NOTE*
-
-Due to the use of EventGrid to trigger the import process, ordering of donor file processing cannot be guaranteed. There are code-measures in place to prevent donor *updates*
-being applied out of order - but there are some edge cases that may still cause errors in very rare cases - e.g. if a donor is created and then updated in two separate files, 
-which are uploaded within a very short timeframe of one another. Such edge cases are described in detail in [the donor import readme](README_DonorImport.md) - they are considered
-extremely unlikely, and alerts will be sent if the data is ever detected as being out of sync. 
-
-If ordering of donor updates is even 100% guaranteed, we recommend replacing the file-based ongoing donor import process with a purely service bus based one, and controlling 
-the order of updates before they make it to ATLAS.  
-
 
 ### Data Refresh
 
@@ -141,6 +87,30 @@ This process is expected to be run:
 The process is expected to take several hours - and will increase with both the number of donors, and the ambiguity of their HLA. 
 For a dataset with ~2 million donors, the process takes 1-2 hours.
 
+### Haplotype Frequency Sets
+
+Haplotype frequency sets should be provided in the [specified JSON schema](Schemas/HFSetSchema.json).
+
+They should be uploaded to the `haplotype-frequency-import` container within Azure Blob Storage. 
+Anything uploaded here will be automatically processed, stored in the SQL database, and activated if all validation passes.
+
+On success, a notification will be sent, and on failure, an alert.
+
+Donors/patients will use an appropriate set based on the ethnicity/registry codes provided - such codes must be identical strings to those used in HF set import to be used.
+
+A "global" set should be uploaded with `null` ethnicity and registry information - when no appropriate set is found for a patient/donor, this global default will be used.
+
+**Important**: if `nomenclatureVersion` of the file is a value older than the latest version of IMGT/HLA database, then the HLA Metadata Dictionary will need to be manually refreshed to that version before file upload (see [below](#hla-metadata)).
+
+### HLA Metadata
+
+HLA "metadata" refers to HLA naming conventions drawn from international HLA nomenclature, [hosted here](https://raw.githubusercontent.com/ANHIG/IMGTHLA/).
+
+HLA metadata will be automatically imported for the latest stable version at the time of a [matching algorithm data refresh](#data-refresh).
+
+To enforce a recreation (e.g. in the case of a schema change), or to import an older version, manual endpoints can be hit.   
+
+> The http-triggered function `RefreshHlaMetadataDictionaryToSpecificVersion` should be called within the `ATLAS-MATCHING-ALGORITHM-FUNCTIONS` functions app, and the `version` specified in the request body.
 
 ## Running Searches
  
