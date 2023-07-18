@@ -1,5 +1,11 @@
 ﻿namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
 {
+    /// <summary>
+    /// Scoring results for a given locus.
+    /// 
+    /// Note: Position scores held in <see cref="ScoreDetailsAtPositionOne"/> and <see cref="ScoreDetailsAtPositionTwo"/> are orientated w.r.t donor typing.
+    /// E.g., Given a locus with a single mismatch where patient typing 1 is mismatched to donor typing 2, <see cref="ScoreDetailsAtPositionTwo"/> will be assigned the mismatch score.
+    /// </summary>
     public class LocusSearchResult
     {
         /// <summary>

@@ -38,6 +38,8 @@ The project version will be appropriately incremented with each change to the pr
 #### Scoring
 * Bug fix: DPB1 match category is now being calculated when the locus typing contained a single null allele, by treating the locus as homozygous for the expressing allele.
 * Scoring feature now also calculates whether a position is antigen matched or not.
+* Positional locus scores are now aligned to donor typing.
+  * E.g., Given a locus with a single mismatch where patient typing 1 is mismatched to donor typing 2, `ScoreDetailsAtPositionTwo` will be assigned the mismatch score.
 
 #### Donor Import
 * Added new function `CheckDonorIdsFromFile` that does symmetric check of donors absence/presence in Atlas storage
