@@ -1232,12 +1232,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient has one antigen mismatch to donor in direct orientation")]
-        public virtual void PatientHasOneAntigenMismatchToDonorInDirectOrientation()
+        [NUnit.Framework.DescriptionAttribute("Donor has Unknown match grade at DPB1")]
+        public virtual void DonorHasUnknownMatchGradeAtDPB1()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has one antigen mismatch to donor in direct orientation", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Donor has Unknown match grade at DPB1", null, tagsOfScenario, argumentsOfScenario);
 #line 185
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -1261,251 +1261,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
 #line 186
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-                TechTalk.SpecFlow.Table table35 = new TechTalk.SpecFlow.Table(new string[] {
-                            "A_1",
-                            "A_2",
-                            "B_1",
-                            "B_2",
-                            "DRB1_1",
-                            "DRB1_2"});
-                table35.AddRow(new string[] {
-                            "*01:01",
-                            "*01:01",
-                            "38",
-                            "52",
-                            "*07:01",
-                            "*07:01"});
 #line 187
-    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table35, "And ");
-#line hidden
-                TechTalk.SpecFlow.Table table36 = new TechTalk.SpecFlow.Table(new string[] {
-                            "A_1",
-                            "A_2",
-                            "B_1",
-                            "B_2",
-                            "DRB1_1",
-                            "DRB1_2"});
-                table36.AddRow(new string[] {
-                            "*01:01",
-                            "*01:01",
-                            "38",
-                            "51",
-                            "*07:01",
-                            "*07:01"});
-#line 190
-    testRunner.And("the patient has the following HLA:", ((string)(null)), table36, "And ");
-#line hidden
-#line 193
-    testRunner.And("scoring is enabled at locus B", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line hidden
-#line 194
-    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line hidden
-#line 195
-    testRunner.Then("antigen match should be true in position 1 and false in position 2 of locus B", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-            }
-            this.ScenarioCleanup();
-        }
-        
-        [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient has one antigen mismatch to donor in cross orientation (patient B_1 vs do" +
-            "nor B_2)")]
-        public virtual void PatientHasOneAntigenMismatchToDonorInCrossOrientationPatientB_1VsDonorB_2()
-        {
-            string[] tagsOfScenario = ((string[])(null));
-            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has one antigen mismatch to donor in cross orientation (patient B_1 vs do" +
-                    "nor B_2)", null, tagsOfScenario, argumentsOfScenario);
-#line 197
-  this.ScenarioInitialize(scenarioInfo);
-#line hidden
-            bool isScenarioIgnored = default(bool);
-            bool isFeatureIgnored = default(bool);
-            if ((tagsOfScenario != null))
-            {
-                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
-            }
-            if ((this._featureTags != null))
-            {
-                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
-            }
-            if ((isScenarioIgnored || isFeatureIgnored))
-            {
-                testRunner.SkipScenario();
-            }
-            else
-            {
-                this.ScenarioStart();
-#line 198
-    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line hidden
-                TechTalk.SpecFlow.Table table37 = new TechTalk.SpecFlow.Table(new string[] {
-                            "A_1",
-                            "A_2",
-                            "B_1",
-                            "B_2",
-                            "DRB1_1",
-                            "DRB1_2"});
-                table37.AddRow(new string[] {
-                            "*01:01",
-                            "*01:01",
-                            "38",
-                            "52",
-                            "*07:01",
-                            "*07:01"});
-#line 199
-    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table37, "And ");
-#line hidden
-                TechTalk.SpecFlow.Table table38 = new TechTalk.SpecFlow.Table(new string[] {
-                            "A_1",
-                            "A_2",
-                            "B_1",
-                            "B_2",
-                            "DRB1_1",
-                            "DRB1_2"});
-                table38.AddRow(new string[] {
-                            "*01:01",
-                            "*01:01",
-                            "51",
-                            "38",
-                            "*07:01",
-                            "*07:01"});
-#line 202
-    testRunner.And("the patient has the following HLA:", ((string)(null)), table38, "And ");
-#line hidden
-#line 205
-    testRunner.And("scoring is enabled at locus B", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line hidden
-#line 206
-    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line hidden
-#line 207
-    testRunner.Then("antigen match should be false in position 1 and true in position 2 of locus B", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-            }
-            this.ScenarioCleanup();
-        }
-        
-        [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient has one antigen mismatch to donor in cross orientation (patient B_2 vs do" +
-            "nor B_1)")]
-        public virtual void PatientHasOneAntigenMismatchToDonorInCrossOrientationPatientB_2VsDonorB_1()
-        {
-            string[] tagsOfScenario = ((string[])(null));
-            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has one antigen mismatch to donor in cross orientation (patient B_2 vs do" +
-                    "nor B_1)", null, tagsOfScenario, argumentsOfScenario);
-#line 209
-  this.ScenarioInitialize(scenarioInfo);
-#line hidden
-            bool isScenarioIgnored = default(bool);
-            bool isFeatureIgnored = default(bool);
-            if ((tagsOfScenario != null))
-            {
-                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
-            }
-            if ((this._featureTags != null))
-            {
-                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
-            }
-            if ((isScenarioIgnored || isFeatureIgnored))
-            {
-                testRunner.SkipScenario();
-            }
-            else
-            {
-                this.ScenarioStart();
-#line 210
-    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line hidden
-                TechTalk.SpecFlow.Table table39 = new TechTalk.SpecFlow.Table(new string[] {
-                            "A_1",
-                            "A_2",
-                            "B_1",
-                            "B_2",
-                            "DRB1_1",
-                            "DRB1_2"});
-                table39.AddRow(new string[] {
-                            "*01:01",
-                            "*01:01",
-                            "52",
-                            "38",
-                            "*07:01",
-                            "*07:01"});
-#line 211
-    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table39, "And ");
-#line hidden
-                TechTalk.SpecFlow.Table table40 = new TechTalk.SpecFlow.Table(new string[] {
-                            "A_1",
-                            "A_2",
-                            "B_1",
-                            "B_2",
-                            "DRB1_1",
-                            "DRB1_2"});
-                table40.AddRow(new string[] {
-                            "*01:01",
-                            "*01:01",
-                            "38",
-                            "51",
-                            "*07:01",
-                            "*07:01"});
-#line 214
-    testRunner.And("the patient has the following HLA:", ((string)(null)), table40, "And ");
-#line hidden
-#line 217
-    testRunner.And("scoring is enabled at locus B", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line hidden
-#line 218
-    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line hidden
-#line 219
-    testRunner.Then("antigen match should be true in position 1 and false in position 2 of locus B", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-            }
-            this.ScenarioCleanup();
-        }
-        
-        [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Donor has Unknown match grade at DPB1")]
-        public virtual void DonorHasUnknownMatchGradeAtDPB1()
-        {
-            string[] tagsOfScenario = ((string[])(null));
-            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Donor has Unknown match grade at DPB1", null, tagsOfScenario, argumentsOfScenario);
-#line 221
-  this.ScenarioInitialize(scenarioInfo);
-#line hidden
-            bool isScenarioIgnored = default(bool);
-            bool isFeatureIgnored = default(bool);
-            if ((tagsOfScenario != null))
-            {
-                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
-            }
-            if ((this._featureTags != null))
-            {
-                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
-            }
-            if ((isScenarioIgnored || isFeatureIgnored))
-            {
-                testRunner.SkipScenario();
-            }
-            else
-            {
-                this.ScenarioStart();
-#line 222
-    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line hidden
-#line 223
     testRunner.And("the matching donor is untyped at locus DPB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 224
+#line 188
     testRunner.And("scoring is enabled at locus DPB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 225
+#line 189
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 226
+#line 190
     testRunner.Then("antigen match should be empty at locus DPB1 at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -1521,7 +1286,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("[Regression] Patient and donor are completely allele mismatched at DRB1 but have " +
                     "one antigen match", null, tagsOfScenario, argumentsOfScenario);
-#line 228
+#line 192
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -1541,51 +1306,51 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
             else
             {
                 this.ScenarioStart();
-#line 229
+#line 193
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-                TechTalk.SpecFlow.Table table41 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table35 = new TechTalk.SpecFlow.Table(new string[] {
                             "A_1",
                             "A_2",
                             "B_1",
                             "B_2",
                             "DRB1_1",
                             "DRB1_2"});
-                table41.AddRow(new string[] {
+                table35.AddRow(new string[] {
                             "*01:YAG",
                             "*03:ANPZ",
                             "*44:AJVH",
                             "*52:01",
                             "*04:AFNC",
                             "*15:APKE"});
-#line 230
-    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table41, "And ");
+#line 194
+    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table35, "And ");
 #line hidden
-                TechTalk.SpecFlow.Table table42 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table36 = new TechTalk.SpecFlow.Table(new string[] {
                             "A_1",
                             "A_2",
                             "B_1",
                             "B_2",
                             "DRB1_1",
                             "DRB1_2"});
-                table42.AddRow(new string[] {
+                table36.AddRow(new string[] {
                             "*01:YAG",
                             "*03:ANPZ",
                             "*44:AJVH",
                             "*52:01",
                             "*03:YMP",
                             "*04:AMCV"});
-#line 233
-    testRunner.And("the patient has the following HLA:", ((string)(null)), table42, "And ");
+#line 197
+    testRunner.And("the patient has the following HLA:", ((string)(null)), table36, "And ");
 #line hidden
-#line 236
+#line 200
     testRunner.And("scoring is enabled at locus DRB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 237
+#line 201
     testRunner.When("I run a 4/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 238
-    testRunner.Then("antigen match should be false in position 1 and true in position 2 of locus DRB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 202
+    testRunner.Then("antigen match should be true in position 1 and false in position 2 of locus DRB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();

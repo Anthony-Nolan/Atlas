@@ -1,6 +1,4 @@
 ﻿using Atlas.Common.Caching;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
@@ -338,12 +336,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedMatchOrientations = new[] {MatchOrientation.Cross};
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.GDna, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.CDna, expectedMatchOrientations);
+            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.CDna, expectedMatchOrientations);
+            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.GDna, expectedMatchOrientations);
 
-            // Direct grade (P1: D1) is PGroup; Cross (P1: D2) is GDna
+            // Direct grade (P1: D1) is PGroup; Cross (P1: D2) is CDna
             actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
-            // Direct grade (P2: D2) is PGroup; Cross (P2: D1) is CDna
+            // Direct grade (P2: D2) is PGroup; Cross (P2: D1) is GDna
             actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
         }
 
@@ -395,12 +393,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedMatchOrientations = new[] {MatchOrientation.Cross};
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.Associated, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
+            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
+            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Associated, expectedMatchOrientations);
 
-            // Direct grade (P1: D1) is Split; Cross (P1: D2) is Associated
+            // Direct grade (P1: D1) is Split; Cross (P1: D2) is Mismatch
             actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
-            // Direct grade (P2: D2) is Mismatch; Cross (P2: D1) is Mismatch
+            // Direct grade (P2: D2) is Mismatch; Cross (P2: D1) is Associated
             actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
         }
 
