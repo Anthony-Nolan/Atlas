@@ -85,10 +85,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching
             LocusInfo<IHlaScoringMetadata> donorLocusData)
         {
             var isGradeOneAntigenMatched = IsAntigenMatch(
-                patientLocusData.Position1, orientation == MatchOrientation.Cross ? donorLocusData.Position2 : donorLocusData.Position1);
+                orientation == MatchOrientation.Cross ? patientLocusData.Position2 : patientLocusData.Position1, donorLocusData.Position1);
 
             var isGradeTwoAntigenMatched = IsAntigenMatch(
-                patientLocusData.Position2, orientation == MatchOrientation.Cross ? donorLocusData.Position1 : donorLocusData.Position2);
+                orientation == MatchOrientation.Cross ? patientLocusData.Position1 : patientLocusData.Position2, donorLocusData.Position2);
 
             return new LocusInfo<bool?>(isGradeOneAntigenMatched, isGradeTwoAntigenMatched);
         }

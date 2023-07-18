@@ -96,10 +96,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
             var orientations = new LociInfo<List<MatchOrientation>>(new List<MatchOrientation> { MatchOrientation.Cross });
             var confidences = confidenceService.CalculateMatchConfidences(patientLookupResults, donorLookupResults, orientations);
 
-            // Direct confidence (P1: D1) is Potential, Cross (P1: D2) is Definite
-            confidences.GetPosition(TestLocus, LocusPosition.One).Should().Be(MatchConfidence.Definite);
-            // Direct confidence (P2: D2) is Definite, Cross (P2: D1) is Potential
-            confidences.GetPosition(TestLocus, LocusPosition.Two).Should().Be(MatchConfidence.Potential);
+            // Direct confidence (P1: D1) is Potential, Cross (P1: D2) is Potential
+            confidences.GetPosition(TestLocus, LocusPosition.One).Should().Be(MatchConfidence.Potential);
+            // Direct confidence (P2: D2) is Definite, Cross (P2: D1) is Definite
+            confidences.GetPosition(TestLocus, LocusPosition.Two).Should().Be(MatchConfidence.Definite);
         }
 
         [Test]
@@ -212,12 +212,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
             var orientations = new LociInfo<List<MatchOrientation>>(new List<MatchOrientation> { MatchOrientation.Direct, MatchOrientation.Cross });
             var confidences = confidenceService.CalculateMatchConfidences(patientLookupResults, donorLookupResults, orientations);
 
-            // Direct confidence (P1: D1) is Potential, Cross (P1: D2) is Definite
-            // Direct confidence (P2: D2) is Potential, Cross (P2: D1) is Potential
+            // Direct confidence (P1: D1) is Potential, Cross (P1: D2) is Potential
+            // Direct confidence (P2: D2) is Potential, Cross (P2: D1) is Definite
 
             // Cross match has a higher confidence, so should be returned
-            confidences.GetPosition(TestLocus, LocusPosition.One).Should().Be(MatchConfidence.Definite);
-            confidences.GetPosition(TestLocus, LocusPosition.Two).Should().Be(MatchConfidence.Potential);
+            confidences.GetPosition(TestLocus, LocusPosition.One).Should().Be(MatchConfidence.Potential);
+            confidences.GetPosition(TestLocus, LocusPosition.Two).Should().Be(MatchConfidence.Definite);
         }
     }
 }

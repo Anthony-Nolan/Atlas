@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
@@ -47,7 +45,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         }
 
         private readonly LociInfo<MatchGrade> defaultMatchGradeForUntypedLocus =
-            new LociInfo<MatchGrade>(
+            new(
                 MatchGrade.PGroup,
                 MatchGrade.PGroup,
                 MatchGrade.PGroup,
@@ -122,8 +120,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
             LocusInfo<IHlaScoringMetadata> donorMetadata,
             Locus locus)
         {
-            var grade1 = CalculateMatchGrade(patientMetadata.Position1, donorMetadata.Position2, locus);
-            var grade2 = CalculateMatchGrade(patientMetadata.Position2, donorMetadata.Position1, locus);
+            var grade1 = CalculateMatchGrade(patientMetadata.Position2, donorMetadata.Position1, locus);
+            var grade2 = CalculateMatchGrade(patientMetadata.Position1, donorMetadata.Position2, locus);
 
             return new LocusMatchGrades(grade1, grade2);
         }

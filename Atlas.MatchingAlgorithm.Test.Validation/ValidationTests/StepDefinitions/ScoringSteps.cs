@@ -25,13 +25,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             this.scenarioContext = scenarioContext;
         }
 
-        [Then("the match grade should be (.*) at (.*) at (.*)")]
-        public void ThenTheMatchGradeShouldBe(string grade, string locus, string position)
-        {
-            var validMatchGrades = ParseExpectedMatchGrades(grade).ToList();
-            AssertLocusScoresAreExpectedValues(locus, position, validMatchGrades, nameof(LocusPositionScoreDetails.MatchGrade));
-        }
-
         [Then("the locus match category should be (.*) at (.*)")]
         public void ThenTheLocusMatchCategoryShouldBe(string category, string locus)
         {
@@ -90,6 +83,31 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             results.Select(r => r.AtlasDonorId).Should().ContainInOrder(new List<int?> { higherResult, lowerResult });
         }
 
+        [Then(@"the typed loci count should be (.*)")]
+        public void ThenTheTypedLociCountShouldBe(int typedLociCount)
+        {
+            var donorResult = GetSearchResultForSingleDonor();
+            donorResult.ScoringResult.TypedLociCountAtScoredLoci.Should().Be(typedLociCount);
+        }
+
+        [Then("the match grade should be (.*) at (.*) at (.*)")]
+        public void ThenTheMatchGradeShouldBe(string grade, string locus, string position)
+        {
+            var validMatchGrades = ParseExpectedMatchGrades(grade).ToList();
+            AssertLocusScoresAreExpectedValues(locus, position, validMatchGrades, nameof(LocusPositionScoreDetails.MatchGrade));
+        }
+
+        [Then("the match grade should be (.*) in position 1 and (.*) in position 2 of (.*)")]
+        public void ThenTheMatchGradeShouldBeInPosition1And2OfLocus(string matchGrade1, string matchGrade2, string locus)
+        {
+            var expectedMatchGrades1 = ParseExpectedMatchGrades(matchGrade1).ToList();
+            var expectedMatchGrades2 = ParseExpectedMatchGrades(matchGrade2).ToList();
+            const string scoreFieldName = nameof(LocusPositionScoreDetails.MatchGrade);
+
+            AssertLocusScoresAreExpectedValues(locus, Position1Text, expectedMatchGrades1, scoreFieldName);
+            AssertLocusScoresAreExpectedValues(locus, Position2Text, expectedMatchGrades2, scoreFieldName);
+        }
+
         [Then(@"the match confidence should be (.*) at (.*) at (.*)")]
         public void ThenTheMatchConfidenceShouldBe(string confidence, string locus, string position)
         {
@@ -98,11 +116,15 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             AssertLocusScoresAreExpectedValues(locus, position, new[] { expectedMatchConfidence }, nameof(LocusPositionScoreDetails.MatchConfidence));
         }
 
-        [Then(@"the typed loci count should be (.*)")]
-        public void ThenTheTypedLociCountShouldBe(int typedLociCount)
+        [Then("the match confidence should be (.*) in position 1 and (.*) in position 2 of (.*)")]
+        public void ThenTheMatchConfidenceShouldBeInPosition1And2OfLocus(string confidence1, string confidence2, string locus)
         {
-            var donorResult = GetSearchResultForSingleDonor();
-            donorResult.ScoringResult.TypedLociCountAtScoredLoci.Should().Be(typedLociCount);
+            var expectedMatchConfidence1 = ParseExpectedMatchConfidence(confidence1);
+            var expectedMatchConfidence2 = ParseExpectedMatchConfidence(confidence2);
+            const string scoreFieldName = nameof(LocusPositionScoreDetails.MatchConfidence);
+
+            AssertLocusScoresAreExpectedValues(locus, Position1Text, new[] { expectedMatchConfidence1 }, scoreFieldName);
+            AssertLocusScoresAreExpectedValues(locus, Position2Text, new[] { expectedMatchConfidence2 }, scoreFieldName);
         }
 
         [Then(@"antigen match should be (.*) at (.*) at (.*)")]
@@ -203,15 +225,15 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
 
         private MatchConfidence? ParseExpectedMatchConfidence(string confidence)
         {
-            switch (confidence)
+            switch (confidence.ToLower())
             {
-                case "Definite":
+                case "definite":
                     return MatchConfidence.Definite;
-                case "Exact":
+                case "exact":
                     return MatchConfidence.Exact;
-                case "Potential":
+                case "potential":
                     return MatchConfidence.Potential;
-                case "Mismatch":
+                case "mismatch":
                     return MatchConfidence.Mismatch;
                 default:
                     scenarioContext.Pending();

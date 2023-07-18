@@ -35,13 +35,13 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
         {
             var confidenceResults = new PhenotypeInfo<MatchConfidence>();
 
-            patientMetadata.EachLocus((locus, patientMetadataAtLocus) =>
+            donorMetadata.EachLocus((locus, donorMetadataAtLocus) =>
             {
                 var orientationsAtLocus = orientations.GetLocus(locus);
 
                 var confidences = orientationsAtLocus.Select(o => new LocusInfo<MatchConfidence>(
-                    CalculateConfidenceForOrientation(locus, LocusPosition.One, patientMetadataAtLocus.Position1, donorMetadata, o),
-                    CalculateConfidenceForOrientation(locus, LocusPosition.Two, patientMetadataAtLocus.Position2, donorMetadata, o)
+                    CalculateConfidenceForOrientation(locus, LocusPosition.One, patientMetadata, donorMetadataAtLocus.Position1, o),
+                    CalculateConfidenceForOrientation(locus, LocusPosition.Two, patientMetadata, donorMetadataAtLocus.Position2, o)
                 ));
 
                 // In the case where the best grade for a donor is the same for both a cross and direct match, but the confidence for each is different,
@@ -61,8 +61,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
         private MatchConfidence CalculateConfidenceForOrientation(
             Locus locus,
             LocusPosition position,
-            IHlaScoringMetadata patientMetadata,
-            PhenotypeInfo<IHlaScoringMetadata> donorMetadata,
+            PhenotypeInfo<IHlaScoringMetadata> patientMetadata,
+            IHlaScoringMetadata donorMetadata,
             MatchOrientation matchOrientation)
         {
             return matchOrientation switch
@@ -76,22 +76,22 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
         private MatchConfidence CalculateConfidenceForDirectMatch(
             Locus locus,
             LocusPosition position,
-            IHlaScoringMetadata patientMetadata,
-            PhenotypeInfo<IHlaScoringMetadata> donorMetadata)
+            PhenotypeInfo<IHlaScoringMetadata> patientMetadata,
+            IHlaScoringMetadata donorMetadata)
         {
-            return GetConfidence(patientMetadata, donorMetadata.GetPosition(locus, position));
+            return GetConfidence(patientMetadata.GetPosition(locus, position), donorMetadata);
         }
 
         private MatchConfidence CalculateConfidenceForCrossMatch(
             Locus locus,
             LocusPosition position,
-            IHlaScoringMetadata patientMetadata,
-            PhenotypeInfo<IHlaScoringMetadata> donorMetadata)
+            PhenotypeInfo<IHlaScoringMetadata> patientMetadata,
+            IHlaScoringMetadata donorMetadata)
         {
             return position switch
             {
-                LocusPosition.One => GetConfidence(patientMetadata, donorMetadata.GetPosition(locus, LocusPosition.Two)),
-                LocusPosition.Two => GetConfidence(patientMetadata, donorMetadata.GetPosition(locus, LocusPosition.One)),
+                LocusPosition.One => GetConfidence(patientMetadata.GetPosition(locus, LocusPosition.Two), donorMetadata),
+                LocusPosition.Two => GetConfidence(patientMetadata.GetPosition(locus, LocusPosition.One), donorMetadata),
                 _ => throw new ArgumentOutOfRangeException(nameof(position), position, null)
             };
         }
