@@ -40,6 +40,8 @@ namespace Atlas.MatchPrediction.Data.Models
                 .HasName("IX_RegistryCode_And_EthnicityCode")
                 .IsUnique()
                 .HasFilter("[Active] = 'True'");
+            modelBuilder
+                .HasIndex(f => new { f.Active });
         }
     }
 }
