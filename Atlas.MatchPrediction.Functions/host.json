@@ -1,7 +1,11 @@
 {
   "extensions": {
     "serviceBus": {
-      "maxMessageBatchSize": 100
+      "maxMessageBatchSize": 100,
+      "messageHandlerOptions": {
+        "maxConcurrentCalls": 1,
+        "maxAutoRenewDuration": "02:00:00"
+      }
     }
   },
   "functionTimeout": "01:30:00",
