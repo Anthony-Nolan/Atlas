@@ -53,6 +53,7 @@ The project version will be appropriately incremented with each change to the pr
 * Changed the way match prediction requests are queued for processing by activity functions, to prevent search requests with many donors from blocking the completion of smaller search requests.
 * Bug fix: Locus `PositionalMatchCategories` are now re-orientated in line with scoring results.
 * Support: Add file name to AI event that logs a failed HF set import.
+* Bug fix: Added measures to prevent the same HF set import request being processed by multiple workers which leads to database conflict errors.
 
 #### Data Refresh
 * Allow DF job to automatically retry when the matching algorithm database is asleep/unavailable.
