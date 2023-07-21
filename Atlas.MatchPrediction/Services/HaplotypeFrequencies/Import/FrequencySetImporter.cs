@@ -107,7 +107,15 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
             foreach (var setId in setIds)
             {
-                await setRepository.ActivateSet(setId);
+                try
+                {
+                    await setRepository.ActivateSet(setId);
+                }
+                catch
+                {
+                    await frequenciesRepository.RemoveHaplotypeFrequencies(setId);
+                    throw;
+                }
             }
         }
 

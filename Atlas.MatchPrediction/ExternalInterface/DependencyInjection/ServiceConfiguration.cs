@@ -126,7 +126,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
                 new HaplotypeFrequencySetRepository(fetchSqlConnectionString(sp), new ContextFactory())
             );
             services.AddTransient<IHaplotypeFrequenciesRepository, HaplotypeFrequenciesRepository>(sp =>
-                new HaplotypeFrequenciesRepository(fetchSqlConnectionString(sp))
+                new HaplotypeFrequenciesRepository(fetchSqlConnectionString(sp), new ContextFactory())
             );
         }
 
