@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
@@ -14,15 +15,21 @@ namespace Atlas.MatchPrediction.Data.Repositories
         Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies);
 
         Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId);
+
+        Task RemoveHaplotypeFrequencies(int setId);
     }
 
     public class HaplotypeFrequenciesRepository : IHaplotypeFrequenciesRepository
     {
         private readonly string connectionString;
+        private readonly ContextFactory contextFactory;
 
-        public HaplotypeFrequenciesRepository(string connectionString)
+        private MatchPredictionContext NewContext() => contextFactory.Create(connectionString);
+
+        public HaplotypeFrequenciesRepository(string connectionString, ContextFactory contextFactory)
         {
             this.connectionString = connectionString;
+            this.contextFactory = contextFactory;
         }
 
         public async Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
@@ -35,9 +42,28 @@ namespace Atlas.MatchPrediction.Data.Repositories
 
             var dataTable = BuildFrequencyInsertDataTable(haplotypeFrequencySetId, haplotypeFrequencies);
 
-            using (var sqlBulk = BuildFrequencySqlBulkCopy())
+            try
             {
+                using var sqlBulk = BuildFrequencySqlBulkCopy();
                 await sqlBulk.WriteToServerAsync(dataTable);
+            }
+            catch
+            {
+                await RemoveHaplotypeFrequencies(haplotypeFrequencySetId);
+                throw;
+            }
+        }
+
+        public async Task RemoveHaplotypeFrequencies(int setId)
+        {
+            await using (var context = NewContext())
+            {
+                var haplotypeFrequenciesToRemove = context.HaplotypeFrequencies.Where(hf => hf.SetId == setId);
+                if (haplotypeFrequenciesToRemove.Any())
+                {
+                    context.HaplotypeFrequencies.RemoveRange(haplotypeFrequenciesToRemove);
+                    await context.SaveChangesAsync();
+                }
             }
         }
 
