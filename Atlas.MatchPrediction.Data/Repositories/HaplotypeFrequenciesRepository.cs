@@ -51,7 +51,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
 
         public async Task RemoveHaplotypeFrequencies(int setId)
         {
-            var sql = $"DELETE FROM MatchPrediction.HaplotypeFrequencies WHERE Set_Id = @{nameof(setId)}";
+            var sql = $"DELETE FROM {HaplotypeFrequency.QualifiedTableName} WHERE Set_Id = @{nameof(setId)}";
             await using (var conn = new SqlConnection(connectionString))
             {
                 await conn.ExecuteAsync(sql, new { setId });
