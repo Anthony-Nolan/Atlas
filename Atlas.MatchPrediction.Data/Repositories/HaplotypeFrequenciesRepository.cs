@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
@@ -22,14 +21,10 @@ namespace Atlas.MatchPrediction.Data.Repositories
     public class HaplotypeFrequenciesRepository : IHaplotypeFrequenciesRepository
     {
         private readonly string connectionString;
-        private readonly ContextFactory contextFactory;
 
-        private MatchPredictionContext NewContext() => contextFactory.Create(connectionString);
-
-        public HaplotypeFrequenciesRepository(string connectionString, ContextFactory contextFactory)
+        public HaplotypeFrequenciesRepository(string connectionString)
         {
             this.connectionString = connectionString;
-            this.contextFactory = contextFactory;
         }
 
         public async Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
@@ -56,14 +51,10 @@ namespace Atlas.MatchPrediction.Data.Repositories
 
         public async Task RemoveHaplotypeFrequencies(int setId)
         {
-            await using (var context = NewContext())
+            var sql = $"DELETE FROM MatchPrediction.HaplotypeFrequencies WHERE Set_Id = @{nameof(setId)}";
+            await using (var conn = new SqlConnection(connectionString))
             {
-                var haplotypeFrequenciesToRemove = context.HaplotypeFrequencies.Where(hf => hf.SetId == setId);
-                if (haplotypeFrequenciesToRemove.Any())
-                {
-                    context.HaplotypeFrequencies.RemoveRange(haplotypeFrequenciesToRemove);
-                    await context.SaveChangesAsync();
-                }
+                await conn.ExecuteAsync(sql, new { setId });
             }
         }
 
