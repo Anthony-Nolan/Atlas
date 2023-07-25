@@ -1,18 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface.Models;
+using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
-    internal struct TruncatedGenotypeSet
-    {
-        public Dictionary<PhenotypeInfo<string>,decimal> GenotypeLikelihoods { get; set; }
-        public ISet<PhenotypeInfo<HlaAtKnownTypingCategory>> Genotypes { get; set; }
-    }
-    
     /// <summary>
     /// Atlas cannot run suitably quickly when the expanded number of available genotypes for the patient/donor are too high
     /// (stemming from a combination of ambiguous typing, and very large haplotype frequency sets)
@@ -38,14 +32,14 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         /// </summary>
         private const int MaximumExpandedGenotypesPerInput = 2000;
 
-        public static TruncatedGenotypeSet TruncateGenotypes(
+        public static ImputedGenotypes TruncateGenotypes(
             Dictionary<PhenotypeInfo<string>, decimal> likelihoods,
             ISet<PhenotypeInfo<HlaAtKnownTypingCategory>> genotypes)
         {
             var truncatedLikelihoods = likelihoods.OrderByDescending(g => g.Value).Take(MaximumExpandedGenotypesPerInput).ToDictionary();
             var truncatedGenotypes = genotypes.Where(p => truncatedLikelihoods.ContainsKey(p.ToHlaNames())).ToHashSet();
 
-            return new TruncatedGenotypeSet { GenotypeLikelihoods = truncatedLikelihoods, Genotypes = truncatedGenotypes };
+            return new ImputedGenotypes { GenotypeLikelihoods = truncatedLikelihoods, Genotypes = truncatedGenotypes };
         }
     }
 }
