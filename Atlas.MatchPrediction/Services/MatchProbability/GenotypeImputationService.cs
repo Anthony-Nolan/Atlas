@@ -19,7 +19,7 @@ using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
-    internal class ImputationInput
+    public class ImputationInput
     {
         public PhenotypeOfStrings HlaTyping { get; set; }
         public HashSet<Locus> AllowedMatchPredictionLoci { get; set; }
@@ -27,7 +27,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         public string SubjectLogDescription { get; set; }
     }
 
-    internal interface IGenotypeImputationService
+    public interface IGenotypeImputationService
     {
         /// <summary>
         /// Expands <see cref="ImputationInput.HlaTyping"/> to set of possible genotypes with their likelihoods.

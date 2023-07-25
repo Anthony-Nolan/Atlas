@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Atlas.MatchPrediction.Models
 {
-    internal struct ImputedGenotypes
+    public struct ImputedGenotypes
     {
         public Dictionary<PhenotypeInfo<string>, decimal> GenotypeLikelihoods { get; set; }
         public ISet<PhenotypeInfo<HlaAtKnownTypingCategory>> Genotypes { get; set; }
