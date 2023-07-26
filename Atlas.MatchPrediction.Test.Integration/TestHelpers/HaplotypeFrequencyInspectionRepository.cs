@@ -81,7 +81,7 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers
 
         public async Task<bool> HasHaplotypeFrequencies(int setId)
         {
-            var sql = $"SELECT TOP 1 1 FROM {HaplotypeFrequency.QualifiedTableName} WHERE Set_Id = @{nameof(setId)}";
+            var sql = $"SELECT TOP 1 1 FROM {HaplotypeFrequency.QualifiedTableName} WHERE Set_Id = @{nameof(setId)}";  // using TOP 1 1 as it's faster than COUNT(*) and fits the needs for this method
             await using (var conn = new SqlConnection(connectionString))
             {
                 return await conn.QuerySingleOrDefaultAsync<int>(sql, new { setId }) == 1;
