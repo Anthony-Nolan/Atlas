@@ -5,6 +5,7 @@ using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -33,7 +34,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
             const int batchSize = 10000;
             var latestSetId = await inspectionRepository.GetLatestSetId();
             var setId = latestSetId + 1;
-            var exceptionWasThrown = false;
 
             var haplotypeFrequencies = GenerateHaplotypeFrequencies(setId, batchSize);
             var firstEntry = haplotypeFrequencies.First();
@@ -49,19 +49,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 TypingCategory = firstEntry.TypingCategory
             });
 
-            try
-            {
-                await repository.AddHaplotypeFrequencies(setId, haplotypeFrequencies);
-            }
-            catch
-            {
-                exceptionWasThrown = true;
-            }
+            repository.Invoking(r => r.AddHaplotypeFrequencies(setId, haplotypeFrequencies)).Should().Throw<Exception>();
 
             var latestHaplotypeFrequenciesSetId = await inspectionRepository.GetLatestSetId();
             var hasHaplotypeFrequency = await inspectionRepository.HasHaplotypeFrequencies(setId);
 
-            exceptionWasThrown.Should().BeTrue();
             hasHaplotypeFrequency.Should().BeFalse();
             latestHaplotypeFrequenciesSetId.Should().NotBe(setId);
             latestHaplotypeFrequenciesSetId.Should().Be(latestSetId);

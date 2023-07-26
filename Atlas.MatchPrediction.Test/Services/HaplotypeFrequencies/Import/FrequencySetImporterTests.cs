@@ -4,6 +4,7 @@ using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
+using FluentAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -61,20 +62,10 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies.Import
                 ShouldBypassHlaValidation = true
             };
 
-            var exceptionWasThrown = false;
-
             // Act
-            try
-            {
-                await frequencySetImporter.Import(file, importBehavior);
-            }
-            catch
-            {
-                exceptionWasThrown = true;
-            }
+            frequencySetImporter.Invoking(i => i.Import(file, importBehavior)).Should().Throw<Exception>();
 
             // Assert
-            Assert.IsTrue(exceptionWasThrown);
             await setRepository.Received(1).ActivateSet(Arg.Any<int>());
             await frequenciesRepository.Received(1).RemoveHaplotypeFrequencies(Arg.Any<int>());
         }
