@@ -15,6 +15,8 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers
         Task<int> ActiveSetCount(string registryCode, string ethnicityCode);
         Task<int> HaplotypeFrequencyCount(int setId);
         Task<HaplotypeFrequency> GetFirstHaplotypeFrequency(int setId);
+        Task<int> GetLatestSetId();
+        Task<bool> HasHaplotypeFrequencies(int setId);
     }
 
     internal class HaplotypeFrequencyInspectionRepository : IHaplotypeFrequencyInspectionRepository
@@ -65,6 +67,24 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers
                     sql,
                     param: new {SetId = setId},
                     commandTimeout: 300);
+            }
+        }
+
+        public async Task<int> GetLatestSetId()
+        {
+            var sql = $"SELECT TOP 1 Id FROM {HaplotypeFrequency.QualifiedTableName} ORDER BY Set_Id DESC";
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                return await conn.QuerySingleOrDefaultAsync<int>(sql);
+            }
+        }
+
+        public async Task<bool> HasHaplotypeFrequencies(int setId)
+        {
+            var sql = $"SELECT TOP 1 1 FROM {HaplotypeFrequency.QualifiedTableName} WHERE Set_Id = @{nameof(setId)}";
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                return await conn.QuerySingleOrDefaultAsync<int>(sql, new { setId }) == 1;
             }
         }
     }

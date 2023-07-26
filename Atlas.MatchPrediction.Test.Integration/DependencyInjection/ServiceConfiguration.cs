@@ -5,6 +5,7 @@ using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 using Atlas.MatchPrediction.Data.Context;
+using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
@@ -67,6 +68,10 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
 
             services.AddScoped<IHaplotypeFrequencyInspectionRepository>(sp =>
                 new HaplotypeFrequencyInspectionRepository(ConnectionStringReader(MatchPredictionSqlConnectionString)(sp))
+            );
+
+            services.AddTransient<IHaplotypeFrequenciesRepository, HaplotypeFrequenciesRepository>(sp =>
+                new HaplotypeFrequenciesRepository(ConnectionStringReader(MatchPredictionSqlConnectionString)(sp))
             );
         }
 
