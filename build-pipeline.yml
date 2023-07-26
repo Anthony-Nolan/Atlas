@@ -20,7 +20,7 @@ jobs:
         inputs:
           command: 'custom'
           custom: 'tool'
-          arguments: 'install --global dotnet-ef'
+          arguments: 'install dotnet-ef --global --ignore-failed-sources'
       - task: DotNetCoreCLI@2
         displayName: 'Restore'
         inputs:
