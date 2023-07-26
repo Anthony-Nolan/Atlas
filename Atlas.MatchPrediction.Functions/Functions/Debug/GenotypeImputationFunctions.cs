@@ -54,7 +54,10 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
 
             return new JsonResult(new GenotypeImputationResponse
             {
+                HlaTyping = input.HlaTyping.ToPhenotypeInfo().PrettyPrint(),
+                AllowedLoci = input.AllowedLoci,
                 HaplotypeFrequencySet = frequencySet,
+                GenotypeCount = imputedGenotypes.GenotypeLikelihoods.Count,
                 GenotypeLikelihoods = genotypes
             });
         }
