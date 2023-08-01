@@ -351,6 +351,12 @@ variable "RESULTS_BATCH_SIZE" {
   description = "Batch size (number of results written per file) for saving search/matching results"
 }
 
+variable "SEARCH_RESULTS_READY_SUBSCRIPTION_NAMES" {
+  type        = list(string)
+  default     = []
+  description  = "Subscription names for the search-results-ready Service Bus topic (in addition to Audit subscription). If not provided, no additional subscriptions will be created."
+}
+
 variable "SERVICE_PLAN_MAX_SCALE_OUT" {
   type        = number
   default     = 50
