@@ -6,7 +6,7 @@ output "azure_storage" {
 
 output "function_app" {
   value = {
-    api_key                 = var.FUNCTION_HOST_KEY
+    api_key                 = data.azurerm_function_app_host_keys.atlas_matching_algorithm_function_keys.default_function_key
     base_url                = "https://${azurerm_windows_function_app.atlas_matching_algorithm_function.default_hostname}"
     app_name                = local.matching_algorithm_function_app_name
     donor_matching_app_name = local.donor_management_function_app_name

@@ -84,10 +84,6 @@ variable "DONOR_WRITE_TRANSACTIONALITY__DONOR_UPDATES" {
   description = "Should the Write for a Donor be entirely Transactional when running DataRefresh. 'false' for greater performance. 'true' for greater reliability"
 }
 
-variable "FUNCTION_HOST_KEY" {
-  type = string
-}
-
 variable "IP_RESTRICTION_SETTINGS" {
   type    = list(string)
   default = []

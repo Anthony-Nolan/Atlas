@@ -167,3 +167,8 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
     "WEBSITE_RUN_FROM_PACKAGE" = var.WEBSITE_RUN_FROM_PACKAGE
   }
 }
+
+data "azurerm_function_app_host_keys" "atlas_public_api_function_keys" {
+  name                = azurerm_windows_function_app.atlas_public_api_function.name
+  resource_group_name = azurerm_resource_group.atlas_resource_group.name
+}
