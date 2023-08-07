@@ -11,6 +11,7 @@ output "match_prediction" {
 
 output "matching_algorithm" {
   value = module.matching_algorithm
+  sensitive=true
 }
 
 output "multiple_allele_code_lookup" {
@@ -19,9 +20,10 @@ output "multiple_allele_code_lookup" {
 
 output "public_api_function" {
   value = {
-    api_key  = var.PUBLIC_API_FUNCTION_HOST_KEY
+    api_key  = data.azurerm_function_app_host_keys.atlas_public_api_function_keys.default_function_key
     base_url = "https://${azurerm_windows_function_app.atlas_public_api_function.default_hostname}"
   }
+  sensitive=true
 }
 
 output "resource_group_name" {

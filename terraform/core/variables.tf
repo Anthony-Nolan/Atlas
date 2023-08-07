@@ -280,12 +280,6 @@ variable "MATCHING_DONOR_WRITE_TRANSACTIONALITY__DONOR_UPDATES" {
   description = "Should the Write for a Donor be entirely Transactional when running DataRefresh. 'false' for greater performance. 'true' for greater reliability"
 }
 
-variable "MATCHING_FUNCTION_HOST_KEY" {
-  type        = string
-  default     = ""
-  description = "Optional. Host keys cannot be set from terraform. This should be set up manually, and is only included to be used as an export. If unset, other terraformed apps cannot use the ATLAS remote state to fetch the host key, and must have it provided manually."
-}
-
 variable "MATCHING_MESSAGING_BUS_DONOR_BATCH_SIZE" {
   type        = number
   default     = 350
@@ -316,12 +310,6 @@ variable "MAX_CONCURRENT_ACTIVITY_FUNCTIONS" {
 variable "ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE" {
   type    = number
   default = 10
-}
-
-variable "PUBLIC_API_FUNCTION_HOST_KEY" {
-  type        = string
-  default     = ""
-  description = "Optional. Host keys cannot be set from terraform. This should be set up manually, and is only included to be used as an export. If unset, other terraformed apps cannot use the ATLAS remote state to fetch the host key, and must have it provided manually."
 }
 
 variable "REPEAT_SEARCH_DATABASE_PASSWORD" {
