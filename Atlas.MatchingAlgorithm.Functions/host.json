@@ -2,8 +2,7 @@
   "extensions": {
     "serviceBus": {
       "messageHandlerOptions": {
-        "maxAutoRenewDuration": "2.00:30:00",
-        "maxConcurrentCalls": 3
+        "maxAutoRenewDuration": "2.00:30:00"
       }
     }
   },
