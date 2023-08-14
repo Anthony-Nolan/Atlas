@@ -1,4 +1,6 @@
-﻿namespace Atlas.Client.Models.Search.Results.LogFile
+﻿using Atlas.Client.Models.Search.Requests;
+
+namespace Atlas.Client.Models.Search.Results.LogFile
 {
     public class SearchLog
     {
@@ -8,6 +10,11 @@
         /// Did request complete successfully?
         /// </summary>
         public bool WasSuccessful { get; set; }
+
+        /// <summary>
+        /// Original search request.
+        /// </summary>
+        public SearchRequest SearchRequest { get; set; }
 
         /// <summary>
         /// Performance metrics captured for the request.

@@ -114,6 +114,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 {
                     SearchRequestId = notification.SearchRequestId,
                     WasSuccessful = requestCompletedSuccessfully,
+                    SearchRequest = notification.SearchRequest,
                     RequestPerformanceMetrics = performanceMetrics
                 });
             }
