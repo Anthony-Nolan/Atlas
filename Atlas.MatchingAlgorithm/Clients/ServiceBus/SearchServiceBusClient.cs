@@ -30,7 +30,13 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
         public async Task PublishToSearchRequestsTopic(IdentifiedSearchRequest searchRequest)
         {
             var json = JsonConvert.SerializeObject(searchRequest);
-            var message = new Message(Encoding.UTF8.GetBytes(json));
+            var message = new Message(Encoding.UTF8.GetBytes(json))
+            {
+                UserProperties =
+                {
+                    {nameof(IdentifiedSearchRequest)+nameof(IdentifiedSearchRequest.Id), searchRequest.Id}
+                }
+            };
 
             var client = new TopicClient(connectionString, searchRequestsTopicName);
             await client.SendAsync(message);
