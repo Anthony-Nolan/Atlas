@@ -3,16 +3,17 @@ using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using System.Reflection;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Common.Models;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
 {
     public interface IMatchingFailureNotificationSender
     {
-        /// <param name="searchRequestId"></param>
-        /// <param name="attemptNumber">The number of times this <paramref name="searchRequestId"/> has been attempted, including the current attempt.</param>
-        /// <param name="remainingRetriesCount">The number of times this <paramref name="searchRequestId"/> will be retried until it completes successfully.</param>
+        /// <param name="searchRequest"></param>
+        /// <param name="attemptNumber">The number of times this <paramref name="searchRequest"/> has been attempted, including the current attempt.</param>
+        /// <param name="remainingRetriesCount">The number of times this <paramref name="searchRequest"/> will be retried until it completes successfully.</param>
         /// <param name="validationError"></param>
-        Task SendFailureNotification(string searchRequestId, int attemptNumber, int remainingRetriesCount, string validationError = null);
+        Task SendFailureNotification(IdentifiedSearchRequest searchRequest, int attemptNumber, int remainingRetriesCount, string validationError = null);
     }
 
     public class MatchingFailureNotificationSender : IMatchingFailureNotificationSender
@@ -26,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
         }
 
-        public async Task SendFailureNotification(string searchRequestId, int attemptNumber, int remainingRetriesCount, string validationError = null)
+        public async Task SendFailureNotification(IdentifiedSearchRequest searchRequest, int attemptNumber, int remainingRetriesCount, string validationError = null)
         {
             var failureInfo = new MatchingAlgorithmFailureInfo
             {
@@ -38,7 +39,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var notification = new MatchingResultsNotification
             {
                 WasSuccessful = false,
-                SearchRequestId = searchRequestId,
+                SearchRequestId = searchRequest.Id,
+                SearchRequest = searchRequest.SearchRequest,
                 MatchingAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString(),
                 MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion(),
                 ValidationError = failureInfo.ValidationError,
