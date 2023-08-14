@@ -65,7 +65,7 @@ namespace Atlas.ManualTesting.Services
                 WasSuccessfulCount = notifications.Count(n => n.WasSuccessful),
                 FailureInfo = notifications
                     .Where(n => !n.WasSuccessful)
-                    .GroupBy(n => n.FailureMessage)
+                    .GroupBy(n => n.FailureInfo?.Summary)
                     .ToDictionary(grp => grp.Key, grp => grp.Count()),
                 UniqueSearchRequestIdCount = notifications.Select(n => n.SearchRequestId).Distinct().Count(),
                 SearchTimesInSeconds = ExtractSearchTimes(notifications),
