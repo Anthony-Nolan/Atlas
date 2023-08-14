@@ -112,6 +112,7 @@ namespace Atlas.Functions.Services
                     {nameof(SearchResultsNotification.SearchRequestId), searchResultsNotification.SearchRequestId},
                     {nameof(SearchResultsNotification.RepeatSearchRequestId), searchResultsNotification.RepeatSearchRequestId},
                     {nameof(SearchResultsNotification.WasSuccessful), searchResultsNotification.WasSuccessful},
+                    {nameof(SearchResultsNotification.FailureInfo.WillRetry), searchResultsNotification.FailureInfo?.WillRetry ?? false},
                     {nameof(SearchResultsNotification.NumberOfResults), searchResultsNotification.NumberOfResults},
                     {nameof(SearchResultsNotification.MatchingAlgorithmHlaNomenclatureVersion), searchResultsNotification.MatchingAlgorithmHlaNomenclatureVersion},
                     {nameof(SearchResultsNotification.OverallSearchTime), searchResultsNotification.OverallSearchTime},
