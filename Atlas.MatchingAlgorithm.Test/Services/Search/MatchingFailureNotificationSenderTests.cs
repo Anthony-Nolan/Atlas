@@ -5,6 +5,9 @@ using Atlas.MatchingAlgorithm.Services.Search;
 using NSubstitute;
 using NUnit.Framework;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
+using Microsoft.Azure.Documents.SystemFunctions;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search
 {
@@ -32,11 +35,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             const int attemptNumber = 7;
             const int remainingRetriesCount = 3;
 
-            await matchingFailureNotificationSender.SendFailureNotification(searchRequestId, attemptNumber, remainingRetriesCount, validationError);
+            var searchRequest = new IdentifiedSearchRequest { Id = searchRequestId, SearchRequest = new SearchRequestBuilder().Build() };
 
-            await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r => 
+            await matchingFailureNotificationSender.SendFailureNotification(searchRequest, attemptNumber, remainingRetriesCount, validationError);
+
+            await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
                 !r.WasSuccessful
                 && r.SearchRequestId.Equals(searchRequestId)
+                && r.SearchRequest != null
                 && r.ValidationError.Equals(validationError)
                 && r.FailureInfo.AttemptNumber == attemptNumber
                 && r.FailureInfo.RemainingRetriesCount == remainingRetriesCount

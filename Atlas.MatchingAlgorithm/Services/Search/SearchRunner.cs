@@ -119,7 +119,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 searchLogger.SendTrace($"Failed to lookup HLA for search with id {searchRequestId}. Exception: {hmdException}", LogLevel.Error);
 
-                await matchingFailureNotificationSender.SendFailureNotification(searchRequestId, attemptNumber, 0, hmdException.Message);
+                await matchingFailureNotificationSender.SendFailureNotification(identifiedSearchRequest, attemptNumber, 0, hmdException.Message);
 
                 // Do not re-throw the HMD exception to prevent the search being retried or dead-lettered.
             }
@@ -128,7 +128,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 searchLogger.SendTrace($"Failed to run search with id {searchRequestId}. Exception: {e}", LogLevel.Error);
 
-                await matchingFailureNotificationSender.SendFailureNotification(searchRequestId, attemptNumber,
+                await matchingFailureNotificationSender.SendFailureNotification(identifiedSearchRequest, attemptNumber,
                     searchRequestMaxRetryCount - attemptNumber);
 
                 throw;

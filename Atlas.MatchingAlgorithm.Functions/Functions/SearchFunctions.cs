@@ -71,7 +71,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             IdentifiedSearchRequest request,
             int deliveryCount)
         {
-            await matchingFailureNotificationSender.SendFailureNotification(request.Id, deliveryCount, 0);
+            await matchingFailureNotificationSender.SendFailureNotification(request, deliveryCount, 0);
         }
     }
 }

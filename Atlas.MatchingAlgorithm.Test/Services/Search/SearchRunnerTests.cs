@@ -157,9 +157,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             searchService.Search(default).ThrowsForAnyArgs(new HlaMetadataDictionaryException(Locus.A, "hla-name", validationError));
 
+            var request = new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest };
+
             try
             {
-                await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, attemptNumber, default);
+                await searchRunner.RunSearch(request, attemptNumber, default);
             }
             catch (HlaMetadataDictionaryException)
             {
@@ -167,7 +169,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             }
             finally
             {
-                await matchingFailureNotificationSender.Received().SendFailureNotification(id, attemptNumber, 0, validationError);
+                await matchingFailureNotificationSender.Received().SendFailureNotification(
+                    Arg.Is<IdentifiedSearchRequest>(x => x.Id == id), 
+                    attemptNumber, 
+                    0, 
+                    validationError);
             }
         }
 
@@ -188,9 +194,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             searchService.Search(default).ThrowsForAnyArgs(new Exception());
 
+            var request = new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest };
+
             try
             {
-                await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, attemptNumber, default);
+                await searchRunner.RunSearch(request, attemptNumber, default);
             }
             catch (Exception)
             {
@@ -198,7 +206,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             }
             finally
             {
-                await matchingFailureNotificationSender.Received().SendFailureNotification(id, attemptNumber, MaxRetryCount - attemptNumber);
+                await matchingFailureNotificationSender.Received().SendFailureNotification(
+                    Arg.Is<IdentifiedSearchRequest>(x => x.Id == id),
+                    attemptNumber,
+                    MaxRetryCount - attemptNumber);
             }
         }
 
