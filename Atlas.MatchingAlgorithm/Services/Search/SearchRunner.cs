@@ -135,10 +135,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             }
             finally
             {
-                await UploadSearchLog(new SearchLog
+                await UploadSearchLog(new MatchingSearchLog
                 {
                     SearchRequestId = searchRequestId,
                     WasSuccessful = requestCompletedSuccessfully,
+                    AttemptNumber = attemptNumber,
+                    SearchRequest = identifiedSearchRequest.SearchRequest,
                     RequestPerformanceMetrics = new RequestPerformanceMetrics
                     {
                         InitiationTime = enqueuedTimeUtc,
@@ -150,7 +152,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             }
         }
 
-        public async Task UploadSearchLog(SearchLog searchLog)
+        public async Task UploadSearchLog(MatchingSearchLog searchLog)
         {
             try
             {
