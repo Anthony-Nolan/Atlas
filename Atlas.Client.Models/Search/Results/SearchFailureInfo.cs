@@ -26,5 +26,20 @@ namespace Atlas.Client.Models.Search.Results
         /// Failures that occur within the Search Orchestrator are retried on the Activity Function level and not at the search request level, and so <see cref="WillRetry"/> will be `false`.
         /// </summary>
         public bool WillRetry => MatchingAlgorithmFailureInfo is { RemainingRetriesCount: > 0 };
+
+        /// <summary>
+        /// Summary of the failure.
+        /// </summary>
+        public string Summary
+        {
+            get
+            {
+                var validationError = string.IsNullOrEmpty(MatchingAlgorithmFailureInfo?.ValidationError)
+                    ? ""
+                    : $", with validation error: {MatchingAlgorithmFailureInfo.ValidationError}";
+
+                return $"Search failed at stage: {StageReached}{validationError}";
+            }
+        }
     }
 }
