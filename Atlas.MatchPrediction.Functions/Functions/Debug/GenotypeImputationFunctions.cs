@@ -5,6 +5,7 @@ using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Http;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Functions.Models.Debug;
+using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
@@ -37,16 +38,14 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
             HttpRequest request)
         {
             var input = JsonConvert.DeserializeObject<GenotypeImputationRequest>(await new StreamReader(request.Body).ReadToEndAsync());
-            input.FrequencySetMetadata ??= new FrequencySetMetadata();
+            input.SubjectInfo.FrequencySetMetadata ??= new FrequencySetMetadata();
 
-            var frequencySet = await frequencyService.GetSingleHaplotypeFrequencySet(input.FrequencySetMetadata);
+            var frequencySet = await frequencyService.GetSingleHaplotypeFrequencySet(input.SubjectInfo.FrequencySetMetadata);
 
             var imputedGenotypes = await genotypeImputationService.Impute(new ImputationInput
             {
-                HlaTyping = input.HlaTyping.ToPhenotypeInfo(),
-                AllowedMatchPredictionLoci = MoreEnumerable.ToHashSet(input.AllowedLoci),
-                FrequencySet = frequencySet,
-                SubjectLogDescription = "debug-subject"
+                SubjectData = new SubjectData(input.SubjectInfo.HlaTyping.ToPhenotypeInfo(), new SubjectFrequencySet(frequencySet, "debug-subject")),
+                AllowedMatchPredictionLoci = MoreEnumerable.ToHashSet(input.AllowedLoci)
             });
 
             var genotypes = imputedGenotypes.GenotypeLikelihoods
@@ -54,7 +53,7 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
 
             return new JsonResult(new GenotypeImputationResponse
             {
-                HlaTyping = input.HlaTyping.ToPhenotypeInfo().PrettyPrint(),
+                HlaTyping = input.SubjectInfo.HlaTyping.ToPhenotypeInfo().PrettyPrint(),
                 AllowedLoci = input.AllowedLoci,
                 HaplotypeFrequencySet = frequencySet,
                 GenotypeCount = imputedGenotypes.GenotypeLikelihoods.Count,

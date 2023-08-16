@@ -8,7 +8,7 @@ using Atlas.MatchPrediction.Utils;
 
 namespace Atlas.MatchPrediction.Models;
 
-internal class GenotypeAtDesiredResolutions
+public class GenotypeAtDesiredResolutions
 {
     /// <summary>
     /// HLA at the resolution at which they were stored.
