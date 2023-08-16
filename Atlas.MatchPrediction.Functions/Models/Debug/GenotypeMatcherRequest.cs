@@ -3,9 +3,10 @@ using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.MatchPrediction.Functions.Models.Debug
 {
-    public class GenotypeImputationRequest
+    public class GenotypeMatcherRequest
     {
-        public SubjectInfo SubjectInfo { get; set; }
         public IEnumerable<Locus> AllowedLoci { get; set; }
+        public SubjectInfo Patient { get; set; }
+        public SubjectInfo Donor { get; set; }
     }
 }

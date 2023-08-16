@@ -1,10 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Http;
+using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.MatchCalculation;
+using Atlas.MatchPrediction.Functions.Models.Debug;
 using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchCalculation;
+using Atlas.MatchPrediction.Services.MatchProbability;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,10 +25,17 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
     public class MatchCalculationFunctions
     {
         private readonly IMatchCalculationService matchCalculatorService;
+        private readonly IHaplotypeFrequencyService frequencyService;
+        private readonly IGenotypeMatcher genotypeMatcher;
 
-        public MatchCalculationFunctions(IMatchCalculationService matchCalculatorService)
+        public MatchCalculationFunctions(
+            IMatchCalculationService matchCalculatorService,
+            IHaplotypeFrequencyService frequencyService,
+            IGenotypeMatcher genotypeMatcher)
         {
             this.matchCalculatorService = matchCalculatorService;
+            this.frequencyService = frequencyService;
+            this.genotypeMatcher = genotypeMatcher;
         }
 
         [FunctionName(nameof(CalculateMatch))]
@@ -43,8 +58,8 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
                         matchCalculationInput.DonorHla,
                         matchCalculationInput.HlaNomenclatureVersion,
                         matchCalculationInput.AllowedLoci)
-                }; 
-                
+                };
+
                 return new JsonResult(new MatchCalculationResponse
                 {
                     MatchCounts = genotypeMatchDetails.MatchCounts,
@@ -56,5 +71,60 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
                 return new BadRequestObjectResult(exception);
             }
         }
+
+        [FunctionName(nameof(MatchPatientDonorGenotypes))]
+        public async Task<IActionResult> MatchPatientDonorGenotypes(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(MatchPatientDonorGenotypes)}")]
+            [RequestBodyType(typeof(GenotypeMatcherRequest), nameof(GenotypeMatcherRequest))]
+            HttpRequest request)
+        {
+            var input = JsonConvert.DeserializeObject<GenotypeMatcherRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+
+            var frequencySet = await frequencyService.GetHaplotypeFrequencySets(
+                input.Patient.FrequencySetMetadata,
+                input.Donor.FrequencySetMetadata);
+
+            var result = await genotypeMatcher.MatchPatientDonorGenotypes(new GenotypeMatcherInput
+            {
+                PatientData = new SubjectData(input.Patient.HlaTyping.ToPhenotypeInfo(),
+                    new SubjectFrequencySet(frequencySet.PatientSet, "debug-patient")),
+                DonorData = new SubjectData(input.Donor.HlaTyping.ToPhenotypeInfo(), new SubjectFrequencySet(frequencySet.DonorSet, "debug-donor")),
+                AllowedLoci = input.AllowedLoci.ToHashSet()
+            });
+
+            var response = new GenotypeMatcherResponse
+            {
+                AllowedLoci = input.AllowedLoci,
+                PatientInfo = BuildSubjectResult(result.PatientResult, frequencySet.PatientSet, input.Patient),
+                DonorInfo = BuildSubjectResult(result.DonorResult, frequencySet.DonorSet, input.Donor),
+                MatchedGenotypePairs = BuildMatchedGenotypePairs(result)
+            };
+
+            return new JsonResult(response);
+        }
+
+        private static Dictionary<int, IEnumerable<MatchedGenotypePair>> BuildMatchedGenotypePairs(GenotypeMatcherResult result)
+        {
+            return result.GenotypeMatchDetails.Select(x => new
+            {
+                TotalCount = x.MatchCount,
+                Pair = new MatchedGenotypePair
+                {
+                    PatientGenotype = $"{x.PatientGenotype.PrettyPrint()}{x.PatientGenotypeLikelihood}",
+                    DonorGenotype = $"{x.DonorGenotype.PrettyPrint()}{x.DonorGenotypeLikelihood}",
+                    MatchCounts = BuildCounts(x.MatchCount, x.MatchCounts)
+                }
+            })
+                .GroupBy(x => x.TotalCount)
+                .ToDictionary(x => x.Key, x => x.Select(a => a.Pair));
+        }
+
+        private static SubjectResult BuildSubjectResult(GenotypeMatcherResult.SubjectResult subjectResult, HaplotypeFrequencySet set, SubjectInfo subjectInfo)
+        {
+            return new SubjectResult(subjectResult.IsUnrepresented, set, subjectInfo.HlaTyping.ToPhenotypeInfo().PrettyPrint());
+        }
+
+        private static string BuildCounts(int totalCount, LociInfo<int?> locusCounts) =>
+            $"{totalCount};{locusCounts.A};{locusCounts.B};{locusCounts.C};{locusCounts.Dqb1};{locusCounts.Drb1}";
     }
 }

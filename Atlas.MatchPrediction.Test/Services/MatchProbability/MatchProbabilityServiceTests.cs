@@ -1,13 +1,9 @@
 ﻿using Atlas.Client.Models.Search.Results.MatchPrediction;
-using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.ApplicationInsights;
-using Atlas.MatchPrediction.Data.Models;
-using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
-using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
@@ -15,10 +11,10 @@ using AutoFixture;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 
 namespace Atlas.MatchPrediction.Test.Services.MatchProbability
@@ -26,11 +22,9 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
     [TestFixture]
     public class MatchProbabilityServiceTests
     {
-        private IMatchCalculationService matchCalculationService;
-        private IGenotypeConverter genotypeConverter;
         private IMatchProbabilityCalculator matchProbabilityCalculator;
+        private IGenotypeMatcher genotypeMatcher;
         private IHaplotypeFrequencyService haplotypeFrequencyService;
-        private IGenotypeImputationService genotypeImputationService;
         private IMatchPredictionLogger<MatchProbabilityLoggingContext> logger;
         private MatchProbabilityLoggingContext matchProbabilityLoggingContext;
         private readonly Fixture fixture = new();
@@ -40,11 +34,9 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         [SetUp]
         public void SetUp()
         {
-            genotypeConverter = Substitute.For<IGenotypeConverter>();
-            matchCalculationService = Substitute.For<IMatchCalculationService>();
             matchProbabilityCalculator = Substitute.For<IMatchProbabilityCalculator>();
+            genotypeMatcher = Substitute.For<IGenotypeMatcher>();
             haplotypeFrequencyService = Substitute.For<IHaplotypeFrequencyService>();
-            genotypeImputationService = Substitute.For<IGenotypeImputationService>();
             logger = Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
             matchProbabilityLoggingContext = new MatchProbabilityLoggingContext();
 
@@ -53,35 +45,32 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             hmdFactory.BuildDictionary(default).ReturnsForAnyArgs(hmd);
 
             matchProbabilityService = new MatchProbabilityService(
-                genotypeConverter,
-                matchCalculationService,
                 matchProbabilityCalculator,
                 haplotypeFrequencyService,
-                genotypeImputationService,
+                genotypeMatcher,
                 logger,
                 matchProbabilityLoggingContext);
 
-            haplotypeFrequencyService.GetAllHaplotypeFrequencies(default).ReturnsForAnyArgs(
-                new ConcurrentDictionary<LociInfo<string>, HaplotypeFrequency>(
-                    new Dictionary<LociInfo<string>, HaplotypeFrequency> { { new LociInfo<string>(), HaplotypeFrequencyBuilder.New.Build() } })
-                );
+            haplotypeFrequencyService.GetHaplotypeFrequencySets(default, default).ReturnsForAnyArgs(
+                new HaplotypeFrequencySetResponse
+                {
+                    PatientSet = new HaplotypeFrequencySet(),
+                    DonorSet = new HaplotypeFrequencySet()
+                });
 
-            genotypeImputationService.Impute(default).ReturnsForAnyArgs(new ImputedGenotypes
+            genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(new GenotypeMatcherResult
             {
-                GenotypeLikelihoods = new Dictionary<PhenotypeInfo<string>, decimal> { { new PhenotypeInfo<string>("hla"), 0.01m } },
-                Genotypes = new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>> { new(new HlaAtKnownTypingCategory("hla", HaplotypeTypingCategory.SmallGGroup)) }
+                PatientResult = new GenotypeMatcherResult.SubjectResult(false, 0m),
+                DonorResult = new GenotypeMatcherResult.SubjectResult(false, 0m),
+                GenotypeMatchDetails = new List<GenotypeMatchDetails>()
             });
-
-            genotypeConverter.ConvertGenotypes(default, default, default, default).ReturnsForAnyArgs(
-                new List<GenotypeAtDesiredResolutions>()
-            );
 
             matchProbabilityCalculator.CalculateMatchProbability(default, default, default, default).ReturnsForAnyArgs(
                 new MatchProbabilityResponse());
         }
 
         [Test]
-        public async Task CalculateMatchProbability_ImputesGenotypesForPatientAndDonorHlaTypings()
+        public async Task CalculateMatchProbability_MatchesPatientAndDonorGenotypes()
         {
             const int patientHfSetId = 123, donorHfSetId = 456;
 
@@ -96,19 +85,34 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
             await matchProbabilityService.CalculateMatchProbability(input);
 
-            await genotypeImputationService.Received(1).Impute(Arg.Is<ImputationInput>(x =>
-                x.SubjectLogDescription == "patient" &&
-                x.AllowedMatchPredictionLoci.SetEquals(new[] { Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1 }) &&
-                x.FrequencySet.Id == patientHfSetId));
-
-            await genotypeImputationService.Received(1).Impute(Arg.Is<ImputationInput>(x =>
-                x.SubjectLogDescription == "donor" &&
-                x.AllowedMatchPredictionLoci.SetEquals(new[] { Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1 }) &&
-                x.FrequencySet.Id == donorHfSetId));
+            await genotypeMatcher.Received(1).MatchPatientDonorGenotypes(Arg.Is<GenotypeMatcherInput>(x =>
+                x.PatientData.SubjectFrequencySet.SubjectLogDescription == "patient" &&
+                x.PatientData.SubjectFrequencySet.FrequencySet.Id == patientHfSetId &&
+                x.PatientData.HlaTyping.Equals(input.PatientHla.ToPhenotypeInfo()) &&
+                x.DonorData.SubjectFrequencySet.SubjectLogDescription == "donor" &&
+                x.DonorData.SubjectFrequencySet.FrequencySet.Id == donorHfSetId &&
+                x.DonorData.HlaTyping.Equals(input.Donor.DonorHla.ToPhenotypeInfo()) &&
+                x.AllowedLoci.SetEquals(new[] { Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1 })));
         }
 
         [Test]
-        public async Task CalculateMatchProbability_WhenPatientIsUnrepresented_ReturnsUnrepresentedResponse()
+        public async Task CalculateMatchProbability_PatientIsUnrepresented_DoesNotCalculateMatchProbability()
+        {
+            genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(new GenotypeMatcherResult
+            {
+                PatientResult = new GenotypeMatcherResult.SubjectResult(true, 0m),
+                DonorResult = new GenotypeMatcherResult.SubjectResult(false, 0.1m),
+                GenotypeMatchDetails = new List<GenotypeMatchDetails>()
+            });
+
+            var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
+            await matchProbabilityService.CalculateMatchProbability(input);
+
+            matchProbabilityCalculator.DidNotReceiveWithAnyArgs().CalculateMatchProbability(default, default, default, default);
+        }
+
+        [Test]
+        public async Task CalculateMatchProbability_PatientIsUnrepresented_ReturnsUnrepresentedResponse()
         {
             const int patientHfSetId = 123, donorHfSetId = 456;
 
@@ -120,8 +124,12 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 }
             );
 
-            genotypeImputationService.Impute(Arg.Is<ImputationInput>(x => x.SubjectLogDescription == "patient"))
-                .Returns(new ImputedGenotypes());
+            genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(new GenotypeMatcherResult
+            {
+                PatientResult = new GenotypeMatcherResult.SubjectResult(true, 0m),
+                DonorResult = new GenotypeMatcherResult.SubjectResult(false, 0.1m),
+                GenotypeMatchDetails = new List<GenotypeMatchDetails>()
+            });
 
             var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
             var result = await matchProbabilityService.CalculateMatchProbability(input);
@@ -134,7 +142,23 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         }
 
         [Test]
-        public async Task CalculateMatchProbability_WhenDonorIsUnrepresented_ReturnsUnrepresentedResponse()
+        public async Task CalculateMatchProbability_DonorIsUnrepresented_DoesNotCalculateMatchProbability()
+        {
+            genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(new GenotypeMatcherResult
+            {
+                PatientResult = new GenotypeMatcherResult.SubjectResult(false, 0.1m),
+                DonorResult = new GenotypeMatcherResult.SubjectResult(true, 0m),
+                GenotypeMatchDetails = new List<GenotypeMatchDetails>()
+            });
+
+            var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
+            await matchProbabilityService.CalculateMatchProbability(input);
+
+            matchProbabilityCalculator.DidNotReceiveWithAnyArgs().CalculateMatchProbability(default, default, default, default);
+        }
+
+        [Test]
+        public async Task CalculateMatchProbability_DonorIsUnrepresented_ReturnsUnrepresentedResponse()
         {
             const int patientHfSetId = 123, donorHfSetId = 456;
 
@@ -146,8 +170,12 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 }
             );
 
-            genotypeImputationService.Impute(Arg.Is<ImputationInput>(x => x.SubjectLogDescription == "donor"))
-                .Returns(new ImputedGenotypes());
+            genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(new GenotypeMatcherResult
+            {
+                PatientResult = new GenotypeMatcherResult.SubjectResult(false, 0.1m),
+                DonorResult = new GenotypeMatcherResult.SubjectResult(true, 0m),
+                GenotypeMatchDetails = new List<GenotypeMatchDetails>()
+            });
 
             var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
             var result = await matchProbabilityService.CalculateMatchProbability(input);
@@ -160,39 +188,58 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         }
 
         [Test]
-        public async Task CalculateMatchProbability_ConvertsGenotypesUsingHFSetNomenclatureVersions()
+        public async Task CalculateMatchProbability_CalculatesMatchProbability()
         {
-            const string patientHfSetVersion = "3400", donorHfSetVersion = "3410";
+            const decimal patientLikelihood = 0.1m, donorLikelihood = 0.5m;
 
-            haplotypeFrequencyService.GetHaplotypeFrequencySets(default, default).ReturnsForAnyArgs(
-                new HaplotypeFrequencySetResponse
-                {
-                    PatientSet = new HaplotypeFrequencySet { HlaNomenclatureVersion = patientHfSetVersion },
-                    DonorSet = new HaplotypeFrequencySet { HlaNomenclatureVersion = donorHfSetVersion }
-                }
-            );
+            genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(new GenotypeMatcherResult
+            {
+                PatientResult = new GenotypeMatcherResult.SubjectResult(false, patientLikelihood),
+                DonorResult = new GenotypeMatcherResult.SubjectResult(false, donorLikelihood),
+                GenotypeMatchDetails = new List<GenotypeMatchDetails>()
+            });
 
-            var input = SingleDonorMatchProbabilityInputBuilder.Default.Build();
+            var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
             await matchProbabilityService.CalculateMatchProbability(input);
 
-
-            await genotypeConverter.Received(1).ConvertGenotypes(
-                Arg.Any<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>>(),
-                "patient",
-                Arg.Any<IReadOnlyDictionary<PhenotypeInfo<string>, decimal>>(),
-                patientHfSetVersion
-                );
-
-            await genotypeConverter.Received(1).ConvertGenotypes(
-                Arg.Any<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>>(),
-                "donor",
-                Arg.Any<IReadOnlyDictionary<PhenotypeInfo<string>, decimal>>(),
-                donorHfSetVersion
+            matchProbabilityCalculator.Received(1).CalculateMatchProbability(
+                patientLikelihood,
+                donorLikelihood,
+                Arg.Any<IEnumerable<GenotypeMatchDetails>>(),
+                Arg.Is<HashSet<Locus>>(x => x.SetEquals(new[] { Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1 }))
             );
         }
 
         [Test]
-        public async Task CalculateMatchProbability_ShouldReturnCompleteHaplotypeFrequencySet()
+        public async Task CalculateMatchProbability_ReturnsMatchProbabilityResponse()
+        {
+            const decimal probability = 0.1m;
+
+            genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(new GenotypeMatcherResult
+            {
+                PatientResult = new GenotypeMatcherResult.SubjectResult(false, 0.1m),
+                DonorResult = new GenotypeMatcherResult.SubjectResult(false, 0.1m),
+                GenotypeMatchDetails = new List<GenotypeMatchDetails>()
+            });
+
+            matchProbabilityCalculator.CalculateMatchProbability(default, default, default, default)
+                .ReturnsForAnyArgs(new MatchProbabilityResponse
+                {
+                    IsDonorPhenotypeUnrepresented = false,
+                    IsPatientPhenotypeUnrepresented = false,
+                    MatchProbabilities = MatchProbabilitiesBuilder.New.WithAllProbabilityValuesSetTo(probability)
+                });
+
+            var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
+            var result = await matchProbabilityService.CalculateMatchProbability(input);
+
+            result.IsPatientPhenotypeUnrepresented.Should().BeFalse();
+            result.IsDonorPhenotypeUnrepresented.Should().BeFalse();
+            result.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(probability);
+        }
+
+        [Test]
+        public async Task CalculateMatchProbability_ReturnsCompleteHaplotypeFrequencySet()
         {
             var patientSet = fixture.Create<HaplotypeFrequencySet>();
             var donorSet = fixture.Create<HaplotypeFrequencySet>();
