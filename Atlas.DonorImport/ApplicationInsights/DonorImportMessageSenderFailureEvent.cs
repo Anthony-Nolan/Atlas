@@ -5,7 +5,7 @@ namespace Atlas.DonorImport.ApplicationInsights
 {
     internal class DonorImportMessageSenderFailureEvent : EventModel
     {
-        public DonorImportMessageSenderFailureEvent(Exception exception, string message) : base("Error Sending Donor Import Message")
+        public DonorImportMessageSenderFailureEvent(Exception exception, string message) : base("Error Sending Donor Import Results Message")
         {
             Level = LogLevel.Warn;
             Properties.Add("Exception", exception.ToString());

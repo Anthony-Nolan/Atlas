@@ -2,6 +2,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.AzureEventGrid;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
 using Microsoft.Azure.WebJobs;
 
@@ -11,11 +12,13 @@ namespace Atlas.DonorImport.Functions.Functions
     {
         private readonly IDonorFileImporter donorFileImporter;
         private readonly IDonorImportFileHistoryService donorHistoryService;
+        private readonly IDonorImportMessageSender donorImportMessageSender;
 
-        public DonorImportFunctions(IDonorFileImporter donorFileImporter, IDonorImportFileHistoryService donorHistoryService)
+        public DonorImportFunctions(IDonorFileImporter donorFileImporter, IDonorImportFileHistoryService donorHistoryService, IDonorImportMessageSender donorImportMessageSender)
         {
             this.donorFileImporter = donorFileImporter;
             this.donorHistoryService = donorHistoryService;
+            this.donorImportMessageSender = donorImportMessageSender;
         }
 
         [FunctionName(nameof(ImportDonorFile))]
@@ -42,6 +45,17 @@ namespace Atlas.DonorImport.Functions.Functions
         public async Task CheckForStalledImport([TimerTrigger("%DonorImport:FileCheckCronSchedule%")] TimerInfo timer)
         {
             await donorHistoryService.SendNotificationForStalledImports();
+        }
+
+        [FunctionName(nameof(ImportDonorFileDeadLetterQueueListener))]
+        public async Task ImportDonorFileDeadLetterQueueListener(
+            [ServiceBusTrigger(
+                "%MessagingServiceBus:ImportFileTopic%/Subscriptions/%MessagingServiceBus:ImportFileSubscription%/$DeadLetterQueue",
+                "%MessagingServiceBus:ImportFileSubscription%",
+                Connection = "MessagingServiceBus:ConnectionString")]
+            EventGridSchema blobCreatedEvent)
+        {
+            await donorImportMessageSender.SendFailureMessage(blobCreatedEvent.Subject, ImportFaulireReason.RequestDeadlettered, string.Empty);
         }
     }
 }

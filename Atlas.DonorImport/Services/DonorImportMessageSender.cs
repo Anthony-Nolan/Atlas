@@ -14,7 +14,8 @@ namespace Atlas.DonorImport.Services
 {
     public interface IDonorImportMessageSender
     {
-        Task SendMessage(string fileName, bool wasSuccessful, int importedDonorCount, int failedDonorCount);
+        Task SendSuccessMessage(string fileName, int importedDonorCount, int failedDonorCount);
+        Task SendFailureMessage(string fileName, ImportFaulireReason failureReason, string failureReasonDescription);
     }
     internal class DonorImportMessageSender : IDonorImportMessageSender
     {
@@ -28,12 +29,11 @@ namespace Atlas.DonorImport.Services
         }
 
 
-        public async Task SendMessage(string fileName, bool wasSuccessful, int importedDonorCount, int failedDonorCount)
+        public async Task SendSuccessMessage(string fileName, int importedDonorCount, int failedDonorCount)
         {
-            var donorImportMessage = new DonorImportMessage
+            var donorImportMessage = new SuccessDonorImportMessage
             {
                 FileName = fileName,
-                WasSuccessful = wasSuccessful,
                 ImportedDonorCount = importedDonorCount, 
                 FailedDonorCount = failedDonorCount
             };
@@ -41,7 +41,7 @@ namespace Atlas.DonorImport.Services
 
             try
             {
-                logger.SendTrace($"{nameof(DonorImportMessage)} send.", LogLevel.Info, new Dictionary<string, string>
+                logger.SendTrace($"{nameof(SuccessDonorImportMessage)} send.", LogLevel.Info, new Dictionary<string, string>
                 {
                     { nameof(donorImportMessage.FileName), donorImportMessage.FileName },
                     { nameof(donorImportMessage.WasSuccessful), donorImportMessage.WasSuccessful.ToString() },
@@ -54,7 +54,36 @@ namespace Atlas.DonorImport.Services
             }
             catch (Exception e)
             {
-                logger.SendEvent(new DonorCheckMessageSenderFailureEvent(e, stringMessage));
+                logger.SendEvent(new DonorImportMessageSenderFailureEvent(e, stringMessage));
+            }
+        }
+
+        public async Task SendFailureMessage(string fileName, ImportFaulireReason failureReason, string failureReasonDescription)
+        {
+            var donorImportMessage = new FailedDonorImportMessage
+            {
+                FileName = fileName,
+                FailureReason = failureReason,
+                FailureReasonDescription = failureReasonDescription
+            };
+            var stringMessage = JsonConvert.SerializeObject(donorImportMessage);
+
+            try
+            {
+                logger.SendTrace($"{nameof(SuccessDonorImportMessage)} send.", LogLevel.Info, new Dictionary<string, string>
+                {
+                    { nameof(donorImportMessage.FileName), donorImportMessage.FileName },
+                    { nameof(donorImportMessage.WasSuccessful), donorImportMessage.WasSuccessful.ToString() },
+                    { nameof(donorImportMessage.FailureReason), donorImportMessage.FailureReason.ToString() },
+                    { nameof(donorImportMessage.FailureReasonDescription), donorImportMessage.FailureReasonDescription }
+                });
+                var message = new Message(Encoding.UTF8.GetBytes(stringMessage));
+
+                await topicClient.SendAsync(message);
+            }
+            catch (Exception e)
+            {
+                logger.SendEvent(new DonorImportMessageSenderFailureEvent(e, stringMessage));
             }
         }
     }
