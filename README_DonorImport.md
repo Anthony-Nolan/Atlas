@@ -140,6 +140,9 @@ The three operations - create, update and delete - will cause problems if the fi
 | Delete  | Upsert | New donor       | Donor updated and not deleted, no error            | In this and the case below this is fine as should be deleted                                           |
 | Delete  | Delete | No donor, no error       | No donor, no error            |                                                                                                        |
 
+### Import Results
+Both successful and failed import send result message to `donor-import-results` topic.
+
 ## Donor Checker Functions
 
 ### Check donor presence in Atlas store
