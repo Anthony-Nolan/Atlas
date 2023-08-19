@@ -36,8 +36,8 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
     "MessagingServiceBus:DonorInfoCheckerTopic"        = azurerm_servicebus_topic.donor-info-checker-requests.name
     "MessagingServiceBus:DonorInfoCheckerSubscription" = azurerm_servicebus_subscription.donor-info-checker.name
     "MessagingServiceBus:DonorInfoCheckerResultsTopic" = azurerm_servicebus_topic.donor-info-checker-results.name
+    "MessagingServiceBus:DonorImportResultsTopic"	   = azurerm_servicebus_topic.donor-import-results.name
 
-    "NotificationConfiguration:NotifyOnSuccessfulDonorImport"             = var.NOTIFICATIONS_ON_SUCCESSFUL_IMPORT
     "NotificationConfiguration:NotifyOnAttemptedDeletionOfUntrackedDonor" = var.NOTIFICATIONS_ON_DELETION_OF_INVALID_DONOR
 
     "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name

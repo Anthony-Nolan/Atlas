@@ -29,10 +29,6 @@ variable "NOTIFICATIONS_ON_DELETION_OF_INVALID_DONOR" {
   type = bool
 }
 
-variable "NOTIFICATIONS_ON_SUCCESSFUL_IMPORT" {
-  type = bool
-}
-
 variable "PUBLISH_DONOR_UPDATES_CRONTAB" {
   type = string
 }
