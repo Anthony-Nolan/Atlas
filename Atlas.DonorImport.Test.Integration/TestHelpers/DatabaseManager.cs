@@ -19,7 +19,7 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
             {
                 throw new Exception("Database context could resolved - DI has not been correctly configured.");
             }
-
+            
             context.Database.Migrate();
         }
 
@@ -33,6 +33,7 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
             context?.Database.ExecuteSqlRaw($"TRUNCATE TABLE {DonorImportHistoryRecord.QualifiedTableName}");
             context?.Database.ExecuteSqlRaw($"TRUNCATE TABLE {DonorLog.QualifiedTableName}");
             context?.Database.ExecuteSqlRaw($"TRUNCATE TABLE {PublishableDonorUpdate.QualifiedTableName}");
+            context?.Database.ExecuteSqlRaw($"TRUNCATE TABLE {DonorImportFailure.QualifiedTableName}");
         }
 
         internal static void ClearPublishableDonorUpdates()
