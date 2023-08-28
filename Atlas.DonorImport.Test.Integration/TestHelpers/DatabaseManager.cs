@@ -19,7 +19,7 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
             {
                 throw new Exception("Database context could resolved - DI has not been correctly configured.");
             }
-            
+
             context.Database.Migrate();
         }
 
