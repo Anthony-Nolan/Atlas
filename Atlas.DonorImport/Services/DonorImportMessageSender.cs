@@ -39,26 +39,6 @@ namespace Atlas.DonorImport.Services
             };
 
             await Send(donorImportMessage, LogMessage);
-
-            //var stringMessage = JsonConvert.SerializeObject(donorImportMessage);
-
-            //try
-            //{
-            //    logger.SendTrace($"{nameof(SuccessDonorImportMessage)} send.", LogLevel.Info, new Dictionary<string, string>
-            //    {
-            //        { nameof(donorImportMessage.FileName), donorImportMessage.FileName },
-            //        { nameof(donorImportMessage.WasSuccessful), donorImportMessage.WasSuccessful.ToString() },
-            //        { nameof(donorImportMessage.ImportedDonorCount), donorImportMessage.ImportedDonorCount.ToString() },
-            //        { nameof(donorImportMessage.FailedDonorCount), donorImportMessage.FailedDonorCount.ToString() }
-            //    });
-            //    var message = new Message(Encoding.UTF8.GetBytes(stringMessage));
-
-            //    await topicClient.SendAsync(message);
-            //}
-            //catch (Exception e)
-            //{
-            //    logger.SendEvent(new DonorImportMessageSenderFailureEvent(e, stringMessage));
-            //}
         }
 
         public async Task SendFailureMessage(string fileName, ImportFaulireReason failureReason, string failureReasonDescription)
@@ -71,26 +51,6 @@ namespace Atlas.DonorImport.Services
             };
 
             await Send(donorImportMessage, LogMessage);
-
-            //var stringMessage = JsonConvert.SerializeObject(donorImportMessage);
-
-            //try
-            //{
-            //    logger.SendTrace($"{nameof(FailedDonorImportMessage)} send.", LogLevel.Info, new Dictionary<string, string>
-            //    {
-            //        { nameof(donorImportMessage.FileName), donorImportMessage.FileName },
-            //        { nameof(donorImportMessage.WasSuccessful), donorImportMessage.WasSuccessful.ToString() },
-            //        { nameof(donorImportMessage.FailureReason), donorImportMessage.FailureReason.ToString() },
-            //        { nameof(donorImportMessage.FailureReasonDescription), donorImportMessage.FailureReasonDescription }
-            //    });
-            //    var message = new Message(Encoding.UTF8.GetBytes(stringMessage));
-
-            //    await topicClient.SendAsync(message);
-            //}
-            //catch (Exception e)
-            //{
-            //    logger.SendEvent(new DonorImportMessageSenderFailureEvent(e, stringMessage));
-            //}
         }
 
         private async Task Send<T>(T donorImportMessage, Action<T> logMessage) where T : DonorImportMessage

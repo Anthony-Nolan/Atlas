@@ -7,7 +7,7 @@ namespace Atlas.DonorImport.ApplicationInsights
 {
     internal class DonorImportFailureEventModel : EventModel
     {
-        public DonorImportFailureEventModel(DonorImportFile file, Exception exception, int importedDonorCount, LazilyParsingDonorFile lazyFile) : base("Donor Import Failed")
+        public DonorImportFailureEventModel(DonorImportFile file, Exception exception, int importedDonorCount, ILazilyParsingDonorFile lazyFile) : base("Donor Import Failed")
         {
             Level = LogLevel.Warn;
             Properties.Add(nameof(file.FileLocation), file.FileLocation);

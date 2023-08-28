@@ -9,18 +9,26 @@ namespace Atlas.DonorImport.Services
     internal interface IDonorImportFileParser
     {
         /// <returns>A batch of parsed donor updates</returns>
-        public LazilyParsingDonorFile PrepareToLazilyParseDonorUpdates(Stream stream);
+        public ILazilyParsingDonorFile PrepareToLazilyParseDonorUpdates(Stream stream);
     }
 
     internal class DonorImportFileParser : IDonorImportFileParser
     {
-        public LazilyParsingDonorFile PrepareToLazilyParseDonorUpdates(Stream stream)
+        public ILazilyParsingDonorFile PrepareToLazilyParseDonorUpdates(Stream stream)
         {
             return new LazilyParsingDonorFile(stream);
         }
     }
 
-    internal class LazilyParsingDonorFile
+    internal interface ILazilyParsingDonorFile
+    {
+        public int ParsedDonorCount { get; }
+        public string LastSuccessfullyParsedDonorCode { get; }
+
+        IEnumerable<DonorUpdate> ReadLazyDonorUpdates();
+    }
+
+    internal class LazilyParsingDonorFile : ILazilyParsingDonorFile
     {
         public LazilyParsingDonorFile(Stream stream)
         {
