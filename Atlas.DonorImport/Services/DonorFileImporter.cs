@@ -8,7 +8,7 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
-using Atlas.DonorImport.ExternalInterface.Settings;
+using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Logger;
 using Dasync.Collections;
 using MoreLinq;
@@ -33,7 +33,7 @@ namespace Atlas.DonorImport.Services
         private readonly IDonorUpdateCategoriser donorUpdateCategoriser;
         private readonly DonorImportLoggingContext loggingContext;
         private readonly ILogger logger;
-        private readonly NotificationConfigurationSettings notificationConfigSettings;
+        private readonly IDonorImportMessageSender donorImportMessageSender;
 
         public DonorFileImporter(
             IDonorImportFileParser fileParser,
@@ -44,7 +44,7 @@ namespace Atlas.DonorImport.Services
             IDonorUpdateCategoriser donorUpdateCategoriser,
             DonorImportLoggingContext loggingContext,
             IDonorImportLogger<DonorImportLoggingContext> logger,
-            NotificationConfigurationSettings notificationConfigSettings)
+            IDonorImportMessageSender donorImportMessageSender)
         {
             this.fileParser = fileParser;
             this.donorRecordChangeApplier = donorRecordChangeApplier;
@@ -54,13 +54,12 @@ namespace Atlas.DonorImport.Services
             this.donorUpdateCategoriser = donorUpdateCategoriser;
             this.loggingContext = loggingContext;
             this.logger = logger;
-            this.notificationConfigSettings = notificationConfigSettings;
+            this.donorImportMessageSender = donorImportMessageSender;
         }
 
         public async Task ImportDonorFile(DonorImportFile file)
         {
             loggingContext.Filename = file.FileLocation;
-
             logger.SendTrace($"Beginning Donor Import for file '{file.FileLocation}'.");
             var importRecord = await donorImportFileHistoryService.RegisterStartOfDonorImport(file);
 
@@ -105,42 +104,43 @@ namespace Atlas.DonorImport.Services
                         ? null
                         : new Dictionary<string, string> { { "FailedDonorIds", $"[{invalidDonorIds.StringJoin(", ")}]" } });
 
-                if (notificationConfigSettings.NotifyOnSuccessfulDonorImport)
-                {
-                    await notificationSender.SendNotification($"Donor Import Successful: {file.FileLocation}",
-                        $"Imported {importedDonorCount} donor(s). Failed to import {invalidDonorIds.Count} donor(s).",
-                        nameof(ImportDonorFile)
-                    );
-                }
+                await donorImportMessageSender.SendSuccessMessage(file.FileLocation, importedDonorCount, invalidDonorIds.Count);
             }
             catch (EmptyDonorFileException e)
             {
                 const string summary = "Donor file was present but it was empty.";
+                await SendFailedImportMessage(file.FileLocation, summary);
                 await LogFileErrorAndSendAlert(file, summary, e.StackTrace);
             }
             catch (MalformedDonorFileException e)
             {
+                await SendFailedImportMessage(file.FileLocation, e.Message);
                 await LogFileErrorAndSendAlert(file, e.Message, e.StackTrace);
             }
             catch (DonorFormatException e)
             {
+                await SendFailedImportMessage(file.FileLocation, e.Message);
                 await LogFileErrorAndSendAlert(file, e.Message, e.InnerException?.Message);
             }
             catch (DuplicateDonorFileImportException e)
             {
+                await SendFailedImportMessage(file.FileLocation, e.Message);
                 await LogFileErrorAndSendAlert(file, e.Message, e.InnerException?.Message);
             }
             catch (DuplicateDonorException e)
             {
+                await SendFailedImportMessage(file.FileLocation, e.Message);
                 await LogFileErrorAndSendAlert(file, e.Message, e.InnerException?.Message);
             }
             catch (DonorNotFoundException e)
             {
+                await SendFailedImportMessage(file.FileLocation, e.Message);
                 await LogFileErrorAndSendAlert(file, e.Message, e.InnerException?.Message);
             }
             catch (Exception e)
             {
                 await donorImportFileHistoryService.RegisterUnexpectedDonorImportError(file);
+                await SendFailedImportMessage(file.FileLocation, e.Message);
 
                 var donorImportEventModel = new DonorImportFailureEventModel(file, e, importedDonorCount, lazyFile);
 
@@ -156,5 +156,8 @@ namespace Atlas.DonorImport.Services
             logger.SendTrace(message, LogLevel.Warn);
             await notificationSender.SendAlert(message, description, Priority.Medium, nameof(ImportDonorFile));
         }
+
+        private async Task SendFailedImportMessage(string fileName, string failureReasonDescription) =>
+            await donorImportMessageSender.SendFailureMessage(fileName, ImportFaulireReason.ErrorDuringImport, failureReasonDescription);
     }
 }

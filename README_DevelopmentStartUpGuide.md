@@ -67,7 +67,7 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
     - Copy the content of the json file `<gitRoot>/MiscTestingAndDebuggingResources/DonorImport/initial-donors-metadata.json` into the `Message Text` text box and click `Start`.
 - When you now run `DonorImport.Functions` your local Donors table should now be populated.
     - This should take < 5 minute to run.
-- Monitor the `notifications` topic to ensure the import succeeded; a failure will be reported via `alerts` topic.
+- Monitor the `donor-import-results` topic for import results; a failure will be reported to `alerts` topic as well.
 
 #### Run an Initial Data Refresh
 - Open up Service Bus Explorer and connect to your local development Service Bus.

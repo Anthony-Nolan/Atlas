@@ -128,6 +128,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
 
             services.AddScoped<IDonorInfoChecker, DonorInfoChecker>();
             services.AddScoped<IDonorUpdateMapper, DonorUpdateMapper>();
+            services.AddScoped<IDonorImportMessageSender, DonorImportMessageSender>();
         }
 
         private static void RegisterDonorReaderServices(this IServiceCollection services)
