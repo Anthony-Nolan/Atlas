@@ -109,15 +109,23 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             }
         }
 
-        private static MatchingAlgorithmResult MapSearchResultToApiSearchResult(
+        private MatchingAlgorithmResult MapSearchResultToApiSearchResult(
             MatchAndScoreResult result,
             IReadOnlyDictionary<int, Donor> donorLookup)
         {
             var atlasDonorId = result.MatchResult.DonorInfo.DonorId;
+
+            if (!donorLookup.TryGetValue(atlasDonorId, out var donor))
+            {
+                var message = $"Donor with id {result.MatchResult.DonorInfo.DonorId} can't be found in donorLookup dictionary";
+                searchLogger.SendTrace(message);
+                throw new KeyNotFoundException(message);
+            }
+
             return new MatchingAlgorithmResult
             {
                 AtlasDonorId = atlasDonorId,
-                DonorCode = donorLookup[atlasDonorId].ExternalDonorCode,
+                DonorCode = donor.ExternalDonorCode,
                 DonorType = result.MatchResult.DonorInfo.DonorType.ToAtlasClientModel(),
 
                 MatchingResult = new MatchingResult
@@ -138,6 +146,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     ScoringResultsByLocus = new LociInfo<LocusSearchResult>().Map((l, _) => MapSearchResultToApiLocusSearchResult(result, l))
                         .ToLociInfoTransfer(),
                 },
+
+                MatchingDonorInfo = new MatchingDonorInfo
+                {
+                    DonorType = result.MatchResult.DonorInfo.DonorType.ToAtlasClientModel(),
+                    ExternalDonorCode = donor.ExternalDonorCode,
+                    EthnicityCode = donor.EthnicityCode,
+                    RegistryCode = donor.RegistryCode
+                }
             };
         }
 

@@ -10,7 +10,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Utils.Extensions;
-using Atlas.DonorImport.ExternalInterface;
 using Atlas.Functions.Models;
 using Atlas.Functions.Services;
 using Atlas.Functions.Services.BlobStorageClients;
@@ -24,9 +23,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 {
     public class SearchActivityFunctions
     {
-        // Donor Import services
-        private readonly IDonorReader donorReader;
-
         // Match Prediction services
         private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
 
@@ -42,8 +38,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         private readonly AzureStorageSettings azureStorageSettings;
 
         public SearchActivityFunctions(
-            // Donor Import services
-            IDonorReader donorReader,
             // Match Prediction services
             IMatchPredictionAlgorithm matchPredictionAlgorithm,
             IMatchPredictionInputBuilder matchPredictionInputBuilder,
@@ -56,7 +50,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             IOptions<AzureStorageSettings> azureStorageSettings,
             SearchLoggingContext loggingContext)
         {
-            this.donorReader = donorReader;
             this.matchPredictionAlgorithm = matchPredictionAlgorithm;
             this.matchPredictionInputBuilder = matchPredictionInputBuilder;
             this.searchCompletionMessageSender = searchCompletionMessageSender;
@@ -85,14 +78,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                     matchingResultsNotification.ResultsBatched ? matchingResultsNotification.BatchFolderName : null)
             );
 
-            var donorInfo = await logger.RunTimedAsync("Fetch donor data", async () =>
-                await donorReader.GetDonors(matchingResults.Results.Select(r => r.AtlasDonorId))
-            );
-
             var matchPredictionInputs = logger.RunTimed("Build Match Prediction Inputs", () =>
                 matchPredictionInputBuilder.BuildMatchPredictionInputs(new MatchPredictionInputParameters
                 {
-                    DonorDictionary = donorInfo,
                     SearchRequest = matchingResultsNotification.SearchRequest,
                     MatchingAlgorithmResults = matchingResults
                 })
@@ -201,14 +189,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             return allSearchResults;
         }
 
-        private async Task<IEnumerable<SearchResult>> ProcessSearchResults(string searchRequestId, IEnumerable<MatchingAlgorithmResult> matchingResults, IReadOnlyDictionary<int, string> matchPredictionResultLocations)
-        {
-            var donorIds = matchingResults.Select(r => r.AtlasDonorId).ToList();
-            var donorInfo = await logger.RunTimedAsync("Fetch donor data", async () =>
-                await donorReader.GetDonors(donorIds)
-            );
-            return await resultsCombiner.CombineResults(searchRequestId, matchingResults, donorInfo, matchPredictionResultLocations);
-        }
+        private async Task<IEnumerable<SearchResult>> ProcessSearchResults(string searchRequestId, IEnumerable<MatchingAlgorithmResult> matchingResults, IReadOnlyDictionary<int, string> matchPredictionResultLocations) =>
+            await resultsCombiner.CombineResults(searchRequestId, matchingResults, matchPredictionResultLocations);
 
         private void InitializeLoggingContext(string searchRequestId)
         {

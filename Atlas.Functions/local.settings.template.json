@@ -51,8 +51,6 @@
     "NotificationsServiceBus:NotificationsTopic": "notifications"
   },
   "ConnectionStrings": {
-    "DonorImport:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
-
     "Matching:Sql:Persistent": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
     "Matching:Sql:A": "Data Source=(local);Initial Catalog=AtlasMatchingA;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
     "Matching:Sql:B": "Data Source=(local);Initial Catalog=AtlasMatchingB;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",

@@ -34,8 +34,6 @@ namespace Atlas.Functions
                 OptionsReaderFor<ApplicationInsightsSettings>()
             );
 
-            builder.Services.RegisterDonorReader(ConnectionStringReader("DonorImport:Sql"));
-
             builder.Services.RegisterMacDictionary(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MacDictionarySettings>()

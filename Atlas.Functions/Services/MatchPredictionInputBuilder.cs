@@ -5,10 +5,8 @@ using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
-using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.Settings;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
@@ -26,7 +24,6 @@ namespace Atlas.Functions.Services
     {
         public SearchRequest SearchRequest { get; set; }
         public ResultSet<MatchingAlgorithmResult> MatchingAlgorithmResults { get; set; }
-        public IReadOnlyDictionary<int, Donor> DonorDictionary { get; set; }
     }
 
     public interface IMatchPredictionInputBuilder
@@ -58,16 +55,11 @@ namespace Atlas.Functions.Services
             {
                 var matchingAlgorithmResultSet = matchPredictionInputParameters.MatchingAlgorithmResults;
                 var searchRequest = matchPredictionInputParameters.SearchRequest;
-                var donorDictionary = matchPredictionInputParameters.DonorDictionary;
                 var nonDonorInput = BuildSearchRequestMatchPredictionInput(
                     matchingAlgorithmResultSet.SearchRequestId,
                     searchRequest
                 );
-                var donorInputs = matchingAlgorithmResultSet.Results.Select(matchingResult => BuildPerDonorMatchPredictionInput(
-                        matchingResult,
-                        donorDictionary
-                    ))
-                    .Where(r => r != null);
+                var donorInputs = matchingAlgorithmResultSet.Results.Select(BuildPerDonorMatchPredictionInput);
 
                 return donorInputBatcher.BatchDonorInputs(nonDonorInput, donorInputs, matchPredictionBatchSize).ToList();
             }
@@ -107,29 +99,17 @@ namespace Atlas.Functions.Services
         /// Match prediction input for the given search result.
         /// Null, if the donor's information could not be found in the donor store 
         /// </returns>
-        private DonorInput BuildPerDonorMatchPredictionInput(
-            MatchingAlgorithmResult matchingAlgorithmResult,
-            IReadOnlyDictionary<int, Donor> donorDictionary)
-        {
-            if (!donorDictionary.TryGetValue(matchingAlgorithmResult.AtlasDonorId, out var donorInfo))
-            {
-                var message = @$"Could not fetch donor information needed for match prediction for donor: {matchingAlgorithmResult.AtlasDonorId}. 
-                                        It is possible that this donor was removed between matching completing and match prediction initiation.";
-                logger.SendTrace(message);
-                return null;
-            }
-
-            return new DonorInput
+        private DonorInput BuildPerDonorMatchPredictionInput(MatchingAlgorithmResult matchingAlgorithmResult) =>
+            new DonorInput
             {
                 DonorId = matchingAlgorithmResult.AtlasDonorId,
                 DonorHla = matchingAlgorithmResult.MatchingResult.DonorHla,
                 DonorFrequencySetMetadata = new FrequencySetMetadata
                 {
-                    EthnicityCode = donorInfo.EthnicityCode,
-                    RegistryCode = donorInfo.RegistryCode
-                },
+                    EthnicityCode = matchingAlgorithmResult.MatchingDonorInfo.EthnicityCode,
+                    RegistryCode = matchingAlgorithmResult.MatchingDonorInfo.RegistryCode
+                }
             };
-        }
 
         /// <summary>
         /// If a locus did not have match criteria provided, we do not want to calculate match probabilities at that locus.
