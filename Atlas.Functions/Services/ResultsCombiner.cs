@@ -10,7 +10,6 @@ using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
-using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.Services.MatchCategories;
 using Atlas.Functions.Settings;
 using Microsoft.Extensions.Options;
@@ -22,7 +21,6 @@ namespace Atlas.Functions.Services
         Task<IEnumerable<SearchResult>> CombineResults(
             string searchRequestId,
             IEnumerable<MatchingAlgorithmResult> matchingAlgorithmResults,
-            IReadOnlyDictionary<int, Donor> donorInformation,
             IReadOnlyDictionary<int, string> matchPredictionResultLocations);
 
         SearchResultSet BuildResultsSummary(ResultSet<MatchingAlgorithmResult> matchingAlgorithmResultSet, TimeSpan matchPredictionTime, TimeSpan matchingTime);
@@ -80,7 +78,6 @@ namespace Atlas.Functions.Services
         public async Task<IEnumerable<SearchResult>> CombineResults(
             string searchRequestId,
             IEnumerable<MatchingAlgorithmResult> matchingAlgorithmResults,
-            IReadOnlyDictionary<int, Donor> donorInformation,
             IReadOnlyDictionary<int, string> matchPredictionResultLocations)
         {
             using (logger.RunTimed($"Combine search results: {searchRequestId}"))
@@ -88,7 +85,7 @@ namespace Atlas.Functions.Services
                 var matchPredictionResults = await DownloadMatchPredictionResults(matchPredictionResultLocations);
                 return matchingAlgorithmResults.Select(r => new SearchResult
                 {
-                    DonorCode = donorInformation[r.AtlasDonorId].ExternalDonorCode,
+                    DonorCode = r.MatchingDonorInfo.ExternalDonorCode,
                     MatchingResult = r,
                     MatchPredictionResult = matchCategoryService.ReOrientatePositionalMatchCategories(matchPredictionResults[r.AtlasDonorId], r.ScoringResult)
                 });

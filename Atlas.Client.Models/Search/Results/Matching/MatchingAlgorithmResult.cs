@@ -1,5 +1,6 @@
 ﻿using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
+using System;
 
 namespace Atlas.Client.Models.Search.Results.Matching
 {
@@ -7,14 +8,17 @@ namespace Atlas.Client.Models.Search.Results.Matching
     {
         public MatchingResult MatchingResult { get; set; }
 
+        public MatchingDonorInfo MatchingDonorInfo { get; set; }
+
         /// <summary>
         /// The ATLAS ID of the donor for lookup in donor registries.
         /// </summary>
         public int AtlasDonorId { get; set; }
-        
+
         /// <summary>
         ///     The type of donor, for example Adult or Cord.
         /// </summary>
+        [Obsolete("The property is moved to MatchingDonorInfo")]
         public DonorType DonorType { get; set; }
     }
 
@@ -94,5 +98,28 @@ namespace Atlas.Client.Models.Search.Results.Matching
         /// The results at C, DPB1 and DQB1 will be populated even if those loci were excluded from aggregate scoring.
         /// </remarks>
         public LociInfoTransfer<LocusSearchResult> ScoringResultsByLocus { get; set; }
+    }
+
+    public class MatchingDonorInfo
+    {
+        /// <summary>
+        /// The type of donor, for example Adult or Cord.
+        /// </summary>
+        public DonorType DonorType { get; set; }
+
+        /// <summary>
+        /// External donor code (not internal Atlas ID)
+        /// </summary>
+        public string ExternalDonorCode { get; set; }
+
+        /// <summary>
+        /// String representation of donor ethnicity
+        /// </summary>
+        public string EthnicityCode { get; set; }
+
+        /// <summary>
+        /// String representation of donor source registry
+        /// </summary>
+        public string RegistryCode { get; set; }
     }
 }
