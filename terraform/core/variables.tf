@@ -93,12 +93,6 @@ variable "DONOR_IMPORT_NOTIFICATIONS_ON_DELETION_OF_INVALID_DONOR" {
   description = "When true, notifications will be sent on every attempt to delete a donor that does not exist in Atlas"
 }
 
-variable "DONOR_IMPORT_NOTIFICATIONS_ON_SUCCESSFUL_IMPORT" {
-  type        = bool
-  default     = true
-  description = "When true, notifications will be sent on every successful donor file import"
-}
-
 variable "DONOR_IMPORT_PUBLISH_DONOR_UPDATES_CRONTAB" {
   type        = string
   default     = "0 * * * * *"
