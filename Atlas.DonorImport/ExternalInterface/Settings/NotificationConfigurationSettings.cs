@@ -2,7 +2,6 @@
 {
     public class NotificationConfigurationSettings
     {
-        public bool NotifyOnSuccessfulDonorImport { get; set; }
         public bool NotifyOnAttemptedDeletionOfUntrackedDonor { get; set; }
     }
 }
