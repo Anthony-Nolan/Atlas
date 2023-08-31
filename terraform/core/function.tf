@@ -89,12 +89,6 @@ resource "azurerm_windows_function_app" "atlas_function" {
   }
 
   connection_string {
-    name  = "DonorImport:Sql"
-    type  = "SQLAzure"
-    value = module.donor_import.sql_database.connection_string
-  }
-
-  connection_string {
     name  = "Matching:Sql:Persistent"
     type  = "SQLAzure"
     value = module.matching_algorithm.sql_database.persistent_database_connection_string
