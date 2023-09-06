@@ -158,6 +158,6 @@ namespace Atlas.DonorImport.Services
         }
 
         private async Task SendFailedImportMessage(string fileName, string failureReasonDescription) =>
-            await donorImportMessageSender.SendFailureMessage(fileName, ImportFaulireReason.ErrorDuringImport, failureReasonDescription);
+            await donorImportMessageSender.SendFailureMessage(fileName, ImportFailureReason.ErrorDuringImport, failureReasonDescription);
     }
 }

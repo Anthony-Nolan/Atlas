@@ -15,7 +15,7 @@ namespace Atlas.DonorImport.Services
     public interface IDonorImportMessageSender
     {
         Task SendSuccessMessage(string fileName, int importedDonorCount, int failedDonorCount);
-        Task SendFailureMessage(string fileName, ImportFaulireReason failureReason, string failureReasonDescription);
+        Task SendFailureMessage(string fileName, ImportFailureReason failureReason, string failureReasonDescription);
     }
     internal class DonorImportMessageSender : IDonorImportMessageSender
     {
@@ -41,7 +41,7 @@ namespace Atlas.DonorImport.Services
             await Send(donorImportMessage, LogMessage);
         }
 
-        public async Task SendFailureMessage(string fileName, ImportFaulireReason failureReason, string failureReasonDescription)
+        public async Task SendFailureMessage(string fileName, ImportFailureReason failureReason, string failureReasonDescription)
         {
             var donorImportMessage = new FailedDonorImportMessage
             {

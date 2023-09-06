@@ -82,7 +82,7 @@ namespace Atlas.DonorImport.Test
 
             await donorFileImporter.ImportDonorFile(file);
 
-            await donorImportMessageSender.Received().SendFailureMessage(file.FileLocation, ImportFaulireReason.ErrorDuringImport,
+            await donorImportMessageSender.Received().SendFailureMessage(file.FileLocation, ImportFailureReason.ErrorDuringImport,
                 "Donor file was present but it was empty.");
         }
 
@@ -98,7 +98,7 @@ namespace Atlas.DonorImport.Test
 
             await donorFileImporter.ImportDonorFile(file);
 
-            await donorImportMessageSender.Received().SendFailureMessage(file.FileLocation, ImportFaulireReason.ErrorDuringImport, error);
+            await donorImportMessageSender.Received().SendFailureMessage(file.FileLocation, ImportFailureReason.ErrorDuringImport, error);
         }
 
         [Test]
@@ -112,7 +112,7 @@ namespace Atlas.DonorImport.Test
 
             await donorFileImporter.ImportDonorFile(file);
 
-            await donorImportMessageSender.Received().SendFailureMessage(file.FileLocation, ImportFaulireReason.ErrorDuringImport, "Error parsing Donor Format");
+            await donorImportMessageSender.Received().SendFailureMessage(file.FileLocation, ImportFailureReason.ErrorDuringImport, "Error parsing Donor Format");
         }
 
         [Test]
@@ -127,7 +127,7 @@ namespace Atlas.DonorImport.Test
 
             await donorFileImporter.ImportDonorFile(file);
 
-            await donorImportMessageSender.Received().SendFailureMessage(file.FileLocation, ImportFaulireReason.ErrorDuringImport, error);
+            await donorImportMessageSender.Received().SendFailureMessage(file.FileLocation, ImportFailureReason.ErrorDuringImport, error);
         }
 
         [Test]
@@ -142,7 +142,7 @@ namespace Atlas.DonorImport.Test
 
             await donorFileImporter.ImportDonorFile(file);
 
-            await donorImportMessageSender.Received().SendFailureMessage(file.FileLocation, ImportFaulireReason.ErrorDuringImport, error);
+            await donorImportMessageSender.Received().SendFailureMessage(file.FileLocation, ImportFailureReason.ErrorDuringImport, error);
         }
 
 
@@ -164,7 +164,7 @@ namespace Atlas.DonorImport.Test
                 // ignored
             }
 
-            await donorImportMessageSender.Received().SendFailureMessage(file.FileLocation, ImportFaulireReason.ErrorDuringImport, error);
+            await donorImportMessageSender.Received().SendFailureMessage(file.FileLocation, ImportFailureReason.ErrorDuringImport, error);
         }
     }
 }

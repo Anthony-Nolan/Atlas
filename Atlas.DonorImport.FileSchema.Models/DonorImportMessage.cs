@@ -1,4 +1,7 @@
-﻿namespace Atlas.DonorImport.FileSchema.Models
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
+namespace Atlas.DonorImport.FileSchema.Models
 {
     public abstract class DonorImportMessage
     {
@@ -16,11 +19,12 @@
     public class FailedDonorImportMessage : DonorImportMessage
     {
         public override bool WasSuccessful => false;
-        public ImportFaulireReason FailureReason { get; set; }
+        public ImportFailureReason FailureReason { get; set; }
         public string FailureReasonDescription { get; set; }
     }
 
-    public enum ImportFaulireReason
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum ImportFailureReason
     {
         ErrorDuringImport,
         RequestDeadlettered

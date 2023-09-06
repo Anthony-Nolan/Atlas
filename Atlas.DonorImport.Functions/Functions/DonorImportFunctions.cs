@@ -55,7 +55,7 @@ namespace Atlas.DonorImport.Functions.Functions
                 Connection = "MessagingServiceBus:ConnectionString")]
             EventGridSchema blobCreatedEvent)
         {
-            await donorImportMessageSender.SendFailureMessage(blobCreatedEvent.Subject, ImportFaulireReason.RequestDeadlettered, string.Empty);
+            await donorImportMessageSender.SendFailureMessage(blobCreatedEvent.Subject, ImportFailureReason.RequestDeadlettered, string.Empty);
         }
     }
 }
