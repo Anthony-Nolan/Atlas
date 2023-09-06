@@ -53,9 +53,10 @@ namespace Atlas.RepeatSearch.Functions.Functions
                 "%MessagingServiceBus:RepeatSearchRequestsTopic%",
                 "%MessagingServiceBus:RepeatSearchRequestsSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString")]
-            IdentifiedRepeatSearchRequest request)
+            IdentifiedRepeatSearchRequest request,
+            int deliveryCount)
         {
-            await repeatSearchRunner.RunSearch(request);
+            await repeatSearchRunner.RunSearch(request, deliveryCount);
         }
     }
 }

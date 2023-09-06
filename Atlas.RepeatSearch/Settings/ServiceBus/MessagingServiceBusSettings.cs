@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Atlas.RepeatSearch.Settings.ServiceBus
+﻿namespace Atlas.RepeatSearch.Settings.ServiceBus
 {
     public class MessagingServiceBusSettings
     {
@@ -10,5 +6,6 @@ namespace Atlas.RepeatSearch.Settings.ServiceBus
         public string RepeatSearchRequestsTopic { get; set; }
         public string RepeatSearchRequestsSubscription { get; set; }
         public string RepeatSearchMatchingResultsTopic { get; set; }
+        public int RepeatSearchRequestsMaxDeliveryCount { get; set; }
     }
 }
