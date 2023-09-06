@@ -80,6 +80,10 @@ The automatic replay of a live message - or the manual replay of a dead-lettered
 
 Check Application Insights for continuation progress or exceptions.
 
+If request replay fails and Application Insights shows the exception: "Exception while executing function: RunDataRefresh [...] There is no record of an initiated job. Please submit a new data refresh request.",
+then find the record for your data refresh attempt with the shared db table, `[MatchingAlgorithmPersistent].[DataRefreshHistory]` and set value of `[RefreshLastContinuedUtc]` to `NULL`.
+This will allow the job to continue from where it left off.
+
 #### (b) Manual cleanup
  
 If you prefer not to continue a refresh, any live request messages must be purged from the `matching-algorithm` subscription, and teardown performed.
