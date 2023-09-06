@@ -19,12 +19,13 @@ using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Models;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
 using Atlas.RepeatSearch.Settings.Azure;
+using Atlas.RepeatSearch.Settings.ServiceBus;
 
 namespace Atlas.RepeatSearch.Services.Search
 {
     public interface IRepeatSearchRunner
     {
-        Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest);
+        Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber);
     }
 
     public class RepeatSearchRunner : IRepeatSearchRunner
@@ -40,6 +41,8 @@ namespace Atlas.RepeatSearch.Services.Search
         private readonly IRepeatSearchDifferentialCalculator repeatSearchDifferentialCalculator;
         private readonly IOriginalSearchResultSetTracker originalSearchResultSetTracker;
         private readonly AzureStorageSettings azureStorageSettings;
+        private readonly int searchRequestMaxRetryCount;
+        private readonly IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender;
 
         public RepeatSearchRunner(
             IRepeatSearchServiceBusClient repeatSearchServiceBusClient,
@@ -53,7 +56,9 @@ namespace Atlas.RepeatSearch.Services.Search
             IRepeatSearchValidator repeatSearchValidator,
             IRepeatSearchDifferentialCalculator repeatSearchDifferentialCalculator,
             IOriginalSearchResultSetTracker originalSearchResultSetTracker,
-            AzureStorageSettings azureStorageSettings)
+            AzureStorageSettings azureStorageSettings,
+            MessagingServiceBusSettings messagingServiceBusSettings,
+            IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender)
         {
             this.repeatSearchServiceBusClient = repeatSearchServiceBusClient;
             this.searchService = searchService;
@@ -66,9 +71,11 @@ namespace Atlas.RepeatSearch.Services.Search
             this.repeatSearchDifferentialCalculator = repeatSearchDifferentialCalculator;
             this.originalSearchResultSetTracker = originalSearchResultSetTracker;
             this.azureStorageSettings = azureStorageSettings;
+            searchRequestMaxRetryCount = messagingServiceBusSettings.RepeatSearchRequestsMaxDeliveryCount;
+            this.repeatSearchMatchingFailureNotificationSender = repeatSearchMatchingFailureNotificationSender;
         }
 
-        public async Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
+        public async Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber)
         {
             var searchStartTime = DateTimeOffset.UtcNow;
             await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
@@ -133,15 +140,7 @@ namespace Atlas.RepeatSearch.Services.Search
             catch (Exception e)
             {
                 repeatSearchLogger.SendTrace($"Failed to run search with id {searchRequestId}. Exception: {e}", LogLevel.Error);
-                var notification = new MatchingResultsNotification
-                {
-                    WasSuccessful = false,
-                    SearchRequestId = searchRequestId,
-                    RepeatSearchRequestId = repeatSearchId,
-                    MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
-                    MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion
-                };
-                await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
+                await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(identifiedRepeatSearchRequest, attemptNumber, searchRequestMaxRetryCount - attemptNumber);
                 throw;
             }
         }

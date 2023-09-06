@@ -18,6 +18,7 @@
     "MessagingServiceBus:RepeatSearchRequestsSubscription": "repeat-search",
     "MessagingServiceBus:RepeatSearchRequestsTopic": "repeat-search-requests",
     "MessagingServiceBus:RepeatSearchMatchingResultsTopic": "repeat-search-matching-results-ready",
+    "MessagingServiceBus:RepeatSearchRequestsMaxDeliveryCount": 10,
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications"
