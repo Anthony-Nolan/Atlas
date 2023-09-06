@@ -81,8 +81,8 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
             var input = JsonConvert.DeserializeObject<GenotypeMatcherRequest>(await new StreamReader(request.Body).ReadToEndAsync());
 
             var frequencySet = await frequencyService.GetHaplotypeFrequencySets(
-                input.Patient.FrequencySetMetadata,
-                input.Donor.FrequencySetMetadata);
+                input.Donor.FrequencySetMetadata,
+                input.Patient.FrequencySetMetadata);
 
             var result = await genotypeMatcher.MatchPatientDonorGenotypes(new GenotypeMatcherInput
             {
