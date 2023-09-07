@@ -6,10 +6,10 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
-using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
@@ -25,7 +25,7 @@ namespace Atlas.RepeatSearch.Services.Search
 {
     public interface IRepeatSearchRunner
     {
-        Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber);
+        Task RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber);
     }
 
     public class RepeatSearchRunner : IRepeatSearchRunner
@@ -75,7 +75,7 @@ namespace Atlas.RepeatSearch.Services.Search
             this.repeatSearchMatchingFailureNotificationSender = repeatSearchMatchingFailureNotificationSender;
         }
 
-        public async Task<ResultSet<MatchingAlgorithmResult>> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber)
+        public async Task RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber)
         {
             var searchStartTime = DateTimeOffset.UtcNow;
             await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
@@ -135,8 +135,18 @@ namespace Atlas.RepeatSearch.Services.Search
                     BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? $"{searchRequestId}/{repeatSearchId}" : null
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
-                return searchResultSet;
             }
+            // Invalid HLA is treated as an "Expected error" pathway and will not be retried.
+            // This means only a single failure notification will be sent out, and the request message will be completed and not dead-lettered.
+            catch (HlaMetadataDictionaryException hmdException)
+            {
+                repeatSearchLogger.SendTrace($"Failed to lookup HLA for search with id {searchRequestId}. Exception: {hmdException}", LogLevel.Error);
+
+                await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(identifiedRepeatSearchRequest, attemptNumber, 0, hmdException.Message);
+
+                // Do not re-throw the HMD exception to prevent the search being retried or dead-lettered.
+            }
+            // "Unexpected" exceptions will be re-thrown to ensure that the request will be retried or dead-lettered, as appropriate.
             catch (Exception e)
             {
                 repeatSearchLogger.SendTrace($"Failed to run search with id {searchRequestId}. Exception: {e}", LogLevel.Error);
