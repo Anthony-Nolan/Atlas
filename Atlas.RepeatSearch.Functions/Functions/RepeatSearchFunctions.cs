@@ -20,11 +20,13 @@ namespace Atlas.RepeatSearch.Functions.Functions
     {
         private readonly IRepeatSearchDispatcher repeatSearchDispatcher;
         private readonly IRepeatSearchRunner repeatSearchRunner;
+        private readonly IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender;
 
-        public RepeatSearchFunctions(IRepeatSearchDispatcher repeatSearchDispatcher, IRepeatSearchRunner repeatSearchRunner)
+        public RepeatSearchFunctions(IRepeatSearchDispatcher repeatSearchDispatcher, IRepeatSearchRunner repeatSearchRunner, IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender)
         {
             this.repeatSearchDispatcher = repeatSearchDispatcher;
             this.repeatSearchRunner = repeatSearchRunner;
+            this.repeatSearchMatchingFailureNotificationSender = repeatSearchMatchingFailureNotificationSender;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -57,6 +59,18 @@ namespace Atlas.RepeatSearch.Functions.Functions
             int deliveryCount)
         {
             await repeatSearchRunner.RunSearch(request, deliveryCount);
+        }
+
+        [FunctionName(nameof(RepeatSearchMatchingRequestsDeadLetterQueueListener))]
+        public async Task RepeatSearchMatchingRequestsDeadLetterQueueListener(
+            [ServiceBusTrigger(
+                "%MessagingServiceBus:RepeatSearchRequestsTopic%/Subscriptions/%MessagingServiceBus:RepeatSearchRequestsSubscription%/$DeadLetterQueue",
+                "%MessagingServiceBus:RepeatSearchRequestsSubscription%",
+                Connection = "MessagingServiceBus:ConnectionString")]
+            IdentifiedRepeatSearchRequest request,
+            int deliveryCount)
+        {
+            await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(request, deliveryCount, 0);
         }
     }
 }
