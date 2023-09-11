@@ -1,10 +1,10 @@
 ﻿using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Http;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Functions.Models.Debug;
+using Atlas.MatchPrediction.Functions.Services.Debug;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
@@ -45,11 +45,8 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
             var imputedGenotypes = await genotypeImputationService.Impute(new ImputationInput
             {
                 SubjectData = new SubjectData(input.SubjectInfo.HlaTyping.ToPhenotypeInfo(), new SubjectFrequencySet(frequencySet, "debug-subject")),
-                AllowedMatchPredictionLoci = MoreEnumerable.ToHashSet(input.AllowedLoci)
+                AllowedMatchPredictionLoci = input.AllowedLoci.ToHashSet()
             });
-
-            var genotypes = imputedGenotypes.GenotypeLikelihoods
-                .Select(x => $"{x.Key.PrettyPrint()} {x.Value}");
 
             return new JsonResult(new GenotypeImputationResponse
             {
@@ -57,7 +54,7 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
                 AllowedLoci = input.AllowedLoci,
                 HaplotypeFrequencySet = frequencySet,
                 GenotypeCount = imputedGenotypes.GenotypeLikelihoods.Count,
-                GenotypeLikelihoods = genotypes
+                GenotypeLikelihoods = imputedGenotypes.GenotypeLikelihoods.ToSingleDelimitedString()
             });
         }
     }

@@ -11,6 +11,6 @@ namespace Atlas.MatchPrediction.Functions.Models.Debug
         public HaplotypeFrequencySet HaplotypeFrequencySet { get; set; }
         public bool IsUnrepresented => GenotypeCount == 0;
         public int GenotypeCount { get; set; }
-        public IEnumerable<string> GenotypeLikelihoods { get; set; }
+        public string GenotypeLikelihoods { get; set; }
     }
 }
