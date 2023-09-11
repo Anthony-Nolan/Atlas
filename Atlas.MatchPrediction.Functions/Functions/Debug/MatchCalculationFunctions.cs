@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Http;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.MatchCalculation;
 using Atlas.MatchPrediction.Functions.Models.Debug;
+using Atlas.MatchPrediction.Functions.Services.Debug;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchCalculation;
@@ -97,34 +96,15 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
                 AllowedLoci = input.AllowedLoci,
                 PatientInfo = BuildSubjectResult(result.PatientResult, frequencySet.PatientSet, input.Patient),
                 DonorInfo = BuildSubjectResult(result.DonorResult, frequencySet.DonorSet, input.Donor),
-                MatchedGenotypePairs = BuildMatchedGenotypePairs(result)
+                MatchedGenotypePairs = result.GenotypeMatchDetails.ToSingleDelimitedString()
             };
 
             return new JsonResult(response);
-        }
-
-        private static Dictionary<int, IEnumerable<MatchedGenotypePair>> BuildMatchedGenotypePairs(GenotypeMatcherResult result)
-        {
-            return result.GenotypeMatchDetails.Select(x => new
-            {
-                TotalCount = x.MatchCount,
-                Pair = new MatchedGenotypePair
-                {
-                    PatientGenotype = $"{x.PatientGenotype.PrettyPrint()}{x.PatientGenotypeLikelihood}",
-                    DonorGenotype = $"{x.DonorGenotype.PrettyPrint()}{x.DonorGenotypeLikelihood}",
-                    MatchCounts = BuildCounts(x.MatchCount, x.MatchCounts)
-                }
-            })
-                .GroupBy(x => x.TotalCount)
-                .ToDictionary(x => x.Key, x => x.Select(a => a.Pair));
         }
 
         private static SubjectResult BuildSubjectResult(GenotypeMatcherResult.SubjectResult subjectResult, HaplotypeFrequencySet set, SubjectInfo subjectInfo)
         {
             return new SubjectResult(subjectResult.IsUnrepresented, set, subjectInfo.HlaTyping.ToPhenotypeInfo().PrettyPrint());
         }
-
-        private static string BuildCounts(int totalCount, LociInfo<int?> locusCounts) =>
-            $"{totalCount};{locusCounts.A};{locusCounts.B};{locusCounts.C};{locusCounts.Dqb1};{locusCounts.Drb1}";
     }
 }
