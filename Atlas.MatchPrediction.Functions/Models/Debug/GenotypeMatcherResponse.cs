@@ -11,9 +11,9 @@ namespace Atlas.MatchPrediction.Functions.Models.Debug
         public SubjectResult DonorInfo { get; set; }
 
         /// <summary>
-        /// Collection of <see cref="MatchedGenotypePair"/> (value) for every distinct match count (key) observed.
+        /// Patient-donor genotype pairs (represented as a single, formatted string) and their match counts.
         /// </summary>
-        public Dictionary<int, IEnumerable<MatchedGenotypePair>> MatchedGenotypePairs { get; set; }
+        public string MatchedGenotypePairs { get; set; }
     }
 
     public class SubjectResult
@@ -28,16 +28,5 @@ namespace Atlas.MatchPrediction.Functions.Models.Debug
             HaplotypeFrequencySet = haplotypeFrequencySet;
             HlaTyping = hlaTyping;
         }
-    }
-
-    public class MatchedGenotypePair
-    {
-        public string PatientGenotype { get; set; }
-        public string DonorGenotype { get; set; }
-
-        /// <summary>
-        /// Total match count per <see cref="MatchedGenotypePair"/> followed by counts at each locus.
-        /// </summary>
-        public string MatchCounts { get; set; }
     }
 }
