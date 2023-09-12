@@ -19,12 +19,18 @@ namespace Atlas.MatchPrediction.Functions.Models.Debug
     public class SubjectResult
     {
         public bool IsUnrepresented { get; set; }
+        public decimal SumOfLikelihoods { get; set; }
         public HaplotypeFrequencySet HaplotypeFrequencySet { get; set; }
         public string HlaTyping { get; set; }
 
-        public SubjectResult(bool isUnrepresented, HaplotypeFrequencySet haplotypeFrequencySet, string hlaTyping)
+        public SubjectResult(
+            bool isUnrepresented,
+            decimal sumOfLikelihoods,
+            HaplotypeFrequencySet haplotypeFrequencySet,
+            string hlaTyping)
         {
             IsUnrepresented = isUnrepresented;
+            SumOfLikelihoods = sumOfLikelihoods;
             HaplotypeFrequencySet = haplotypeFrequencySet;
             HlaTyping = hlaTyping;
         }

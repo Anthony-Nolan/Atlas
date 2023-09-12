@@ -8,5 +8,6 @@ namespace Atlas.MatchPrediction.Models
     {
         public Dictionary<PhenotypeInfo<string>, decimal> GenotypeLikelihoods { get; set; }
         public ISet<PhenotypeInfo<HlaAtKnownTypingCategory>> Genotypes { get; set; }
+        public decimal SumOfLikelihoods { get; set; }
     }
 }

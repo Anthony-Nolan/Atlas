@@ -54,6 +54,7 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
                 AllowedLoci = input.AllowedLoci,
                 HaplotypeFrequencySet = frequencySet,
                 GenotypeCount = imputedGenotypes.GenotypeLikelihoods.Count,
+                SumOfLikelihoods = imputedGenotypes.SumOfLikelihoods,
                 GenotypeLikelihoods = imputedGenotypes.GenotypeLikelihoods.ToSingleDelimitedString()
             });
         }

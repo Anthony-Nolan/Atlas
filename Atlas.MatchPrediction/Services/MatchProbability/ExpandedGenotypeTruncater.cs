@@ -39,7 +39,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var truncatedLikelihoods = likelihoods.OrderByDescending(g => g.Value).Take(MaximumExpandedGenotypesPerInput).ToDictionary();
             var truncatedGenotypes = genotypes.Where(p => truncatedLikelihoods.ContainsKey(p.ToHlaNames())).ToHashSet();
 
-            return new ImputedGenotypes { GenotypeLikelihoods = truncatedLikelihoods, Genotypes = truncatedGenotypes };
+            return new ImputedGenotypes
+            {
+                GenotypeLikelihoods = truncatedLikelihoods,
+                Genotypes = truncatedGenotypes,
+                SumOfLikelihoods = truncatedLikelihoods.Values.SumDecimals()
+            };
         }
     }
 }
