@@ -102,9 +102,16 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
             return new JsonResult(response);
         }
 
-        private static SubjectResult BuildSubjectResult(GenotypeMatcherResult.SubjectResult subjectResult, HaplotypeFrequencySet set, SubjectInfo subjectInfo)
+        private static SubjectResult BuildSubjectResult(
+            GenotypeMatcherResult.SubjectResult subjectResult, 
+            HaplotypeFrequencySet set, 
+            SubjectInfo subjectInfo)
         {
-            return new SubjectResult(subjectResult.IsUnrepresented, set, subjectInfo.HlaTyping.ToPhenotypeInfo().PrettyPrint());
+            return new SubjectResult(
+                subjectResult.IsUnrepresented,
+                subjectResult.SumOfLikelihoods,
+                set, 
+                subjectInfo.HlaTyping.ToPhenotypeInfo().PrettyPrint());
         }
     }
 }

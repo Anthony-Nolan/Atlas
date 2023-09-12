@@ -26,7 +26,8 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
             imputedGenotypes = new ImputedGenotypes
             {
                 GenotypeLikelihoods = new Dictionary<PhenotypeInfo<string>, decimal>(),
-                Genotypes = new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>>()
+                Genotypes = new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>>(),
+                SumOfLikelihoods = 0m
             };
         }
 
@@ -38,7 +39,8 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
                 {
                     {new PhenotypeInfoBuilder<string>(BuilderDefaults.HlaName).Build(), BuilderDefaults.Likelihood}
                 },
-                Genotypes = new[] { new KnownTypingCategoryGenotypeBuilder(BuilderDefaults.HlaName).Build() }.ToHashSet()
+                Genotypes = new[] { new KnownTypingCategoryGenotypeBuilder(BuilderDefaults.HlaName).Build() }.ToHashSet(),
+                SumOfLikelihoods = BuilderDefaults.Likelihood
             };
 
             return this;

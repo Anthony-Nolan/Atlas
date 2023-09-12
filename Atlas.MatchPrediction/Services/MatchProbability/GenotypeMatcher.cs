@@ -116,7 +116,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     subjectData.SubjectFrequencySet.SubjectLogDescription,
                     imputedGenotypes.GenotypeLikelihoods,
                     subjectData.SubjectFrequencySet.FrequencySet.HlaNomenclatureVersion),
-                SumOfLikelihoods(imputedGenotypes));
+                imputedGenotypes.SumOfLikelihoods);
         }
 
         private IEnumerable<Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>> CombineGenotypes(
@@ -173,7 +173,5 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     }
                 });
         }
-
-        private static decimal SumOfLikelihoods(ImputedGenotypes imputedGenotypes) => imputedGenotypes.GenotypeLikelihoods.Values.SumDecimals();
     }
 }
