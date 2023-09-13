@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using Atlas.Common.Utils;
 using Atlas.Common.Utils.Http;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Functions.Models.Debug;
@@ -41,6 +43,24 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             catch (Exception ex)
             {
                 throw new AtlasHttpException(HttpStatusCode.BadRequest, "Failed to convert HLA.", ex);
+            }
+        }
+
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
+        [FunctionName(nameof(Dpb1TceGroups))]
+        public async Task<string> Dpb1TceGroups(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(Dpb1TceGroups)}/"+"{hlaName}")]
+            HttpRequest httpRequest,
+            string hlaName)
+        {
+            try
+            {
+                return await hlaMetadataDictionary.GetDpb1TceGroup(hlaName);
+
+            }
+            catch (Exception ex)
+            {
+                throw new AtlasHttpException(HttpStatusCode.BadRequest, "Failed to retrieve TCE groups.", ex);
             }
         }
     }
