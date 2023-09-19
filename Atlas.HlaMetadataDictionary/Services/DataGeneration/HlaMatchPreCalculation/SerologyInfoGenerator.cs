@@ -22,12 +22,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
             this.dataRepository = dataRepository;
         }
 
-        public IEnumerable<ISerologyInfoForMatching> GetSerologyInfoForMatching(string hlaNomenclatureVersion)
+        public IEnumerable<SerologyInfoForMatching> GetSerologyInfoForMatching(string hlaNomenclatureVersion)
         {
             return dataRepository.GetWmdaDataset(hlaNomenclatureVersion).Serologies.Select(s => GetInfoForSingleSerology(s, hlaNomenclatureVersion));
         }
 
-        private ISerologyInfoForMatching GetInfoForSingleSerology(HlaNom serology, string hlaNomenclatureVersion)
+        private SerologyInfoForMatching GetInfoForSingleSerology(HlaNom serology, string hlaNomenclatureVersion)
         {
             var serologyTyping = GetSerologyTyping(serology, hlaNomenclatureVersion);
             var usedInMatching = GetTypingUsedInMatching(serology, serologyTyping, hlaNomenclatureVersion);

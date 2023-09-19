@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
@@ -9,11 +8,12 @@ using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation.AlleleToSerology
 {
-    internal class AlleleToSerologyMatchingTest : MatchedOnTestBase<MatchedAllele>
+    // ReSharper disable once InconsistentNaming
+    internal class MatchedAllele_AlleleToSerologyTests : MatchedOnTestBase<MatchedAllele>
     {
         [TestCaseSource(
-            typeof(AlleleToSerologyMatchingTestCaseSources),
-            nameof(AlleleToSerologyMatchingTestCaseSources.ExpressingAllelesMatchingSerologies))]
+            typeof(AlleleToSerologyTestCaseSources),
+            nameof(AlleleToSerologyTestCaseSources.ExpressingAllelesMatchingSerologies))]
         public void AlleleToSerologyMatching_ExpressedAlleles_HaveCorrectMatchingSerology(
             Locus locus,
             string alleleName,
@@ -45,8 +45,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
         }
 
         [TestCaseSource(
-            typeof(AlleleToSerologyMatchingTestCaseSources),
-            nameof(AlleleToSerologyMatchingTestCaseSources.DeletedAllelesMatchingSerologies))]
+            typeof(AlleleToSerologyTestCaseSources),
+            nameof(AlleleToSerologyTestCaseSources.DeletedAllelesMatchingSerologies))]
         public void AlleleToSerologyMatching_DeletedAlleles_IdenticalHlaUsedToFindMatchingSerology(
             Locus locus,
             string alleleName,
@@ -68,8 +68,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
         }
 
         [TestCaseSource(
-            typeof(AlleleToSerologyMatchingTestCaseSources),
-            nameof(AlleleToSerologyMatchingTestCaseSources.AllelesMappedToSpecificSubtypeMatchingSerologies))]
+            typeof(AlleleToSerologyTestCaseSources),
+            nameof(AlleleToSerologyTestCaseSources.AllelesMappedToSpecificSubtypeMatchingSerologies))]
         public void AlleleToSerologyMatching_AlleleMappedToSpecificSubtype_HasCorrectMatchingSerologies(Locus locus,
             string alleleName,
             object[] matchingSerologies)
@@ -83,8 +83,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
         }
 
         [TestCaseSource(
-            typeof(AlleleToSerologyMatchingTestCaseSources),
-            nameof(AlleleToSerologyMatchingTestCaseSources.B15AllelesMatchingSerologies))]
+            typeof(AlleleToSerologyTestCaseSources),
+            nameof(AlleleToSerologyTestCaseSources.B15AllelesMatchingSerologies))]
         public void AlleleToSerologyMatching_B15Alleles_HaveCorrectMatchingSerologies(
             AlleleTestCase alleleTestCaseDetails,
             object[] matchingSerologies)
@@ -101,8 +101,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
         }
 
         [TestCaseSource(
-            typeof(AlleleToSerologyMatchingTestCaseSources),
-            nameof(AlleleToSerologyMatchingTestCaseSources.AllelesOfUnknownSerology))]
+            typeof(AlleleToSerologyTestCaseSources),
+            nameof(AlleleToSerologyTestCaseSources.AllelesOfUnknownSerology))]
         public void AlleleToSerologyMatching_AllelesOfUnknownSerology_HaveCorrectMatchingSerologies(
             Locus locus,
             string alleleName,

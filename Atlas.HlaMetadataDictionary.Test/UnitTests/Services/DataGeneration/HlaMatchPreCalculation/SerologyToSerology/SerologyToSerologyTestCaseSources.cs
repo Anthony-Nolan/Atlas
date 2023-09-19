@@ -4,7 +4,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation.SerologyToSerology
 {
-    public class SerologyToSerologyMatchingTestCaseSources
+    public class SerologyToSerologyTestCaseSources
     {
         public static readonly object[] ExpectedSerologyInfos =
         {

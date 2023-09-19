@@ -5,7 +5,7 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
 {
     internal interface IHlaInfoToMapSerologyToAllele
     {
-        List<IAlleleInfoForMatching> AlleleInfoForMatching { get; }
+        List<AlleleInfoForMatching> AlleleInfoForMatching { get; }
         List<RelDnaSer> AlleleToSerologyRelationships { get; }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
@@ -15,7 +14,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
         [TestCase(Locus.C, "01:80", "1")]
         [TestCase(Locus.Dqb1, "03:01:15", "7")]
         [TestCase(Locus.Drb1, "04:155", "4")]
-        public void HlaMatchPrecalculation_AlleleAndSerologyTypingsMatchReciprocally(
+        public void HlaMatchPreCalculation_AlleleAndSerologyTypingsMatchReciprocally(
             Locus locus,
             string alleleName,
             string serologyName)

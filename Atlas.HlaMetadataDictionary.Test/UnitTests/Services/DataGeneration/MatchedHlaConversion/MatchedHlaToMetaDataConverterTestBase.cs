@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
@@ -9,7 +7,6 @@ using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversion;
 using FluentAssertions;
-using NSubstitute;
 using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.MatchedHlaConversion
@@ -39,14 +36,15 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Mat
         {
             var serologyTyping = new SerologyTyping(MatchedLocus.ToString(), SerologyName, SeroSubtype);
 
-            var infoForMatching = Substitute.For<ISerologyInfoForMatching>();
-            infoForMatching.HlaTyping.Returns(serologyTyping);
-            infoForMatching.MatchingSerologies.Returns(new[] { new MatchingSerology(serologyTyping, IsDirectMapping) });
+            var infoForMatching = new SerologyInfoForMatching(
+                serologyTyping, serologyTyping, new[] { new MatchingSerology(serologyTyping, IsDirectMapping) });
 
             var matchedSerology = new MatchedSerology(
                 infoForMatching,
                 new List<string> { PGroupName },
-                new List<string> { GGroupName });
+                new List<string> { GGroupName },
+                new List<SerologyToAlleleMapping>()
+                );
 
             var actualMetadata = MetadataConverter.ConvertToHlaMetadata(new[] { matchedSerology });
 
@@ -86,8 +84,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Mat
         protected static MatchedAllele BuildMatchedAllele(string alleleName)
         {
             var hlaTyping = new AlleleTyping(MatchedLocus, alleleName);
-            var alleleGroup = new[] { alleleName };
-            var infoForMatching = new AlleleInfoForMatching(hlaTyping, hlaTyping, alleleGroup.ToList(), alleleGroup.ToList());
+            var infoForMatching = new AlleleInfoForMatching(hlaTyping, hlaTyping, alleleName, alleleName);
 
             var serologyTyping = new SerologyTyping(MatchedLocus.ToString(), SerologyName, SeroSubtype);
             var matchingSerologies = new[] { new MatchingSerology(serologyTyping, true) };
