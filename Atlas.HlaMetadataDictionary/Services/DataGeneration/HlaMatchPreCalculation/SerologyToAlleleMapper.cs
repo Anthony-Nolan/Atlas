@@ -7,7 +7,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
     internal static class SerologyToAlleleMapper
     {
         /// <returns>Alleles that map to one or more serologies that match the submitted serology.</returns>
-        public static IEnumerable<IAlleleInfoForMatching> GetAlleleMappingsForSerology(ISerologyInfoForMatching serologyInfo, IHlaInfoToMapSerologyToAllele hlaInfo)
+        public static IEnumerable<SerologyToAlleleMapping> GetAlleleMappingsForSerology(SerologyInfoForMatching serologyInfo, IHlaInfoToMapSerologyToAllele hlaInfo)
         {
             var locus = serologyInfo.HlaTyping.Locus;
             var matchingSerologyNames = serologyInfo.MatchingSerologies.Select(m => m.SerologyTyping.Name);
@@ -19,7 +19,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
                     equals new { WmdaLocus = alleleToSerology.TypingLocus, alleleToSerology.Name }
                 where alleleInfo.TypingUsedInMatching.Locus.Equals(locus)
                       && alleleToSerology.Serologies.Intersect(matchingSerologyNames).Any()
-                select alleleInfo;
+                select new SerologyToAlleleMapping
+                {
+                    MatchedAllele = alleleInfo,
+                    SerologyBridge = alleleToSerology.Serologies.Intersect(matchingSerologyNames)
+                };
         }
     }
 }

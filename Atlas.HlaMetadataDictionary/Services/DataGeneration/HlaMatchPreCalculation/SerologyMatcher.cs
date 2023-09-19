@@ -16,11 +16,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
                 .AsParallel()
                 .Select(serologyInfo =>
                 {
-                    var allelesInfo = SerologyToAlleleMapper.GetAlleleMappingsForSerology(serologyInfo, hlaInfo).ToList();
+                    var mappings = SerologyToAlleleMapper.GetAlleleMappingsForSerology(serologyInfo, hlaInfo).ToList();
                     return new MatchedSerology(
                         serologyInfo,
-                        allelesInfo.SelectMany(a => a.MatchingPGroups).Distinct().ToList(),
-                        allelesInfo.SelectMany(a => a.MatchingGGroups).Distinct().ToList()
+                        mappings.Select(m => m.MatchedAllele.MatchingPGroup).Distinct().ToList(),
+                        mappings.Select(m => m.MatchedAllele.MatchingGGroup).Distinct().ToList(),
+                        mappings
                     );
                 })
                 .AsEnumerable();

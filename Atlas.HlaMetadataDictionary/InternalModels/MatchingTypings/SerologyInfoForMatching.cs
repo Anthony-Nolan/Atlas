@@ -6,12 +6,7 @@ using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 
 namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
 {
-    internal interface ISerologyInfoForMatching : IMatchedOn
-    {
-        IEnumerable<MatchingSerology> MatchingSerologies { get; }
-    }
-
-    internal class SerologyInfoForMatching : ISerologyInfoForMatching, IEquatable<ISerologyInfoForMatching>
+    internal class SerologyInfoForMatching : IMatchedOn, IEquatable<SerologyInfoForMatching>
     {
         public HlaTyping HlaTyping { get; }
         public HlaTyping TypingUsedInMatching { get; }
@@ -33,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
                    $"matchingSerologies: {string.Join("; ", MatchingSerologies.Select(m => m))}";
         }
 
-        public bool Equals(ISerologyInfoForMatching other)
+        public bool Equals(SerologyInfoForMatching other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -47,7 +42,7 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj is ISerologyInfoForMatching other && Equals(other);
+            return obj is SerologyInfoForMatching other && Equals(other);
         }
 
         public override int GetHashCode()

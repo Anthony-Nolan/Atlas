@@ -4,7 +4,6 @@ using ApprovalTests;
 using ApprovalTests.Namers;
 using ApprovalTests.Reporters;
 using ApprovalTests.Reporters.TestFrameworks;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
@@ -17,75 +16,63 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
 {
     [UseReporter(typeof(NUnitReporter))]
     [UseApprovalSubdirectory("Approvals")]
-    internal class SerologyToSerologyMatchingTest : MatchedOnTestBase<ISerologyInfoForMatching>
+    // ReSharper disable once InconsistentNaming
+    internal class MatchedSerology_SerologyToSerologyTests : MatchedOnTestBase<MatchedSerology>
     {
         [TestCaseSource(
-            typeof(SerologyToSerologyMatchingTestCaseSources),
-            nameof(SerologyToSerologyMatchingTestCaseSources.ExpectedSerologyInfos)
+            typeof(SerologyToSerologyTestCaseSources),
+            nameof(SerologyToSerologyTestCaseSources.ExpectedSerologyInfos)
             )]
-        public void MatchedSerologies_WhenValidSerology_SerologyInfoCorrectlyAssigned(
+        public void MatchedSerology_WhenValidSerology_SerologyInfoCorrectlyAssigned(
             string serologyLocus,
             Locus locus,
             string serologyName,
             SerologySubtype serologySubtype,
             object[][] matchingSerologies)
         {
-            var actualSerologyInfo = GetSingleMatchingTyping(locus, serologyName);
-
             var expectedSerologyTyping = new SerologyTyping(serologyLocus, serologyName, serologySubtype);
+            var expectedMatchingSerologies = matchingSerologies.Select(m =>
+                new MatchingSerology(new SerologyTyping(serologyLocus, m[0].ToString(), (SerologySubtype)m[1]), (bool)m[2]));
 
-            var expectedMatchingSerologies = matchingSerologies
-                .Select(m =>
-                    new MatchingSerology(
-                        new SerologyTyping(serologyLocus, m[0].ToString(), (SerologySubtype)m[1]),
-                            (bool)m[2]));
+            var actualMatchedSerology = GetSingleMatchingTyping(locus, serologyName);
 
-            var expectedSerologyInfo = new SerologyInfoForMatching
-            (
-                expectedSerologyTyping,
-                expectedSerologyTyping,
-                expectedMatchingSerologies
-            );
-
-            actualSerologyInfo.Should().BeEquivalentTo((ISerologyInfoForMatching)expectedSerologyInfo);
+            actualMatchedSerology.HlaTyping.Should().Be(expectedSerologyTyping);
+            actualMatchedSerology.TypingForHlaMetadata.Should().Be(expectedSerologyTyping);
+            actualMatchedSerology.MatchingSerologies.Should().BeEquivalentTo(expectedMatchingSerologies);
         }
 
         [Test]
-        public void MatchedSerologies_WhenDeletedSerology_SerologyInfoCorrectlyAssigned()
+        public void MatchedSerology_WhenDeletedSerology_SerologyInfoCorrectlyAssigned()
         {
+            const string typingLocus = "Cw";
             const Locus locus = Locus.C;
             const string deletedSerologyName = "11";
             const string serologyUsedInMatchingName = "1";
 
-            var actualSerologyInfo = GetSingleMatchingTyping(locus, deletedSerologyName);
-
-            const string typingLocus = "Cw";
             var expectedDeletedSerology =
                 new SerologyTyping(typingLocus, deletedSerologyName, SerologySubtype.NotSplit, true);
+
             var expectedTypingUsedInMatching =
                 new SerologyTyping(typingLocus, serologyUsedInMatchingName, SerologySubtype.NotSplit);
+
             var expectedMatchingSerologies = new List<MatchingSerology>
             {
-                new MatchingSerology(expectedDeletedSerology, true),
-                new MatchingSerology(expectedTypingUsedInMatching, true)
+                new(expectedDeletedSerology, true),
+                new(expectedTypingUsedInMatching, true)
             };
 
-            var expectedSerologyInfo = new SerologyInfoForMatching
-            (
-                expectedDeletedSerology,
-                expectedTypingUsedInMatching,
-                expectedMatchingSerologies
-            );
+            var actualMatchedSerology = GetSingleMatchingTyping(locus, deletedSerologyName);
 
-            actualSerologyInfo.Should().BeEquivalentTo((ISerologyInfoForMatching)expectedSerologyInfo);
+            actualMatchedSerology.HlaTyping.Should().Be(expectedDeletedSerology);
+            actualMatchedSerology.TypingUsedInMatching.Should().Be(expectedTypingUsedInMatching);
+            actualMatchedSerology.TypingForHlaMetadata.Should().Be(expectedDeletedSerology);
+            actualMatchedSerology.MatchingSerologies.Should().BeEquivalentTo(expectedMatchingSerologies);
         }
 
         [Test]
-        public void MatchedSerologies_CollectionContainsAllExpectedSerology()
+        public void MatchedSerology_CollectionContainsAllExpectedSerology()
         {
-            var str = SharedTestDataCache
-                .GetMatchedHla()
-                .OfType<MatchedSerology>()
+            var str = MatchedHla
                 .OrderBy(s => s.HlaTyping.Locus)
                 .ThenBy(s => int.Parse(s.HlaTyping.Name))
                 .Select(s => $"{s.HlaTyping.Locus.ToString().ToUpper()}\t{s.HlaTyping.Name}")
@@ -95,11 +82,9 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
         }
 
         [Test]
-        public void MatchedSerologies_WhereSerologyIsValid_CollectionOnlyContainsValidRelationships()
+        public void MatchedSerology_WhereSerologyIsValid_CollectionOnlyContainsValidRelationships()
         {
-            var groupBySubtype = SharedTestDataCache
-                .GetMatchedHla()
-                .OfType<MatchedSerology>()
+            var serologiesBySubtype = MatchedHla
                 .Where(m => !m.HlaTyping.IsDeleted)
                 .Select(m => new
                 {
@@ -111,14 +96,14 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
                         .Select(s => new { Subtype = s.Key, Count = s.Count() })
                 }).ToList();
 
-            var broads = groupBySubtype.Where(s => s.MatchedType.SerologySubtype == SerologySubtype.Broad).ToList();
-            var splits = groupBySubtype.Where(s => s.MatchedType.SerologySubtype == SerologySubtype.Split).ToList();
-            var associated = groupBySubtype.Where(s => s.MatchedType.SerologySubtype == SerologySubtype.Associated).ToList();
-            var notSplits = groupBySubtype.Where(s => s.MatchedType.SerologySubtype == SerologySubtype.NotSplit).ToList();
+            var broads = serologiesBySubtype.Where(s => s.MatchedType.SerologySubtype == SerologySubtype.Broad).ToList();
+            var splits = serologiesBySubtype.Where(s => s.MatchedType.SerologySubtype == SerologySubtype.Split).ToList();
+            var associated = serologiesBySubtype.Where(s => s.MatchedType.SerologySubtype == SerologySubtype.Associated).ToList();
+            var notSplits = serologiesBySubtype.Where(s => s.MatchedType.SerologySubtype == SerologySubtype.NotSplit).ToList();
 
             // Matching list should not contain the subtype of the Matched type
             Assert.IsEmpty(
-                groupBySubtype.Where(s => s.SubtypeCounts.Any(sc => sc.Subtype == s.MatchedType.SerologySubtype)));
+                serologiesBySubtype.Where(s => s.SubtypeCounts.Any(sc => sc.Subtype == s.MatchedType.SerologySubtype)));
 
             // Broads cannot be matched to NotSplit, and must have at least two Splits
             Assert.IsEmpty(

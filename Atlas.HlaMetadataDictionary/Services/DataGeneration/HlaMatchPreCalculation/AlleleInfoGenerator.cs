@@ -21,7 +21,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
             this.dataRepository = dataRepository;
         }
 
-        public IEnumerable<IAlleleInfoForMatching> GetAlleleInfoForMatching(string hlaNomenclatureVersion)
+        public IEnumerable<AlleleInfoForMatching> GetAlleleInfoForMatching(string hlaNomenclatureVersion)
         {
             var alleles = dataRepository.GetWmdaDataset(hlaNomenclatureVersion).Alleles;
 
@@ -35,7 +35,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
             return !dataRepository.GetWmdaDataset(hlaNomenclatureVersion).ConfidentialAlleles.Contains(allele);
         }
 
-        private IAlleleInfoForMatching GetInfoForSingleAllele(HlaNom allele, string hlaNomenclatureVersion)
+        private AlleleInfoForMatching GetInfoForSingleAllele(HlaNom allele, string hlaNomenclatureVersion)
         {
             var alleleTyping = GetAlleleTyping(allele, hlaNomenclatureVersion);
 
@@ -69,24 +69,24 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
             return alleleStatus.ToAlleleTypingStatus();
         }
 
-        private List<string> GetPGroup(IWmdaHlaTyping allele, string hlaNomenclatureVersion)
+        private string GetPGroup(IWmdaHlaTyping allele, string hlaNomenclatureVersion)
         {
             return GetAlleleGroup(dataRepository.GetWmdaDataset(hlaNomenclatureVersion).PGroups, allele);
         }
 
-        private List<string> GetGGroup(IWmdaHlaTyping allele, string hlaNomenclatureVersion)
+        private string GetGGroup(IWmdaHlaTyping allele, string hlaNomenclatureVersion)
         {
             return GetAlleleGroup(dataRepository.GetWmdaDataset(hlaNomenclatureVersion).GGroups, allele);
         }
 
-        private static List<string> GetAlleleGroup(IEnumerable<IWmdaAlleleGroup> alleleGroups, IWmdaHlaTyping allele)
+        private static string GetAlleleGroup(IEnumerable<IWmdaAlleleGroup> alleleGroups, IWmdaHlaTyping allele)
         {
             var alleleGroup = alleleGroups
                 .Where(group => group.LocusEquals(allele))
                 .SingleOrDefault(group => group.Alleles.Contains(allele.Name))
                 ?.Name;
 
-            return alleleGroup != null ? new List<string> {alleleGroup} : new List<string>();
+            return alleleGroup;
         }
     }
 }
