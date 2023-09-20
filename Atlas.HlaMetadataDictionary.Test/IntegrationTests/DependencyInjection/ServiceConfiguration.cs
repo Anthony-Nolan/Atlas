@@ -47,6 +47,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             services.AddSingleton<IHlaMatchingMetadataRepository, FileBackedHlaMatchingMetadataRepository>();
             services.AddSingleton<IAlleleNamesMetadataRepository, FileBackedAlleleNamesMetadataRepository>();
             services.AddSingleton<IDpb1TceGroupsMetadataRepository, FileBackedTceMetadataRepository>();
+            services.AddSingleton<ISerologyToAllelesMetadataRepository, FileBackedSerologyToAllelesMetadataRepository>();
             services.AddSingleton<IAlleleGroupsMetadataRepository, FileBackedAlleleGroupsMetadataRepository>();
             services.AddSingleton<IGGroupToPGroupMetadataRepository, FileBackedGGroupToPGroupMetadataRepository>();
             services.AddSingleton<IHlaNameToSmallGGroupLookupRepository, FileBackedHlaNameToSmallGroupLookupRepository>();

@@ -2,7 +2,6 @@ using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
@@ -48,6 +47,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
         private readonly IGGroupToPGroupMetadataService gGroupToPGroupMetadataService;
         private readonly ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService;
+        private readonly ISerologyToAllelesMetadataService serologyToAllelesMetadataService;
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
@@ -60,6 +60,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository;
         private readonly IHlaNameToSmallGGroupLookupRepository hlaNameToSmallGGroupLookupRepository;
         private readonly ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository;
+        private readonly ISerologyToAllelesMetadataRepository serologyToAllelesMetadataRepository;
 
         public HlaMetadataDictionaryFactory(
             IPersistentCacheProvider cacheProvider,
@@ -74,6 +75,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
             IGGroupToPGroupMetadataService gGroupToPGroupMetadataService,
             ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService,
+            ISerologyToAllelesMetadataService serologyToAllelesMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger,
@@ -85,7 +87,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository,
             IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository,
             IHlaNameToSmallGGroupLookupRepository hlaNameToSmallGGroupLookupRepository,
-            ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository)
+            ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository,
+            ISerologyToAllelesMetadataRepository serologyToAllelesMetadataRepository)
         {
             this.cache = cacheProvider.Cache;
 
@@ -99,6 +102,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.dpb1TceGroupMetadataService = dpb1TceGroupMetadataService;
             this.gGroupToPGroupMetadataService = gGroupToPGroupMetadataService;
             this.smallGGroupToPGroupMetadataService = smallGGroupToPGroupMetadataService;
+            this.serologyToAllelesMetadataService = serologyToAllelesMetadataService;
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
@@ -111,6 +115,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.gGroupToPGroupMetadataRepository = gGroupToPGroupMetadataRepository;
             this.hlaNameToSmallGGroupLookupRepository = hlaNameToSmallGGroupLookupRepository;
             this.smallGGroupToPGroupMetadataRepository = smallGGroupToPGroupMetadataRepository;
+            this.serologyToAllelesMetadataRepository = serologyToAllelesMetadataRepository;
         }
 
         /// <summary>
@@ -165,6 +170,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 dpb1TceGroupMetadataService,
                 gGroupToPGroupMetadataService,
                 smallGGroupToPGroupMetadataService,
+                serologyToAllelesMetadataService,
                 hlaMetadataGenerationOrchestrator,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger);
@@ -180,7 +186,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 dpb1TceGroupsMetadataRepository,
                 gGroupToPGroupMetadataRepository,
                 hlaNameToSmallGGroupLookupRepository,
-                smallGGroupToPGroupMetadataRepository);
+                smallGGroupToPGroupMetadataRepository,
+                serologyToAllelesMetadataRepository);
         }
     }
 }
