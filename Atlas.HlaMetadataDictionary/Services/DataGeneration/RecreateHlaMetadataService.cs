@@ -27,6 +27,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
         private readonly IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository;
         private readonly IHlaNameToSmallGGroupLookupRepository hlaNameToSmallGGroupLookupRepository;
         private readonly ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository;
+        private readonly ISerologyToAllelesMetadataRepository serologyToAllelesMetadataRepository;
         private readonly ILogger logger;
 
         public RecreateHlaMetadataService(
@@ -39,6 +40,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository,
             IHlaNameToSmallGGroupLookupRepository hlaNameToSmallGGroupLookupRepository,
             ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository,
+            ISerologyToAllelesMetadataRepository serologyToAllelesMetadataRepository,
             ILogger logger)
         {
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
@@ -50,6 +52,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             this.gGroupToPGroupMetadataRepository = gGroupToPGroupMetadataRepository;
             this.hlaNameToSmallGGroupLookupRepository = hlaNameToSmallGGroupLookupRepository;
             this.smallGGroupToPGroupMetadataRepository = smallGGroupToPGroupMetadataRepository;
+            this.serologyToAllelesMetadataRepository = serologyToAllelesMetadataRepository;
             this.logger = logger;
         }
 
@@ -81,7 +84,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
                 alleleGroupsMetadataRepository.RecreateHlaMetadataTable(metadataCollection.AlleleGroupMetadata, hlaNomenclatureVersion),
                 gGroupToPGroupMetadataRepository.RecreateHlaMetadataTable(metadataCollection.GGroupToPGroupMetadata, hlaNomenclatureVersion),
                 hlaNameToSmallGGroupLookupRepository.RecreateHlaMetadataTable(metadataCollection.SmallGGroupMetadata, hlaNomenclatureVersion),
-                smallGGroupToPGroupMetadataRepository.RecreateHlaMetadataTable(metadataCollection.SmallGGroupToPGroupMetadata, hlaNomenclatureVersion)
+                smallGGroupToPGroupMetadataRepository.RecreateHlaMetadataTable(metadataCollection.SmallGGroupToPGroupMetadata, hlaNomenclatureVersion),
+                serologyToAllelesMetadataRepository.RecreateHlaMetadataTable(metadataCollection.SerologyToAllelesMetadata, hlaNomenclatureVersion)
             );
         }
     }

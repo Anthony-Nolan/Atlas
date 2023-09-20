@@ -81,9 +81,10 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
                 logger.SendTrace("HlaMetadataDictionary: GGroup to PGroup");
                 var gGroupToPGroupMetadata = GetGGroupToPGroupMetadata(hlaNomenclatureVersion).ToList();
 
-                var preCalculatedSerology = preCalculatedMatchedHla.OfType<IHlaMetadataSource<SerologyTyping>>();
+                var matchedSerologies = preCalculatedMatchedHla.OfType<MatchedSerology>().ToList();
+
                 logger.SendTrace("HlaMetadataDictionary: Building small g groups");
-                var smallGGroupsMetadata = GetSmallGGroupsMetadata(hlaNomenclatureVersion, preCalculatedSerology).ToList();
+                var smallGGroupsMetadata = GetSmallGGroupsMetadata(hlaNomenclatureVersion, matchedSerologies).ToList();
                 var smallGToPGroupMetadata = GetSmallGGroupToPGroupMetadata(hlaNomenclatureVersion).ToList();
 
                 return new HlaMetadataCollection
@@ -95,7 +96,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
                     AlleleGroupMetadata = alleleGroupsMetadata,
                     GGroupToPGroupMetadata = gGroupToPGroupMetadata,
                     SmallGGroupMetadata = smallGGroupsMetadata,
-                    SmallGGroupToPGroupMetadata = smallGToPGroupMetadata
+                    SmallGGroupToPGroupMetadata = smallGToPGroupMetadata,
+                    SerologyToAllelesMetadata = matchedSerologies.Select(m => new SerologyToAllelesMetadata(m))
                 };
             }
             catch (Exception ex)

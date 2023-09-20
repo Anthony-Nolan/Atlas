@@ -12,5 +12,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata
         public IEnumerable<ISerialisableHlaMetadata> SmallGGroupMetadata { get; set; }
         public IEnumerable<ISerialisableHlaMetadata> GGroupToPGroupMetadata { get; set; }
         public IEnumerable<ISerialisableHlaMetadata> SmallGGroupToPGroupMetadata { get; set; }
+        public IEnumerable<ISerialisableHlaMetadata> SerologyToAllelesMetadata { get; set; }
     }
 }
