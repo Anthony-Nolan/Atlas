@@ -23,29 +23,37 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.Metadata
         public SerologyToAllelesMetadata(MatchedSerology serology)
             : base(serology.HlaTyping.Locus, serology.HlaTyping.Name, TypingMethod.Serology)
         {
-            SerologyToAlleleMappings = SummariseSerologyToAlleleMappings(serology.SerologyToAlleleMappings);
+            SerologyToAlleleMappings = SummariseSerologyToAlleleMapping(serology.SerologyToAlleleMappings).ToList();
         }
 
         /// <summary>
         /// Used when retrieving metadata from the HMD
         /// </summary>
-        public SerologyToAllelesMetadata(Locus locus, string serologyName, List<SerologyToAlleleMappingSummary> mappings) 
+        public SerologyToAllelesMetadata(Locus locus, string serologyName, List<SerologyToAlleleMappingSummary> mappings)
             : base(locus, serologyName, TypingMethod.Serology)
         {
             SerologyToAlleleMappings = mappings;
         }
 
-        private static List<SerologyToAlleleMappingSummary> SummariseSerologyToAlleleMappings(IEnumerable<SerologyToAlleleMapping> mappings)
+        private static IEnumerable<SerologyToAlleleMappingSummary> SummariseSerologyToAlleleMapping(IEnumerable<SerologyToAlleleMapping> mappings)
         {
             return mappings
-                .GroupBy(m => m.MatchedAllele.MatchingPGroup)
+                .SelectMany(m => m.SerologyBridge
+                    .Select(s => new
+                    {
+                        SerologyBridge = s,
+                        PGroup = m.MatchedAllele.MatchingPGroup,
+                        GGroup = m.MatchedAllele.MatchingGGroup,
+                        Allele = m.MatchedAllele.HlaTyping.Name
+                    }))
+                .GroupBy(m => new { m.SerologyBridge, m.PGroup })
                 .Select(grp => new SerologyToAlleleMappingSummary
                 {
-                    PGroup = grp.Key,
-                    GGroups = grp.Select(g => g.MatchedAllele.MatchingGGroup).Distinct().OrderBy(x => x).ToList(),
-                    Alleles = grp.Select(g => g.MatchedAllele.HlaTyping.Name).Distinct().OrderBy(x => x).ToList(),
-                    SerologyBridge = grp.SelectMany(g => g.SerologyBridge).Distinct().OrderBy(x => x).ToList()
-                }).ToList();
+                    SerologyBridge = grp.Key.SerologyBridge,
+                    PGroup = grp.Key.PGroup,
+                    GGroups = grp.Select(g => g.GGroup).Distinct().ToList(),
+                    Alleles = grp.Select(g => g.Allele).Distinct().ToList()
+                });
         }
     }
 }

@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils;
-using Atlas.Common.Utils.Extensions;
 using Atlas.Common.Utils.Http;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
 {
@@ -82,13 +81,14 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
         {
             try
             {
-                if (Enum.TryParse(locusName, out Locus locus))
+                var formattedLocusName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(locusName.ToLower());
+                if (Enum.TryParse(formattedLocusName, out Locus locus))
                 {
                     var mappings = await hlaMetadataDictionary.GetSerologyToAlleleMappings(locus, serologyName);
 
                     return string.IsNullOrEmpty(pGroup) 
-                        ? mappings 
-                        : mappings.Where(m => m.PGroup == pGroup);
+                        ? mappings.OrderBy(m => m.PGroup).ThenBy(m => m.SerologyBridge)
+                        : mappings.Where(m => m.PGroup == pGroup).OrderBy(m => m.SerologyBridge);
                 }
 
                 throw new ArgumentException($"{locusName} is not a valid option for type, {nameof(Locus)}.");
