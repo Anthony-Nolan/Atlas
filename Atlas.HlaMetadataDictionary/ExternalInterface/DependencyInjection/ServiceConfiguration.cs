@@ -7,7 +7,6 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators;
@@ -58,6 +57,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.AddScoped<IAlleleGroupsMetadataRepository, AlleleGroupsMetadataRepository>();
             services.AddScoped<IHlaNameToSmallGGroupLookupRepository, HlaNameToSmallGGroupLookupRepository>();
             services.AddScoped<ISmallGGroupToPGroupMetadataRepository, SmallGGroupToPGroupMetadataRepository>();
+            services.AddScoped<ISerologyToAllelesMetadataRepository, SerologyToAllelesMetadataRepository>();
         }
 
         private static void RegisterTypesRelatedToDictionaryRecreation(this IServiceCollection services)
