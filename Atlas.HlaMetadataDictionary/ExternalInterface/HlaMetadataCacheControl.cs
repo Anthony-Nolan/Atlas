@@ -27,6 +27,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository;
         private readonly IHlaNameToSmallGGroupLookupRepository hlaNameToSmallGGroupLookupRepository;
         private readonly ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository;
+        private readonly ISerologyToAllelesMetadataRepository serologyToAllelesMetadataRepository;
 
         public HlaMetadataCacheControl(
             string hlaNomenclatureVersion,
@@ -36,7 +37,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository,
             IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository,
             IHlaNameToSmallGGroupLookupRepository hlaNameToSmallGGroupLookupRepository,
-            ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository)
+            ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository,
+            ISerologyToAllelesMetadataRepository serologyToAllelesMetadataRepository)
         {
             this.hlaNomenclatureVersion = hlaNomenclatureVersion;
 
@@ -47,6 +49,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.gGroupToPGroupMetadataRepository = gGroupToPGroupMetadataRepository;
             this.hlaNameToSmallGGroupLookupRepository = hlaNameToSmallGGroupLookupRepository;
             this.smallGGroupToPGroupMetadataRepository = smallGGroupToPGroupMetadataRepository;
+            this.serologyToAllelesMetadataRepository = serologyToAllelesMetadataRepository;
         }
 
         public async Task PreWarmAllCaches()
@@ -59,6 +62,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             await gGroupToPGroupMetadataRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
             await hlaNameToSmallGGroupLookupRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
             await smallGGroupToPGroupMetadataRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
+            await serologyToAllelesMetadataRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
         }
 
         public async Task PreWarmAlleleNameCache()

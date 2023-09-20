@@ -16,5 +16,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         public IEnumerable<FileBackedMolecularTypingToPGroupMetadata> GGroupToPGroupMetadata { get; set; }
         public IEnumerable<FileBackedSmallGGroupsMetadata> SmallGGroupMetadata { get; set; }
         public IEnumerable<FileBackedMolecularTypingToPGroupMetadata> SmallGGroupToPGroupMetadata { get; set; }
+        public IEnumerable<FileBackedSerologyToAllelesMetadata> SerologyToAllelesMetadata { get; set; }
     }
 }

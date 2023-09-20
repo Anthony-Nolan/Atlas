@@ -1,7 +1,6 @@
 ﻿using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
@@ -22,6 +21,7 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
         private IDpb1TceGroupMetadataService dpb1;
         private IGGroupToPGroupMetadataService gGroupToPGroup;
         private ISmallGGroupToPGroupMetadataService smallGGroupToPGroup;
+        private ISerologyToAllelesMetadataService serologyToAlleles;
         private IHlaMetadataGenerationOrchestrator metadata;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private ILogger logger;
@@ -43,6 +43,7 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
             dpb1 = Substitute.For<IDpb1TceGroupMetadataService>();
             gGroupToPGroup = Substitute.For<IGGroupToPGroupMetadataService>();
             smallGGroupToPGroup = Substitute.For<ISmallGGroupToPGroupMetadataService>();
+            serologyToAlleles = Substitute.For<ISerologyToAllelesMetadataService>();
             metadata = Substitute.For<IHlaMetadataGenerationOrchestrator>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
             logger = Substitute.For<ILogger>();
@@ -85,6 +86,9 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                 case ISmallGGroupToPGroupMetadataService typedDependency:
                     smallGGroupToPGroup = typedDependency;
                     break;
+                case ISerologyToAllelesMetadataService typedDependency:
+                    serologyToAlleles = typedDependency;
+                    break;
                 case IHlaMetadataGenerationOrchestrator typedDependency:
                     metadata = typedDependency;
                     break;
@@ -116,6 +120,7 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                 dpb1,
                 gGroupToPGroup,
                 smallGGroupToPGroup,
+                serologyToAlleles,
                 metadata,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger

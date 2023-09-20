@@ -2,11 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils;
+using Atlas.Common.Utils.Extensions;
 using Atlas.Common.Utils.Http;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.MatchingAlgorithm.Functions.Models.Debug;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
@@ -14,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
 {
@@ -61,6 +66,37 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             catch (Exception ex)
             {
                 throw new AtlasHttpException(HttpStatusCode.BadRequest, "Failed to retrieve TCE groups.", ex);
+            }
+        }
+
+        [FunctionName(nameof(SerologyToAlleleMapping))]
+        public async Task<IEnumerable<SerologyToAlleleMappingSummary>> SerologyToAlleleMapping(
+            [HttpTrigger(
+                AuthorizationLevel.Function,
+                "get",
+                Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(SerologyToAlleleMapping)}/{{{nameof(locusName)}}}/{{{nameof(serologyName)}}}/{{{nameof(pGroup)}?}}")]
+            HttpRequest httpRequest,
+            string locusName,
+            string serologyName,
+            string pGroup)
+        {
+            try
+            {
+                if (Enum.TryParse(locusName, out Locus locus))
+                {
+                    var mappings = await hlaMetadataDictionary.GetSerologyToAlleleMappings(locus, serologyName);
+
+                    return string.IsNullOrEmpty(pGroup) 
+                        ? mappings 
+                        : mappings.Where(m => m.PGroup == pGroup);
+                }
+
+                throw new ArgumentException($"{locusName} is not a valid option for type, {nameof(Locus)}.");
+
+            }
+            catch (Exception ex)
+            {
+                throw new AtlasHttpException(HttpStatusCode.BadRequest, "Failed to retrieve serology to allele mappings.", ex);
             }
         }
     }
