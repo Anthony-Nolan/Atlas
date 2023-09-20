@@ -9,27 +9,27 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata
     public class SerologyToAlleleMappingSummary
     {
         /// <summary>
-        /// Name of serology typing(s) that match the given serology typing AND map to <see cref="Alleles"/>.
+        /// Name of single serology typing that matches the given serology typing AND maps to <see cref="Alleles"/>.
         /// </summary>
         [JsonProperty("ser")]
-        public List<string> SerologyBridge { get; set; }
+        public string SerologyBridge { get; set; }
 
         /// <summary>
-        /// Alleles mapped to serologies listed in <see cref="SerologyBridge"/>
+        /// Name of single P group that <see cref="Alleles"/> belong to
+        /// </summary>
+        [JsonProperty("pGrp")]
+        public string PGroup { get; set; }
+
+        /// <summary>
+        /// Alleles mapped to serology listed in <see cref="SerologyBridge"/> and belong to the same <see cref="PGroup"/>
         /// </summary>
         [JsonProperty("alleles")]
         public List<string> Alleles { get; set; }
 
         /// <summary>
-        /// G groups that <see cref="Alleles"/> belongs to
+        /// G groups that <see cref="Alleles"/> belong to
         /// </summary>
         [JsonProperty("gGrps")]
         public List<string> GGroups { get; set; }
-
-        /// <summary>
-        /// Name of P group that <see cref="Alleles"/> belongs to
-        /// </summary>
-        [JsonProperty("pGrp")]
-        public string PGroup { get; set; }
     }
 }
