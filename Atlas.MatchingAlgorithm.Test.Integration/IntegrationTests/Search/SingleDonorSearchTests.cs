@@ -58,7 +58,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 donor = new DonorInfoWithExpandedHla
                 {
                     DonorType = DonorType.Adult,
-                    ExternalDonorCode = Guid.NewGuid().ToString(),
+                    ExternalDonorCode = DonorIdGenerator.NewExternalCode,
                     DonorId = DonorIdGenerator.NextId(),
                     HlaNames = donorHlas,
                     MatchingHla = matchingHlaPhenotype
