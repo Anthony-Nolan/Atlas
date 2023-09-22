@@ -73,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             [HttpTrigger(
                 AuthorizationLevel.Function,
                 "get",
-                Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(SerologyToAlleleMapping)}/{{{nameof(locusName)}}}/{{{nameof(serologyName)}}}/{{{nameof(pGroup)}?}}")]
+                Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(SerologyToAlleleMapping)}/"+"{locusName}/{serologyName}/{pGroup?}")]
             HttpRequest httpRequest,
             string locusName,
             string serologyName,
@@ -86,7 +86,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
                 {
                     var mappings = await hlaMetadataDictionary.GetSerologyToAlleleMappings(locus, serologyName);
 
-                    return string.IsNullOrEmpty(pGroup) 
+                    return string.IsNullOrEmpty(pGroup)
                         ? mappings.OrderBy(m => m.PGroup).ThenBy(m => m.SerologyBridge)
                         : mappings.Where(m => m.PGroup == pGroup).OrderBy(m => m.SerologyBridge);
                 }
