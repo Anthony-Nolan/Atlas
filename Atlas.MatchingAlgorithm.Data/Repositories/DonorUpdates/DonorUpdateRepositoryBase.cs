@@ -47,6 +47,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             "DQB1_2",
             "DRB1_1",
             "DRB1_2",
+            nameof(Donor.ExternalDonorCode),
+            nameof(Donor.EthnicityCode),
+            nameof(Donor.RegistryCode)
         };
 
         // The order of these matters when setting up the datatable - if re-ordering, also re-order datatable contents
@@ -238,7 +241,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     donor.HlaNames.Dqb1.Position1,
                     donor.HlaNames.Dqb1.Position2,
                     donor.HlaNames.Drb1.Position1,
-                    donor.HlaNames.Drb1.Position2);
+                    donor.HlaNames.Drb1.Position2,
+                    donor.ExternalDonorCode,
+                    donor.EthnicityCode,
+                    donor.RegistryCode);
             }
 
             return dataTable;

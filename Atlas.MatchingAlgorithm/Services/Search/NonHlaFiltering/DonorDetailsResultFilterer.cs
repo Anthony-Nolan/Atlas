@@ -2,6 +2,7 @@
 using System.Linq;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Models;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.NonHlaFiltering
 {
@@ -18,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.NonHlaFiltering
         IEnumerable<MatchAndScoreResult> FilterResultsByDonorData(
             DonorFilteringCriteria donorFilteringCriteria,
             IEnumerable<MatchAndScoreResult> results,
-            IReadOnlyDictionary<int, Donor> donorLookup);
+            IReadOnlyDictionary<int, DonorLookupInfo> donorLookup);
     }
 
     internal class DonorDetailsResultFilterer : IDonorDetailsResultFilterer
@@ -27,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.NonHlaFiltering
         public IEnumerable<MatchAndScoreResult> FilterResultsByDonorData(
             DonorFilteringCriteria donorFilteringCriteria,
             IEnumerable<MatchAndScoreResult> results,
-            IReadOnlyDictionary<int, Donor> donorLookup)
+            IReadOnlyDictionary<int, DonorLookupInfo> donorLookup)
         {
             if (donorFilteringCriteria.RegistryCodes != null)
             {

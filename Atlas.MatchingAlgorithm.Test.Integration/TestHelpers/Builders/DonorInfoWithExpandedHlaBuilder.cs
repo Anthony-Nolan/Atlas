@@ -5,6 +5,7 @@ using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using System;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 {
@@ -17,6 +18,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
             donor = new DonorInfoWithExpandedHla
             {
                 DonorType = DonorType.Adult,
+                ExternalDonorCode = Guid.NewGuid().ToString(),
                 DonorId = donorId,
                 HlaNames = new PhenotypeInfo<string>(),
                 MatchingHla = new PhenotypeInfo<INullHandledHlaMatchingMetadata>()

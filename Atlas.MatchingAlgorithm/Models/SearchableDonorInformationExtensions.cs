@@ -13,6 +13,9 @@ namespace Atlas.MatchingAlgorithm.Models
             {
                 DonorId = donor.DonorId,
                 DonorType = donor.DonorType,
+                ExternalDonorCode = donor.ExternalDonorCode,
+                EthnicityCode = donor.EthnicityCode,
+                RegistryCode = donor.RegistryCode,
                 HlaNames = donor.HlaAsPhenotype()
             };
         }

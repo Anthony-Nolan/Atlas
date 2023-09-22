@@ -29,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
             
             testDataRepository.SetupPersistentMatchingDatabase();
             testDataRepository.SetupTransientMatchingDatabase();
-            testDataRepository.AddTestDonors(metaDonorRepository.AllMetaDonors().ToList().SelectMany(md => md.GetDatabaseDonors()));
+            testDataRepository.AddTestDonors(metaDonorRepository.AllMetaDonors().SelectMany(md => md.GetDatabaseDonors()));
         }
     }
 }

@@ -1,6 +1,7 @@
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using LochNessBuilder;
+using System;
 
 namespace Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels
 {
@@ -18,7 +19,8 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels
             .With(d => d.B_2, DefaultHlaName)
             .With(d => d.DRB1_1, DefaultHlaName)
             .With(d => d.DRB1_2, DefaultHlaName)
-            .With(d => d.DonorType, DefaultDonorType);
+            .With(d => d.DonorType, DefaultDonorType)
+            .With(d => d.ExternalDonorCode, Guid.NewGuid().ToString());
 
         public static Builder<Donor> WithDefaultValidHla(this Builder<Donor> builder, string defaultHla) => builder
             .With(d => d.A_1, defaultHla)

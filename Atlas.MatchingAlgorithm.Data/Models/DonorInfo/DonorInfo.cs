@@ -13,5 +13,8 @@ namespace Atlas.MatchingAlgorithm.Data.Models.DonorInfo
         public DonorType DonorType { get; set; }
         public PhenotypeInfo<string> HlaNames { get; set; }
         public bool IsAvailableForSearch { get; set; } = true;
+        public string ExternalDonorCode { get; set; }
+        public string EthnicityCode { get; set; }
+        public string RegistryCode { get; set; }
     }
 }

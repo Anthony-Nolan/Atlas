@@ -51,6 +51,9 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
     {
         public int DonorId { get; set; }
         public DonorType DonorType { get; set; }
+        public string ExternalDonorCode { get; set; }
+        public string EthnicityCode { get; set; }
+        public string RegistryCode { get; set; }
         public PhenotypeInfoTransfer<string> HlaNames { get; set; }
         public bool IsAvailableForSearch { get; set; } = true;
     }
@@ -63,6 +66,9 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
             {
                 DonorId = donorInfoTransfer.DonorId,
                 DonorType = donorInfoTransfer.DonorType,
+                ExternalDonorCode = donorInfoTransfer.ExternalDonorCode,
+                EthnicityCode = donorInfoTransfer.EthnicityCode,
+                RegistryCode = donorInfoTransfer.RegistryCode,
                 HlaNames = donorInfoTransfer.HlaNames.ToPhenotypeInfo(),
                 IsAvailableForSearch = donorInfoTransfer.IsAvailableForSearch
             };
