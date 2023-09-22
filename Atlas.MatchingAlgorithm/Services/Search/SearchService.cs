@@ -84,9 +84,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var reifiedScoredMatches = scoredMatches.DistinctBy(m => m.MatchResult.DonorId).ToList();
             searchLogger.SendTrace($"Via {splitSearch.Count} sub-searches, matched {reifiedScoredMatches.Count} donors total.");
 
-            var donorLookupTimer = searchLogger.RunTimed($"{LoggingPrefix}Look up external donor ids");
-            var donorLookup = await donorReader.GetDonors(reifiedScoredMatches.Select(r => r.MatchResult.DonorId));
-            donorLookupTimer.Dispose();
+
+            var useDonorInfoStoredInMatchingAlgorithmDb = false;
+            var donorLookup = useDonorInfoStoredInMatchingAlgorithmDb
+                ? GetDonorLookupFromMatchResults(reifiedScoredMatches)
+                : await LoadDonorLookupFromDatabase(reifiedScoredMatches);
 
             var resultsFilteredByDonorDetails = donorDetailsResultFilterer.FilterResultsByDonorData(
                 new DonorFilteringCriteria { RegistryCodes = matchingRequest.DonorRegistryCodes },
@@ -96,6 +98,16 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             return resultsFilteredByDonorDetails.Select(scoredMatch => MapSearchResultToApiSearchResult(scoredMatch, donorLookup));
         }
+
+        private async Task<Dictionary<int, DonorLookupInfo>> LoadDonorLookupFromDatabase(List<MatchAndScoreResult> reifiedScoredMatches)
+        {
+            using var donorLookupTimer = searchLogger.RunTimed($"{LoggingPrefix}Look up external donor ids");
+            return (await donorReader.GetDonors(reifiedScoredMatches.Select(r => r.MatchResult.DonorId)))
+                .ToDictionary(l => l.Key, l => l.Value.ToDonorLookupInfo());
+        }
+
+        private Dictionary<int, DonorLookupInfo> GetDonorLookupFromMatchResults(List<MatchAndScoreResult> reifiedScoredMatches)
+            => reifiedScoredMatches.ToDictionary(r => r.MatchResult.DonorId, r => r.MatchResult.DonorInfo.ToDonorLookupInfo());
 
         private async IAsyncEnumerable<MatchResult> RunSubSearches(List<AlleleLevelMatchCriteria> splitSearch, DateTimeOffset? cutOffDate)
         {
@@ -111,7 +123,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
         private MatchingAlgorithmResult MapSearchResultToApiSearchResult(
             MatchAndScoreResult result,
-            IReadOnlyDictionary<int, Donor> donorLookup)
+            IReadOnlyDictionary<int, DonorLookupInfo> donorLookup)
         {
             var atlasDonorId = result.MatchResult.DonorInfo.DonorId;
 

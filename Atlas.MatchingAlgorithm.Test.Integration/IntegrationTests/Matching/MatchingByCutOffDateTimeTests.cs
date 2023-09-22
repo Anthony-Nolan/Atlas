@@ -192,6 +192,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             {
                 DonorId = donorId,
                 DonorType = DefaultDonorType,
+                ExternalDonorCode = Guid.NewGuid().ToString(),
                 HlaNames = donorHla
             };
 

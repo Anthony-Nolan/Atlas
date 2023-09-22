@@ -1,12 +1,11 @@
-﻿using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Public.Models.GeneticData;
+﻿using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
+using System;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
 {
@@ -24,7 +23,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
         public DonorBuilder(Genotype genotype)
         {
             this.genotype = genotype;
-            donor = new Donor {DonorId = DonorIdGenerator.NextId()};
+            donor = new Donor 
+            {
+                DonorId = DonorIdGenerator.NextId(),
+                ExternalDonorCode = Guid.NewGuid().ToString()
+            };
         }
 
         public DonorBuilder OfType(DonorType donorType)

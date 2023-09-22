@@ -30,6 +30,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         private readonly DonorInfoWithExpandedHla donorInfoWithAllelesAtThreeLoci = new DonorInfoWithExpandedHla
         {
             DonorType = DonorType.Cord,
+            ExternalDonorCode = Guid.NewGuid().ToString(),
             HlaNames = new PhenotypeInfo<string>
             (
                 valueA: new LocusInfo<string>("01:02", "30:02"),
@@ -59,6 +60,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         private readonly DonorInfoWithExpandedHla donorInfoWithXxCodesAtThreeLoci = new DonorInfoWithExpandedHla
         {
             DonorType = DonorType.Cord,
+            ExternalDonorCode = Guid.NewGuid().ToString(),
             HlaNames = new PhenotypeInfo<string>
             (
                 valueA: new LocusInfo<string>("*01:XX", "30:XX"),

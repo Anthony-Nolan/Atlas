@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 
@@ -13,6 +12,13 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
 
         [Required]
         public bool IsAvailableForSearch { get; set; }
+
+        [Required]
+        public string ExternalDonorCode { get; set; }
+
+        public string EthnicityCode { get; set; }
+
+        public string RegistryCode { get; set; }
 
         [Required]
         public string A_1 { get; set; }
@@ -46,6 +52,9 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
                 DonorId = DonorId,
                 DonorType = DonorType,
                 IsAvailableForSearch = IsAvailableForSearch,
+                ExternalDonorCode = ExternalDonorCode,
+                EthnicityCode = EthnicityCode,
+                RegistryCode = RegistryCode,
                 HlaNames = new PhenotypeInfo<string>
                 (
                     valueA: new LocusInfo<string>(A_1, A_2),

@@ -1,6 +1,4 @@
-﻿using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Public.Models.GeneticData;
+﻿using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -29,7 +27,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
                     valueA: new LocusInfo<string>("*01:01", "*01:01"),
                     valueB: new LocusInfo<string>("*18:01:01", "*18:01:01"),
                     valueDrb1: new LocusInfo<string>("*04:01", "*04:01")
-                )
+                ),
+                ExternalDonorCode = "donor_id",
+                EthnicityCode = "UK",
+                RegistryCode = "1"
             };
         }
 

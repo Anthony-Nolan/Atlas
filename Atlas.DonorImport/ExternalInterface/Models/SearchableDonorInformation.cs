@@ -12,6 +12,9 @@ namespace Atlas.DonorImport.ExternalInterface.Models
     {
         public int DonorId { get; set; }
         public DonorType DonorType { get; set; }
+        public string ExternalDonorCode { get; set; }
+        public string EthnicityCode { get; set; }
+        public string RegistryCode { get; set; }
         public string A_1 { get; set; }
         public string A_2 { get; set; }
         public string B_1 { get; set; }

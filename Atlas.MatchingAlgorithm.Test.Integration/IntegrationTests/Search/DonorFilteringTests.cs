@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
@@ -54,6 +55,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 donorAtRegistryA = new DonorInfoWithExpandedHla
                 {
                     DonorType = DonorType.Adult,
+                    ExternalDonorCode = Guid.NewGuid().ToString(),
                     DonorId = DonorIdGenerator.NextId(),
                     HlaNames = donorHlas,
                     MatchingHla = matchingHlaPhenotype
@@ -61,6 +63,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 donorAtRegistryB = new DonorInfoWithExpandedHla
                 {
                     DonorType = DonorType.Adult,
+                    ExternalDonorCode = Guid.NewGuid().ToString(),
                     DonorId = DonorIdGenerator.NextId(),
                     HlaNames = donorHlas,
                     MatchingHla = matchingHlaPhenotype
