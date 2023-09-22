@@ -28,9 +28,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
                     valueB: new LocusInfo<string>("*18:01:01", "*18:01:01"),
                     valueDrb1: new LocusInfo<string>("*04:01", "*04:01")
                 ),
-                ExternalDonorCode = "donor_id",
-                EthnicityCode = "UK",
-                RegistryCode = "1"
+                ExternalDonorCode = DonorIdGenerator.NewExternalCode
             };
         }
 

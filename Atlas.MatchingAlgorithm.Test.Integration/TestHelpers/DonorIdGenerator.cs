@@ -1,4 +1,6 @@
-﻿namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
+﻿using System;
+
+namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
 {
     /// <summary>
     /// Shared auto-incrementer to generate unique donor ids across all integration test fixtures
@@ -11,5 +13,7 @@
         {
             return ++_nextId;
         }
+
+        public static string NewExternalCode => Guid.NewGuid().ToString();
     }
 }

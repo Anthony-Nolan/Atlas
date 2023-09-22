@@ -13,7 +13,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         public static Builder<ServiceBusMessage<SearchableDonorUpdate>> New =>
             Builder<ServiceBusMessage<SearchableDonorUpdate>>.New
                 .With(x => x.SequenceNumber, DefaultSequenceNumber)
-                .With(x => x.LockToken, Guid.NewGuid().ToString())
+                .With(x => x.LockToken, DonorIdGenerator.NewExternalCode)
                 .With(x => x.LockedUntilUtc, DateTime.UtcNow.AddMinutes(5))
                 .With(x => x.DeserializedBody, SearchableDonorUpdateBuilder.New);
     }

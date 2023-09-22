@@ -26,7 +26,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
             donor = new Donor 
             {
                 DonorId = DonorIdGenerator.NextId(),
-                ExternalDonorCode = Guid.NewGuid().ToString()
+                ExternalDonorCode = DonorIdGenerator.NewExternalCode
             };
         }
 
