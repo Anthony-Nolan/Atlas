@@ -112,7 +112,7 @@ To enforce a recreation (e.g. in the case of a schema change), or to import an o
 
 > The http-triggered function `RefreshHlaMetadataDictionaryToSpecificVersion` should be called within the `ATLAS-MATCHING-ALGORITHM-FUNCTIONS` functions app, and the `version` specified in the request body.
 
-Note that the [oldest IMGT/HLA version that Atlas supports is 3.33.0]([url](https://github.com/Anthony-Nolan/Atlas/issues/803)).
+Note that the [oldest IMGT/HLA version that Atlas supports is 3.33.0](https://github.com/Anthony-Nolan/Atlas/issues/803).
 
 ## Running Searches
  
