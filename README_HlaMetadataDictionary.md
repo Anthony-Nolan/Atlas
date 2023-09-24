@@ -8,7 +8,11 @@ The HMD gets its original data from files published by IMGT/HLA (primarily, the 
 On command (expected to be roughly quarterly), the HMD library will read the latest version of the HLA Nomenclature (read from a mirror hosted by Anthony Nolan Bioinformatics).
 Having read it from raw data files, the HMD converts it into a the format that is of most use for itself, and slow-caches all of that formatted data in its own Azure CloudStorage Table.
 
-### Allele groups
+## Versioning
+The HMD is automatically regenerated to the latest IMGT/HLA version on every [data refresh,](https://github.com/Anthony-Nolan/Atlas/blob/master/README_Integration.md#data-refresh) but can also hold multiple older IMGT/HLA versions. The main use case for this is the need to upload haplotype frequency set files that have been encoded to an older HLA version.
+[See integration README for instructions on how to regenerate the HMD to an older version](https://github.com/Anthony-Nolan/Atlas/blob/master/README_Integration.md#hla-metadata).
+
+## Allele groups
 These are the different allele grouping that the HMD currently handles:
 - G group: alleles that share the same DNA sequence at the ABD (Antigen Binding Domain) region.
 - P group: alleles that share the same protein sequence at the ABD region - excludes null alleles, as they do not result in a protein.
