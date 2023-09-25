@@ -22,6 +22,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             var donorInfo = new DonorInfo
             {
                 DonorId = DonorIdGenerator.NextId(),
+                ExternalDonorCode = DonorIdGenerator.NewExternalCode,
                 HlaNames = donorHla,
                 DonorType = DonorType.Adult
             };
