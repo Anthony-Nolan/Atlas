@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.Functions.Services.Debug
@@ -25,6 +26,12 @@ namespace Atlas.MatchPrediction.Functions.Services.Debug
 
         public static string ToSingleDelimitedString(this IEnumerable<GenotypeMatchDetails> genotypeMatchDetails)
         {
+            // ReSharper disable once PossibleMultipleEnumeration - `IsNullOrEmpty` extension method does not enumerate full collection
+            if (genotypeMatchDetails.IsNullOrEmpty())
+            {
+                return "No available genotype match details.";
+            }
+
             var builder = new StringBuilder();
 
             var genotypePairs = BuildGenotypePairsWithMatchCounts(genotypeMatchDetails);
