@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
@@ -23,8 +18,15 @@ using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.FeatureManagement;
 using NSubstitute;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
@@ -139,6 +141,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 
             // Log to file, not to ApplicationInsights!
             services.AddSingleton<ILogger, FileBasedLogger>();
+
+            var featureManagerSnapshot = Substitute.For<IFeatureManagerSnapshot>();
+            featureManagerSnapshot.IsEnabledAsync(Arg.Any<string>()).Returns(true);
+            services.AddScoped(_ => featureManagerSnapshot);
+
+            var configurationRefresherProvider = Substitute.For<IConfigurationRefresherProvider>();
+            configurationRefresherProvider.Refreshers.Returns(new List<IConfigurationRefresher> { Substitute.For<IConfigurationRefresher>() });
+            services.AddScoped(_ => configurationRefresherProvider);
         }
 
         private static void RegisterIntegrationTestServices(IServiceCollection services)

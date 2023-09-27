@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Requests;
-using Atlas.Client.Models.Search.Results.Matching;
+﻿using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.MatchingAlgorithm.Api;
-using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
 {
@@ -27,12 +25,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
 
         public static void StartServer()
         {
+
             var builder = new WebHostBuilder()
                 .UseContentRoot(Environment.CurrentDirectory)
                 .ConfigureAppConfiguration((context, config) =>
                 {
                     config.AddJsonFile("appsettings.json", true, true);
                     config.AddUserSecrets(Assembly.GetExecutingAssembly());
+
+                    var configuration = config.Build();
+                    var azureConfigurationConnectionString = configuration.GetValue<string>("AzureAppConfiguration:ConnectionString");
+                    config.AddAzureAppConfiguration(options =>
+                    {
+                        options.Connect(azureConfigurationConnectionString)
+                            .Select("_")
+                            .UseFeatureFlags();
+                    });
                 })
                 .UseStartup<Startup>();
             server = new TestServer(builder);

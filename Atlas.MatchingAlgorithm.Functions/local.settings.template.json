@@ -9,6 +9,7 @@
     "AzureManagement:Database:PollingRetryIntervalMilliseconds": "1000",
     "AzureManagement:Database:ResourceGroupName": "not-used-locally",
     "AzureManagement:Database:SubscriptionId": "6114522f-eea5-44ab-94ab-af37ffffc4d3",
+    "AzureAppConfiguration:ConnectionString": "override-this",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:SearchResultsBlobContainer": "matching-algorithm-results",
     "AzureStorage:SearchResultsBatchSize": 0,

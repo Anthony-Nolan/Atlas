@@ -25,6 +25,7 @@
         <InternalsVisibleTo Include="Atlas.DonorImport.Test" />
         <InternalsVisibleTo Include="Atlas.DonorImport.Test.Integration" />
         <InternalsVisibleTo Include="Atlas.MatchPrediction.Test.Verification" />
+        <InternalsVisibleTo Include="Atlas.MatchingAlgorithm.Test" />
         <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     </ItemGroup>
 

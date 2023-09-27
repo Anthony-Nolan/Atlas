@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Requests;
+﻿using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.ApplicationInsights;
@@ -11,15 +7,18 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Extensions;
-using Atlas.DonorImport.ExternalInterface;
-using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Models;
+using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Services.Search.NonHlaFiltering;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
 {
@@ -36,8 +35,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly IMatchScoringService scoringService;
         private readonly IMatchingService matchingService;
         private readonly ILogger searchLogger;
-        private readonly IDonorReader donorReader;
         private readonly IDonorDetailsResultFilterer donorDetailsResultFilterer;
+        private readonly IDonorHelper donorHelper;
 
         public SearchService(
             IMatchCriteriaMapper matchCriteriaMapper,
@@ -45,14 +44,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             IMatchingService matchingService,
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchingAlgorithmSearchLogger searchLogger,
-            IDonorReader donorReader,
-            IDonorDetailsResultFilterer donorDetailsResultFilterer)
+            IDonorDetailsResultFilterer donorDetailsResultFilterer,
+            IDonorHelper donorHelper)
         {
             this.scoringService = scoringService;
             this.matchingService = matchingService;
             this.searchLogger = searchLogger;
-            this.donorReader = donorReader;
             this.donorDetailsResultFilterer = donorDetailsResultFilterer;
+            this.donorHelper = donorHelper;
             this.matchCriteriaMapper = matchCriteriaMapper;
         }
 
@@ -84,12 +83,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var reifiedScoredMatches = scoredMatches.DistinctBy(m => m.MatchResult.DonorId).ToList();
             searchLogger.SendTrace($"Via {splitSearch.Count} sub-searches, matched {reifiedScoredMatches.Count} donors total.");
 
-
-            var useDonorInfoStoredInMatchingAlgorithmDb = false;
-            var donorLookup = useDonorInfoStoredInMatchingAlgorithmDb
-                ? GetDonorLookupFromMatchResults(reifiedScoredMatches)
-                : await LoadDonorLookupFromDatabase(reifiedScoredMatches);
-
+            var donorLookup = await donorHelper.GetDonorLookup(reifiedScoredMatches);
             var resultsFilteredByDonorDetails = donorDetailsResultFilterer.FilterResultsByDonorData(
                 new DonorFilteringCriteria { RegistryCodes = matchingRequest.DonorRegistryCodes },
                 reifiedScoredMatches,
@@ -98,16 +92,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             return resultsFilteredByDonorDetails.Select(scoredMatch => MapSearchResultToApiSearchResult(scoredMatch, donorLookup));
         }
-
-        private async Task<Dictionary<int, DonorLookupInfo>> LoadDonorLookupFromDatabase(List<MatchAndScoreResult> reifiedScoredMatches)
-        {
-            using var donorLookupTimer = searchLogger.RunTimed($"{LoggingPrefix}Look up external donor ids");
-            return (await donorReader.GetDonors(reifiedScoredMatches.Select(r => r.MatchResult.DonorId)))
-                .ToDictionary(l => l.Key, l => l.Value.ToDonorLookupInfo());
-        }
-
-        private Dictionary<int, DonorLookupInfo> GetDonorLookupFromMatchResults(List<MatchAndScoreResult> reifiedScoredMatches)
-            => reifiedScoredMatches.ToDictionary(r => r.MatchResult.DonorId, r => r.MatchResult.DonorInfo.ToDonorLookupInfo());
 
         private async IAsyncEnumerable<MatchResult> RunSubSearches(List<AlleleLevelMatchCriteria> splitSearch, DateTimeOffset? cutOffDate)
         {

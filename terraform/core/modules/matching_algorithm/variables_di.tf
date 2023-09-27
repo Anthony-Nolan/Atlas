@@ -1,5 +1,14 @@
 // Variables that allow for dependency inversion of other terraformed resources.
 
+variable "azure_app_configuration" {
+  type = object({
+    id                = string
+    primary_read_key  = object({
+      connection_string = string
+    })
+  })
+}
+
 variable "azure_storage" {
   type = object({
     name                      = string

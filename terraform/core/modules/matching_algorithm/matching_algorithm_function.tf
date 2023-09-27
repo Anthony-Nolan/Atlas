@@ -12,6 +12,8 @@ locals {
     "AzureManagement:Database:ResourceGroupName"                = var.resource_group.name
     "AzureManagement:Database:SubscriptionId"                   = var.general.subscription_id
 
+    "AzureAppConfiguration:ConnectionString"  = var.azure_app_configuration.primary_read_key.connection_string
+
     "AzureStorage:ConnectionString"           = var.azure_storage.primary_connection_string
     "AzureStorage:SearchResultsBlobContainer" = azurerm_storage_container.search_matching_results_blob_container.name
     "AzureStorage:SearchResultsBatchSize"     = var.RESULTS_BATCH_SIZE
