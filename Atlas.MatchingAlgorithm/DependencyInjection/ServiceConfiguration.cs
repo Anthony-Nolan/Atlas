@@ -353,7 +353,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             // Repositories
             services.AddScoped<IScoringWeightingRepository, ScoringWeightingRepository>();
 
-            services.AddScoped<AtlasFeatureManager, MatchingAlgorithmFeatureManager>();
+            services.AddScoped<IAtlasFeatureManager, AtlasFeatureManager>();
         }
 
         /// <summary>
