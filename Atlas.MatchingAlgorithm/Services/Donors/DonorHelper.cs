@@ -37,10 +37,10 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 
             return isFeatureEnabled
                 ? GetDonorLookupFromMatchResults(reifiedScoredMatches)
-                : await LoadDonorLookupFromDatabase(reifiedScoredMatches);
+                : await LoadDonorLookupFromDonorStore(reifiedScoredMatches);
         }
 
-        private async Task<Dictionary<int, DonorLookupInfo>> LoadDonorLookupFromDatabase(List<MatchAndScoreResult> reifiedScoredMatches)
+        private async Task<Dictionary<int, DonorLookupInfo>> LoadDonorLookupFromDonorStore(List<MatchAndScoreResult> reifiedScoredMatches)
         {
             using var donorLookupTimer = searchLogger.RunTimed($"Matching Algorithm: Look up external donor ids");
             return (await donorReader.GetDonors(reifiedScoredMatches.Select(r => r.MatchResult.DonorId)))
