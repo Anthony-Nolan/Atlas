@@ -27,7 +27,6 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
-using Atlas.MatchingAlgorithm.Services.FeatureManagement;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Services.Search.NonHlaFiltering;

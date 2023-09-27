@@ -27,13 +27,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             searchLogger = Substitute.For<IMatchingAlgorithmSearchLogger>();
 
             donorReader = Substitute.For<IDonorReader>();
-            donorReader.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new List<Donor> { new Donor { ExternalDonorCode = "donor_from_database" } }.ToDictionary(_ => 1, v => v.ToPublicDonor()));
+            donorReader.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new List<Donor> { new Donor { ExternalDonorCode = "donor_from_donor_store" } }.ToDictionary(_ => 1, v => v.ToPublicDonor()));
 
             featureManager = Substitute.For<IAtlasFeatureManager>();
         }
 
         [Test]
-        public async Task GetDonorLookup_FeatureFlagDisabled_GetsDataFromDatabase()
+        public async Task GetDonorLookup_FeatureFlagDisabled_GetsDataFromDonorStore()
         {
             // Arrange
             featureManager.IsFeatureEnabled(Arg.Any<string>()).Returns(false);
@@ -61,7 +61,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             actual.Should().NotBeNull();
             var donor = actual.FirstOrDefault();
             donor.Should().NotBeNull();
-            donor.Value.ExternalDonorCode.Should().Be("donor_from_database");
+            donor.Value.ExternalDonorCode.Should().Be("donor_from_donor_store");
 
             await donorReader.Received().GetDonors(Arg.Any<IEnumerable<int>>());
         }
