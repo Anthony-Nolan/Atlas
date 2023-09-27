@@ -120,6 +120,7 @@ jobs:
   variables:
     matching_algorithm_validation_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.matching_algorithm_validation_db_connection_string'] ]
     azure_storage_account_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.azure_storage_account_connection_string'] ]
+    azure_app_configuration_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.azure_app_configuration_connection_string'] ]
   pool:
     vmImage: 'ubuntu-latest'
   #Your build pipeline references an undefined variable named ‘Parameters.packagesDirectory’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
@@ -199,6 +200,15 @@ jobs:
       keyname2: ConnectionString
 #     ServiceBus is not used directly in tests, but DI will fail without a valid service bus connection string. 
       valueToSet: '$(SERVICE_BUS_CONNECTION_STRING)'
+
+  - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
+    displayName: 'Set Azure App Configuration ConnectionString'
+    inputs:
+      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
+      numberOfLevels: 2
+      keyname1: AzureAppConfiguration
+      keyname2: ConnectionString
+      valueToSet: '$(azure_app_configuration_connection_string)'
 
   - task: DotNetCoreCLI@2
     displayName: 'Matching Validation Tests'

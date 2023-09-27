@@ -20,6 +20,8 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
 
     "AzureFunctionsJobHost__extensions__serviceBus__messageHandlerOptions__maxConcurrentCalls" = var.MAX_CONCURRENT_SERVICEBUS_FUNCTIONS
 
+    "AzureAppConfiguration:ConnectionString"    = var.azure_app_configuration.primary_read_key.connection_string
+
     "AzureStorage:ConnectionString"             = var.azure_storage.primary_connection_string
     "AzureStorage:MatchingResultsBlobContainer" = azurerm_storage_container.repeat_search_matching_results_container.name
     "AzureStorage:SearchResultsBatchSize"       = var.RESULTS_BATCH_SIZE

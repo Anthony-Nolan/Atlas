@@ -8,7 +8,9 @@ using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 [assembly: FunctionsStartup(typeof(Startup))]
@@ -46,6 +48,19 @@ namespace Atlas.MatchingAlgorithm.Functions
                 ConnectionStringReader("SqlA"),
                 ConnectionStringReader("SqlB"), 
                 ConnectionStringReader("DonorSql"));
+        }
+
+        public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
+        {
+            var azureConfigurationConnectionString = Environment.GetEnvironmentVariable("AzureAppConfiguration:ConnectionString");
+            builder.ConfigurationBuilder.AddAzureAppConfiguration(options =>
+            {
+                options.Connect(azureConfigurationConnectionString)
+                    .Select("_")
+                    .UseFeatureFlags();
+            });
+
+            base.ConfigureAppConfiguration(builder);
         }
 
         private static void RegisterSettings(IServiceCollection services)

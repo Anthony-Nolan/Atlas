@@ -56,6 +56,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 {
                     DonorType = DonorType.Adult,
                     ExternalDonorCode = DonorIdGenerator.NewExternalCode,
+                    RegistryCode = RegistryCodeA,
                     DonorId = DonorIdGenerator.NextId(),
                     HlaNames = donorHlas,
                     MatchingHla = matchingHlaPhenotype
@@ -64,6 +65,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 {
                     DonorType = DonorType.Adult,
                     ExternalDonorCode = DonorIdGenerator.NewExternalCode,
+                    RegistryCode = RegistryCodeB,
                     DonorId = DonorIdGenerator.NextId(),
                     HlaNames = donorHlas,
                     MatchingHla = matchingHlaPhenotype

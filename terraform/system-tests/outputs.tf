@@ -18,3 +18,8 @@ output "azure_storage_account_connection_string" {
   value     = azurerm_storage_account.system_test_storage.primary_connection_string
   sensitive = true
 }
+
+output "azure_app_configuration_connection_string" {
+  value     = azurerm_app_configuration.atlas_test_config.primary_read_key.connection_string
+  sensitive = true
+}

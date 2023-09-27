@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Atlas.Common.ApplicationInsights;
+﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.DependencyInjection;
@@ -11,6 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.Api
@@ -33,6 +33,15 @@ namespace Atlas.MatchingAlgorithm.Api
                 builder.AddConfiguration(configuration);
                 builder.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
                 builder.AddUserSecrets(Assembly.GetExecutingAssembly());
+
+                var azureConfigurationConnectionString = configuration.GetValue<string>("AzureAppConfiguration:ConnectionString");
+                builder.AddAzureAppConfiguration(options =>
+                {
+                    options.Connect(azureConfigurationConnectionString)
+                        .Select("_")
+                        .UseFeatureFlags();
+                });
+
                 this.configuration = builder.Build();
             }
             else

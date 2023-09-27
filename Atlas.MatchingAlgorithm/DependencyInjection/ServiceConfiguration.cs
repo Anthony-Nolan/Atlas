@@ -1,7 +1,7 @@
-using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Caching;
+using Atlas.Common.FeatureManagement;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
@@ -27,6 +27,7 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
+using Atlas.MatchingAlgorithm.Services.FeatureManagement;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Services.Search.NonHlaFiltering;
@@ -42,7 +43,10 @@ using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.FeatureManagement;
+using System;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.DependencyInjection
@@ -305,10 +309,14 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchMatchingConfigurationSettings
             );
 
+            services.AddAzureAppConfiguration();
+            services.AddFeatureManagement();
+
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IDonorDetailsResultFilterer, DonorDetailsResultFilterer>();
             services.AddScoped<IMatchCriteriaMapper, MatchCriteriaMapper>();
             services.AddScoped<IMatchingFailureNotificationSender, MatchingFailureNotificationSender>();
+            services.AddScoped<IDonorHelper, DonorHelper>();
 
             services.AddApplicationInsightsTelemetryWorkerService();
             services.AddScoped<MatchingAlgorithmSearchLoggingContext>();
@@ -344,6 +352,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             // Repositories
             services.AddScoped<IScoringWeightingRepository, ScoringWeightingRepository>();
+
+            services.AddScoped<AtlasFeatureManager, MatchingAlgorithmFeatureManager>();
         }
 
         /// <summary>

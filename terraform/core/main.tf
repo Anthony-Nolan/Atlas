@@ -88,6 +88,7 @@ module "matching_algorithm" {
 
   // DI variables
   application_insights      = azurerm_application_insights.atlas
+  azure_app_configuration   = azurerm_app_configuration.atlas_config
   azure_storage             = azurerm_storage_account.azure_storage
   donor_import_sql_database = azurerm_mssql_database.atlas-database-shared
   elastic_app_service_plan  = azurerm_service_plan.atlas-elastic-plan
@@ -202,6 +203,7 @@ module "repeat_search" {
   // DI Variables
   application_insights                            = azurerm_application_insights.atlas
   app_service_plan                                = azurerm_service_plan.atlas-elastic-plan
+  azure_app_configuration                         = azurerm_app_configuration.atlas_config
   azure_storage                                   = azurerm_storage_account.azure_storage
   donor_database_connection_string                = module.donor_import.sql_database.connection_string
   mac_import_table                                = module.multiple_allele_code_lookup.storage_table

@@ -7,7 +7,9 @@ using Atlas.RepeatSearch.ExternalInterface.DependencyInjection;
 using Atlas.RepeatSearch.Functions;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 [assembly: FunctionsStartup(typeof(Startup))]
@@ -33,6 +35,19 @@ namespace Atlas.RepeatSearch.Functions
                 ConnectionStringReader("MatchingSqlB"),
                 ConnectionStringReader("DonorSql")
                 );
+        }
+
+        public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
+        {
+            var azureConfigurationConnectionString = Environment.GetEnvironmentVariable("AzureAppConfiguration:ConnectionString");
+            builder.ConfigurationBuilder.AddAzureAppConfiguration(options =>
+            {
+                options.Connect(azureConfigurationConnectionString)
+                    .Select("_")
+                    .UseFeatureFlags();
+            });
+
+            base.ConfigureAppConfiguration(builder);
         }
 
         private static void RegisterSettings(IServiceCollection services)

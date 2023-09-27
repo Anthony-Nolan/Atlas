@@ -4,6 +4,7 @@
     "ApplicationInsights:InstrumentationKey": "dummy-key",
     "ApplicationInsights:LogLevel": "Info",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "AzureAppConfiguration:ConnectionString": "override-this",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:MatchingResultsBlobContainer": "repeat-search-matching-results",
     "AzureStorage:SearchResultsBatchSize": 0,
