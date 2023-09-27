@@ -6,16 +6,19 @@ using System.Threading.Tasks;
 
 namespace Atlas.Common.FeatureManagement
 {
-    public abstract class AtlasFeatureManager
+    public interface IAtlasFeatureManager
+    {
+        Task<bool> IsFeatureEnabled(string featureName);
+    }
+
+    public class AtlasFeatureManager : IAtlasFeatureManager
     {
         private readonly IFeatureManager featureManagerSnapshot;
         private readonly IConfigurationRefresher configurationRefresher;
 
-        protected abstract List<string> SupportedFeatures { get; }
-
         private readonly Dictionary<string, bool> features = new();
 
-        protected AtlasFeatureManager(IFeatureManagerSnapshot featureManagerSnapshot, IConfigurationRefresherProvider refresherProvider)
+        public AtlasFeatureManager(IFeatureManagerSnapshot featureManagerSnapshot, IConfigurationRefresherProvider refresherProvider)
         {
             this.featureManagerSnapshot = featureManagerSnapshot;
             configurationRefresher = refresherProvider.Refreshers.First();

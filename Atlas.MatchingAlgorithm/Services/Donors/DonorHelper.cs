@@ -21,9 +21,9 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
     {
         private readonly ILogger searchLogger;
         private readonly IDonorReader donorReader;
-        private readonly AtlasFeatureManager featureManager;
+        private readonly IAtlasFeatureManager featureManager;
 
-        public DonorHelper(IMatchingAlgorithmSearchLogger searchLogger, IDonorReader donorReader, AtlasFeatureManager featureManager)
+        public DonorHelper(IMatchingAlgorithmSearchLogger searchLogger, IDonorReader donorReader, IAtlasFeatureManager featureManager)
         {
             this.searchLogger = searchLogger;
             this.donorReader = donorReader;

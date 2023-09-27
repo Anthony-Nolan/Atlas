@@ -5,10 +5,7 @@ using Atlas.DonorImport.Models.Mapping;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.Donors;
-using Atlas.MatchingAlgorithm.Services.FeatureManagement;
 using FluentAssertions;
-using Microsoft.Extensions.Configuration.AzureAppConfiguration;
-using Microsoft.FeatureManagement;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
@@ -22,8 +19,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
     {
         private IMatchingAlgorithmSearchLogger searchLogger;
         private IDonorReader donorReader;
-        private IConfigurationRefresherProvider configurationRefresherProvider;
-        private IFeatureManagerSnapshot featureManagerSnapshot;
+        private IAtlasFeatureManager featureManager;
 
         [SetUp]
         public void SetUp()
@@ -33,18 +29,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             donorReader = Substitute.For<IDonorReader>();
             donorReader.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new List<Donor> { new Donor { ExternalDonorCode = "donor_from_database" } }.ToDictionary(_ => 1, v => v.ToPublicDonor()));
 
-            configurationRefresherProvider = Substitute.For<IConfigurationRefresherProvider>();
-            configurationRefresherProvider.Refreshers.Returns(new List<IConfigurationRefresher> { Substitute.For<IConfigurationRefresher>() });
-
-            featureManagerSnapshot = Substitute.For<IFeatureManagerSnapshot>();
+            featureManager = Substitute.For<IAtlasFeatureManager>();
         }
 
         [Test]
         public async Task GetDonorLookup_FeatureFlagDisabled_GetsDataFromDatabase()
         {
             // Arrange
-            featureManagerSnapshot.IsEnabledAsync(Arg.Any<string>()).Returns(false);
-            var featureManager = new MatchingAlgorithmFeatureManager(featureManagerSnapshot, configurationRefresherProvider);
+            featureManager.IsFeatureEnabled(Arg.Any<string>()).Returns(false);
 
             var donorHelper = new DonorHelper(searchLogger, donorReader, featureManager);
 
@@ -78,8 +70,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         public async Task GetDonorLookup_FeatureFlagEnabled_GetsDataFromMatchingResultObject()
         {
             // Arrange
-            featureManagerSnapshot.IsEnabledAsync(Arg.Any<string>()).Returns(true);
-            var featureManager = new MatchingAlgorithmFeatureManager(featureManagerSnapshot, configurationRefresherProvider);
+            featureManager.IsFeatureEnabled(Arg.Any<string>()).Returns(true);
 
             var donorHelper = new DonorHelper(searchLogger, donorReader, featureManager);
 
