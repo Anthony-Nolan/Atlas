@@ -10,6 +10,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Config;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
@@ -142,6 +143,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.AddSingleton<ILogger, FileBasedLogger>();
 
             var atlasFeatureManager = Substitute.For<IAtlasFeatureManager>();
+            atlasFeatureManager.IsFeatureEnabled(FeatureFlags.UseDonorInfoStoredInMatchingAlgorithmDb).Returns(true);
             services.AddScoped(_ => atlasFeatureManager);
         }
 

@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.Services.FeatureManagement
+﻿namespace Atlas.MatchingAlgorithm.Config
 {
     public static class FeatureFlags
     {
