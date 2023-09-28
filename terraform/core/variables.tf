@@ -163,8 +163,8 @@ variable "MATCH_PREDICTION_DATABASE_USERNAME" {
 }
 
 variable "MATCH_PREDICTION_DOWNLOAD_BATCH_SIZE" {
-  type    = number
-  default = 10
+  type        = number
+  default     = 10
   description = "Batch size for downloading match prediction results"
 }
 
