@@ -29,6 +29,11 @@ variable "MAX_SCALE_OUT" {
   type = number
 }
 
+variable "REPEAT_SEARCH_RESULTS_READY_SUBSCRIPTION_NAMES" {
+  type    = list(string)
+  default = []
+}
+
 variable "RESULTS_BATCH_SIZE" {
   type = number
 }

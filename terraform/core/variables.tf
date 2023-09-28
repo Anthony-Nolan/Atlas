@@ -336,7 +336,7 @@ variable "RESULTS_BATCH_SIZE" {
 variable "SEARCH_RESULTS_READY_SUBSCRIPTION_NAMES" {
   type        = list(string)
   default     = []
-  description = "Subscription names for the search-results-ready Service Bus topic (in addition to Audit subscription). If not provided, no additional subscriptions will be created."
+  description = "Subscription names for the search-results-ready and repeat-search-results-ready Service Bus topics (in addition to Audit subscriptions). If not provided, no additional subscriptions will be created."
 }
 
 variable "SERVICE_PLAN_MAX_SCALE_OUT" {
