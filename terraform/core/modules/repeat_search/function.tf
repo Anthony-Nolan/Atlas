@@ -31,13 +31,13 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
 
     "MatchingConfiguration:MatchingBatchSize" = var.MATCHING_BATCH_SIZE
 
-    "MessagingServiceBus:ConnectionString"                      = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
-    "MessagingServiceBus:OriginalSearchRequestsSubscription"    = azurerm_servicebus_subscription.original-search-results-ready-repeat-search-listener.name
-    "MessagingServiceBus:OriginalSearchRequestsTopic"           = var.original-search-matching-results-topic.name
-    "MessagingServiceBus:RepeatSearchRequestsSubscription"      = azurerm_servicebus_subscription.repeat-search-repeat-search-requests.name
-    "MessagingServiceBus:RepeatSearchRequestsMaxDeliveryCount"  = azurerm_servicebus_subscription.repeat-search-repeat-search-requests.max_delivery_count
-    "MessagingServiceBus:RepeatSearchRequestsTopic"             = azurerm_servicebus_topic.repeat-search-requests.name
-    "MessagingServiceBus:RepeatSearchMatchingResultsTopic"      = azurerm_servicebus_topic.repeat-search-matching-results-ready.name
+    "MessagingServiceBus:ConnectionString"                     = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
+    "MessagingServiceBus:OriginalSearchRequestsSubscription"   = azurerm_servicebus_subscription.original-search-results-ready-repeat-search-listener.name
+    "MessagingServiceBus:OriginalSearchRequestsTopic"          = var.original-search-matching-results-topic.name
+    "MessagingServiceBus:RepeatSearchRequestsSubscription"     = azurerm_servicebus_subscription.repeat-search-repeat-search-requests.name
+    "MessagingServiceBus:RepeatSearchRequestsMaxDeliveryCount" = azurerm_servicebus_subscription.repeat-search-repeat-search-requests.max_delivery_count
+    "MessagingServiceBus:RepeatSearchRequestsTopic"            = azurerm_servicebus_topic.repeat-search-requests.name
+    "MessagingServiceBus:RepeatSearchMatchingResultsTopic"     = azurerm_servicebus_topic.repeat-search-matching-results-ready.name
 
     "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
