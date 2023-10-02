@@ -20,6 +20,6 @@ output "azure_storage_account_connection_string" {
 }
 
 output "azure_app_configuration_connection_string" {
-  value     = azurerm_app_configuration.atlas_test_config.primary_read_key.connection_string
+  value     = azurerm_app_configuration.atlas_test_config.primary_read_key[0].connection_string
   sensitive = true
 }
