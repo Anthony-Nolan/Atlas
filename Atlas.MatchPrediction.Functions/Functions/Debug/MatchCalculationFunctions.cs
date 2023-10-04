@@ -37,40 +37,6 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
             this.genotypeMatcher = genotypeMatcher;
         }
 
-        [FunctionName(nameof(CalculateMatch))]
-        public async Task<IActionResult> CalculateMatch(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(CalculateMatch)}")]
-            [RequestBodyType(typeof(MatchCalculationInput), nameof(MatchCalculationInput))]
-            HttpRequest request)
-        {
-            var matchCalculationInput = JsonConvert.DeserializeObject<MatchCalculationInput>(await new StreamReader(request.Body).ReadToEndAsync());
-
-            try
-            {
-                var genotypeMatchDetails = new GenotypeMatchDetails
-                {
-                    AvailableLoci = matchCalculationInput.AllowedLoci,
-                    DonorGenotype = matchCalculationInput.DonorHla,
-                    PatientGenotype = matchCalculationInput.PatientHla,
-                    MatchCounts = await matchCalculatorService.CalculateMatchCounts(
-                        matchCalculationInput.PatientHla,
-                        matchCalculationInput.DonorHla,
-                        matchCalculationInput.HlaNomenclatureVersion,
-                        matchCalculationInput.AllowedLoci)
-                };
-
-                return new JsonResult(new MatchCalculationResponse
-                {
-                    MatchCounts = genotypeMatchDetails.MatchCounts,
-                    IsTenOutOfTenMatch = genotypeMatchDetails.MismatchCount == 0
-                });
-            }
-            catch (Exception exception)
-            {
-                return new BadRequestObjectResult(exception);
-            }
-        }
-
         [FunctionName(nameof(MatchPatientDonorGenotypes))]
         public async Task<IActionResult> MatchPatientDonorGenotypes(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(MatchPatientDonorGenotypes)}")]
