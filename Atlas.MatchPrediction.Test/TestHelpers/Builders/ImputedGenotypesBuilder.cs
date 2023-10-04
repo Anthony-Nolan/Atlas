@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
-using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Models;
 using MoreLinq;
-using NSubstitute;
 
 namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 {
@@ -62,19 +60,15 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 
     internal class GenotypeAtDesiredResolutionsBuilder
     {
-        private readonly IHlaMetadataDictionary hmd = Substitute.For<IHlaMetadataDictionary>();
         private GenotypeAtDesiredResolutions genotypeAtDesiredResolutions;
-
-        public GenotypeAtDesiredResolutionsBuilder()
-        {
-            hmd.ConvertGGroupToPGroup(default, default).ReturnsForAnyArgs(BuilderDefaults.HlaName);
-            hmd.ConvertSmallGGroupToPGroup(default, default).ReturnsForAnyArgs(BuilderDefaults.HlaName);
-        }
 
         public GenotypeAtDesiredResolutionsBuilder Default()
         {
             var haplotypeResolutions = new KnownTypingCategoryGenotypeBuilder(BuilderDefaults.HlaName).Build();
-            genotypeAtDesiredResolutions = GenotypeAtDesiredResolutions.FromHaplotypeResolutions(haplotypeResolutions, hmd, BuilderDefaults.Likelihood).Result;
+            genotypeAtDesiredResolutions = new GenotypeAtDesiredResolutions(
+                haplotypeResolutions, 
+                new PhenotypeInfo<string>(BuilderDefaults.HlaName),
+                BuilderDefaults.Likelihood);
 
             return this;
         }

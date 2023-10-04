@@ -92,7 +92,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 x.DonorData.SubjectFrequencySet.SubjectLogDescription == "donor" &&
                 x.DonorData.SubjectFrequencySet.FrequencySet.Id == donorHfSetId &&
                 x.DonorData.HlaTyping.Equals(input.Donor.DonorHla.ToPhenotypeInfo()) &&
-                x.AllowedLoci.SetEquals(new[] { Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1 })));
+                x.MatchPredictionParameters.AllowedLoci.SetEquals(new[] { Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1 })));
         }
 
         [Test]

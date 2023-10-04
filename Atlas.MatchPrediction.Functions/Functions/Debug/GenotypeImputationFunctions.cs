@@ -45,13 +45,13 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
             var imputedGenotypes = await genotypeImputationService.Impute(new ImputationInput
             {
                 SubjectData = new SubjectData(input.SubjectInfo.HlaTyping.ToPhenotypeInfo(), new SubjectFrequencySet(frequencySet, "debug-subject")),
-                AllowedMatchPredictionLoci = input.AllowedLoci.ToHashSet()
+                MatchPredictionParameters = input.MatchPredictionParameters
             });
 
             return new JsonResult(new GenotypeImputationResponse
             {
                 HlaTyping = input.SubjectInfo.HlaTyping.ToPhenotypeInfo().PrettyPrint(),
-                AllowedLoci = input.AllowedLoci,
+                MatchPredictionParameters = input.MatchPredictionParameters,
                 HaplotypeFrequencySet = frequencySet,
                 GenotypeCount = imputedGenotypes.GenotypeLikelihoods.Count,
                 SumOfLikelihoods = imputedGenotypes.SumOfLikelihoods,
