@@ -78,9 +78,6 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "MatchPrediction:AzureStorage:ConnectionString"                    = azurerm_storage_account.azure_storage.primary_connection_string
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer" = module.match_prediction.storage.match_prediction_results_container_name
 
-    // Compressed phenotype conversion exceptions should be suppressed when running match prediction as part of search
-    "MatchPrediction:Algorithm:SuppressCompressedPhenotypeConversionExceptions" = true
-
     "NotificationsServiceBus:AlertsTopic"        = module.support.general.alerts_servicebus_topic.name
     "NotificationsServiceBus:ConnectionString"   = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
     "NotificationsServiceBus:NotificationsTopic" = module.support.general.notifications_servicebus_topic.name

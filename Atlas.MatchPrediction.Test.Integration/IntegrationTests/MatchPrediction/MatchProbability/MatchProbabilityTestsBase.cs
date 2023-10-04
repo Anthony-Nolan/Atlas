@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
@@ -22,18 +21,21 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 {
     public class MatchProbabilityTestsBase
     {
-        protected readonly FrequencySetMetadata GlobalHfSetMetadata = new FrequencySetMetadata { EthnicityCode = null, RegistryCode = null };
+        protected readonly FrequencySetMetadata GlobalHfSetMetadata = new() { EthnicityCode = null, RegistryCode = null };
 
         protected IMatchProbabilityService MatchProbabilityService;
         protected IHaplotypeFrequencyService ImportService;
 
-        protected const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
+        protected const string HfSetHlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
+        protected const string MatchingAlgorithmHlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
 
         protected static readonly PhenotypeInfo<string> DefaultGGroups = Alleles.UnambiguousAlleleDetails.GGroups();
         protected static readonly PhenotypeInfo<string> DefaultSmallGGroups = Alleles.UnambiguousAlleleDetails.SmallGGroups();
 
         protected const string DefaultRegistryCode = "default-registry-code";
         protected const string DefaultEthnicityCode = "default-ethnicity-code";
+
+        protected const decimal DefaultHaplotypeFrequency = 0.00001m;
 
         [SetUp]
         protected void SetUp()
@@ -46,7 +48,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             IEnumerable<HaplotypeFrequency> haplotypes,
             string registryCode = DefaultRegistryCode,
             string ethnicityCode = DefaultEthnicityCode,
-            string nomenclatureVersion = HlaNomenclatureVersion,
+            string nomenclatureVersion = HfSetHlaNomenclatureVersion,
             ImportTypingCategory typingCategory = ImportTypingCategory.LargeGGroup)
         {
             var registry = registryCode == null ? null : new[] { registryCode };
@@ -70,13 +72,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected static Builder<HaplotypeFrequency> DefaultSmallGGroupHaplotypeFrequency2 => Builder<HaplotypeFrequency>.New
             .WithHaplotype(Alleles.UnambiguousAlleleDetails.SmallGGroups().Split().Item2);
 
-        protected static PhenotypeInfoBuilder<string> DefaultUnambiguousAllelesBuilder =>
-            new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles());
-
-        protected static PhenotypeInfoBuilder<string> DefaultAmbiguousAllelesBuilder =>
-            new PhenotypeInfoBuilder<string>(Alleles.AmbiguousAlleleDetails.Alleles());
+        protected static PhenotypeInfoBuilder<string> DefaultUnambiguousAllelesBuilder => new(Alleles.UnambiguousAlleleDetails.Alleles());
 
         protected static Builder<SingleDonorMatchProbabilityInput> DefaultInputBuilder => SingleDonorMatchProbabilityInputBuilder.Default
+            .With(x => x.MatchingAlgorithmHlaNomenclatureVersion, MatchingAlgorithmHlaNomenclatureVersion)
             .WithPatientHla(DefaultUnambiguousAllelesBuilder.Build())
             .WithDonorHla(DefaultUnambiguousAllelesBuilder.Build())
             .WithDonorMetadata(new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode })

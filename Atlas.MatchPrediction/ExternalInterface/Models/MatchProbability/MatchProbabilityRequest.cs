@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
+using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 {
@@ -117,10 +117,16 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 
         protected MatchProbabilityRequestBase(MatchProbabilityRequestBase initial)
         {
+            MatchingAlgorithmHlaNomenclatureVersion = initial.MatchingAlgorithmHlaNomenclatureVersion;
             ExcludedLoci = initial.ExcludedLoci;
             PatientHla = initial.PatientHla;
             PatientFrequencySetMetadata = initial.PatientFrequencySetMetadata;
         }
+
+        /// <summary>
+        /// <inheritdoc cref="MatchPredictionParameters.MatchingAlgorithmHlaNomenclatureVersion"/>
+        /// </summary>
+        public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
 
         /// <summary>
         /// Match prediction will be run on all loci by default.
