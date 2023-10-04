@@ -26,7 +26,7 @@ The following are the steps that are required to be taken manually when deployin
 - A second *App Registration* should be created within Azure Active Directory, to be used by the code itself for managing azure resources at runtime.
     - e.g. The matching algorithm Data Refresh needs to be able to scale azure databases at runtime.
     - It also allows Terraform to fetch function keys.
-    - This registration must have the role of `Contributor` and `App Configuration Data Owner` on the Atlas resource group.
+    - This registration must have the role of `Contributor` and `App Configuration Data Owner` on the Atlas resource group (this can be set at the Azure subscription level before the resources are deployed).
     - App registration info must be provided via the following terraform release vars:
       - `AZURE_CLIENT_ID`
       - `AZURE_CLIENT_SECRET`.
@@ -147,9 +147,10 @@ Once terraform has created ATLAS resources for the first time, certain actions m
 
 ### Resources
 
-The system tests require some Azure resources of their own: SQL databases, and Azure Storage.
+The system tests require some Azure resources of their own: SQL databases, Azure Storage, and App Configuration.
 These resources are controlled by terraform scripts, which will be run by the test pipeline (see "test-pipeline.yml").
 
+#### DevOps
 Create a new DevOps variable group named "TestTerraform", with the following variables:
 - `TerraformWorkspace` - e.g., `atlas-system-tests`
 - `TF_VAR_AZURE_SUBSCRIPTION_ID` - ID of the Azure subscription into which the test resources will be deployed.
@@ -158,6 +159,9 @@ Create a new DevOps variable group named "TestTerraform", with the following var
   - `TF_VAR_DATABASE_SERVER_AZUREAD_ADMINISTRATOR_LOGIN_USERNAME` - Name of the AD group used to control admin access to the system-tests SQL server
   - `TF_VAR_DATABASE_SERVER_AZUREAD_ADMINISTRATOR_OBJECTID` - Object ID of AD group
   - `TF_VAR_DATABASE_SERVER_AZUREAD_ADMINISTRATOR_TENANTID` - ID of Tenant where AD group resides
+
+#### Azure Configuration
+The second App Registration created during [the previous Azure Configuration step](#azure-configuration) must have the role of `Contributor` and `App Configuration Data Owner` on the `ATLAS-SYSTEM-TEST-RESOURCE-GROUP` to allow terraform to create and access the required resources. This can be set at the Azure subscription level.
 
 ### One-time Set-up
 
