@@ -1,16 +1,17 @@
-﻿using System;
-using Atlas.Common.ApplicationInsights;
+﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.ApplicationInsights;
+using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Services.HlaConversion;
+using Atlas.MatchPrediction.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
-using Atlas.MatchPrediction.Data.Models;
-using Atlas.MatchPrediction.Utils;
 using GenotypeAsStrings = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
 using GenotypeOfKnownTypingCategory = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<Atlas.MatchPrediction.ExternalInterface.Models.HlaAtKnownTypingCategory>;
 
@@ -35,17 +36,20 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         private const string StageToLog = "Convert genotypes for match calculation";
         private readonly ILogger logger;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
-        private readonly IHlaConverter converter;
+        private readonly IGGroupToPGroupConverter gGroupConverter;
+        private readonly ISmallGGroupToPGroupConverter smallGGroupConverter;
 
         public GenotypeConverter(
             // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
-            IHlaConverter converter,
+            IGGroupToPGroupConverter gGroupConverter,
+            ISmallGGroupToPGroupConverter smallGGroupConverter,
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger)
         {
             this.logger = logger;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
-            this.converter = converter;
+            this.gGroupConverter = gGroupConverter;
+            this.smallGGroupConverter = smallGGroupConverter;
         }
 
         public async Task<ICollection<GenotypeAtDesiredResolutions>> ConvertGenotypes(GenotypeConverterInput input)
@@ -79,14 +83,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     return null;
                 }
 
-                async Task<string> ConvertHlaToPGroup(HlaConverterInput.ConversionPaths path)
+                async Task<string> ConvertHlaToPGroup(IHlaConverter converter)
                 {
                     var converterInput = new HlaConverterInput
                     {
                         HfSetHmd = hfSetHmd,
                         MatchingAlgorithmHmd = matchingHmd,
                         StageToLog = StageToLog,
-                        ConversionPath = path,
                         TargetHlaCategory = TargetHlaCategory.PGroup
                     };
 
@@ -96,8 +99,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 return hla.TypingCategory switch
                 {
                     HaplotypeTypingCategory.PGroup => hla.Hla,
-                    HaplotypeTypingCategory.GGroup => await ConvertHlaToPGroup(HlaConverterInput.ConversionPaths.GGroupToPGroup),
-                    HaplotypeTypingCategory.SmallGGroup => await ConvertHlaToPGroup(HlaConverterInput.ConversionPaths.SmallGGroupToPGroup),
+                    HaplotypeTypingCategory.GGroup => await ConvertHlaToPGroup(gGroupConverter),
+                    HaplotypeTypingCategory.SmallGGroup => await ConvertHlaToPGroup(smallGGroupConverter),
                     _ => throw new ArgumentOutOfRangeException(nameof(hla.TypingCategory))
                 };
             })).CopyExpressingAllelesToNullPositions();
