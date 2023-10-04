@@ -1,5 +1,3 @@
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
@@ -12,8 +10,7 @@ namespace Atlas.MatchPrediction.Test.Integration.Resources.Alleles
         /// All chosen alleles are heterozygous with respect to the chosen GGroup.
         /// Creates new property each time to avoid mutation.
         /// </summary>
-        public static PhenotypeInfo<AlleleWithGGroups> UnambiguousAlleleDetails => new PhenotypeInfo<AlleleWithGGroups>
-        (
+        public static PhenotypeInfo<AlleleWithGGroups> UnambiguousAlleleDetails => new(
             valueA: new LocusInfo<AlleleWithGGroups>
             (
                 new AlleleWithGGroups {Allele = "02:09", GGroup = "02:01:01G", SmallGGroup = "02:01g"},
@@ -38,35 +35,6 @@ namespace Atlas.MatchPrediction.Test.Integration.Resources.Alleles
             (
                 new AlleleWithGGroups {Allele = "03:124", GGroup = "03:01:01G", SmallGGroup = "03:01g"},
                 new AlleleWithGGroups {Allele = "11:129", GGroup = "11:06:01G", SmallGGroup = "11:06g"}
-            )
-        );
-
-        public static PhenotypeInfo<AlleleWithGGroups> AmbiguousAlleleDetails => new PhenotypeInfo<AlleleWithGGroups>
-        (
-            valueA: new LocusInfo<AlleleWithGGroups>
-            (
-                new AlleleWithGGroups {Allele = "01:01", GGroup = "01:01:01G", SmallGGroup = "01:01g"},
-                new AlleleWithGGroups {Allele = "02:01", GGroup = "02:01:01G", SmallGGroup = "02:01g"}
-            ),
-            valueB: new LocusInfo<AlleleWithGGroups>
-            (
-                new AlleleWithGGroups {Allele = "15:146", GGroup = "15:01:01G", SmallGGroup = "15:01g"},
-                new AlleleWithGGroups {Allele = "08:182", GGroup = "08:01:01G", SmallGGroup = "08:01g"}
-            ),
-            valueC: new LocusInfo<AlleleWithGGroups>
-            (
-                new AlleleWithGGroups {Allele = "04:82", GGroup = "04:01:01G", SmallGGroup = "04:01g"},
-                new AlleleWithGGroups {Allele = "03:04", GGroup = "03:04:01G", SmallGGroup = "03:04g"}
-            ),
-            valueDqb1: new LocusInfo<AlleleWithGGroups>
-            (
-                new AlleleWithGGroups {Allele = "03:19", GGroup = "03:01:01G", SmallGGroup = "03:01g"},
-                new AlleleWithGGroups {Allele = "03:03", GGroup = "03:03:01G", SmallGGroup = "03:03g"}
-            ),
-            valueDrb1: new LocusInfo<AlleleWithGGroups>
-            (
-                new AlleleWithGGroups {Allele = "*15:03", GGroup = "15:03:01G", SmallGGroup = "15:03g"},
-                new AlleleWithGGroups {Allele = "*13:01", GGroup = "13:01:01G", SmallGGroup = "13:01g"}
             )
         );
     }

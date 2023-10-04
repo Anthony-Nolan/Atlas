@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using Atlas.Common.Public.Models.GeneticData;
-using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
+﻿using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
+using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.Functions.Models.Debug
 {
     public class GenotypeMatcherResponse
     {
-        public IEnumerable<Locus> AllowedLoci { get; set; }
+        public MatchPredictionParameters MatchPredictionParameters { get; set; }
         public SubjectResult PatientInfo { get; set; }
         public SubjectResult DonorInfo { get; set; }
 

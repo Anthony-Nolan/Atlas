@@ -13,7 +13,6 @@
     "MessagingServiceBus:ConnectionString": "override-this",
     "MessagingServiceBus:ImportFileSubscription": "haplotype-frequency-import",
     "MessagingServiceBus:ImportFileTopic": "haplotype-frequency-file-uploads",
-    "MatchPredictionAlgorithm:SuppressCompressedPhenotypeConversionExceptions": false,
     "MatchPredictionRequests:RequestsSubscription": "match-prediction",
     "MatchPredictionRequests:RequestsTopic": "match-prediction-requests",
     "MatchPredictionRequests:ResultsTopic": "match-prediction-results",

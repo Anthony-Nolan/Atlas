@@ -88,12 +88,12 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
                 PatientData = new SubjectData(input.Patient.HlaTyping.ToPhenotypeInfo(),
                     new SubjectFrequencySet(frequencySet.PatientSet, "debug-patient")),
                 DonorData = new SubjectData(input.Donor.HlaTyping.ToPhenotypeInfo(), new SubjectFrequencySet(frequencySet.DonorSet, "debug-donor")),
-                AllowedLoci = input.AllowedLoci.ToHashSet()
+                MatchPredictionParameters = input.MatchPredictionParameters
             });
 
             var response = new GenotypeMatcherResponse
             {
-                AllowedLoci = input.AllowedLoci,
+                MatchPredictionParameters = input.MatchPredictionParameters,
                 PatientInfo = BuildSubjectResult(result.PatientResult, frequencySet.PatientSet, input.Patient),
                 DonorInfo = BuildSubjectResult(result.DonorResult, frequencySet.DonorSet, input.Donor),
                 MatchedGenotypePairs = result.GenotypeMatchDetails.ToSingleDelimitedString()

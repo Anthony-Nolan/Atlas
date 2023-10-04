@@ -79,11 +79,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             );
 
             var matchPredictionInputs = logger.RunTimed("Build Match Prediction Inputs", () =>
-                matchPredictionInputBuilder.BuildMatchPredictionInputs(new MatchPredictionInputParameters
-                {
-                    SearchRequest = matchingResultsNotification.SearchRequest,
-                    MatchingAlgorithmResults = matchingResults
-                })
+                matchPredictionInputBuilder.BuildMatchPredictionInputs(matchingResults)
             );
 
             using (logger.RunTimed("Uploading match prediction requests"))

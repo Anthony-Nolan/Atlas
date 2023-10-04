@@ -62,7 +62,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             {
                 PatientData = new SubjectData(singleDonorMatchProbabilityInput.PatientHla.ToPhenotypeInfo(), frequencySets.Patient),
                 DonorData = new SubjectData(singleDonorMatchProbabilityInput.Donor.DonorHla.ToPhenotypeInfo(), frequencySets.Donor),
-                AllowedLoci = allowedLoci
+                MatchPredictionParameters = new MatchPredictionParameters(allowedLoci, singleDonorMatchProbabilityInput.MatchingAlgorithmHlaNomenclatureVersion)
             });
 
             if (matcherResult.PatientResult.IsUnrepresented || matcherResult.DonorResult.IsUnrepresented)

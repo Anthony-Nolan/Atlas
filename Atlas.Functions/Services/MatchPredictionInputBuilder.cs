@@ -16,19 +16,9 @@ using Microsoft.Extensions.Options;
 
 namespace Atlas.Functions.Services
 {
-    // ReSharper disable once ClassNeverInstantiated.Global - Used in activity function
-    /// <summary>
-    /// Parameters wrapped in single object as Azure Activity functions may only have one parameter.
-    /// </summary>
-    public class MatchPredictionInputParameters
-    {
-        public SearchRequest SearchRequest { get; set; }
-        public ResultSet<MatchingAlgorithmResult> MatchingAlgorithmResults { get; set; }
-    }
-
     public interface IMatchPredictionInputBuilder
     {
-        IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(MatchPredictionInputParameters matchPredictionInputParameters);
+        IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(ResultSet<MatchingAlgorithmResult> matchingResultSet);
     }
 
     internal class MatchPredictionInputBuilder : IMatchPredictionInputBuilder
@@ -48,18 +38,12 @@ namespace Atlas.Functions.Services
         }
 
         /// <inheritdoc />
-        public IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(
-            MatchPredictionInputParameters matchPredictionInputParameters)
+        public IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(ResultSet<MatchingAlgorithmResult> matchingResultSet)
         {
-            using (logger.RunTimed($"Building match prediction inputs: {matchPredictionInputParameters.MatchingAlgorithmResults.SearchRequestId}"))
+            using (logger.RunTimed($"Building match prediction inputs: {matchingResultSet.SearchRequestId}"))
             {
-                var matchingAlgorithmResultSet = matchPredictionInputParameters.MatchingAlgorithmResults;
-                var searchRequest = matchPredictionInputParameters.SearchRequest;
-                var nonDonorInput = BuildSearchRequestMatchPredictionInput(
-                    matchingAlgorithmResultSet.SearchRequestId,
-                    searchRequest
-                );
-                var donorInputs = matchingAlgorithmResultSet.Results.Select(BuildPerDonorMatchPredictionInput);
+                var nonDonorInput = BuildSearchRequestMatchPredictionInput(matchingResultSet);
+                var donorInputs = matchingResultSet.Results.Select(BuildPerDonorMatchPredictionInput);
 
                 return donorInputBatcher.BatchDonorInputs(nonDonorInput, donorInputs, matchPredictionBatchSize).ToList();
             }
@@ -71,23 +55,18 @@ namespace Atlas.Functions.Services
         /// 
         /// This will remain constant for all donors in the request, so only needs to be calculated once.
         /// </summary>
-        /// <param name="searchRequestId"></param>
-        /// <param name="searchRequest"></param>
-        /// <returns></returns>
-        private static IdentifiedMatchProbabilityRequest BuildSearchRequestMatchPredictionInput(
-            string searchRequestId,
-            SearchRequest searchRequest
-        )
+        private static IdentifiedMatchProbabilityRequest BuildSearchRequestMatchPredictionInput(ResultSet<MatchingAlgorithmResult> resultSet)
         {
             return new IdentifiedMatchProbabilityRequest
             {
-                SearchRequestId = searchRequestId,
-                ExcludedLoci = ExcludedLoci(searchRequest.MatchCriteria),
-                PatientHla = searchRequest.SearchHlaData.ToPhenotypeInfo().ToPhenotypeInfoTransfer(),
+                SearchRequestId = resultSet.SearchRequestId,
+                MatchingAlgorithmHlaNomenclatureVersion = resultSet.MatchingAlgorithmHlaNomenclatureVersion,
+                ExcludedLoci = ExcludedLoci(resultSet.SearchRequest.MatchCriteria),
+                PatientHla = resultSet.SearchRequest.SearchHlaData.ToPhenotypeInfo().ToPhenotypeInfoTransfer(),
                 PatientFrequencySetMetadata = new FrequencySetMetadata
                 {
-                    EthnicityCode = searchRequest.PatientEthnicityCode,
-                    RegistryCode = searchRequest.PatientRegistryCode
+                    EthnicityCode = resultSet.SearchRequest.PatientEthnicityCode,
+                    RegistryCode = resultSet.SearchRequest.PatientRegistryCode
                 }
             };
         }
@@ -99,8 +78,7 @@ namespace Atlas.Functions.Services
         /// Match prediction input for the given search result.
         /// Null, if the donor's information could not be found in the donor store 
         /// </returns>
-        private DonorInput BuildPerDonorMatchPredictionInput(MatchingAlgorithmResult matchingAlgorithmResult) =>
-            new DonorInput
+        private static DonorInput BuildPerDonorMatchPredictionInput(MatchingAlgorithmResult matchingAlgorithmResult) => new()
             {
                 DonorId = matchingAlgorithmResult.AtlasDonorId,
                 DonorHla = matchingAlgorithmResult.MatchingResult.DonorHla,

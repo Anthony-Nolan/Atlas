@@ -30,38 +30,46 @@ per-locus values being provided for each of 0/1/2 mismatches.
 The algorithm makes use of reference data known as "Haplotype Frequency Sets" (or HF Sets) to come to this conclusion
 
 
-### Algorithmic Summary
+## Algorithmic Summary
 
 A high level overview of the match prediction algorithm's logic is as follows: 
 
-#### Haplotype Frequency Set Selection
+### Haplotype Frequency Set Selection
   * For each patient and donor, a suitable HF set is selected
   * Sets are identified by a combination of the ethnicity and registry data for the donor/patient. If a specific set cannot be found 
   for their ethnicity/registry data, a less specific set will be used, ultimately defaulting to the "global" or default set.
   
-#### Genotype Expansion
+### Genotype Expansion
   * Both patient and donor genotypes must be expanded from _potentially ambiguous allele representations of unknown phase_
   to a collection of possible *diplotypes* (unambiguous typing of known phase).
   * This could be achieved naively by expanding to *all possible* diplotypes, but this would generate far too many possibilities to run calculations on
   * Instead, the diplotypes are calculated from the chosen HF set - all haplotypes that are permitted by the input HLA are selected, and
   then all combinations of permitted haplotypes are considered to give us a set of possible diplotypes
 
-#### Frequency Identification
+### Frequency Identification
   * For each expanded set of diplotypes, a likelihood for the diplotype must be sourced
   * As the diplotypes were built from haplotypes from the chosen HF set, the likelihood of a diplotype can be easily calculated 
   by multiplying the likelihoods of the two haplotypes it consists of.
 
-#### Match Calculation
+### Match Calculation
   * For each patient/donor *pair of diplotypes*, we calculate the match count at each locus. 
   * Match counts are determined by comparing P Group values - identical P groups are considered a match
     * In the case of null expressing alleles (which belong to no P group), the P group of its paired allele is used for this calculation, in keeping with the logic used in the matching algorithm
     * In the case of HF sets typed at a non-P group resolution, the data must first be converted to P groups. Therefore the only typing resolutions
     permitted for HF set data (P Group, G group, g group) must all be convertable to exactly 1 (or 0) P groups.
 
-#### Final Calculation
+### Final Calculation
   * For each of the percentage results, the final result can be calculated by dividing the `sum of all patient donor pairs' likelihoods that meet the result's criteria`
     (e.g. 0 mismatches overall) by the `sum of all patient donor pairs' likelihoods`
 
+## HLA versioning
+- There are two places in the algorithm where HLA typings have to be converted to a specific HLA category:
+  - [Genotype Expansion](#genotype-expansion) (original typing category to HF set typing categories)
+  - [Match Calculation](#match-calculation) (HF set categories to P groups)
+- Atlas allows for HF sets to be encoded to a HLA nomenclature version that is older than the one used by the matching algorithm.
+- The match prediction algorithm first tries to convert HLA typings using the HF set HLA version.
+- If this first attempt fails (e.g., when an allele belongs to a subsequent nomenclature version), it will attempt to convert the typing using the matching algorithm HLA version (as long as it is different to the HF set version).
+- If both attempts fail, there is a significant risk of the subject being deemed "unrepresented", depending on the point at which conversion fails and the overall typing resolution.
 
 ## Match Prediction Requests
 - Match prediction requests (outside of search) can be submitted to the http-triggered function within the Match prediction project.
@@ -74,16 +82,3 @@ A high level overview of the match prediction algorithm's logic is as follows:
     - Note, the file does not contain a patient or donor ID; the consumer should map patient-donor IDs to request ID when initially submitting the request.
   - At this point, if any requests contain invalid properties, such invalid HLA, these will be indiviually caught and logged to Application Insights to allow users to correct them and re-submit.
     - Note: No alerts are sent out in such case; the user should manually monitor the logs, or use Application Insights monitoring.
-
-
-## Match Prediction Algorithm (MPA) Settings
-
-### Handling HLA metadata dictionary (HMD) errors caused by HLA versioning
-
-There is a known issue that occurs when the matching and match prediction components are run on different versions of the HMD, specifically where the former may be ahead of the latter, and contain new alleles. Refer to [issue #637](https://github.com/Anthony-Nolan/Atlas/issues/637) for more details.
-
-Until a more permanent fix has been implemented, the following setting has been added to the MPA to control whether HMD errors will be thrown during the "phenotype conversion" step of the algorithm: `SuppressCompressedPhenotypeConversionExceptions: [true/false]`.
-
-It has been set to `true` for search requests handled by the `Atlas.Functions` app, and to `false` for match prediction requests run by the `Atlas.MatchPrediction.Functions` app. This is because the above issue only occurs when both matching and match prediction are run sequentially on the same patient-donor set (i.e., during search). When only match prediction is run, HMD exceptions may be due to genuinely invalid HLA being submitted in a request that should rightly cause the request to fail.
-
-Note to developers: `SuppressCompressedPhenotypeConversionExceptions` has been added as an app-level setting, as for the immediate future, there are no plans to run match prediction requests from the top-level function. If this changes before a fix for issue #637 has been implemented, the scope of controlling suppression of conversion errors may need amending.

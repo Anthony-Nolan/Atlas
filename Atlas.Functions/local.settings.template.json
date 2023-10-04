@@ -44,7 +44,6 @@
 
     "MatchPrediction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer": "match-prediction-results",
-    "MatchPrediction:Algorithm:SuppressCompressedPhenotypeConversionExceptions": true,
 
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
