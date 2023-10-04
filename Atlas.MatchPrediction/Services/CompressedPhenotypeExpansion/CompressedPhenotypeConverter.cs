@@ -4,6 +4,7 @@ using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.Data.Models;
+using Atlas.MatchPrediction.Services.HlaConversion;
 using MoreLinq.Extensions;
 using ConvertedPhenotype = Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion.DataByResolution<Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<System.Collections.Generic.ISet<string>>>;
 
@@ -21,10 +22,10 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
     internal class CompressedPhenotypeConverter : ICompressedPhenotypeConverter
     {
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
-        private readonly IHlaConverter converter;
+        private readonly IHlaToTargetCategoryConverter converter;
 
         public CompressedPhenotypeConverter(
-            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory, IHlaConverter converter)
+            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory, IHlaToTargetCategoryConverter converter)
         {
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
             this.converter = converter;
@@ -55,7 +56,6 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
                 HfSetHmd = hfSetHmd,
                 MatchingAlgorithmHmd = matchingHmd,
                 StageToLog = stage,
-                ConversionPath = HlaConverterInput.ConversionPaths.AnyHlaCategoryToTargetCategory,
                 TargetHlaCategory = category.ToHlaTypingCategory().ToTargetHlaCategory()
             };
 

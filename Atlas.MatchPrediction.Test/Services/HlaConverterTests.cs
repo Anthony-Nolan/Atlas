@@ -5,7 +5,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.ApplicationInsights;
-using Atlas.MatchPrediction.Services;
+using Atlas.MatchPrediction.Services.HlaConversion;
 using FluentAssertions;
 using LochNessBuilder;
 using NSubstitute;
@@ -14,6 +14,9 @@ using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Services
 {
+    /// <summary>
+    /// Covers base logic of <see cref="HlaConverterBase"/> via one concrete implementation, <see cref="HlaToTargetCategoryConverter"/>.
+    /// </summary>
     [TestFixture]
     internal class HlaConverterTests
     {
@@ -37,7 +40,7 @@ namespace Atlas.MatchPrediction.Test.Services
         public void SetUp()
         {
             logger = Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
-            converter = new HlaConverter(logger);
+            converter = new HlaToTargetCategoryConverter(logger);
 
             hfSetHmd = Substitute.For<IHlaMetadataDictionary>();
             hfSetHmd.HlaNomenclatureVersion.Returns(HfSetHlaVersion);
@@ -88,75 +91,28 @@ namespace Atlas.MatchPrediction.Test.Services
 
         #endregion
 
-        #region Conversion path tests
-        // Tests to check that the correct HMD converter method is called
+        #region ConvertHlaWithLoggingAndRetryOnFailure tests
 
         [Test]
-        public async Task ConvertHlaWithLoggingAndRetryOnFailure_AnyHlaCategoryToTargetCategory_ConvertsHla([Values] TargetHlaCategory target)
+        public async Task ConvertHlaWithLoggingAndRetryOnFailure_ConvertsHla([Values] TargetHlaCategory target)
         {
             var input = inputBuilder
                 .With(x => x.HfSetHmd, hfSetHmd)
-                .With(x => x.ConversionPath, HlaConverterInput.ConversionPaths.AnyHlaCategoryToTargetCategory)
                 .With(x => x.TargetHlaCategory, target)
                 .Build();
 
             await converter.ConvertHlaWithLoggingAndRetryOnFailure(input, DefaultLocus, HlaName);
 
             await hfSetHmd.Received().ConvertHla(DefaultLocus, HlaName, target);
-
-            // remaining two conversion paths
-            await hfSetHmd.DidNotReceiveWithAnyArgs().ConvertGGroupToPGroup(default, default);
-            await hfSetHmd.DidNotReceiveWithAnyArgs().ConvertSmallGGroupToPGroup(default, default);
         }
 
         [Test]
-        public async Task ConvertHlaWithLoggingAndRetryOnFailure_GGroupToPGroup_ConvertsGGroupToPGroup()
-        {
-            var input = inputBuilder
-                .With(x => x.HfSetHmd, hfSetHmd)
-                .With(x => x.ConversionPath, HlaConverterInput.ConversionPaths.GGroupToPGroup)
-                .Build();
-
-            await converter.ConvertHlaWithLoggingAndRetryOnFailure(input, DefaultLocus, HlaName);
-
-            await hfSetHmd.Received().ConvertGGroupToPGroup(DefaultLocus, HlaName);
-
-            // remaining two conversion paths
-            await hfSetHmd.DidNotReceiveWithAnyArgs().ConvertHla(default, default, default);
-            await hfSetHmd.DidNotReceiveWithAnyArgs().ConvertSmallGGroupToPGroup(default, default);
-        }
-
-        [Test]
-        public async Task ConvertHlaWithLoggingAndRetryOnFailure_SmallGGroupToPGroup_ConvertsSmallGGroupToPGroup()
-        {
-            var input = inputBuilder
-                .With(x => x.HfSetHmd, hfSetHmd)
-                .With(x => x.ConversionPath, HlaConverterInput.ConversionPaths.SmallGGroupToPGroup)
-                .Build();
-
-            await converter.ConvertHlaWithLoggingAndRetryOnFailure(input, DefaultLocus, HlaName);
-
-            await hfSetHmd.Received().ConvertSmallGGroupToPGroup(DefaultLocus, HlaName);
-
-            // remaining two conversion paths
-            await hfSetHmd.DidNotReceiveWithAnyArgs().ConvertHla(default, default, default);
-            await hfSetHmd.DidNotReceiveWithAnyArgs().ConvertGGroupToPGroup(default, default);
-        }
-
-        #endregion
-
-        #region ConvertHlaWithLoggingAndRetryOnFailure tests
-        // These tests cover the core retry logic within the service class.
-        // Only the conversion path "AnyHlaCategoryToTargetCategory" is tested, as the other paths only differ in which HMD method is invoked.
-
-        [Test]
-        public async Task ConvertHlaWithLoggingAndRetryOnFailure_AnyHlaCategoryToTargetCategory_FirstLookupSucceeds_ReturnsResults(
+        public async Task ConvertHlaWithLoggingAndRetryOnFailure_FirstLookupSucceeds_ReturnsResults(
             [Values] TargetHlaCategory target)
         {
             var input = inputBuilder
                 .With(x => x.HfSetHmd, hfSetHmd)
                 .With(x => x.MatchingAlgorithmHmd, matchingHmd)
-                .With(x => x.ConversionPath, HlaConverterInput.ConversionPaths.AnyHlaCategoryToTargetCategory)
                 .With(x => x.TargetHlaCategory, target)
                 .Build();
 
@@ -166,13 +122,12 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public async Task ConvertHlaWithLoggingAndRetryOnFailure_AnyHlaCategoryToTargetCategory_FirstLookupSucceeds_DoesNotLogFailure(
+        public async Task ConvertHlaWithLoggingAndRetryOnFailure_FirstLookupSucceeds_DoesNotLogFailure(
             [Values] TargetHlaCategory target)
         {
             var input = inputBuilder
                 .With(x => x.HfSetHmd, hfSetHmd)
                 .With(x => x.MatchingAlgorithmHmd, matchingHmd)
-                .With(x => x.ConversionPath, HlaConverterInput.ConversionPaths.AnyHlaCategoryToTargetCategory)
                 .With(x => x.TargetHlaCategory, target)
                 .Build();
 
@@ -182,13 +137,12 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public async Task ConvertHlaWithLoggingAndRetryOnFailure_AnyHlaCategoryToTargetCategory_FirstLookupSucceeds_AndRetryEnabled_DoesNotRetryLookup(
+        public async Task ConvertHlaWithLoggingAndRetryOnFailure_FirstLookupSucceeds_AndRetryEnabled_DoesNotRetryLookup(
             [Values] TargetHlaCategory target)
         {
             var input = inputBuilder
                 .With(x => x.HfSetHmd, hfSetHmd)
                 .With(x => x.MatchingAlgorithmHmd, matchingHmd)
-                .With(x => x.ConversionPath, HlaConverterInput.ConversionPaths.AnyHlaCategoryToTargetCategory)
                 .With(x => x.TargetHlaCategory, target)
                 .Build();
 
@@ -198,7 +152,7 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public async Task ConvertHlaWithLoggingAndRetryOnFailure_AnyHlaCategoryToTargetCategory_FirstLookupSucceeds_AndRetryDisabled_DoesNotRetryLookup(
+        public async Task ConvertHlaWithLoggingAndRetryOnFailure_FirstLookupSucceeds_AndRetryDisabled_DoesNotRetryLookup(
             [Values] TargetHlaCategory target)
         {
             // disables retry
@@ -207,7 +161,6 @@ namespace Atlas.MatchPrediction.Test.Services
             var input = inputBuilder
                 .With(x => x.HfSetHmd, hfSetHmd)
                 .With(x => x.MatchingAlgorithmHmd, matchingHmd)
-                .With(x => x.ConversionPath, HlaConverterInput.ConversionPaths.AnyHlaCategoryToTargetCategory)
                 .With(x => x.TargetHlaCategory, target)
                 .Build();
 
@@ -217,7 +170,7 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public async Task ConvertHlaWithLoggingAndRetryOnFailure_AnyHlaCategoryToTargetCategory_FirstLookupFails_LogsFailure(
+        public async Task ConvertHlaWithLoggingAndRetryOnFailure_FirstLookupFails_LogsFailure(
             [Values] TargetHlaCategory target)
         {
             // arrange first lookup failure
@@ -228,7 +181,6 @@ namespace Atlas.MatchPrediction.Test.Services
             var input = inputBuilder
                 .With(x => x.HfSetHmd, hfSetHmd)
                 .With(x => x.MatchingAlgorithmHmd, matchingHmd)
-                .With(x => x.ConversionPath, HlaConverterInput.ConversionPaths.AnyHlaCategoryToTargetCategory)
                 .With(x => x.TargetHlaCategory, target)
                 .Build();
 
@@ -238,7 +190,7 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public async Task ConvertHlaWithLoggingAndRetryOnFailure_AnyHlaCategoryToTargetCategory_FirstLookupFails_AndRetryEnabled_RetriesLookupUsingMatchingHmd(
+        public async Task ConvertHlaWithLoggingAndRetryOnFailure_FirstLookupFails_AndRetryEnabled_RetriesLookupUsingMatchingHmd(
             [Values] TargetHlaCategory target)
         {
             // arrange first lookup failure
@@ -249,7 +201,6 @@ namespace Atlas.MatchPrediction.Test.Services
             var input = inputBuilder
                 .With(x => x.HfSetHmd, hfSetHmd)
                 .With(x => x.MatchingAlgorithmHmd, matchingHmd)
-                .With(x => x.ConversionPath, HlaConverterInput.ConversionPaths.AnyHlaCategoryToTargetCategory)
                 .With(x => x.TargetHlaCategory, target)
                 .Build();
 
@@ -259,7 +210,7 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public async Task ConvertHlaWithLoggingAndRetryOnFailure_AnyHlaCategoryToTargetCategory_FirstLookupFails_AndRetryEnabled_ReturnsResults(
+        public async Task ConvertHlaWithLoggingAndRetryOnFailure_FirstLookupFails_AndRetryEnabled_ReturnsResults(
             [Values] TargetHlaCategory target)
         {
             // arrange first lookup failure
@@ -270,7 +221,6 @@ namespace Atlas.MatchPrediction.Test.Services
             var input = inputBuilder
                 .With(x => x.HfSetHmd, hfSetHmd)
                 .With(x => x.MatchingAlgorithmHmd, matchingHmd)
-                .With(x => x.ConversionPath, HlaConverterInput.ConversionPaths.AnyHlaCategoryToTargetCategory)
                 .With(x => x.TargetHlaCategory, target)
                 .Build();
 
@@ -280,7 +230,7 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public async Task ConvertHlaWithLoggingAndRetryOnFailure_AnyHlaCategoryToTargetCategory_FirstLookupFails_AndRetryDisabled_DoesNotRetryLookup(
+        public async Task ConvertHlaWithLoggingAndRetryOnFailure_FirstLookupFails_AndRetryDisabled_DoesNotRetryLookup(
             [Values] TargetHlaCategory target)
         {
             // arrange first lookup failure
@@ -294,7 +244,6 @@ namespace Atlas.MatchPrediction.Test.Services
             var input = inputBuilder
                 .With(x => x.HfSetHmd, hfSetHmd)
                 .With(x => x.MatchingAlgorithmHmd, matchingHmd)
-                .With(x => x.ConversionPath, HlaConverterInput.ConversionPaths.AnyHlaCategoryToTargetCategory)
                 .With(x => x.TargetHlaCategory, target)
                 .Build();
 
@@ -304,7 +253,7 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public async Task ConvertHlaWithLoggingAndRetryOnFailure_AnyHlaCategoryToTargetCategory_FirstLookupFails_AndRetryDisabled_ReturnsEmptyCollection(
+        public async Task ConvertHlaWithLoggingAndRetryOnFailure_FirstLookupFails_AndRetryDisabled_ReturnsEmptyCollection(
             [Values] TargetHlaCategory target)
         {
             // arrange first lookup failure
@@ -318,7 +267,6 @@ namespace Atlas.MatchPrediction.Test.Services
             var input = inputBuilder
                 .With(x => x.HfSetHmd, hfSetHmd)
                 .With(x => x.MatchingAlgorithmHmd, matchingHmd)
-                .With(x => x.ConversionPath, HlaConverterInput.ConversionPaths.AnyHlaCategoryToTargetCategory)
                 .With(x => x.TargetHlaCategory, target)
                 .Build();
 
@@ -328,7 +276,7 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public async Task ConvertHlaWithLoggingAndRetryOnFailure_AnyHlaCategoryToTargetCategory_SecondLookupFails_LogsFirstAndSecondFailure(
+        public async Task ConvertHlaWithLoggingAndRetryOnFailure_SecondLookupFails_LogsFirstAndSecondFailure(
             [Values] TargetHlaCategory target)
         {
             // arrange first lookup failure
@@ -344,7 +292,6 @@ namespace Atlas.MatchPrediction.Test.Services
             var input = inputBuilder
                 .With(x => x.HfSetHmd, hfSetHmd)
                 .With(x => x.MatchingAlgorithmHmd, matchingHmd)
-                .With(x => x.ConversionPath, HlaConverterInput.ConversionPaths.AnyHlaCategoryToTargetCategory)
                 .With(x => x.TargetHlaCategory, target)
                 .Build();
 
@@ -354,7 +301,7 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public async Task ConvertHlaWithLoggingAndRetryOnFailure_AnyHlaCategoryToTargetCategory_SecondLookupFails_ReturnsEmptyCollection(
+        public async Task ConvertHlaWithLoggingAndRetryOnFailure_SecondLookupFails_ReturnsEmptyCollection(
             [Values] TargetHlaCategory target)
         {
             // arrange first lookup failure
@@ -370,7 +317,6 @@ namespace Atlas.MatchPrediction.Test.Services
             var input = inputBuilder
                 .With(x => x.HfSetHmd, hfSetHmd)
                 .With(x => x.MatchingAlgorithmHmd, matchingHmd)
-                .With(x => x.ConversionPath, HlaConverterInput.ConversionPaths.AnyHlaCategoryToTargetCategory)
                 .With(x => x.TargetHlaCategory, target)
                 .Build();
 
@@ -381,7 +327,4 @@ namespace Atlas.MatchPrediction.Test.Services
 
         #endregion
     }
-
-
-
 }

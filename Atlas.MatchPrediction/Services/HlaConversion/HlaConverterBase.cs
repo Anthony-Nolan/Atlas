@@ -1,5 +1,4 @@
-﻿using System;
-using Atlas.HlaMetadataDictionary.ExternalInterface;
+﻿using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchPrediction.ApplicationInsights;
@@ -8,7 +7,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 
-namespace Atlas.MatchPrediction.Services
+namespace Atlas.MatchPrediction.Services.HlaConversion
 {
     internal class HlaConverterInput
     {
@@ -25,21 +24,12 @@ namespace Atlas.MatchPrediction.Services
         public bool DoNotRetryLookupUsingMatchingAlgorithmHmd =>
             MatchingAlgorithmHmd == null || HfSetHmd.HlaNomenclatureVersion == MatchingAlgorithmHmd.HlaNomenclatureVersion;
 
-        public ConversionPaths? ConversionPath { get; set; }
-
         public TargetHlaCategory? TargetHlaCategory { get; set; }
 
         /// <summary>
         /// Match prediction stage - used when logging conversion failures
         /// </summary>
         public string StageToLog { get; set; }
-
-        public enum ConversionPaths
-        {
-            AnyHlaCategoryToTargetCategory,
-            GGroupToPGroup,
-            SmallGGroupToPGroup
-        }
     }
 
     internal interface IHlaConverter
@@ -56,11 +46,11 @@ namespace Atlas.MatchPrediction.Services
         Task<IEnumerable<string>> ConvertHlaWithLoggingAndRetryOnFailure(HlaConverterInput input, Locus locus, string hla);
     }
 
-    internal class HlaConverter : IHlaConverter
+    internal abstract class HlaConverterBase : IHlaConverter
     {
         private readonly ILogger logger;
 
-        public HlaConverter(
+        protected HlaConverterBase(
             // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger)
         {
@@ -77,11 +67,9 @@ namespace Atlas.MatchPrediction.Services
 
             async Task<(bool WasSuccessful, IEnumerable<string> ConvertedHla)> TryConvertHla(IHlaMetadataDictionary hmd)
             {
-                var converterFunc = ConverterFunctionSelector(input, hmd);
-
                 try
                 {
-                    var convertedHla = await converterFunc(locus, hla);
+                    var convertedHla = await ConvertHla(input.TargetHlaCategory, locus, hla, hmd);
                     return (true, convertedHla);
                 }
                 catch (HlaMetadataDictionaryException exception)
@@ -99,27 +87,7 @@ namespace Atlas.MatchPrediction.Services
             }
         }
 
-        private static Func<Locus, string, Task<IEnumerable<string>>> ConverterFunctionSelector(HlaConverterInput input, IHlaMetadataDictionary hmd)
-        {
-            return input.ConversionPath switch
-            {
-                HlaConverterInput.ConversionPaths.AnyHlaCategoryToTargetCategory => async (locus, hlaName) =>
-                {
-                    if (input.TargetHlaCategory == null)
-                    {
-                        throw new ArgumentNullException(nameof(input.TargetHlaCategory));
-                    }
-                    return await hmd.ConvertHla(locus, hlaName, input.TargetHlaCategory.Value);
-                },
-
-                HlaConverterInput.ConversionPaths.GGroupToPGroup => async (locus, hlaName) =>
-                    new[] { await hmd.ConvertGGroupToPGroup(locus, hlaName) },
-
-                HlaConverterInput.ConversionPaths.SmallGGroupToPGroup => async (locus, hlaName) =>
-                    new[] { await hmd.ConvertSmallGGroupToPGroup(locus, hlaName) },
-
-                _ => throw new ArgumentOutOfRangeException(nameof(input.ConversionPath), input.ConversionPath, null)
-            };
-        }
+        protected abstract Task<IEnumerable<string>> ConvertHla(
+            TargetHlaCategory? targetHlaCategory, Locus locus, string hla, IHlaMetadataDictionary hmd);
     }
 }
