@@ -26,7 +26,7 @@ The following are the steps that are required to be taken manually when deployin
 - A second *App Registration* should be created within Azure Active Directory, to be used by the code itself for managing azure resources at runtime.
     - e.g. The matching algorithm Data Refresh needs to be able to scale azure databases at runtime.
     - It also allows Terraform to fetch function keys.
-    - This registration must have the role of `Contributor` on the Atlas resource group.
+    - This registration must have the role of `Contributor` and `App Configuration Data Owner` on the Atlas resource group.
     - App registration info must be provided via the following terraform release vars:
       - `AZURE_CLIENT_ID`
       - `AZURE_CLIENT_SECRET`.
