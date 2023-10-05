@@ -7,6 +7,16 @@ This includes both schema and data workflow changes.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.6.0
+
+### Donors
+
+New columns have been added
+
+* `ExternalDonorCode` - unique identifier for donors provided by the consumer. String - can be numeric but does not need to be. 
+* `EthnicityCode` - string representation of donor ethnicity
+* `RegistryCode` - string representation of donor source registry
+
 ## <= 1.5.0
 
 Prior to v1.5 of Atlas, no Changelog was actively updated. A snapshot of the schema at this time has been documented here, and all future changes should be documented against the appropriate version.
