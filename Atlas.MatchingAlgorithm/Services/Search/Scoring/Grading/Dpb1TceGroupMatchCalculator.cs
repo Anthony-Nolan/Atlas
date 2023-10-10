@@ -174,8 +174,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
                 return null;
             }
 
-            var isHla1ANullAllele = IsNullAllele(typing.Position1);
-            var isHla2ANullAllele = IsNullAllele(typing.Position2);
+            var isHla1ANullAllele = categoriser.IsNullAllele(typing.Position1);
+            var isHla2ANullAllele = categoriser.IsNullAllele(typing.Position2);
 
             if (isHla1ANullAllele && isHla2ANullAllele)
             {
@@ -195,9 +195,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
 
             return new UnorderedPair<string>(tceGroupResult1, tceGroupResult2);
         }
-
-        private bool IsNullAllele(string hlaName) => categoriser.GetHlaTypingCategory(hlaName) == HlaTypingCategory.Allele &&
-                                                     AlleleSplitter.GetExpressionSuffix(hlaName) == "N";
 
         private Task<string> LookupDpb1TceGroup(string hlaName) => hlaMetadataDictionary.GetDpb1TceGroup(hlaName);
     }

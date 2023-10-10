@@ -4,6 +4,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
+using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 using Atlas.Common.Utils.Http;
 
 namespace Atlas.Common.GeneticData.Hla.Services
@@ -18,7 +19,9 @@ namespace Atlas.Common.GeneticData.Hla.Services
         /// </summary>
         bool ConformsToValidHlaFormat(string hlaDescriptor);
         HlaTypingCategory GetHlaTypingCategory(string hlaDescriptor);
-        bool TryGetHlaTypingCategory(string hlaDescriptor, [NotNullWhen(true)]out HlaTypingCategory? category);
+        bool TryGetHlaTypingCategory(string hlaDescriptor, [NotNullWhen(true)] out HlaTypingCategory? category);
+
+        bool IsNullAllele(string hlaName);
     }
 
     internal class HlaCategorisationService : IHlaCategorisationService
@@ -71,7 +74,7 @@ namespace Atlas.Common.GeneticData.Hla.Services
             )
         };
 
-        public bool TryGetHlaTypingCategory(string hlaDescriptor, [NotNullWhen(true)]out HlaTypingCategory? category)
+        public bool TryGetHlaTypingCategory(string hlaDescriptor, [NotNullWhen(true)] out HlaTypingCategory? category)
         {
             var name = hlaDescriptor.Trim();
 
@@ -87,6 +90,10 @@ namespace Atlas.Common.GeneticData.Hla.Services
             category = null;
             return false;
         }
+
+        /// <inheritdoc />
+        public bool IsNullAllele(string hlaName) =>
+            GetHlaTypingCategory(hlaName) == HlaTypingCategory.Allele && AlleleSplitter.GetExpressionSuffix(hlaName) == "N";
 
         public HlaTypingCategory GetHlaTypingCategory(string hlaDescriptor)
         {
