@@ -1,7 +1,5 @@
 ﻿using System.Reflection;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers;
@@ -24,7 +22,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             .WithDataAt(Locus.A, LocusPosition.Two, "23:01")
             .WithDataAt(Locus.B, LocusPosition.One, "44:03")
             .WithDataAt(Locus.B, LocusPosition.Two, "57:01")
-            .WithDataAt(Locus.C, LocusPosition.One, "04:09N")
+            .WithDataAt(Locus.C, LocusPosition.One, "04:28")
             .WithDataAt(Locus.C, LocusPosition.Two, "06:02")
             .WithDataAt(Locus.Dqb1, LocusPosition.One, "03:01")
             .WithDataAt(Locus.Dqb1, LocusPosition.Two, "04:01")
@@ -69,6 +67,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchProbability.MatchProbabilities.OneMismatchProbability.Percentage.Should().Be(0);
             matchProbability.MatchProbabilities.TwoMismatchProbability.Percentage.Should().Be(32);
         }
+
         [Test]
         public async Task
             CalculateMatchProbability_WhenDonorIsUnambiguousByPGroup_AndUnrepresentedInHaplotypeFrequencySet_DoesNotMarkDonorAsUnrepresented()

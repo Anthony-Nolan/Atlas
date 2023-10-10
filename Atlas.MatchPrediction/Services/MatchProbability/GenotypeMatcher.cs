@@ -110,8 +110,10 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 return new GenotypeSet(true, null, 0m);
             }
 
-            var convertedGenotypes = await genotypeConverter.ConvertGenotypes(new GenotypeConverterInput
+            var convertedGenotypes = await genotypeConverter.ConvertGenotypesForMatchCalculation(new GenotypeConverterInput
             {
+                CompressedPhenotype = subjectData.HlaTyping,
+                AllowedLoci = parameters.AllowedLoci,
                 Genotypes = imputedGenotypes.Genotypes,
                 GenotypeLikelihoods = imputedGenotypes.GenotypeLikelihoods,
                 HfSetHlaNomenclatureVersion = subjectData.SubjectFrequencySet.FrequencySet.HlaNomenclatureVersion,

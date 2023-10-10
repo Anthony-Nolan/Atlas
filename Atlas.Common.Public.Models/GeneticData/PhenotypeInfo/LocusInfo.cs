@@ -124,6 +124,24 @@ namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo
             return Position1 == null ^ Position2 == null;
         }
 
+        /// <summary>
+        /// Do both positions fulfill the same <paramref name="condition"/>?
+        /// </summary>
+        /// <param name="condition"></param>
+        public bool BothPositions(Func<T, bool> condition)
+        {
+            return condition(Position1) && condition(Position2);
+        }
+
+        /// <summary>
+        /// Does either position fulfill the provided <paramref name="condition"/>?
+        /// </summary>
+        /// <param name="condition"></param>
+        public bool EitherPosition(Func<T, bool> condition)
+        {
+            return condition(Position1) || condition(Position2);
+        }
+
         #region IEquatable<T> implementation (Defers to EqualityComparer of inner type.)
         public static bool operator ==(LocusInfo<T> left, LocusInfo<T> right)
         {

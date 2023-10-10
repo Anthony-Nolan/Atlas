@@ -51,8 +51,7 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
 
             var result = await genotypeMatcher.MatchPatientDonorGenotypes(new GenotypeMatcherInput
             {
-                PatientData = new SubjectData(input.Patient.HlaTyping.ToPhenotypeInfo(),
-                    new SubjectFrequencySet(frequencySet.PatientSet, "debug-patient")),
+                PatientData = new SubjectData(input.Patient.HlaTyping.ToPhenotypeInfo(), new SubjectFrequencySet(frequencySet.PatientSet, "debug-patient")),
                 DonorData = new SubjectData(input.Donor.HlaTyping.ToPhenotypeInfo(), new SubjectFrequencySet(frequencySet.DonorSet, "debug-donor")),
                 MatchPredictionParameters = input.MatchPredictionParameters
             });

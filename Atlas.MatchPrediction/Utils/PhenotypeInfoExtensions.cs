@@ -1,5 +1,4 @@
-﻿using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Public.Models.GeneticData;
+﻿using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchPrediction.Utils
@@ -12,7 +11,7 @@ namespace Atlas.MatchPrediction.Utils
         /// </summary>
         public static PhenotypeInfo<string> CopyExpressingAllelesToNullPositions(this PhenotypeInfo<string> typedGenotype)
         {
-            return typedGenotype.MapByLocus((locus, locusInfo) =>
+            return typedGenotype.MapByLocus((_, locusInfo) =>
             {
                 if (locusInfo.SinglePositionNull())
                 {

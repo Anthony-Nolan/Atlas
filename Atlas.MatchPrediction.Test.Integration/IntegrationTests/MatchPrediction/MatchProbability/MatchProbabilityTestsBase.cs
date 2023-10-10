@@ -37,8 +37,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         protected const decimal DefaultHaplotypeFrequency = 0.00001m;
 
-        [SetUp]
-        protected void SetUp()
+        [OneTimeSetUp]
+        protected void BaseOneTimeSetUp()
         {
             MatchProbabilityService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchProbabilityService>();
             ImportService = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
