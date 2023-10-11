@@ -64,7 +64,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             if (genotypes.IsNullOrEmpty())
             {
                 logger.SendTrace($"{LoggingPrefix}{input.SubjectData.SubjectFrequencySet.SubjectLogDescription} genotype unrepresented.", LogLevel.Verbose);
-                return new ImputedGenotypes();
+                return ImputedGenotypes.Empty();
             }
 
             var genotypeLikelihoods = await CalculateGenotypeLikelihoods(
