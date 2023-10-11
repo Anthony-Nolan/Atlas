@@ -23,10 +23,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         private const LocusPosition OtherPosition = LocusPosition.One;
 
         private static readonly string ExpressingAllele = DefaultUnambiguousAllelesBuilder.Build().GetPosition(LocusUnderTest, OtherPosition);
-        private const string MismatchedAllele = "01:01";
+        private const string MismatchedAllele = "*01:01";
 
-        private const string NullAllele_HasNoRelatedAlleles = "01:11N";
-        private const string NullAllele_HasRelatedAlleles = "03:129N";
+        private const string NullAllele_HasNoRelatedAlleles = "*01:11N";
+        private const string NullAllele_HasRelatedAlleles = "*03:129N";
         public static object[] NullAlleles = { NullAllele_HasNoRelatedAlleles, NullAllele_HasRelatedAlleles };
 
         #endregion

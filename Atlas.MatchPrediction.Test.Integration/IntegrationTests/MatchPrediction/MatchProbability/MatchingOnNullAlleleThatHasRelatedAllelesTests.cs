@@ -19,8 +19,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         private const LocusPosition NullAllelePosition = LocusPosition.Two;
 
         // both alleles are from 03:01:01G
-        private const string NullAllele = "03:129N";
-        private const string ExpressingAlleleFromSameGGroupAsNull = "03:20";
+        private const string NullAllele = "*03:129N";
+        private const string ExpressingAlleleFromSameGGroupAsNull = "*03:20";
 
         [OneTimeSetUp]
         public async Task OneTimeSetup()

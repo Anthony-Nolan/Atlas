@@ -1,5 +1,9 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
+using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.ApplicationInsights;
@@ -12,9 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData.Hla.Services;
-using Atlas.Common.Public.Models.GeneticData;
-using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using GenotypeOfKnownTypingCategory = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<Atlas.MatchPrediction.ExternalInterface.Models.HlaAtKnownTypingCategory>;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
@@ -101,7 +102,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 StageToLog = nullAlleleStageName
             };
 
-            if (!allowedLoci.Contains(locus) || hla == null || !categoriser.IsNullAllele(hla))
+            // TODO #1091 - stop stripping the molecular prefix once #1091 is done
+            if (!allowedLoci.Contains(locus) || hla == null || !categoriser.IsNullAllele(AlleleSplitter.RemovePrefix(hla)))
             {
                 return (false, new List<HlaAtKnownTypingCategory>());
             }
