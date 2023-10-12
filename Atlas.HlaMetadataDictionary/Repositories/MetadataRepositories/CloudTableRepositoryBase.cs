@@ -36,7 +36,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         private readonly ITableReferenceRepository tableReferenceRepository;
         private readonly string functionalTableReferencePrefix;
         private readonly string cacheKey;
-        private CloudTable cloudTable;
+        private readonly IDictionary<string, CloudTable> cloudTables = new Dictionary<string, CloudTable>();
 
         protected CloudTableRepositoryBase(
             ICloudTableFactory factory,
@@ -71,7 +71,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             var newDataTable = await CreateNewDataTable(tablePrefix);
             await newDataTable.BatchInsert(tableContents.Select(rowData => new HlaMetadataTableRow(rowData)));
             await tableReferenceRepository.UpdateTableReference(tablePrefix, newDataTable.Name);
-            cloudTable = null;
+            cloudTables.Remove(tablePrefix);
         }
 
         protected async Task<TTableRow> GetDataRowIfExists(string partition, string rowKey, string hlaNomenclatureVersion)
@@ -102,7 +102,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
                 var dataToLoad = new Dictionary<string, TTableRow>();
 
                 while (tableResults.HasMoreResults)
-                { 
+                {
                     var results = await tableResults.RequestNextAsync();
                     foreach (var result in results)
                     {
@@ -121,7 +121,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             return $"{functionalTableReferencePrefix}{hlaNomenclatureVersion}";
         }
 
-        private readonly SemaphoreSlim tableConnectionCreationLock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim tableConnectionCreationLock = new(1, 1);
 
         /// <summary>
         /// The connection to the current data table is cached so we don't open unnecessary connections
@@ -129,15 +129,19 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         private async Task<CloudTable> GetVersionedDataTable(string hlaNomenclatureVersion)
         {
             await tableConnectionCreationLock.WaitAsync();
+
+            var tablePrefix = VersionedTableReferencePrefix(hlaNomenclatureVersion);
+
             try
             {
-                if (cloudTable == null)
+                if (cloudTables.TryGetValue(tablePrefix, out var cachedCloudTable))
                 {
-                    var tablePrefix = VersionedTableReferencePrefix(hlaNomenclatureVersion);
-                    var dataTableReference = await tableReferenceRepository.GetCurrentTableReference(tablePrefix);
-                    cloudTable = await tableFactory.GetTable(dataTableReference);
+                    return cachedCloudTable;
                 }
 
+                var dataTableReference = await tableReferenceRepository.GetCurrentTableReference(tablePrefix);
+                var cloudTable = await tableFactory.GetTable(dataTableReference);
+                cloudTables.Add(tablePrefix, cloudTable);
                 return cloudTable;
             }
             finally
