@@ -33,7 +33,8 @@ namespace Atlas.DonorImport.Services
         /// <summary>
         /// Donors that failed validation by <see cref="SearchableDonorValidator"/>
         /// </summary>
-        public IReadOnlyCollection<DonorUpdate> InvalidDonors { get; set; }
+        //public IReadOnlyCollection<DonorUpdate> InvalidDonors { get; set; }
+        public IReadOnlyCollection<SearchableDonorValidationResult> InvalidDonors { get; set; }
     }
 
     internal class DonorUpdateCategoriser : IDonorUpdateCategoriser
@@ -68,7 +69,7 @@ namespace Atlas.DonorImport.Services
             return new DonorUpdateCategoriserResults
             {
                 ValidDonors = validDonors.Select(d => d.DonorUpdate).ToList(),
-                InvalidDonors = invalidDonors.Select(d => d.DonorUpdate).ToList()
+                InvalidDonors = invalidDonors.ToList()
             };
 
             SearchableDonorValidationResult ValidateDonorIsSearchable(DonorUpdate donorUpdate)
@@ -125,13 +126,13 @@ namespace Atlas.DonorImport.Services
 
             await donorImportFailureRepository.BulkInsert(donorImportFailures);
         }
+    }
 
-        private class SearchableDonorValidationResult
-        {
-            public DonorUpdate DonorUpdate { get; init; }
-            public bool IsValid { get; init; }
-            public IReadOnlyCollection<ValidationFailure> Errors { get; init; }
-            public string ErrorMessage { get; init; }
-        }
+    public class SearchableDonorValidationResult
+    {
+        public DonorUpdate DonorUpdate { get; init; }
+        public bool IsValid { get; init; }
+        public IReadOnlyCollection<ValidationFailure> Errors { get; init; }
+        public string ErrorMessage { get; init; }
     }
 }

@@ -22,14 +22,14 @@ namespace Atlas.DonorImport.Validators
             {
                 RuleFor(d => d.RecordId)
                     .Must(context.ExternalDonorCodes.Contains)
-                    .WithMessage("Donor with {PropertyName} '{PropertyValue}' is not present in the database.");
+                    .WithMessage("Donor is not present in the database.");
             });
 
             When(donorUpdate => donorUpdate.ChangeType == ImportDonorChangeType.Create && donorUpdate.UpdateMode == UpdateMode.Differential, () =>
             {
                 RuleFor(d => d.RecordId)
                     .Must(id => !context.ExternalDonorCodes.Contains(id))
-                    .WithMessage("Donor with {PropertyName} '{PropertyValue}' is already present in the database.");
+                    .WithMessage("Donor is already present in the database.");
             });
         }
     }
