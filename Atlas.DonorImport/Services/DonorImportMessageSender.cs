@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.Azure.ServiceBus;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace Atlas.DonorImport.Services
 {
     public interface IDonorImportMessageSender
     {
-        Task SendSuccessMessage(string fileName, int importedDonorCount, int failedDonorCount);
+        Task SendSuccessMessage(string fileName, int importedDonorCount, IReadOnlyCollection<SearchableDonorValidationResult> failedDonors);
         Task SendFailureMessage(string fileName, ImportFailureReason failureReason, string failureReasonDescription);
     }
     internal class DonorImportMessageSender : IDonorImportMessageSender
@@ -29,13 +30,23 @@ namespace Atlas.DonorImport.Services
         }
 
 
-        public async Task SendSuccessMessage(string fileName, int importedDonorCount, int failedDonorCount)
+        public async Task SendSuccessMessage(string fileName, int importedDonorCount, IReadOnlyCollection<SearchableDonorValidationResult> failedDonors)
         {
+            var failedSummary = failedDonors.SelectMany(d => d.Errors)
+                .GroupBy(e => e.ErrorMessage)
+                .Select(g => new FauilureSummary
+                {
+                    Reason = g.Key,
+                    Count = g.Count()
+                })
+                .ToList();
+
             var donorImportMessage = new SuccessDonorImportMessage
             {
                 FileName = fileName,
                 ImportedDonorCount = importedDonorCount, 
-                FailedDonorCount = failedDonorCount
+                FailedDonorCount = failedDonors.Count,
+                FailedDonorSummary = failedSummary
             };
 
             await Send(donorImportMessage, LogMessage);
@@ -61,7 +72,14 @@ namespace Atlas.DonorImport.Services
             {
                 logMessage(donorImportMessage);
 
-                var message = new Message(Encoding.UTF8.GetBytes(stringMessage));
+                var message = new Message(Encoding.UTF8.GetBytes(stringMessage))
+                {
+                    UserProperties =
+                    {
+                        { nameof(DonorImportMessage.WasSuccessful), donorImportMessage.WasSuccessful },
+                        { nameof(DonorImportMessage.FileName), donorImportMessage.FileName }
+                    }
+                };
 
                 await topicClient.SendAsync(message);
             }

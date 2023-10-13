@@ -68,7 +68,7 @@ namespace Atlas.DonorImport.Test
 
             await donorFileImporter.ImportDonorFile(file);
 
-            await donorImportMessageSender.Received().SendSuccessMessage(file.FileLocation, validDonorCount, invalidDonorsCount);
+            await donorImportMessageSender.Received().SendSuccessMessage(file.FileLocation, validDonorCount, TODO);
         }
 
         [Test]
