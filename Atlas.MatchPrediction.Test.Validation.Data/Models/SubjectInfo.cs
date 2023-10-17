@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Sql.BulkInsert;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -60,6 +59,12 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Models
         [Required]
         [MaxLength(64)]
         public string DRB1_2 { get; set; }
+
+        /// <summary>
+        /// Optional field to allow individual subjects to be mapped to a specific test HF set.
+        /// </summary>
+        [MaxLength(256)]
+        public string? ExternalHfSetId { get; set; }
     }
 
     public static class SubjectInfoBuilder
