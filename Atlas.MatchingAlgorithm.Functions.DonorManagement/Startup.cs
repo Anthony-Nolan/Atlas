@@ -30,7 +30,8 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 ConnectionStringReader("PersistentSql"),
                 ConnectionStringReader("SqlA"),
-                ConnectionStringReader("SqlB")
+                ConnectionStringReader("SqlB"),
+                ConnectionStringReader("DonorSql")
             );
         }
 

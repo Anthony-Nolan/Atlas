@@ -1,16 +1,19 @@
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ServiceBus.Exceptions;
+using Atlas.Common.Utils;
+using Atlas.DonorImport.ExternalInterface;
+using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.Services.DonorUpdates;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
+using Atlas.MatchingAlgorithm.Exceptions;
+using Atlas.MatchingAlgorithm.Services.DonorManagement;
+using Microsoft.Azure.WebJobs;
+using MoreLinq.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
-using Atlas.Common.ServiceBus.Exceptions;
-using Atlas.Common.Utils;
-using Atlas.DonorImport.ExternalInterface.Models;
-using Atlas.MatchingAlgorithm.Data.Persistent.Models;
-using Atlas.MatchingAlgorithm.Exceptions;
-using Atlas.MatchingAlgorithm.Services.DonorManagement;
-using Microsoft.Azure.WebJobs;
 
 namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
 {
@@ -20,11 +23,15 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
 
         private readonly IDonorUpdateProcessor donorUpdateProcessor;
         private readonly ILogger logger;
+        private readonly IDonorReader donorReader;
+        private readonly IDonorUpdatesSaver donorUpdatesSaver;
 
-        public DonorManagementFunctions(IDonorUpdateProcessor donorUpdateProcessor, ILogger logger)
+        public DonorManagementFunctions(IDonorUpdateProcessor donorUpdateProcessor, ILogger logger, IDonorReader donorReader, IDonorUpdatesSaver donorUpdatesSaver)
         {
             this.donorUpdateProcessor = donorUpdateProcessor;
             this.logger = logger;
+            this.donorReader = donorReader;
+            this.donorUpdatesSaver = donorUpdatesSaver;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -43,6 +50,35 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
             TimerInfo myTimer)
         {
             await ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase.DatabaseB);
+        }
+
+        [FunctionName(nameof(ProcessDifferentialDonorUpdatesForMatchingDbADeadLetterQueueListener))]
+        public async Task ProcessDifferentialDonorUpdatesForMatchingDbADeadLetterQueueListener(
+            [ServiceBusTrigger(
+                "%MessagingServiceBus:DonorManagement:Topic%/Subscriptions/%MessagingServiceBus:DonorManagement:SubscriptionForDbA%/$DeadLetterQueue",
+                "%MessagingServiceBus:DonorManagement:SubscriptionForDbA%",
+                Connection = "MessagingServiceBus:ConnectionString")]
+            SearchableDonorUpdate[] searchableDonorUpdates)
+        {
+            await ProcessDeadLetterDifferentialDonorUpdates(searchableDonorUpdates);
+        }
+
+        [FunctionName(nameof(ProcessDifferentialDonorUpdatesForMatchingDbBDeadLetterQueueListener))]
+        public async Task ProcessDifferentialDonorUpdatesForMatchingDbBDeadLetterQueueListener(
+            [ServiceBusTrigger(
+                "%MessagingServiceBus:DonorManagement:Topic%/Subscriptions/%MessagingServiceBus:DonorManagement:SubscriptionForDbB%/$DeadLetterQueue",
+                "%MessagingServiceBus:DonorManagement:SubscriptionForDbB%",
+                Connection = "MessagingServiceBus:ConnectionString")]
+            SearchableDonorUpdate[] searchableDonorUpdates)
+        {
+            await ProcessDeadLetterDifferentialDonorUpdates(searchableDonorUpdates);
+        }
+
+        private async Task ProcessDeadLetterDifferentialDonorUpdates(SearchableDonorUpdate[] searchableDonorUpdates)
+        {
+            var existingDonors = await donorReader.GetDonors(searchableDonorUpdates.Select(d => d.DonorId));
+            searchableDonorUpdates.ForEach(d => d.IsAvailableForSearch = existingDonors.ContainsKey(d.DonorId));
+            await donorUpdatesSaver.Save(searchableDonorUpdates);
         }
 
         private async Task ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase targetDatabase)

@@ -74,4 +74,9 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_donor_manageme
     type  = "SQLAzure"
     value = local.matching_persistent_database_connection_string
   }
+  connection_string {
+    name  = "DonorSql"
+    type  = "SQLAzure"
+    value = "Server=tcp:${var.sql_server.fully_qualified_domain_name},1433;Initial Catalog=${var.donor_import_sql_database.name};Persist Security Info=False;User ID=${var.DONOR_IMPORT_DATABASE_USERNAME};Password=${var.DONOR_IMPORT_DATABASE_PASSWORD};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
+  }
 }
