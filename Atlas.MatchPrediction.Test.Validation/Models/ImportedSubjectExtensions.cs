@@ -23,7 +23,8 @@ namespace Atlas.MatchPrediction.Test.Validation.Models
                 DQB1_1 = importedSubject.DQB1_1,
                 DQB1_2 = importedSubject.DQB1_2,
                 DRB1_1 = importedSubject.DRB1_1,
-                DRB1_2 = importedSubject.DRB1_2
+                DRB1_2 = importedSubject.DRB1_2,
+                ExternalHfSetId = importedSubject.HF_SET
             };
         }
     }
