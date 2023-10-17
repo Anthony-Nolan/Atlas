@@ -43,6 +43,14 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.RegisterImportDatabaseTypes(fetchSqlConnectionString);
         }
 
+        public static void RegisterDonorUpdateServices(
+             this IServiceCollection services,
+             Func<IServiceProvider, string> fetchDonorImportDatabaseConnectionString)
+        {
+            services.AddScoped<IDonorUpdatesSaver, DonorUpdatesSaver>();
+            services.AddScoped<IPublishableDonorUpdatesRepository>(sp => new PublishableDonorUpdatesRepository(fetchDonorImportDatabaseConnectionString(sp)));
+        }
+
         public static void RegisterDonorReader(
             this IServiceCollection services,
             Func<IServiceProvider, string> fetchDonorImportDatabaseConnectionString)

@@ -8,6 +8,7 @@ using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.Services.DonorUpdates;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
@@ -66,7 +67,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
-            Func<IServiceProvider, string> fetchTransientBSqlConnectionString
+            Func<IServiceProvider, string> fetchTransientBSqlConnectionString,
+            Func<IServiceProvider, string> fetchDonorImportSqlConnectionString
         )
         {
             services.RegisterCommonServices(
@@ -84,6 +86,17 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
 
             services.RegisterDonorManagementServices(fetchDonorManagementSettings, fetchMessagingServiceBusSettings);
+
+            services.RegisterDonorImportServices(fetchDonorImportSqlConnectionString);
+        }
+
+        public static void RegisterDonorImportServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, string> fetchDonorImportSqlConnectionString
+        )
+        {
+            services.RegisterDonorReader(fetchDonorImportSqlConnectionString);
+            services.RegisterDonorUpdateServices(fetchDonorImportSqlConnectionString);
         }
 
         /// <summary>
