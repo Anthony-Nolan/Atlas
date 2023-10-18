@@ -22,7 +22,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     public class ImputationInput
     {
         public SubjectData SubjectData { get; set; }
-        public HashSet<Locus> AllowedMatchPredictionLoci { get; set; }
+        public MatchPredictionParameters MatchPredictionParameters { get; set; }
     }
 
     public interface IGenotypeImputationService
@@ -64,10 +64,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             if (genotypes.IsNullOrEmpty())
             {
                 logger.SendTrace($"{LoggingPrefix}{input.SubjectData.SubjectFrequencySet.SubjectLogDescription} genotype unrepresented.", LogLevel.Verbose);
-                return new ImputedGenotypes();
+                return ImputedGenotypes.Empty();
             }
 
-            var genotypeLikelihoods = await CalculateGenotypeLikelihoods(genotypes, input.SubjectData.SubjectFrequencySet.FrequencySet, input.AllowedMatchPredictionLoci);
+            var genotypeLikelihoods = await CalculateGenotypeLikelihoods(
+                genotypes, input.SubjectData.SubjectFrequencySet.FrequencySet, input.MatchPredictionParameters.AllowedLoci);
 
             return ExpandedGenotypeTruncater.TruncateGenotypes(genotypeLikelihoods, genotypes);
         }
@@ -78,6 +79,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             using (logger.RunTimed($"{LoggingPrefix}Expand {input.SubjectData.SubjectFrequencySet.SubjectLogDescription} phenotype", LogLevel.Verbose))
             {
+                var expanderInput = new CompressedPhenotypeExpanderInput
+                {
+                    Phenotype = input.SubjectData.HlaTyping,
+                    HfSetHlaNomenclatureVersion = input.SubjectData.SubjectFrequencySet.FrequencySet.HlaNomenclatureVersion,
+                    MatchPredictionParameters = input.MatchPredictionParameters
+                };
+
                 var groupedFrequencies = haplotypeFrequencies
                     .GroupBy(f => f.Value.TypingCategory)
                     .Select(g =>
@@ -85,20 +93,14 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     )
                     .ToDictionary();
 
-                return await compressedPhenotypeExpander.ExpandCompressedPhenotype(
-                    new ExpandCompressedPhenotypeInput
-                    {
-                        Phenotype = input.SubjectData.HlaTyping,
-                        AllowedLoci = input.AllowedMatchPredictionLoci,
-                        HlaNomenclatureVersion = input.SubjectData.SubjectFrequencySet.FrequencySet.HlaNomenclatureVersion,
-                        AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
-                        {
-                            GGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.GGroup, new List<LociInfo<string>>()),
-                            PGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.PGroup, new List<LociInfo<string>>()),
-                            SmallGGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.SmallGGroup, new List<LociInfo<string>>()),
-                        }
-                    }
-                );
+                var allHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
+                {
+                    GGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.GGroup, new List<LociInfo<string>>()),
+                    PGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.PGroup, new List<LociInfo<string>>()),
+                    SmallGGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.SmallGGroup, new List<LociInfo<string>>()),
+                };
+
+                return await compressedPhenotypeExpander.ExpandCompressedPhenotype(expanderInput, allHaplotypes);
             }
         }
 

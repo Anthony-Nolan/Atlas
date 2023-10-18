@@ -1,10 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
-using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
@@ -20,8 +17,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
     {
         private IMatchCalculationService matchCalculationService;
 
-        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
-
         private static readonly ISet<Locus> AllowedLoci = LocusSettings.MatchPredictionLoci;
 
         [OneTimeSetUp]
@@ -34,15 +29,14 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [TestCase(new[] {Locus.Dqb1})]
         [TestCase(new[] {Locus.C})]
         [TestCase(new[] {Locus.Dqb1, Locus.C})]
-        public async Task CalculateMatchCounts_WhenIdenticalGenotypes_IsTenOutOfTenMatch(Locus[] lociToExclude)
+        public void CalculateMatchCounts_Fast_WhenIdenticalGenotypes_IsTenOutOfTenMatch(Locus[] lociToExclude)
         {
             var loci = AllowedLoci.Where(l => !lociToExclude.Contains(l)).ToHashSet();
 
-            var matchCounts = await matchCalculationService
-                .CalculateMatchCounts(
+            var matchCounts = matchCalculationService
+                .CalculateMatchCounts_Fast(
                     DefaultGGroupsBuilder.Build(),
                     DefaultGGroupsBuilder.Build(),
-                    HlaNomenclatureVersion,
                     loci);
 
             var expectedMatchCounts = new MatchCountsBuilder().ZeroMismatch(loci).Build();
@@ -54,18 +48,17 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [TestCase(new[] {Locus.Dqb1})]
         [TestCase(new[] {Locus.C})]
         [TestCase(new[] {Locus.Dqb1, Locus.C})]
-        public async Task CalculateMatchCounts_WhenGenotypesDifferInPhase_IsTenOutOfTenMatch(Locus[] lociToExclude)
+        public void CalculateMatchCounts_Fast_WhenGenotypesDifferInPhase_IsTenOutOfTenMatch(Locus[] lociToExclude)
         {
             var loci = AllowedLoci.Where(l => !lociToExclude.Contains(l)).ToHashSet();
             var donorGenotype = DefaultGGroupsBuilder
                 .WithDataAt(Locus.A, Alleles.UnambiguousAlleleDetails.A.Position2.GGroup, Alleles.UnambiguousAlleleDetails.A.Position1.GGroup)
                 .Build();
 
-            var matchCounts = await matchCalculationService
-                .CalculateMatchCounts(
+            var matchCounts = matchCalculationService
+                .CalculateMatchCounts_Fast(
                     DefaultGGroupsBuilder.Build(),
                     donorGenotype,
-                    HlaNomenclatureVersion,
                     loci.ToHashSet());
 
             var expectedMatchCounts = new MatchCountsBuilder().ZeroMismatch(loci).Build();
@@ -77,17 +70,16 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [TestCase(new[] {Locus.Dqb1})]
         [TestCase(new[] {Locus.C})]
         [TestCase(new[] {Locus.Dqb1, Locus.C})]
-        public async Task CalculateMatchCounts_WhenPatientGenotypeHomozygous_AndMatchesExactlyOneOfPatientHla_IsNineOutOfTenMatch(
+        public void CalculateMatchCounts_Fast_WhenPatientGenotypeHomozygous_AndMatchesExactlyOneOfPatientHla_IsNineOutOfTenMatch(
             Locus[] lociToExclude)
         {
             var loci = AllowedLoci.Where(l => !lociToExclude.Contains(l)).ToHashSet();
             var patientGenotype = DefaultGGroupsBuilder.WithDataAt(Locus.A, Alleles.UnambiguousAlleleDetails.A.Position1.GGroup).Build();
 
-            var matchCounts = await matchCalculationService
-                .CalculateMatchCounts(
+            var matchCounts = matchCalculationService
+                .CalculateMatchCounts_Fast(
                     patientGenotype,
                     DefaultGGroupsBuilder.Build(),
-                    HlaNomenclatureVersion,
                     loci.ToHashSet());
 
             var expectedMatchCounts = new MatchCountsBuilder().ZeroMismatch(loci).WithSingleMismatchAt(Locus.A).Build();
@@ -99,16 +91,15 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [TestCase(new[] {Locus.Dqb1})]
         [TestCase(new[] {Locus.C})]
         [TestCase(new[] {Locus.Dqb1, Locus.C})]
-        public async Task CalculateMatchCounts_WhenDonorGenotypeHomozygous_AndMatchesExactlyOneOfDonorHla_IsNineOutOfTenMatch(Locus[] lociToExclude)
+        public void CalculateMatchCounts_Fast_WhenDonorGenotypeHomozygous_AndMatchesExactlyOneOfDonorHla_IsNineOutOfTenMatch(Locus[] lociToExclude)
         {
             var loci = AllowedLoci.Where(l => !lociToExclude.Contains(l)).ToHashSet();
             var donorGenotype = DefaultGGroupsBuilder.WithDataAt(Locus.A, Alleles.UnambiguousAlleleDetails.A.Position1.GGroup).Build();
 
-            var matchCounts = await matchCalculationService
-                .CalculateMatchCounts(
+            var matchCounts = matchCalculationService
+                .CalculateMatchCounts_Fast(
                     DefaultGGroupsBuilder.Build(),
                     donorGenotype,
-                    HlaNomenclatureVersion,
                     loci.ToHashSet());
 
             var expectedMatchCounts = new MatchCountsBuilder().ZeroMismatch(loci).WithSingleMismatchAt(Locus.A).Build();
@@ -120,16 +111,15 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [TestCase(new[] {Locus.Dqb1})]
         [TestCase(new[] {Locus.C})]
         [TestCase(new[] {Locus.Dqb1, Locus.C})]
-        public async Task CalculateMatchCounts_WhenDonorGenotypeHasLocusMismatch_IsEightOutOfTenMatch(Locus[] lociToExclude)
+        public void CalculateMatchCounts_Fast_WhenDonorGenotypeHasLocusMismatch_IsEightOutOfTenMatch(Locus[] lociToExclude)
         {
             var loci = AllowedLoci.Where(l => !lociToExclude.Contains(l)).ToHashSet();
             var donorGenotype = DefaultGGroupsBuilder.WithDataAt(Locus.A, "01:120").Build();
             var patientGenotype = DefaultGGroupsBuilder.WithDataAt(Locus.A, "01:84").Build();
 
-            var matchCounts = await matchCalculationService.CalculateMatchCounts(
+            var matchCounts = matchCalculationService.CalculateMatchCounts_Fast(
                 patientGenotype,
                 donorGenotype,
-                HlaNomenclatureVersion,
                 loci.ToHashSet());
 
             var expectedMatchCounts = new MatchCountsBuilder().ZeroMismatch(loci).WithDoubleMismatchAt(Locus.A).Build();

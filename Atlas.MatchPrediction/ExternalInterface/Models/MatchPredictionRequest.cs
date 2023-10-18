@@ -40,14 +40,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models
             });
         }
 
-        public static SingleDonorMatchProbabilityInput ToSingleDonorMatchProbabilityInput(this MatchPredictionRequest request)
-        {
-            return new SingleDonorMatchProbabilityInput(request)
-            {
-                Donor = request.Donor.ToDonorInput()
-            };
-        }
-
         private static DonorInput ToDonorInput(this Donor donor)
         {
             return new DonorInput

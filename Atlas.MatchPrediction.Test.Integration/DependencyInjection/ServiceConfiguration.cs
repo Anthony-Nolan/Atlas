@@ -31,7 +31,6 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
                 ApplicationInsightsSettingsReader,
                 _ => new HlaMetadataDictionarySettings(),
                 MacDictionarySettingsReader,
-                MatchPredictionAlgorithmSettingsReader,
                 _ => new NotificationsServiceBusSettings(),
                 AzureStorageSettingsReader,
                 ConnectionStringReader(MatchPredictionSqlConnectionString)
@@ -88,8 +87,5 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
 
         private static Func<IServiceProvider, MacDictionarySettings> MacDictionarySettingsReader =>
             _ => new MacDictionarySettings();
-
-        private static Func<IServiceProvider, MatchPredictionAlgorithmSettings> MatchPredictionAlgorithmSettingsReader =>
-            _ => new MatchPredictionAlgorithmSettings();
     }
 }

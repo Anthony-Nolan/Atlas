@@ -18,7 +18,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     {
         public SubjectData PatientData { get; set; }
         public SubjectData DonorData { get; set; }
-        public HashSet<Locus> AllowedLoci { get; set; }
+        public MatchPredictionParameters MatchPredictionParameters { get; set; }
     }
 
     public class GenotypeMatcherResult
@@ -70,8 +70,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         /// <inheritdoc />
         public async Task<GenotypeMatcherResult> MatchPatientDonorGenotypes(GenotypeMatcherInput input)
         {
-            var patientGenotypeSet = await GetGenotypeSetResultForMatchCounting(input.PatientData, input.AllowedLoci);
-            var donorGenotypeSet = await GetGenotypeSetResultForMatchCounting(input.DonorData, input.AllowedLoci);
+            var patientGenotypeSet = await GetGenotypeSetResultForMatchCounting(input.PatientData, input.MatchPredictionParameters);
+            var donorGenotypeSet = await GetGenotypeSetResultForMatchCounting(input.DonorData, input.MatchPredictionParameters);
 
             if (patientGenotypeSet.IsUnrepresented || donorGenotypeSet.IsUnrepresented)
             {
@@ -93,16 +93,16 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             {
                 PatientResult = new GenotypeMatcherResult.SubjectResult(false, patientGenotypeSet.SumOfLikelihoods),
                 DonorResult = new GenotypeMatcherResult.SubjectResult(false, donorGenotypeSet.SumOfLikelihoods),
-                GenotypeMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, input.AllowedLoci, matchCountLogger)
+                GenotypeMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, input.MatchPredictionParameters.AllowedLoci, matchCountLogger)
             };
         }
 
-        private async Task<GenotypeSet> GetGenotypeSetResultForMatchCounting(SubjectData subjectData, HashSet<Locus> allowedLoci)
+        private async Task<GenotypeSet> GetGenotypeSetResultForMatchCounting(SubjectData subjectData, MatchPredictionParameters parameters)
         {
             var imputedGenotypes = await genotypeImputer.Impute(new ImputationInput
             {
                 SubjectData = subjectData,
-                AllowedMatchPredictionLoci = allowedLoci
+                MatchPredictionParameters = parameters
             });
 
             if (imputedGenotypes.Genotypes.IsNullOrEmpty())
@@ -110,13 +110,18 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 return new GenotypeSet(true, null, 0m);
             }
 
-            return new GenotypeSet(false,
-                await genotypeConverter.ConvertGenotypes(
-                    imputedGenotypes.Genotypes,
-                    subjectData.SubjectFrequencySet.SubjectLogDescription,
-                    imputedGenotypes.GenotypeLikelihoods,
-                    subjectData.SubjectFrequencySet.FrequencySet.HlaNomenclatureVersion),
-                imputedGenotypes.SumOfLikelihoods);
+            var convertedGenotypes = await genotypeConverter.ConvertGenotypesForMatchCalculation(new GenotypeConverterInput
+            {
+                CompressedPhenotype = subjectData.HlaTyping,
+                AllowedLoci = parameters.AllowedLoci,
+                Genotypes = imputedGenotypes.Genotypes,
+                GenotypeLikelihoods = imputedGenotypes.GenotypeLikelihoods,
+                HfSetHlaNomenclatureVersion = subjectData.SubjectFrequencySet.FrequencySet.HlaNomenclatureVersion,
+                MatchingAlgorithmHlaNomenclatureVersion = parameters.MatchingAlgorithmHlaNomenclatureVersion,
+                SubjectLogDescription = subjectData.SubjectFrequencySet.SubjectLogDescription
+            });
+
+            return new GenotypeSet(false, convertedGenotypes, imputedGenotypes.SumOfLikelihoods);
         }
 
         private IEnumerable<Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>> CombineGenotypes(

@@ -14,6 +14,7 @@ using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
+using Atlas.MatchPrediction.Services.HlaConversion;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
@@ -30,13 +31,12 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
-            Func<IServiceProvider, MatchPredictionAlgorithmSettings> fetchMatchPredictionAlgorithmSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, string> fetchSqlConnectionString
         )
         {
-            services.RegisterSettings(fetchNotificationsServiceBusSettings, fetchAzureStorageSettings, fetchMatchPredictionAlgorithmSettings);
+            services.RegisterSettings(fetchNotificationsServiceBusSettings, fetchAzureStorageSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices();
             services.RegisterDatabaseServices(fetchSqlConnectionString);
@@ -112,12 +112,10 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
         private static void RegisterSettings(
             this IServiceCollection services,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, MatchPredictionAlgorithmSettings> fetchMatchPredictionAlgorithmSettings)
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
         {
             services.MakeSettingsAvailableForUse(fetchNotificationsServiceBusSettings);
             services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
-            services.MakeSettingsAvailableForUse(fetchMatchPredictionAlgorithmSettings);
         }
 
         private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)
@@ -159,6 +157,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             
             services.AddScoped<ICompressedPhenotypeExpander, CompressedPhenotypeExpander>();
             services.AddScoped<ICompressedPhenotypeConverter, CompressedPhenotypeConverter>();
+            services.AddScoped<IHlaToTargetCategoryConverter, HlaToTargetCategoryConverter>();
+            services.AddScoped<ISmallGGroupToPGroupConverter, SmallGGroupToPGroupConverter>();
+            services.AddScoped<IGGroupToPGroupConverter, GGroupToPGroupConverter>();
 
             services.AddScoped<IMatchCalculationService, MatchCalculationService>();
 

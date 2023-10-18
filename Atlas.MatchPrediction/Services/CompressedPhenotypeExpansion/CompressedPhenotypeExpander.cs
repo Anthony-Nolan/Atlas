@@ -3,44 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Maths;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
-using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
+using Atlas.MatchPrediction.Models;
 
 // ReSharper disable SuggestBaseTypeForParameter
 // ReSharper disable ParameterTypeCanBeEnumerable.Local
 
 namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
 {
-    internal class ExpandCompressedPhenotypeInput
+    internal class CompressedPhenotypeExpanderInput
     {
         /// <summary>
-        /// Given phenotype. Can be of any supported hla resolution.
+        /// Given phenotype. Can be of any supported HLA resolution.
         /// </summary>
         public PhenotypeInfo<string> Phenotype { get; set; }
 
         /// <summary>
-        /// HLA nomenclature version to be used
+        /// HLA nomenclature version of Haplotype Frequency Set
         /// </summary>
-        public string HlaNomenclatureVersion { get; set; }
+        public string HfSetHlaNomenclatureVersion { get; set; }
 
-        /// <summary>
-        /// Loci that should be considered for expansion.
-        /// </summary>
-        public ISet<Locus> AllowedLoci { get; set; }
-
-        /// <summary>
-        /// All available haplotypes, split by supported resolution - should be taken from the corresponding haplotype frequency set for a given search.
-        /// Together, the properties represent all possibilities for haplotypes for the current frequency set.
-        /// </summary>
-        public DataByResolution<IReadOnlyCollection<LociInfo<string>>> AllHaplotypes { get; set; }
+        /// <inheritdoc cref="Models.MatchPredictionParameters" />
+        public MatchPredictionParameters MatchPredictionParameters { get; set; }
     }
 
     internal interface ICompressedPhenotypeExpander
@@ -49,51 +38,43 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
         /// Expands an ambiguous phenotype to GGroup resolution, then transforms into all possible permutations of the given hla representations.
         /// Does not consider phase - so the results cannot necessarily be considered Diplotypes.
         /// </summary>
-        public Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandCompressedPhenotype(ExpandCompressedPhenotypeInput input);
+        /// <param name="allHaplotypes">All available haplotypes, split by supported resolution - should be taken from the corresponding haplotype frequency set for a given search.
+        /// Together, the properties represent all possibilities for haplotypes for the current frequency set.</param>
+        public Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandCompressedPhenotype(
+            CompressedPhenotypeExpanderInput input,
+            DataByResolution<IReadOnlyCollection<LociInfo<string>>> allHaplotypes);
     }
 
     internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     {
         private readonly ILogger logger;
-        private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly ICompressedPhenotypeConverter converter;
+
 
         public CompressedPhenotypeExpander(
             // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
-            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             ICompressedPhenotypeConverter converter)
         {
             this.logger = logger;
-            this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
             this.converter = converter;
         }
 
         /// <inheritdoc />
-        public async Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandCompressedPhenotype(ExpandCompressedPhenotypeInput input)
+        public async Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandCompressedPhenotype(
+            CompressedPhenotypeExpanderInput input,
+            DataByResolution<IReadOnlyCollection<LociInfo<string>>> allHaplotypes)
         {
-            var allowedLoci = input.AllowedLoci;
+            var allowedLoci = input.MatchPredictionParameters.AllowedLoci;
 
-            if (input.AllHaplotypes?.GGroup == null || input.AllHaplotypes?.PGroup == null || input.AllHaplotypes?.SmallGGroup == null)
+            if (allHaplotypes?.GGroup == null || allHaplotypes.PGroup == null || allHaplotypes.SmallGGroup == null)
             {
                 throw new ArgumentException("Haplotypes must be provided for phenotype expansion to complete in a reasonable timeframe.");
             }
 
-            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(input.HlaNomenclatureVersion);
+            var groupsPerPosition = await converter.ConvertPhenotype(input);
 
-            var groupsPerPosition = await new DataByResolution<bool>().MapAsync(async (category, _) =>
-                await converter.ConvertPhenotype(hlaMetadataDictionary, input.Phenotype, category.ToHlaTypingCategory().ToTargetHlaCategory(), allowedLoci)
-            );
-
-            var groupsPerLocus = groupsPerPosition.Map(CombineSetsAtLoci);
-
-            var isUnambiguousAtSelectedLoci = allowedLoci.All(l =>
-            {
-                var groupsAtLocus = groupsPerPosition.SmallGGroup.GetLocus(l);
-                return groupsAtLocus.Position1?.Count == 1 && groupsAtLocus.Position2?.Count == 1;
-            });
-            
-            if (isUnambiguousAtSelectedLoci)
+            if (IsUnambiguousAtAllowedLoci(allowedLoci, groupsPerPosition))
             {
                 return new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>>
                 {
@@ -102,25 +83,32 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
                 };
             }
 
-            var allowedHaplotypes = GetAllowedHaplotypes(allowedLoci, input.AllHaplotypes, groupsPerLocus);
-
-            var allowedHaplotypesExcludingLoci = new HashSet<LociInfo<HlaAtKnownTypingCategory>>(allowedHaplotypes.Select(h =>
-                h.Map((l, hla) => allowedLoci.Contains(l) ? hla : null)
-            ));
-
-            var allowedDiplotypes = Combinations.AllPairs(allowedHaplotypesExcludingLoci, true).ToList();
-            var filteredDiplotypes = FilterDiplotypes(allowedDiplotypes, groupsPerPosition, allowedLoci);
+            var haplotypesForAllowedLoci = GetHaplotypesForAllowedLoci(allowedLoci, allHaplotypes, groupsPerPosition);
+            var filteredDiplotypes = GetFilteredDiplotypes(haplotypesForAllowedLoci, groupsPerPosition, allowedLoci);
 
             logger.SendTrace($"Filtered expanded genotypes: {filteredDiplotypes.Count}");
             return filteredDiplotypes.Select(dp => new PhenotypeInfo<HlaAtKnownTypingCategory>(dp.Item1, dp.Item2)).ToHashSet();
         }
 
-        private static IEnumerable<LociInfo<HlaAtKnownTypingCategory>> GetAllowedHaplotypes(
+        private static bool IsUnambiguousAtAllowedLoci(
+            ISet<Locus> allowedLoci, 
+            DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
+        {
+            return allowedLoci.All(l =>
+            {
+                var groupsAtLocus = groupsPerPosition.SmallGGroup.GetLocus(l);
+                return groupsAtLocus.Position1?.Count == 1 && groupsAtLocus.Position2?.Count == 1;
+            });
+        }
+
+        private static IEnumerable<LociInfo<HlaAtKnownTypingCategory>> GetHaplotypesForAllowedLoci(
             ISet<Locus> allowedLoci,
             DataByResolution<IReadOnlyCollection<LociInfo<string>>> allHaplotypes,
-            DataByResolution<LociInfo<ISet<string>>> groupsPerLocus)
+            DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
         {
-            var allowedHaplotypes = allHaplotypes.Map((category, haplotypes) =>
+            var groupsPerLocus = groupsPerPosition.Map(CombineSetsAtLoci);
+
+            var haplotypesByResolution = allHaplotypes.Map((category, haplotypes) =>
             {
                 return haplotypes.Where(haplotype => allowedLoci.All(locus =>
                     {
@@ -131,20 +119,28 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
                     .ToList();
             });
 
-            return allowedHaplotypes.GGroup.Concat(allowedHaplotypes.PGroup).Concat(allowedHaplotypes.SmallGGroup);
+            var mergedHaplotypes = haplotypesByResolution.GGroup
+                .Concat(haplotypesByResolution.PGroup)
+                .Concat(haplotypesByResolution.SmallGGroup);
+
+            return new HashSet<LociInfo<HlaAtKnownTypingCategory>>(mergedHaplotypes.Select(h =>
+                h.Map((l, hla) => allowedLoci.Contains(l) ? hla : null)));
         }
 
         /// <summary>
-        /// Filters a collection of diplotypes down to only those which are possible for an input phenotype, typed to G-Group resolution
+        /// Filters a collection of haplotypes down to only those which are possible for an input phenotype, typed to G-Group resolution
         /// </summary>
-        /// <param name="allowedDiplotypes">Source of diplotypes to filter.</param>
+        /// <param name="haplotypes">Source of haplotypes to filter.</param>
         /// <param name="groupsPerPosition">GGroups and PGroups present in the phenotype being expanded.</param>
         /// <param name="allowedLoci">List of loci that are being considered.</param>
-        private static List<Tuple<LociInfo<HlaAtKnownTypingCategory>, LociInfo<HlaAtKnownTypingCategory>>> FilterDiplotypes(
-            List<Tuple<LociInfo<HlaAtKnownTypingCategory>, LociInfo<HlaAtKnownTypingCategory>>> allowedDiplotypes,
+        /// <returns>Set of diplotypes (pairs of haplotypes) which are possible for an input phenotype</returns>
+        private static List<Tuple<LociInfo<HlaAtKnownTypingCategory>, LociInfo<HlaAtKnownTypingCategory>>> GetFilteredDiplotypes(
+            IEnumerable<LociInfo<HlaAtKnownTypingCategory>> haplotypes,
             DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition,
             ISet<Locus> allowedLoci)
         {
+            var diplotypes = Combinations.AllPairs(haplotypes, true).ToList();
+
             bool IsRepresentedInTargetPhenotype(HlaAtKnownTypingCategory hla, Locus locus, LocusPosition position)
             {
                 var groups = groupsPerPosition.GetByCategory(hla.TypingCategory).GetPosition(locus, position);
@@ -152,7 +148,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
             }
 
             // ReSharper disable once UseDeconstructionOnParameter
-            return allowedDiplotypes.Where(diplotype =>
+            return diplotypes.Where(diplotype =>
             {
                 var (haplotype1, haplotype2) = diplotype;
                 return new LociInfo<bool>().AllAtLoci((locus, _) =>
@@ -176,7 +172,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
         private static LociInfo<ISet<string>> CombineSetsAtLoci(PhenotypeInfo<ISet<string>> phenotypeInfo)
         {
             return phenotypeInfo.ToLociInfo((_, values1, values2)
-                => values1 != null && values2 != null ? (ISet<string>) new HashSet<string>(values1.Concat(values2)) : null
+                => values1 != null && values2 != null ? (ISet<string>)new HashSet<string>(values1.Concat(values2)) : null
             );
         }
     }

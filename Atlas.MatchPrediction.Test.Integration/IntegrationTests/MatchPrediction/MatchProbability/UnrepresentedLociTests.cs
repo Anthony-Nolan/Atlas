@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.MatchPrediction;
@@ -14,18 +12,18 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 {
     public class UnrepresentedLociTests : MatchProbabilityTestsBase
     {
-        // the default "ambiguous alleles builder" is not actually ambiguous with respect to g-groups
-        // - to show up as unrepresented, there must be some ambiguity at the g-group level in the input genotype
-        private PhenotypeInfo<string> ambiguousGenotype = DefaultAmbiguousAllelesBuilder
-            .WithDataAt(Locus.A, LocusPosition.One, "01:XX")
+        // To show up as unrepresented, there must be some ambiguity at the g-group level in the input genotype
+        private const string UnrepresentedHla = "01:XX";
+        private readonly PhenotypeInfo<string> ambiguousPhenotype = DefaultUnambiguousAllelesBuilder
+            .WithDataAt(Locus.A, LocusPosition.One, UnrepresentedHla)
             .Build();
 
         [Test]
         public async Task CalculateMatchProbability_WhenUnrepresentedPatientAndDonor_ReturnsNullProbabilityAndPatientAndDonorUnrepresentedFlagsTrue()
         {
             var matchProbabilityInput = DefaultInputBuilder
-                .WithDonorHla(ambiguousGenotype)
-                .WithPatientHla(ambiguousGenotype)
+                .WithDonorHla(ambiguousPhenotype)
+                .WithPatientHla(ambiguousPhenotype)
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
@@ -54,7 +52,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [Test]
         public async Task CalculateMatchProbability_WhenUnrepresentedPatient_ReturnsNullProbabilityAndPatientUnrepresentedFlagTrue()
         {
-            var matchProbabilityInput = DefaultInputBuilder.WithPatientHla(ambiguousGenotype).Build();
+            var matchProbabilityInput = DefaultInputBuilder.WithPatientHla(ambiguousPhenotype).Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
             {
@@ -82,7 +80,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [Test]
         public async Task CalculateMatchProbability_WhenUnrepresentedDonor_ReturnsNullProbabilityAndDonorUnrepresentedFlagTrue()
         {
-            var matchProbabilityInput = DefaultInputBuilder.WithDonorHla(ambiguousGenotype).Build();
+            var matchProbabilityInput = DefaultInputBuilder.WithDonorHla(ambiguousPhenotype).Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
             {

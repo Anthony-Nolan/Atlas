@@ -1,82 +1,72 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
-using Atlas.MatchPrediction.ApplicationInsights;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
+using Atlas.MatchPrediction.Data.Models;
+using Atlas.MatchPrediction.Services.HlaConversion;
 using MoreLinq.Extensions;
+using ConvertedPhenotype = Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion.DataByResolution<Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<System.Collections.Generic.ISet<string>>>;
 
 namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
 {
     internal interface ICompressedPhenotypeConverter
     {
-        /// <summary>
-        /// Runs <see cref="IHlaMetadataDictionary.ConvertHla"/> for each HLA in a PhenotypeInfo, at selected loci.
-        /// </summary>
         /// <returns>
         /// Excluded loci will not be converted, and will be set to `null`.
         /// Provided `null`s will be preserved.
-        /// An empty list will be returned where HLA cannot be converted, e.g., an allele could not be found in the HMD due to being renamed in a later HLA version.
         /// </returns>
-        Task<PhenotypeInfo<ISet<string>>> ConvertPhenotype(
-            IHlaMetadataDictionary hlaMetadataDictionary,
-            PhenotypeInfo<string> compressedPhenotype,
-            TargetHlaCategory targetHlaCategory,
-            ISet<Locus> allowedLoci
-            );
+        Task<ConvertedPhenotype> ConvertPhenotype(CompressedPhenotypeExpanderInput input);
     }
 
     internal class CompressedPhenotypeConverter : ICompressedPhenotypeConverter
     {
-        private readonly ILogger logger;
-        private readonly MatchPredictionAlgorithmSettings settings;
+        private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
+        private readonly IHlaToTargetCategoryConverter converter;
 
         public CompressedPhenotypeConverter(
-            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
-            IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
-            MatchPredictionAlgorithmSettings settings)
+            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory, IHlaToTargetCategoryConverter converter)
         {
-            this.logger = logger;
-            this.settings = settings;
+            this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
+            this.converter = converter;
         }
-        
+
         /// <inheritdoc />
-        public async Task<PhenotypeInfo<ISet<string>>> ConvertPhenotype(IHlaMetadataDictionary hlaMetadataDictionary,
-            PhenotypeInfo<string> compressedPhenotype,
-            TargetHlaCategory targetHlaCategory,
-            ISet<Locus> allowedLoci)
+        public async Task<ConvertedPhenotype> ConvertPhenotype(CompressedPhenotypeExpanderInput input)
         {
-            return await compressedPhenotype.MapAsync(async (locus, _, hla) =>
+            var hfSetHmd = hlaMetadataDictionaryFactory.BuildDictionary(input.HfSetHlaNomenclatureVersion);
+
+            var matchingHlaVersion = input.MatchPredictionParameters.MatchingAlgorithmHlaNomenclatureVersion;
+            var matchingHmd = matchingHlaVersion == null ? null : hlaMetadataDictionaryFactory.BuildDictionary(matchingHlaVersion);
+
+            return await new DataByResolution<bool>().MapAsync(async (category, _) =>
+                await ConvertPhenotypeToTargetCategory(input, hfSetHmd, matchingHmd, category));
+        }
+
+        private async Task<PhenotypeInfo<ISet<string>>> ConvertPhenotypeToTargetCategory(
+            CompressedPhenotypeExpanderInput expanderInput,
+            IHlaMetadataDictionary hfSetHmd,
+            IHlaMetadataDictionary matchingHmd,
+            HaplotypeTypingCategory category)
+        {
+            const string stage = "Conversion of compressed phenotype to target HLA category";
+
+            var converterInput = new HlaConverterInput
             {
-                if (!allowedLoci.Contains(locus) || hla == null)
+                HfSetHmd = hfSetHmd,
+                MatchingAlgorithmHmd = matchingHmd,
+                StageToLog = stage,
+                TargetHlaCategory = category.ToHlaTypingCategory().ToTargetHlaCategory()
+            };
+
+            return await expanderInput.Phenotype.MapAsync(async (locus, _, hla) =>
+            {
+                if (!expanderInput.MatchPredictionParameters.AllowedLoci.Contains(locus) || hla == null)
                 {
                     return null;
                 }
 
-                try
-                {
-                    return (ISet<string>) (await hlaMetadataDictionary.ConvertHla(locus, hla, targetHlaCategory)).ToHashSet();
-                }
-                catch (HlaMetadataDictionaryException exception) when (settings.SuppressCompressedPhenotypeConversionExceptions)
-                {
-                    logger.SendEvent(new HlaConversionFailureEventModel(
-                        locus,
-                        hla,
-                        hlaMetadataDictionary.HlaNomenclatureVersion,
-                        targetHlaCategory, 
-                        "Conversion of compressed phenotype to target HLA category",
-                        exception));
-
-                    //TODO issue #637 - re-attempt HLA conversion using other approaches
-
-                    return new HashSet<string>();
-                }
+                return (ISet<string>)(await converter.ConvertHlaWithLoggingAndRetryOnFailure(converterInput, locus, hla)).ToHashSet();
             });
         }
     }
