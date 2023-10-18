@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.ServiceBus.Models;
+using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.Services.DonorUpdates;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
@@ -31,6 +33,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         private IDonorUpdateProcessor donorUpdateProcessor;
         private ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
         private IDataRefreshHistoryRepository refreshHistory;
+        private IDonorReader donorReader;
+        private IDonorUpdatesSaver donorUpdatesSaver;
 
         private readonly DataRefreshRecord dbARefreshing = DataRefreshRecordBuilder.New.WithDatabase(DatabaseA);
         private readonly DataRefreshRecord dbBRefreshing = DataRefreshRecordBuilder.New.WithDatabase(DatabaseB);
@@ -51,6 +55,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             var logger = Substitute.For<IMatchingAlgorithmImportLogger>();
 
+            donorReader = Substitute.For<IDonorReader>();
+            donorUpdatesSaver = Substitute.For<IDonorUpdatesSaver>();
+
             donorUpdateProcessor = new DonorUpdateProcessor(
                 messageProcessorServiceForA,
                 messageProcessorServiceForB,
@@ -60,7 +67,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 hlaVersionAccessor,
                 new DonorManagementSettings {BatchSize = BatchSize, OngoingDifferentialDonorUpdatesShouldBeFullyTransactional = false},
                 logger,
-                new MatchingAlgorithmImportLoggingContext());
+                new MatchingAlgorithmImportLoggingContext(),
+                donorReader,
+                donorUpdatesSaver);
 
             messageProcessorServiceForA.ClearReceivedCalls();
             messageProcessorServiceForB.ClearReceivedCalls();
@@ -232,6 +241,42 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 Arg.Any<Func<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>, Task>>(),
                 BatchSize,
                 Arg.Is<int>(b => b > BatchSize));
+        }
+
+        [Test]
+        public async Task ProcessDeadLetterDifferentialDonorUpdates_ShouldSaveUpdates()
+        {
+            var searchableDonorUpdates = new SearchableDonorUpdate[]
+            {
+                new () 
+                {
+                    DonorId = 1,
+                    SearchableDonorInformation = new SearchableDonorInformation
+                    {
+                        A_1 = "01:01"
+                    }
+                },
+                new ()
+                {
+                    DonorId = 2,
+                    SearchableDonorInformation = new SearchableDonorInformation
+                    {
+                        A_1 = "01:01"
+                    }
+                },
+            };
+
+            donorReader.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, Donor>
+            {
+                { 1, new Donor { A_1 = "01:02" } }
+            });
+
+            await donorUpdateProcessor.ProcessDeadLetterDifferentialDonorUpdates(searchableDonorUpdates);
+
+            await donorReader.Received(1).GetDonors(Arg.Any<IEnumerable<int>>());
+            await donorUpdatesSaver.Received(1).Save(Arg.Is<IReadOnlyCollection<SearchableDonorUpdate>>(l =>
+                l.ElementAt(0).DonorId == 1 && l.ElementAt(0).SearchableDonorInformation.A_1 == "01:02" && l.ElementAt(0).IsAvailableForSearch
+                && l.ElementAt(1).DonorId == 2 && l.ElementAt(1).SearchableDonorInformation.A_1 == "01:01" && !l.ElementAt(1).IsAvailableForSearch));
         }
     }
 }
