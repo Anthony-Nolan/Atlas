@@ -244,7 +244,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task ProcessDeadLetterDifferentialDonorUpdates_ShouldSaveUpdates()
+        public async Task ProcessDeadLetterDifferentialDonorUpdates_DonorExists_ShouldBeAvailableForSearch()
         {
             var searchableDonorUpdates = new SearchableDonorUpdate[]
             {
@@ -255,7 +255,26 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     {
                         A_1 = "01:01"
                     }
-                },
+                }
+            };
+
+            donorReader.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, Donor>
+            {
+                { 1, new Donor { A_1 = "01:02" } }
+            });
+
+            await donorUpdateProcessor.ProcessDeadLetterDifferentialDonorUpdates(searchableDonorUpdates);
+
+            await donorReader.Received(1).GetDonors(Arg.Any<IEnumerable<int>>());
+            await donorUpdatesSaver.Received(1).Save(Arg.Is<IReadOnlyCollection<SearchableDonorUpdate>>(l =>
+                l.First().DonorId == 1 && l.First().SearchableDonorInformation.A_1 == "01:02" && l.First().IsAvailableForSearch));
+        }
+
+        [Test]
+        public async Task ProcessDeadLetterDifferentialDonorUpdates_DonorDoNotExist_ShouldNotBeAvailableForSearch()
+        {
+            var searchableDonorUpdates = new SearchableDonorUpdate[]
+            {
                 new ()
                 {
                     DonorId = 2,
@@ -275,8 +294,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorReader.Received(1).GetDonors(Arg.Any<IEnumerable<int>>());
             await donorUpdatesSaver.Received(1).Save(Arg.Is<IReadOnlyCollection<SearchableDonorUpdate>>(l =>
-                l.ElementAt(0).DonorId == 1 && l.ElementAt(0).SearchableDonorInformation.A_1 == "01:02" && l.ElementAt(0).IsAvailableForSearch
-                && l.ElementAt(1).DonorId == 2 && l.ElementAt(1).SearchableDonorInformation.A_1 == "01:01" && !l.ElementAt(1).IsAvailableForSearch));
+                l.First().DonorId == 2 && l.First().SearchableDonorInformation.A_1 == "01:01" && !l.First().IsAvailableForSearch));
         }
     }
 }
