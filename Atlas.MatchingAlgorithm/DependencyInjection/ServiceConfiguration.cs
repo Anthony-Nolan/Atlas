@@ -6,6 +6,7 @@ using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus.BatchReceiving;
+using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Services.DonorUpdates;
@@ -85,18 +86,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
 
-            services.RegisterDonorManagementServices(fetchDonorManagementSettings, fetchMessagingServiceBusSettings);
-
-            services.RegisterDonorImportServices(fetchDonorImportSqlConnectionString);
-        }
-
-        public static void RegisterDonorImportServices(
-            this IServiceCollection services,
-            Func<IServiceProvider, string> fetchDonorImportSqlConnectionString
-        )
-        {
-            services.RegisterDonorReader(fetchDonorImportSqlConnectionString);
-            services.RegisterDonorUpdateServices(fetchDonorImportSqlConnectionString);
+            services.RegisterDonorManagementServices(fetchDonorManagementSettings, fetchMessagingServiceBusSettings, fetchDonorImportSqlConnectionString);
         }
 
         /// <summary>
@@ -140,7 +130,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchAzureDatabaseManagementSettings,
                 fetchDataRefreshSettings,
                 fetchDonorManagementSettings,
-                fetchMessagingServiceBusSettings
+                fetchMessagingServiceBusSettings,
+                fetchDonorImportSqlConnectionString
             );
         }
 
@@ -222,10 +213,11 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
             Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
             Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, string> fetchDonorImportSqlConnectionString)
         {
             // The last step of the Data Refresh is applying a backlog of donor updates - so it needs to know how to perform queued donor updates as well. 
-            services.RegisterDonorManagementServices(fetchDonorManagementSettings, fetchMessagingServiceBusSettings);
+            services.RegisterDonorManagementServices(fetchDonorManagementSettings, fetchMessagingServiceBusSettings, fetchDonorImportSqlConnectionString);
 
             services.RegisterSettingsForDataRefresh(
                 fetchAzureAuthenticationSettings,
@@ -260,8 +252,11 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static void RegisterDonorManagementServices(
             this IServiceCollection services,
             Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, string> fetchDonorImportSqlConnectionString)
         {
+            services.RegisterDonorImportServices(fetchDonorImportSqlConnectionString);
+
             services.AddScoped<IDonorManagementService, DonorManagementService>();
             services.AddScoped<ISearchableDonorUpdateConverter, SearchableDonorUpdateConverter>();
 
@@ -296,6 +291,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 var logger = sp.GetService<IMatchingAlgorithmImportLogger>();
                 var loggingContext = sp.GetService<MatchingAlgorithmImportLoggingContext>();
                 var settings = fetchDonorManagementSettings(sp);
+                var donorReader = sp.GetService<IDonorReader>();
+                var donorUpdatesSaver = sp.GetService<IDonorUpdatesSaver>();
 
                 return new DonorUpdateProcessor(
                     messageReceiverServiceForDbA,
@@ -306,7 +303,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                     hlaVersionAccessor,
                     settings,
                     logger,
-                    loggingContext);
+                    loggingContext,
+                    donorReader,
+                    donorUpdatesSaver);
             });
         }
 
@@ -457,6 +456,15 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             // Persistent storage
             services.AddScoped(sp => new ContextFactory().Create(fetchPersistentSqlConnectionString(sp)));
             services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
+        }
+
+        private static void RegisterDonorImportServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, string> fetchDonorImportSqlConnectionString
+        )
+        {
+            services.RegisterDonorReader(fetchDonorImportSqlConnectionString);
+            services.RegisterDonorUpdateServices(fetchDonorImportSqlConnectionString);
         }
 
         #region Settings

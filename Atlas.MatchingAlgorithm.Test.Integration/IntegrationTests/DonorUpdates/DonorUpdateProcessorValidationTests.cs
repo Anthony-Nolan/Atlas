@@ -3,7 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.ServiceBus.Models;
+using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.Services.DonorUpdates;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
@@ -37,6 +39,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         private IDonorManagementService donorManagementService;
         private ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
         private IMatchingAlgorithmImportLogger logger;
+        private IDonorReader donorReader;
+        private IDonorUpdatesSaver donorUpdatesSaver;
         private int batchSize;
         private const TransientDatabase DbTarget = TransientDatabase.DatabaseA;
 
@@ -56,6 +60,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             searchableDonorUpdateConverter = provider.GetService<ISearchableDonorUpdateConverter>();
             var hlaVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
+            donorReader = Substitute.For<IDonorReader>();
+            donorUpdatesSaver = Substitute.For<IDonorUpdatesSaver>();
 
             batchSize = 10;
 
@@ -68,7 +74,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 hlaVersionAccessor,
                 new DonorManagementSettings {BatchSize = batchSize, OngoingDifferentialDonorUpdatesShouldBeFullyTransactional = false},
                 logger,
-                new MatchingAlgorithmImportLoggingContext());
+                new MatchingAlgorithmImportLoggingContext(),
+                donorReader,
+                donorUpdatesSaver);
         }
 
         [Test]

@@ -1,17 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
+﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.ServiceBus.Models;
+using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.Services.DonorUpdates;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
+using Atlas.MatchingAlgorithm.Mapping;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Settings;
 using EnumStringValues;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 {
@@ -42,6 +45,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
     {
         Task ProcessDifferentialDonorUpdates(TransientDatabase targetDatabase);
         Task ApplyDifferentialDonorUpdatesDuringRefresh(TransientDatabase targetDatabase, string hlaNomenclatureVersionFromRefresh);
+        Task ProcessDeadLetterDifferentialDonorUpdates(SearchableDonorUpdate[] searchableDonorUpdates);
     }
 
     public class DonorUpdateProcessor : IDonorUpdateProcessor
@@ -58,6 +62,8 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         private readonly int batchSize;
         private readonly IMatchingAlgorithmImportLogger logger;
         private readonly MatchingAlgorithmImportLoggingContext loggingContext;
+        private readonly IDonorReader donorReader;
+        private readonly IDonorUpdatesSaver donorUpdatesSaver;
 
         public DonorUpdateProcessor(
             IMessageProcessorForDbADonorUpdates dbAMessageProcessorService,
@@ -68,7 +74,9 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             IActiveHlaNomenclatureVersionAccessor activeHlaNomenclatureVersionAccessor,
             DonorManagementSettings settings,
             IMatchingAlgorithmImportLogger logger,
-            MatchingAlgorithmImportLoggingContext loggingContext)
+            MatchingAlgorithmImportLoggingContext loggingContext,
+            IDonorReader donorReader,
+            IDonorUpdatesSaver donorUpdatesSaver)
         {
             this.dbAMessageProcessorService = dbAMessageProcessorService;
             this.dbBMessageProcessorService = dbBMessageProcessorService;
@@ -80,6 +88,8 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             this.batchSize = settings.BatchSize;
             this.logger = logger;
             this.loggingContext = loggingContext;
+            this.donorReader = donorReader;
+            this.donorUpdatesSaver = donorUpdatesSaver;
         }
 
         /// <remarks>
@@ -134,6 +144,21 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        public async Task ProcessDeadLetterDifferentialDonorUpdates(SearchableDonorUpdate[] searchableDonorUpdates)
+        {
+            var existingDonors = await donorReader.GetDonors(searchableDonorUpdates.Select(d => d.DonorId));
+            foreach (var searchableDonorUpdate in searchableDonorUpdates)
+            {
+                searchableDonorUpdate.IsAvailableForSearch = existingDonors.ContainsKey(searchableDonorUpdate.DonorId);
+
+                if (searchableDonorUpdate.IsAvailableForSearch)
+                {
+                    searchableDonorUpdate.SearchableDonorInformation = existingDonors[searchableDonorUpdate.DonorId].MapImportDonorToMatchingUpdateDonor();
+                }
+            }
+            await donorUpdatesSaver.Save(searchableDonorUpdates);
         }
 
         private DatabaseStateWithRespectToDonorUpdates DetermineDatabaseState(TransientDatabase targetDatabase)
