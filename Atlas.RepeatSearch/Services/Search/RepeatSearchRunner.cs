@@ -106,6 +106,7 @@ namespace Atlas.RepeatSearch.Services.Search
 
                 var searchResultSet = new RepeatMatchingAlgorithmResultSet
                 {
+                    SearchRequest = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest,
                     SearchRequestId = searchRequestId,
                     RepeatSearchId = repeatSearchId,
                     Results = results,
