@@ -159,6 +159,12 @@ Some of the files in the hla metadata dictionary tests are longer than the 260 c
 - For your IDE, use Visual Studio 2019, or Rider, as there are known issues trying to load the Test project in Visual Studio 2017 due to this. The issue is not present in more recent IDEs.
 - For your git, we use the `core.longpaths` git setting, as described in the zero-to-hero section in the [core Readme](README.md). If you cloned your repo prior to reading this README, it would be wise to delete and reclone it with the modified git setting.
 
+### Tests
+
+HMD tests use checked in versions of the allele data we fetch from WMDA. Originally they were directly copied from a full version of the WMDA data, but to speed up testing, alleles unused in any unit test have been removed from some of the files - as such they should not be considered to be valid representations of the WMDA data.
+
+Any new alleles required in testing the HlaMetadata Dictionary should be added, and any no longer used can be removed.
+
 ### Extending the HMD with new Lookups
 
 #### Background
