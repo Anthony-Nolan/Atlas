@@ -1,4 +1,5 @@
-Service for the Matching, non-predictive portion of the Atlas Search Algorithm.
+# Summary
+Service for the matching, non-predictive portion of the Atlas Search Algorithm.
 
 ## Table of Contents
 - [Feature Documentation](#feature-documentation)
@@ -12,7 +13,7 @@ A search involves receiving some patient HLA, and returning all donors that are 
 A search request requires the following criteria:
 
 - Donor type
-  - Adult or Cord - only the specified donor type will be returned
+  - `Adult` (MUD) or `Cord` (CBU) - only the specified donor type will be returned
 - Match Criteria
   - Allows specification of an allowed number of mismatches, both overall and per locus.
   - If a donor exceeds either the total mismatch count, or any per locus count, it will not be returned
@@ -21,7 +22,7 @@ A search request requires the following criteria:
   - Allows specification of which loci should be scored, if any.
   - Allows specification of which loci should excluded from aggregation of score results, if any.
 - Search Hla Data
-  - The HLA data to search against (usually the HLA typing of the patient - but can be any set of valid HLA typings, such as "alternative phenotype" or a test phenotype, as Atlas does not store any patient information)
+  - The HLA data to search against (usually the HLA typing of the patient - but can be any set of valid HLA typings, such as "alternative phenotype", or a test phenotype as Atlas does not store any patient information)
   - All known HLA should be provided, even if that locus is omitted from matching, as it may be used by scoring, when enabled.
 
 ### (1) Matching
@@ -36,11 +37,11 @@ We refer to matches as 'cross' or 'direct': (*P = patient, D = donor*)
 - Direct: P1 <=> D1, P2 <=> D2
 - Cross: P1 <=> D2, P2 <=> D1
 
-The worst match considered is a P-group level match ([deemed "AI3" in the WMDA matching framework](https://www.nature.com/articles/bmt2010132)) - i.e. the donor and patient typings share at least one P-group. Hence our matching strategy only considers P-groups.
+The worst match considered is a P-group level match ([deemed "AI3" in the WMDA matching framework](https://www.nature.com/articles/bmt2010132)) - i.e. the donor and patient typings share at least one P-group. Hence our matching strategy only considers P-groups for both molecular and serological typings.
 
 ### (2) Scoring
 
-Once all matches have been retrieved, we must score them.
+Once all matches have been retrieved, they can be scored.
 
 This involves:
 
@@ -50,17 +51,24 @@ Each locus/position will be assigned a match grade, which will indicate the qual
 
 |Typing Methods|Match Grade|Description|
 |--------------|-----------|-----------|
+|**_Expressing vs. Expressing:_**|
 |Both types are molecular|gDNA|Same nucleotide sequence across entire gene.|
 |Both types are molecular|cDNA|Same nucleotide sequence across coding regions only.|
 |Both types are molecular|Protein|Same polypeptide sequence across coding regions only.|
 |Both types are molecular|G group|Same nucleotide sequence across ABD only.|
 |Both types are molecular|P group|Same polypeptide sequence across ABD only.|
-|---|---|---|
 |One or both types are serology|Associated|Corresponding antigens are matched at associated level.|
 |One or both types are serology|Split|Corresponding antigens are matched at split level.|
 |One or both types are serology|Broad|Corresponding antigens are matched at broad level.|
-|---|---|---|
 |Any|Mismatch|Alleles do not match|
+|**_Null vs. Null:_**|
+|Both types are molecular|gDNA|Same nucleotide sequence across entire gene.|
+|Both types are molecular|cDNA|Same nucleotide sequence across coding regions only.|
+|Both types are molecular|Partial|Same name AND have partial g/cDNA|
+|Both types are molecular|Mismatch|Mismatch at the molecular level but would be considered a match at the clinical level (i.e., assigned a match count of 1).|
+|**_Expressing vs Null:_**|
+|Any|Mismatch|Mismatch at the molecular level but may be matched at the clinical level in a homozygous scenario ([see below](#matching))|
+
 
 #### (b) Confidence
 
@@ -90,9 +98,27 @@ The results will be ordered by a number of factors, including:
 
 N.B. The search team may want to account for other factors when viewing results, such as donor age, CBU cell count, etc - presentation of the final match list is deemed the responsibility of the consumer that initiated the Atlas search, as it would hold the additional patient and donor data needed to make such front-end, user-facing decisions.
 
-#### Misc. Notes
+#### Miscellaneous
 
-- Scoring of P- and G-group typings has been implemented, but requires validation (TODO: #748).
+- Scoring of P- and G-group typings has been implemented and requires validation (TODO: #748).
+
+### HLA Interpretation
+As explained above, matching is performed at the P-group level and scoring requires additional knowledge of HLA typings (termed, "HLA metadata") to grade a match. This is achieved by looking up HLA typings in the **HLA Metadata Dictionary (HMD)**. Consult the [HMD README](/README_HlaMetadataDictionary.md) for information on [how HLA typings are interpreted](/README_HlaMetadataDictionary.md#hla-conversion) and how this can impact matching and scoring (especially when [comparing serology to molecular typings](/README_HlaMetadataDictionary.md#conversion-between-serology-and-molecular-typings)).
+
+### Handling of Null Alleles
+Null/non-expressing/"N" alleles are those HLA allotypes that do not result in a protein.
+
+#### Matching
+As matching is performed at the P-group level, if one of the two positions is an "N" allele, then only the P-group(s) of the expressing typing will be considered, i.e., the locus will be treated as homozygous for the expressing P-groups. 
+
+E.g., `A*03:01,01:11N` will be treated as `A*03:01P,03:01P`, and would be assigned a match count of 2 when compared to another typing with the same pair of P-groups, such as `A*03:01,03:01`, `A*03:20,03:112`, `A*03:411,02:43N`, and so on.
+
+#### Scoring
+Null alleles have their own match grades ([see section on Grading](#a-grading)).
+Note, the table shows where it is possible for a locus to have a match count of 1 or 2 due to the null-containing locus being treated as homozygous for the expressing P group, but still be assigned the score grade of `Mismatch` after the null allele is compared to another typing, one-to-one, at the molecular level.
+
+#### MAC Interpretation
+Null alleles present in the decoded/expanded allele string of a MAC are _not_ considered when matching or scoring. This behaviour was explicitly requested by the search coordinators and clinical scientist on the search algorithm development team as the expressed allele is more likely to be the true result (with some exceptions), and consideration of the null allele during search leads to undesirable results. Until the Transplant Centre updates the patient with a typing that specifies that there is a null allele, search coordinators work on the basis that the typing is expressed - and so Atlas ignores any null alleles in decoded MAC strings.
 
 ## Technical Documentation
 
