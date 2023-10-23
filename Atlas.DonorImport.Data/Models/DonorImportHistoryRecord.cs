@@ -71,6 +71,11 @@ namespace Atlas.DonorImport.Data.Models
         /// When retrying due to transient failures, it shows what updates have already been applied and at what point in the file to start retrying from.
         /// </summary>
         public int ImportedDonorsCount { get; set; }
+
+        /// <summary>
+        /// The number of donors that have not been imported.
+        /// </summary>
+        public int? FailedDonorCount { get; set; }
     }
 
     internal static class DonorImportHistoryModelBuilder

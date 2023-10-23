@@ -163,6 +163,9 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.Property<DateTime>("UploadTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("FailedDonorCount")
+                        .HasColumnType("int");
+
                     b.Property<int>("FailureCount")
                         .HasColumnType("int");
 
