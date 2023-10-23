@@ -65,25 +65,20 @@ namespace Atlas.RepeatSearch.Services.Search
             var previousCanonicalDonorsInDonorStore = await donorReader.GetDonorsByExternalDonorCodes(previousCanonicalDonors);
             var deletedDonors = previousCanonicalDonors.Where(d => !previousCanonicalDonorsInDonorStore.ContainsKey(d)).ToList();
 
-            var donorLookup =
-                allDonorsUpdatedSinceCutoff.Merge(previousCanonicalDonorsInDonorStore.ToDictionary(d => d.Key, d => d.Value.AtlasDonorId));
-
             return new SearchResultDifferential
             {
-                NewResults = newDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, donorLookup, results)).ToList(),
-                UpdatedResults = updatedDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, donorLookup, results)).ToList(),
+                NewResults = newDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, results)).ToList(),
+                UpdatedResults = updatedDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, results)).ToList(),
                 RemovedResults = noLongerMatchingDonors.Concat(deletedDonors).ToList()
             };
         }
 
-        private static DonorIdPair LookupDonorIdFromCode(string externalDonorCode, IDictionary<string, int> allDonorsUpdatedSinceCutoff, List<MatchingAlgorithmResult> results)
+        private static DonorIdPair LookupDonorIdFromCode(string externalDonorCode, List<MatchingAlgorithmResult> results)
         {
             return new DonorIdPair
             {
                 ExternalDonorCode = externalDonorCode,
-                AtlasId = allDonorsUpdatedSinceCutoff.TryGetValue(externalDonorCode, out var atlasId)
-                    ? atlasId
-                    : results.First(r => r.DonorCode == externalDonorCode).AtlasDonorId
+                AtlasId = results.First(r => r.DonorCode == externalDonorCode).AtlasDonorId
             };
         }
     }
