@@ -41,7 +41,7 @@ namespace Atlas.DonorImport.Test.Services
             var result = await categoriser.Categorise(validDonorUpdate.Concat(invalidDonorUpdate), string.Empty);
 
             result.ValidDonors.Select(d => d.RecordId).Should().BeEquivalentTo(validDonorUpdate.Select(d => d.RecordId));
-            result.InvalidDonors.Select(d => d.RecordId).Should().BeEquivalentTo(invalidDonorUpdate.Select(d => d.RecordId));
+            result.InvalidDonors.Select(d => d.DonorUpdate.RecordId).Should().BeEquivalentTo(invalidDonorUpdate.Select(d => d.RecordId));
         }
 
         [Test]
