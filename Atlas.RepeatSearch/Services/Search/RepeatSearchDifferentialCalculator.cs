@@ -70,15 +70,21 @@ namespace Atlas.RepeatSearch.Services.Search
 
             return new SearchResultDifferential
             {
-                NewResults = newDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, donorLookup)).ToList(),
-                UpdatedResults = updatedDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, donorLookup)).ToList(),
+                NewResults = newDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, donorLookup, results)).ToList(),
+                UpdatedResults = updatedDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, donorLookup, results)).ToList(),
                 RemovedResults = noLongerMatchingDonors.Concat(deletedDonors).ToList()
             };
         }
 
-        private static DonorIdPair LookupDonorIdFromCode(string externalDonorCode, IDictionary<string, int> allDonorsUpdatedSinceCutoff)
+        private static DonorIdPair LookupDonorIdFromCode(string externalDonorCode, IDictionary<string, int> allDonorsUpdatedSinceCutoff, List<MatchingAlgorithmResult> results)
         {
-            return new DonorIdPair {ExternalDonorCode = externalDonorCode, AtlasId = allDonorsUpdatedSinceCutoff[externalDonorCode]};
+            return new DonorIdPair
+            {
+                ExternalDonorCode = externalDonorCode,
+                AtlasId = allDonorsUpdatedSinceCutoff.TryGetValue(externalDonorCode, out var atlasId)
+                    ? atlasId
+                    : results.First(r => r.DonorCode == externalDonorCode).AtlasDonorId
+            };
         }
     }
 }
