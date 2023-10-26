@@ -107,9 +107,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                             continue;
                         }
 
-                        if (DonorTypeHasChanged(existingDonor, donorToUpdate))
+                        if (DonorInfoHasChanged(existingDonor, donorToUpdate))
                         {
-                            await UpdateDonorType(donorToUpdate, conn);
+                            await UpdateDonorInfo(donorToUpdate, conn);
                         }
 
                         var existingDonorResult = existingDonor.ToDonorInfo();
@@ -140,9 +140,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        private static bool DonorTypeHasChanged(Donor existingDonor, DonorInfo donorInfo)
+        private static bool DonorInfoHasChanged(Donor existingDonor, DonorInfo donorInfo)
         {
-            return existingDonor.DonorType != donorInfo.DonorType;
+            return existingDonor.DonorType != donorInfo.DonorType
+                || existingDonor.RegistryCode != donorInfo.RegistryCode
+                || existingDonor.EthnicityCode != donorInfo.EthnicityCode;
         }
 
         private static bool DonorHlaHasChanged(DonorInfo existingDonorInfo, DonorInfo incomingDonorInfo)
@@ -176,12 +178,14 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 commandTimeout: 600);
         }
 
-        private static async Task UpdateDonorType(DonorInfo donorInfo, IDbConnection connection)
+        private static Task UpdateDonorInfo(DonorInfo donorInfo, IDbConnection connection)
         {
-            await connection.ExecuteAsync($@"
-                        UPDATE Donors 
-                        SET 
-                            DonorType = {(int) donorInfo.DonorType}
+            return connection.ExecuteAsync($@"
+                        UPDATE Donors
+                        SET
+                            DonorType = {(int)donorInfo.DonorType},
+                            EthnicityCode = '{donorInfo.EthnicityCode}',
+                            RegistryCode = '{donorInfo.RegistryCode}'
                         WHERE DonorId = {donorInfo.DonorId}
                         ", commandTimeout: 600);
         }
