@@ -190,27 +190,6 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                         ", commandTimeout: 600);
         }
 
-        // If we can identify all donors that need their type updating in one go, then this approach is drastically faster.
-        // ~0.04 seconds to update 333 records vs. ~1.2 seconds to updated 333 records even in a single connection.
-        private static async Task UpdateDonorTypes(List<DonorInfo> donorInfos, IDbConnection connection)
-        {
-            var updatedDonorTypeMaps = donorInfos.Select(d => $" WHEN {d.DonorId} THEN {(int) d.DonorType} ").StringJoinWithNewline();
-            var allUpdatedDonorIds = donorInfos.Select(d => d.DonorId.ToString()).StringJoin(", ");
-
-            await connection.ExecuteAsync($@"
-                    UPDATE Donors
-                    SET DonorType = (
-                        CASE(DonorId)
-                            {updatedDonorTypeMaps}
-                            ELSE DonorType
-                        END)
-                        WHERE DonorId IN (
-                            {allUpdatedDonorIds}
-                        )
-                        ", commandTimeout: 600);
-        }
-
-
         private static async Task UpdateDonorHla(DonorInfo donorInfo, IDbConnection connection)
         {
             var donor = donorInfo.ToDonor();
