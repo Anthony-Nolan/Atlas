@@ -25,7 +25,8 @@ namespace Atlas.DonorImport.Functions
                 OptionsReaderFor<StalledFileSettings>(),
                 OptionsReaderFor<PublishDonorUpdatesSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
-                ConnectionStringReader("DonorStoreSql")
+                OptionsReaderFor<FailureLogsSettings>(),
+            ConnectionStringReader("DonorStoreSql")
             );
 
             builder.Services.RegisterDonorReader(ConnectionStringReader("DonorStoreSql"));
@@ -40,6 +41,7 @@ namespace Atlas.DonorImport.Functions
             services.RegisterAsOptions<StalledFileSettings>("DonorImport");
             services.RegisterAsOptions<PublishDonorUpdatesSettings>("PublishDonorUpdates");
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
+            services.RegisterAsOptions<FailureLogsSettings>("FailureLogs");
         }
     }
 }

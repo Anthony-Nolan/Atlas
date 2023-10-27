@@ -44,6 +44,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
                 sp => new StalledFileSettings { HoursToCheckStalledFiles = 2 },
                 sp => new PublishDonorUpdatesSettings(),
                 sp => new AzureStorageSettings(),
+                sp => new FailureLogsSettings { ExpiryInDays = 60 },
                 ConnectionStringReader(DonorStoreSqlConnectionString)
             );
             RegisterIntegrationTestServices(services);
