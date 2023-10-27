@@ -27,7 +27,9 @@
     "NotificationsServiceBus:NotificationsTopic": "notifications",
     "PublishDonorUpdates:DeletionCronSchedule": "0 0 0 * * *",
     "PublishDonorUpdates:PublishCronSchedule": "0 * * * * *",
-    "PublishDonorUpdates:PublishedUpdateExpiryInDays": 30
+    "PublishDonorUpdates:PublishedUpdateExpiryInDays": 30,
+    "FailureLogs:DeletionCronSchedule": "0 0 0 * * *",
+    "FailureLogs:ExpiryInDays": 60
   },
   "ConnectionStrings": {
     "DonorStoreSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"

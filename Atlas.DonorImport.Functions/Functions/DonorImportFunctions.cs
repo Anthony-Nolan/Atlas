@@ -13,12 +13,14 @@ namespace Atlas.DonorImport.Functions.Functions
         private readonly IDonorFileImporter donorFileImporter;
         private readonly IDonorImportFileHistoryService donorHistoryService;
         private readonly IDonorImportMessageSender donorImportMessageSender;
+        private readonly IDonorImportFailuresCleaner donorImportFailuresCleaner;
 
-        public DonorImportFunctions(IDonorFileImporter donorFileImporter, IDonorImportFileHistoryService donorHistoryService, IDonorImportMessageSender donorImportMessageSender)
+        public DonorImportFunctions(IDonorFileImporter donorFileImporter, IDonorImportFileHistoryService donorHistoryService, IDonorImportMessageSender donorImportMessageSender, IDonorImportFailuresCleaner donorImportFailuresCleaner)
         {
             this.donorFileImporter = donorFileImporter;
             this.donorHistoryService = donorHistoryService;
             this.donorImportMessageSender = donorImportMessageSender;
+            this.donorImportFailuresCleaner = donorImportFailuresCleaner;
         }
 
         [FunctionName(nameof(ImportDonorFile))]
@@ -56,6 +58,12 @@ namespace Atlas.DonorImport.Functions.Functions
             EventGridSchema blobCreatedEvent)
         {
             await donorImportMessageSender.SendFailureMessage(blobCreatedEvent.Subject, ImportFailureReason.RequestDeadlettered, string.Empty);
+        }
+
+        [FunctionName(nameof(DeleteDonorImportFailures))]
+        public async Task DeleteDonorImportFailures([TimerTrigger("%FailureLogs:DeletionCronSchedule%")] TimerInfo timer)
+        {
+            await donorImportFailuresCleaner.DeleteExpiredDonorImportFailures();
         }
     }
 }

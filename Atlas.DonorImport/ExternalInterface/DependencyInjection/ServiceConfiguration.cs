@@ -29,6 +29,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, StalledFileSettings> fetchStalledFileSettings,
             Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, FailureLogsSettings> fetchFailureLogsSettings,
             Func<IServiceProvider, string> fetchSqlConnectionString)
         {
             // Perform static Dapper set up that should be performed once before any SQL requests are made.
@@ -37,7 +38,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             RegisterDonorImportLogger(services);
 
             services.RegisterSettings(
-                fetchNotificationConfigurationSettings, fetchStalledFileSettings, fetchPublishDonorUpdatesSettings, fetchAzureStorageSettings, fetchMessagingServiceBusSettings);
+                fetchNotificationConfigurationSettings, fetchStalledFileSettings, fetchPublishDonorUpdatesSettings, fetchAzureStorageSettings, fetchMessagingServiceBusSettings, fetchFailureLogsSettings);
             services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
             services.RegisterServices(fetchMessagingServiceBusSettings, fetchAzureStorageSettings);
             services.RegisterImportDatabaseTypes(fetchSqlConnectionString);
@@ -68,13 +69,15 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, StalledFileSettings> fetchStalledFileSettings,
             Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, FailureLogsSettings> fetchFailureLogsSettings)
         {
             services.MakeSettingsAvailableForUse(fetchStalledFileSettings);
             services.MakeSettingsAvailableForUse(fetchNotificationConfigurationSettings);
             services.MakeSettingsAvailableForUse(fetchPublishDonorUpdatesSettings);
             services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
+            services.MakeSettingsAvailableForUse(fetchFailureLogsSettings);
         }
 
         private static void RegisterServices(
