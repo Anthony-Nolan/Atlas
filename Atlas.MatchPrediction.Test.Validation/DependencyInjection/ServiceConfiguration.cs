@@ -1,15 +1,21 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using Atlas.MatchPrediction.Test.Validation.Data.Repositories;
-using Atlas.MatchPrediction.Test.Validation.Services;
+﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
-using Atlas.MatchPrediction.Test.Validation.Models;
 using Atlas.Common.Utils.Extensions;
+using Atlas.ManualTesting.Common.Models;
+using Atlas.ManualTesting.Common.Repositories;
+using Atlas.ManualTesting.Common.Services;
+using Atlas.ManualTesting.Common.Settings;
+using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
-using Atlas.Common.ApplicationInsights;
-using Atlas.ManualTesting.Common;
-using Atlas.ManualTesting.Common.SubjectImport;
+using Atlas.MatchPrediction.Test.Validation.Data.Repositories;
+using Atlas.MatchPrediction.Test.Validation.Models;
+using Atlas.MatchPrediction.Test.Validation.Services;
+using Atlas.MatchPrediction.Test.Validation.Services.Exercise3;
+using Atlas.MatchPrediction.Test.Validation.Services.Exercise4;
+using Atlas.MatchPrediction.Test.Validation.Settings;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
 {
@@ -19,14 +25,16 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, OutgoingMatchPredictionRequestSettings> fetchOutgoingMatchPredictionRequestSettings,
             Func<IServiceProvider, ValidationAzureStorageSettings> fetchValidationAzureStorageSettings,
+            Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessageServiceBusSettings,
             Func<IServiceProvider, MatchPredictionRequestsSettings> fetchMatchPredictionRequestSettings,
-            Func<IServiceProvider, string> fetchMatchPredictionValidationSqlConnectionString)
+            Func<IServiceProvider, string> fetchMatchPredictionValidationSqlConnectionString,
+            Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString)
         {
             services.RegisterSettings(fetchOutgoingMatchPredictionRequestSettings, fetchValidationAzureStorageSettings);
             services.RegisterDatabaseServices(fetchMatchPredictionValidationSqlConnectionString);
-            services.RegisterServices(fetchValidationAzureStorageSettings);
-
+            services.RegisterServices(fetchValidationAzureStorageSettings, fetchDataRefreshSettings);
+            services.RegisterHaplotypeFrequenciesReader(fetchMatchPredictionSqlConnectionString);
             services.RegisterMatchPredictionResultsLocationPublisher(fetchMessageServiceBusSettings, fetchMatchPredictionRequestSettings);
         }
 
@@ -53,10 +61,22 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
 
         private static void RegisterServices(
             this IServiceCollection services,
-            Func<IServiceProvider, ValidationAzureStorageSettings> fetchValidationAzureStorageSettings)
+            Func<IServiceProvider, ValidationAzureStorageSettings> fetchValidationAzureStorageSettings,
+            Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings)
         {
             services.AddScoped<ISubjectInfoImporter, SubjectInfoImporter>();
             services.AddScoped<IFileReader<ImportedSubject>, FileReader<ImportedSubject>>();
+
+            services.AddScoped<IValidationAtlasPreparer, ValidationAtlasPreparer>(sp =>
+            {
+                var subjectRepo = sp.GetService<ISubjectRepository>();
+                var setReader = sp.GetService<IHaplotypeFrequencySetReader>();
+                var testDonorExporter = sp.GetService<ITestDonorExporter>();
+                var testDonorExportRepo = sp.GetService<ITestDonorExportRepository>();
+                var requestUrl = fetchDataRefreshSettings(sp).RequestUrl;
+                return new ValidationAtlasPreparer(subjectRepo, setReader, testDonorExporter, testDonorExportRepo, requestUrl);
+            });
+
             services.AddScoped<IMatchPredictionRequester, MatchPredictionRequester>();
             services.AddScoped<IBlobStreamer, BlobStreamer>(sp =>
             {

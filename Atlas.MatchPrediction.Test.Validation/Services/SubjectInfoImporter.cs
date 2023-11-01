@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
-using Atlas.ManualTesting.Common;
-using Atlas.ManualTesting.Common.SubjectImport;
+using Atlas.ManualTesting.Common.Models;
+using Atlas.ManualTesting.Common.Services;
 using Atlas.MatchPrediction.Test.Validation.Data.Models;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories;
 using Atlas.MatchPrediction.Test.Validation.Models;

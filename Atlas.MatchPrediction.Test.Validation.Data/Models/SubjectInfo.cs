@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using Atlas.Client.Models.Search;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Sql.BulkInsert;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 // ReSharper disable InconsistentNaming
 
 namespace Atlas.MatchPrediction.Test.Validation.Data.Models
@@ -19,6 +20,9 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Models
 
         [Column(TypeName = "nvarchar(10)")]
         public SubjectType SubjectType { get; set; }
+
+        [Column(TypeName = "nvarchar(10)")]
+        public DonorType? DonorType { get; set; }
 
         [Required]
         [MaxLength(10)]

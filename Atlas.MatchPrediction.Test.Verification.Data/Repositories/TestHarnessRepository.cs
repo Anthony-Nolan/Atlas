@@ -12,7 +12,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
         Task<int> AddTestHarness(int poolId, string comments);
         Task AddMaskingRecords(IEnumerable<MaskingRecord> records);
         Task MarkAsCompleted(int id);
-        Task<bool> WasTestHarnessCompleted(int id);
+        Task<TestHarness> GetTestHarness(int id);
+        Task SetExportRecordId(int testHarnessId, int exportRecordId);
         Task<int> GetHaplotypeFrequencySetIdOfTestHarness(int id);
         Task<ImportTypingCategory> GetTypingCategoryOfGenotypesInTestHarness(int id);
     }
@@ -59,16 +60,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task<bool> WasTestHarnessCompleted(int id)
+        public async Task SetExportRecordId(int testHarnessId, int exportRecordId)
         {
-            var record = await GetTestHarness(id);
-
-            if (record == null)
-            {
-                throw new ArgumentException($"No test harness found with id {id}.");
-            }
-
-            return record.WasCompleted;
+            var record = await GetTestHarness(testHarnessId);
+            record.ExportRecord_Id = exportRecordId;
+            await context.SaveChangesAsync();
         }
 
         public async Task<int> GetHaplotypeFrequencySetIdOfTestHarness(int id)
@@ -85,9 +81,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             return pool.TypingCategory;
         }
 
-        private async Task<TestHarness> GetTestHarness(int id)
+        public async Task<TestHarness> GetTestHarness(int id)
         {
-            return await context.TestHarnesses.FindAsync(id);
+            var record = await context.TestHarnesses.FindAsync(id);
+
+            return record ?? throw new ArgumentException($"No test harness found with id {id}.");
         }
     }
 }

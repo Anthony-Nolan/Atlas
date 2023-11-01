@@ -9,7 +9,7 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
-using Atlas.ManualTesting.Common;
+using Atlas.ManualTesting.Common.Services;
 using Atlas.ManualTesting.Services;
 using Atlas.ManualTesting.Services.HaplotypeFrequencySet;
 using Atlas.ManualTesting.Services.Scoring;

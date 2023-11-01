@@ -22,6 +22,34 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
+            modelBuilder.Entity("Atlas.ManualTesting.Common.Models.Entities.TestDonorExportRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<DateTimeOffset?>("DataRefreshCompleted")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int?>("DataRefreshRecordId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("Exported")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("Started")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool?>("WasDataRefreshSuccessful")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TestDonorExportRecords");
+                });
+
             modelBuilder.Entity("Atlas.MatchPrediction.Test.Validation.Data.Models.MatchPredictionRequest", b =>
                 {
                     b.Property<int>("Id")
@@ -134,6 +162,9 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("DonorType")
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("ExternalHfSetId")
                         .HasMaxLength(256)

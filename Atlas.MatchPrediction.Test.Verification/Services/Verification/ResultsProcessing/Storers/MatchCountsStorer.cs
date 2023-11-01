@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.MatchPrediction.ExternalInterface;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers

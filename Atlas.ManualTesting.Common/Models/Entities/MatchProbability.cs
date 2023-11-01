@@ -1,10 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Sql.BulkInsert;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification
+namespace Atlas.ManualTesting.Common.Models.Entities
 {
     // ReSharper disable InconsistentNaming
 
@@ -26,16 +24,5 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
         /// </summary>
         [Column(TypeName = "decimal(6,5)")]
         public decimal? Probability { get; set; }
-    }
-
-    internal static class MatchProbabilityBuilder
-    {
-        public static void SetUpModel(this EntityTypeBuilder<MatchProbability> modelBuilder)
-        {
-            modelBuilder
-                .HasOne<MatchedDonor>()
-                .WithMany()
-                .HasForeignKey(r => r.MatchedDonor_Id);
-        }
     }
 }

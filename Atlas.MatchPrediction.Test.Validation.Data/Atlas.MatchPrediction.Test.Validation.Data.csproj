@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
+    <ProjectReference Include="..\Atlas.ManualTesting.Common\Atlas.ManualTesting.Common.csproj" />
   </ItemGroup>
 
 </Project>

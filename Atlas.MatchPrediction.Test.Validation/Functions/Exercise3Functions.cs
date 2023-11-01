@@ -1,7 +1,7 @@
 ﻿using Atlas.Common.Utils;
 using Atlas.Common.Utils.Http;
 using Atlas.MatchPrediction.ExternalInterface.Models;
-using Atlas.MatchPrediction.Test.Validation.Services;
+using Atlas.MatchPrediction.Test.Validation.Services.Exercise3;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;

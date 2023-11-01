@@ -8,6 +8,14 @@
 
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="12.1.2" />
+    <PackageReference Include="Dapper" Version="2.0.35" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
+    <ProjectReference Include="..\Atlas.DonorImport.Data\Atlas.DonorImport.Data.csproj" />
+    <ProjectReference Include="..\Atlas.DonorImport\Atlas.DonorImport.csproj" />
+    <ProjectReference Include="..\Atlas.MatchingAlgorithm.Client.Models\Atlas.MatchingAlgorithm.Client.Models.csproj" />
   </ItemGroup>
 
 </Project>
