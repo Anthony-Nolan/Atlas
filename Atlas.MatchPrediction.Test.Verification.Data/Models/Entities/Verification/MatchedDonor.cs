@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Atlas.Common.Sql.BulkInsert;
+﻿using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -9,28 +7,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
 {
     // ReSharper disable InconsistentNaming
 
-    public class MatchedDonor : IBulkInsertModel
+    public class MatchedDonor : MatchedDonorBase
     {
-        public int Id { get; set; }
-        public int SearchRequestRecord_Id { get; set; }
         public int MatchedDonorSimulant_Id { get; set; }
-        public int TotalMatchCount { get; set; }
-        public int TypedLociCount { get; set; }
-        public bool? WasPatientRepresented { get; set; }
-        public bool? WasDonorRepresented { get; set; }
-
-        /// <summary>
-        /// Serialised copy of the <see cref="Client.Models.Search.Results.Matching.MatchingAlgorithmResult"/>.
-        /// </summary>
-        [Required]
-        [Column(TypeName = "nvarchar(max)")]
-        public string MatchingResult { get; set; }
-
-        /// <summary>
-        /// Serialised copy of the <see cref="Client.Models.Search.Results.MatchPrediction.MatchProbabilityResponse"/>.
-        /// </summary>
-        [Column(TypeName = "nvarchar(max)")]
-        public string MatchPredictionResult { get; set; }
     }
 
     internal static class MatchedDonorBuilder

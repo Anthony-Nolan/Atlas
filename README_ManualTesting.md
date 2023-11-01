@@ -109,10 +109,13 @@ Validation of the match prediction algorithm against either [exercise 3 of the W
 
 ### Subject files
 - Patient and donor data will be imported from their own text files with the following schema:
-`ID;A_1;A_2;C_1;C_2;B_1;B_2;DRB1_1;DRB1_2;DQB1_1;DQB1_2;HF_SET`
+`ID;A_1;A_2;C_1;C_2;B_1;B_2;DRB1_1;DRB1_2;DQB1_1;DQB1_2;DONOR_TYPE;HF_SET`
   - This header line must be included, though the order of columns is not critical as long as the header is present.
   - Subjects not typed at the required loci (A, B, DRB1) will be ignored; debug output displays how many subjects were actually imported.
-  - HF_SET field is nullable, and Atlas will default to using the global HF set where the field is `null`/empty.
+  - `DONOR_TYPE` is nullable:
+    - For the Patient file, this field is ignored.
+    - For the Donor file, if the field is empty, then `Adult` type will be assigned by default.
+  - `HF_SET` field is nullable; Atlas will default to using the global HF set where the field is empty.
 
 ### Stored Data
 - At present, only data generated from the last validation run will be persisted to the associated Validation database (defined within the Functions app setting: `MatchPredictionValidation:Sql`)

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
-using Atlas.Common.Public.Models.GeneticData;
+﻿using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
@@ -16,9 +9,15 @@ using Microsoft.Extensions.Options;
 using MoreLinq;
 using Newtonsoft.Json;
 using Polly;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using MatchPredictionRequest = Atlas.MatchPrediction.Test.Validation.Data.Models.MatchPredictionRequest;
 
-namespace Atlas.MatchPrediction.Test.Validation.Services
+namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise3
 {
     public interface IMatchPredictionRequester
     {
@@ -90,7 +89,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services
 
             Debug.WriteLine("Completed sending match prediction requests.");
         }
-         
+
         private async Task SendAndStoreMatchPredictionRequests(SubjectInfo patient, IEnumerable<SubjectInfo> donors)
         {
             var retryPolicy = Policy.Handle<Exception>().RetryAsync(10);

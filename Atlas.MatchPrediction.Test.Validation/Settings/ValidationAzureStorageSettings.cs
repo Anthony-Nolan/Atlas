@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchPrediction.Test.Validation.Models
+﻿namespace Atlas.MatchPrediction.Test.Validation.Settings
 {
     public class ValidationAzureStorageSettings
     {

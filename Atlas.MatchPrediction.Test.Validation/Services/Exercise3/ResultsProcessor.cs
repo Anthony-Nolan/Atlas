@@ -1,11 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Results.MatchPrediction;
+﻿using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.AzureStorage.Blob;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Extensions;
@@ -14,8 +8,13 @@ using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Test.Validation.Data.Models;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories;
 using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace Atlas.MatchPrediction.Test.Validation.Services
+namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise3
 {
     public interface IResultsProcessor
     {

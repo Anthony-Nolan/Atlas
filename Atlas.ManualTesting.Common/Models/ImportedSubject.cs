@@ -1,6 +1,6 @@
 ﻿// ReSharper disable InconsistentNaming
 
-namespace Atlas.ManualTesting.Common.SubjectImport
+namespace Atlas.ManualTesting.Common.Models
 {
     public class ImportedSubject
     {
@@ -15,6 +15,7 @@ namespace Atlas.ManualTesting.Common.SubjectImport
         public string DQB1_2 { get; set; }
         public string DRB1_1 { get; set; }
         public string DRB1_2 { get; set; }
+        public string DONOR_TYPE { get; set; }
         public string HF_SET { get; set; }
     }
 }

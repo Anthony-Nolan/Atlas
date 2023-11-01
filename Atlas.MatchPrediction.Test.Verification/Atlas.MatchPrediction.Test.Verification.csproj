@@ -35,6 +35,7 @@
     <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
     <ProjectReference Include="..\Atlas.DonorImport.Data\Atlas.DonorImport.Data.csproj" />
     <ProjectReference Include="..\Atlas.DonorImport\Atlas.DonorImport.csproj" />
+    <ProjectReference Include="..\Atlas.ManualTesting.Common\Atlas.ManualTesting.Common.csproj" />
     <ProjectReference Include="..\Atlas.MatchingAlgorithm.Client.Models\Atlas.MatchingAlgorithm.Client.Models.csproj" />
     <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
     <ProjectReference Include="..\Atlas.MatchPrediction.Test.Verification.Data\Atlas.MatchPrediction.Test.Verification.Data.csproj" />

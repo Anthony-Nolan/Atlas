@@ -4,9 +4,9 @@ using Atlas.Common.ServiceBus;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories;
-using Atlas.MatchPrediction.Test.Validation.Models;
+using Atlas.MatchPrediction.Test.Validation.Settings;
 
-namespace Atlas.MatchPrediction.Test.Validation.Services
+namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise3
 {
     public interface IMessageSender
     {

@@ -6,8 +6,10 @@
 
  -- Replace with value of interest
  DECLARE @runId INT = (SELECT TOP 1 Id FROM VerificationRuns WHERE TestHarness_Id = (
-		SELECT TOP 1 TestHarness_Id
-		FROM TestDonorExportRecords
+		SELECT TOP 1 h.Id
+		FROM TestDonorExportRecords r
+		JOIN TestHarnesses h
+		ON r.Id = h.ExportRecord_Id
 		WHERE WasDataRefreshSuccessful = 1
 		ORDER BY Id DESC)
 	ORDER BY Id DESC)

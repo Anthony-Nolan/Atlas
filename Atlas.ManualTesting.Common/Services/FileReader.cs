@@ -1,6 +1,6 @@
 ﻿using CsvHelper;
 
-namespace Atlas.ManualTesting.Common
+namespace Atlas.ManualTesting.Common.Services
 {
     public interface IFileReader<T>
     {

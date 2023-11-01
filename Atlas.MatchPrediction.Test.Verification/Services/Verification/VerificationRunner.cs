@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.ManualTesting.Common.Repositories;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Test.Verification.Config;
@@ -84,9 +84,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
         private async Task<bool> TestHarnessDonorsNotOnAtlasDonorStores(int testHarnessId)
         {
-            var lastExport = await exportRepository.GetLastExportRecord();
+            var maxExportRecordId = await exportRepository.GetMaxExportRecordId();
+            var harness = await harnessRepository.GetTestHarness(testHarnessId);
 
-            return lastExport == null || lastExport.TestHarness_Id != testHarnessId;
+            return maxExportRecordId == null
+                || harness.ExportRecord_Id == null
+                || harness.ExportRecord_Id != maxExportRecordId;
         }
 
         private async Task<bool> TestHarnessHaplotypeFrequencySetNotActiveOnAtlas(int testHarnessId)

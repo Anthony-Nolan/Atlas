@@ -1,8 +1,7 @@
-﻿using System;
-using Atlas.Client.Models.Search;
-using Atlas.DonorImport.Data.Models;
+﻿using Atlas.Client.Models.Search;
 using Atlas.MatchPrediction.Test.Verification.Config;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
+using System;
 
 namespace Atlas.MatchPrediction.Test.Verification.Models
 {
@@ -15,16 +14,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Models
                 SimulatedHlaTypingCategory.Genotype => VerificationConstants.GenotypeSearchDonorType,
                 SimulatedHlaTypingCategory.Masked => VerificationConstants.MaskedSearchDonorType,
                 _ => throw new ArgumentOutOfRangeException(nameof(category), category, null)
-            };
-        }
-
-        public static DatabaseDonorType ToDatabaseType(this DonorType donorType)
-        {
-            return donorType switch
-            {
-                DonorType.Adult => DatabaseDonorType.Adult,
-                DonorType.Cord => DatabaseDonorType.Cord,
-                _ => throw new ArgumentOutOfRangeException(nameof(donorType), donorType, null)
             };
         }
     }

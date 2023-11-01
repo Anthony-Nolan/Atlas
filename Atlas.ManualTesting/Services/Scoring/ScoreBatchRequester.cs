@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
-using Atlas.ManualTesting.Common.SubjectImport;
+using Atlas.ManualTesting.Common.Models;
 using Atlas.ManualTesting.Models;
 using Atlas.ManualTesting.Settings;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
