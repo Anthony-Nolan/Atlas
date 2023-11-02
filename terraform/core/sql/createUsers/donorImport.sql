@@ -2,6 +2,7 @@ IF USER_ID('$(matchingUsernameForDonorDB)') IS NULL
     BEGIN
         CREATE USER $(matchingUsernameForDonorDB) WITH PASSWORD = '$(matchingPasswordForDonorDB)', DEFAULT_SCHEMA = $(donorImportSchema);
         ALTER ROLE db_datareader ADD MEMBER $(matchingUsernameForDonorDB)
+		ALTER ROLE db_datawriter ADD MEMBER $(matchingUsernameForDonorDB)
     END
 
 ELSE
@@ -9,6 +10,7 @@ ELSE
     BEGIN
         ALTER USER $(matchingUsernameForDonorDB) WITH PASSWORD = '$(matchingPasswordForDonorDB)', DEFAULT_SCHEMA = $(donorImportSchema);
         ALTER ROLE db_datareader ADD MEMBER $(matchingUsernameForDonorDB)
+		ALTER ROLE db_datawriter ADD MEMBER $(matchingUsernameForDonorDB)
     END
 
 
