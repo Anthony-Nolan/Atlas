@@ -132,7 +132,7 @@ Once terraform has created ATLAS resources for the first time, certain actions m
       |Matching - Persistent|Matching        |db-owner/db-writer/db-reader|
       |Match Prediction     |Match Prediction|db-writer/db-reader         |
       |Donor Import         |Donor Import    |db-writer/db-reader         |
-      |Donor Import         |Matching        |db-reader                   |
+      |Donor Import         |Matching        |db-writer/db-reader         |
 
   - Active Directory (Optional)
         - If you would like to be able to access the database server using Active Directory authentication, this should be manually configured
