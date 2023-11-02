@@ -1,6 +1,7 @@
 ﻿using Atlas.Client.Models.Search;
 using Atlas.ManualTesting.Common.Models;
 using Atlas.MatchPrediction.Test.Validation.Data.Models;
+using System;
 
 namespace Atlas.MatchPrediction.Test.Validation.Models
 {
@@ -23,7 +24,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Models
                 DQB1_2 = importedSubject.DQB1_2,
                 DRB1_1 = importedSubject.DRB1_1,
                 DRB1_2 = importedSubject.DRB1_2,
-                ExternalHfSetId = importedSubject.HF_SET
+                ExternalHfSetId = GetExternalHfSetId(importedSubject.HF_SET)
             };
         }
 
@@ -36,6 +37,21 @@ namespace Atlas.MatchPrediction.Test.Validation.Models
                 null when subjectType == SubjectType.Donor => DonorType.Adult,
                 _ => null,
             };
+        }
+
+        private static int? GetExternalHfSetId(string hfSet)
+        {        
+            if(string.IsNullOrEmpty(hfSet))
+            {
+                return null;
+            }
+            
+            if(int.TryParse(hfSet, out var id))
+            {
+                return id;
+            }
+
+            throw new ArgumentException($"{nameof(hfSet)} must be either empty or an integer.", nameof(hfSet));
         }
     }
 }

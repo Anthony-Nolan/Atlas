@@ -9,7 +9,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
     public interface IHaplotypeFrequencySetReader
     {
         Task<HaplotypeFrequencySet> GetActiveGlobalHaplotypeFrequencySet();
-        Task<IEnumerable<HaplotypeFrequencySet>> GetActiveHaplotypeFrequencySetByName(string hfSetName);
+        Task<IEnumerable<HaplotypeFrequencySet>> GetActiveHaplotypeFrequencySetByPopulationId(int populationId);
     }
 
     internal class HaplotypeFrequencySetReader : IHaplotypeFrequencySetReader
@@ -27,9 +27,9 @@ namespace Atlas.MatchPrediction.ExternalInterface
             return ConvertToExternalModel(set);
         }
 
-        public async Task<IEnumerable<HaplotypeFrequencySet>> GetActiveHaplotypeFrequencySetByName(string hfSetName)
+        public async Task<IEnumerable<HaplotypeFrequencySet>> GetActiveHaplotypeFrequencySetByPopulationId(int populationId)
         {
-            var sets = await readRepository.GetActiveHaplotypeFrequencySet(hfSetName);
+            var sets = await readRepository.GetActiveHaplotypeFrequencySet(populationId);
             return sets.Select(ConvertToExternalModel);
         }
 

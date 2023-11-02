@@ -24,7 +24,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4
         private readonly ISubjectRepository subjectRepository;
         private readonly IHaplotypeFrequencySetReader setReader;
 
-        private ConcurrentDictionary<string, HaplotypeFrequencySet> hfSets = new();
+        private ConcurrentDictionary<int, HaplotypeFrequencySet> hfSets = new();
 
         public ValidationAtlasPreparer(
             ISubjectRepository subjectRepository,
@@ -81,24 +81,31 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4
             return donor;
         }
 
-        private async Task<HaplotypeFrequencySet> GetOrAddHfSet(string externalHfSetId)
+        private async Task<HaplotypeFrequencySet> GetOrAddHfSet(int? externalHfSetId)
         {
-            if(hfSets.TryGetValue(externalHfSetId, out var set))
+            if (!externalHfSetId.HasValue)
+            {
+                throw new ArgumentNullException(nameof(externalHfSetId));
+            }
+
+            var externalId = externalHfSetId.Value;
+
+            if (hfSets.TryGetValue(externalId, out var set))
             {
                 return set;
             }
 
-            var sets = (await setReader.GetActiveHaplotypeFrequencySetByName(externalHfSetId)).ToList();
+            var sets = (await setReader.GetActiveHaplotypeFrequencySetByPopulationId(externalId)).ToList();
 
             switch (sets.Count)
             {
                 case 0:
-                    throw new Exception($"Could not find active HF set named {externalHfSetId}.");
+                    throw new Exception($"Could not find active HF set with population Id {externalHfSetId}.");
                 case 1:
-                    hfSets.TryAdd(externalHfSetId, sets.Single());
+                    hfSets.TryAdd(externalId, sets.Single());
                     return sets.Single();
                 default:
-                    throw new Exception($"Found multiple active HF sets named {externalHfSetId}.");
+                    throw new Exception($"Found multiple active HF sets with population Id {externalHfSetId}.");
             }
         }
     }

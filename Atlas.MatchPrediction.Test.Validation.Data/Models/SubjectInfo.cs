@@ -68,7 +68,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Models
         /// Optional field to allow individual subjects to be mapped to a specific test HF set.
         /// </summary>
         [MaxLength(256)]
-        public string? ExternalHfSetId { get; set; }
+        public int? ExternalHfSetId { get; set; }
     }
 
     public static class SubjectInfoBuilder
