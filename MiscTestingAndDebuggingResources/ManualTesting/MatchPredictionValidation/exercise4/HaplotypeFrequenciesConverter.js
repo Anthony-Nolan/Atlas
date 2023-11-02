@@ -42,15 +42,38 @@ const fix_hla_names = {
     }
 }
 
+const groupBySum = (arr, groupByKeys, sumKeys) => {
+    return [
+        ...arr
+            .reduce((accu, curr) => {
+                const keyArr = groupByKeys.map((key) => curr[key]);
+                const key = keyArr.join("-");
+                const groupedSum =
+                    accu.get(key) ||
+                    Object.assign(
+                        {},
+                        Object.fromEntries(groupByKeys.map((key) => [key, curr[key]])),
+                        Object.fromEntries(sumKeys.map((key) => [key, 0]))
+                    );
+                for (let key of sumKeys) {
+                    groupedSum[key] += Number(curr[key]);
+                }
+                return accu.set(key, groupedSum);
+            }, new Map())
+            .values(),
+    ];
+};
+
 !fs.existsSync(config.outputDir) ? fs.mkdirSync(config.outputDir) : undefined;
 
 fs.readdir(config.inputDir, (err, files) => {
     files.forEach(file => {
         fs.readFile(`${config.inputDir}${file}`, 'utf-8', (err, rawData) => {
+            // split each line into component parts to generate list of frequencies
             var freqs = rawData.split(/\r?\n/).map(line => {
                 line = line.trim()
                 if (line.length === 0) {
-                    return ""
+                    return null
                 }
 
                 let a = line.split("~")[0].replace("A*", "")
@@ -63,7 +86,7 @@ fs.readdir(config.inputDir, (err, files) => {
 
                 // Note that this is tied to the number of decimal places in the line above
                 if (freq === new Number(0).toFixed(config.decimalPlaces)) {
-                    return ""
+                    return null
                 }
 
                 if (fix_hla_names.a[a]) {
@@ -82,16 +105,30 @@ fs.readdir(config.inputDir, (err, files) => {
                     drb1 = fix_hla_names.drb1[drb1]
                 }
 
-                return `{
-                    "a": "${a}", 
-                    "b": "${b}", 
-                    "c": "${c}", 
-                    "drb1": "${drb1}", 
-                    "dqb1": "${dqb1}",
-                    "frequency": "${freq}" 
-                }`
-            }).filter(x => x !== "")
+                return {
+                    a: a,
+                    b: b,
+                    c: c,
+                    dqb1: dqb1,
+                    drb1: drb1,
+                    frequency: freq
+                }
+            }).filter(x => x != null)
 
+            // reduce down any duplicate frequencies caused by the previous HLA rename step
+            var distinctFreqs = groupBySum(freqs, ["a", "b", "c", "dqb1", "drb1"], ["frequency"])
+                .map(f => {
+                    return `{
+                    "a": "${f.a}", 
+                    "b": "${f.b}", 
+                    "c": "${f.c}", 
+                    "dqb1": "${f.dqb1}",
+                    "drb1": "${f.drb1}",                    
+                    "frequency": "${f.frequency}" 
+                }`
+                }).join();
+
+            // write out results
             let setId = path.parse(file).name.replace(config.fileNamePrefix, "");
 
             const fileContent = `{
@@ -100,7 +137,7 @@ fs.readdir(config.inputDir, (err, files) => {
                 "ethn": ["${setId}"],
                 "PopulationId": ${setId},
                 "TypingCategory": "${config.typingCategory}", 
-                "Frequencies": [${freqs.join(",")}]
+                "Frequencies": [${distinctFreqs}]
             }`;
 
             fs.writeFile(`${config.outputDir}${config.fileNamePrefix}${setId}.json`, fileContent, noop);
