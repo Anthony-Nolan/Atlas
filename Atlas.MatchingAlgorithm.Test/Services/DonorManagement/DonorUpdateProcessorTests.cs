@@ -246,11 +246,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         [Test]
         public async Task ProcessDeadLetterDifferentialDonorUpdates_DonorExists_ShouldBeAvailableForSearch()
         {
+            var initialPublishedDateTime = DateTimeOffset.UtcNow.AddSeconds(-1);
+
             var searchableDonorUpdates = new SearchableDonorUpdate[]
             {
                 new () 
                 {
                     DonorId = 1,
+                    PublishedDateTime = initialPublishedDateTime,
                     SearchableDonorInformation = new SearchableDonorInformation
                     {
                         A_1 = "01:01"
@@ -267,17 +270,20 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorReader.Received(1).GetDonors(Arg.Any<IEnumerable<int>>());
             await donorUpdatesSaver.Received(1).Save(Arg.Is<IReadOnlyCollection<SearchableDonorUpdate>>(l =>
-                l.First().DonorId == 1 && l.First().SearchableDonorInformation.A_1 == "01:02" && l.First().IsAvailableForSearch));
+                l.First().DonorId == 1 && l.First().SearchableDonorInformation.A_1 == "01:02" && l.First().IsAvailableForSearch && l.First().PublishedDateTime > initialPublishedDateTime));
         }
 
         [Test]
         public async Task ProcessDeadLetterDifferentialDonorUpdates_DonorDoNotExist_ShouldNotBeAvailableForSearch()
         {
+            var initialPublishedDateTime = DateTimeOffset.UtcNow.AddSeconds(-1);
+
             var searchableDonorUpdates = new SearchableDonorUpdate[]
             {
                 new ()
                 {
                     DonorId = 2,
+                    PublishedDateTime = initialPublishedDateTime,
                     SearchableDonorInformation = new SearchableDonorInformation
                     {
                         A_1 = "01:01"
@@ -294,7 +300,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorReader.Received(1).GetDonors(Arg.Any<IEnumerable<int>>());
             await donorUpdatesSaver.Received(1).Save(Arg.Is<IReadOnlyCollection<SearchableDonorUpdate>>(l =>
-                l.First().DonorId == 2 && l.First().SearchableDonorInformation.A_1 == "01:01" && !l.First().IsAvailableForSearch));
+                l.First().DonorId == 2 && l.First().SearchableDonorInformation.A_1 == "01:01" && !l.First().IsAvailableForSearch && l.First().PublishedDateTime > initialPublishedDateTime));
         }
     }
 }
