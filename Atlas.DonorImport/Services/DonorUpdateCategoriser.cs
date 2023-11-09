@@ -33,7 +33,6 @@ namespace Atlas.DonorImport.Services
         /// <summary>
         /// Donors that failed validation by <see cref="SearchableDonorValidator"/>
         /// </summary>
-        //public IReadOnlyCollection<DonorUpdate> InvalidDonors { get; set; }
         public IReadOnlyCollection<SearchableDonorValidationResult> InvalidDonors { get; set; }
     }
 

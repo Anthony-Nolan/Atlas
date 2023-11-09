@@ -80,10 +80,10 @@ WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
             await using (var connection = new SqlConnection(connectionString))
             {
                 var sql = $@"UPDATE {DonorImportHistoryRecord.QualifiedTableName}
-SET ImportedDonorsCount = ImportedDonorsCount + (@ImportedCount),
-    FailedDonorCount = ISNULL(FailedDonorCount, 0) + (@FailedCount)
-WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
-                await connection.ExecuteAsync(sql, new {FileName = filename, UploadTime = uploadTime, ImportedCount = importedCount, FailedCount  = failedCount});
+SET ImportedDonorsCount = ImportedDonorsCount + (@{nameof(importedCount)}),
+    FailedDonorCount = ISNULL(FailedDonorCount, 0) + (@{nameof(failedCount)})
+WHERE Filename = (@{nameof(filename)}) AND UploadTime = (@{nameof(uploadTime)})";
+                await connection.ExecuteAsync(sql, new { filename, uploadTime, importedCount, failedCount });
             }
         }
 

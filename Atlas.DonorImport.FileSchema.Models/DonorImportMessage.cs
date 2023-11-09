@@ -14,7 +14,7 @@ namespace Atlas.DonorImport.FileSchema.Models
         public override bool WasSuccessful => true;
         public int ImportedDonorCount { get; set; }
         public int FailedDonorCount { get; set; }
-        public IReadOnlyCollection<FauilureSummary> FailedDonorSummary { get; set; }
+        public IReadOnlyCollection<FailureSummary> FailedDonorSummary { get; set; }
     }
 
     public class FailedDonorImportMessage : DonorImportMessage
@@ -31,7 +31,7 @@ namespace Atlas.DonorImport.FileSchema.Models
         RequestDeadlettered
     }
 
-    public class FauilureSummary
+    public class FailureSummary
     {
         public string Reason { get; set; }
         public int Count { get; set; }

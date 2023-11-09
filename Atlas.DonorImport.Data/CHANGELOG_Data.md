@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `UpdateProperty` - donor update property that failed validation, if relevant
   * `FailureReason` - reason why update was not applied
   * `FailureTime` - datetime stamp of failure
+* Added new column to `DonorImportHistory` table.
+  * `FailedDonorCount` - number of donors were not updated
 
 ### 1.5.0
 

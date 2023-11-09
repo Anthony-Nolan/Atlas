@@ -34,7 +34,7 @@ namespace Atlas.DonorImport.Services
         {
             var failedSummary = failedDonors.SelectMany(d => d.Errors)
                 .GroupBy(e => e.ErrorMessage)
-                .Select(g => new FauilureSummary
+                .Select(g => new FailureSummary
                 {
                     Reason = g.Key,
                     Count = g.Count()
