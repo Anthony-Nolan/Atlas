@@ -49,6 +49,8 @@ The project version will be appropriately incremented with each change to the pr
 * Tagged donor import logs with the donor import file name.
 * Improved queryability of import failures by logging failed donor updates to a new table within shared database, `Donor.DonorImportFailures`.
 * Added new topic `donor-import-results` to store succcessful and failed import results.
+* Update `SuccessDonorImportMessage` with `FailedDonorSummary` that includes failure reasons and their count.
+* Added new `FailedDonorCount` column to `Donors.DonorImportHistory` to reflect number of donors were not updated.
 
 #### Match Prediction
 * Changed the way match prediction requests are queued for processing by activity functions, to prevent search requests with many donors from blocking the completion of smaller search requests.

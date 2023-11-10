@@ -12,7 +12,7 @@ namespace Atlas.DonorImport.Data.Repositories
     {
         public Task InsertNewDonorImportRecord(string filename, string messageId, DateTime uploadTime);
         public Task UpdateDonorImportState(string filename, DateTime uploadTime, DonorImportState donorState);
-        public Task IncrementImportedDonorCount(string filename, DateTime uploadTime, int numberToAdd);
+        public Task IncrementImportedDonorCount(string filename, DateTime uploadTime, int importedCount, int failedCount);
         public Task<DonorImportHistoryRecord> GetFileIfExists(string filename, DateTime uploadTime);
         public Task<IReadOnlyCollection<DonorImportHistoryRecord>> GetLongRunningFiles(TimeSpan duration);
     }
@@ -75,14 +75,15 @@ WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
             }
         }
 
-        public async Task IncrementImportedDonorCount(string filename, DateTime uploadTime, int numberToAdd)
+        public async Task IncrementImportedDonorCount(string filename, DateTime uploadTime, int importedCount, int failedCount)
         {
             await using (var connection = new SqlConnection(connectionString))
             {
                 var sql = $@"UPDATE {DonorImportHistoryRecord.QualifiedTableName}
-SET ImportedDonorsCount = ImportedDonorsCount + (@Count)
-WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
-                await connection.ExecuteAsync(sql, new {FileName = filename, UploadTime = uploadTime, Count = numberToAdd});
+SET ImportedDonorsCount = ImportedDonorsCount + (@{nameof(importedCount)}),
+    FailedDonorCount = ISNULL(FailedDonorCount, 0) + (@{nameof(failedCount)})
+WHERE Filename = (@{nameof(filename)}) AND UploadTime = (@{nameof(uploadTime)})";
+                await connection.ExecuteAsync(sql, new { filename, uploadTime, importedCount, failedCount });
             }
         }
 

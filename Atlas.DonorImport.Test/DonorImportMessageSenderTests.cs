@@ -56,11 +56,12 @@ namespace Atlas.DonorImport.Test
             const int invalidDonorsCount = 5;
             var invalidDonors = DonorUpdateBuilder.New.Build(invalidDonorsCount).ToList();
             var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(validDonors.Concat(invalidDonors).ToArray()).Build();
+            var invalidDonorsWithErrors = invalidDonors.Select(d => new SearchableDonorValidationResult { DonorUpdate = d }).ToList();
             fileParser.PrepareToLazilyParseDonorUpdates(file.Contents).Returns(new LazilyParsingDonorFile(file.Contents));
             donorUpdateCategoriser.Categorise(Arg.Any<IEnumerable<DonorUpdate>>(), Arg.Any<string>())
                 .Returns(new DonorUpdateCategoriserResults
                 {
-                    InvalidDonors = invalidDonors,
+                    InvalidDonors = invalidDonorsWithErrors,
                     ValidDonors = validDonors
                 });
             donorLogService.FilterDonorUpdatesBasedOnUpdateTime(Arg.Any<IEnumerable<DonorUpdate>>(), Arg.Any<DateTime>())
@@ -68,7 +69,7 @@ namespace Atlas.DonorImport.Test
 
             await donorFileImporter.ImportDonorFile(file);
 
-            await donorImportMessageSender.Received().SendSuccessMessage(file.FileLocation, validDonorCount, invalidDonorsCount);
+            await donorImportMessageSender.Received().SendSuccessMessage(file.FileLocation, validDonorCount, Arg.Is<List<SearchableDonorValidationResult>>(r => r.Count == invalidDonorsCount));
         }
 
         [Test]

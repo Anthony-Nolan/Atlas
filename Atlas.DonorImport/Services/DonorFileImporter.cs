@@ -12,6 +12,7 @@ using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Logger;
 using Dasync.Collections;
 using MoreLinq;
+using static Atlas.DonorImport.Services.DonorUpdateCategoriser;
 
 // ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
 
@@ -64,7 +65,7 @@ namespace Atlas.DonorImport.Services
             var importRecord = await donorImportFileHistoryService.RegisterStartOfDonorImport(file);
 
             var importedDonorCount = 0;
-            var invalidDonorIds = new List<string>();
+            var invalidDonors = new List<SearchableDonorValidationResult>();
             var donorUpdatesToSkip = importRecord?.ImportedDonorsCount ?? 0;
 
             if (donorUpdatesToSkip > 0)
@@ -90,7 +91,7 @@ namespace Atlas.DonorImport.Services
                     var reifiedDonorBatch = await donorUpdatesToApply.ToListAsync();
                     await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file, categoriserResults.InvalidDonors.Count);
 
-                    invalidDonorIds = invalidDonorIds.Concat(categoriserResults.InvalidDonors.Select(d => d.RecordId)).ToList();
+                    invalidDonors.AddRange(categoriserResults.InvalidDonors);
                     importedDonorCount += reifiedDonorBatch.Count;
                     logger.SendTrace($"Batch complete - imported {reifiedDonorBatch.Count} donors this batch. Cumulatively {importedDonorCount} donors. ");
                 }
@@ -98,13 +99,13 @@ namespace Atlas.DonorImport.Services
                 await donorImportFileHistoryService.RegisterSuccessfulDonorImport(file);
 
                 logger.SendTrace(
-                    $"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s). Failed to import {invalidDonorIds.Count} donor(s).",
+                    $"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s). Failed to import {invalidDonors.Count} donor(s).",
                     LogLevel.Info,
-                    invalidDonorIds.Count == 0
+                    invalidDonors.Count == 0
                         ? null
-                        : new Dictionary<string, string> { { "FailedDonorIds", $"[{invalidDonorIds.StringJoin(", ")}]" } });
-
-                await donorImportMessageSender.SendSuccessMessage(file.FileLocation, importedDonorCount, invalidDonorIds.Count);
+                        : new Dictionary<string, string> { { "FailedDonorIds", $"[{invalidDonors.Select(d => d.DonorUpdate.RecordId).StringJoin(", ")}]" } });
+                
+                await donorImportMessageSender.SendSuccessMessage(file.FileLocation, importedDonorCount, invalidDonors);
             }
             catch (EmptyDonorFileException e)
             {

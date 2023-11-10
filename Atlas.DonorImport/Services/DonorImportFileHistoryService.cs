@@ -14,7 +14,7 @@ namespace Atlas.DonorImport.Services
     {
         public Task<DonorImportHistoryRecord> RegisterStartOfDonorImport(DonorImportFile donorFile);
         public Task RegisterSuccessfulDonorImport(DonorImportFile donorFile);
-        public Task RegisterSuccessfulBatchImport(DonorImportFile donorFile, int count);
+        public Task RegisterSuccessfulBatchImport(DonorImportFile donorFile, int importedCount, int failedCount);
         public Task RegisterFailedDonorImportWithPermanentError(DonorImportFile donorFile);
         public Task RegisterUnexpectedDonorImportError(DonorImportFile donorFile);
         public Task SendNotificationForStalledImports();
@@ -73,10 +73,10 @@ namespace Atlas.DonorImport.Services
             await UpdateDonorImportRecord(donorFile, DonorImportState.Completed);
         }
 
-        public async Task RegisterSuccessfulBatchImport(DonorImportFile donorFile, int count)
+        public async Task RegisterSuccessfulBatchImport(DonorImportFile donorFile, int importedCount, int failedCount)
         {
             var filename = GetFileNameFromLocation(donorFile.FileLocation);
-            await repository.IncrementImportedDonorCount(filename, donorFile.UploadTime, count);
+            await repository.IncrementImportedDonorCount(filename, donorFile.UploadTime, importedCount, failedCount);
         }
 
         public async Task RegisterFailedDonorImportWithPermanentError(DonorImportFile donorFile)

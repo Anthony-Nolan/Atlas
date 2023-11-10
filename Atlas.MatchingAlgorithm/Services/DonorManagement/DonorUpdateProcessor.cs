@@ -151,6 +151,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             var existingDonors = await donorReader.GetDonors(searchableDonorUpdates.Select(d => d.DonorId));
             foreach (var searchableDonorUpdate in searchableDonorUpdates)
             {
+                searchableDonorUpdate.PublishedDateTime = DateTimeOffset.UtcNow;
                 searchableDonorUpdate.IsAvailableForSearch = existingDonors.ContainsKey(searchableDonorUpdate.DonorId);
 
                 if (searchableDonorUpdate.IsAvailableForSearch)

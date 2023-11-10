@@ -23,11 +23,11 @@ namespace Atlas.DonorImport.Services
     {
         /// <param name="donorUpdates">Batch of donors to update</param>
         /// <param name="file">The donor import file being imported</param>
-        /// <param name="skippedDonors">
+        /// <param name="failedDonorsCount">
         /// The number of donors that were processed in a batch, but have not been applied due to per-donor validation failure.
         /// This must be passed in here as we need to apply donor updates and logs in the same transaction.
         /// </param>
-        Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, DonorImportFile file, int skippedDonors);
+        Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, DonorImportFile file, int failedDonorsCount);
     }
 
     internal class DonorRecordChangeApplier : IDonorRecordChangeApplier
@@ -61,11 +61,11 @@ namespace Atlas.DonorImport.Services
             this.donorUpdateMapper = donorUpdateMapper;
         }
 
-        public async Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, DonorImportFile file, int skippedDonors)
+        public async Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, DonorImportFile file, int failedDonorsCount)
         {
             if (!donorUpdates.Any())
             {
-                await donorImportHistoryService.RegisterSuccessfulBatchImport(file, skippedDonors);
+                await donorImportHistoryService.RegisterSuccessfulBatchImport(file, 0, failedDonorsCount);
                 return;
             }
 
@@ -74,7 +74,7 @@ namespace Atlas.DonorImport.Services
                 var updates = await ApplyUpdatesToDonorStore(donorUpdates, file);
                 await SavePublishableDonorUpdates(updates);
                 await donorImportLogService.SetLastUpdated(donorUpdates, file.UploadTime);
-                await donorImportHistoryService.RegisterSuccessfulBatchImport(file, donorUpdates.Count + skippedDonors);
+                await donorImportHistoryService.RegisterSuccessfulBatchImport(file, donorUpdates.Count, failedDonorsCount);
                 transactionScope.Complete();
             }
         }
