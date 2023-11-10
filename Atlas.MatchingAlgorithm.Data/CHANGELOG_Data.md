@@ -47,10 +47,10 @@ Copy of donor store from the persistent donor table, allowing for FK relationshi
 
 Log of when donors were last updated, to enforce donor updates are applied in strict order.
 
-# `Id`
-# `DonorId` - *matching algorithm* assigned donor id from [Donors](#donors)
-# `SequenceNumberOfLastUpdate` - id from service bus message triggering the latest update for the donor (not used in practice)
-# `LastUpdateDateTime` - time this donor was last updated
+- `Id`
+- `DonorId` - *matching algorithm* assigned donor id from [Donors](#donors)
+- `SequenceNumberOfLastUpdate` - id from service bus message triggering the latest update for the donor (not used in practice)
+- `LastUpdateDateTime` - time this donor was last updated
 
 ### PGroupNames
 
