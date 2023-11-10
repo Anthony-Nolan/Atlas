@@ -47,6 +47,9 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
     "PublishDonorUpdates:DeletionCronSchedule"        = var.DELETE_PUBLISHED_DONOR_UPDATES_CRONTAB
     "PublishDonorUpdates:PublishCronSchedule"         = var.PUBLISH_DONOR_UPDATES_CRONTAB
     "PublishDonorUpdates:PublishedUpdateExpiryInDays" = var.PUBLISHED_UPDATE_EXPIRY_IN_DAYS
+	
+	"FailureLogs:DeletionCronSchedule" = var.FAILURE_LOGS_CRONTAB
+    "FailureLogs:ExpiryInDays":        = var.FAILURE_LOGS_EXPIRY_IN_DAYS
 
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = var.MAX_INSTANCES
     "WEBSITE_RUN_FROM_PACKAGE"                  = "1"

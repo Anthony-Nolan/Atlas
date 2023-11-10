@@ -44,3 +44,11 @@ variable "STALLED_FILE_CHECK_CRONTAB" {
 variable "STALLED_FILE_DURATION" {
   type = string
 }
+
+variable "FAILURE_LOGS_CRONTAB" {
+  type = string
+}
+
+variable "FAILURE_LOGS_EXPIRY_IN_DAYS" {
+  type = number
+}

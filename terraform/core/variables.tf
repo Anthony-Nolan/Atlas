@@ -116,6 +116,18 @@ variable "DONOR_IMPORT_STALLED_FILE_DURATION" {
   description = "How long, in hours, a file must have been in the 'Started' state to be considered stalled"
 }
 
+variable "DONOR_IMPORT_FAILURE_LOGS_CRONTAB" {
+  type        = string
+  default     = "0 0 0 * * *"
+  description = "Crontab used to determine how often to delete expired donor import failure logs."
+}
+
+variable "DONOR_IMPORT_FAILURE_LOGS_EXPIRY_IN_DAYS" {
+  type        = number
+  default     = 60
+  description = "Number of days after donor import failure logs will expire and be eligible for deletion."
+}
+
 variable "ELASTIC_SERVICE_PLAN_SKU_SIZE" {
   type        = string
   default     = "EP1"
