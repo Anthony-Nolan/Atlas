@@ -23,8 +23,10 @@
         public int? MatchGradeScore;
 
         /// <summary>
-        /// Will be `true` if patient and donor overlap in their matching serologies.
-        /// Will be `null` if either patient or donor is a typing that does not have any serologies assigned within IMGT/HLA `rel_dna_ser`, e.g.,  non-expressing alleles, alleles with only "?" assignment, etc.
+        /// Will be `true` if:
+        ///   - patient and donor typing are both molecular AND are allele-level matched
+        ///   - patient and donor overlap in their matching serologies
+        /// Else will be `false`.
         /// </summary>
         public bool? IsAntigenMatch;
     }

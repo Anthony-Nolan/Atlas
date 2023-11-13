@@ -200,3 +200,27 @@
     And scoring is enabled at locus DRB1
     When I run a 4/6 search
     Then antigen match should be true in position 1 and false in position 2 of locus DRB1
+
+  Scenario: Patient and donor are allele-matched at C and one position has no assigned serology
+    Given a patient has a match
+    And the matching donor has the following HLA:
+    |A_1    |A_2    |B_1    |B_2    |C_1    |C_2    |DRB1_1 |DRB1_2 |
+    |*02:01 |*02:01 |*08:01 |*08:01 |*01:02 |*16:58 |*07:01 |*07:01 |
+    And the patient has the following HLA:
+    |A_1    |A_2    |B_1    |B_2    |C_1    |C_2    |DRB1_1 |DRB1_2 |
+    |*02:01 |*02:01 |*08:01 |*08:01 |*01:02 |*16:01 |*07:01 |*07:01 |
+    And scoring is enabled at locus C
+    When I run a 6/6 search
+    Then antigen match should be true at locus C at both positions
+
+  Scenario: Patient and donor are allele-mismatched at C and the mismatched position has no assigned serology
+    Given a patient has a match
+    And the matching donor has the following HLA:
+    |A_1    |A_2    |B_1    |B_2    |C_1    |C_2    |DRB1_1 |DRB1_2 |
+    |*02:01 |*02:01 |*08:01 |*08:01 |*01:02 |*16:06 |*07:01 |*07:01 |
+    And the patient has the following HLA:
+    |A_1    |A_2    |B_1    |B_2    |C_1    |C_2    |DRB1_1 |DRB1_2 |
+    |*02:01 |*02:01 |*08:01 |*08:01 |*01:02 |*16:01 |*07:01 |*07:01 |
+    And scoring is enabled at locus C
+    When I run a 6/6 search
+    Then antigen match should be true in position 1 and false in position 2 of locus C
