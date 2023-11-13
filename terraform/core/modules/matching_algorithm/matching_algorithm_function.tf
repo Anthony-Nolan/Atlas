@@ -12,7 +12,7 @@ locals {
     "AzureManagement:Database:ResourceGroupName"                = var.resource_group.name
     "AzureManagement:Database:SubscriptionId"                   = var.general.subscription_id
 
-    "AzureAppConfiguration:ConnectionString"  = var.azure_app_configuration.primary_read_key[0].connection_string
+    "AzureAppConfiguration:ConnectionString" = var.azure_app_configuration.primary_read_key[0].connection_string
 
     "AzureStorage:ConnectionString"           = var.azure_storage.primary_connection_string
     "AzureStorage:SearchResultsBlobContainer" = azurerm_storage_container.search_matching_results_blob_container.name

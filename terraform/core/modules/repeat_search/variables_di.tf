@@ -15,8 +15,8 @@ variable "application_insights" {
 
 variable "azure_app_configuration" {
   type = object({
-    id                = string
-    primary_read_key  = list(object({
+    id = string
+    primary_read_key = list(object({
       connection_string = string
     }))
   })
