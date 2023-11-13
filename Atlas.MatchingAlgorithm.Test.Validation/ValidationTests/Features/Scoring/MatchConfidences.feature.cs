@@ -746,7 +746,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
 #line 107
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-                TechTalk.SpecFlow.Table table37 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table41 = new TechTalk.SpecFlow.Table(new string[] {
                             "A_1",
                             "A_2",
                             "B_1",
@@ -757,7 +757,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                             "C_2",
                             "DQB1_1",
                             "DQB1_2"});
-                table37.AddRow(new string[] {
+                table41.AddRow(new string[] {
                             "*01:01",
                             "*01:02",
                             "52",
@@ -769,9 +769,9 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                             "*05:02",
                             "*02:01"});
 #line 108
-    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table37, "And ");
+    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table41, "And ");
 #line hidden
-                TechTalk.SpecFlow.Table table38 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table42 = new TechTalk.SpecFlow.Table(new string[] {
                             "A_1",
                             "A_2",
                             "B_1",
@@ -782,7 +782,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                             "C_2",
                             "DQB1_1",
                             "DQB1_2"});
-                table38.AddRow(new string[] {
+                table42.AddRow(new string[] {
                             "*01:01",
                             "*01:02",
                             "*51:01",
@@ -794,7 +794,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                             "*05:02",
                             "*02:01"});
 #line 111
-    testRunner.And("the patient has the following HLA:", ((string)(null)), table38, "And ");
+    testRunner.And("the patient has the following HLA:", ((string)(null)), table42, "And ");
 #line hidden
 #line 114
     testRunner.And("scoring is enabled at locus B", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
@@ -890,14 +890,14 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
 #line 127
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-                TechTalk.SpecFlow.Table table39 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table43 = new TechTalk.SpecFlow.Table(new string[] {
                             "A_1",
                             "A_2",
                             "B_1",
                             "B_2",
                             "DRB1_1",
                             "DRB1_2"});
-                table39.AddRow(new string[] {
+                table43.AddRow(new string[] {
                             "*01:AC",
                             "*66:01",
                             "*57:01",
@@ -905,16 +905,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                             "*13:XX",
                             "*07:01"});
 #line 128
-    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table39, "And ");
+    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table43, "And ");
 #line hidden
-                TechTalk.SpecFlow.Table table40 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table44 = new TechTalk.SpecFlow.Table(new string[] {
                             "A_1",
                             "A_2",
                             "B_1",
                             "B_2",
                             "DRB1_1",
                             "DRB1_2"});
-                table40.AddRow(new string[] {
+                table44.AddRow(new string[] {
                             "1",
                             "*66:01",
                             "*57:01",
@@ -922,7 +922,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                             "*13:XX",
                             "*07:01"});
 #line 131
-    testRunner.And("the patient has the following HLA:", ((string)(null)), table40, "And ");
+    testRunner.And("the patient has the following HLA:", ((string)(null)), table44, "And ");
 #line hidden
 #line 134
     testRunner.And("scoring is enabled at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
@@ -969,14 +969,14 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
 #line 139
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-                TechTalk.SpecFlow.Table table41 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table45 = new TechTalk.SpecFlow.Table(new string[] {
                             "A_1",
                             "A_2",
                             "B_1",
                             "B_2",
                             "DRB1_1",
                             "DRB1_2"});
-                table41.AddRow(new string[] {
+                table45.AddRow(new string[] {
                             "*01:01/03",
                             "*66:01",
                             "*57:01",
@@ -984,16 +984,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                             "*13:XX",
                             "*07:01"});
 #line 140
-    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table41, "And ");
+    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table45, "And ");
 #line hidden
-                TechTalk.SpecFlow.Table table42 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table46 = new TechTalk.SpecFlow.Table(new string[] {
                             "A_1",
                             "A_2",
                             "B_1",
                             "B_2",
                             "DRB1_1",
                             "DRB1_2"});
-                table42.AddRow(new string[] {
+                table46.AddRow(new string[] {
                             "1",
                             "*66:01",
                             "*57:01",
@@ -1001,7 +1001,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                             "*13:XX",
                             "*07:01"});
 #line 143
-    testRunner.And("the patient has the following HLA:", ((string)(null)), table42, "And ");
+    testRunner.And("the patient has the following HLA:", ((string)(null)), table46, "And ");
 #line hidden
 #line 146
     testRunner.And("scoring is enabled at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");

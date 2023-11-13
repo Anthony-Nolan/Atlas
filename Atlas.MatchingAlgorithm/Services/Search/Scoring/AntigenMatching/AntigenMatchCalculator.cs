@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
-using Atlas.Common.Utils.Extensions;
+using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching
@@ -33,29 +33,24 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching
             return ArePatientAndDonorAntigenMatched(patientMetadata, donorMetadata);
         }
 
-        private static bool? ArePatientAndDonorAntigenMatched(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
+        private static bool ArePatientAndDonorAntigenMatched(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
         {
             var patientMatchingSerologies = patientMetadata.HlaScoringInfo.MatchingSerologies.Select(s => s.Name).ToList();
             var donorSerologyEquivalents = donorMetadata.HlaScoringInfo.MatchingSerologies.Where(s => s.IsDirectMapping).Select(s => s.Name).ToList();
 
+            // if both typings are allele-matched, expressing, molecular typings, then early return `true`
+            bool IsExpressingMolecular(IHlaScoringMetadata metadata) =>
+                metadata.TypingMethod == TypingMethod.Molecular && metadata.HlaScoringInfo.MatchingPGroups.Any();
+            
+            if (IsExpressingMolecular(patientMetadata) &&
+                IsExpressingMolecular(donorMetadata) &&
+                patientMetadata.HlaScoringInfo.MatchingPGroups.Intersect(donorMetadata.HlaScoringInfo.MatchingPGroups).Any())
+            {
+                return true;
+            }
+
             // if both typings have assigned serologies, then determine if they are antigen-matched by checking for overlapping assignments
-            if (patientMatchingSerologies.Any() && donorSerologyEquivalents.Any())
-            {
-                return patientMatchingSerologies.Intersect(donorSerologyEquivalents).Any();
-            }
-
-            // else if either typing is a non-expressing typing, then return `false`
-            static bool IsNonExpressingTyping(IHlaScoringMetadata metadata) =>
-                metadata.HlaScoringInfo.MatchingPGroups.IsNullOrEmpty() && 
-                metadata.HlaScoringInfo.MatchingSerologies.IsNullOrEmpty();
-
-            if (IsNonExpressingTyping(patientMetadata) || IsNonExpressingTyping(donorMetadata))
-            {
-                return false;
-            }
-
-            // finally, default to `null` where antigen match cannot be determined, e.g., expressing allele with no serology assignment
-            return null;
+            return patientMatchingSerologies.Any() && donorSerologyEquivalents.Any() && patientMatchingSerologies.Intersect(donorSerologyEquivalents).Any();
         }
     }
 }
