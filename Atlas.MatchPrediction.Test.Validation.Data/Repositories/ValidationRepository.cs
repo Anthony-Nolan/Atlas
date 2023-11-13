@@ -32,11 +32,12 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories
             const string sql = @$"
                 DELETE FROM {ResultsTable}
                 DELETE FROM {RequestsTable}
+                DELETE FROM {nameof(ValidationContext.TestDonorExportRecords)}
                 DELETE FROM {nameof(ValidationContext.SubjectInfo)}";
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                await conn.ExecuteAsync(sql);
+                await conn.ExecuteAsync(sql, commandTimeout: 600);
             }
         }
 
@@ -55,7 +56,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                await conn.ExecuteAsync(sql, new { firstPatientId });
+                await conn.ExecuteAsync(sql, new { firstPatientId }, commandTimeout: 600);
             }
         }
 

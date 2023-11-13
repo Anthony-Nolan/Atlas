@@ -29,7 +29,8 @@ namespace Atlas.MatchPrediction.Test.Validation
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<MatchPredictionRequestsSettings>(),
                 ConnectionStringReader("MatchPredictionValidation:Sql"),
-                ConnectionStringReader("MatchPrediction:Sql"));
+                ConnectionStringReader("MatchPrediction:Sql"),
+                ConnectionStringReader("DonorImport:Sql"));
         }
 
         private static void RegisterSettings(IServiceCollection services)

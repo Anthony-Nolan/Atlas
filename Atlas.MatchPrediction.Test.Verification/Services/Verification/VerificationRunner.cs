@@ -84,12 +84,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
         private async Task<bool> TestHarnessDonorsNotOnAtlasDonorStores(int testHarnessId)
         {
-            var maxExportRecordId = await exportRepository.GetMaxExportRecordId();
+            var lastExportRecord = await exportRepository.GetLastExportRecord();
             var harness = await harnessRepository.GetTestHarness(testHarnessId);
 
-            return maxExportRecordId == null
+            return lastExportRecord == null
                 || harness.ExportRecord_Id == null
-                || harness.ExportRecord_Id != maxExportRecordId;
+                || harness.ExportRecord_Id != lastExportRecord.Id;
         }
 
         private async Task<bool> TestHarnessHaplotypeFrequencySetNotActiveOnAtlas(int testHarnessId)

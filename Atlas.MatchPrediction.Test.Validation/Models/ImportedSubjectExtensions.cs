@@ -33,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Models
             return importedSubject.DONOR_TYPE?.ToUpper() switch
             {
                 "C" => DonorType.Cord,
-                "A" => DonorType.Adult,
+                "D" => DonorType.Adult,
                 null when subjectType == SubjectType.Donor => DonorType.Adult,
                 _ => null,
             };

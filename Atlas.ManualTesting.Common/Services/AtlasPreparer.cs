@@ -12,7 +12,7 @@ namespace Atlas.ManualTesting.Common.Services
     /// </summary>
     public interface IAtlasPreparer
     {
-        Task UpdateLatestExportRecordWithDataRefreshDetails(CompletedDataRefresh dataRefresh);
+        Task SaveDataRefreshDetails(CompletedDataRefresh dataRefresh);
     }
 
     public abstract class AtlasPreparer : IAtlasPreparer
@@ -31,9 +31,9 @@ namespace Atlas.ManualTesting.Common.Services
             this.dataRefreshRequestUrl = dataRefreshRequestUrl;
         }
 
-        public async Task UpdateLatestExportRecordWithDataRefreshDetails(CompletedDataRefresh dataRefresh)
+        public async Task SaveDataRefreshDetails(CompletedDataRefresh dataRefresh)
         {
-            await exportRepository.UpdateLatestRecordWithDataRefreshDetails(dataRefresh);
+            await exportRepository.SetCompletedDataRefreshInfo(dataRefresh);
 
             var successStatus = dataRefresh.WasSuccessful ? "" : "not ";
             Debug.WriteLine($"Latest export record updated: data refresh {dataRefresh.DataRefreshRecordId} was {successStatus}successful.");
@@ -43,24 +43,24 @@ namespace Atlas.ManualTesting.Common.Services
         /// <exception cref="Exception"></exception>
         protected async Task<int> PrepareAtlasDonorStores()
         {
-            if (await AnyIncompleteExports())
+            if (await LastExportIsIncomplete())
             {
-                throw new Exception("Incomplete test donor export record(s) found; this suggests a previous export is still running " +
+                throw new Exception("Last test donor export record is incomplete; this suggests the previous export is still running " +
                                     "or that something went wrong with data refresh. See README for further guidance.");
             }
 
             var exportRecordId = await ExportDonors();
-            await InvokeDataRefresh();
+            await InvokeDataRefresh(exportRecordId);
 
             return exportRecordId;
         }
 
         protected abstract Task<IEnumerable<Donor>> GetTestDonors();
 
-        private async Task<bool> AnyIncompleteExports()
+        private async Task<bool> LastExportIsIncomplete()
         {
-            var incompleteRecords = await exportRepository.GetRecordsWithoutDataRefreshDetails();
-            return incompleteRecords.Any();
+            var lastRecord = await exportRepository.GetLastExportRecord();
+            return lastRecord != null && lastRecord.DataRefreshCompleted == null;
         }
 
         private async Task<int> ExportDonors()
@@ -73,23 +73,28 @@ namespace Atlas.ManualTesting.Common.Services
             return recordId;
         }
 
-        private async Task InvokeDataRefresh()
+        private async Task InvokeDataRefresh(int exportRecordId)
         {
             Debug.WriteLine("Requesting data refresh on matching algorithm.");
 
-            var httpRequestClient = new HttpClient();
-
-            // need sufficient time for request to return; note, this is not equivalent to how long data refresh takes to complete.
-            httpRequestClient.Timeout = TimeSpan.FromMinutes(5);
+            var httpRequestClient = new HttpClient
+            {
+                // need sufficient time for request to return; note, this is not equivalent to how long data refresh takes to complete.
+                Timeout = TimeSpan.FromMinutes(5)
+            };
 
             var request = JsonConvert.SerializeObject(new DataRefreshRequest { ForceDataRefresh = true });
             var response = await httpRequestClient.PostAsync(dataRefreshRequestUrl, new StringContent(request));
+            
+            if(response.IsSuccessStatusCode)
+            {
+                var dataRefreshResponse = JsonConvert.DeserializeObject<DataRefreshResponse>(await response.Content.ReadAsStringAsync());
+                Debug.WriteLine("Data refresh request submitted - check relevant AI logs for detailed progress messages.");
+                await exportRepository.SetDataRefreshRecordId(exportRecordId, dataRefreshResponse.DataRefreshRecordId.Value);
+                return;
+            }
 
-            var debugMessage = response.IsSuccessStatusCode
-                ? "Data refresh request submitted - check relevant AI logs for detailed progress messages."
-                : $"Data refresh request failed: {response.ReasonPhrase}";
-
-            Debug.WriteLine(debugMessage);
+            Debug.WriteLine($"Data refresh request failed: {response.ReasonPhrase}");
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Utils.Extensions;
+using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.ManualTesting.Common.Models;
 using Atlas.ManualTesting.Common.Repositories;
 using Atlas.ManualTesting.Common.Services;
@@ -29,12 +30,14 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessageServiceBusSettings,
             Func<IServiceProvider, MatchPredictionRequestsSettings> fetchMatchPredictionRequestSettings,
             Func<IServiceProvider, string> fetchMatchPredictionValidationSqlConnectionString,
-            Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString)
+            Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString,
+            Func<IServiceProvider, string> fetchDonorImportSqlConnectionString)
         {
             services.RegisterSettings(fetchOutgoingMatchPredictionRequestSettings, fetchValidationAzureStorageSettings);
             services.RegisterDatabaseServices(fetchMatchPredictionValidationSqlConnectionString);
             services.RegisterServices(fetchValidationAzureStorageSettings, fetchDataRefreshSettings);
             services.RegisterHaplotypeFrequenciesReader(fetchMatchPredictionSqlConnectionString);
+            services.RegisterImportDatabaseTypes(fetchDonorImportSqlConnectionString);
             services.RegisterMatchPredictionResultsLocationPublisher(fetchMessageServiceBusSettings, fetchMatchPredictionRequestSettings);
         }
 
@@ -53,6 +56,8 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
                 new ValidationRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<ISubjectRepository, SubjectRepository>(sp =>
                 new SubjectRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<ITestDonorExportRepository>(sp =>
+             new TestDonorExportRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<IMatchPredictionRequestRepository, MatchPredictionRequestRepository>(sp =>
                 new MatchPredictionRequestRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<IMatchPredictionResultsRepository, MatchPredictionResultsRepository>(sp =>
@@ -66,6 +71,7 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
         {
             services.AddScoped<ISubjectInfoImporter, SubjectInfoImporter>();
             services.AddScoped<IFileReader<ImportedSubject>, FileReader<ImportedSubject>>();
+            services.AddScoped<ITestDonorExporter, TestDonorExporter>();
 
             services.AddScoped<IValidationAtlasPreparer, ValidationAtlasPreparer>(sp =>
             {

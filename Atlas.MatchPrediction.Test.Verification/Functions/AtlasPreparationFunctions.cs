@@ -58,7 +58,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
                 Connection = "MessagingServiceBus:ConnectionString")]
             CompletedDataRefresh dataRefresh)
         {
-            await atlasPreparer.UpdateLatestExportRecordWithDataRefreshDetails(dataRefresh);
+            await atlasPreparer.SaveDataRefreshDetails(dataRefresh);
         }
 
         private async Task<bool> TestHarnessNotCompleted(int testHarnessId)
