@@ -11,18 +11,30 @@ namespace Atlas.DonorImport.Test.Services
     [TestFixture]
     internal class DonorImportFailuresCleanerTests
     {
+        private IDonorImportFailureRepository _repository;
+
+        [SetUp]
+        public void Setup()
+        {
+            _repository = Substitute.For<IDonorImportFailureRepository>();
+        }
+
         [Test]
         public async Task DeleteExpiredDonorImportFailures_DeletesFailuresByExpectedCutOffDate()
         {
             const int expiryInDays = 10;
-            var failureLogsSettings = new FailureLogsSettings { ExpiryInDays = expiryInDays };
-            var repository = Substitute.For<IDonorImportFailureRepository>();
-            var cleaner = new DonorImportFailuresCleaner(repository, failureLogsSettings);
+            var cleaner = BuildCleaner(expiryInDays);
 
             await cleaner.DeleteExpiredDonorImportFailures();
 
-            await repository.Received()
+            await _repository.Received()
                 .DeleteDonorImportFailuresBefore(Arg.Is<DateTimeOffset>(d => DateTimeOffset.Now.Subtract(d).Days == expiryInDays));
+        }
+
+        private IDonorImportFailuresCleaner BuildCleaner(int expiryInDays)
+        {
+            var failureLogsSettings = new FailureLogsSettings { ExpiryInDays = expiryInDays };
+            return new DonorImportFailuresCleaner(_repository, failureLogsSettings);
         }
     }
 }
