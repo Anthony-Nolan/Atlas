@@ -113,7 +113,7 @@ Validation of the match prediction algorithm against either [exercise 3 of the W
   - This header line must be included, though the order of columns is not critical as long as the header is present.
   - Subjects not typed at the required loci (A, B, DRB1) will be ignored; debug output displays how many subjects were actually imported.
   - `DONOR_TYPE` is nullable:
-    - For the Patient file, this field is ignored.
+    - For the Patient file, this field is ignored and can be excluded entirely.
     - For the Donor file, if the field is empty, then `Adult` type will be assigned by default.
   - `HF_SET` field is nullable; Atlas will default to using the global HF set where the field is empty.
 
@@ -135,7 +135,7 @@ Validation of the match prediction algorithm against either [exercise 3 of the W
 - Upload the Haplotype Frequency (HF) file(s) to the target Atlas installation, prior to submitting search or match predictions requests.
   - Before upload, ensure that the HLA metadata dictionary (HMD) on the target Atlas instance has the HLA version that the frequency file was encoded to ([instructions for how to refresh HMD to a specific version](./README_Integration.md#hla-metadata)).
 
-### How to Run Exercise 3
+### Exercise 3
 
 #### HF Set Upload
 - The single HF set file provided with exercise 3 should be uploaded to the target Atlas installation as the **global** HF set.
@@ -156,6 +156,48 @@ After starting up the Functions app:
   - Messages that contain algorithm request IDs not in the requests table will be ignored but will also be taken off the queue.
 4. [Optional] In case any match prediction results were not downloaded, and their service bus messages have been taken off the queue, invoke function `Exercise3_PromptDownloadOfMissingResults`; this will query the database for those requests that are missing results, and send off new messages to the `results` topic, thereby kicking off the above described results-download process. This requires that the results files are still on the blob storage container.
 
+### Exercise 4
+
+#### HLA Nomenclature Version
+One of the requirement of excercise 4 is that the data should be interpreted to v3.52.0 of the IMGT/HLA nomenclature. As newer versions of the database have been published and Atlas always runs matching at the latest available nomenclature version, the Atlas instance under test must be pointed to a different data source to force the use of v3.52.0.
+
+On the Atlas instance under test:
+  1. Point to a fork of the IMGT/HLA repository whose `Latest` branch is a snapshot of v3.52.0, via the Matching Algorithm functions app config setting: `HlaMetadataDictionary:HlaNomenclatureSourceUrl`.
+  2. Delete all rows from the data refresh history table ("shared db" > `MatchingAlgorithmPersistent.DataRefreshHistory`), if any present.
+  3. Delete all rows from the shared db `Donors.Donors` table, if any present.
+  4. Import a single, valid donor update in `Full` mode (the HLA profile doesn't matter as this donor will eventually be deleted).
+  5. Initiate a data refresh job.
+
+The end result should be:
+  - The last row in data refresh table should show that the active db is on version "3520".
+  - The HMD should have a newly generated copy of version 3520.
+  - There should be a single donor in the `Donors` table of the active matching db.
+
+#### HF Set Upload
+- The collection of HF set files provided with exercise 4 should be uploaded to the target Atlas installation.
+- The folder `\MiscTestingAndDebuggingResources\ManualTesting\MatchPredictionValidation\exercise4\` contains a script that converts the delimited HF set files to the required JSON schema.
+- The script includes a step to convert a subset of HLA values to their equivalent small g group and merge any resulting haplotype duplicates.
+
+#### Export Test Donors to Atlas
+Test donors need to be exported to the Atlas instance before search requests can be run.
+
+- Launch the local functions app and call the http function: `PrepareAtlasDonorStores`.
+  - This takes in the ID of a completed test harness (see Swagger UI for request model).
+  - The request will take several minutes to complete as it involves the following steps:
+    1. Wipe the remote donor import donor store.
+    2. Re-populate it with test donors.
+    3. Force a data refresh on the matching algorithm.
+  - Ensure the following settings have been overriden in `local.settings.json` with values for the remote environment:
+      `DataRefresh:RequestUrl`, `DataRefresh:CompletionTopicSubscription`, and `DonorImport:Sql`.
+- As data refresh is a long-running process, a servicebus-triggered function, `HandleDataRefreshCompletion`, is used to determine when data refresh has actually completed.
+  - The local verification functions app should be left running to allow the triggering of `HandleDataRefreshCompletion`.
+  - On receipt of a new job completion message, the appropriate export record is updated with data refresh details,
+    including whether the job succeeded or failed - a failure should prompt further investigation before re-attempting export.
+- Make sure to check support alerts and AI logs for info on single donor processing failures.
+- If the `PrepareAtlasDonorStores` function complains about an incomplete test donor export record, try the following:
+  - Check whether a data refresh is still in progress; if so, leave the local functions app running so it can detect the job completion message and update the open export record.
+  - If the data refresh job failed, then manually delete the open export record from the local database, and start the export from scratch.
+
 ## Match Prediction Verification using simulated data
 Verification is the validation of match prediction using patient and donor data that has been simulated from a given HLA haplotype frequency dataset.
 The exercise involves:
@@ -164,6 +206,7 @@ The exercise involves:
   - running searches with match prediction enabled,
   - and, finally, analysing the results.
 
+### Contents
 - [Glossary](#glossary)
 - [Start Up Guide](#start-up-guide)
 - [Test Harness Generation](#test-harness-generation)
@@ -171,7 +214,7 @@ The exercise involves:
     + [Populate/refresh the Local MAC store](#populate-refresh-the-local-mac-store)
     + [Upload Haplotype Frequency Set File](#upload-haplotype-frequency-set-file)
   * [Generating the Test Harness](#generating-the-test-harness)
-- [Prepare Atlas to receive Search Requests](#prepare-atlas-to-receive-search-requests)
+- [Export Test Harness Donors to Atlas](#export-test-harness-donors-to-Atlas)
 - [Searching](#searching)
   * [Small g groups](#small-g-groups)
   * [Send Search Requests](#send-search-requests)
@@ -288,34 +331,8 @@ The following steps must be completed prior to generating the test harness.
       - Etc.
       - This means that the proportions of masking categories found within the final test harness may differ to those listed in the request.
 
-### Prepare Atlas to receive Search Requests
-- Test donors need to be exported to the remote verification environment before search requests can be run.
-  - Further, donor stores should only contain donors from one test harness at any one time.
-- To achieve this, launch the local functions app and call the http function: `PrepareAtlasDonorStores`.
-  - This takes in the ID of a completed test harness (see Swagger UI for request model).
-  - The request will take several minutes to complete as it involves the following steps:
-    1. Wipe the remote donor import donor store.
-    2. Re-populate it with donors from the test harness specified in the request.
-    3. Force a data refresh on the matching algorithm.
-  - Ensure the following settings have been overriden in `local.settings.json` with values for the remote environment:
-      `DataRefresh:RequestUrl`, `DataRefresh:CompletionTopicSubscription`, and `DonorImport:Sql`.
-- As data refresh is a long-running process, a servicebus-triggered function, `HandleDataRefreshCompletion`, is
-    used to determine when data refresh has actually completed.
-  - The local verification functions app should be left running to allow the triggering of `HandleDataRefreshCompletion`.
-  - On receipt of a new job completion message, the record for the last export attempt is updated with data refresh details,
-    including whether the job succeeded or failed - a failure should prompt further investigation before re-attempting export.
-- Make sure to check support alerts and AI logs for info on single donor processing failures.
-- If the data refresh job is interrupted before it completes, manually invoke the `ContinueDataRefresh` function
-  on the remote Matching Algorithm functions app.
-- At present, it is not possible to tie an export attempt to a data refresh request *before* the refresh job has completed;
-  some checks have been added to ensure only one export is attempted at a time.
-  - If the `PrepareAtlasDonorStores` function complains about incomplete test donor export records, try the following:
-    - Check whether a data refresh is still in progress; if so, leave the local functions app running so it can detect
-      the job completion message and update the open export record.
-    - If the data refresh job was interrupted, manually invoke the remote `ContinueDataRefresh` function. Again, leave
-      the local verifications function app running to pick up the completion message.
-    - If the interrupted data refresh job cannot be continued for some reason, then it is best to manually delete the open
-      export record from the local verification database, and start from scratch.
+### Export Test Harness Donors to Atlas
+Follow [instructions described above](#export-test-donors-to-atlas), making sure to set the `TestHarnessId` in the request body.
 
 ### Searching
 Note: at present, the framework is hard-coded to only run five locus (A,B,C,DQB1,DRB1) search requests.

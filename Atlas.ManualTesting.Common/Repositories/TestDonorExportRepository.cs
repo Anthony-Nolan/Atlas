@@ -7,11 +7,11 @@ namespace Atlas.ManualTesting.Common.Repositories
 {
     public interface ITestDonorExportRepository
     {
-        Task<IEnumerable<TestDonorExportRecord>> GetRecordsWithoutDataRefreshDetails();
         Task<int> AddRecord();
         Task SetExportedDateTimeToNow(int id);
-        Task UpdateLatestRecordWithDataRefreshDetails(CompletedDataRefresh dataRefresh);
-        Task<int?> GetMaxExportRecordId();
+        Task SetDataRefreshRecordId(int exportRecordId, int dataRefreshRecordId);
+        Task SetCompletedDataRefreshInfo(CompletedDataRefresh dataRefresh);
+        Task<TestDonorExportRecord?> GetLastExportRecord();
     }
 
     public class TestDonorExportRepository : ITestDonorExportRepository
@@ -24,15 +24,6 @@ namespace Atlas.ManualTesting.Common.Repositories
             this.connectionString = connectionString;
         }
 
-        public async Task<IEnumerable<TestDonorExportRecord>> GetRecordsWithoutDataRefreshDetails()
-        {
-            const string sql = $"SELECT * FROM {TableName} WHERE DataRefreshRecordId IS NULL";
-
-            await using (var conn = new SqlConnection(connectionString))
-            {
-                return await conn.QueryAsync<TestDonorExportRecord>(sql, commandTimeout: 180);
-            }
-        }
         public async Task<int> AddRecord()
         {
             var dateTimeNow = DateTime.UtcNow;
@@ -56,16 +47,28 @@ namespace Atlas.ManualTesting.Common.Repositories
             }
         }
 
-        public async Task UpdateLatestRecordWithDataRefreshDetails(CompletedDataRefresh dataRefresh)
+        public async Task SetDataRefreshRecordId(int exportId, int dataRefreshRecordId)
+        {
+            var dateTimeNow = DateTimeOffset.UtcNow;
+            const string sql = $@"UPDATE dbo.TestDonorExportRecords 
+                                SET DataRefreshRecordId = @{nameof(dataRefreshRecordId)}
+                                WHERE Id = @{nameof(exportId)}";
+
+            await using (var connection = new SqlConnection(connectionString))
+            {
+                await connection.ExecuteAsync(sql, new { dateTimeNow, exportId, dataRefreshRecordId });
+            }
+        }
+
+        public async Task SetCompletedDataRefreshInfo(CompletedDataRefresh dataRefresh)
         {
             var dateTimeNow = DateTimeOffset.UtcNow;
 
             const string sql = $@"
                 UPDATE {TableName} SET
                     DataRefreshCompleted = @{nameof(dateTimeNow)},
-                    DataRefreshRecordId = @{nameof(dataRefresh.DataRefreshRecordId)},
                     WasDataRefreshSuccessful = @{nameof(dataRefresh.WasSuccessful)}
-                WHERE Id = (SELECT MAX(Id) from {TableName})";
+                WHERE DataRefreshRecordId = @{nameof(dataRefresh.DataRefreshRecordId)}";
 
             await using (var connection = new SqlConnection(connectionString))
             {
@@ -73,13 +76,13 @@ namespace Atlas.ManualTesting.Common.Repositories
             }
         }
 
-        public async Task<int?> GetMaxExportRecordId()
+        public async Task<TestDonorExportRecord?> GetLastExportRecord()
         {
-            const string sql = $"SELECT MAX(Id) from {TableName}";
+            const string sql = $"SELECT TOP 1 * FROM {TableName} ORDER BY Id DESC";
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                return (await conn.QueryAsync<int?>(sql)).SingleOrDefault();
+                return (await conn.QueryAsync<TestDonorExportRecord>(sql)).SingleOrDefault();
             }
         }
     }

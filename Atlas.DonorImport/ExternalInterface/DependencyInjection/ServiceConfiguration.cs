@@ -44,6 +44,18 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.RegisterImportDatabaseTypes(fetchSqlConnectionString);
         }
 
+        public static void RegisterImportDatabaseTypes(
+        this IServiceCollection services,
+        Func<IServiceProvider, string> fetchDonorImportDatabaseConnectionString)
+        {
+            services.AddScoped<IDonorImportRepository>(sp => new DonorImportRepository(fetchDonorImportDatabaseConnectionString(sp)));
+            services.AddScoped<IDonorReadRepository>(sp => new DonorReadRepository(fetchDonorImportDatabaseConnectionString(sp)));
+            services.AddScoped<IDonorImportHistoryRepository>(sp => new DonorImportHistoryRepository(fetchDonorImportDatabaseConnectionString(sp)));
+            services.AddScoped<IDonorImportLogRepository>(sp => new DonorImportLogRepository(fetchDonorImportDatabaseConnectionString(sp)));
+            services.AddScoped<IPublishableDonorUpdatesRepository>(sp => new PublishableDonorUpdatesRepository(fetchDonorImportDatabaseConnectionString(sp)));
+            services.AddScoped<IDonorImportFailureRepository>(sp => new DonorImportFailureRepository(fetchDonorImportDatabaseConnectionString(sp)));
+        }
+
         public static void RegisterDonorUpdateServices(
              this IServiceCollection services,
              Func<IServiceProvider, string> fetchDonorImportDatabaseConnectionString)
@@ -154,18 +166,6 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings)
         {
             services.RegisterNotificationSender(fetchNotificationsServiceBusSettings, fetchApplicationInsightsSettings);
-        }
-
-        internal static void RegisterImportDatabaseTypes(
-             this IServiceCollection services,
-             Func<IServiceProvider, string> fetchDonorImportDatabaseConnectionString)
-        {
-            services.AddScoped<IDonorImportRepository>(sp => new DonorImportRepository(fetchDonorImportDatabaseConnectionString(sp)));
-            services.AddScoped<IDonorReadRepository>(sp => new DonorReadRepository(fetchDonorImportDatabaseConnectionString(sp)));
-            services.AddScoped<IDonorImportHistoryRepository>(sp => new DonorImportHistoryRepository(fetchDonorImportDatabaseConnectionString(sp)));
-            services.AddScoped<IDonorImportLogRepository>(sp => new DonorImportLogRepository(fetchDonorImportDatabaseConnectionString(sp)));
-            services.AddScoped<IPublishableDonorUpdatesRepository>(sp => new PublishableDonorUpdatesRepository(fetchDonorImportDatabaseConnectionString(sp)));
-            services.AddScoped<IDonorImportFailureRepository>(sp => new DonorImportFailureRepository(fetchDonorImportDatabaseConnectionString(sp)));
         }
 
         private static void RegisterDonorImportLogger(IServiceCollection services)

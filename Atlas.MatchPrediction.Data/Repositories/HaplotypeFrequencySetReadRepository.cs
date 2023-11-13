@@ -42,7 +42,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
         public async Task<IEnumerable<HaplotypeFrequencySet>> GetActiveHaplotypeFrequencySet(int populationId)
         {
             var sql = @$"SELECT * FROM {HaplotypeFrequencySet.QualifiedTableName}
-                        WHERE Active = 1 AND PopulationId = @{populationId},'')";
+                        WHERE Active = 1 AND PopulationId = @{nameof(populationId)}";
 
             return await RetryConfig.AsyncRetryPolicy.ExecuteAsync(async () =>
             {

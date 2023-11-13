@@ -24,7 +24,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4
         private readonly ISubjectRepository subjectRepository;
         private readonly IHaplotypeFrequencySetReader setReader;
 
-        private ConcurrentDictionary<int, HaplotypeFrequencySet> hfSets = new();
+        private readonly ConcurrentDictionary<int, HaplotypeFrequencySet> hfSets = new();
 
         public ValidationAtlasPreparer(
             ISubjectRepository subjectRepository,
@@ -46,7 +46,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4
         protected override async Task<IEnumerable<Donor>> GetTestDonors()
         {
             var donors = await subjectRepository.GetDonors();
-            return await Task.WhenAll(donors.Select(d => MapToDonorImportModel(d)));
+            return await Task.WhenAll(donors.Select(MapToDonorImportModel));
         }
 
         private async Task<Donor> MapToDonorImportModel(SubjectInfo subject)

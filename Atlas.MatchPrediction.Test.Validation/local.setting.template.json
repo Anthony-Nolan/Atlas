@@ -21,6 +21,7 @@
     "MessagingServiceBus:ConnectionString": "override-this"
   },
   "ConnectionStrings": {
+    "DonorImport:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
     "MatchPredictionValidation:Sql": "Data Source=(local);Initial Catalog=AtlasMatchPredictionValidation;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
     "MatchPrediction:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"
   }
