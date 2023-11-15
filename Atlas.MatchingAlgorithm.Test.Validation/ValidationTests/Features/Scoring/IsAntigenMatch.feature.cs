@@ -299,19 +299,19 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 39
-    testRunner.Then("antigen match should be false in position 1 and true in position 2 of locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("antigen match should be true at locus A at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient has broad serology and donor has the same broad")]
-        public virtual void PatientHasBroadSerologyAndDonorHasTheSameBroad()
+        [NUnit.Framework.DescriptionAttribute("Patient and donor are mismatched at A and one allele is non-expressing")]
+        public virtual void PatientAndDonorAreMismatchedAtAAndOneAlleleIsNon_Expressing()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has broad serology and donor has the same broad", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient and donor are mismatched at A and one allele is non-expressing", null, tagsOfScenario, argumentsOfScenario);
 #line 41
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -343,10 +343,10 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                             "DRB1_1",
                             "DRB1_2"});
                 table11.AddRow(new string[] {
-                            "*01:01",
-                            "*01:01",
-                            "16",
-                            "16",
+                            "*01:01:01:02N",
+                            "*03:01",
+                            "*08:01",
+                            "*08:01",
                             "*07:01",
                             "*07:01"});
 #line 43
@@ -360,35 +360,35 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                             "DRB1_1",
                             "DRB1_2"});
                 table12.AddRow(new string[] {
-                            "*01:01",
-                            "*01:01",
-                            "16",
-                            "16",
+                            "*01:01:01:02N",
+                            "*02:01",
+                            "*08:01",
+                            "*08:01",
                             "*07:01",
                             "*07:01"});
 #line 46
     testRunner.And("the patient has the following HLA:", ((string)(null)), table12, "And ");
 #line hidden
 #line 49
-    testRunner.And("scoring is enabled at locus B", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("scoring is enabled at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
 #line 50
-    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I run a 4/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 51
-    testRunner.Then("antigen match should be true at locus B at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("antigen match should be false at locus A at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient has broad serology and donor has split of that broad")]
-        public virtual void PatientHasBroadSerologyAndDonorHasSplitOfThatBroad()
+        [NUnit.Framework.DescriptionAttribute("Patient has broad serology and donor has the same broad")]
+        public virtual void PatientHasBroadSerologyAndDonorHasTheSameBroad()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has broad serology and donor has split of that broad", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has broad serology and donor has the same broad", null, tagsOfScenario, argumentsOfScenario);
 #line 53
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -422,8 +422,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                 table13.AddRow(new string[] {
                             "*01:01",
                             "*01:01",
-                            "38",
-                            "39",
+                            "16",
+                            "16",
                             "*07:01",
                             "*07:01"});
 #line 55
@@ -460,12 +460,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient has broad serology and donor has associated of that broad")]
-        public virtual void PatientHasBroadSerologyAndDonorHasAssociatedOfThatBroad()
+        [NUnit.Framework.DescriptionAttribute("Patient has broad serology and donor has split of that broad")]
+        public virtual void PatientHasBroadSerologyAndDonorHasSplitOfThatBroad()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has broad serology and donor has associated of that broad", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has broad serology and donor has split of that broad", null, tagsOfScenario, argumentsOfScenario);
 #line 65
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -499,8 +499,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                 table15.AddRow(new string[] {
                             "*01:01",
                             "*01:01",
-                            "3901",
-                            "3902",
+                            "38",
+                            "39",
                             "*07:01",
                             "*07:01"});
 #line 67
@@ -537,12 +537,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient has split serology and donor has the same split")]
-        public virtual void PatientHasSplitSerologyAndDonorHasTheSameSplit()
+        [NUnit.Framework.DescriptionAttribute("Patient has broad serology and donor has associated of that broad")]
+        public virtual void PatientHasBroadSerologyAndDonorHasAssociatedOfThatBroad()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has split serology and donor has the same split", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has broad serology and donor has associated of that broad", null, tagsOfScenario, argumentsOfScenario);
 #line 77
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -576,8 +576,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                 table17.AddRow(new string[] {
                             "*01:01",
                             "*01:01",
-                            "39",
-                            "39",
+                            "3901",
+                            "3902",
                             "*07:01",
                             "*07:01"});
 #line 79
@@ -593,8 +593,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                 table18.AddRow(new string[] {
                             "*01:01",
                             "*01:01",
-                            "39",
-                            "39",
+                            "16",
+                            "16",
                             "*07:01",
                             "*07:01"});
 #line 82
@@ -614,12 +614,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient has split serology and donor has associated of that split")]
-        public virtual void PatientHasSplitSerologyAndDonorHasAssociatedOfThatSplit()
+        [NUnit.Framework.DescriptionAttribute("Patient has split serology and donor has the same split")]
+        public virtual void PatientHasSplitSerologyAndDonorHasTheSameSplit()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has split serology and donor has associated of that split", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has split serology and donor has the same split", null, tagsOfScenario, argumentsOfScenario);
 #line 89
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -653,8 +653,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                 table19.AddRow(new string[] {
                             "*01:01",
                             "*01:01",
-                            "3901",
-                            "3902",
+                            "39",
+                            "39",
                             "*07:01",
                             "*07:01"});
 #line 91
@@ -691,12 +691,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient has split serology and donor has broad of that split")]
-        public virtual void PatientHasSplitSerologyAndDonorHasBroadOfThatSplit()
+        [NUnit.Framework.DescriptionAttribute("Patient has split serology and donor has associated of that split")]
+        public virtual void PatientHasSplitSerologyAndDonorHasAssociatedOfThatSplit()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has split serology and donor has broad of that split", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has split serology and donor has associated of that split", null, tagsOfScenario, argumentsOfScenario);
 #line 101
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -730,8 +730,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                 table21.AddRow(new string[] {
                             "*01:01",
                             "*01:01",
-                            "16",
-                            "16",
+                            "3901",
+                            "3902",
                             "*07:01",
                             "*07:01"});
 #line 103
@@ -768,12 +768,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient has split serology and donor has sibling of that split")]
-        public virtual void PatientHasSplitSerologyAndDonorHasSiblingOfThatSplit()
+        [NUnit.Framework.DescriptionAttribute("Patient has split serology and donor has broad of that split")]
+        public virtual void PatientHasSplitSerologyAndDonorHasBroadOfThatSplit()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has split serology and donor has sibling of that split", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has split serology and donor has broad of that split", null, tagsOfScenario, argumentsOfScenario);
 #line 113
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -807,8 +807,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                 table23.AddRow(new string[] {
                             "*01:01",
                             "*01:01",
-                            "38",
-                            "38",
+                            "16",
+                            "16",
                             "*07:01",
                             "*07:01"});
 #line 115
@@ -838,19 +838,19 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 123
-    testRunner.Then("antigen match should be false at locus B at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("antigen match should be true at locus B at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient has associated serology and donor has same associated")]
-        public virtual void PatientHasAssociatedSerologyAndDonorHasSameAssociated()
+        [NUnit.Framework.DescriptionAttribute("Patient has split serology and donor has sibling of that split")]
+        public virtual void PatientHasSplitSerologyAndDonorHasSiblingOfThatSplit()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has associated serology and donor has same associated", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has split serology and donor has sibling of that split", null, tagsOfScenario, argumentsOfScenario);
 #line 125
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -884,8 +884,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                 table25.AddRow(new string[] {
                             "*01:01",
                             "*01:01",
-                            "3901",
-                            "3901",
+                            "38",
+                            "38",
                             "*07:01",
                             "*07:01"});
 #line 127
@@ -901,8 +901,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                 table26.AddRow(new string[] {
                             "*01:01",
                             "*01:01",
-                            "3901",
-                            "3901",
+                            "39",
+                            "39",
                             "*07:01",
                             "*07:01"});
 #line 130
@@ -915,19 +915,19 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 135
-    testRunner.Then("antigen match should be true at locus B at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("antigen match should be false at locus B at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient has associated serology and donor has split of that associated")]
-        public virtual void PatientHasAssociatedSerologyAndDonorHasSplitOfThatAssociated()
+        [NUnit.Framework.DescriptionAttribute("Patient has associated serology and donor has same associated")]
+        public virtual void PatientHasAssociatedSerologyAndDonorHasSameAssociated()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has associated serology and donor has split of that associated", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has associated serology and donor has same associated", null, tagsOfScenario, argumentsOfScenario);
 #line 137
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -961,8 +961,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                 table27.AddRow(new string[] {
                             "*01:01",
                             "*01:01",
-                            "39",
-                            "39",
+                            "3901",
+                            "3901",
                             "*07:01",
                             "*07:01"});
 #line 139
@@ -999,12 +999,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient has associated serology and donor has broad of that associated")]
-        public virtual void PatientHasAssociatedSerologyAndDonorHasBroadOfThatAssociated()
+        [NUnit.Framework.DescriptionAttribute("Patient has associated serology and donor has split of that associated")]
+        public virtual void PatientHasAssociatedSerologyAndDonorHasSplitOfThatAssociated()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has associated serology and donor has broad of that associated", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has associated serology and donor has split of that associated", null, tagsOfScenario, argumentsOfScenario);
 #line 149
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -1038,8 +1038,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                 table29.AddRow(new string[] {
                             "*01:01",
                             "*01:01",
-                            "16",
-                            "16",
+                            "39",
+                            "39",
                             "*07:01",
                             "*07:01"});
 #line 151
@@ -1076,12 +1076,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient has associated serology and donor has sibling of that associated")]
-        public virtual void PatientHasAssociatedSerologyAndDonorHasSiblingOfThatAssociated()
+        [NUnit.Framework.DescriptionAttribute("Patient has associated serology and donor has broad of that associated")]
+        public virtual void PatientHasAssociatedSerologyAndDonorHasBroadOfThatAssociated()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has associated serology and donor has sibling of that associated", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has associated serology and donor has broad of that associated", null, tagsOfScenario, argumentsOfScenario);
 #line 161
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -1115,8 +1115,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                 table31.AddRow(new string[] {
                             "*01:01",
                             "*01:01",
-                            "3902",
-                            "3902",
+                            "16",
+                            "16",
                             "*07:01",
                             "*07:01"});
 #line 163
@@ -1146,21 +1146,19 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 171
-    testRunner.Then("antigen match should be false at locus B at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("antigen match should be true at locus B at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient has associated serology and donor has sibling of the split of that associ" +
-            "ated")]
-        public virtual void PatientHasAssociatedSerologyAndDonorHasSiblingOfTheSplitOfThatAssociated()
+        [NUnit.Framework.DescriptionAttribute("Patient has associated serology and donor has sibling of that associated")]
+        public virtual void PatientHasAssociatedSerologyAndDonorHasSiblingOfThatAssociated()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has associated serology and donor has sibling of the split of that associ" +
-                    "ated", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has associated serology and donor has sibling of that associated", null, tagsOfScenario, argumentsOfScenario);
 #line 173
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -1194,8 +1192,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                 table33.AddRow(new string[] {
                             "*01:01",
                             "*01:01",
-                            "38",
-                            "38",
+                            "3902",
+                            "3902",
                             "*07:01",
                             "*07:01"});
 #line 175
@@ -1232,12 +1230,14 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Donor has Unknown match grade at DPB1")]
-        public virtual void DonorHasUnknownMatchGradeAtDPB1()
+        [NUnit.Framework.DescriptionAttribute("Patient has associated serology and donor has sibling of the split of that associ" +
+            "ated")]
+        public virtual void PatientHasAssociatedSerologyAndDonorHasSiblingOfTheSplitOfThatAssociated()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Donor has Unknown match grade at DPB1", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient has associated serology and donor has sibling of the split of that associ" +
+                    "ated", null, tagsOfScenario, argumentsOfScenario);
 #line 185
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -1261,32 +1261,61 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
 #line 186
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
+                TechTalk.SpecFlow.Table table35 = new TechTalk.SpecFlow.Table(new string[] {
+                            "A_1",
+                            "A_2",
+                            "B_1",
+                            "B_2",
+                            "DRB1_1",
+                            "DRB1_2"});
+                table35.AddRow(new string[] {
+                            "*01:01",
+                            "*01:01",
+                            "38",
+                            "38",
+                            "*07:01",
+                            "*07:01"});
 #line 187
-    testRunner.And("the matching donor is untyped at locus DPB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table35, "And ");
 #line hidden
-#line 188
-    testRunner.And("scoring is enabled at locus DPB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+                TechTalk.SpecFlow.Table table36 = new TechTalk.SpecFlow.Table(new string[] {
+                            "A_1",
+                            "A_2",
+                            "B_1",
+                            "B_2",
+                            "DRB1_1",
+                            "DRB1_2"});
+                table36.AddRow(new string[] {
+                            "*01:01",
+                            "*01:01",
+                            "3901",
+                            "3901",
+                            "*07:01",
+                            "*07:01"});
+#line 190
+    testRunner.And("the patient has the following HLA:", ((string)(null)), table36, "And ");
 #line hidden
-#line 189
+#line 193
+    testRunner.And("scoring is enabled at locus B", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 194
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 190
-    testRunner.Then("antigen match should be empty at locus DPB1 at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 195
+    testRunner.Then("antigen match should be false at locus B at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("[Regression] Patient and donor are completely allele mismatched at DRB1 but have " +
-            "one antigen match")]
-        public virtual void RegressionPatientAndDonorAreCompletelyAlleleMismatchedAtDRB1ButHaveOneAntigenMatch()
+        [NUnit.Framework.DescriptionAttribute("Donor has Unknown match grade at DPB1")]
+        public virtual void DonorHasUnknownMatchGradeAtDPB1()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("[Regression] Patient and donor are completely allele mismatched at DRB1 but have " +
-                    "one antigen match", null, tagsOfScenario, argumentsOfScenario);
-#line 192
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Donor has Unknown match grade at DPB1", null, tagsOfScenario, argumentsOfScenario);
+#line 197
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -1306,65 +1335,34 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
             else
             {
                 this.ScenarioStart();
-#line 193
+#line 198
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-                TechTalk.SpecFlow.Table table35 = new TechTalk.SpecFlow.Table(new string[] {
-                            "A_1",
-                            "A_2",
-                            "B_1",
-                            "B_2",
-                            "DRB1_1",
-                            "DRB1_2"});
-                table35.AddRow(new string[] {
-                            "*01:YAG",
-                            "*03:ANPZ",
-                            "*44:AJVH",
-                            "*52:01",
-                            "*04:AFNC",
-                            "*15:APKE"});
-#line 194
-    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table35, "And ");
-#line hidden
-                TechTalk.SpecFlow.Table table36 = new TechTalk.SpecFlow.Table(new string[] {
-                            "A_1",
-                            "A_2",
-                            "B_1",
-                            "B_2",
-                            "DRB1_1",
-                            "DRB1_2"});
-                table36.AddRow(new string[] {
-                            "*01:YAG",
-                            "*03:ANPZ",
-                            "*44:AJVH",
-                            "*52:01",
-                            "*03:YMP",
-                            "*04:AMCV"});
-#line 197
-    testRunner.And("the patient has the following HLA:", ((string)(null)), table36, "And ");
+#line 199
+    testRunner.And("the matching donor is untyped at locus DPB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
 #line 200
-    testRunner.And("scoring is enabled at locus DRB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("scoring is enabled at locus DPB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
 #line 201
-    testRunner.When("I run a 4/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 202
-    testRunner.Then("antigen match should be true in position 1 and false in position 2 of locus DRB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("antigen match should be empty at locus DPB1 at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient and donor are allele-matched at C and one position has no assigned serolo" +
-            "gy")]
-        public virtual void PatientAndDonorAreAllele_MatchedAtCAndOnePositionHasNoAssignedSerology()
+        [NUnit.Framework.DescriptionAttribute("[Regression] Patient and donor are completely allele mismatched at DRB1 but have " +
+            "one antigen match")]
+        public virtual void RegressionPatientAndDonorAreCompletelyAlleleMismatchedAtDRB1ButHaveOneAntigenMatch()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient and donor are allele-matched at C and one position has no assigned serolo" +
-                    "gy", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("[Regression] Patient and donor are completely allele mismatched at DRB1 but have " +
+                    "one antigen match", null, tagsOfScenario, argumentsOfScenario);
 #line 204
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -1393,19 +1391,15 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                             "A_2",
                             "B_1",
                             "B_2",
-                            "C_1",
-                            "C_2",
                             "DRB1_1",
                             "DRB1_2"});
                 table37.AddRow(new string[] {
-                            "*02:01",
-                            "*02:01",
-                            "*08:01",
-                            "*08:01",
-                            "*01:02",
-                            "*16:58",
-                            "*07:01",
-                            "*07:01"});
+                            "*01:YAG",
+                            "*03:ANPZ",
+                            "*44:AJVH",
+                            "*52:01",
+                            "*04:AFNC",
+                            "*15:APKE"});
 #line 206
     testRunner.And("the matching donor has the following HLA:", ((string)(null)), table37, "And ");
 #line hidden
@@ -1414,44 +1408,40 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                             "A_2",
                             "B_1",
                             "B_2",
-                            "C_1",
-                            "C_2",
                             "DRB1_1",
                             "DRB1_2"});
                 table38.AddRow(new string[] {
-                            "*02:01",
-                            "*02:01",
-                            "*08:01",
-                            "*08:01",
-                            "*01:02",
-                            "*16:01",
-                            "*07:01",
-                            "*07:01"});
+                            "*01:YAG",
+                            "*03:ANPZ",
+                            "*44:AJVH",
+                            "*52:01",
+                            "*03:YMP",
+                            "*04:AMCV"});
 #line 209
     testRunner.And("the patient has the following HLA:", ((string)(null)), table38, "And ");
 #line hidden
 #line 212
-    testRunner.And("scoring is enabled at locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("scoring is enabled at locus DRB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
 #line 213
-    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I run a 4/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 214
-    testRunner.Then("antigen match should be true at locus C at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+    testRunner.Then("antigen match should be true in position 1 and false in position 2 of locus DRB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Patient and donor are allele-mismatched at C and the mismatched position has no a" +
-            "ssigned serology")]
-        public virtual void PatientAndDonorAreAllele_MismatchedAtCAndTheMismatchedPositionHasNoAssignedSerology()
+        [NUnit.Framework.DescriptionAttribute("Patient and donor are allele-matched at C and one position has no assigned serolo" +
+            "gy")]
+        public virtual void PatientAndDonorAreAllele_MatchedAtCAndOnePositionHasNoAssignedSerology()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient and donor are allele-mismatched at C and the mismatched position has no a" +
-                    "ssigned serology", null, tagsOfScenario, argumentsOfScenario);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient and donor are allele-matched at C and one position has no assigned serolo" +
+                    "gy", null, tagsOfScenario, argumentsOfScenario);
 #line 216
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -1490,7 +1480,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
                             "*08:01",
                             "*08:01",
                             "*01:02",
-                            "*16:06",
+                            "*16:58",
                             "*07:01",
                             "*07:01"});
 #line 218
@@ -1524,6 +1514,93 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
     testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 226
+    testRunner.Then("antigen match should be true at locus C at both positions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Patient and donor are allele-mismatched at C and the mismatched position has no a" +
+            "ssigned serology")]
+        public virtual void PatientAndDonorAreAllele_MismatchedAtCAndTheMismatchedPositionHasNoAssignedSerology()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Patient and donor are allele-mismatched at C and the mismatched position has no a" +
+                    "ssigned serology", null, tagsOfScenario, argumentsOfScenario);
+#line 228
+  this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 229
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+                TechTalk.SpecFlow.Table table41 = new TechTalk.SpecFlow.Table(new string[] {
+                            "A_1",
+                            "A_2",
+                            "B_1",
+                            "B_2",
+                            "C_1",
+                            "C_2",
+                            "DRB1_1",
+                            "DRB1_2"});
+                table41.AddRow(new string[] {
+                            "*02:01",
+                            "*02:01",
+                            "*08:01",
+                            "*08:01",
+                            "*01:02",
+                            "*16:06",
+                            "*07:01",
+                            "*07:01"});
+#line 230
+    testRunner.And("the matching donor has the following HLA:", ((string)(null)), table41, "And ");
+#line hidden
+                TechTalk.SpecFlow.Table table42 = new TechTalk.SpecFlow.Table(new string[] {
+                            "A_1",
+                            "A_2",
+                            "B_1",
+                            "B_2",
+                            "C_1",
+                            "C_2",
+                            "DRB1_1",
+                            "DRB1_2"});
+                table42.AddRow(new string[] {
+                            "*02:01",
+                            "*02:01",
+                            "*08:01",
+                            "*08:01",
+                            "*01:02",
+                            "*16:01",
+                            "*07:01",
+                            "*07:01"});
+#line 233
+    testRunner.And("the patient has the following HLA:", ((string)(null)), table42, "And ");
+#line hidden
+#line 236
+    testRunner.And("scoring is enabled at locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 237
+    testRunner.When("I run a 6/6 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 238
     testRunner.Then("antigen match should be true in position 1 and false in position 2 of locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
