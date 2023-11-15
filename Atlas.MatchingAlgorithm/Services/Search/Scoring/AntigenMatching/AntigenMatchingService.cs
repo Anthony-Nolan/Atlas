@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
@@ -17,11 +18,16 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching
 
     internal class AntigenMatchingService : IAntigenMatchingService
     {
+        private readonly IHlaCategorisationService hlaCategorisationService;
         private readonly IAntigenMatchCalculator calculator;
         private readonly IScoringCache scoringCache;
 
-        public AntigenMatchingService(IAntigenMatchCalculator calculator, IScoringCache scoringCache)
-        {
+        public AntigenMatchingService(
+            IHlaCategorisationService hlaCategorisationService,
+            IAntigenMatchCalculator calculator, 
+            IScoringCache scoringCache)
+        {            
+            this.hlaCategorisationService = hlaCategorisationService;
             this.calculator = calculator;
             this.scoringCache = scoringCache;
         }
@@ -45,13 +51,33 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching
                     return;
                 }
 
+                var patientLocusForAgMatching = HandleNonExpressingAlleleIfAny(patientLocus);
+                var donorLocusForAgMatching = HandleNonExpressingAlleleIfAny(donorLocus);
+
                 // need to calculate antigen match according to the orientation provided in grading result
-                var locusResults = CalculateLocusAntigenMatchInBestOrientation(orientationsAtLocus, patientLocus, donorLocus);
+                var locusResults = CalculateLocusAntigenMatchInBestOrientation(
+                    orientationsAtLocus, patientLocusForAgMatching, donorLocusForAgMatching);
 
                 results = results.SetLocus(locus, locusResults.Position1, locusResults.Position2);
             });
 
             return results;
+        }
+
+        /// <summary>
+        /// If locus contains a non-expressing allele, then return new object with scoring metadata of expressing typing copied to both positions,
+        /// else return the original metadata.
+        /// </summary>
+        private LocusInfo<IHlaScoringMetadata> HandleNonExpressingAlleleIfAny(LocusInfo<IHlaScoringMetadata> metadata)
+        {
+            var nonExpressingCheck = metadata.Map(x => hlaCategorisationService.IsNullAllele(x.LookupName));
+
+            return nonExpressingCheck.BothPositions(x => x == false)
+                ? metadata
+                : new LocusInfo<IHlaScoringMetadata>(
+                    nonExpressingCheck.Position1 ? metadata.Position2 : metadata.Position1,
+                    nonExpressingCheck.Position2 ? metadata.Position1 : metadata.Position2
+                );
         }
 
         private LocusInfo<bool?> CalculateLocusAntigenMatchInBestOrientation(
