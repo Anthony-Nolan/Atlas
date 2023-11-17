@@ -11,6 +11,7 @@ using Atlas.Common.Utils;
 using Atlas.Common.Utils.Http;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.MatchingAlgorithm.Functions.Models.Debug;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
@@ -47,6 +48,25 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             catch (Exception ex)
             {
                 throw new AtlasHttpException(HttpStatusCode.BadRequest, "Failed to convert HLA.", ex);
+            }
+        }
+
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
+        [FunctionName(nameof(ScoringMetadata))]
+        public async Task<IHlaScoringMetadata> ScoringMetadata(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(ScoringMetadata)}/"+"{locusName}/{hlaName}")]
+            HttpRequest httpRequest,
+            string locusName,
+            string hlaName)
+        {
+            try
+            {
+                var locus = Enum.Parse<Locus>(locusName);
+                return await hlaMetadataDictionary.GetHlaScoringMetadata(locus, hlaName);
+            }
+            catch (Exception ex)
+            {
+                throw new AtlasHttpException(HttpStatusCode.BadRequest, "Failed to retrieve scoring metadata.", ex);
             }
         }
 
