@@ -86,11 +86,10 @@ namespace Atlas.RepeatSearch.Services.Search
             repeatSearchLoggingContext.SearchRequestId = searchRequestId;
             repeatSearchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
 
-            // validate after setting logging context so that potential validation exception can be logged with the search ID
-            await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
-
             try
             {
+                await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
+
                 // ReSharper disable once PossibleInvalidOperationException - validation has ensured this is not null.
                 var searchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value;
 
@@ -119,7 +118,8 @@ namespace Atlas.RepeatSearch.Services.Search
                     MatchingStartTime = searchStartTime
                 };
 
-                await repeatResultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize, $"{searchRequestId}/{repeatSearchId}");
+                await repeatResultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,
+                    $"{searchRequestId}/{repeatSearchId}");
 
                 var notification = new MatchingResultsNotification
                 {
@@ -138,22 +138,42 @@ namespace Atlas.RepeatSearch.Services.Search
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
             }
-            // Invalid HLA is treated as an "Expected error" pathway and will not be retried.
-            // This means only a single failure notification will be sent out, and the request message will be completed and not dead-lettered.
+
+            #region Expected Exceptions
+
+            // Invalid requests are treated as an "Expected error" pathways.
+            // They are not be re-thrown to prevent retries.
+            // Only a single failure notification is sent out and the request message will be completed, not dead-lettered.
+
+            catch (FluentValidation.ValidationException validationException)
+            {
+                await HandleValidationExceptionWithoutRethrow(validationException);
+            }
             catch (HlaMetadataDictionaryException hmdException)
             {
-                repeatSearchLogger.SendTrace($"Failed to lookup HLA for search with id {searchRequestId}. Exception: {hmdException}", LogLevel.Error);
-
-                await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(identifiedRepeatSearchRequest, attemptNumber, 0, hmdException.Message);
-
-                // Do not re-throw the HMD exception to prevent the search being retried or dead-lettered.
+                await HandleValidationExceptionWithoutRethrow(hmdException);
             }
+
+            #endregion
+
             // "Unexpected" exceptions will be re-thrown to ensure that the request will be retried or dead-lettered, as appropriate.
             catch (Exception e)
             {
-                repeatSearchLogger.SendTrace($"Failed to run search with id {searchRequestId}. Exception: {e}", LogLevel.Error);
+                repeatSearchLogger.SendTrace(
+                    $"Failed to run search with repeat search id: {repeatSearchId} (search id: {searchRequestId}). Exception: {e}", 
+                    LogLevel.Error);
                 await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(identifiedRepeatSearchRequest, attemptNumber, searchRequestMaxRetryCount - attemptNumber);
                 throw;
+            }
+
+            async Task HandleValidationExceptionWithoutRethrow(Exception ex)
+            {
+                repeatSearchLogger.SendTrace(
+                    $"Validation failed for repeat search id: {repeatSearchId} (search id: {searchRequestId}). Exception: {ex}",
+                    LogLevel.Error);
+
+                await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(
+                    identifiedRepeatSearchRequest, attemptNumber, 0, ex.Message);
             }
         }
 
