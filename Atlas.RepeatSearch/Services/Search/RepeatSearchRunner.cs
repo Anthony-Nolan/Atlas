@@ -78,15 +78,16 @@ namespace Atlas.RepeatSearch.Services.Search
         public async Task RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber)
         {
             var searchStartTime = DateTimeOffset.UtcNow;
-            await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
-
             var searchRequestId = identifiedRepeatSearchRequest.OriginalSearchId;
             var repeatSearchId = identifiedRepeatSearchRequest.RepeatSearchId;
-
-            repeatSearchLoggingContext.SearchRequestId = searchRequestId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
+
+            repeatSearchLoggingContext.SearchRequestId = searchRequestId;
             repeatSearchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
+
+            // validate after setting logging context so that potential validation exception can be logged with the search ID
+            await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
 
             try
             {
