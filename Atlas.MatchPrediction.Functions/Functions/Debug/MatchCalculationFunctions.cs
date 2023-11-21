@@ -1,16 +1,12 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Http;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
-using Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.MatchCalculation;
 using Atlas.MatchPrediction.Functions.Models.Debug;
 using Atlas.MatchPrediction.Functions.Services.Debug;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
-using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
@@ -23,16 +19,13 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
 {
     public class MatchCalculationFunctions
     {
-        private readonly IMatchCalculationService matchCalculatorService;
         private readonly IHaplotypeFrequencyService frequencyService;
         private readonly IGenotypeMatcher genotypeMatcher;
 
         public MatchCalculationFunctions(
-            IMatchCalculationService matchCalculatorService,
             IHaplotypeFrequencyService frequencyService,
             IGenotypeMatcher genotypeMatcher)
         {
-            this.matchCalculatorService = matchCalculatorService;
             this.frequencyService = frequencyService;
             this.genotypeMatcher = genotypeMatcher;
         }
