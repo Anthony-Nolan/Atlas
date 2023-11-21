@@ -46,9 +46,10 @@ This sign-off process should involve ensuring:
 * All automated tests have passed
 * Manual testing of the algorithm has been performed, if deemed necessary
 * If algorithmic logic has changed, an expert in the field of HLA matching must sign off the algorithmic changes.
-* Documentation has been updated as appropriate:
-    * Notably, the [Feature CHANGELOG](./Atlas.Functions.PublicApi/CHANGELOG_Atlas.md) should always be updated, and
-      the [Client CHANGELOG](./Atlas.Client.Models/CHANGELOG_Client.md) should always be updated if any client models were changed
+* Documentation has been updated as appropriate, notably:
+    * [Feature CHANGELOG](./Atlas.Functions.PublicApi/CHANGELOG_Atlas.md)
+    * [Client CHANGELOG](./Atlas.Client.Models/CHANGELOG_Client.md) 
+    * Database changelogs (see invidivudal `.Data` projects)
 
 ### Other Tags
 
