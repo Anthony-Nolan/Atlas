@@ -4,68 +4,99 @@ Changelog for Atlas as a product: it will cover functional and algorithmic chang
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Versioning
-Product version is represented by the version tag of the Functions.PublicApi project.
-The project version will be appropriately incremented with each change to the product, and the nature of the change logged below.
+Product version is represented by the version tag of the `Functions.PublicApi` project.
+The project version will be appropriately incremented with each change to the product and the nature of the changes logged below.
 
-## Versions
+## Contents
+- [Feature Flags](#feature-flags)
+- [Version Logs](#version-logs)
+
+## Feature Flags
+Feature flags permit greater control over the release of new features (see this [ADR](/ArchitecturalDecisionRecord/Phase2/009-Feature_Flags.md) for more background). FFs are managed within Azure using an App Configuration resource (`[ENV]-ATLAS-APP-CONFIGURATION`). This section of the changelog documents feature flags, their state within an Atlas version (new (`N`), removed (`R`), or inherited from previous version (`P`)), and the ticket that describes their eventual removal ("retirement plan").
 
 ### 1.6.0
 
+|State|Name|Component|Description|Retirement Plan|
+|-----|----|---------|-----------|---------------|
+|N|useDonorInfoStoredInMatchingAlgorithmDb|Matching Algorithm|Enables reading of donor metadata from the matching db (instead of from the donor store) during the matching phase of search.|#1067|
+
+## Version Logs
+
+**Key** (in use from v1.6.0 onwards)
+* E - Enhancement, i.e., new feature or extension of existing feature
+* BF - Bug Fix
+* BREAKING - Breaking change at the API level
+* FBC - Functionally Breaking Change, i.e., significant change to the behaviour of an existing feature but the API remains unchanged
+
+### 1.6.0
+This version has a significant set of changes that were prompted by the integration of Atlas into WMDA Search and Match. Several of them are around handling of searches with very large resultsets, improvements to donor import reporting, and bug fixes identified during testing.
+
 #### Blob Storage
-* Bug fix: Stopped excessive number of `CreateContainer` API calls being made during blob download.
+* BF: Stopped excessive number of `CreateContainer` API calls being made during blob download.
 
 #### Search
-* Ensure all failed search requests are reported as completed by routing dead-lettered search request messages to the `search-results-ready` topic, with the appropriate failure information.
-* Added performance logs for initial search.
-* Bug fix: all search-related logs are now being tagged with the search request ID to allow complete end-to-end tracking of a search request via Application Insights.
-* Added matching request start time to result set.
-
-##### Auto-Heal
-* Auto-Heal is disabled on matching algorithm function app
-
-##### Writing of Search Results
-* Added an ability to save search results in multiple files. Result files will now be split into two types:
-  * Search summary - this will be a single file containing all search result metadata, e.g., number of matches, the original search request, etc.
-  * Search results - these will be written to 1 or more files, each containing a maximum number of results (this is a configurable setting AzureStorage:BatchSize).
-* Search results will still be written to one file along with search summary if batch size (`SearchResultsBatchSize`) is set to a value less than or equal to '0'. 
-  - Default value for 'SearchResultsBatchSize' is '0'.
+* E: Ensure all failed search requests are reported as completed by routing dead-lettered search request messages to the `search-results-ready` topic, with the appropriate failure information.
+* E: Added performance logs for initial search.
+* BF: all search-related logs are now being tagged with the search request ID to allow complete end-to-end tracking of a search request via Application Insights.
+* E: Added matching request start time to result set.
+* BF: Allows matching requests to fail - and not stall - in the event of memory issues, by disabling Auto-Heal on matching algorithm function app.
+* E: Specify additional subscriptions for `search-results-ready` topic via release var.
+* E: Large search result sets can be written to multiple files. 
+  * Result files will now be split into two types:
+    * Search summary - this will be a single file containing all search result metadata, e.g., number of matches, the original search request, etc.
+    * Search results - these will be written to 1 or more files, each containing a maximum number of results (this is a configurable setting `AzureStorage:BatchSize`).
+  * Search results will still be written to one file along with search summary if batch size (`SearchResultsBatchSize`) is set to a value less than or equal to '0'. 
+  * Default value for 'SearchResultsBatchSize' is '0'.
+* BF: searches (and repeat searches) were failing when Atlas tried to lookup info on a matching donor that had been deleted from the donor store.
+  - This problem was exacerbated by hundreds of thousands of donors updates being submitted to Atlas, which meant the matching algorithm was behind donor store for several hours.
+  - Dependency on the donor store during search runtime has been removed. Now all donor metadata needed for search is stored within the matching algorithm db and added to the matching result model to be made available during match prediction and repeat search.
 
 #### Repeat Search
-* Bug fix: the `StoreOriginalSearchResults` function can now successfully process failed searches and successful searches with no matching donors.
-* Ability to save search results in multiple files ([see Search section](#writing-of-search-results) for further info).
+* E: Ensure all failed repeat search requests are reported as completed by routing dead-lettered search request messages to the `repeat-search-results-ready` topic, with the appropriate failure information.
+* E: Specify additional subscriptions for `repeat-search-results-ready` topic via release var.
+* E: Ability to save search results in multiple files ([see Search section](#writing-of-search-results) for further info).
+* BF: `StoreOriginalSearchResults` function can now successfully process failed searches and successful searches with no matching donors.
 
 #### Scoring
-* Bug fix: DPB1 match category is now being calculated when the locus typing contained a single null allele, by treating the locus as homozygous for the expressing allele.
-* Scoring feature now also calculates whether a position is antigen matched or not.
-* Positional locus scores are now aligned to donor typing.
+* BF: DPB1 match category is now being calculated when the locus typing contained a single null allele, by treating the locus as homozygous for the expressing allele.
+* E: Scoring feature now also calculates whether a position is antigen matched or not.
+* **FBC: Positional locus scores are now aligned to donor typing, instead of to the patient typing.**
   * E.g., Given a locus with a single mismatch where patient typing 1 is mismatched to donor typing 2, `ScoreDetailsAtPositionTwo` will be assigned the mismatch score.
 
 #### Donor Import
-* Added new function `CheckDonorIdsFromFile` that does symmetric check of donors absence/presence in Atlas storage
-* Added new function `CheckDonorInfoFromFile` that compares donor/CBU fields with Atlas
-* Updated `ImportDonorFile` function to log invalid donor updates to AI if donor is not present in Atlas storage instead of throwing error
-* Updated `ImportDonorFile` function to log invalid donor creates for `diff` update mode to AI if donor is present in Atlas storage instead of throwing error
-* Tagged donor import logs with the donor import file name.
-* Improved queryability of import failures by logging failed donor updates to a new table within shared database, `Donor.DonorImportFailures`.
-* Added new topic `donor-import-results` to store succcessful and failed import results.
-* Update `SuccessDonorImportMessage` with `FailedDonorSummary` that includes failure reasons and their count.
-* Added new `FailedDonorCount` column to `Donors.DonorImportHistory` to reflect number of donors were not updated.
+* E: Symmetric check of donors absence/presence in Atlas storage via new function `CheckDonorIdsFromFile`.
+* E: Check of donor/CBU fields within Atlas donor store via new function `CheckDonorInfoFromFile`.
+* E: Tagged donor import logs with the donor import file name.
+* E: Improved reporting of donor import results:
+  * Failed donor updates logged to a new table within shared database, `Donor.DonorImportFailures`.
+    * **FBC**: Invalid donor creates/updates are now logged instead of throwing error.
+  * New topic `donor-import-results` reports succcessful and failed import results.
+  * New `FailedDonorCount` column added to `Donors.DonorImportHistory` to reflect number of donors were not updated.
+* E: Automatically re-publish dead-lettered donor updates that failed to be consumed by the matching algorithm. This is distinct from "replay", as the update is regenerated from latest version of the data held in the donor store, which may have changed since the original dead-lettered update was published.
 
 #### Match Prediction
-* Changed the way match prediction requests are queued for processing by activity functions, to prevent search requests with many donors from blocking the completion of smaller search requests.
-* Bug fix: Locus `PositionalMatchCategories` are now re-orientated in line with scoring results.
-* Support: Add file name to AI event that logs a failed HF set import.
-* Bug fix: Added measures to prevent the same HF set import request being processed by multiple workers which leads to database conflict errors.
-* Support added for subjects typed with HLA that is invalid in haplotype frequency set HLA version, but is valid in matching algorithm HLA version.
+* E: Prevent large result sets from blocking the completion of smaller search requests by improving the queuing of match prediction requests within activity functions.
+* BF: Locus `PositionalMatchCategories` are now re-orientated in line with scoring results.
+* E: Add file name to AI event that logs a failed HF set import.
+* BF: Added measures to prevent the same HF set import request being processed by multiple workers which leads to database conflict errors.
+* E: Haplotype frequencies from a failed file upload are deleted from the db as part of import clean up.
+* E: Match probability can now be calculated for subjects typed with HLA that is invalid in haplotype frequency set HLA version, but is valid in matching algorithm HLA version.
+* BF: Corrected the handling of subjects typed with a null allele that map to a small g group.
 
 #### Data Refresh
-* Allow DF job to automatically retry when the matching algorithm database is asleep/unavailable.
+* E: Job will automatically retry when the matching algorithm database is asleep/unavailable.
 
 #### Manual Testing
-- Locally-running functions added to `Atlas.ManualTesting.Functions.WmdaConsensusDatasetFunctions` to allow running of exercises 1 and 2 of the WMDA consensus dataset.
-- Locally-running function added to `Atlas.ManualTesting.Functions.HaplotypeFrequencySetFunctions` to transform haplotype frequency dataset files that failed import due to the presence of an invalid typing.
-- Locally-running function added to `Atlas.ManualTesting.Functions.SearchOutcomesFunctions` that retrives search performance and failure information via peeking of the search results notifications topic specified in app settings.
+- E: Exercises 1 and 2 of the WMDA consensus dataset can be run via new locally-running functions added to `Atlas.ManualTesting.Functions.WmdaConsensusDatasetFunctions`.
+- E: Transform haplotype frequency dataset file that failed import due to the presence of an invalid typing via new locally-running function added to `Atlas.ManualTesting.Functions.HaplotypeFrequencySetFunctions`.
+- E: Retrieve search performance and failure information via new locally-running function added to `Atlas.ManualTesting.Functions.SearchOutcomesFunctions`.
+
+#### Debugging
+- E: Http-triggered functions added for debugging of scoring and match prediction:
+  - Matching algorithm functions app: GET `ScoringMetadata`, `Dpb1TceGroups`, and `SerologyToAlleleMapping`.
+  - Match prediction functions app: POST `Impute` and `MatchPatientDonorGenotypes`.
+- BREAKING: URL of all debug endpoints (including those added before this version) now have `/debug/` as a route prefix.
+
 
 ### 1.5.0
 
