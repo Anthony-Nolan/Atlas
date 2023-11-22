@@ -99,8 +99,8 @@ Most Atlas functions apps run on a shared service plan, which will also impact t
 
 ### Search Results
 
-| Terraform Setting          | Functions App Name                 |Functions App Setting Name | Description 
-| -------------------------- | ------------------                 | -------------------------- | -----------                |                |
+| Terraform Setting          | Functions App Name  | Functions App Setting Name  | Description  |
+| -------------------------- | ------------------  | --------------------------  | ------------ |
 | RESULTS_BATCH_SIZE | ATLAS-FUNCTIONS, ATLAS-MATCHING-ALGORITHM-FUNCTIONS, ATLAS-REPEAT-SEARCH-FUNCTION | AzureStorage-SearchResultsBatchSize | Batch size (number of results written per file) for saving search/matching results |
 | SEARCH_RESULTS_READY_SUBSCRIPTION_NAMES| N/A | N/A | Subscription names for the search-results-ready and repeat-search-results-ready Service Bus topics (in addition to Audit subscriptions). If not provided, no additional subscriptions will be created. |
 
