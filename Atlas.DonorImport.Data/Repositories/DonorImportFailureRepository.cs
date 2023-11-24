@@ -25,7 +25,7 @@ namespace Atlas.DonorImport.Data.Repositories
 
             await using (var connection = new SqlConnection(ConnectionString))
             {
-                await connection.ExecuteAsync(sql, param: new { cutOffDate });
+                await connection.ExecuteAsync(sql, param: new { cutOffDate }, commandTimeout: 600);
             }
         }
     }
