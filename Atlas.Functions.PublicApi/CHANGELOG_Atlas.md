@@ -14,6 +14,8 @@ The project version will be appropriately incremented with each change to the pr
 ## Feature Flags
 Feature flags permit greater control over the release of new features (see this [ADR](/ArchitecturalDecisionRecord/Phase2/009-Feature_Flags.md) for more background). FFs are managed within Azure using an App Configuration resource (`[ENV]-ATLAS-APP-CONFIGURATION`). This section of the changelog documents feature flags, their state within an Atlas version (new (`N`), removed (`R`), or inherited from previous version (`P`)), and the ticket that describes their eventual removal ("retirement plan").
 
+### 1.7.0
+
 ### 1.6.0
 
 |State|Name|Component|Description|Retirement Plan|
@@ -27,6 +29,8 @@ Feature flags permit greater control over the release of new features (see this 
 * BF - Bug Fix
 * BREAKING - Breaking change at the API level
 * FBC - Functionally Breaking Change, i.e., significant change to the behaviour of an existing feature but the API remains unchanged
+
+### 1.7.0
 
 ### 1.6.0
 This version has a significant set of changes that were prompted by the integration of Atlas into WMDA Search and Match. Several of them are around handling of searches with very large resultsets, improvements to donor import reporting, and bug fixes identified during testing.
