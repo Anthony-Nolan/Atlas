@@ -4,10 +4,8 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Public.Models.GeneticData;
-using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Models;
-using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
@@ -15,7 +13,6 @@ using PhenotypeOfStrings = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.
 using GenotypeOfKnownTypingCategory = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<Atlas.MatchPrediction.ExternalInterface.Models.HlaAtKnownTypingCategory>;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
-using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
@@ -38,19 +35,16 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     internal class GenotypeImputationService : IGenotypeImputationService
     {
         private const string LoggingPrefix = "MatchPrediction: ";
-        private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
         private readonly ICompressedPhenotypeExpander compressedPhenotypeExpander;
         private readonly IGenotypeLikelihoodService genotypeLikelihoodService;
         private readonly ILogger logger;
 
         public GenotypeImputationService(
-            IHaplotypeFrequencyService haplotypeFrequencyService,
             ICompressedPhenotypeExpander compressedPhenotypeExpander,
             IGenotypeLikelihoodService genotypeLikelihoodService,
             // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger)
         {
-            this.haplotypeFrequencyService = haplotypeFrequencyService;
             this.compressedPhenotypeExpander = compressedPhenotypeExpander;
             this.genotypeLikelihoodService = genotypeLikelihoodService;
             this.logger = logger;
@@ -75,32 +69,19 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
         private async Task<ISet<GenotypeOfKnownTypingCategory>> ExpandToGenotypes(ImputationInput input)
         {
-            var haplotypeFrequencies = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(input.SubjectData.SubjectFrequencySet.FrequencySet.Id);
-
             using (logger.RunTimed($"{LoggingPrefix}Expand {input.SubjectData.SubjectFrequencySet.SubjectLogDescription} phenotype", LogLevel.Verbose))
             {
+                var frequencySet = input.SubjectData.SubjectFrequencySet.FrequencySet;
+
                 var expanderInput = new CompressedPhenotypeExpanderInput
                 {
                     Phenotype = input.SubjectData.HlaTyping,
-                    HfSetHlaNomenclatureVersion = input.SubjectData.SubjectFrequencySet.FrequencySet.HlaNomenclatureVersion,
+                    HfSetId = frequencySet.Id,
+                    HfSetHlaNomenclatureVersion = frequencySet.HlaNomenclatureVersion,
                     MatchPredictionParameters = input.MatchPredictionParameters
                 };
 
-                var groupedFrequencies = haplotypeFrequencies
-                    .GroupBy(f => f.Value.TypingCategory)
-                    .Select(g =>
-                        new KeyValuePair<HaplotypeTypingCategory, IReadOnlyCollection<LociInfo<string>>>(g.Key, g.Select(f => f.Value.Hla).ToList())
-                    )
-                    .ToDictionary();
-
-                var allHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
-                {
-                    GGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.GGroup, new List<LociInfo<string>>()),
-                    PGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.PGroup, new List<LociInfo<string>>()),
-                    SmallGGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.SmallGGroup, new List<LociInfo<string>>()),
-                };
-
-                return await compressedPhenotypeExpander.ExpandCompressedPhenotype(expanderInput, allHaplotypes);
+                return await compressedPhenotypeExpander.ExpandCompressedPhenotype(expanderInput);
             }
         }
 
