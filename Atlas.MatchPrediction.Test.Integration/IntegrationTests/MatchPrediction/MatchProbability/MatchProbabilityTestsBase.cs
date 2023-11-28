@@ -7,10 +7,9 @@ using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Models.FileSchema;
-using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
-using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
+using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using LochNessBuilder;
@@ -24,7 +23,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected readonly FrequencySetMetadata GlobalHfSetMetadata = new() { EthnicityCode = null, RegistryCode = null };
 
         protected IMatchProbabilityService MatchProbabilityService;
-        protected IHaplotypeFrequencyService ImportService;
 
         protected const string HfSetHlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
         protected const string MatchingAlgorithmHlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
@@ -41,7 +39,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected void BaseOneTimeSetUp()
         {
             MatchProbabilityService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchProbabilityService>();
-            ImportService = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
         }
 
         protected async Task ImportFrequencies(
@@ -51,13 +48,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             string nomenclatureVersion = HfSetHlaNomenclatureVersion,
             ImportTypingCategory typingCategory = ImportTypingCategory.LargeGGroup)
         {
-            var registry = registryCode == null ? null : new[] { registryCode };
-            var ethnicity = ethnicityCode == null ? null : new[] { ethnicityCode };
-
-            using var file = FrequencySetFileBuilder
-                .New(haplotypes, registry, ethnicity, nomenclatureVersion: nomenclatureVersion, typingCategory: typingCategory)
-                .Build();
-            await ImportService.ImportFrequencySet(file);
+            await HaplotypeFrequencyImporter.Import(haplotypes, nomenclatureVersion, registryCode, ethnicityCode, typingCategory);
         }
 
         protected static Builder<HaplotypeFrequency> DefaultHaplotypeFrequency1 => HaplotypeFrequencyBuilder.New
