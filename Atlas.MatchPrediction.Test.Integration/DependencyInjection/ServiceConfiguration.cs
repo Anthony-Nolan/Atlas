@@ -68,10 +68,6 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             services.AddScoped<IHaplotypeFrequencyInspectionRepository>(sp =>
                 new HaplotypeFrequencyInspectionRepository(ConnectionStringReader(MatchPredictionSqlConnectionString)(sp))
             );
-
-            services.AddTransient<IHaplotypeFrequenciesRepository, HaplotypeFrequenciesRepository>(sp =>
-                new HaplotypeFrequenciesRepository(ConnectionStringReader(MatchPredictionSqlConnectionString)(sp))
-            );
         }
 
         private static void SetUpMockServices(this IServiceCollection services)
