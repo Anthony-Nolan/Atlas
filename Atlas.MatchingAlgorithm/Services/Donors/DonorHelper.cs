@@ -21,33 +21,16 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
     {
         private readonly ILogger searchLogger;
         private readonly IDonorReader donorReader;
-        private readonly IAtlasFeatureManager featureManager;
 
-        public DonorHelper(IMatchingAlgorithmSearchLogger searchLogger, IDonorReader donorReader, IAtlasFeatureManager featureManager)
+        public DonorHelper(IMatchingAlgorithmSearchLogger searchLogger, IDonorReader donorReader)
         {
             this.searchLogger = searchLogger;
             this.donorReader = donorReader;
-            this.featureManager = featureManager;
         }
 
         public async Task<Dictionary<int, DonorLookupInfo>> GetDonorLookup(List<MatchAndScoreResult> reifiedScoredMatches)
         {
-            var isFeatureEnabled = await featureManager.IsFeatureEnabled(FeatureFlags.UseDonorInfoStoredInMatchingAlgorithmDb);
-            searchLogger.SendTrace($"Feature flag {FeatureFlags.UseDonorInfoStoredInMatchingAlgorithmDb} = {isFeatureEnabled}");
-
-            return isFeatureEnabled
-                ? GetDonorLookupFromMatchResults(reifiedScoredMatches)
-                : await LoadDonorLookupFromDonorStore(reifiedScoredMatches);
+            return reifiedScoredMatches.ToDictionary(r => r.MatchResult.DonorId, r => r.MatchResult.DonorInfo.ToDonorLookupInfo());
         }
-
-        private async Task<Dictionary<int, DonorLookupInfo>> LoadDonorLookupFromDonorStore(List<MatchAndScoreResult> reifiedScoredMatches)
-        {
-            using var donorLookupTimer = searchLogger.RunTimed($"Matching Algorithm: Look up external donor ids");
-            return (await donorReader.GetDonors(reifiedScoredMatches.Select(r => r.MatchResult.DonorId)))
-                .ToDictionary(l => l.Key, l => l.Value.ToDonorLookupInfo());
-        }
-
-        private Dictionary<int, DonorLookupInfo> GetDonorLookupFromMatchResults(List<MatchAndScoreResult> reifiedScoredMatches)
-            => reifiedScoredMatches.ToDictionary(r => r.MatchResult.DonorId, r => r.MatchResult.DonorInfo.ToDonorLookupInfo());
     }
 }

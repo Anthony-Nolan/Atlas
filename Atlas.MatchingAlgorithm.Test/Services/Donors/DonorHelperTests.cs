@@ -32,47 +32,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             featureManager = Substitute.For<IAtlasFeatureManager>();
         }
 
-        [Test]
-        public async Task GetDonorLookup_FeatureFlagDisabled_GetsDataFromDonorStore()
-        {
-            // Arrange
-            featureManager.IsFeatureEnabled(Arg.Any<string>()).Returns(false);
 
-            var donorHelper = new DonorHelper(searchLogger, donorReader, featureManager);
-
-            var reifiedScoredMatches = new List<MatchAndScoreResult>
-            {
-                new ()
-                {
-                    MatchResult = new (1)
-                    {
-                        DonorInfo = new ()
-                        {
-                            ExternalDonorCode = "donor_from_matching_result"
-                        }
-                    }
-                }
-            };
-
-            // Act
-            var actual = await donorHelper.GetDonorLookup(reifiedScoredMatches);
-
-            // Assert
-            actual.Should().NotBeNull();
-            var donor = actual.FirstOrDefault();
-            donor.Should().NotBeNull();
-            donor.Value.ExternalDonorCode.Should().Be("donor_from_donor_store");
-
-            await donorReader.Received().GetDonors(Arg.Any<IEnumerable<int>>());
-        }
 
         [Test]
         public async Task GetDonorLookup_FeatureFlagEnabled_GetsDataFromMatchingResultObject()
         {
             // Arrange
-            featureManager.IsFeatureEnabled(Arg.Any<string>()).Returns(true);
-
-            var donorHelper = new DonorHelper(searchLogger, donorReader, featureManager);
+            var donorHelper = new DonorHelper(searchLogger, donorReader);
 
             var reifiedScoredMatches = new List<MatchAndScoreResult>
             {
