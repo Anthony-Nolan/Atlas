@@ -50,19 +50,6 @@ namespace Atlas.MatchingAlgorithm.Functions
                 ConnectionStringReader("DonorSql"));
         }
 
-        public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
-        {
-            var azureConfigurationConnectionString = Environment.GetEnvironmentVariable("AzureAppConfiguration:ConnectionString");
-            builder.ConfigurationBuilder.AddAzureAppConfiguration(options =>
-            {
-                options.Connect(azureConfigurationConnectionString)
-                    .Select("_")
-                    .UseFeatureFlags();
-            });
-
-            base.ConfigureAppConfiguration(builder);
-        }
-
         private static void RegisterSettings(IServiceCollection services)
         {
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");

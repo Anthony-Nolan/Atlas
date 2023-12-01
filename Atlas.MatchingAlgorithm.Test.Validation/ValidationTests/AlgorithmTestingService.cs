@@ -33,14 +33,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
                     config.AddJsonFile("appsettings.json", true, true);
                     config.AddUserSecrets(Assembly.GetExecutingAssembly());
 
-                    var configuration = config.Build();
-                    var azureConfigurationConnectionString = configuration.GetValue<string>("AzureAppConfiguration:ConnectionString");
-                    config.AddAzureAppConfiguration(options =>
-                    {
-                        options.Connect(azureConfigurationConnectionString)
-                            .Select("_")
-                            .UseFeatureFlags();
-                    });
                 })
                 .UseStartup<Startup>();
             server = new TestServer(builder);

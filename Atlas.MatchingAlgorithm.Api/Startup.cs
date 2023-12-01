@@ -34,14 +34,6 @@ namespace Atlas.MatchingAlgorithm.Api
                 builder.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
                 builder.AddUserSecrets(Assembly.GetExecutingAssembly());
 
-                var azureConfigurationConnectionString = configuration.GetValue<string>("AzureAppConfiguration:ConnectionString");
-                builder.AddAzureAppConfiguration(options =>
-                {
-                    options.Connect(azureConfigurationConnectionString)
-                        .Select("_")
-                        .UseFeatureFlags();
-                });
-
                 this.configuration = builder.Build();
             }
             else

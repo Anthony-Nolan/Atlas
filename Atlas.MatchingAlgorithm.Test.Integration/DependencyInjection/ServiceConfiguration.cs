@@ -1,6 +1,5 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
-using Atlas.Common.FeatureManagement;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.Test.SharedTestHelpers;
