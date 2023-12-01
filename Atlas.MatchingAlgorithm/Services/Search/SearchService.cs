@@ -36,7 +36,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly IMatchingService matchingService;
         private readonly ILogger searchLogger;
         private readonly IDonorDetailsResultFilterer donorDetailsResultFilterer;
-        private readonly IDonorHelper donorHelper;
 
         public SearchService(
             IMatchCriteriaMapper matchCriteriaMapper,
@@ -44,14 +43,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             IMatchingService matchingService,
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchingAlgorithmSearchLogger searchLogger,
-            IDonorDetailsResultFilterer donorDetailsResultFilterer,
-            IDonorHelper donorHelper)
+            IDonorDetailsResultFilterer donorDetailsResultFilterer)
         {
             this.scoringService = scoringService;
             this.matchingService = matchingService;
             this.searchLogger = searchLogger;
             this.donorDetailsResultFilterer = donorDetailsResultFilterer;
-            this.donorHelper = donorHelper;
             this.matchCriteriaMapper = matchCriteriaMapper;
         }
 
@@ -83,7 +80,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var reifiedScoredMatches = scoredMatches.DistinctBy(m => m.MatchResult.DonorId).ToList();
             searchLogger.SendTrace($"Via {splitSearch.Count} sub-searches, matched {reifiedScoredMatches.Count} donors total.");
 
-            var donorLookup = await donorHelper.GetDonorLookup(reifiedScoredMatches);
+            var donorLookup = GetDonorLookup(reifiedScoredMatches);
             var resultsFilteredByDonorDetails = donorDetailsResultFilterer.FilterResultsByDonorData(
                 new DonorFilteringCriteria { RegistryCodes = matchingRequest.DonorRegistryCodes },
                 reifiedScoredMatches,
@@ -179,6 +176,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 MatchCategory = scoreDetailsForLocus?.MatchCategory,
                 MismatchDirection = scoreDetailsForLocus?.MismatchDirection
             };
+        }
+
+        public static Dictionary<int, DonorLookupInfo> GetDonorLookup(List<MatchAndScoreResult> reifiedScoredMatches)
+        {
+            return reifiedScoredMatches.ToDictionary(r => r.MatchResult.DonorId, r => r.MatchResult.DonorInfo.ToDonorLookupInfo());
         }
     }
 }
