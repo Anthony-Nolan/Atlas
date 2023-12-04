@@ -320,9 +320,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchMatchingConfigurationSettings
             );
 
-            services.AddAzureAppConfiguration();
-            services.AddFeatureManagement();
-
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IDonorDetailsResultFilterer, DonorDetailsResultFilterer>();
             services.AddScoped<IMatchCriteriaMapper, MatchCriteriaMapper>();
@@ -362,6 +359,16 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             // Repositories
             services.AddScoped<IScoringWeightingRepository, ScoringWeightingRepository>();
+
+            services.RegisterFeatureManager();
+
+        }
+
+        private static void RegisterFeatureManager(this IServiceCollection services)
+        {
+            // Feature manager's services should be registered event if features aren't used at the moment
+            services.AddAzureAppConfiguration();
+            services.AddFeatureManagement();
 
             services.AddScoped<IAtlasFeatureManager, AtlasFeatureManager>();
         }
