@@ -4,7 +4,7 @@ using System;
 
 namespace Atlas.DonorImport.Models
 {
-    internal static class DonorTypeExtensions
+    public static class DonorTypeExtensions
     {
         public static DatabaseDonorType ToDatabaseType(this ImportDonorType fileDonorType)
         {
