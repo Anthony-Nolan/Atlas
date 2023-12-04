@@ -1,4 +1,5 @@
-﻿using Atlas.Common.Debugging.Donors;
+﻿using System.Collections.Generic;
+using Atlas.Common.Debugging.Donors;
 using Atlas.Common.Utils.Http;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +11,10 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
+using Atlas.DonorImport.Functions.Models.Debug;
+using Atlas.DonorImport.Models;
 
 namespace Atlas.DonorImport.Functions.Functions.Debug
 {
@@ -24,7 +28,7 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
         }
 
         [FunctionName(nameof(GetDonors))]
-        [ProducesResponseType(typeof(DebugDonorsResult<Data.Models.Donor, string>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(DebugDonorsResult<Donor, string>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetDonors(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/donors")]
             [RequestBodyType(typeof(string[]), "Donor Record Ids")]
@@ -36,6 +40,20 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
 
             return new JsonResult(
                 DebugDonorsHelper.BuildDebugDonorsResult(recordIds, donors.Values.ToList(), d => d.ExternalDonorCode));
+        }
+
+        [FunctionName(nameof(GetRandomDonors))]
+        [ProducesResponseType(typeof(IEnumerable<Donor>), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetRandomDonors(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/donors/random")]
+            [RequestBodyType(typeof(DonorRequest), "Donors to retrieve")]
+            HttpRequest request)
+        {
+            var donorRequest = JsonConvert.DeserializeObject<DonorRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+            var donorType = donorRequest.DonorType?.ToDatabaseType();
+            var donors = await donorReadRepository.Get1000RandomDonors(donorType, donorRequest.RegistryCode);
+
+            return new JsonResult(donors);
         }
     }
 }
