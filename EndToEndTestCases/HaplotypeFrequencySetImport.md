@@ -11,7 +11,8 @@
 - Atlas DB `HlaNomenclatureVersion` value request
 
 ```sql
-SELECT TOP 1 HlaNomenclatureVersion FROM MatchingAlgorithmPersistent.DataRefreshHistory
+SELECT TOP 1 HlaNomenclatureVersion
+FROM MatchingAlgorithmPersistent.DataRefreshHistory
 WHERE WasSuccessful = 1 ORDER BY Id DESC
 ```
 - App Insights log request
