@@ -31,8 +31,7 @@ namespace Atlas.DonorImport.Data.Repositories
         /// </summary>
         /// <param name="donorType">Optional, if you wish to restrict donors by donor type</param>
         /// <param name="registryCode">Optional, if you wish to restrict donors by registry code</param>
-        /// <returns>Attempts to return the <paramref name="numberOfDonors"/> specified,
-        /// but may return fewer depending on SQL filters and which donor ID is randomly selected as the cut-off</returns>
+        /// <returns>Attempts to return 1000 donors, but may return fewer depending on SQL filters and which donor ID is randomly selected as the cut-off</returns>
         Task<IEnumerable<Donor>> Get1000RandomDonors(DatabaseDonorType? donorType, string registryCode = null);
     }
 
