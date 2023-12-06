@@ -364,9 +364,12 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
         }
 
+        /// <summary>
+        /// Feature management, leave it configured even if there is no active feature flags in use
+        /// </summary>
+        /// <param name="services">Services collection</param>
         private static void RegisterFeatureManager(this IServiceCollection services)
         {
-            // Feature manager's services should be registered event if features aren't used at the moment
             services.AddAzureAppConfiguration();
             services.AddFeatureManagement();
 

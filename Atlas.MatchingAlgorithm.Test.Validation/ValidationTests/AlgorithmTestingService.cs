@@ -39,13 +39,15 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
             server = new TestServer(builder);
         }
 
-        private static void AddFeatureManagement(IConfigurationBuilder config)
+        /// <summary>
+        /// Feature management, leave it configured even if there is no active feature flags in use
+        /// </summary>
+        /// <param name="configBuilder">Configuration builder</param>
+        private static void AddFeatureManagement(IConfigurationBuilder configBuilder)
         {
-            // Feature management, leave it configured even if there is no active feature flags in use
-
-            var configuration = config.Build();
+            var configuration = configBuilder.Build();
             var azureConfigurationConnectionString = configuration.GetValue<string>("AzureAppConfiguration:ConnectionString");
-            config.AddAzureAppConfiguration(options =>
+            configBuilder.AddAzureAppConfiguration(options =>
             {
                 options.Connect(azureConfigurationConnectionString)
                     .Select("_")

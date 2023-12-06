@@ -45,10 +45,13 @@ namespace Atlas.MatchingAlgorithm.Api
             }
         }
 
+        /// <summary>
+        /// Feature management, leave it configured even if there is no active feature flags in use
+        /// </summary>
+        /// <param name="configuration">Configuration</param>
+        /// <param name="builder">Configuration builder</param>
         private void AddFeatureManagement(IConfiguration configuration, ConfigurationBuilder builder)
         {
-            // Feature management, leave it configured even if there is no active feature flags in use
-
             var azureConfigurationConnectionString = configuration.GetValue<string>("AzureAppConfiguration:ConnectionString");
             builder.AddAzureAppConfiguration(options =>
             {

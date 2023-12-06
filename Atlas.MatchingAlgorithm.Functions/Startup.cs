@@ -50,10 +50,12 @@ namespace Atlas.MatchingAlgorithm.Functions
                 ConnectionStringReader("DonorSql"));
         }
 
+        /// <summary>
+        /// Feature management, leave it configured even if there is no active feature flags in use
+        /// </summary>
+        /// <param name="builder">Configuration builder</param>
         public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
         {
-            // Feature management, leave it configured even if there is no active feature flags in use
-
             var azureConfigurationConnectionString = Environment.GetEnvironmentVariable("AzureAppConfiguration:ConnectionString");
             builder.ConfigurationBuilder.AddAzureAppConfiguration(options =>
             {
