@@ -61,7 +61,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                     ExternalDonorCode = DonorIdGenerator.NewExternalCode,
                     DonorId = DonorIdGenerator.NextId(),
                     HlaNames = donorHlas,
-                    MatchingHla = matchingHlaPhenotype
+                    MatchingHla = matchingHlaPhenotype, 
+                    EthnicityCode = "EthnicityCode#0",
+                    RegistryCode = "RegistryCode#0"
                 };
                 donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor}, false).Wait();
             });
@@ -213,5 +215,24 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             // DQB1 is not typed and not included in search
             result?.ScoringResult.ScoringResultsByLocus.Dqb1.IsLocusTyped.Should().BeFalse();
         }
+
+        [Test]
+        public async Task Search_Result_Has_ExternalDonorCode_EthnicityCode_RegistryCode_Props_Populated()
+        {
+            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
+                .SixOutOfSix()
+                .WithLociToScore(new List<Locus> { Locus.C, Locus.Dqb1 })
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
+
+            result.Should().NotBeNull();
+            result.MatchingDonorInfo.Should().NotBeNull();
+            result.MatchingDonorInfo.ExternalDonorCode.Should().BeEquivalentTo(donor.ExternalDonorCode);
+            result.MatchingDonorInfo.EthnicityCode.Should().BeEquivalentTo(donor.EthnicityCode);
+            result.MatchingDonorInfo.RegistryCode.Should().BeEquivalentTo(donor.RegistryCode);
+        }
+
     }
 }

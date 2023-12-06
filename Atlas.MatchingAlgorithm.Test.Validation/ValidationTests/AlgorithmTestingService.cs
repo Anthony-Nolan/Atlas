@@ -33,17 +33,26 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
                     config.AddJsonFile("appsettings.json", true, true);
                     config.AddUserSecrets(Assembly.GetExecutingAssembly());
 
-                    var configuration = config.Build();
-                    var azureConfigurationConnectionString = configuration.GetValue<string>("AzureAppConfiguration:ConnectionString");
-                    config.AddAzureAppConfiguration(options =>
-                    {
-                        options.Connect(azureConfigurationConnectionString)
-                            .Select("_")
-                            .UseFeatureFlags();
-                    });
+                    AddFeatureManagement(config);
                 })
                 .UseStartup<Startup>();
             server = new TestServer(builder);
+        }
+
+        /// <summary>
+        /// Feature management, leave it configured even if there is no active feature flags in use
+        /// </summary>
+        /// <param name="configBuilder">Configuration builder</param>
+        private static void AddFeatureManagement(IConfigurationBuilder configBuilder)
+        {
+            var configuration = configBuilder.Build();
+            var azureConfigurationConnectionString = configuration.GetValue<string>("AzureAppConfiguration:ConnectionString");
+            configBuilder.AddAzureAppConfiguration(options =>
+            {
+                options.Connect(azureConfigurationConnectionString)
+                    .Select("_")
+                    .UseFeatureFlags();
+            });
         }
 
         public static void StopServer()

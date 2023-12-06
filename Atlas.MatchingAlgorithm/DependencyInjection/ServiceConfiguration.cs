@@ -320,14 +320,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchMatchingConfigurationSettings
             );
 
-            services.AddAzureAppConfiguration();
-            services.AddFeatureManagement();
-
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IDonorDetailsResultFilterer, DonorDetailsResultFilterer>();
             services.AddScoped<IMatchCriteriaMapper, MatchCriteriaMapper>();
             services.AddScoped<IMatchingFailureNotificationSender, MatchingFailureNotificationSender>();
-            services.AddScoped<IDonorHelper, DonorHelper>();
 
             services.AddApplicationInsightsTelemetryWorkerService();
             services.AddScoped<MatchingAlgorithmSearchLoggingContext>();
@@ -363,6 +359,19 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             // Repositories
             services.AddScoped<IScoringWeightingRepository, ScoringWeightingRepository>();
+
+            services.RegisterFeatureManager();
+
+        }
+
+        /// <summary>
+        /// Feature management, leave it configured even if there is no active feature flags in use
+        /// </summary>
+        /// <param name="services">Services collection</param>
+        private static void RegisterFeatureManager(this IServiceCollection services)
+        {
+            services.AddAzureAppConfiguration();
+            services.AddFeatureManagement();
 
             services.AddScoped<IAtlasFeatureManager, AtlasFeatureManager>();
         }

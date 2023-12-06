@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Reflection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
@@ -34,13 +35,7 @@ namespace Atlas.MatchingAlgorithm.Api
                 builder.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
                 builder.AddUserSecrets(Assembly.GetExecutingAssembly());
 
-                var azureConfigurationConnectionString = configuration.GetValue<string>("AzureAppConfiguration:ConnectionString");
-                builder.AddAzureAppConfiguration(options =>
-                {
-                    options.Connect(azureConfigurationConnectionString)
-                        .Select("_")
-                        .UseFeatureFlags();
-                });
+                AddFeatureManagement(configuration, builder);
 
                 this.configuration = builder.Build();
             }
@@ -48,6 +43,22 @@ namespace Atlas.MatchingAlgorithm.Api
             {
                 this.configuration = configuration;
             }
+        }
+
+        /// <summary>
+        /// Feature management, leave it configured even if there is no active feature flags in use
+        /// </summary>
+        /// <param name="configuration">Configuration</param>
+        /// <param name="builder">Configuration builder</param>
+        private void AddFeatureManagement(IConfiguration configuration, ConfigurationBuilder builder)
+        {
+            var azureConfigurationConnectionString = configuration.GetValue<string>("AzureAppConfiguration:ConnectionString");
+            builder.AddAzureAppConfiguration(options =>
+            {
+                options.Connect(azureConfigurationConnectionString)
+                    .Select("_")
+                    .UseFeatureFlags();
+            });
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.

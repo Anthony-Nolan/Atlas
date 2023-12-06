@@ -143,9 +143,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             // Log to file, not to ApplicationInsights!
             services.AddSingleton<ILogger, FileBasedLogger>();
 
-            var atlasFeatureManager = Substitute.For<IAtlasFeatureManager>();
-            atlasFeatureManager.IsFeatureEnabled(FeatureFlags.UseDonorInfoStoredInMatchingAlgorithmDb).Returns(true);
-            services.AddScoped(_ => atlasFeatureManager);
         }
 
         private static void RegisterIntegrationTestServices(IServiceCollection services)
