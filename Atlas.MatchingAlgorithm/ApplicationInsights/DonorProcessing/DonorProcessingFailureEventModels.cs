@@ -28,8 +28,10 @@ namespace Atlas.MatchingAlgorithm.ApplicationInsights.DonorProcessing
         public DonorHlaLookupFailureEventModel(string eventName, DonorProcessingException<HlaMetadataDictionaryException> exception)
             : base(eventName, exception.Exception, exception.FailedDonorInfo)
         {
-            Properties.Add("Locus", exception.Exception.Locus);
-            Properties.Add("HlaName", exception.Exception.HlaName);
+            var hmdException = exception.Exception;
+            Properties.Add("Locus", hmdException.Locus);
+            Properties.Add("HlaName", hmdException.HlaName);
+            Properties.Add("InnerExceptionType", hmdException.InnerException?.GetType().Name ?? "N/A");
         }
     }
 
