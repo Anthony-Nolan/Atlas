@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
@@ -10,6 +12,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Settings;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 {
@@ -29,7 +32,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IDataRefreshServiceBusClient serviceBusClient;
         private readonly IDataRefreshSupportNotificationSender supportNotificationSender;
+        private readonly IMatchingAlgorithmImportLogger logger;
+
         private readonly bool shouldAllowAutoRefresh;
+
 
         public DataRefreshRequester(
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
@@ -38,12 +44,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
             IDataRefreshServiceBusClient serviceBusClient,
             IDataRefreshSupportNotificationSender supportNotificationSender,
-            DataRefreshSettings dataRefreshSettings)
+            DataRefreshSettings dataRefreshSettings,
+            IMatchingAlgorithmImportLogger logger)
         {
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
             this.serviceBusClient = serviceBusClient;
             this.supportNotificationSender = supportNotificationSender;
+            this.logger = logger;
 
             shouldAllowAutoRefresh = dataRefreshSettings.AutoRunDataRefresh;
 
@@ -54,6 +62,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         public async Task<DataRefreshResponse> RequestDataRefresh(DataRefreshRequest request, bool wasManuallyRequested)
         {
+
             if (!shouldAllowAutoRefresh && !wasManuallyRequested)
             {
                 return new DataRefreshResponse {WasRefreshRun = false};
@@ -66,9 +75,17 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
             if (NoNeedToRecreateActiveHlaMetaDictionary() && !request.ForceDataRefresh)
             {
-                throw new InvalidDataRefreshRequestHttpException("Active HLA metadata dictionary is already on the " +
-                                                                 "latest version of the WMDA HLA nomenclature and refresh " +
-                                                                 "was not run in 'Forced' mode.");
+                const string message = "Active HLA metadata dictionary is already on the " +
+                                                                     "latest version of the WMDA HLA nomenclature and refresh " +
+                                                                     "was not run in 'Forced' mode.";
+
+                if (wasManuallyRequested)
+                {
+                    throw new InvalidDataRefreshRequestHttpException(message);
+                }
+
+                logger.SendTrace(message, LogLevel.Warn);
+                return new DataRefreshResponse { WasRefreshRun = false };
             }
 
             var recordId = await CreateNewDataRefreshRecord();
