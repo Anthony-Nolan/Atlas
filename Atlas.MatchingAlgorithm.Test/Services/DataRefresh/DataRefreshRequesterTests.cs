@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils.Http;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
@@ -26,6 +28,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private IDataRefreshServiceBusClient serviceBusClient;
         private IDataRefreshSupportNotificationSender supportNotificationSender;
+        private IMatchingAlgorithmImportLogger logger;
 
         private IDataRefreshRequester dataRefreshRequester;
 
@@ -42,6 +45,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
             serviceBusClient = Substitute.For<IDataRefreshServiceBusClient>();
             supportNotificationSender = Substitute.For<IDataRefreshSupportNotificationSender>();
+            logger = Substitute.For<IMatchingAlgorithmImportLogger>();
 
             dataRefreshRequester = BuildDataRefreshRequester();
 
@@ -64,7 +68,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 dataRefreshHistoryRepository,
                 serviceBusClient,
                 supportNotificationSender,
-                dataRefreshSettings
+                dataRefreshSettings,
+                logger
             );
         }
 
@@ -80,13 +85,25 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task RequestDataRefresh_WhenActiveHlaVersionMatchesLatest_AndNonForcedMode_ThrowsHttpException()
+        public async Task RequestDataRefresh_WhenActiveHlaVersionMatchesLatest_AndNonForcedMode_AndManuallyRequested_ThrowsHttpException()
         {
             wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(ExistingHlaVersion);
 
             await dataRefreshRequester.Invoking(service => service.RequestDataRefresh(new DataRefreshRequest(), true))
                 .Should().ThrowAsync<AtlasHttpException>();
         }
+
+        [Test]
+        public async Task RequestDataRefresh_WhenActiveHlaVersionMatchesLatest_AndNonForcedMode_AndIsntManuallyRequested_LogsTrace()
+        {
+            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(ExistingHlaVersion);
+
+            await dataRefreshRequester.Invoking(service => service.RequestDataRefresh(new DataRefreshRequest(), false))
+                .Should().NotThrowAsync<AtlasHttpException>();
+
+            logger.Received().SendTrace(Arg.Any<string>(), LogLevel.Warn);
+        }
+
 
         [Test]
         public async Task RequestDataRefresh_WhenNoActiveHlaVersion_CreatesRecord()
