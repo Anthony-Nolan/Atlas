@@ -94,13 +94,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task RequestDataRefresh_WhenActiveHlaVersionMatchesLatest_AndNonForcedMode_AndIsntManuallyRequested_LogsTrace()
+        public async Task RequestDataRefresh_WhenActiveHlaVersionMatchesLatest_AndNonForcedMode_AndAutomatedRequest_LogsTrace()
         {
             wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(ExistingHlaVersion);
 
-            await dataRefreshRequester.Invoking(service => service.RequestDataRefresh(new DataRefreshRequest(), false))
-                .Should().NotThrowAsync<AtlasHttpException>();
+            var response = await dataRefreshRequester.RequestDataRefresh(new DataRefreshRequest(), false);
 
+            response.WasRefreshRun.Should().BeFalse();
             logger.Received().SendTrace(Arg.Any<string>(), LogLevel.Warn);
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
@@ -83,7 +84,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     throw new InvalidDataRefreshRequestHttpException(message);
                 }
 
-                logger.SendTrace(message, Atlas.Common.ApplicationInsights.LogLevel.Warn);
+                logger.SendTrace(message, LogLevel.Warn);
                 return new DataRefreshResponse { WasRefreshRun = false };
             }
 
