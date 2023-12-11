@@ -1,10 +1,19 @@
 using System.IO;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
+using System.Web.Http;
 using Atlas.Common.AzureEventGrid;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
+using Azure.Core;
+using AzureFunctions.Extensions.Swashbuckle.Attribute;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.OData;
+using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Functions.Functions
 {
@@ -14,13 +23,20 @@ namespace Atlas.DonorImport.Functions.Functions
         private readonly IDonorImportFileHistoryService donorHistoryService;
         private readonly IDonorImportMessageSender donorImportMessageSender;
         private readonly IDonorImportFailuresCleaner donorImportFailuresCleaner;
+        private readonly IManuallyPublishDonorUpdatesService manuallyPublishDonorUpdatesService;
 
-        public DonorImportFunctions(IDonorFileImporter donorFileImporter, IDonorImportFileHistoryService donorHistoryService, IDonorImportMessageSender donorImportMessageSender, IDonorImportFailuresCleaner donorImportFailuresCleaner)
+        public DonorImportFunctions(
+            IDonorFileImporter donorFileImporter, 
+            IDonorImportFileHistoryService donorHistoryService, 
+            IDonorImportMessageSender donorImportMessageSender, 
+            IDonorImportFailuresCleaner donorImportFailuresCleaner, 
+            IManuallyPublishDonorUpdatesService manuallyPublishDonorUpdatesService)
         {
             this.donorFileImporter = donorFileImporter;
             this.donorHistoryService = donorHistoryService;
             this.donorImportMessageSender = donorImportMessageSender;
             this.donorImportFailuresCleaner = donorImportFailuresCleaner;
+            this.manuallyPublishDonorUpdatesService = manuallyPublishDonorUpdatesService;
         }
 
         [FunctionName(nameof(ImportDonorFile))]
@@ -64,6 +80,22 @@ namespace Atlas.DonorImport.Functions.Functions
         public async Task DeleteDonorImportFailures([TimerTrigger("%FailureLogs:DeletionCronSchedule%")] TimerInfo timer)
         {
             await donorImportFailuresCleaner.DeleteExpiredDonorImportFailures();
+        }
+
+        [FunctionName(nameof(ManuallyPublishDonorUpdatesByDonorId))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(500)]
+        public async Task<IActionResult> ManuallyPublishDonorUpdatesByDonorId([HttpTrigger(AuthorizationLevel.Function, "post")][RequestBodyType(typeof(int[]), "Donor ids")]HttpRequest request)
+        {
+            using var reader = new StreamReader(request.Body);
+            var ids = JsonConvert.DeserializeObject<int[]>(await reader.ReadToEndAsync());
+
+            var succeed = await manuallyPublishDonorUpdatesService.PublishDonorUpdates(ids);
+
+            if (succeed)
+                return new OkResult();
+
+            return new InternalServerErrorResult();
         }
     }
 }
