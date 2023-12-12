@@ -6,6 +6,7 @@ using Atlas.Common.AzureEventGrid;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
+using Atlas.DonorImport.Services.DonorUpdates;
 using Azure.Core;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
@@ -23,20 +24,20 @@ namespace Atlas.DonorImport.Functions.Functions
         private readonly IDonorImportFileHistoryService donorHistoryService;
         private readonly IDonorImportMessageSender donorImportMessageSender;
         private readonly IDonorImportFailuresCleaner donorImportFailuresCleaner;
-        private readonly IManuallyPublishDonorUpdatesService manuallyPublishDonorUpdatesService;
+        private readonly IDonorUpdatesSaver donorUpdatesSaver;
 
         public DonorImportFunctions(
-            IDonorFileImporter donorFileImporter, 
-            IDonorImportFileHistoryService donorHistoryService, 
-            IDonorImportMessageSender donorImportMessageSender, 
-            IDonorImportFailuresCleaner donorImportFailuresCleaner, 
-            IManuallyPublishDonorUpdatesService manuallyPublishDonorUpdatesService)
+            IDonorFileImporter donorFileImporter,
+            IDonorImportFileHistoryService donorHistoryService,
+            IDonorImportMessageSender donorImportMessageSender,
+            IDonorImportFailuresCleaner donorImportFailuresCleaner,
+            IDonorUpdatesSaver donorUpdatesSaver)
         {
             this.donorFileImporter = donorFileImporter;
             this.donorHistoryService = donorHistoryService;
             this.donorImportMessageSender = donorImportMessageSender;
             this.donorImportFailuresCleaner = donorImportFailuresCleaner;
-            this.manuallyPublishDonorUpdatesService = manuallyPublishDonorUpdatesService;
+            this.donorUpdatesSaver = donorUpdatesSaver;
         }
 
         [FunctionName(nameof(ImportDonorFile))]
@@ -90,12 +91,8 @@ namespace Atlas.DonorImport.Functions.Functions
             using var reader = new StreamReader(request.Body);
             var ids = JsonConvert.DeserializeObject<int[]>(await reader.ReadToEndAsync());
 
-            var succeed = await manuallyPublishDonorUpdatesService.PublishDonorUpdates(ids);
-
-            if (succeed)
-                return new OkResult();
-
-            return new InternalServerErrorResult();
+            await donorUpdatesSaver.GenerateAndSave(ids);
+            return new OkResult();
         }
     }
 }

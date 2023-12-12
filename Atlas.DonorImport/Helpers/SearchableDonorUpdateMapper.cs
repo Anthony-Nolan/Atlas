@@ -10,7 +10,7 @@ using Donor = Atlas.DonorImport.Data.Models.Donor;
 
 namespace Atlas.DonorImport.Helpers
 {
-    public static class SearchableDonorUpdateHelper
+    public static class SearchableDonorUpdateMapper
     {
         public static SearchableDonorUpdate MapToMatchingUpdateMessage(Donor updatedDonor)
         {

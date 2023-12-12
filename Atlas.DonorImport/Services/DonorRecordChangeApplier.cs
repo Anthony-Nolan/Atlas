@@ -183,7 +183,7 @@ namespace Atlas.DonorImport.Services
             return creationsWithoutAtlasIds.Select(creation =>
             {
                 creation.AtlasId = GetAtlasIdFromCode(creation.ExternalDonorCode, newAtlasDonorIds);
-                return SearchableDonorUpdateHelper.MapToMatchingUpdateMessage(creation);
+                return SearchableDonorUpdateMapper.MapToMatchingUpdateMessage(creation);
             }).ToList();
         }
 
@@ -209,7 +209,7 @@ namespace Atlas.DonorImport.Services
                 await donorImportRepository.UpdateDonorBatch(editedDonors, file.UploadTime);
             }
 
-            return editedDonors.Select(SearchableDonorUpdateHelper.MapToMatchingUpdateMessage).ToList();
+            return editedDonors.Select(SearchableDonorUpdateMapper.MapToMatchingUpdateMessage).ToList();
         }
 
         /// <returns>A collection of donor updates to be published for import into the matching component's data store.</returns>
@@ -232,7 +232,7 @@ namespace Atlas.DonorImport.Services
 
             await donorImportRepository.DeleteDonorBatch(deletedAtlasDonorIds.Values.ToList());
 
-            return deletedAtlasDonorIds.Values.Select(SearchableDonorUpdateHelper.MapToDeletionUpdateMessage).ToList();
+            return deletedAtlasDonorIds.Values.Select(SearchableDonorUpdateMapper.MapToDeletionUpdateMessage).ToList();
         }
 
         private static int GetAtlasIdFromCode(string donorCode, IReadOnlyDictionary<string, int> codesToIdsDictionary)
