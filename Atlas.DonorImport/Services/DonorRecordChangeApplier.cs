@@ -16,6 +16,7 @@ using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Donor = Atlas.DonorImport.Data.Models.Donor;
+using Atlas.DonorImport.Helpers;
 
 namespace Atlas.DonorImport.Services
 {
@@ -182,7 +183,7 @@ namespace Atlas.DonorImport.Services
             return creationsWithoutAtlasIds.Select(creation =>
             {
                 creation.AtlasId = GetAtlasIdFromCode(creation.ExternalDonorCode, newAtlasDonorIds);
-                return MapToMatchingUpdateMessage(creation);
+                return SearchableDonorUpdateMapper.MapToMatchingUpdateMessage(creation);
             }).ToList();
         }
 
@@ -208,7 +209,7 @@ namespace Atlas.DonorImport.Services
                 await donorImportRepository.UpdateDonorBatch(editedDonors, file.UploadTime);
             }
 
-            return editedDonors.Select(MapToMatchingUpdateMessage).ToList();
+            return editedDonors.Select(SearchableDonorUpdateMapper.MapToMatchingUpdateMessage).ToList();
         }
 
         /// <returns>A collection of donor updates to be published for import into the matching component's data store.</returns>
@@ -231,7 +232,7 @@ namespace Atlas.DonorImport.Services
 
             await donorImportRepository.DeleteDonorBatch(deletedAtlasDonorIds.Values.ToList());
 
-            return deletedAtlasDonorIds.Values.Select(MapToDeletionUpdateMessage).ToList();
+            return deletedAtlasDonorIds.Values.Select(SearchableDonorUpdateMapper.MapToDeletionUpdateMessage).ToList();
         }
 
         private static int GetAtlasIdFromCode(string donorCode, IReadOnlyDictionary<string, int> codesToIdsDictionary)
@@ -254,45 +255,6 @@ namespace Atlas.DonorImport.Services
             }
 
             return donorUpdates.First().UpdateMode;
-        }
-
-        private static SearchableDonorUpdate MapToDeletionUpdateMessage(int deletedDonorId)
-        {
-            return new SearchableDonorUpdate
-            {
-                DonorId = deletedDonorId,
-                IsAvailableForSearch = false,
-                SearchableDonorInformation = null
-            };
-        }
-
-        private static SearchableDonorUpdate MapToMatchingUpdateMessage(Donor updatedDonor)
-        {
-            return new SearchableDonorUpdate
-            {
-                DonorId = updatedDonor.AtlasId,
-                IsAvailableForSearch = true, //Only false for deletions, which are handled separately
-                SearchableDonorInformation = new SearchableDonorInformation
-                {
-                    DonorId = updatedDonor.AtlasId,
-                    DonorType = updatedDonor.DonorType.ToMatchingAlgorithmType(),
-                    ExternalDonorCode = updatedDonor.ExternalDonorCode,
-                    EthnicityCode = updatedDonor.EthnicityCode,
-                    RegistryCode = updatedDonor.RegistryCode,
-                    A_1 = updatedDonor.A_1,
-                    A_2 = updatedDonor.A_2,
-                    B_1 = updatedDonor.B_1,
-                    B_2 = updatedDonor.B_2,
-                    C_1 = updatedDonor.C_1,
-                    C_2 = updatedDonor.C_2,
-                    DPB1_1 = updatedDonor.DPB1_1,
-                    DPB1_2 = updatedDonor.DPB1_2,
-                    DQB1_1 = updatedDonor.DQB1_1,
-                    DQB1_2 = updatedDonor.DQB1_2,
-                    DRB1_1 = updatedDonor.DRB1_1,
-                    DRB1_2 = updatedDonor.DRB1_2,
-                }
-            };
         }
     }
 }
