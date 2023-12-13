@@ -14,6 +14,11 @@ namespace Atlas.DonorImport.Services.DonorUpdates
     public interface IDonorUpdatesSaver
     {
         Task Save(IEnumerable<SearchableDonorUpdate> donorUpdates);
+
+        /// <summary>
+        /// Retrieves donors from db with ids in <paramref name="donorIds"/>. Then generate update messages for id present in donor store, and deletion updates for an absent id.
+        /// </summary>
+        /// <param name="donorIds">Donor ids</param>
         Task GenerateAndSave(IEnumerable<int> donorIds);
     }
 

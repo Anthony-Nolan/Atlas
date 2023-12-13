@@ -14,6 +14,8 @@ using FluentAssertions;
 using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Atlas.DonorImport.Services.DonorUpdates;
+using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorUpdates
 {
@@ -23,6 +25,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorUpdates
         private IPublishableDonorUpdatesInspectionRepository updatesInspectionRepository;
         private IDonorInspectionRepository donorInspectionRepository;
         private IDonorFileImporter fileImporter;
+        private IDonorUpdatesSaver donorUpdatesSaver;
 
         private static Builder<DonorUpdate> DonorBuilder => DonorUpdateBuilder.New
             .With(upd => upd.ChangeType, ImportDonorChangeType.Upsert);
@@ -36,6 +39,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorUpdates
                 fileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
                 updatesInspectionRepository = DependencyInjection.DependencyInjection.Provider.GetService<IPublishableDonorUpdatesInspectionRepository>();
                 donorInspectionRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
+                donorUpdatesSaver = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdatesSaver>();
             });
         }
 
@@ -81,6 +85,23 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorUpdates
             updates.Select(u => u.CreatedOn).Distinct().Single().Should().BeCloseTo(dateTimeJustAfterUpdateCreation, 10000);
             updates.Select(u => u.IsPublished).Should().AllBeEquivalentTo(false);
             updates.Select(u => u.PublishedOn).Should().AllBeEquivalentTo((DateTimeOffset?)null);
+        }
+
+        [Test]
+        public async Task DonorUpdatesSaver_GenerateAndSave_ForExistingAndNonExistingDonors_SavesCorrespondingPublishabelDonorUpdates()
+        {
+            var id = (await BuildAndImportDonors(1)).Single();
+            await updatesInspectionRepository.RemoveAll();
+
+            await donorUpdatesSaver.GenerateAndSave(new[] { id, -id });
+
+            var updates = (await updatesInspectionRepository.GetAll()).ToList();
+            updates.Count.Should().Be(2);
+
+            var updateRecord = JsonConvert.DeserializeObject<SearchableDonorUpdate>(updates.Single(x => x.DonorId == id).SearchableDonorUpdate);
+            var deleteRecord = JsonConvert.DeserializeObject<SearchableDonorUpdate>(updates.Single(x => x.DonorId == -id).SearchableDonorUpdate);
+            updateRecord.IsAvailableForSearch.Should().BeTrue();
+            deleteRecord.IsAvailableForSearch.Should().BeFalse();
         }
 
         /// <summary>

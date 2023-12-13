@@ -1,7 +1,6 @@
 ﻿using Atlas.Client.Models.Search;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
-using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Services.DonorUpdates;
@@ -16,6 +15,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
+using ExternalInfteface=Atlas.DonorImport.ExternalInterface.Models;
+
 
 namespace Atlas.DonorImport.Test.Services.DonorUpdates
 {
@@ -105,7 +107,7 @@ namespace Atlas.DonorImport.Test.Services.DonorUpdates
         {
             publishableDonorUpdate.DonorId.Should().Be(donorId);
 
-            var searchableDonorUpdate = JsonConvert.DeserializeObject<SearchableDonorUpdate>(publishableDonorUpdate.SearchableDonorUpdate);
+            var searchableDonorUpdate = JsonConvert.DeserializeObject<ExternalInfteface.SearchableDonorUpdate>(publishableDonorUpdate.SearchableDonorUpdate);
 
             searchableDonorUpdate.DonorId.Should().Be(donorId);
             searchableDonorUpdate.IsAvailableForSearch.Should().BeFalse();
@@ -116,7 +118,7 @@ namespace Atlas.DonorImport.Test.Services.DonorUpdates
         {
             publishableDonorUpdate.DonorId.Should().Be(donorId);
 
-            var searchableDonorUpdate = JsonConvert.DeserializeObject<SearchableDonorUpdate>(publishableDonorUpdate.SearchableDonorUpdate);
+            var searchableDonorUpdate = JsonConvert.DeserializeObject<ExternalInfteface.SearchableDonorUpdate>(publishableDonorUpdate.SearchableDonorUpdate);
 
             searchableDonorUpdate.DonorId.Should().Be(donorId);
             searchableDonorUpdate.IsAvailableForSearch.Should().BeTrue();
@@ -125,28 +127,28 @@ namespace Atlas.DonorImport.Test.Services.DonorUpdates
             var info = searchableDonorUpdate.SearchableDonorInformation;
             info.DonorId.Should().Be(donorId);
             info.DonorType.Should().Be(donorType);
-            info.ExternalDonorCode.Should().Be($"#{donorId}ExtCode");
-            info.EthnicityCode.Should().Be($"#{donorId}Eth");
-            info.RegistryCode.Should().Be($"#{donorId}RC");
-            info.A_1.Should().Be($"#{donorId}A_1");
-            info.A_2.Should().Be($"#{donorId}A_2");
-            info.B_1.Should().Be($"#{donorId}B_1");
-            info.B_2.Should().Be($"#{donorId}B_2");
-            info.C_1.Should().Be($"#{donorId}C_1");
-            info.C_2.Should().Be($"#{donorId}C_2");
-            info.DPB1_1.Should().Be($"#{donorId}DPB1_1");
-            info.DPB1_2.Should().Be($"#{donorId}DPB1_2");
-            info.DQB1_1.Should().Be($"#{donorId}DQB1_1");
-            info.DQB1_2.Should().Be($"#{donorId}DQB1_2");
-            info.DRB1_1.Should().Be($"#{donorId}DRB1_1");
-            info.DRB1_2.Should().Be($"#{donorId}DRB1_2");
+            info.ExternalDonorCode.Should().Be($"#{donorId}{nameof(Donor.ExternalDonorCode)}");
+            info.EthnicityCode.Should().Be($"#{donorId}{nameof(Donor.EthnicityCode)}");
+            info.RegistryCode.Should().Be($"#{donorId}{nameof(Donor.RegistryCode)}");
+            info.A_1.Should().Be($"#{donorId}{nameof(Donor.A_1)}");
+            info.A_2.Should().Be($"#{donorId}{nameof(Donor.A_2)}");
+            info.B_1.Should().Be($"#{donorId}{nameof(Donor.B_1)}");
+            info.B_2.Should().Be($"#{donorId}{nameof(Donor.B_2)}");
+            info.C_1.Should().Be($"#{donorId}{nameof(Donor.C_1)}");
+            info.C_2.Should().Be($"#{donorId}{nameof(Donor.C_2)}");
+            info.DPB1_1.Should().Be($"#{donorId}{nameof(Donor.DPB1_1)}");
+            info.DPB1_2.Should().Be($"#{donorId}{nameof(Donor.DPB1_2)}");
+            info.DQB1_1.Should().Be($"#{donorId}{nameof(Donor.DQB1_1)}");
+            info.DQB1_2.Should().Be($"#{donorId}{nameof(Donor.DQB1_2)}");
+            info.DRB1_1.Should().Be($"#{donorId}{nameof(Donor.DRB1_1)}");
+            info.DRB1_2.Should().Be($"#{donorId}{nameof(Donor.DRB1_2)}");
         }
 
         private static readonly Dictionary<int, Data.Models.Donor> donorData = new Dictionary<int, Data.Models.Donor>
         {
-            {1, DatabaseDonorBuilder.WithPropValuesBasedOnId(1, DatabaseDonorType.Adult)},
-            {2, DatabaseDonorBuilder.WithPropValuesBasedOnId(2, DatabaseDonorType.Adult)},
-            {3, DatabaseDonorBuilder.WithPropValuesBasedOnId(3, DatabaseDonorType.Cord)},
+            {1, DatabaseDonorBuilder.WithPropValuesBasedOnId(1, DatabaseDonorType.Adult).Build()},
+            {2, DatabaseDonorBuilder.WithPropValuesBasedOnId(2, DatabaseDonorType.Adult).Build()},
+            {3, DatabaseDonorBuilder.WithPropValuesBasedOnId(3, DatabaseDonorType.Cord).Build()},
         };
     }
 }
