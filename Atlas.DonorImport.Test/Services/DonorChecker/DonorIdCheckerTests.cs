@@ -148,7 +148,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
 
             await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await notificationSender.Received().SendAlert("Donor Ids file was present but it was empty.", Arg.Any<string>(), Priority.Medium, Arg.Any<string>());
+            await notificationSender.Received().SendAlert("Donor Ids file was present but it was empty.", $"Donor Ids file: file-location", Priority.Medium, Arg.Any<string>());
         }
 
         [Test]

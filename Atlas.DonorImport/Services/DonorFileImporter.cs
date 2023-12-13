@@ -111,7 +111,7 @@ namespace Atlas.DonorImport.Services
             {
                 const string summary = "Donor file was present but it was empty.";
                 await SendFailedImportMessage(file.FileLocation, summary);
-                await LogFileErrorAndSendAlert(file, summary, e.StackTrace);
+                await LogFileErrorAndSendAlert(file, summary, $"Donor file: {file.FileLocation}");
             }
             catch (MalformedDonorFileException e)
             {
