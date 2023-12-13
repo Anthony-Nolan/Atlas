@@ -18,6 +18,7 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
 
         Task<IEnumerable<PublishableDonorUpdate>> GetAll();
 
+        Task RemoveAll();
     }
 
     public class PublishableDonorUpdatesInspectionRepository : IPublishableDonorUpdatesInspectionRepository
@@ -56,6 +57,14 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
             {
                 return await conn.QueryAsync<PublishableDonorUpdate>($"SELECT * FROM {PublishableDonorUpdate.QualifiedTableName}");
             }
+        }
+
+        public async Task RemoveAll()
+        {
+            const string sql = @$"DELETE FROM {PublishableDonorUpdate.QualifiedTableName}";
+
+            await using var connection = new SqlConnection(connectionString);
+            await connection.ExecuteAsync(sql);
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Atlas.DonorImport.Data.Repositories
     {
         public IEnumerable<Donor> StreamAllDonors();
         public Task<IReadOnlyDictionary<string, Donor>> GetDonorsByExternalDonorCodes(ICollection<string> externalDonorCodes);
-        public Task<IReadOnlyDictionary<int, Donor>> GetDonorsByIds(ICollection<int> donorIds);
+        public Task<IReadOnlyDictionary<int, Donor>> GetDonorsByIds(IEnumerable<int> donorIds);
         public Task<IReadOnlyDictionary<string, int>> GetDonorIdsByExternalDonorCodes(ICollection<string> externalDonorCodes);
         public Task<IReadOnlyDictionary<string, int>> GetDonorIdsUpdatedSince(DateTimeOffset cutoffDate);
         public Task<IReadOnlyCollection<string>> GetExistingExternalDonorCodes(IEnumerable<string> externalDonorCodes);
@@ -75,7 +75,7 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
         }
 
         /// <inheritdoc />
-        public async Task<IReadOnlyDictionary<int, Donor>> GetDonorsByIds(ICollection<int> donorIds)
+        public async Task<IReadOnlyDictionary<int, Donor>> GetDonorsByIds(IEnumerable<int> donorIds)
         {
             var sql = @$"
 SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM {Donor.QualifiedTableName}
