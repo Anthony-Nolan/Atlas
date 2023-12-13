@@ -6,7 +6,7 @@ using Newtonsoft.Json.Converters;
 namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
 {
     /// <summary>
-    /// Grades assigned during scoring stage
+    /// Grades assigned during the scoring stage.
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
     public enum MatchGrade
@@ -15,6 +15,13 @@ namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
         /// Allele-level mismatch
         /// </summary>
         Mismatch,
+
+        /// <summary>
+        /// One typing is expressing and the other is a null-expressing allele.
+        /// It is not matched nor mismatched but is a special case.
+        /// It has a lower value than other "matching" grades, especially Null vs. Null grades, to ensure they are assigned in preference to this grade.
+        /// </summary>
+        ExpressingVsNull,
 
         /// <summary>
         /// "SI3" serology match
@@ -131,6 +138,14 @@ namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
                 MatchGrade.Associated => LocusMatchCategory.Match,
                 MatchGrade.Broad => LocusMatchCategory.Match,
                 MatchGrade.Split => LocusMatchCategory.Match,
+
+                // This is not technically a match, but it is not a mismatch either.
+                // Assigning the mapping of "Match" allows the grade of the expressing typing within the same locus
+                // to determine the overall match category, as currently the worst of the two positional categories is used.
+                // I.e., if the expressing typing is a match, then the overall locus match category will be "Match",
+                // and if the expressing typing is a mismatch, then the overall locus match category will be "Mismatch".
+                MatchGrade.ExpressingVsNull => LocusMatchCategory.Match,
+
                 MatchGrade.Mismatch => LocusMatchCategory.Mismatch,
                 MatchGrade.NullMismatch => LocusMatchCategory.Mismatch,
                 MatchGrade.Unknown => LocusMatchCategory.Unknown,
