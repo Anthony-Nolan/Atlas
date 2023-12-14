@@ -167,7 +167,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
 
             await donorInfoChecker.CompareDonorInfoInFileToAtlasDonorStore(file);
 
-            await notificationSender.Received().SendAlert("Donors file was present but it was empty.", $"Donors file: name-of-the-file.ext", Priority.Medium, Arg.Any<string>());
+            await notificationSender.Received().SendAlert("Donor info checker file was present but it was empty.", $"Donors file: name-of-the-file.ext", Priority.Medium, Arg.Any<string>());
         }
 
     }
