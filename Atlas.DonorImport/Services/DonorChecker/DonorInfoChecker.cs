@@ -75,9 +75,9 @@ namespace Atlas.DonorImport.Services.DonorChecker
 
                 await messageSender.SendSuccessDonorCheckMessage(file.FileLocation, checkerResults.DonorRecordIds.Count, filename);
             }
-            catch (EmptyDonorFileException e)
+            catch (EmptyDonorFileException)
             {
-                await LogFileErrorAndSendAlert("Donors file was present but it was empty.", e.StackTrace);
+                await LogFileErrorAndSendAlert("Donor info checker file was present but it was empty.", $"Donors file: {file.FileLocation}");
             }
             catch (MalformedDonorFileException e)
             {

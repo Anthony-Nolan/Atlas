@@ -73,9 +73,9 @@ namespace Atlas.DonorImport.Test
         }
 
         [Test]
-        public async Task ImportDonorFile_WhenEmptyDonorFileException_SendsFailedResultMessage()
+        public async Task ImportDonorFile_WhenEmptyDonorFileException_SendsFailedResultMessageAndAlert()
         {
-            var file = DonorImportFileBuilder.NewWithDefaultContents.Build();
+            var file = DonorImportFileBuilder.NewWithDefaultContents.With(x => x.FileLocation, "name-of-the-file.ext").Build();
             var lazeFile = Substitute.For<ILazilyParsingDonorFile>();
             lazeFile.ReadLazyDonorUpdates().Throws(new EmptyDonorFileException());
             fileParser.PrepareToLazilyParseDonorUpdates(Arg.Any<Stream>()).Returns(lazeFile);
@@ -85,6 +85,8 @@ namespace Atlas.DonorImport.Test
 
             await donorImportMessageSender.Received().SendFailureMessage(file.FileLocation, ImportFailureReason.ErrorDuringImport,
                 "Donor file was present but it was empty.");
+
+            await notificationSender.Received().SendAlert("Donor file was present but it was empty.", $"Donor file: name-of-the-file.ext", Priority.Medium, Arg.Any<string>());
         }
 
         [Test]

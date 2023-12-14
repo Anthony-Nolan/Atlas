@@ -7,6 +7,7 @@ using Atlas.Common.Notifications;
 using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
+using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 using Atlas.DonorImport.Services;
@@ -155,5 +156,19 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
 
             logger.Received().SendEvent(Arg.Any<DonorInfoCheckerFailureEventModel>());
         }
+
+        [Test]
+        public async Task CompareDonorInfoInFileToAtlasDonorStore_WhenEmptyDonorFileException_SendsAlert()
+        {
+            var file = DonorImportFileBuilder.NewWithoutContents.With(x => x.FileLocation, "name-of-the-file.ext");
+            var fileParserResult = Substitute.For<ILazilyParsingDonorFile>();
+            fileParserResult.ReadLazyDonorUpdates().Throws<EmptyDonorFileException>();
+            fileParser.PrepareToLazilyParseDonorUpdates(default).Returns(fileParserResult);
+
+            await donorInfoChecker.CompareDonorInfoInFileToAtlasDonorStore(file);
+
+            await notificationSender.Received().SendAlert("Donor info checker file was present but it was empty.", $"Donors file: name-of-the-file.ext", Priority.Medium, Arg.Any<string>());
+        }
+
     }
 }
