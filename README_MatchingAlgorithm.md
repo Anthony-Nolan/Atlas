@@ -67,7 +67,7 @@ Each locus/position will be assigned a match grade, which will indicate the qual
 |Both types are molecular|Partial|Same name AND have partial g/cDNA|
 |Both types are molecular|Mismatch|Mismatch at the molecular level but would be considered a match at the clinical level (i.e., assigned a match count of 1).|
 |**_Expressing vs Null:_**|
-|Any|Mismatch|Mismatch at the molecular level but may be matched at the clinical level in a homozygous scenario ([see below](#matching))|
+|Any|ExpressingVsNull|Mismatch at the molecular level but may be matched at the clinical level in a homozygous scenario ([see below](#matching))|
 
 
 #### (b) Confidence
@@ -115,7 +115,8 @@ E.g., `A*03:01,01:11N` will be treated as `A*03:01P,03:01P`, and would be assign
 
 #### Scoring
 Null alleles have their own match grades ([see section on Grading](#a-grading)).
-Note, the table shows where it is possible for a locus to have a match count of 1 or 2 due to the null-containing locus being treated as homozygous for the expressing P group, but still be assigned the score grade of `Mismatch` after the null allele is compared to another typing, one-to-one, at the molecular level.
+
+In the first versions of Atlas, any comparison of null allele to an expressing typing would immediately be graded as `Mismatch`, even where the locus had a match count of 2 due to being treated as homozygous during matching. The discrepancy between matching and scoring results was deemed confusing by end-users. To remedy this, a new match grade, `ExpressingVsNull`, was added for use in this special case, and the score count now aligns with the match count.
 
 #### MAC Interpretation
 Null alleles present in the decoded/expanded allele string of a MAC are _not_ considered when matching or scoring. This behaviour was explicitly requested by the search coordinators and clinical scientist on the search algorithm development team as the expressed allele is more likely to be the true result (with some exceptions), and consideration of the null allele during search leads to undesirable results. Until the Transplant Centre updates the patient with a typing that specifies that there is a null allele, search coordinators work on the basis that the typing is expressed - and so Atlas ignores any null alleles in decoded MAC strings.

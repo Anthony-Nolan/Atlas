@@ -165,17 +165,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         {
             var difference = SumGrades(directGrades) - SumGrades(crossGrades);
 
-            if (difference > 0)
+            return difference switch
             {
-                return new[] {MatchOrientation.Direct};
-            }
-
-            if (difference < 0)
-            {
-                return new[] {MatchOrientation.Cross};
-            }
-
-            return new[] {MatchOrientation.Direct, MatchOrientation.Cross};
+                > 0 => new[] { MatchOrientation.Direct },
+                < 0 => new[] { MatchOrientation.Cross },
+                _ => new[] { MatchOrientation.Direct, MatchOrientation.Cross }
+            };
         }
 
         private static int SumGrades(LocusMatchGrades grades)
@@ -184,7 +179,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         }
 
         private static MatchGradeResult GetBestMatchGradeResult(
-            IEnumerable<MatchOrientation> bestOrientations,
+            IReadOnlyCollection<MatchOrientation> bestOrientations,
             MatchGrade directGrade,
             MatchGrade crossGrade)
         {

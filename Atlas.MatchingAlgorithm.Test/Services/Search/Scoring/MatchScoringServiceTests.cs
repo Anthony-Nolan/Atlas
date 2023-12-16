@@ -57,8 +57,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
             rankingService.RankSearchResults(Arg.Any<IEnumerable<MatchAndScoreResult>>())
                 .Returns(callInfo => (IEnumerable<MatchAndScoreResult>) callInfo.Args().First());
             gradingService.CalculateGrades(null, null).ReturnsForAnyArgs(new PhenotypeInfo<MatchGradeResult>(new MatchGradeResult()));
-            confidenceService.CalculateMatchConfidences(null, null, null).ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>());
-            antigenMatchingService.CalculateAntigenMatches(default, default, default).ReturnsForAnyArgs(new PhenotypeInfo<bool?>());
+            confidenceService.Score(null, null, null).ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>());
+            antigenMatchingService.Score(default, default, default).ReturnsForAnyArgs(new PhenotypeInfo<bool?>());
 
             var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(scoringMetadataService);
 
@@ -303,7 +303,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
             const MatchConfidence expectedMatchConfidenceAtA1 = MatchConfidence.Mismatch;
             const MatchConfidence expectedMatchConfidenceAtB2 = MatchConfidence.Potential;
 
-            confidenceService.CalculateMatchConfidences(null, null, null)
+            confidenceService.Score(null, null, null)
                 .ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>
                 (
                     valueA: new LocusInfo<MatchConfidence>(expectedMatchConfidenceAtA1, default),
@@ -325,7 +325,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
             const MatchConfidence matchConfidenceAtA1 = MatchConfidence.Mismatch;
             const MatchConfidence matchConfidenceAtB2 = MatchConfidence.Potential;
 
-            confidenceService.CalculateMatchConfidences(null, null, null)
+            confidenceService.Score(null, null, null)
                 .ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>
                 (
                     valueA: new LocusInfo<MatchConfidence>(matchConfidenceAtA1, default),
@@ -361,17 +361,17 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 
             await scoringService.ScoreMatchesAgainstPatientHla(request);
 
-            confidenceService.ReceivedWithAnyArgs(2).CalculateMatchConfidences(null, null, null);
+            confidenceService.ReceivedWithAnyArgs(2).Score(null, null, null);
         }
 
         [Test]
         public async Task ScoreMatchesAgainstPatientHla_ReturnsIsAntigenMatchForMatchResults()
         {
-            bool? expectedValueAtA1 = true;
-            bool? expectedValueAtB2 = false;
+            const bool expectedValueAtA1 = true;
+            const bool expectedValueAtB2 = false;
             bool? expectedValueAtDrb11 = null;
 
-            antigenMatchingService.CalculateAntigenMatches(default, default, default)
+            antigenMatchingService.Score(default, default, default)
                 .ReturnsForAnyArgs(new PhenotypeInfo<bool?>
                 (
                     valueA: new LocusInfo<bool?>(expectedValueAtA1, default),
@@ -398,7 +398,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 
             await scoringService.ScoreMatchesAgainstPatientHla(request);
 
-            antigenMatchingService.ReceivedWithAnyArgs(2).CalculateAntigenMatches(default, default, default);
+            antigenMatchingService.ReceivedWithAnyArgs(2).Score(default, default, default);
         }
 
         [Test]
