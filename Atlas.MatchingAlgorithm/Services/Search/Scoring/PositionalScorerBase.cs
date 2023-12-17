@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
@@ -10,53 +12,67 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 {
     public interface IPositionalScorerBase<T>
     {
-        /// <summary>
-        /// For each locus to be scored, will score the locus in the best orientation provided,
-        /// also handling any null alleles by copying the expressing allele to both positions.
-        /// </summary>
-        PhenotypeInfo<T> Score(
-            LociInfo<List<MatchOrientation>> orientations,
+        LociInfo<LocusScoreResult<T>> Score(
+            LociInfo<IEnumerable<MatchOrientation>> orientations,
             PhenotypeInfo<IHlaScoringMetadata> patientMetadata,
             PhenotypeInfo<IHlaScoringMetadata> donorMetadata);
+    }
+
+    public class PositionalScorerSettings<T>
+    {
+        public T DefaultLocusScore { get; set; }
+        public T DefaultDpb1Score { get; set; }
+        public bool HandleNonExpressingAlleles { get; set; }
     }
 
     public abstract class PositionalScorerBase<T> : IPositionalScorerBase<T>
     {
         private readonly IHlaCategorisationService hlaCategorisationService;
-        private readonly T defaultScoreWhenNoInfo;
+        private readonly LocusScoreResult<T> defaultLocusScoreResult;
+        private readonly LocusScoreResult<T> defaultDpb1ScoreResult;
+        private readonly bool handleNonExpressingAlleles;
 
-        protected PositionalScorerBase(IHlaCategorisationService hlaCategorisationService, T defaultScoreWhenNoInfo)
+        protected PositionalScorerBase(
+            IHlaCategorisationService hlaCategorisationService,
+            PositionalScorerSettings<T> settings)
         {
             this.hlaCategorisationService = hlaCategorisationService;
-            this.defaultScoreWhenNoInfo = defaultScoreWhenNoInfo;
+            defaultLocusScoreResult = new LocusScoreResult<T>(settings.DefaultLocusScore);
+            defaultDpb1ScoreResult = new LocusScoreResult<T>(settings.DefaultDpb1Score);
+            handleNonExpressingAlleles = settings.HandleNonExpressingAlleles;
         }
 
-        public PhenotypeInfo<T> Score(
-            LociInfo<List<MatchOrientation>> orientations,
+        public LociInfo<LocusScoreResult<T>> Score(
+            LociInfo<IEnumerable<MatchOrientation>> orientations,
             PhenotypeInfo<IHlaScoringMetadata> patientMetadata,
             PhenotypeInfo<IHlaScoringMetadata> donorMetadata)
         {
-            var results = new PhenotypeInfo<T>();
+            if (orientations == null || patientMetadata == null || donorMetadata == null)
+            {
+                throw new ArgumentNullException($"{nameof(orientations)}/{nameof(patientMetadata)}/{nameof(donorMetadata)}");
+            }
+
+            var results = new LociInfo<LocusScoreResult<T>>();
 
             orientations.ForEachLocus((locus, orientationsAtLocus) =>
             {
+                var orientationsList = orientationsAtLocus.ToList();
                 var patientLocus = patientMetadata.GetLocus(locus);
                 var donorLocus = donorMetadata.GetLocus(locus);
 
                 static bool IsLocusInfoNull(LocusInfo<IHlaScoringMetadata> locusInfo) => locusInfo is null || locusInfo.Position1And2Null();
-                if (orientationsAtLocus.IsNullOrEmpty() || IsLocusInfoNull(patientLocus) || IsLocusInfoNull(donorLocus))
+                if (orientationsList.IsNullOrEmpty() || IsLocusInfoNull(patientLocus) || IsLocusInfoNull(donorLocus))
                 {
-                    results = results.SetLocus(locus, defaultScoreWhenNoInfo);
+                    results = results.SetLocus(locus, locus == Locus.Dpb1 ? defaultDpb1ScoreResult : defaultLocusScoreResult);
                     return;
                 }
 
-                var patientLocusForScoring = HandleNonExpressingAlleleIfAny(patientLocus);
-                var donorLocusForScoring = HandleNonExpressingAlleleIfAny(donorLocus);
-
                 var locusResults = CalculateLocusScoreForBestOrientation(
-                    orientationsAtLocus, patientLocusForScoring, donorLocusForScoring);
+                    orientationsList,
+                    handleNonExpressingAlleles ? HandleNonExpressingAlleleIfAny(patientLocus) : patientLocus,
+                    handleNonExpressingAlleles ? HandleNonExpressingAlleleIfAny(donorLocus) : donorLocus);
 
-                results = results.SetLocus(locus, locusResults.Position1, locusResults.Position2);
+                results = results.SetLocus(locus, locusResults);
             });
 
             return results;
@@ -78,19 +94,15 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                 );
         }
 
-        private LocusInfo<T> CalculateLocusScoreForBestOrientation(
+        private LocusScoreResult<T> CalculateLocusScoreForBestOrientation(
             IReadOnlyCollection<MatchOrientation> orientations,
             LocusInfo<IHlaScoringMetadata> patientLocusData,
             LocusInfo<IHlaScoringMetadata> donorLocusData)
         {
-            if (!orientations.Any())
-            {
-                return new LocusInfo<T>();
-            }
-
             if (orientations.Count == 1)
             {
-                return ScoreLocus(orientations.Single(), patientLocusData, donorLocusData);
+                var score = ScoreLocus(orientations.Single(), patientLocusData, donorLocusData);
+                return new LocusScoreResult<T>(score, orientations);
             }
 
             var directScore = ScoreLocus(MatchOrientation.Direct, patientLocusData, donorLocusData);
@@ -115,9 +127,16 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
         protected abstract T ScorePosition(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata);
 
-        private LocusInfo<T> SelectBestOrientation(LocusInfo<T> directScore, LocusInfo<T> crossScore)
+        private LocusScoreResult<T> SelectBestOrientation(LocusInfo<T> directScore, LocusInfo<T> crossScore)
         {
-            return SumLocusScore(directScore) >= SumLocusScore(crossScore) ? directScore : crossScore;
+            var difference = SumLocusScore(directScore) - SumLocusScore(crossScore);
+
+            return difference switch
+            {
+                > 0 => new LocusScoreResult<T>(directScore, new[] { MatchOrientation.Direct }),
+                < 0 => new LocusScoreResult<T>(crossScore, new[] { MatchOrientation.Cross }),
+                _ => new LocusScoreResult<T>(directScore, new[] { MatchOrientation.Direct, MatchOrientation.Cross })
+            };
         }
 
         protected abstract int SumLocusScore(LocusInfo<T> score);

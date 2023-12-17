@@ -56,9 +56,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 
             rankingService.RankSearchResults(Arg.Any<IEnumerable<MatchAndScoreResult>>())
                 .Returns(callInfo => (IEnumerable<MatchAndScoreResult>) callInfo.Args().First());
-            gradingService.CalculateGrades(null, null).ReturnsForAnyArgs(new PhenotypeInfo<MatchGradeResult>(new MatchGradeResult()));
-            confidenceService.Score(null, null, null).ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>());
-            antigenMatchingService.Score(default, default, default).ReturnsForAnyArgs(new PhenotypeInfo<bool?>());
+            
+            gradingService.Score(default, default, default)
+                .ReturnsForAnyArgs(new LociInfo<LocusScoreResult<MatchGrade>>(new LocusScoreResult<MatchGrade>(MatchGrade.Mismatch)));
+            
+            confidenceService.Score(default, default, default)
+                .ReturnsForAnyArgs(new LociInfo<LocusScoreResult<MatchConfidence>>(new LocusScoreResult<MatchConfidence>(MatchConfidence.Mismatch)));
+            
+            antigenMatchingService.Score(default, default, default)
+                .ReturnsForAnyArgs(new LociInfo<LocusScoreResult<bool?>>(new LocusScoreResult<bool?>(false)));
 
             var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(scoringMetadataService);
 
@@ -238,22 +244,25 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
         [Test]
         public async Task ScoreMatchesAgainstPatientHla_ReturnsMatchGradeForMatchResults()
         {
+            const MatchGrade defaultMatchGrade = MatchGrade.PGroup;
             const MatchGrade expectedMatchGradeAtA1 = MatchGrade.GGroup;
             const MatchGrade expectedMatchGradeAtB2 = MatchGrade.Protein;
 
-            var matchGrades = new PhenotypeInfoBuilder<MatchGradeResult>(new MatchGradeResult())
-                .WithDataAt(Locus.A, LocusPosition.One, new MatchGradeResult {GradeResult = expectedMatchGradeAtA1})
-                .WithDataAt(Locus.B, LocusPosition.Two, new MatchGradeResult {GradeResult = expectedMatchGradeAtB2})
+            var matchGrades = new LociInfoBuilder<LocusScoreResult<MatchGrade>>(new LocusScoreResult<MatchGrade>(defaultMatchGrade))
+                .WithDataAt(Locus.A, new LocusScoreResult<MatchGrade>(expectedMatchGradeAtA1))
+                .WithDataAt(Locus.B, new LocusScoreResult<MatchGrade>(expectedMatchGradeAtB2))
                 .Build();
 
-            gradingService.CalculateGrades(null, null).ReturnsForAnyArgs(matchGrades);
+            gradingService.Score(default, default, default).ReturnsForAnyArgs(matchGrades);
 
             var results = await scoringService.ScoreMatchesAgainstPatientHla(
                 MatchResultsScoringRequestBuilder.ScoreDefaultMatchAtAllLoci.Build());
 
             // Check across multiple loci and positions
-            results.First().ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.MatchGrade.Should().Be(expectedMatchGradeAtA1);
-            results.First().ScoreResult.ScoreDetailsAtLocusB.ScoreDetailsAtPosition2.MatchGrade.Should().Be(expectedMatchGradeAtB2);
+            var result = results.Single();
+            result.ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.MatchGrade.Should().Be(expectedMatchGradeAtA1);
+            result.ScoreResult.ScoreDetailsAtLocusB.ScoreDetailsAtPosition2.MatchGrade.Should().Be(expectedMatchGradeAtB2);
+            result.ScoreResult.ScoreDetailsAtLocusDrb1.ScoreDetailsAtPosition1.MatchGrade.Should().Be(defaultMatchGrade);
         }
 
         [Test]
@@ -265,19 +274,21 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 
             await scoringService.ScoreMatchesAgainstPatientHla(request);
 
-            gradingService.ReceivedWithAnyArgs(2).CalculateGrades(null, null);
+            gradingService.ReceivedWithAnyArgs(2).Score(default, default, default);
         }
 
         [Test]
         public async Task ScoreMatchesAgainstPatientHla_ReturnsMatchGradeScoreForMatchResults()
         {
+            const MatchGrade defaultMatchGrade = MatchGrade.PGroup;
             const MatchGrade matchGradeAtA1 = MatchGrade.GGroup;
             const MatchGrade matchGradeAtB2 = MatchGrade.Protein;
-            var matchGrades = new PhenotypeInfoBuilder<MatchGradeResult>(new MatchGradeResult())
-                .WithDataAt(Locus.A, LocusPosition.One, new MatchGradeResult {GradeResult = matchGradeAtA1})
-                .WithDataAt(Locus.B, LocusPosition.Two, new MatchGradeResult {GradeResult = matchGradeAtB2})
+
+            var matchGrades = new LociInfoBuilder<LocusScoreResult<MatchGrade>>(new LocusScoreResult<MatchGrade>(defaultMatchGrade))
+                .WithDataAt(Locus.A, new LocusScoreResult<MatchGrade>(matchGradeAtA1))
+                .WithDataAt(Locus.B, new LocusScoreResult<MatchGrade>(matchGradeAtB2))
                 .Build();
-            gradingService.CalculateGrades(null, null).ReturnsForAnyArgs(matchGrades);
+            gradingService.Score(default, default, default).ReturnsForAnyArgs(matchGrades);
 
             const int expectedMatchGradeScoreAtA1 = 190;
             const int expectedMatchGradeScoreAtB2 = 87;
@@ -300,37 +311,40 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
         [Test]
         public async Task ScoreMatchesAgainstPatientHla_ReturnsMatchConfidenceForMatchResults()
         {
-            const MatchConfidence expectedMatchConfidenceAtA1 = MatchConfidence.Mismatch;
-            const MatchConfidence expectedMatchConfidenceAtB2 = MatchConfidence.Potential;
+            const MatchConfidence defaultConfidence = MatchConfidence.Potential;
+            const MatchConfidence matchConfidenceAtA = MatchConfidence.Mismatch;
+            const MatchConfidence matchConfidenceAtB = MatchConfidence.Definite;
 
+            var confidences = new LociInfoBuilder<LocusScoreResult<MatchConfidence>>(new LocusScoreResult<MatchConfidence>(defaultConfidence))
+                .WithDataAt(Locus.A, new LocusScoreResult<MatchConfidence>(matchConfidenceAtA))
+                .WithDataAt(Locus.B, new LocusScoreResult<MatchConfidence>(matchConfidenceAtB))
+                .Build();
             confidenceService.Score(null, null, null)
-                .ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>
-                (
-                    valueA: new LocusInfo<MatchConfidence>(expectedMatchConfidenceAtA1, default),
-                    valueB: new LocusInfo<MatchConfidence>(default, expectedMatchConfidenceAtB2)
-                ));
+                .ReturnsForAnyArgs(confidences);
 
             var results = await scoringService.ScoreMatchesAgainstPatientHla(
                 MatchResultsScoringRequestBuilder.ScoreDefaultMatchAtAllLoci.Build());
 
             // Check across multiple loci and positions
             var result = results.Single();
-            result.ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.MatchConfidence.Should().Be(expectedMatchConfidenceAtA1);
-            result.ScoreResult.ScoreDetailsAtLocusB.ScoreDetailsAtPosition2.MatchConfidence.Should().Be(expectedMatchConfidenceAtB2);
+            result.ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.MatchConfidence.Should().Be(matchConfidenceAtA);
+            result.ScoreResult.ScoreDetailsAtLocusB.ScoreDetailsAtPosition2.MatchConfidence.Should().Be(matchConfidenceAtB);
+            result.ScoreResult.ScoreDetailsAtLocusDrb1.ScoreDetailsAtPosition1.MatchConfidence.Should().Be(defaultConfidence);
         }
 
         [Test]
         public async Task ScoreMatchesAgainstPatientHla_ReturnsMatchConfidenceScoreForMatchResults()
         {
+            const MatchConfidence defaultConfidence = MatchConfidence.Potential;
             const MatchConfidence matchConfidenceAtA1 = MatchConfidence.Mismatch;
-            const MatchConfidence matchConfidenceAtB2 = MatchConfidence.Potential;
+            const MatchConfidence matchConfidenceAtB2 = MatchConfidence.Definite;
 
+            var confidences = new LociInfoBuilder<LocusScoreResult<MatchConfidence>>(new LocusScoreResult<MatchConfidence>(defaultConfidence))
+                .WithDataAt(Locus.A, new LocusScoreResult<MatchConfidence>(matchConfidenceAtA1))
+                .WithDataAt(Locus.B, new LocusScoreResult<MatchConfidence>(matchConfidenceAtB2))
+                .Build();
             confidenceService.Score(null, null, null)
-                .ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>
-                (
-                    valueA: new LocusInfo<MatchConfidence>(matchConfidenceAtA1, default),
-                    valueB: new LocusInfo<MatchConfidence>(default, matchConfidenceAtB2)
-                ));
+                .ReturnsForAnyArgs(confidences);
 
             const int expectedMatchConfidenceScoreAtA1 = 7;
             const int expectedMatchConfidenceScoreAtB2 = 340;
@@ -369,15 +383,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
         {
             const bool expectedValueAtA1 = true;
             const bool expectedValueAtB2 = false;
-            bool? expectedValueAtDrb11 = null;
 
+            var antigenMatches = new LociInfoBuilder<LocusScoreResult<bool?>>(new LocusScoreResult<bool?>(null))
+                .WithDataAt(Locus.A, new LocusScoreResult<bool?>(expectedValueAtA1))
+                .WithDataAt(Locus.B, new LocusScoreResult<bool?>(expectedValueAtB2))
+                .Build();
             antigenMatchingService.Score(default, default, default)
-                .ReturnsForAnyArgs(new PhenotypeInfo<bool?>
-                (
-                    valueA: new LocusInfo<bool?>(expectedValueAtA1, default),
-                    valueB: new LocusInfo<bool?>(default, expectedValueAtB2),
-                    valueDrb1: new LocusInfo<bool?>(expectedValueAtDrb11, default)
-                ));
+                .ReturnsForAnyArgs(antigenMatches);
 
             var results = await scoringService.ScoreMatchesAgainstPatientHla(
                 MatchResultsScoringRequestBuilder.ScoreDefaultMatchAtAllLoci.Build());
@@ -386,7 +398,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
             var result = results.Single();
             result.ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.IsAntigenMatch.Should().Be(expectedValueAtA1);
             result.ScoreResult.ScoreDetailsAtLocusB.ScoreDetailsAtPosition2.IsAntigenMatch.Should().Be(expectedValueAtB2);
-            result.ScoreResult.ScoreDetailsAtLocusDrb1.ScoreDetailsAtPosition1.IsAntigenMatch.Should().Be(expectedValueAtDrb11);
+            result.ScoreResult.ScoreDetailsAtLocusDrb1.ScoreDetailsAtPosition1.IsAntigenMatch.Should().BeNull();
         }
 
         [Test]

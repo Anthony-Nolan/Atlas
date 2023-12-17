@@ -12,6 +12,7 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
+using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Models;
@@ -126,24 +127,33 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         }
 
         private async Task<PhenotypeInfo<DonorScoringInfo>> CalculateDonorScoringInfo(
-            PhenotypeInfo<string> donorHla, 
-            ScoringCriteria scoringCriteria, 
+            PhenotypeInfo<string> donorHla,
+            ScoringCriteria scoringCriteria,
             PhenotypeInfo<IHlaScoringMetadata> patientScoringMetadata)
         {
             var donorScoringMetadata = await GetHlaScoringMetadata(donorHla, scoringCriteria.LociToScore);
 
-            var grades = gradingService.CalculateGrades(patientScoringMetadata, donorScoringMetadata);
-            var orientations = grades.ToLociInfo((_, pos1, _) => pos1?.Orientations?.ToList());
-            var confidences = confidenceService.Score(orientations, patientScoringMetadata, donorScoringMetadata);
-            var antigenMatches = antigenMatchingService.Score(orientations, patientScoringMetadata, donorScoringMetadata);
+            // Grading should be called first and calculated for both orientations,
+            // as all remaining score types should be calculated in the orientations that lead to the best possible match grades.
+            var grades = gradingService.Score(
+                new LociInfo<IEnumerable<MatchOrientation>>(new[] { MatchOrientation.Direct, MatchOrientation.Cross }),
+                patientScoringMetadata,
+                donorScoringMetadata);
 
-            return donorHla.Map((locus, position, hlaName) => scoringCriteria.LociToScore.Contains(locus) ? 
+            var confidences = confidenceService.Score(
+                grades.GetMatchOrientations(), patientScoringMetadata, donorScoringMetadata);
+
+            // Confidence service may have further refined the best orientations, so its output is passed in here.
+            var antigenMatches = antigenMatchingService.Score(
+                confidences.GetMatchOrientations(), patientScoringMetadata, donorScoringMetadata);
+
+            return donorHla.Map((locus, position, hlaName) => scoringCriteria.LociToScore.Contains(locus) ?
                 new DonorScoringInfo
                 {
                     HlaName = hlaName,
-                    Grade = grades.GetPosition(locus, position).GradeResult,
-                    Confidence = confidences.GetPosition(locus, position),
-                    IsAntigenMatch = antigenMatches.GetPosition(locus, position)
+                    Grade = grades.GetLocus(locus).LocusScore.GetAtPosition(position),
+                    Confidence = confidences.GetLocus(locus).LocusScore.GetAtPosition(position),
+                    IsAntigenMatch = antigenMatches.GetLocus(locus).LocusScore.GetAtPosition(position)
                 } : null);
         }
 
@@ -168,7 +178,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
             foreach (var locus in criteria.LociToScore)
             {
-                var scoreDetailsPerPosition = new LocusInfo<LocusPositionScoreDetails>(p => 
+                var scoreDetailsPerPosition = new LocusInfo<LocusPositionScoreDetails>(p =>
                     BuildScoreDetailsForPosition(donorScoringInfo.GetPosition(locus, p)));
 
                 var matchCategory = locus == Locus.Dpb1
@@ -226,7 +236,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
             return LocusMatchCategoryAggregator.GetMismatchDirection(dpb1TceGroupMatchType);
         }
-        
+
         private class DonorScoringInfo
         {
             public string HlaName { get; init; }

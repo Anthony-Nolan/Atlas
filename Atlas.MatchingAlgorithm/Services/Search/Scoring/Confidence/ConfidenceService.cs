@@ -11,13 +11,20 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
 
     public class ConfidenceService : PositionalScorerBase<MatchConfidence>, IConfidenceService
     {
+        private static readonly PositionalScorerSettings<MatchConfidence> Settings = new()
+        {
+            DefaultLocusScore = MatchConfidence.Potential,
+            DefaultDpb1Score = MatchConfidence.Potential,
+            HandleNonExpressingAlleles = true
+        };
+
         private readonly IConfidenceCalculator confidenceCalculator;
         private readonly IScoringCache scoringCache;
 
         public ConfidenceService(
             IHlaCategorisationService hlaCategorisationService, 
             IConfidenceCalculator confidenceCalculator, 
-            IScoringCache scoringCache) : base(hlaCategorisationService, MatchConfidence.Potential)
+            IScoringCache scoringCache) : base(hlaCategorisationService, Settings)
         {
             this.confidenceCalculator = confidenceCalculator;
             this.scoringCache = scoringCache;

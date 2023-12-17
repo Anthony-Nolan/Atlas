@@ -11,13 +11,19 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching
 
     internal class AntigenMatchingService : PositionalScorerBase<bool?>, IAntigenMatchingService
     {
+        private static readonly PositionalScorerSettings<bool?> Settings = new() {
+            DefaultLocusScore = null,
+            DefaultDpb1Score = null,
+            HandleNonExpressingAlleles = true
+        };
+
         private readonly IAntigenMatchCalculator calculator;
         private readonly IScoringCache scoringCache;
 
         public AntigenMatchingService(
             IHlaCategorisationService hlaCategorisationService,
             IAntigenMatchCalculator calculator, 
-            IScoringCache scoringCache) : base(hlaCategorisationService, null)
+            IScoringCache scoringCache) : base(hlaCategorisationService, Settings)
         {
             this.calculator = calculator;
             this.scoringCache = scoringCache;
