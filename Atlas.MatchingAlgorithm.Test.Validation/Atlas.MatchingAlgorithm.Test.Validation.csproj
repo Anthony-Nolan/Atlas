@@ -36,7 +36,6 @@
         <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\SingleMismatch.feature" />
         <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\ThreeMismatches.feature" />
         <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\TwoMismatches.feature" />
-        <Content Include="ValidationTests\Features\NullAlleles\NullAlleles.feature" />
         <Content Include="ValidationTests\Features\Scoring\MatchCategorisation.feature" />
         <Content Include="ValidationTests\Features\Scoring\MatchConfidences.feature" />
         <Content Include="ValidationTests\Features\Scoring\MatchGrades.feature" />

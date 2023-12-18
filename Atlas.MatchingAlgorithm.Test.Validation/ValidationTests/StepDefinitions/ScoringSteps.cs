@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
@@ -25,50 +24,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             this.scenarioContext = scenarioContext;
         }
 
-        [Then("the locus match category should be (.*) at (.*)")]
-        public void ThenTheLocusMatchCategoryShouldBe(string category, string locus)
-        {
-            var donorResult = GetSearchResultForSingleDonor();
-            var expectedLocusMatchCategory = ParseExpectedLocusMatchCategory(category);
-            var expectedLoci = ParseLoci(locus);
-
-            foreach (var expectedLocus in expectedLoci)
-            {
-                switch (expectedLocus)
-                {
-                    case Locus.A:
-                        donorResult.ScoringResult.ScoringResultsByLocus.A.MatchCategory.Should().Be(expectedLocusMatchCategory);
-                        break;
-                    case Locus.B:
-                        donorResult.ScoringResult.ScoringResultsByLocus.B.MatchCategory.Should().Be(expectedLocusMatchCategory);
-                        break;
-                    case Locus.C:
-                        donorResult.ScoringResult.ScoringResultsByLocus.C.MatchCategory.Should().Be(expectedLocusMatchCategory);
-                        break;
-                    case Locus.Dpb1:
-                        donorResult.ScoringResult.ScoringResultsByLocus.Dpb1.MatchCategory.Should().Be(expectedLocusMatchCategory);
-                        break;
-                    case Locus.Dqb1:
-                        donorResult.ScoringResult.ScoringResultsByLocus.Dqb1.MatchCategory.Should().Be(expectedLocusMatchCategory);
-                        break;
-                    case Locus.Drb1:
-                        donorResult.ScoringResult.ScoringResultsByLocus.Drb1.MatchCategory.Should().Be(expectedLocusMatchCategory);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-        }
-
-        [Then("the match category should be (.*)")]
-        public void ThenTheMatchCategoryShouldBe(string category)
-        {
-            var donorResult = GetSearchResultForSingleDonor();
-            var expectedMatchCategory = ParseExpectedMatchCategory(category);
-
-            donorResult.ScoringResult.MatchCategory.Should().Be(expectedMatchCategory);
-        }
-
         [Then("(.*) should be returned above (.*)")]
         public void ThenXShouldBeReturnedAboveY(string higherResultType, string lowerResultType)
         {
@@ -83,6 +38,15 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             results.Select(r => r.AtlasDonorId).Should().ContainInOrder(new List<int?> { higherResult, lowerResult });
         }
 
+        [Then("the match category should be (.*)")]
+        public void ThenTheMatchCategoryShouldBe(string category)
+        {
+            var donorResult = GetSearchResultForSingleDonor();
+            var expectedMatchCategory = ParseExpectedMatchCategory(category);
+
+            donorResult.ScoringResult.MatchCategory.Should().Be(expectedMatchCategory);
+        }
+
         [Then(@"the typed loci count should be (.*)")]
         public void ThenTheTypedLociCountShouldBe(int typedLociCount)
         {
@@ -90,11 +54,24 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             donorResult.ScoringResult.TypedLociCountAtScoredLoci.Should().Be(typedLociCount);
         }
 
+        [Then(@"the locus score count should be (.*) at (.*)")]
+        public void ThenTheScoreCountAtLocusShouldBe(int count, string locus)
+        {
+            AssertLocusScoreIsExpectedValue(locus, count, nameof(LocusSearchResult.MatchCount));
+        }
+
+        [Then("the locus match category should be (.*) at (.*)")]
+        public void ThenTheLocusMatchCategoryShouldBe(string category, string locus)
+        {
+            var expectedLocusMatchCategory = ParseExpectedLocusMatchCategory(category);
+            AssertLocusScoreIsExpectedValue(locus, expectedLocusMatchCategory, nameof(LocusSearchResult.MatchCategory));
+        }
+
         [Then("the match grade should be (.*) at (.*) at (.*)")]
         public void ThenTheMatchGradeShouldBe(string grade, string locus, string position)
         {
             var validMatchGrades = ParseExpectedMatchGrades(grade).ToList();
-            AssertLocusScoresAreExpectedValues(locus, position, validMatchGrades, nameof(LocusPositionScoreDetails.MatchGrade));
+            AssertLocusPositionScoresAreExpectedValues(locus, position, validMatchGrades, nameof(LocusPositionScoreDetails.MatchGrade));
         }
 
         [Then("the match grade should be (.*) in position 1 and (.*) in position 2 of (.*)")]
@@ -104,16 +81,15 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             var expectedMatchGrades2 = ParseExpectedMatchGrades(matchGrade2).ToList();
             const string scoreFieldName = nameof(LocusPositionScoreDetails.MatchGrade);
 
-            AssertLocusScoresAreExpectedValues(locus, Position1Text, expectedMatchGrades1, scoreFieldName);
-            AssertLocusScoresAreExpectedValues(locus, Position2Text, expectedMatchGrades2, scoreFieldName);
+            AssertLocusPositionScoresAreExpectedValues(locus, Position1Text, expectedMatchGrades1, scoreFieldName);
+            AssertLocusPositionScoresAreExpectedValues(locus, Position2Text, expectedMatchGrades2, scoreFieldName);
         }
 
         [Then(@"the match confidence should be (.*) at (.*) at (.*)")]
         public void ThenTheMatchConfidenceShouldBe(string confidence, string locus, string position)
         {
             var expectedMatchConfidence = ParseExpectedMatchConfidence(confidence);
-            var donorResult = GetSearchResultForSingleDonor();
-            AssertLocusScoresAreExpectedValues(locus, position, new[] { expectedMatchConfidence }, nameof(LocusPositionScoreDetails.MatchConfidence));
+            AssertLocusPositionScoresAreExpectedValues(locus, position, expectedMatchConfidence, nameof(LocusPositionScoreDetails.MatchConfidence));
         }
 
         [Then("the match confidence should be (.*) in position 1 and (.*) in position 2 of (.*)")]
@@ -123,15 +99,15 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             var expectedMatchConfidence2 = ParseExpectedMatchConfidence(confidence2);
             const string scoreFieldName = nameof(LocusPositionScoreDetails.MatchConfidence);
 
-            AssertLocusScoresAreExpectedValues(locus, Position1Text, new[] { expectedMatchConfidence1 }, scoreFieldName);
-            AssertLocusScoresAreExpectedValues(locus, Position2Text, new[] { expectedMatchConfidence2 }, scoreFieldName);
+            AssertLocusPositionScoresAreExpectedValues(locus, Position1Text, expectedMatchConfidence1, scoreFieldName);
+            AssertLocusPositionScoresAreExpectedValues(locus, Position2Text, expectedMatchConfidence2, scoreFieldName);
         }
 
         [Then(@"antigen match should be (.*) at (.*) at (.*)")]
         public void ThenAntigenMatchShouldBe(string isAntigenMatch, string locus, string position)
         {
             var expectedAntigenMatch = ParseExpectedAntigenMatch(isAntigenMatch);
-            AssertLocusScoresAreExpectedValues(locus, position, new[] { expectedAntigenMatch }, nameof(LocusPositionScoreDetails.IsAntigenMatch));
+            AssertLocusPositionScoresAreExpectedValues(locus, position, new[] { expectedAntigenMatch }, nameof(LocusPositionScoreDetails.IsAntigenMatch));
         }
 
         [Then(@"antigen match should be (.*) in position 1 and (.*) in position 2 of (.*)")]
@@ -141,8 +117,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             var expectedAntigenMatch2 = ParseExpectedAntigenMatch(isAntigenMatch2);
             const string scoreFieldName = nameof(LocusPositionScoreDetails.IsAntigenMatch);
 
-            AssertLocusScoresAreExpectedValues(locus, Position1Text, new[] { expectedAntigenMatch1 }, scoreFieldName);
-            AssertLocusScoresAreExpectedValues(locus, Position2Text, new[] { expectedAntigenMatch2 }, scoreFieldName);
+            AssertLocusPositionScoresAreExpectedValues(locus, Position1Text, new[] { expectedAntigenMatch1 }, scoreFieldName);
+            AssertLocusPositionScoresAreExpectedValues(locus, Position2Text, new[] { expectedAntigenMatch2 }, scoreFieldName);
         }
 
         private MatchingAlgorithmResult GetSearchResultForSingleDonor()
@@ -157,7 +133,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                 .Single(r => r.AtlasDonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
         }
 
-        private void AssertLocusScoresAreExpectedValues<T>(string locus, string position, IReadOnlyCollection<T> expectedScores, string scoreFieldName)
+        #region Assertions
+
+        private void AssertLocusScoreIsExpectedValue<T>(string locus, T expectedScore, string scorePropName)
+        {
+            var donorResult = GetSearchResultForSingleDonor();
+            var lociToCheck = ParseLoci(locus);
+
+            foreach (var locusToCheck in lociToCheck)
+            {
+                var locusSearchResult = donorResult.ScoringResult.ScoringResultsByLocus.ToLociInfo().GetLocus(locusToCheck);
+                var score = (T)typeof(LocusSearchResult).GetProperty(scorePropName)?.GetValue(locusSearchResult);
+                score.Should().Be(expectedScore);
+            }
+        }
+
+        private void AssertLocusPositionScoresAreExpectedValues<T>(string locus, string position, IReadOnlyCollection<T> expectedScores, string scoreFieldName)
         {
             var donorResult = GetSearchResultForSingleDonor();
             var lociToCheck = ParseLoci(locus);
@@ -191,9 +182,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
 
             static T GetScoreValue(string propName, LocusPositionScoreDetails details)
             {
-                return (T)details.GetType().GetField(propName)?.GetValue(details);
+                return (T)typeof(LocusPositionScoreDetails).GetField(propName)?.GetValue(details);
             }
         }
+
+        #endregion
+
 
         #region Parsers
 
@@ -211,33 +205,39 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                     return new[] { MatchGrade.GDna };
                 case "protein":
                     return new[] { MatchGrade.Protein };
+                case "molecular-match":
+                    return new[] { MatchGrade.PGroup, MatchGrade.GGroup, MatchGrade.Protein, MatchGrade.CDna, MatchGrade.GDna };
                 case "serology":
                     return new[] { MatchGrade.Associated, MatchGrade.Broad, MatchGrade.Split };
                 case "mismatch":
                     return new[] { MatchGrade.Mismatch };
                 case "unknown":
                     return new[] { MatchGrade.Unknown };
+                case "expressing-vs-null":
+                    return new[] { MatchGrade.ExpressingVsNull };
                 default:
                     scenarioContext.Pending();
                     return new List<MatchGrade>();
             }
         }
 
-        private MatchConfidence? ParseExpectedMatchConfidence(string confidence)
+        private IReadOnlyCollection<MatchConfidence> ParseExpectedMatchConfidence(string confidence)
         {
             switch (confidence.ToLower())
             {
                 case "definite":
-                    return MatchConfidence.Definite;
+                    return new []{ MatchConfidence.Definite };
                 case "exact":
-                    return MatchConfidence.Exact;
+                    return new[] { MatchConfidence.Exact };
                 case "potential":
-                    return MatchConfidence.Potential;
+                    return new[] { MatchConfidence.Potential };
+                case "not-mismatch":
+                    return new[] { MatchConfidence.Definite, MatchConfidence.Exact, MatchConfidence.Potential };
                 case "mismatch":
-                    return MatchConfidence.Mismatch;
+                    return new[] { MatchConfidence.Mismatch };
                 default:
                     scenarioContext.Pending();
-                    return null;
+                    return new List<MatchConfidence>();
             }
         }
 

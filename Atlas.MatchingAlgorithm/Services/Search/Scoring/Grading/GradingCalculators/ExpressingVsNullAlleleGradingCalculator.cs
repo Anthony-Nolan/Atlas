@@ -17,7 +17,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
 
         protected override MatchGrade GetMatchGrade(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
         {
-            return MatchGrade.Mismatch;
+            return MatchGrade.ExpressingVsNull;
         }
     }
 }
