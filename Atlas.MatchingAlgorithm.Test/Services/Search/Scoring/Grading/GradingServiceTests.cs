@@ -9,30 +9,35 @@ using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
-using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
+using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+using FluentAssertions;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 {
     public class GradingServiceTests
     {
         private const Locus MatchedLocus = Locus.A;
+        private static readonly LociInfo<IEnumerable<MatchOrientation>> Orientations = new(new[] { MatchOrientation.Direct, MatchOrientation.Cross });
+
         private IGradingService gradingService;
         private IHlaScoringMetadata defaultSerologyResult;
 
         [SetUp]
         public void SetUpBeforeEachTest()
         {
+            var hlaCategoriser = Substitute.For<IHlaCategorisationService>();
             var scoringCache = new ScoringCache(
                 new PersistentCacheProvider(AppCacheBuilder.NewDefaultCache()),
                 Substitute.For<IActiveHlaNomenclatureVersionAccessor>());
 
-            gradingService = new GradingService(scoringCache);
+            gradingService = new GradingService(hlaCategoriser, scoringCache);
 
             defaultSerologyResult =
                 new HlaScoringMetadataBuilder()
@@ -49,25 +54,30 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         #region Tests: Exception Cases
 
         [Test]
-        public void CalculateGrades_PatientPhenotypeIsNull_ThrowsException()
-        {
-            var donorPhenotype = new PhenotypeInfo<IHlaScoringMetadata>();
-
-            Assert.Throws<ArgumentException>(() => gradingService.CalculateGrades(null, donorPhenotype));
-        }
-
-        [Test]
-        public void CalculateGrades_DonorPhenotypeIsNull_ThrowsException()
+        public void Score_OrientationsIsNull_ThrowsException()
         {
             var patientPhenotype = new PhenotypeInfo<IHlaScoringMetadata>();
+            var donorPhenotype = new PhenotypeInfo<IHlaScoringMetadata>();
 
-            Assert.Throws<ArgumentException>(() => gradingService.CalculateGrades(patientPhenotype, null));
+            Assert.Throws<ArgumentNullException>(() => gradingService.Score(null, patientPhenotype, donorPhenotype));
         }
 
         [Test]
-        public void CalculateGrades_BothPhenotypesAreNull_ThrowsException()
+        public void Score_PatientPhenotypeIsNull_ThrowsException()
         {
-            Assert.Throws<ArgumentException>(() => gradingService.CalculateGrades(null, null));
+            var orientations = new LociInfo<IEnumerable<MatchOrientation>>();
+            var donorPhenotype = new PhenotypeInfo<IHlaScoringMetadata>();
+
+            Assert.Throws<ArgumentNullException>(() => gradingService.Score(orientations, null, donorPhenotype));
+        }
+
+        [Test]
+        public void Score_DonorPhenotypeIsNull_ThrowsException()
+        {
+            var orientations = new LociInfo<IEnumerable<MatchOrientation>>();
+            var patientPhenotype = new PhenotypeInfo<IHlaScoringMetadata>();
+
+            Assert.Throws<ArgumentNullException>(() => gradingService.Score(orientations, patientPhenotype, null));
         }
 
         #endregion
@@ -75,7 +85,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         #region Tests: Best Grades & Orientation(s) returned
 
         [Test]
-        public void CalculateGrades_TwoMatchesInDirect_TwoMismatchesInCross_ReturnsTwoMatchGradesInDirectOrientation()
+        public void Score_TwoMatchesInDirect_TwoMismatchesInCross_ReturnsTwoMatchGradesInDirectOrientation()
         {
             const string sharedGGroup1 = "g-group-1";
             const string sharedGGroup2 = "g-group-2";
@@ -110,20 +120,20 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] {MatchOrientation.Direct};
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.GGroup, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.GGroup, expectedMatchOrientations);
+            var expectedMatchOrientations = new[] { MatchOrientation.Direct };
+            var expectedGradingResult = new LocusScoreResult<MatchGrade>(
+                new LocusInfo<MatchGrade>(MatchGrade.GGroup), 
+                expectedMatchOrientations);
 
             // Direct grade (P1: D1) is GGroup; Cross (P1: D2) is Mismatch
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is GGroup; Cross (P2: D1) is Mismatch
-            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Should().Be(expectedGradingResult);
         }
 
         [Test]
-        public void CalculateGrades_TwoBetterMatchesInDirect_TwoWorseMatchesInCross_ReturnsTwoBetterMatchGradesInDirectOrientation()
+        public void Score_TwoBetterMatchesInDirect_TwoWorseMatchesInCross_ReturnsTwoBetterMatchGradesInDirectOrientation()
         {
             const string sharedAlleleName1 = "111:111";
             const string sharedAlleleName2 = "999:999";
@@ -169,20 +179,19 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] {MatchOrientation.Direct};
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.GDna, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.CDna, expectedMatchOrientations);
+            var expectedMatchOrientations = new[] { MatchOrientation.Direct };
+            var expectedGradingResult = new LocusScoreResult<MatchGrade>(
+                new LocusInfo<MatchGrade>(MatchGrade.GDna, MatchGrade.CDna), expectedMatchOrientations);
 
             // Direct grade (P1: D1) is GDna; Cross (P1: D2) is PGroup
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is CDna; Cross (P2: D1) is PGroup
-            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Should().Be(expectedGradingResult);
         }
 
         [Test]
-        public void CalculateGrades_BetterMatchWithMismatchInDirect_WorseMatchWithMismatchInCross_ReturnsBetterMatchWithMismatchInDirectOrientation()
+        public void Score_BetterMatchWithMismatchInDirect_WorseMatchWithMismatchInCross_ReturnsBetterMatchWithMismatchInDirectOrientation()
         {
             const string matchingAssociatedName = "associated";
             const string matchingSplitName = "matching-split";
@@ -202,7 +211,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithMatchingSerologies(new[] {new SerologyEntry("mismatched-not-split", SerologySubtype.NotSplit, true)})
+                    .WithMatchingSerologies(new[] { new SerologyEntry("mismatched-not-split", SerologySubtype.NotSplit, true) })
                     .Build())
                 .Build();
 
@@ -226,20 +235,20 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] {MatchOrientation.Direct};
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.Associated, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
+            var expectedMatchOrientations = new[] { MatchOrientation.Direct };
+            var expectedGradingResult = new LocusScoreResult<MatchGrade>(
+                new LocusInfo<MatchGrade>(MatchGrade.Associated, MatchGrade.Mismatch),
+                expectedMatchOrientations);
 
             // Direct grade (P1: D1) is Associated; Cross (P1: D2) is Split
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is Mismatch; Cross (P2: D1) is Mismatch
-            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Should().Be(expectedGradingResult);
         }
 
         [Test]
-        public void CalculateGrades_TwoMismatchesInDirect_TwoMatchesInCross_ReturnsTwoMatchesInCrossOrientation()
+        public void Score_TwoMismatchesInDirect_TwoMatchesInCross_ReturnsTwoMatchesInCrossOrientation()
         {
             const string sharedGGroup1 = "g-group-1";
             const string sharedGGroup2 = "g-group-2";
@@ -274,20 +283,20 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] {MatchOrientation.Cross};
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.GGroup, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.GGroup, expectedMatchOrientations);
+            var expectedMatchOrientations = new[] { MatchOrientation.Cross };
+            var expectedGradingResult = new LocusScoreResult<MatchGrade>(
+                new LocusInfo<MatchGrade>(MatchGrade.GGroup),
+                expectedMatchOrientations);
 
             // Direct grade (P1: D1) is Mismatch; Cross (P1: D2) is GGroup
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is Mismatch; Cross (P2: D1) is GGroup
-            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Should().Be(expectedGradingResult);
         }
 
         [Test]
-        public void CalculateGrades_TwoWorseMatchesInDirect_TwoBetterMatchesInCross_ReturnsTwoBetterMatchesInCrossOrientation()
+        public void Score_TwoWorseMatchesInDirect_TwoBetterMatchesInCross_ReturnsTwoBetterMatchesInCrossOrientation()
         {
             const string sharedAlleleName1 = "111:111";
             const string sharedAlleleName2 = "999:999";
@@ -333,20 +342,20 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] {MatchOrientation.Cross};
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.CDna, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.GDna, expectedMatchOrientations);
+            var expectedMatchOrientations = new[] { MatchOrientation.Cross };
+            var expectedGradingResult = new LocusScoreResult<MatchGrade>(
+                new LocusInfo<MatchGrade>(MatchGrade.CDna, MatchGrade.GDna),
+                expectedMatchOrientations);
 
             // Direct grade (P1: D1) is PGroup; Cross (P1: D2) is CDna
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is PGroup; Cross (P2: D1) is GDna
-            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Should().Be(expectedGradingResult);
         }
 
         [Test]
-        public void CalculateGrades_WorseMatchWithMismatchInDirect_BetterMatchWithMismatchInCross_ReturnsBetterMatchWithMismatchInCrossOrientation()
+        public void Score_WorseMatchWithMismatchInDirect_BetterMatchWithMismatchInCross_ReturnsBetterMatchWithMismatchInCrossOrientation()
         {
             const string matchingAssociatedName = "associated";
             const string matchingSplitName = "matching-split";
@@ -366,7 +375,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithMatchingSerologies(new[] {new SerologyEntry("mismatched-not-split", SerologySubtype.NotSplit, true)})
+                    .WithMatchingSerologies(new[] { new SerologyEntry("mismatched-not-split", SerologySubtype.NotSplit, true) })
                     .Build())
                 .Build();
 
@@ -390,20 +399,20 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] {MatchOrientation.Cross};
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Associated, expectedMatchOrientations);
+            var expectedMatchOrientations = new[] { MatchOrientation.Cross };
+            var expectedGradingResult = new LocusScoreResult<MatchGrade>(
+                new LocusInfo<MatchGrade>(MatchGrade.Mismatch, MatchGrade.Associated),
+                expectedMatchOrientations);
 
             // Direct grade (P1: D1) is Split; Cross (P1: D2) is Mismatch
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is Mismatch; Cross (P2: D1) is Associated
-            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Should().Be(expectedGradingResult);
         }
 
         [Test]
-        public void CalculateGrades_TwoSameMatchesInDirect_TwoSameMatchesInCross_ReturnsTwoSameMatchesInBothOrientations()
+        public void Score_TwoSameMatchesInDirect_TwoSameMatchesInCross_ReturnsTwoSameMatchesInBothOrientations()
         {
             const string sharedFirstTwoFields = "999:999";
             var fullSequenceStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.CDna);
@@ -442,67 +451,67 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.Protein, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Protein, expectedMatchOrientations);
+            var expectedMatchOrientations = new[] { MatchOrientation.Direct, MatchOrientation.Cross };
+            var expectedGradingResult = new LocusScoreResult<MatchGrade>(
+                new LocusInfo<MatchGrade>(MatchGrade.Protein),
+                expectedMatchOrientations);
 
             // Direct grade (P1: D1) is Protein; Cross (P1: D2) is Protein
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is Protein; Cross (P2: D1) is Protein
-            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Should().Be(expectedGradingResult);
         }
 
         [Test]
-        public void CalculateGrades_SameMatchAndMismatchInDirect_SameMatchAndMismatchInCross_ReturnsSameMatchAndMismatchInBothOrientations()
+        public void Score_SameMatchAndMismatchInDirect_SameMatchAndMismatchInCross_ReturnsSameMatchAndMismatchInBothOrientations()
         {
             var directMatchingSerology = new SerologyEntry("matching-split", SerologySubtype.Split, true);
 
             var patientResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithMatchingSerologies(new[] {directMatchingSerology})
+                    .WithMatchingSerologies(new[] { directMatchingSerology })
                     .Build())
                 .Build();
 
             var patientResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithMatchingSerologies(new[] {directMatchingSerology})
+                    .WithMatchingSerologies(new[] { directMatchingSerology })
                     .Build())
                 .Build();
 
             var donorResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithMatchingSerologies(new[] {new SerologyEntry("mismatched-serology", SerologySubtype.NotSplit, true)})
+                    .WithMatchingSerologies(new[] { new SerologyEntry("mismatched-serology", SerologySubtype.NotSplit, true) })
                     .Build())
                 .Build();
 
             var donorResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithMatchingSerologies(new[] {directMatchingSerology})
+                    .WithMatchingSerologies(new[] { directMatchingSerology })
                     .Build())
                 .Build();
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Split, expectedMatchOrientations);
+            var expectedMatchOrientations = new[] { MatchOrientation.Direct, MatchOrientation.Cross };
+            var expectedGradingResult = new LocusScoreResult<MatchGrade>(
+                new LocusInfo<MatchGrade>(MatchGrade.Mismatch, MatchGrade.Split),
+                expectedMatchOrientations);
 
             // Direct grade (P1: D1) is Mismatch; Cross (P1: D2) is Split
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is Split; Cross (P2: D1) is Mismatch
-            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Should().Be(expectedGradingResult);
         }
 
         [Test]
-        public void CalculateGrades_TwoMismatchesInDirect_TwoMismatchesInCross_ReturnTwoMismatchesInBothOrientations()
+        public void Score_TwoMismatchesInDirect_TwoMismatchesInCross_ReturnTwoMismatchesInBothOrientations()
         {
             var patientResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
@@ -538,23 +547,23 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
+            var expectedMatchOrientations = new[] { MatchOrientation.Direct, MatchOrientation.Cross };
+            var expectedGradingResult = new LocusScoreResult<MatchGrade>(
+                new LocusInfo<MatchGrade>(MatchGrade.Mismatch),
+                expectedMatchOrientations);
 
             // Direct grade (P1: D1) is Mismatch; Cross (P1: D2) is Mismatch
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is Mismatch; Cross (P2: D1) is Mismatch
-            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Should().Be(expectedGradingResult);
         }
 
         [TestCase(typeof(SingleAlleleScoringInfo))]
         [TestCase(typeof(MultipleAlleleScoringInfo))]
         [TestCase(typeof(ConsolidatedMolecularScoringInfo))]
         [TestCase(typeof(SerologyScoringInfo))]
-        public void CalculateGrades_PatientIsMissingTheLocusTyping_ReturnsTwoPGroupMatchesInBothOrientations(
+        public void Score_PatientIsMissingTheLocusTyping_ReturnsTwoPGroupMatchesInBothOrientations(
             Type donorScoringInfoType)
         {
             var patientLookupResults = BuildMetadataAtMatchedLocus(null, null);
@@ -565,21 +574,21 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 .Build();
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, donorResult);
 
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
+            var expectedMatchOrientations = new[] { MatchOrientation.Direct, MatchOrientation.Cross };
+            var expectedGradingResult = new LocusScoreResult<MatchGrade>(
+                new LocusInfo<MatchGrade>(MatchGrade.PGroup),
+                expectedMatchOrientations);
 
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
-            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Should().Be(expectedGradingResult);
         }
 
         [TestCase(typeof(SingleAlleleScoringInfo))]
         [TestCase(typeof(MultipleAlleleScoringInfo))]
         [TestCase(typeof(ConsolidatedMolecularScoringInfo))]
         [TestCase(typeof(SerologyScoringInfo))]
-        public void CalculateGrades_DonorIsMissingTheLocusTyping_ReturnsTwoPGroupMatchesInBothOrientations(
+        public void Score_DonorIsMissingTheLocusTyping_ReturnsTwoPGroupMatchesInBothOrientations(
             Type patientScoringInfoType)
         {
             var patientResult = new HlaScoringMetadataBuilder()
@@ -590,31 +599,31 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var donorLookupResults = BuildMetadataAtMatchedLocus(null, null);
 
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
+            var expectedMatchOrientations = new[] { MatchOrientation.Direct, MatchOrientation.Cross };
+            var expectedGradingResult = new LocusScoreResult<MatchGrade>(
+                new LocusInfo<MatchGrade>(MatchGrade.PGroup),
+                expectedMatchOrientations);
 
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
-            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Should().Be(expectedGradingResult);
         }
 
         [Test]
-        public void CalculateGrades_PatientAndDonorAreBothMissingTheLocusTyping_ReturnsTwoPGroupMatchesInBothOrientations()
+        public void Score_PatientAndDonorAreBothMissingTheLocusTyping_ReturnsTwoPGroupMatchesInBothOrientations()
         {
             var patientLookupResults = BuildMetadataAtMatchedLocus(null, null);
 
             var donorLookupResults = BuildMetadataAtMatchedLocus(null, null);
 
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
-            var expectedGradingResult1 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
-            var expectedGradingResult2 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
+            var expectedMatchOrientations = new[] { MatchOrientation.Direct, MatchOrientation.Cross };
+            var expectedGradingResult = new LocusScoreResult<MatchGrade>(
+                new LocusInfo<MatchGrade>(MatchGrade.PGroup),
+                expectedMatchOrientations);
 
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
-            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Should().Be(expectedGradingResult);
         }
 
         #endregion
@@ -622,7 +631,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         #region Tests: Typing affects the maximum possible grade assigned
 
         [Test]
-        public void CalculateGrades_PatientAndDonorHaveSameSingleAllele_ReturnsMaxGradeOfGDna()
+        public void Score_PatientAndDonorHaveSameSingleAllele_ReturnsMaxGradeOfGDna()
         {
             var sharedSingleAlleleScoringInfo = new SingleAlleleScoringInfoBuilder()
                 .WithAlleleName("999:999")
@@ -649,15 +658,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] {MatchOrientation.Direct});
-
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.LocusScore.Position1.Should().Be(MatchGrade.GDna);
+            actualGradingResults.A.Orientations.Should().BeEquivalentTo(new[] { MatchOrientation.Direct });
         }
 
         [Test]
-        public void CalculateGrades_PatientHasSingleAllele_DonorHasMatchingMultipleAllele_ReturnsMaxGradeOfGDna()
+        public void Score_PatientHasSingleAllele_DonorHasMatchingMultipleAllele_ReturnsMaxGradeOfGDna()
         {
             var sharedSingleAlleleScoringInfo = new SingleAlleleScoringInfoBuilder()
                 .WithAlleleName("999:999")
@@ -680,21 +688,20 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithAlleleScoringInfos(new[] {sharedSingleAlleleScoringInfo})
+                    .WithAlleleScoringInfos(new[] { sharedSingleAlleleScoringInfo })
                     .Build())
                 .Build();
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
-
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] {MatchOrientation.Direct});
-
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
+            
+            actualGradingResults.A.LocusScore.Position1.Should().Be(MatchGrade.GDna);
+            actualGradingResults.A.Orientations.Should().BeEquivalentTo(new[] { MatchOrientation.Direct });
         }
 
         [Test]
-        public void CalculateGrades_PatientHasSingleAllele_DonorHasMatchingConsolidatedMolecular_ReturnsMaxGradeOfGGroup()
+        public void Score_PatientHasSingleAllele_DonorHasMatchingConsolidatedMolecular_ReturnsMaxGradeOfGGroup()
         {
             const string sharedGGroup = "shared-g-group";
             const string sharedPGroup = "shared-p-group";
@@ -719,23 +726,22 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] {sharedGGroup})
-                    .WithMatchingPGroups(new[] {sharedPGroup})
+                    .WithMatchingGGroups(new[] { sharedGGroup })
+                    .WithMatchingPGroups(new[] { sharedPGroup })
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
-
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.LocusScore.Position1.Should().Be(MatchGrade.GGroup);
+            actualGradingResults.A.Orientations.Should().BeEquivalentTo(new[] { MatchOrientation.Direct });
         }
 
         [Test]
-        public void CalculateGrades_PatientHasSingleAllele_DonorHasMatchingSerology_ReturnsMaxGradeOfAssociated()
+        public void Score_PatientHasSingleAllele_DonorHasMatchingSerology_ReturnsMaxGradeOfAssociated()
         {
             var sharedMatchingSerologies = new[]
             {
@@ -764,15 +770,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
-
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.LocusScore.Position1.Should().Be(MatchGrade.Associated);
+            actualGradingResults.A.Orientations.Should().BeEquivalentTo(new[] { MatchOrientation.Direct });
         }
 
         [Test]
-        public void CalculateGrades_PatientHasMultipleAllele_DonorHasMatchingSingleAllele_ReturnsMaxGradeOfGDna()
+        public void Score_PatientHasMultipleAllele_DonorHasMatchingSingleAllele_ReturnsMaxGradeOfGDna()
         {
             var sharedSingleAlleleScoringInfo = new SingleAlleleScoringInfoBuilder()
                 .WithAlleleName("999:999")
@@ -790,7 +795,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithAlleleScoringInfos(new[] {sharedSingleAlleleScoringInfo})
+                    .WithAlleleScoringInfos(new[] { sharedSingleAlleleScoringInfo })
                     .Build())
                 .Build();
 
@@ -801,15 +806,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
-
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] {MatchOrientation.Direct});
-
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
+            
+            actualGradingResults.A.LocusScore.Position1.Should().Be(MatchGrade.GDna);
+            actualGradingResults.A.Orientations.Should().BeEquivalentTo(new[] { MatchOrientation.Direct });
         }
 
         [Test]
-        public void CalculateGrades_PatientAndDonorHaveSameMultipleAllele_ReturnsMaxGradeOfGDna()
+        public void Score_PatientAndDonorHaveSameMultipleAllele_ReturnsMaxGradeOfGDna()
         {
             var sharedSingleAlleleScoringInfo = new SingleAlleleScoringInfoBuilder()
                 .WithAlleleName("999:999")
@@ -827,28 +831,27 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithAlleleScoringInfos(new[] {sharedSingleAlleleScoringInfo})
+                    .WithAlleleScoringInfos(new[] { sharedSingleAlleleScoringInfo })
                     .Build())
                 .Build();
 
             var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
-                    .WithAlleleScoringInfos(new[] {sharedSingleAlleleScoringInfo})
+                    .WithAlleleScoringInfos(new[] { sharedSingleAlleleScoringInfo })
                     .Build())
                 .Build();
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
-
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] {MatchOrientation.Direct});
-
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
+            
+            actualGradingResults.A.LocusScore.Position1.Should().Be(MatchGrade.GDna);
+            actualGradingResults.A.Orientations.Should().BeEquivalentTo(new[] { MatchOrientation.Direct });
         }
 
         [Test]
-        public void CalculateGrades_PatientHasMultipleAllele_DonorHasMatchingConsolidatedMolecular_ReturnsMaxGradeOfGGroup()
+        public void Score_PatientHasMultipleAllele_DonorHasMatchingConsolidatedMolecular_ReturnsMaxGradeOfGGroup()
         {
             const string sharedGGroup = "shared-g-group";
             const string sharedPGroup = "shared-p-group";
@@ -878,23 +881,22 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] {sharedGGroup})
-                    .WithMatchingPGroups(new[] {sharedPGroup})
+                    .WithMatchingGGroups(new[] { sharedGGroup })
+                    .WithMatchingPGroups(new[] { sharedPGroup })
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
-
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.LocusScore.Position1.Should().Be(MatchGrade.GGroup);
+            actualGradingResults.A.Orientations.Should().BeEquivalentTo(new[] { MatchOrientation.Direct });
         }
 
         [Test]
-        public void CalculateGrades_PatientHasMultipleAllele_DonorHasMatchingSerology_ReturnsMaxGradeOfAssociated()
+        public void Score_PatientHasMultipleAllele_DonorHasMatchingSerology_ReturnsMaxGradeOfAssociated()
         {
             var sharedMatchingSerologies = new[]
             {
@@ -928,15 +930,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
-
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.LocusScore.Position1.Should().Be(MatchGrade.Associated);
+            actualGradingResults.A.Orientations.Should().BeEquivalentTo(new[] { MatchOrientation.Direct });
         }
 
         [Test]
-        public void CalculateGrades_PatientHasConsolidatedMolecular_DonorHasMatchingSingleAllele_ReturnsMaxGradeOfGGroup()
+        public void Score_PatientHasConsolidatedMolecular_DonorHasMatchingSingleAllele_ReturnsMaxGradeOfGGroup()
         {
             const string sharedGGroup = "shared-g-group";
             const string sharedPGroup = "shared-p-group";
@@ -950,8 +951,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] {sharedGGroup})
-                    .WithMatchingPGroups(new[] {sharedPGroup})
+                    .WithMatchingGGroups(new[] { sharedGGroup })
+                    .WithMatchingPGroups(new[] { sharedPGroup })
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
@@ -969,15 +970,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
-
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.LocusScore.Position1.Should().Be(MatchGrade.GGroup);
+            actualGradingResults.A.Orientations.Should().BeEquivalentTo(new[] { MatchOrientation.Direct });
         }
 
         [Test]
-        public void CalculateGrades_PatientHasConsolidatedMolecular_DonorHasMatchingMultipleAllele_ReturnsMaxGradeOfGGroup()
+        public void Score_PatientHasConsolidatedMolecular_DonorHasMatchingMultipleAllele_ReturnsMaxGradeOfGGroup()
         {
             const string sharedGGroup = "shared-g-group";
             const string sharedPGroup = "shared-p-group";
@@ -991,8 +991,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] {sharedGGroup})
-                    .WithMatchingPGroups(new[] {sharedPGroup})
+                    .WithMatchingGGroups(new[] { sharedGGroup })
+                    .WithMatchingPGroups(new[] { sharedPGroup })
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
@@ -1015,15 +1015,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
-
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.LocusScore.Position1.Should().Be(MatchGrade.GGroup);
+            actualGradingResults.A.Orientations.Should().BeEquivalentTo(new[] { MatchOrientation.Direct });
         }
 
         [Test]
-        public void CalculateGrades_PatientAndDonorHaveSameConsolidatedMolecular_ReturnsMaxGradeOfGGroup()
+        public void Score_PatientAndDonorHaveSameConsolidatedMolecular_ReturnsMaxGradeOfGGroup()
         {
             const string sharedGGroup = "shared-g-group";
             const string sharedPGroup = "shared-p-group";
@@ -1037,8 +1036,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] {sharedGGroup})
-                    .WithMatchingPGroups(new[] {sharedPGroup})
+                    .WithMatchingGGroups(new[] { sharedGGroup })
+                    .WithMatchingPGroups(new[] { sharedPGroup })
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
@@ -1046,23 +1045,22 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] {sharedGGroup})
-                    .WithMatchingPGroups(new[] {sharedPGroup})
+                    .WithMatchingGGroups(new[] { sharedGGroup })
+                    .WithMatchingPGroups(new[] { sharedPGroup })
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
-
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.LocusScore.Position1.Should().Be(MatchGrade.GGroup);
+            actualGradingResults.A.Orientations.Should().BeEquivalentTo(new[] { MatchOrientation.Direct });
         }
 
         [Test]
-        public void CalculateGrades_PatientHasConsolidatedMolecular_DonorHasMatchingSerology_ReturnsMaxGradeOfAssociated()
+        public void Score_PatientHasConsolidatedMolecular_DonorHasMatchingSerology_ReturnsMaxGradeOfAssociated()
         {
             var sharedMatchingSerologies = new[]
             {
@@ -1074,8 +1072,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] {"patient-g-group"})
-                    .WithMatchingPGroups(new[] {"patient-p-group"})
+                    .WithMatchingGGroups(new[] { "patient-g-group" })
+                    .WithMatchingPGroups(new[] { "patient-p-group" })
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
@@ -1089,15 +1087,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
-
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.LocusScore.Position1.Should().Be(MatchGrade.Associated);
+            actualGradingResults.A.Orientations.Should().BeEquivalentTo(new[] { MatchOrientation.Direct });
         }
 
         [Test]
-        public void CalculateGrades_PatientHasSerology_DonorHasMatchingSingleAllele_ReturnsMaxGradeOfAssociated()
+        public void Score_PatientHasSerology_DonorHasMatchingSingleAllele_ReturnsMaxGradeOfAssociated()
         {
             var sharedMatchingSerologies = new[]
             {
@@ -1126,15 +1123,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
-
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.LocusScore.Position1.Should().Be(MatchGrade.Associated);
+            actualGradingResults.A.Orientations.Should().BeEquivalentTo(new[] { MatchOrientation.Direct });
         }
 
         [Test]
-        public void CalculateGrades_PatientHasSerology_DonorHasMatchingMultipleAllele_ReturnsMaxGradeOfAssociated()
+        public void Score_PatientHasSerology_DonorHasMatchingMultipleAllele_ReturnsMaxGradeOfAssociated()
         {
             var sharedMatchingSerologies = new[]
             {
@@ -1168,15 +1164,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
-
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.LocusScore.Position1.Should().Be(MatchGrade.Associated);
+            actualGradingResults.A.Orientations.Should().BeEquivalentTo(new[] { MatchOrientation.Direct });
         }
 
         [Test]
-        public void CalculateGrades_PatientHasSerology_DonorHasMatchingConsolidatedMolecular_ReturnsMaxGradeOfAssociated()
+        public void Score_PatientHasSerology_DonorHasMatchingConsolidatedMolecular_ReturnsMaxGradeOfAssociated()
         {
             var sharedMatchingSerologies = new[]
             {
@@ -1195,23 +1190,22 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] {"patient-g-group"})
-                    .WithMatchingPGroups(new[] {"patient-p-group"})
+                    .WithMatchingGGroups(new[] { "patient-g-group" })
+                    .WithMatchingPGroups(new[] { "patient-p-group" })
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
-
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.LocusScore.Position1.Should().Be(MatchGrade.Associated);
+            actualGradingResults.A.Orientations.Should().BeEquivalentTo(new[] { MatchOrientation.Direct });
         }
 
         [Test]
-        public void CalculateGrades_PatientAndDonorHaveSameSerology_ReturnsMaxGradeOfAssociated()
+        public void Score_PatientAndDonorHaveSameSerology_ReturnsMaxGradeOfAssociated()
         {
             var sharedMatchingSerologies = new[]
             {
@@ -1236,17 +1230,16 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
             var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
-
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.LocusScore.Position1.Should().Be(MatchGrade.Associated);
+            actualGradingResults.A.Orientations.Should().BeEquivalentTo(new[] { MatchOrientation.Direct });
         }
 
         #endregion
 
         [Test]
-        public void CalculateGrades_CalculatesMatchesForMultipleLoci()
+        public void Score_CalculatesMatchesForMultipleLoci()
         {
             var singleAlleleAtA = new HlaScoringMetadataBuilder()
                 .AtLocus(Locus.A)
@@ -1259,14 +1252,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var consolidatedMolecularAtB = new HlaScoringMetadataBuilder()
                 .AtLocus(Locus.B)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
-                    .WithMatchingGGroups(new[] {"shared-g-group"})
+                    .WithMatchingGGroups(new[] { "shared-g-group" })
                     .Build())
                 .Build();
 
             var serologyAtDrb1 = new HlaScoringMetadataBuilder()
                 .AtLocus(Locus.Drb1)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
-                    .WithMatchingSerologies(new[] {new SerologyEntry("shared-not-split", SerologySubtype.NotSplit, true)})
+                    .WithMatchingSerologies(new[] { new SerologyEntry("shared-not-split", SerologySubtype.NotSplit, true) })
                     .Build())
                 .Build();
 
@@ -1280,22 +1273,22 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 .SetLocus(Locus.B, consolidatedMolecularAtB)
                 .SetLocus(Locus.Drb1, serologyAtDrb1);
 
-            var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
+            var actualGradingResults = gradingService.Score(Orientations, patientLookupResults, donorLookupResults);
 
-            var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
-            var expectedGradingResultAtA = new MatchGradeResult(MatchGrade.GDna, expectedMatchOrientations);
-            var expectedGradingResultAtB = new MatchGradeResult(MatchGrade.GGroup, expectedMatchOrientations);
-            var expectedGradingResultAtDrb1 = new MatchGradeResult(MatchGrade.Split, expectedMatchOrientations);
+            var expectedMatchOrientations = new[] { MatchOrientation.Direct, MatchOrientation.Cross };
+            var expectedGradingResultAtA = new LocusScoreResult<MatchGrade>(new LocusInfo<MatchGrade>(MatchGrade.GDna), expectedMatchOrientations);
+            var expectedGradingResultAtB = new LocusScoreResult<MatchGrade>(new LocusInfo<MatchGrade>(MatchGrade.GGroup), expectedMatchOrientations);
+            var expectedGradingResultAtDrb1 = new LocusScoreResult<MatchGrade>(new LocusInfo<MatchGrade>(MatchGrade.Split), expectedMatchOrientations);
 
             // both grades should be GDna, in both orientations
-            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResultAtA);
-            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResultAtA);
+            actualGradingResults.A.Should().Be(expectedGradingResultAtA);
+            actualGradingResults.A.Should().Be(expectedGradingResultAtA);
             // both grades should be GGroup, in both orientations
-            actualGradingResults.B.Position1.Should().BeEquivalentTo(expectedGradingResultAtB);
-            actualGradingResults.B.Position2.Should().BeEquivalentTo(expectedGradingResultAtB);
+            actualGradingResults.B.Should().Be(expectedGradingResultAtB);
+            actualGradingResults.B.Should().Be(expectedGradingResultAtB);
             // both grades should be Split, in both orientations
-            actualGradingResults.Drb1.Position1.Should().BeEquivalentTo(expectedGradingResultAtDrb1);
-            actualGradingResults.Drb1.Position2.Should().BeEquivalentTo(expectedGradingResultAtDrb1);
+            actualGradingResults.Drb1.Should().Be(expectedGradingResultAtDrb1);
+            actualGradingResults.Drb1.Should().Be(expectedGradingResultAtDrb1);
         }
 
         private static PhenotypeInfo<IHlaScoringMetadata> BuildMetadataAtMatchedLocus(

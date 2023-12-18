@@ -28,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.NullA
         
         private string[] _featureTags = ((string[])(null));
         
-#line 1 "NullAlleles.feature"
+#line 1 "Search.feature"
 #line hidden
         
         [NUnit.Framework.OneTimeSetUpAttribute()]

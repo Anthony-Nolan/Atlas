@@ -64,7 +64,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             var grade = GradingCalculator.CalculateGrade(patientLookupResult, donorLookupResult);
 
-            grade.Should().Be(MatchGrade.Mismatch);
+            grade.Should().Be(MatchGrade.ExpressingVsNull);
         }
 
         #endregion
