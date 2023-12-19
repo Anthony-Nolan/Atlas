@@ -29,7 +29,8 @@ namespace Atlas.MatchingAlgorithm.Data.Context
                 .IsUnique();
 
             modelBuilder.Entity<DonorManagementLog>()
-                .HasIndex(d => new { d.DonorId, d.LastUpdateDateTime });
+                .HasIndex(d => d.LastUpdateDateTime)
+                .IncludeProperties(x => x.DonorId);
 
             // Note: The Model Builder seems to have a bug
             // where it will drop the Locus C filtered index
