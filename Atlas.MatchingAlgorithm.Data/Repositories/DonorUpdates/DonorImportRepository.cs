@@ -68,6 +68,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         }
 
         private const string HlaRelationTable_IndexName_PGroupIdAndHlaNameId = "IX_PGroupId_HlaNameId";
+        private const string HlaRelationTable_IndexName_HlaNameId = "IX_HlaNameId";
         private const string MatchingHlaTable_IndexName_HlaNameIdAndDonorId = "IX_HlaNameId_DonorId__TypePosition";
         private const string MatchingHlaTable_IndexName_DonorId = "IX_DonorId__PGroupId_TypePosition";
 
@@ -97,11 +98,19 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         private static string BuildDropAllPreProcessedDonorHlaSql() =>
             AllHlaTables.Select(table => $"TRUNCATE TABLE [{table}];").StringJoinWithNewline();
 
-        private string BuildRelationIndexSqlFor(string tableName) => BuildIndexCreationSqlFor(
-            MatchingHlaTable_IndexName_HlaNameIdAndDonorId,
+        private IEnumerable<string> BuildRelationIndexesSqlFor(string tableName)
+        {
+            yield return BuildIndexCreationSqlFor(
+            HlaRelationTable_IndexName_PGroupIdAndHlaNameId,
             tableName,
-            new[] {"PGroupId", "HlaNameId"}
-        );
+            new[] { "PGroupId", "HlaNameId" });
+
+            yield return BuildIndexCreationSqlFor(
+            HlaRelationTable_IndexName_HlaNameId,
+            tableName,
+            new[] { "HlaNameId" },
+            new[] { "PGroupId" });
+        }
 
         private string BuildPGroupIndexSqlFor(string tableName) => BuildIndexCreationSqlFor(
             MatchingHlaTable_IndexName_HlaNameIdAndDonorId,
@@ -179,11 +188,18 @@ END
                     {
                         using (timer.TimeInnerOperation())
                         {
-                            var indexSql = BuildRelationIndexSqlFor(table);
-                            await conn.ExecuteAsync(indexSql, commandTimeout: 43200);
+                            await CreateRelationIndexesFor(table, conn);
                         }
                     }
                 }
+            }
+        }
+
+        private async Task CreateRelationIndexesFor(string table, SqlConnection conn)
+        {
+            foreach (var indexSql in BuildRelationIndexesSqlFor(table))
+            {
+                await conn.ExecuteAsync(indexSql, commandTimeout: 43200);
             }
         }
 
@@ -200,6 +216,9 @@ END
                     await conn.ExecuteAsync(donorIdIndexSql, commandTimeout: 300);
                     
                     var hlaRelationIndexSql = BuildIndexDeletionSqlFor(HlaRelationTable_IndexName_PGroupIdAndHlaNameId, table);
+                    await conn.ExecuteAsync(hlaRelationIndexSql, commandTimeout: 300);
+
+                    hlaRelationIndexSql = BuildIndexDeletionSqlFor(HlaRelationTable_IndexName_HlaNameId, table);
                     await conn.ExecuteAsync(hlaRelationIndexSql, commandTimeout: 300);
                 }
             }
