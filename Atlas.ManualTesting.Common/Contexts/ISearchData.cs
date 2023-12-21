@@ -9,6 +9,6 @@ namespace Atlas.ManualTesting.Common.Contexts
         public DbSet<TSearch> SearchRequests { get; set; }
         public DbSet<MatchedDonor> MatchedDonors { get; set; }
         public DbSet<LocusMatchCount> MatchCounts { get; set; }
-        public DbSet<MatchProbability> MatchProbabilities { get; set; }
+        public DbSet<MatchedDonorProbability> MatchProbabilities { get; set; }
     }
 }

@@ -10,7 +10,7 @@ using Atlas.ManualTesting.Common.Models.Entities;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {
-    public class MatchProbabilitiesRepository : IProcessedResultsRepository<MatchProbability>
+    public class MatchProbabilitiesRepository : IProcessedResultsRepository<MatchedDonorProbability>
     {
         private readonly string connectionString;
 
@@ -21,7 +21,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 
         public async Task DeleteResults(int searchRequestRecordId)
         {
-            var sql = $@"
+            const string sql = $@"
                 DELETE FROM MatchProbabilities
                 FROM MatchProbabilities m
                 JOIN MatchedDonors d
@@ -34,7 +34,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             }
         }
 
-        public async Task BulkInsertResults(IReadOnlyCollection<MatchProbability> matchProbabilities)
+        public async Task BulkInsertResults(IReadOnlyCollection<MatchedDonorProbability> matchProbabilities)
         {
             if (!matchProbabilities.Any())
             {
@@ -50,7 +50,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             }
         }
 
-        private static DataTable BuildDataTable(IReadOnlyCollection<MatchProbability> matchProbabilities, IEnumerable<string> columnNames)
+        private static DataTable BuildDataTable(IReadOnlyCollection<MatchedDonorProbability> matchProbabilities, IEnumerable<string> columnNames)
         {
             var dataTable = new DataTable();
             foreach (var columnName in columnNames)

@@ -6,10 +6,9 @@ namespace Atlas.ManualTesting.Common.Models.Entities
 {
     // ReSharper disable InconsistentNaming
 
-    public class MatchProbability : IBulkInsertModel
+    public abstract class MatchProbability : IBulkInsertModel
     {
         public int Id { get; set; }
-        public int MatchedDonor_Id { get; set; }
 
         /// <summary>
         /// This will be null for "cross-loci" predictions, e.g., P(x/10), etc.

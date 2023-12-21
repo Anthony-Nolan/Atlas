@@ -89,7 +89,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
                     b.ToTable("MatchedDonors");
                 });
 
-            modelBuilder.Entity("Atlas.ManualTesting.Common.Models.Entities.MatchProbability", b =>
+            modelBuilder.Entity("Atlas.ManualTesting.Common.Models.Entities.MatchedDonorProbability", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -111,7 +111,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MatchedDonor_Id");
+                    b.HasIndex("MatchedDonor_Id", "Locus", "MismatchCount");
 
                     b.ToTable("MatchProbabilities");
                 });
@@ -499,7 +499,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Atlas.ManualTesting.Common.Models.Entities.MatchProbability", b =>
+            modelBuilder.Entity("Atlas.ManualTesting.Common.Models.Entities.MatchedDonorProbability", b =>
                 {
                     b.HasOne("Atlas.ManualTesting.Common.Models.Entities.MatchedDonor", null)
                         .WithMany()

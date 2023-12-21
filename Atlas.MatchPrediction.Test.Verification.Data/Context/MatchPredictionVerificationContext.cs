@@ -30,7 +30,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Context
             modelBuilder.Entity<VerificationSearchRequestRecord>().SetUpModel();
             modelBuilder.Entity<MatchedDonor>().SetUpModel();
             modelBuilder.Entity<LocusMatchCount>().SetUpModel();
-            modelBuilder.Entity<MatchProbability>().SetUpModel();
+            modelBuilder.Entity<MatchedDonorProbability>().SetUpModel();
             base.OnModelCreating(modelBuilder);
         }
 
@@ -45,6 +45,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Context
         public DbSet<VerificationSearchRequestRecord> SearchRequests { get; set; }
         public DbSet<MatchedDonor> MatchedDonors { get; set; }
         public DbSet<LocusMatchCount> MatchCounts { get; set; }
-        public DbSet<MatchProbability> MatchProbabilities { get; set; }
+        public DbSet<MatchedDonorProbability> MatchProbabilities { get; set; }
     }
 }
