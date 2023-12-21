@@ -9,6 +9,7 @@ namespace Atlas.ManualTesting.Common.Models.Entities
     public abstract class SearchRequestRecordBase : IBulkInsertModel
     {
         public int Id { get; set; }
+        public int PatientId { get; set; }
         public int DonorMismatchCount { get; set; }
 
         [Required]

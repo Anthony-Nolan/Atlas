@@ -33,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
         private static readonly Simulant MissingDonor = SimulantBuilder.New.Build();
         private static readonly SearchRequestRecord SearchRequest = new SearchRequestRecord
         {
-            PatientSimulant_Id = Patient.Id
+            PatientId = Patient.Id
         };
 
         [SetUp]

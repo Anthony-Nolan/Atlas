@@ -139,7 +139,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
             await searchRequestsRepository.AddSearchRequest(new SearchRequestRecord
             {
                 VerificationRun_Id = verificationRunId,
-                PatientSimulant_Id = patient.Id,
+                PatientId = patient.Id,
                 DonorMismatchCount = searchRequest.MatchCriteria.DonorMismatchCount,
                 WasMatchPredictionRun = searchRequest.RunMatchPrediction,
                 AtlasSearchIdentifier = searchFailed ? failedSearchId : requestResponse.Result,

@@ -39,7 +39,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 			    JOIN MatchProbabilities p
 			    ON d.Id = p.MatchedDonor_Id
 			    JOIN Simulants ps
-			    ON r.PatientSimulant_Id = ps.Id
+			    ON r.PatientId = ps.Id
 			    JOIN Simulants ds
 			    ON d.MatchedDonorSimulant_Id = ds.Id
 			    WHERE 
@@ -67,7 +67,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 			    JOIN MatchedDonors d
 			    ON r.Id = d.SearchRequestRecord_Id
 			    JOIN Simulants ps
-			    ON r.PatientSimulant_Id = ps.Id
+			    ON r.PatientId = ps.Id
 			    JOIN Simulants ds
 			    ON d.MatchedDonorSimulant_Id = ds.Id
 			    WHERE 
@@ -96,7 +96,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 			    JOIN MatchedDonors d
 			    ON r.Id = d.SearchRequestRecord_Id
 			    JOIN Simulants ps
-			    ON r.PatientSimulant_Id = ps.Id
+			    ON r.PatientId = ps.Id
 			    JOIN Simulants ds
 			    ON d.MatchedDonorSimulant_Id = ds.Id
                 JOIN MatchCounts mc
