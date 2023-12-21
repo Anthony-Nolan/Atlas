@@ -52,7 +52,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
             return new JsonResult(verificationRunId);
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(FetchMatchingResults))]
         public async Task FetchMatchingResults(
             [ServiceBusTrigger(
@@ -72,7 +71,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
             }
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(FetchSearchResults))]
         public async Task FetchSearchResults(
             [ServiceBusTrigger(

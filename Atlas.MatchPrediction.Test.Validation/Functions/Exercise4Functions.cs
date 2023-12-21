@@ -6,6 +6,7 @@ using Atlas.MatchPrediction.Test.Validation.Services;
 using Atlas.MatchPrediction.Test.Validation.Services.Exercise4;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
@@ -26,14 +27,19 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
 
         private readonly ISubjectInfoImporter subjectInfoImporter;
         private readonly IValidationAtlasPreparer atlasPreparer;
+        private readonly ISearchRequester searchRequester;
 
-        public Exercise4Functions(ISubjectInfoImporter subjectInfoImporter, IValidationAtlasPreparer atlasPreparer)
+        public Exercise4Functions(
+            ISubjectInfoImporter subjectInfoImporter,
+            IValidationAtlasPreparer atlasPreparer,
+            ISearchRequester searchRequester)
         {
             this.subjectInfoImporter = subjectInfoImporter;
             this.atlasPreparer = atlasPreparer;
+            this.searchRequester = searchRequester;
         }
 
-        [FunctionName($"{FunctionNamePrefix}{nameof(ImportSubjects)}")]
+        [FunctionName($"{FunctionNamePrefix}1_{nameof(ImportSubjects)}")]
         public async Task ImportSubjects(
         [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(ImportRequest), nameof(ImportRequest))]
@@ -51,7 +57,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName($"{FunctionNamePrefix}{nameof(PrepareAtlasDonorStores)}")]
+        [FunctionName($"{FunctionNamePrefix}2_{nameof(PrepareAtlasDonorStores)}")]
         public async Task PrepareAtlasDonorStores(
         [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request)
         {
@@ -74,6 +80,18 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             CompletedDataRefresh dataRefresh)
         {
             await atlasPreparer.SaveDataRefreshDetails(dataRefresh);
+        }
+
+        [FunctionName($"{FunctionNamePrefix}3_{nameof(SendSearchRequests)}")]
+        public async Task<IActionResult> SendSearchRequests(
+        [HttpTrigger(AuthorizationLevel.Function, "post")]
+        [RequestBodyType(typeof(ValidationSearchRequest), nameof(ValidationSearchRequest))]
+        HttpRequest request)
+        {
+            var searchRequest = JsonConvert.DeserializeObject<ValidationSearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+            var searchSetId = await searchRequester.SubmitSearchRequests(searchRequest);
+
+            return new OkObjectResult(searchSetId);
         }
     }
 }

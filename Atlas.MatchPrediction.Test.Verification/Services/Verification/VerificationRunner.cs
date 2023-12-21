@@ -143,7 +143,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
                 DonorMismatchCount = searchRequest.MatchCriteria.DonorMismatchCount,
                 WasMatchPredictionRun = searchRequest.RunMatchPrediction,
                 AtlasSearchIdentifier = searchFailed ? failedSearchId : requestResponse.Result,
-                WasSuccessful = searchFailed ? false : (bool?)null
+                WasSuccessful = searchFailed ? false : null
             });
         }
 

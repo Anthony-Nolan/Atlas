@@ -4,6 +4,7 @@ using Atlas.MatchPrediction.Test.Validation.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
 {
     [DbContext(typeof(MatchPredictionValidationContext))]
-    partial class MatchPredictionValidationContextModelSnapshot : ModelSnapshot
+    [Migration("20231221205016_AmendSearchSetTable")]
+    partial class AmendSearchSetTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -342,9 +344,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<bool>("SearchResultsRetrieved")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<int>("SearchSet_Id")
                         .HasColumnType("int");

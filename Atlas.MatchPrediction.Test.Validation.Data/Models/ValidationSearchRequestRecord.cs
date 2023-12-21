@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Atlas.ManualTesting.Common.Models.Entities;
+using Microsoft.EntityFrameworkCore;
+
 // ReSharper disable InconsistentNaming
 
 namespace Atlas.MatchPrediction.Test.Validation.Data.Models
@@ -22,6 +24,10 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Models
                 .HasOne<SubjectInfo>()
                 .WithMany()
                 .HasForeignKey(r => r.PatientId);
+
+            modelBuilder
+                .Property(r => r.SearchResultsRetrieved)
+                .HasDefaultValue(false);
 
             modelBuilder.HasIndex(r => r.AtlasSearchIdentifier);
         }
