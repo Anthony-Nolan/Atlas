@@ -18,7 +18,9 @@
     "MatchPredictionRequests:ResultsSubscription": "override-this",
     "MatchPredictionRequests:ResultsTopic": "match-prediction-results",
 
-    "MessagingServiceBus:ConnectionString": "override-this"
+    "MessagingServiceBus:ConnectionString": "override-this",
+
+    "Search:RequestUrl": "override-this"
   },
   "ConnectionStrings": {
     "DonorImport:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
