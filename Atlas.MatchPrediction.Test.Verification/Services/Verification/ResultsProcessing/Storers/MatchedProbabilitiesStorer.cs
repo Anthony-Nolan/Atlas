@@ -49,21 +49,21 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         {
             return new List<MatchProbability>
             {
-                new MatchProbability
+                new MatchedDonorProbability
                 {
                     MatchedDonor_Id = matchedDonorId,
                     Locus = locus,
                     MismatchCount = 0,
                     Probability = probabilities.ZeroMismatchProbability?.Decimal
                 },
-                new MatchProbability
+                new MatchedDonorProbability
                 {
                     MatchedDonor_Id = matchedDonorId,
                     Locus = locus,
                     MismatchCount = 1,
                     Probability = probabilities.OneMismatchProbability?.Decimal
                 },
-                new MatchProbability
+                new MatchedDonorProbability
                 {
                     MatchedDonor_Id = matchedDonorId,
                     Locus = locus,

@@ -1,24 +1,24 @@
 ﻿using Atlas.ManualTesting.Common.Models.Entities;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification
+namespace Atlas.MatchPrediction.Test.Validation.Data.Models
 {
     internal static class MatchedDonorBuilder
     {
         public static void SetUpModel(this EntityTypeBuilder<MatchedDonor> modelBuilder)
         {
             modelBuilder
-                .HasOne<VerificationSearchRequestRecord>()
+                .HasOne<ValidationSearchRequestRecord>()
                 .WithMany()
                 .HasForeignKey(r => r.SearchRequestRecord_Id)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder
-                .HasOne<Simulant>()
+                .HasOne<SubjectInfo>()
                 .WithMany()
-                .HasForeignKey(r => r.DonorId);
+                .HasForeignKey(r => r.DonorId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder
                 .HasIndex(r => new { r.SearchRequestRecord_Id, r.DonorId, r.TotalMatchCount });

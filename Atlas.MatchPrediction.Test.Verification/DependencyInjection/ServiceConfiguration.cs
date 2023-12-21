@@ -85,7 +85,7 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
                 new MatchedDonorsRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<IProcessedResultsRepository<LocusMatchCount>, MatchCountsRepository>(sp =>
                 new MatchCountsRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<IProcessedResultsRepository<MatchProbability>, MatchProbabilitiesRepository>(sp =>
+            services.AddScoped<IProcessedResultsRepository<MatchedDonorProbability>, MatchProbabilitiesRepository>(sp =>
                 new MatchProbabilitiesRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<IVerificationResultsRepository, VerificationResultsRepository>(sp =>
                 new VerificationResultsRepository(fetchSqlConnectionString(sp)));
