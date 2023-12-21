@@ -7,7 +7,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
 {
     // ReSharper disable InconsistentNaming
 
-    public class SearchRequestRecord : SearchRequestRecordBase
+    public class VerificationSearchRequestRecord : SearchRequestRecord
     {
         public int VerificationRun_Id { get; set; }
         public bool WasMatchPredictionRun { get; set; }
@@ -18,7 +18,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
 
     internal static class SearchRequestRecordBuilder
     {
-        public static void SetUpModel(this EntityTypeBuilder<SearchRequestRecord> modelBuilder)
+        public static void SetUpModel(this EntityTypeBuilder<VerificationSearchRequestRecord> modelBuilder)
         {
             modelBuilder
                 .HasOne<VerificationRun>()

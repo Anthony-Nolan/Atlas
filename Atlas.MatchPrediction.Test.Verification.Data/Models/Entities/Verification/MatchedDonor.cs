@@ -17,7 +17,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
         public static void SetUpModel(this EntityTypeBuilder<MatchedDonor> modelBuilder)
         {
             modelBuilder
-                .HasOne<SearchRequestRecord>()
+                .HasOne<VerificationSearchRequestRecord>()
                 .WithMany()
                 .HasForeignKey(r => r.SearchRequestRecord_Id)
                 .OnDelete(DeleteBehavior.NoAction);

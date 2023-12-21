@@ -9,8 +9,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {
     public interface ISearchRequestsRepository
     {
-        Task AddSearchRequest(SearchRequestRecord request);
-        Task<SearchRequestRecord> GetRecordByAtlasSearchId(string atlasSearchId);
+        Task AddSearchRequest(VerificationSearchRequestRecord request);
+        Task<VerificationSearchRequestRecord> GetRecordByAtlasSearchId(string atlasSearchId);
         Task MarkSearchResultsAsFailed(int searchRequestRecordId);
         Task MarkSearchResultsAsSuccessful(SuccessfulSearchRequestInfo info);
     }
@@ -24,7 +24,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             this.connectionString = connectionString;
         }
 
-        public async Task AddSearchRequest(SearchRequestRecord request)
+        public async Task AddSearchRequest(VerificationSearchRequestRecord request)
         {
             const string sql = $@"INSERT INTO SearchRequests(
                 VerificationRun_Id,
@@ -56,13 +56,13 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             }
         }
 
-        public async Task<SearchRequestRecord> GetRecordByAtlasSearchId(string atlasSearchId)
+        public async Task<VerificationSearchRequestRecord> GetRecordByAtlasSearchId(string atlasSearchId)
         {
             const string sql = @$"SELECT * FROM SearchRequests s WHERE s.AtlasSearchIdentifier = @{nameof(atlasSearchId)}";
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                return (await conn.QueryAsync<SearchRequestRecord>(sql, new { atlasSearchId })).SingleOrDefault();
+                return (await conn.QueryAsync<VerificationSearchRequestRecord>(sql, new { atlasSearchId })).SingleOrDefault();
             }
         }
 

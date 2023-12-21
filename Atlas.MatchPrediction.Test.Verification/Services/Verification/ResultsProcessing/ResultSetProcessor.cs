@@ -57,7 +57,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             await FetchAndPersistResults(record, notification);
         }
 
-        private async Task FetchAndPersistResults(SearchRequestRecord searchRequest, TNotification notification)
+        private async Task FetchAndPersistResults(VerificationSearchRequestRecord searchRequest, TNotification notification)
         {
             var resultSet = JsonConvert.DeserializeObject<TResultSet>(await DownloadResults(notification));
             await ProcessAndStoreResults(searchRequest, resultSet);
@@ -72,9 +72,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             return await new StreamReader(blobStream).ReadToEndAsync();
         }
 
-        protected abstract bool ShouldProcessResult(SearchRequestRecord searchRequest);
+        protected abstract bool ShouldProcessResult(VerificationSearchRequestRecord searchRequest);
 
-        protected abstract Task ProcessAndStoreResults(SearchRequestRecord searchRequest, TResultSet resultSet);
+        protected abstract Task ProcessAndStoreResults(VerificationSearchRequestRecord searchRequest, TResultSet resultSet);
 
         protected abstract SuccessfulSearchRequestInfo GetSuccessInfo(int searchRequestRecordId, TNotification notification);
     }

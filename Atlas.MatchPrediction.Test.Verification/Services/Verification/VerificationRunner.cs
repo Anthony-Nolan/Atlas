@@ -136,7 +136,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
             var searchFailed = requestResponse.Outcome == OutcomeType.Failure;
 
-            await searchRequestsRepository.AddSearchRequest(new SearchRequestRecord
+            await searchRequestsRepository.AddSearchRequest(new VerificationSearchRequestRecord
             {
                 VerificationRun_Id = verificationRunId,
                 PatientId = patient.Id,
