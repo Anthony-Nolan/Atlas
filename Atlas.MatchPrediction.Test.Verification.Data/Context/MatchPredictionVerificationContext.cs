@@ -10,7 +10,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Context
     public class MatchPredictionVerificationContext : 
         DbContext,
         IDonorExportData,
-        ISearchData<SearchRequestRecord, MatchedDonor>
+        ISearchData<VerificationSearchRequestRecord, MatchedDonor>
     {
         // ReSharper disable once SuggestBaseTypeForParameter
         public MatchPredictionVerificationContext(DbContextOptions<MatchPredictionVerificationContext> options) : base(options)
@@ -27,7 +27,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Context
             modelBuilder.Entity<MaskingRecord>().SetUpModel();
             modelBuilder.Entity<TestDonorExportRecord>();
             modelBuilder.Entity<VerificationRun>().SetUpModel();
-            modelBuilder.Entity<SearchRequestRecord>().SetUpModel();
+            modelBuilder.Entity<VerificationSearchRequestRecord>().SetUpModel();
             modelBuilder.Entity<MatchedDonor>().SetUpModel();
             modelBuilder.Entity<LocusMatchCount>().SetUpModel();
             modelBuilder.Entity<MatchProbability>().SetUpModel();
@@ -42,7 +42,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Context
         public DbSet<MaskingRecord> MaskingRecords { get; set; }
         public DbSet<VerificationRun> VerificationRuns { get; set; }
         public DbSet<TestDonorExportRecord> TestDonorExportRecords { get; set; }
-        public DbSet<SearchRequestRecord> SearchRequests { get; set; }
+        public DbSet<VerificationSearchRequestRecord> SearchRequests { get; set; }
         public DbSet<MatchedDonor> MatchedDonors { get; set; }
         public DbSet<LocusMatchCount> MatchCounts { get; set; }
         public DbSet<MatchProbability> MatchProbabilities { get; set; }

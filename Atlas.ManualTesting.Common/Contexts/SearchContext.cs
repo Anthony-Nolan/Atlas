@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Atlas.ManualTesting.Common.Contexts
 {
     public interface ISearchData<TSearch, TMatchedDonor>
-        where TSearch : SearchRequestRecordBase
+        where TSearch : SearchRequestRecord
         where TMatchedDonor : MatchedDonorBase
     {
         public DbSet<TSearch> SearchRequests { get; set; }

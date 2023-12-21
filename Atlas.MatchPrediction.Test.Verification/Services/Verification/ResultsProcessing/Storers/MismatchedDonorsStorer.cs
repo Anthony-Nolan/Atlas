@@ -29,7 +29,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         /// returned in the search results due to having too many mismatches, by creating records with appropriate values.
         /// Note: 0/10 donors and 0/2 loci match counts will not be stored to reduce number of rows added to the database.
         /// </summary>
-        Task CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequestRecord searchRequest, ResultSet<TResult> resultSet);
+        Task CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequestRecord searchRequest, ResultSet<TResult> resultSet);
     }
 
     internal class MismatchedDonorsStorer<TResult> : IMismatchedDonorsStorer<TResult> where TResult : Result
@@ -54,7 +54,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             this.cache = cache;
         }
 
-        public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequestRecord searchRequest, ResultSet<TResult> resultSet)
+        public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequestRecord searchRequest, ResultSet<TResult> resultSet)
         {
             var info = await cache.GetOrAddGenotypeSimulantsInfo(searchRequest.VerificationRun_Id);
 
@@ -76,7 +76,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
 
         private async Task CreateRecordsForDonorsWithAtLeastOneMatch(
             GenotypeSimulantsInfo info,
-            SearchRequestRecord searchRequest,
+            VerificationSearchRequestRecord searchRequest,
             IEnumerable<int> donorSimulantIds)
         {
             var patient = info.Patients.Hla.Single(p => p.Id == searchRequest.PatientId);

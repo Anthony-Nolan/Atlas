@@ -32,12 +32,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         /// <summary>
         /// Only store Matching result if no match prediction was run.
         /// </summary>
-        protected override bool ShouldProcessResult(SearchRequestRecord searchRequest)
+        protected override bool ShouldProcessResult(VerificationSearchRequestRecord searchRequest)
         {
             return !searchRequest.WasMatchPredictionRun;
         }
 
-        protected override async Task ProcessAndStoreResults(SearchRequestRecord searchRequest, OriginalMatchingAlgorithmResultSet resultSet)
+        protected override async Task ProcessAndStoreResults(VerificationSearchRequestRecord searchRequest, OriginalMatchingAlgorithmResultSet resultSet)
         {
             await donorsStorer.ProcessAndStoreResults(searchRequest.Id, resultSet);
             await countsStorer.ProcessAndStoreResults(searchRequest.Id, resultSet);

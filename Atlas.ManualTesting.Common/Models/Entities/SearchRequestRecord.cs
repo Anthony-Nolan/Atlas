@@ -6,7 +6,7 @@ namespace Atlas.ManualTesting.Common.Models.Entities
 {
     // ReSharper disable InconsistentNaming
 
-    public abstract class SearchRequestRecordBase : IBulkInsertModel
+    public class SearchRequestRecord : IBulkInsertModel
     {
         public int Id { get; set; }
         public int PatientId { get; set; }
