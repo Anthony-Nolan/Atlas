@@ -3,12 +3,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.ManualTesting.Common.Contexts
 {
-    public interface ISearchData<TSearch, TMatchedDonor>
+    public interface ISearchData<TSearch>
         where TSearch : SearchRequestRecord
-        where TMatchedDonor : MatchedDonorBase
     {
         public DbSet<TSearch> SearchRequests { get; set; }
-        public DbSet<TMatchedDonor> MatchedDonors { get; set; }
+        public DbSet<MatchedDonor> MatchedDonors { get; set; }
         public DbSet<LocusMatchCount> MatchCounts { get; set; }
         public DbSet<MatchProbability> MatchProbabilities { get; set; }
     }
