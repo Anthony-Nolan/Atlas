@@ -6,10 +6,11 @@ namespace Atlas.ManualTesting.Common.Models.Entities
 {
     // ReSharper disable InconsistentNaming
 
-    public class MatchedDonorBase : IBulkInsertModel
+    public class MatchedDonor : IBulkInsertModel
     {
         public int Id { get; set; }
         public int SearchRequestRecord_Id { get; set; }
+        public int DonorId { get; set; }
         public int TotalMatchCount { get; set; }
         public int TypedLociCount { get; set; }
         public bool? WasPatientRepresented { get; set; }

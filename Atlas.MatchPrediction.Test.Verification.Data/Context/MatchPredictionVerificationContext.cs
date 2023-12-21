@@ -10,7 +10,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Context
     public class MatchPredictionVerificationContext : 
         DbContext,
         IDonorExportData,
-        ISearchData<VerificationSearchRequestRecord, MatchedDonor>
+        ISearchData<VerificationSearchRequestRecord>
     {
         // ReSharper disable once SuggestBaseTypeForParameter
         public MatchPredictionVerificationContext(DbContextOptions<MatchPredictionVerificationContext> options) : base(options)

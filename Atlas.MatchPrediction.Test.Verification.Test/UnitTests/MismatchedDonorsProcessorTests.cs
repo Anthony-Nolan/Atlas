@@ -123,7 +123,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, MatchingResultSetBuilder.Empty.Build());
 
             await bulkInsertDonorRepository.Received().BulkInsertResults(Arg.Is<IReadOnlyCollection<MatchedDonor>>(x =>
-                x.Single().MatchedDonorSimulant_Id == MissingDonor.Id &&
+                x.Single().DonorId == MissingDonor.Id &&
                 x.Single().TotalMatchCount == totalMatchCount));
         }
 

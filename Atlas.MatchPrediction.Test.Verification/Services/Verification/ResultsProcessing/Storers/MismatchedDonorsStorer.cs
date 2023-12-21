@@ -125,7 +125,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             var matchedDonors = scores.Select(r => new MatchedDonor
                 {
                     SearchRequestRecord_Id = searchRequestId,
-                    MatchedDonorSimulant_Id = r.Key,
+                    DonorId = r.Key,
                     TotalMatchCount = r.Value.AggregateScoreDetails.MatchCount,
                     TypedLociCount = VerificationConstants.SearchLociCount
                 }).ToList();

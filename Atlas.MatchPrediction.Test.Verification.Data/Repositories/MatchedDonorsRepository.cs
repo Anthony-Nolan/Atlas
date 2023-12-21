@@ -5,14 +5,14 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Atlas.Common.Sql.BulkInsert;
+using Atlas.ManualTesting.Common.Models.Entities;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {
     public interface IMatchedDonorsRepository
     {
-        Task<int?> GetMatchedDonorId(int searchRequestRecordId, int simulantId);
+        Task<int?> GetMatchedDonorId(int searchRequestRecordId, int simulantDonorId);
     }
 
     public class MatchedDonorsRepository : IMatchedDonorsRepository, IProcessedResultsRepository<MatchedDonor>
@@ -26,7 +26,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 
         public async Task DeleteResults(int searchRequestRecordId)
         {
-            var sql = $@"DELETE FROM MatchedDonors WHERE SearchRequestRecord_Id = @{nameof(searchRequestRecordId)}";
+            const string sql = $@"DELETE FROM MatchedDonors WHERE SearchRequestRecord_Id = @{nameof(searchRequestRecordId)}";
 
             await using (var connection = new SqlConnection(connectionString))
             {
@@ -50,15 +50,15 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             }
         }
 
-        public async Task<int?> GetMatchedDonorId(int searchRequestRecordId, int simulantId)
+        public async Task<int?> GetMatchedDonorId(int searchRequestRecordId, int simulantDonorId)
         {
-            var sql = @$"SELECT Id FROM MatchedDonors WHERE 
+            const string sql = @$"SELECT Id FROM MatchedDonors WHERE 
                 SearchRequestRecord_Id = @{nameof(searchRequestRecordId)} AND
-                MatchedDonorSimulant_Id = @{nameof(simulantId)}";
+                DonorId = @{nameof(simulantDonorId)}";
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                return (await conn.QueryAsync<int>(sql, new { searchRequestRecordId, simulantId })).SingleOrDefault();
+                return (await conn.QueryAsync<int>(sql, new { searchRequestRecordId, simulantId = simulantDonorId })).SingleOrDefault();
             }
         }
 
@@ -74,7 +74,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             {
                 dataTable.Rows.Add(
                     donor.SearchRequestRecord_Id,
-                    donor.MatchedDonorSimulant_Id,
+                    donor.DonorId,
                     donor.TotalMatchCount,
                     donor.TypedLociCount,
                     donor.WasPatientRepresented,

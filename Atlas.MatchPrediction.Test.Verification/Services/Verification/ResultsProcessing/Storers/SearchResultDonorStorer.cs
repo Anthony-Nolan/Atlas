@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
+using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Newtonsoft.Json;
 
@@ -22,7 +22,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
                 new MatchedDonor
                 {
                     SearchRequestRecord_Id = searchRequestRecordId,
-                    MatchedDonorSimulant_Id = int.Parse(result.DonorCode),
+                    DonorId = int.Parse(result.DonorCode),
                     TotalMatchCount = result.MatchingResult.MatchingResult.TotalMatchCount,
                     TypedLociCount = result.MatchingResult.MatchingResult.TypedLociCount ?? 0,
                     WasPatientRepresented = !result.MatchPredictionResult.IsPatientPhenotypeUnrepresented,
