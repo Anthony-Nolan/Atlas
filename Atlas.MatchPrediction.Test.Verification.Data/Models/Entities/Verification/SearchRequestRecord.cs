@@ -10,7 +10,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
     public class SearchRequestRecord : SearchRequestRecordBase
     {
         public int VerificationRun_Id { get; set; }
-        public int PatientSimulant_Id { get; set; }
         public bool WasMatchPredictionRun { get; set; }
         public double? MatchingAlgorithmTimeInMs { get; set; }
         public double? MatchPredictionTimeInMs { get; set; }
@@ -30,10 +29,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
             modelBuilder
                 .HasOne<Simulant>()
                 .WithMany()
-                .HasForeignKey(r => r.PatientSimulant_Id);
+                .HasForeignKey(r => r.PatientId);
 
             modelBuilder.HasIndex(r => r.AtlasSearchIdentifier);
-            modelBuilder.HasIndex(r => new { r.VerificationRun_Id, r.PatientSimulant_Id, r.SearchResultsRetrieved });
+            modelBuilder.HasIndex(r => new { r.VerificationRun_Id, r.PatientId, r.SearchResultsRetrieved });
         }
     }
 }

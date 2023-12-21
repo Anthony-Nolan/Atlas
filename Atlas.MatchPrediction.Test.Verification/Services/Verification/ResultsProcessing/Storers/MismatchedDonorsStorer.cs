@@ -58,7 +58,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         {
             var info = await cache.GetOrAddGenotypeSimulantsInfo(searchRequest.VerificationRun_Id);
 
-            if (!info.Patients.Ids.Contains(searchRequest.PatientSimulant_Id))
+            if (!info.Patients.Ids.Contains(searchRequest.PatientId))
             {
                 return;
             }
@@ -79,7 +79,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             SearchRequestRecord searchRequest,
             IEnumerable<int> donorSimulantIds)
         {
-            var patient = info.Patients.Hla.Single(p => p.Id == searchRequest.PatientSimulant_Id);
+            var patient = info.Patients.Hla.Single(p => p.Id == searchRequest.PatientId);
             var scores = new DonorScores();
 
             foreach (var donorSimulantId in donorSimulantIds)

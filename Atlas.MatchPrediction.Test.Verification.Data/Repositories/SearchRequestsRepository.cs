@@ -26,16 +26,16 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 
         public async Task AddSearchRequest(SearchRequestRecord request)
         {
-            var sql = $@"INSERT INTO SearchRequests(
+            const string sql = $@"INSERT INTO SearchRequests(
                 VerificationRun_Id,
-                PatientSimulant_Id,
+                PatientId,
                 AtlasSearchIdentifier,
                 DonorMismatchCount,
                 WasSuccessful,
                 WasMatchPredictionRun)
                 VALUES(
                     @{nameof(request.VerificationRun_Id)},
-                    @{nameof(request.PatientSimulant_Id)},
+                    @{nameof(request.PatientId)},
                     @{nameof(request.AtlasSearchIdentifier)},
                     @{nameof(request.DonorMismatchCount)},
                     @{nameof(request.WasSuccessful)},
@@ -47,7 +47,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
                 await connection.ExecuteAsync(sql, new
                 {
                     request.VerificationRun_Id,
-                    request.PatientSimulant_Id,
+                    request.PatientId,
                     request.AtlasSearchIdentifier,
                     request.DonorMismatchCount,
                     request.WasSuccessful,
@@ -58,7 +58,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 
         public async Task<SearchRequestRecord> GetRecordByAtlasSearchId(string atlasSearchId)
         {
-            var sql = @$"SELECT * FROM SearchRequests s WHERE s.AtlasSearchIdentifier = @{nameof(atlasSearchId)}";
+            const string sql = @$"SELECT * FROM SearchRequests s WHERE s.AtlasSearchIdentifier = @{nameof(atlasSearchId)}";
 
             await using (var conn = new SqlConnection(connectionString))
             {
@@ -68,7 +68,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 
         public async Task MarkSearchResultsAsFailed(int searchRequestRecordId)
         {
-            var sql = $@"UPDATE SearchRequests SET 
+            const string sql = $@"UPDATE SearchRequests SET 
                 SearchResultsRetrieved = 1,
                 WasSuccessful = 0
                 WHERE Id = @{nameof(searchRequestRecordId)}";
