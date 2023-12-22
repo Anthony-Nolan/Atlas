@@ -107,11 +107,9 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4
 
         private static MismatchCriteria BuildMismatchCriteria(ValidationSearchRequest request)
         {
-            var locusMismatchCount = 2 - request.MismatchCount;
-
             var locusMismatchCriteria = request.MatchLoci
                 .ToLociInfo()
-                .Map((_, isMatchLocus) => isMatchLocus ? locusMismatchCount : (int?)null)
+                .Map((_, isMatchLocus) => isMatchLocus ? request.MismatchCount : (int?)null)
                 .ToLociInfoTransfer();
 
             return new MismatchCriteria
