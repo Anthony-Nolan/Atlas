@@ -74,7 +74,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4
         private async Task<int?> LastTestDonorExportId()
         {
             var lastRecord = await testDonorExportRepository.GetLastExportRecord();
-            return lastRecord?.DataRefreshCompleted == null
+            return lastRecord?.WasDataRefreshSuccessful == null || !lastRecord.WasDataRefreshSuccessful.Value
                 ? null
                 : lastRecord.Id;
         }
@@ -122,15 +122,13 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4
 
         private async Task RunAndStoreSearchRequests(int searchSetId, SubjectInfo patient, DonorType donorType, MismatchCriteria mismatchCriteria)
         {
-            const string failedSearchId = "FAILED-SEARCH";
             var retryPolicy = Policy.Handle<Exception>().RetryAsync(10);
-
             var searchRequest = BuildSearchRequest(patient, donorType, mismatchCriteria);
-
             var requestResponse = await retryPolicy.ExecuteAndCaptureAsync(
                 async () => await SubmitSearchRequest(searchRequest, patient.Id));
 
             var searchFailed = requestResponse.Outcome == OutcomeType.Failure;
+            const string failedSearchId = "FAILED-SEARCH";
 
             await searchRequestsRepository.AddSearchRequest(new ValidationSearchRequestRecord
             {
@@ -144,20 +142,33 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4
 
         private static SearchRequest BuildSearchRequest(SubjectInfo patient, DonorType donorType, MismatchCriteria mismatchCriteria)
         {
+            var patientHla = patient.ToPhenotypeInfo().ToPhenotypeInfoTransfer();
             return new SearchRequest
             {
-                SearchHlaData = patient.ToPhenotypeInfo().ToPhenotypeInfoTransfer(),
+                SearchHlaData = patientHla,
                 SearchDonorType = donorType,
                 MatchCriteria = mismatchCriteria,
                 ScoringCriteria = new ScoringCriteria
                 {
-                    LociToScore = new List<Locus> { Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1 },
+                    LociToScore = LociToScore(patientHla),
                     LociToExcludeFromAggregateScore = new List<Locus>()
                 },
                 PatientEthnicityCode = $"{patient.ExternalHfSetId}",
                 PatientRegistryCode = $"{patient.ExternalHfSetId}",
                 RunMatchPrediction = true
             };
+        }
+
+        private static List<Locus> LociToScore(PhenotypeInfoTransfer<string> patientHla)
+        {
+            return patientHla.ToPhenotypeInfo().Reduce((locus, info, lociToScore) =>
+            {
+                if (info.Position1And2NotNull())
+                {
+                    lociToScore.Add(locus);
+                }
+                return lociToScore;
+            }, new List<Locus>());
         }
 
         private async Task<string> SubmitSearchRequest(SearchRequest searchRequest, int patientId)

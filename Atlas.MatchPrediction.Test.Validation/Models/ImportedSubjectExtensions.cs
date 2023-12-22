@@ -13,7 +13,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Models
             {
                 ExternalId = importedSubject.ID,
                 SubjectType = subjectType,
-                DonorType = importedSubject.GetDonorType(),
+                DonorType = importedSubject.GetDonorType(subjectType),
                 A_1 = importedSubject.A_1,
                 A_2 = PositionTwoHla(importedSubject.A_1, importedSubject.A_2),
                 B_1 = importedSubject.B_1,
@@ -28,12 +28,13 @@ namespace Atlas.MatchPrediction.Test.Validation.Models
             };
         }
 
-        private static DonorType? GetDonorType(this ImportedSubject importedSubject)
+        private static DonorType? GetDonorType(this ImportedSubject importedSubject, SubjectType subjectType)
         {
-            return importedSubject.DONOR_TYPE.ToUpper() switch
+            return importedSubject.DONOR_TYPE?.ToUpper() switch
             {
                 "C" => DonorType.Cord,
                 "D" => DonorType.Adult,
+                null when subjectType == SubjectType.Donor => DonorType.Adult,
                 _ => null,
             };
         }
