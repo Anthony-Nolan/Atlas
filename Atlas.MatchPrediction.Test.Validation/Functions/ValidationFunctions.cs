@@ -18,6 +18,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
     /// </summary>
     public class ValidationFunctions
     {
+        private const string FunctionNamePrefix = "BothExercises_";
         private readonly ISubjectInfoImporter subjectInfoImporter;
 
         public ValidationFunctions(ISubjectInfoImporter subjectInfoImporter)
@@ -25,7 +26,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             this.subjectInfoImporter = subjectInfoImporter;
         }
 
-        [FunctionName($"0_{nameof(ImportSubjects)}")]
+        [FunctionName($"{FunctionNamePrefix}{nameof(ImportSubjects)}")]
         public async Task ImportSubjects(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(ImportRequest), nameof(ImportRequest))]
