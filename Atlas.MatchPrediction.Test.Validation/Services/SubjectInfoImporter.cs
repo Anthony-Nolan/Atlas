@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.Utils.Extensions;
 using Atlas.ManualTesting.Common.Models;
 using Atlas.ManualTesting.Common.Services;
 using Atlas.MatchPrediction.Test.Validation.Data.Models;
@@ -35,7 +34,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services
 
         public async Task Import(ImportRequest request)
         {
-            await validationRepository.DeleteAllExistingData();
+            await validationRepository.DeleteSubjectInfo();
 
             await ImportSubjects(request.PatientFilePath, SubjectType.Patient);
             await ImportSubjects(request.DonorFilePath, SubjectType.Donor);
@@ -46,7 +45,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services
             var importedSubjects = await fileReader.ReadAllLines(FileDelimiter, filePath);
 
             var filteredSubjects = importedSubjects
-                .Where(s => IsTyped(s.A_1, s.A_2) && IsTyped(s.B_1, s.B_2) && IsTyped(s.DRB1_1, s.DRB1_2))
+                .Where(PositionOneOfMandatoryLociAreTyped)
                 .Select(s => s.ToSubjectInfo(subjectType)).ToList();
             
             Debug.WriteLine($"Imported {subjectType} count: {importedSubjects.Count}; count after filtering for required HLA: {filteredSubjects.Count}.");
@@ -54,9 +53,9 @@ namespace Atlas.MatchPrediction.Test.Validation.Services
             await subjectRepository.BulkInsert(filteredSubjects);
         }
 
-        private static bool IsTyped(string position1, string position2)
+        private static bool PositionOneOfMandatoryLociAreTyped(ImportedSubject subject)
         {
-            return !position1.IsNullOrEmpty() && !position2.IsNullOrEmpty();
+            return !string.IsNullOrEmpty(subject.A_1) && !string.IsNullOrEmpty(subject.B_1) && !string.IsNullOrEmpty(subject.DRB1_1);
         }
     }
 }

@@ -70,7 +70,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise3
 
         private async Task BatchRequestMatchPrediction(int fromPatientId)
         {
-            await validationRepository.DeleteMatchPredictionRelatedData(fromPatientId);
+            await validationRepository.DeleteMatchPredictionRequestData(fromPatientId);
 
             Debug.WriteLine($"Starting to send match prediction requests from patient id {fromPatientId}...");
 
