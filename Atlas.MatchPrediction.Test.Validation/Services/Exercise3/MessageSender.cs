@@ -31,7 +31,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise3
 
         public async Task SendNotificationsForMissingResults()
         {
-            var algorithmIds = await validationRepository.GetAlgorithmIdsOfRequestsMissingResults();
+            var algorithmIds = await validationRepository.GetAlgorithmIdsOfMatchPredictionRequestsMissingResults();
             var locations = algorithmIds.Select(id => ResultLocationBuilder.BuildMatchPredictionRequestResultLocation(id, resultsContainer));
             await messagePublisher.BatchPublish(locations);
         }

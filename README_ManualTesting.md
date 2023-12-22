@@ -112,6 +112,7 @@ Validation of the match prediction algorithm against either [exercise 3 of the W
 `ID;A_1;A_2;C_1;C_2;B_1;B_2;DRB1_1;DRB1_2;DQB1_1;DQB1_2;DONOR_TYPE;HF_SET`
   - This header line must be included, though the order of columns is not critical as long as the header is present.
   - Subjects not typed at the required loci (A, B, DRB1) will be ignored; debug output displays how many subjects were actually imported.
+  - Empty HLA at position 2 of the locus, e.g., empty `A_2`, will be converted to homozygous by duplicating the typing in position 1.
   - `DONOR_TYPE` is nullable:
     - For the Patient file, this field is ignored and can be excluded entirely.
     - For the Donor file, if the field is empty, then `Adult` type will be assigned by default.
@@ -119,7 +120,7 @@ Validation of the match prediction algorithm against either [exercise 3 of the W
 
 ### Stored Data
 - At present, only data generated from the last validation run will be persisted to the associated Validation database (defined within the Functions app setting: `MatchPredictionValidation:Sql`)
-  - Running a new import clears tables of all existing data.
+  - Running a new import clears existing patient and donor data.
   - Submitting match or search requests deletes existing requests and results, but patient and donor data is left intact.
 
 ### Validation Functions
@@ -159,7 +160,8 @@ After starting up the Functions app:
 ### Exercise 4
 
 #### HLA Nomenclature Version
-One of the requirement of excercise 4 is that the data should be interpreted to v3.52.0 of the IMGT/HLA nomenclature. As newer versions of the database have been published and Atlas always runs matching at the latest available nomenclature version, the Atlas instance under test must be pointed to a different data source to force the use of v3.52.0.
+One of the requirement of excercise 4 is that the data should be interpreted to v3.52.0 of the IMGT/HLA nomenclature.
+As newer versions of the database have been published and Atlas always runs matching at the latest available nomenclature version, the Atlas instance under test must be pointed to a different data source to force the use of v3.52.0.
 
 On the Atlas instance under test:
   1. Point to a fork of the IMGT/HLA repository whose `Latest` branch is a snapshot of v3.52.0, via the Matching Algorithm functions app config setting: `HlaMetadataDictionary:HlaNomenclatureSourceUrl`.
