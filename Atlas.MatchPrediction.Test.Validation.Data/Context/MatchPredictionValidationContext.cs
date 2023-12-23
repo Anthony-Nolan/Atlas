@@ -23,7 +23,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Context
             modelBuilder.Entity<SearchSet>().SetUpModel();
             modelBuilder.Entity<ValidationSearchRequestRecord>().SetUpModel();
             modelBuilder.Entity<MatchedDonor>().SetUpModel();
-            modelBuilder.Entity<LocusMatchCount>().SetUpModel();
+            modelBuilder.Entity<LocusMatchDetails>().SetUpModel();
             modelBuilder.Entity<MatchedDonorProbability>().SetUpModel();
 
             base.OnModelCreating(modelBuilder);
@@ -38,7 +38,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Context
         public DbSet<SearchSet> SearchSets { get; set; }
         public DbSet<ValidationSearchRequestRecord> SearchRequests { get; set; }
         public DbSet<MatchedDonor> MatchedDonors { get; set; }
-        public DbSet<LocusMatchCount> MatchCounts { get; set; }
+        public DbSet<LocusMatchDetails> LocusMatchDetails { get; set; }
         public DbSet<MatchedDonorProbability> MatchProbabilities { get; set; }
     }
 }

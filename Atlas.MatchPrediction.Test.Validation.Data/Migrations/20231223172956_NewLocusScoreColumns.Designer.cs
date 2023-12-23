@@ -4,6 +4,7 @@ using Atlas.MatchPrediction.Test.Validation.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
 {
     [DbContext(typeof(MatchPredictionValidationContext))]
-    partial class MatchPredictionValidationContextModelSnapshot : ModelSnapshot
+    [Migration("20231223172956_NewLocusScoreColumns")]
+    partial class NewLocusScoreColumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,12 +31,6 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<bool?>("IsAntigenMatch_1")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("IsAntigenMatch_2")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Locus")
                         .IsRequired()

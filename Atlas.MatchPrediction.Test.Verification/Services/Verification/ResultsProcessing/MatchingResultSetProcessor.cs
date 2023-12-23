@@ -13,14 +13,14 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
     internal class MatchingResultSetProcessor : ResultSetProcessor<MatchingResultsNotification, OriginalMatchingAlgorithmResultSet, MatchingAlgorithmResult>
     {
         private readonly IResultsStorer<MatchingAlgorithmResult, MatchedDonor> donorsStorer;
-        private readonly IResultsStorer<MatchingAlgorithmResult, LocusMatchCount> countsStorer;
+        private readonly IResultsStorer<MatchingAlgorithmResult, LocusMatchDetails> countsStorer;
         private readonly IMismatchedDonorsStorer<MatchingAlgorithmResult> mismatchedDonorsStorer;
 
         public MatchingResultSetProcessor(
             ISearchRequestsRepository searchRequestsRepository,
             IBlobStreamer resultsStreamer,
             IResultsStorer<MatchingAlgorithmResult,MatchedDonor> donorsStorer,
-            IResultsStorer<MatchingAlgorithmResult,LocusMatchCount> countsStorer,
+            IResultsStorer<MatchingAlgorithmResult,LocusMatchDetails> countsStorer,
             IMismatchedDonorsStorer<MatchingAlgorithmResult> mismatchedDonorsStorer)
         : base(searchRequestsRepository, resultsStreamer)
         {

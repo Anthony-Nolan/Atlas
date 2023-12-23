@@ -39,7 +39,13 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Context
 
             var optionsBuilder = new DbContextOptionsBuilder<MatchPredictionVerificationContext>();
 
-            optionsBuilder.UseSqlServer(connectionString, builder => { builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null); });
+            optionsBuilder.UseSqlServer(
+                connectionString,
+                builder =>
+                {
+                    builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null);
+                    builder.CommandTimeout((int)TimeSpan.FromMinutes(10).TotalSeconds);
+                });
 
             return new MatchPredictionVerificationContext(optionsBuilder.Options);
         }

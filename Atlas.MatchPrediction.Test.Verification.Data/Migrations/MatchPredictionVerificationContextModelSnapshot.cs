@@ -22,7 +22,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
-            modelBuilder.Entity("Atlas.ManualTesting.Common.Models.Entities.LocusMatchCount", b =>
+            modelBuilder.Entity("Atlas.ManualTesting.Common.Models.Entities.LocusMatchDetails", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -30,12 +30,30 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<bool?>("IsAntigenMatch_1")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsAntigenMatch_2")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Locus")
                         .IsRequired()
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<string>("MatchConfidence_1")
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("MatchConfidence_2")
+                        .HasColumnType("nvarchar(32)");
+
                     b.Property<int?>("MatchCount")
                         .HasColumnType("int");
+
+                    b.Property<string>("MatchGrade_1")
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("MatchGrade_2")
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<int>("MatchedDonor_Id")
                         .HasColumnType("int");
@@ -44,7 +62,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
 
                     b.HasIndex("MatchedDonor_Id", "Locus", "MatchCount");
 
-                    b.ToTable("MatchCounts");
+                    b.ToTable("LocusMatchDetails");
                 });
 
             modelBuilder.Entity("Atlas.ManualTesting.Common.Models.Entities.MatchedDonor", b =>
@@ -475,7 +493,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
                     b.ToTable("SearchRequests");
                 });
 
-            modelBuilder.Entity("Atlas.ManualTesting.Common.Models.Entities.LocusMatchCount", b =>
+            modelBuilder.Entity("Atlas.ManualTesting.Common.Models.Entities.LocusMatchDetails", b =>
                 {
                     b.HasOne("Atlas.ManualTesting.Common.Models.Entities.MatchedDonor", null)
                         .WithMany()
