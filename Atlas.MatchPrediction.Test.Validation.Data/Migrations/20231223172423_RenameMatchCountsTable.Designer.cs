@@ -4,6 +4,7 @@ using Atlas.MatchPrediction.Test.Validation.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
 {
     [DbContext(typeof(MatchPredictionValidationContext))]
-    partial class MatchPredictionValidationContextModelSnapshot : ModelSnapshot
+    [Migration("20231223172423_RenameMatchCountsTable")]
+    partial class RenameMatchCountsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,30 +32,12 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<bool?>("IsAntigenMatch_1")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("IsAntigenMatch_2")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Locus")
                         .IsRequired()
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<string>("MatchConfidence_1")
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("MatchConfidence_2")
-                        .HasColumnType("nvarchar(32)");
-
                     b.Property<int?>("MatchCount")
                         .HasColumnType("int");
-
-                    b.Property<string>("MatchGrade_1")
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("MatchGrade_2")
-                        .HasColumnType("nvarchar(128)");
 
                     b.Property<int>("MatchedDonor_Id")
                         .HasColumnType("int");

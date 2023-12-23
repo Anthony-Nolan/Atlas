@@ -25,7 +25,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
         private IDonorScoringService scoringService;
         private IProcessedResultsRepository<MatchedDonor> bulkInsertDonorRepository;
         private IMatchedDonorsRepository matchedDonorsRepository;
-        private IProcessedResultsRepository<LocusMatchCount> matchCountsRepository;
+        private IProcessedResultsRepository<LocusMatchDetails> matchCountsRepository;
 
         private IMismatchedDonorsStorer<MatchingAlgorithmResult> mismatchedDonorsStorer;
 
@@ -43,7 +43,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             scoringService = Substitute.For<IDonorScoringService>();
             bulkInsertDonorRepository = Substitute.For<IProcessedResultsRepository<MatchedDonor>>();
             matchedDonorsRepository = Substitute.For<IMatchedDonorsRepository>();
-            matchCountsRepository = Substitute.For<IProcessedResultsRepository<LocusMatchCount>>();
+            matchCountsRepository = Substitute.For<IProcessedResultsRepository<LocusMatchDetails>>();
 
             mismatchedDonorsStorer = new MismatchedDonorsStorer<MatchingAlgorithmResult>(
                 cache, scoringService, bulkInsertDonorRepository, matchedDonorsRepository, matchCountsRepository);
@@ -143,7 +143,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
 
             await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, MatchingResultSetBuilder.Empty.Build());
 
-            await matchCountsRepository.Received().BulkInsertResults(Arg.Is<IReadOnlyCollection<LocusMatchCount>>(x =>
+            await matchCountsRepository.Received().BulkInsertResults(Arg.Is<IReadOnlyCollection<LocusMatchDetails>>(x =>
                 x.Single().Locus == nonZeroLocus &&
                 x.Single().MatchCount == matchCount &&
                 x.Single().MatchedDonor_Id == matchedDonorId));

@@ -14,7 +14,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
     internal class MatchingResultCountsStorer : MatchCountsStorer<MatchingAlgorithmResult>
     {
         public MatchingResultCountsStorer(
-            IProcessedResultsRepository<LocusMatchCount> resultsRepository,
+            IProcessedResultsRepository<LocusMatchDetails> resultsRepository,
             IMatchedDonorsRepository matchedDonorsRepository)
             : base(resultsRepository, matchedDonorsRepository)
         {
@@ -24,19 +24,19 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
     internal class SearchResultCountsStorer : MatchCountsStorer<SearchResult>
     {
         public SearchResultCountsStorer(
-            IProcessedResultsRepository<LocusMatchCount> resultsRepository,
+            IProcessedResultsRepository<LocusMatchDetails> resultsRepository,
             IMatchedDonorsRepository matchedDonorsRepository)
             : base(resultsRepository, matchedDonorsRepository)
         {
         }
     }
 
-    internal abstract class MatchCountsStorer<TResult> : ResultsStorer<TResult, LocusMatchCount> where TResult : Result
+    internal abstract class MatchCountsStorer<TResult> : ResultsStorer<TResult, LocusMatchDetails> where TResult : Result
     {
         private readonly IMatchedDonorsRepository matchedDonorsRepository;
 
         protected MatchCountsStorer(
-            IProcessedResultsRepository<LocusMatchCount> resultsRepository,
+            IProcessedResultsRepository<LocusMatchDetails> resultsRepository,
             IMatchedDonorsRepository matchedDonorsRepository)
             : base(resultsRepository)
         {
@@ -44,7 +44,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         }
 
         /// <returns>Locus match counts greater than zero.</returns>
-        protected override async Task<IEnumerable<LocusMatchCount>> ProcessSingleSearchResult(int searchRequestRecordId, TResult result)
+        protected override async Task<IEnumerable<LocusMatchDetails>> ProcessSingleSearchResult(int searchRequestRecordId, TResult result)
         {
             var matchedDonorId = await matchedDonorsRepository.GetMatchedDonorId(
                 searchRequestRecordId, int.Parse(result.DonorCode));
@@ -57,7 +57,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             var lociResults = result.ScoringResult.ScoringResultsByLocus.ToLociInfo();
 
             return MatchPredictionStaticData.MatchPredictionLoci
-                .Select(l => new LocusMatchCount
+                .Select(l => new LocusMatchDetails
                 {
                     Locus = l,
                     MatchedDonor_Id = matchedDonorId.Value,

@@ -10,7 +10,7 @@ using Atlas.ManualTesting.Common.Models.Entities;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {
-    public class MatchCountsRepository : IProcessedResultsRepository<LocusMatchCount>
+    public class MatchCountsRepository : IProcessedResultsRepository<LocusMatchDetails>
     {
         private readonly string connectionString;
 
@@ -22,8 +22,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
         public async Task DeleteResults(int searchRequestRecordId)
         {
             var sql = $@"
-                DELETE FROM MatchCounts
-                FROM MatchCounts c
+                DELETE FROM LocusMatchDetails
+                FROM LocusMatchDetails c
                 JOIN MatchedDonors d
                 ON c.MatchedDonor_Id = d.Id
                 WHERE d.SearchRequestRecord_Id = @{nameof(searchRequestRecordId)}";
@@ -34,7 +34,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             }
         }
 
-        public async Task BulkInsertResults(IReadOnlyCollection<LocusMatchCount> matchCounts)
+        public async Task BulkInsertResults(IReadOnlyCollection<LocusMatchDetails> matchCounts)
         {
             if (!matchCounts.Any())
             {
@@ -50,7 +50,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             }
         }
 
-        private static DataTable BuildDataTable(IEnumerable<LocusMatchCount> matchCounts, IEnumerable<string> columnNames)
+        private static DataTable BuildDataTable(IEnumerable<LocusMatchDetails> matchCounts, IEnumerable<string> columnNames)
         {
             var dataTable = new DataTable();
             foreach (var columnName in columnNames)
@@ -75,7 +75,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             {
                 BulkCopyTimeout = 3600,
                 BatchSize = 10000,
-                DestinationTableName = nameof(MatchPredictionVerificationContext.MatchCounts)
+                DestinationTableName = nameof(MatchPredictionVerificationContext.LocusMatchDetails)
             };
 
             foreach (var columnName in columnNames)

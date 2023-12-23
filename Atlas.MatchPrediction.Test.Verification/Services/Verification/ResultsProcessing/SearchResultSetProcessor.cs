@@ -13,7 +13,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
     internal class SearchResultSetProcessor : ResultSetProcessor<SearchResultsNotification, OriginalSearchResultSet, SearchResult>
     {
         private readonly IResultsStorer<SearchResult, MatchedDonor> donorsStorer;
-        private readonly IResultsStorer<SearchResult, LocusMatchCount> countsStorer;
+        private readonly IResultsStorer<SearchResult, LocusMatchDetails> countsStorer;
         private readonly IMismatchedDonorsStorer<SearchResult> mismatchedDonorsStorer;
         private readonly IResultsStorer<SearchResult, MatchProbability> probabilitiesStorer;
 
@@ -21,7 +21,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             ISearchRequestsRepository searchRequestsRepository,
             IBlobStreamer resultsStreamer,
             IResultsStorer<SearchResult, MatchedDonor> donorsStorer,
-            IResultsStorer<SearchResult, LocusMatchCount> countsStorer,
+            IResultsStorer<SearchResult, LocusMatchDetails> countsStorer,
             IMismatchedDonorsStorer<SearchResult> mismatchedDonorsStorer,
             IResultsStorer<SearchResult, MatchProbability> probabilitiesStorer)
         : base(searchRequestsRepository, resultsStreamer)

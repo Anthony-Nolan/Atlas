@@ -99,7 +99,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 			    ON r.PatientId = ps.Id
 			    JOIN Simulants ds
 			    ON d.DonorId = ds.Id
-                JOIN MatchCounts mc
+                JOIN LocusMatchDetails mc
                 ON d.Id = mc.MatchedDonor_Id
 			    WHERE 
 				    r.SearchResultsRetrieved = 1 AND
