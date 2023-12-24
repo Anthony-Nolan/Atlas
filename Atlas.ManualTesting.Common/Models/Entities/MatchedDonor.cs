@@ -10,11 +10,18 @@ namespace Atlas.ManualTesting.Common.Models.Entities
     {
         public int Id { get; set; }
         public int SearchRequestRecord_Id { get; set; }
-        public int DonorId { get; set; }
+
+        [MaxLength(64)]
+        public string DonorCode { get; set; }
+
         public int TotalMatchCount { get; set; }
         public int TypedLociCount { get; set; }
+
         public bool? WasPatientRepresented { get; set; }
         public bool? WasDonorRepresented { get; set; }
+
+        public int? PatientHfSetPopulationId { get; set; }
+        public int? DonorHfSetPopulationId { get; set; }
 
         /// <summary>
         /// Serialised copy of the <see cref="Client.Models.Search.Results.Matching.MatchingAlgorithmResult"/>.

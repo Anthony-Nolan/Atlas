@@ -16,18 +16,18 @@ using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise3
 {
-    public interface IResultsProcessor
+    public interface IMatchPredictionResultsProcessor
     {
         Task ProcessAndStoreResults(IReadOnlyCollection<MatchPredictionResultLocation> resultLocations);
     }
 
-    internal class ResultsProcessor : IResultsProcessor
+    internal class MatchPredictionResultsProcessor : IMatchPredictionResultsProcessor
     {
         private readonly IMatchPredictionRequestRepository requestRepository;
         private readonly IMatchPredictionResultsRepository resultsRepository;
         private readonly IBlobStreamer resultsStreamer;
 
-        public ResultsProcessor(
+        public MatchPredictionResultsProcessor(
             IMatchPredictionRequestRepository requestRepository,
             IMatchPredictionResultsRepository resultsRepository,
             IBlobStreamer resultsStreamer)

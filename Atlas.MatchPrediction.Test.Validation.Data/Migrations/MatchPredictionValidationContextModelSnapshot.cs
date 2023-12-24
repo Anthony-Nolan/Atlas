@@ -73,7 +73,12 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("DonorId")
+                    b.Property<string>("DonorCode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int?>("DonorHfSetPopulationId")
                         .HasColumnType("int");
 
                     b.Property<string>("MatchPredictionResult")
@@ -82,6 +87,9 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
                     b.Property<string>("MatchingResult")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("PatientHfSetPopulationId")
+                        .HasColumnType("int");
 
                     b.Property<int>("SearchRequestRecord_Id")
                         .HasColumnType("int");
@@ -100,9 +108,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DonorId");
-
-                    b.HasIndex("SearchRequestRecord_Id", "DonorId", "TotalMatchCount");
+                    b.HasIndex("SearchRequestRecord_Id", "DonorCode", "TotalMatchCount");
 
                     b.ToTable("MatchedDonors");
                 });
@@ -126,6 +132,9 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
 
                     b.Property<decimal?>("Probability")
                         .HasColumnType("decimal(6,5)");
+
+                    b.Property<int?>("ProbabilityAsPercentage")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -213,6 +222,9 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
 
                     b.Property<decimal?>("Probability")
                         .HasColumnType("decimal(6,5)");
+
+                    b.Property<int?>("ProbabilityAsPercentage")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -392,12 +404,6 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
 
             modelBuilder.Entity("Atlas.ManualTesting.Common.Models.Entities.MatchedDonor", b =>
                 {
-                    b.HasOne("Atlas.MatchPrediction.Test.Validation.Data.Models.SubjectInfo", null)
-                        .WithMany()
-                        .HasForeignKey("DonorId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("Atlas.MatchPrediction.Test.Validation.Data.Models.ValidationSearchRequestRecord", null)
                         .WithMany()
                         .HasForeignKey("SearchRequestRecord_Id")

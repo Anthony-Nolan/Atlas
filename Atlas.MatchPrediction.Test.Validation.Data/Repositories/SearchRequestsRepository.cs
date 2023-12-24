@@ -1,21 +1,16 @@
-﻿using Atlas.MatchPrediction.Test.Validation.Data.Models;
+﻿using Atlas.ManualTesting.Common.Repositories;
+using Atlas.MatchPrediction.Test.Validation.Data.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
 
 namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories
 {
-    public interface ISearchRequestsRepository
+    public class SearchRequestsRepository :
+        SearchRequestsRepositoryBase<ValidationSearchRequestRecord>,
+        ISearchRequestsRepository<ValidationSearchRequestRecord>
     {
-        Task AddSearchRequest(ValidationSearchRequestRecord request);
-    }
-
-    public class SearchRequestsRepository : ISearchRequestsRepository
-    {
-        private readonly string connectionString;
-
-        public SearchRequestsRepository(string connectionString)
+        public SearchRequestsRepository(string connectionString) : base(connectionString)
         {
-            this.connectionString = connectionString;
         }
 
         public async Task AddSearchRequest(ValidationSearchRequestRecord request)
@@ -34,7 +29,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories
                     @{nameof(request.WasSuccessful)}
                 )";
 
-            await using (var connection = new SqlConnection(connectionString))
+            await using (var connection = new SqlConnection(ConnectionString))
             {
                 await connection.ExecuteAsync(sql, new
                 {

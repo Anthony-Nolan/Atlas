@@ -1,14 +1,18 @@
-﻿using Atlas.Common.ApplicationInsights;
+﻿using Atlas.Client.Models.Search.Results;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.ManualTesting.Common.Models;
+using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.ManualTesting.Common.Repositories;
 using Atlas.ManualTesting.Common.Services;
+using Atlas.ManualTesting.Common.Services.Storers;
 using Atlas.ManualTesting.Common.Settings;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
+using Atlas.MatchPrediction.Test.Validation.Data.Models;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories;
 using Atlas.MatchPrediction.Test.Validation.Models;
 using Atlas.MatchPrediction.Test.Validation.Services;
@@ -62,12 +66,22 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
                 new ValidationRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<ISubjectRepository, SubjectRepository>(sp =>
                 new SubjectRepository(fetchSqlConnectionString(sp)));
+            
             services.AddScoped<ITestDonorExportRepository>(sp =>
              new TestDonorExportRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<ISearchSetRepository>(sp =>
                 new SearchSetRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<ISearchRequestsRepository>(sp =>
+            services.AddScoped<ISearchRequestsRepository<ValidationSearchRequestRecord>>(sp =>
                 new SearchRequestsRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<IMatchedDonorsRepository, MatchedDonorsRepository>(sp =>
+                new MatchedDonorsRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<IProcessedResultsRepository<MatchedDonor>, MatchedDonorsRepository>(sp =>
+                new MatchedDonorsRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<IProcessedResultsRepository<LocusMatchDetails>, LocusMatchDetailsRepository>(sp =>
+                new LocusMatchDetailsRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<IProcessedResultsRepository<MatchedDonorProbability>, MatchProbabilitiesRepository>(sp =>
+                new MatchProbabilitiesRepository(fetchSqlConnectionString(sp)));
+
             services.AddScoped<IMatchPredictionRequestRepository, MatchPredictionRequestRepository>(sp =>
                 new MatchPredictionRequestRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<IMatchPredictionResultsRepository, MatchPredictionResultsRepository>(sp =>
@@ -94,13 +108,18 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
                 return new ValidationAtlasPreparer(subjectRepo, setReader, testDonorExporter, testDonorExportRepo, requestUrl);
             });
 
+            services.AddScoped<IResultSetProcessor<SearchResultsNotification>, SearchResultSetProcessor>();
+            services.AddScoped<IResultsStorer<SearchResult, MatchedDonor>, SearchResultDonorStorer>();
+            services.AddScoped<IResultsStorer<SearchResult, LocusMatchDetails>, SearchLocusDetailsStorer>();
+            services.AddScoped<IResultsStorer<SearchResult, MatchedDonorProbability>, MatchedDonorProbabilitiesStorer>();
+
             services.AddScoped<IMatchPredictionRequester, MatchPredictionRequester>();
             services.AddScoped<IBlobStreamer, BlobStreamer>(sp =>
             {
                 var settings = fetchValidationAzureStorageSettings(sp);
                 return new BlobStreamer(settings.ConnectionString, sp.GetService<ILogger>());
             });
-            services.AddScoped<IResultsProcessor, ResultsProcessor>();
+            services.AddScoped<IMatchPredictionResultsProcessor, MatchPredictionResultsProcessor>();
             services.AddScoped<IMessageSender, MessageSender>();
         }
     }

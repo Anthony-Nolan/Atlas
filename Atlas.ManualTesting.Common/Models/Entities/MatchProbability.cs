@@ -23,5 +23,10 @@ namespace Atlas.ManualTesting.Common.Models.Entities
         /// </summary>
         [Column(TypeName = "decimal(6,5)")]
         public decimal? Probability { get; set; }
+
+        /// <summary>
+        /// Nullable for when patient and/or donor were non-represented.
+        /// </summary>
+        public int? ProbabilityAsPercentage { get; set; }
     }
 }

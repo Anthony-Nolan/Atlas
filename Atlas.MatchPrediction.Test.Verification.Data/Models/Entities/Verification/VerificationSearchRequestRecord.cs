@@ -11,9 +11,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
     {
         public int VerificationRun_Id { get; set; }
         public bool WasMatchPredictionRun { get; set; }
-        public double? MatchingAlgorithmTimeInMs { get; set; }
-        public double? MatchPredictionTimeInMs { get; set; }
-        public double? OverallSearchTimeInMs { get; set; }
     }
 
     internal static class SearchRequestRecordBuilder
