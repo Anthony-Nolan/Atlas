@@ -29,14 +29,14 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
     internal class VerificationRunner : IVerificationRunner
     {
-        private static readonly HttpClient HttpRequestClient = new HttpClient();
+        private static readonly HttpClient HttpRequestClient = new();
 
         private readonly ITestDonorExportRepository exportRepository;
         private readonly ITestHarnessRepository harnessRepository;
         private readonly IHaplotypeFrequencySetReader setReader;
         private readonly IVerificationRunRepository verificationRunRepository;
         private readonly ISimulantsRepository simulantsRepository;
-        private readonly ISearchRequestsRepository searchRequestsRepository;
+        private readonly ISearchRequestsRepository<VerificationSearchRequestRecord> searchRequestsRepository;
         private readonly string searchRequestUrl;
 
         public VerificationRunner(
@@ -45,7 +45,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
             IHaplotypeFrequencySetReader setReader,
             IVerificationRunRepository verificationRunRepository,
             ISimulantsRepository simulantsRepository,
-            ISearchRequestsRepository searchRequestsRepository,
+            ISearchRequestsRepository<VerificationSearchRequestRecord> searchRequestsRepository,
             IOptions<VerificationSearchSettings> settings)
         {
             this.exportRepository = exportRepository;

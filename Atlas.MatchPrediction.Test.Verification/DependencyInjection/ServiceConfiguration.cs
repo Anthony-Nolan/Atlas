@@ -10,6 +10,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.ManualTesting.Common.Repositories;
 using Atlas.ManualTesting.Common.Services;
+using Atlas.ManualTesting.Common.Services.Storers;
 using Atlas.ManualTesting.Common.Settings;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.Test.Verification.Data.Context;
@@ -77,14 +78,14 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
                 new NormalisedPoolRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<ISimulantsRepository, SimulantsRepository>(sp =>
                 new SimulantsRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<ISearchRequestsRepository, SearchRequestsRepository>(sp =>
+            services.AddScoped<ISearchRequestsRepository<VerificationSearchRequestRecord>, SearchRequestsRepository>(sp =>
                 new SearchRequestsRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<IMatchedDonorsRepository, MatchedDonorsRepository>(sp =>
                 new MatchedDonorsRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<IProcessedResultsRepository<MatchedDonor>, MatchedDonorsRepository>(sp =>
                 new MatchedDonorsRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<IProcessedResultsRepository<LocusMatchDetails>, MatchCountsRepository>(sp =>
-                new MatchCountsRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<IProcessedResultsRepository<LocusMatchDetails>, LocusMatchDetailsRepository>(sp =>
+                new LocusMatchDetailsRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<IProcessedResultsRepository<MatchedDonorProbability>, MatchProbabilitiesRepository>(sp =>
                 new MatchProbabilitiesRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<IVerificationResultsRepository, VerificationResultsRepository>(sp =>
@@ -149,10 +150,10 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             services.AddScoped<IResultSetProcessor<SearchResultsNotification>, SearchResultSetProcessor>();
             services.AddScoped<IResultsStorer<MatchingAlgorithmResult, MatchedDonor>, MatchingResultDonorStorer>();
             services.AddScoped<IResultsStorer<SearchResult, MatchedDonor>, SearchResultDonorStorer>();
-            services.AddScoped<IResultsStorer<MatchingAlgorithmResult, LocusMatchDetails>, MatchingResultCountsStorer>();
-            services.AddScoped<IResultsStorer<SearchResult, LocusMatchDetails>, SearchResultCountsStorer>();
+            services.AddScoped<IResultsStorer<MatchingAlgorithmResult, LocusMatchDetails>, MatchingLocusDetailsStorer>();
+            services.AddScoped<IResultsStorer<SearchResult, LocusMatchDetails>, SearchLocusDetailsStorer>();
             services.AddScoped(typeof(IMismatchedDonorsStorer<>), typeof(MismatchedDonorsStorer<>));
-            services.AddScoped<IResultsStorer<SearchResult, MatchProbability>, MatchedProbabilitiesStorer>();
+            services.AddScoped<IResultsStorer<SearchResult, MatchedDonorProbability>, MatchedDonorProbabilitiesStorer>();
             services.AddScoped<IVerificationResultsWriter, VerificationResultsWriter>();
             services.AddScoped<IVerificationResultsCompiler, VerificationResultsCompiler>();
             services.AddScoped<IActualVersusExpectedResultsCompiler, ActualVersusExpectedResultsCompiler>();

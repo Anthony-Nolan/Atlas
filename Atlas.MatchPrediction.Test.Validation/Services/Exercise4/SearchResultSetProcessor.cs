@@ -7,46 +7,39 @@ using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.ManualTesting.Common.Repositories;
 using Atlas.ManualTesting.Common.Services;
 using Atlas.ManualTesting.Common.Services.Storers;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
-using Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers;
+using Atlas.MatchPrediction.Test.Validation.Data.Models;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing
+namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4
 {
-    internal class SearchResultSetProcessor : ResultSetProcessor<SearchResultsNotification, OriginalSearchResultSet, SearchResult, VerificationSearchRequestRecord>
+    internal class SearchResultSetProcessor : ResultSetProcessor<SearchResultsNotification, OriginalSearchResultSet, SearchResult, ValidationSearchRequestRecord>
     {
         private readonly IResultsStorer<SearchResult, MatchedDonor> donorsStorer;
         private readonly IResultsStorer<SearchResult, LocusMatchDetails> countsStorer;
-        private readonly IMismatchedDonorsStorer<SearchResult> mismatchedDonorsStorer;
         private readonly IResultsStorer<SearchResult, MatchedDonorProbability> probabilitiesStorer;
 
         public SearchResultSetProcessor(
-            ISearchRequestsRepository<VerificationSearchRequestRecord> searchRequestsRepository,
+            ISearchRequestsRepository<ValidationSearchRequestRecord> searchRequestsRepository,
             IBlobStreamer resultsStreamer,
             IResultsStorer<SearchResult, MatchedDonor> donorsStorer,
             IResultsStorer<SearchResult, LocusMatchDetails> countsStorer,
-            IMismatchedDonorsStorer<SearchResult> mismatchedDonorsStorer,
             IResultsStorer<SearchResult, MatchedDonorProbability> probabilitiesStorer)
         : base(searchRequestsRepository, resultsStreamer)
         {
             this.donorsStorer = donorsStorer;
             this.countsStorer = countsStorer;
-            this.mismatchedDonorsStorer = mismatchedDonorsStorer;
             this.probabilitiesStorer = probabilitiesStorer;
         }
 
-        /// <summary>
-        /// Only store Search result if match prediction was run.
-        /// </summary>
-        protected override bool ShouldProcessResult(VerificationSearchRequestRecord searchRequest)
+        protected override bool ShouldProcessResult(ValidationSearchRequestRecord searchRequest)
         {
-            return searchRequest.WasMatchPredictionRun;
+            // process all results
+            return true;
         }
 
-        protected override async Task ProcessAndStoreResults(VerificationSearchRequestRecord searchRequest, OriginalSearchResultSet resultSet)
+        protected override async Task ProcessAndStoreResults(ValidationSearchRequestRecord searchRequest, OriginalSearchResultSet resultSet)
         {
             await donorsStorer.ProcessAndStoreResults(searchRequest.Id, resultSet);
             await countsStorer.ProcessAndStoreResults(searchRequest.Id, resultSet);
-            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(searchRequest, resultSet);
             await probabilitiesStorer.ProcessAndStoreResults(searchRequest.Id, resultSet);
         }
 

@@ -1,31 +1,30 @@
 ﻿using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.AzureStorage.Blob;
-using Atlas.MatchPrediction.Test.Verification.Data.Models;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
-using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
+using Atlas.ManualTesting.Common.Models;
+using Atlas.ManualTesting.Common.Models.Entities;
+using Atlas.ManualTesting.Common.Repositories;
 using Newtonsoft.Json;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing
+namespace Atlas.ManualTesting.Common.Services
 {
     public interface IResultSetProcessor<in TNotification> where TNotification : ResultsNotification
     {
         Task ProcessAndStoreResultSet(TNotification notification);
     }
 
-    internal abstract class ResultSetProcessor<TNotification, TResultSet, TResult> : IResultSetProcessor<TNotification>
+    public abstract class ResultSetProcessor<TNotification, TResultSet, TResult, TRecord> : IResultSetProcessor<TNotification>
         where TNotification : ResultsNotification
         where TResultSet : ResultSet<TResult>
         where TResult : Result
+        where TRecord : SearchRequestRecord
     {
-        private readonly ISearchRequestsRepository searchRequestsRepository;
+        private readonly ISearchRequestsRepository<TRecord> searchRequestsRepository;
         private readonly IBlobStreamer resultsStreamer;
 
         protected ResultSetProcessor(
-            ISearchRequestsRepository searchRequestsRepository,
+            ISearchRequestsRepository<TRecord> searchRequestsRepository,
             IBlobStreamer resultsStreamer)
         {
             this.searchRequestsRepository = searchRequestsRepository;
@@ -57,11 +56,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             await FetchAndPersistResults(record, notification);
         }
 
-        private async Task FetchAndPersistResults(VerificationSearchRequestRecord searchRequest, TNotification notification)
+        private async Task FetchAndPersistResults(TRecord searchRequest, TNotification notification)
         {
             var resultSet = JsonConvert.DeserializeObject<TResultSet>(await DownloadResults(notification));
             await ProcessAndStoreResults(searchRequest, resultSet);
-            await searchRequestsRepository.MarkSearchResultsAsSuccessful(GetSuccessInfo(searchRequest.Id, notification));
+            await searchRequestsRepository.MarkSearchResultsAsSuccessful(GetSuccessInfo(searchRequest.Id, resultSet.TotalResults));
             Debug.WriteLine($"Search request {searchRequest.Id} was successful - {resultSet.TotalResults} matched donors found.");
         }
 
@@ -72,10 +71,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             return await new StreamReader(blobStream).ReadToEndAsync();
         }
 
-        protected abstract bool ShouldProcessResult(VerificationSearchRequestRecord searchRequest);
+        protected abstract bool ShouldProcessResult(TRecord searchRequest);
 
-        protected abstract Task ProcessAndStoreResults(VerificationSearchRequestRecord searchRequest, TResultSet resultSet);
+        protected abstract Task ProcessAndStoreResults(TRecord searchRequest, TResultSet resultSet);
 
-        protected abstract SuccessfulSearchRequestInfo GetSuccessInfo(int searchRequestRecordId, TNotification notification);
+        protected abstract SuccessfulSearchRequestInfo GetSuccessInfo(int searchRequestRecordId, int numberOfResults);
     }
 }

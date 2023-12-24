@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Results;
+﻿using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.ManualTesting.Common.Models.Entities;
+using Atlas.ManualTesting.Common.Repositories;
 using Atlas.MatchPrediction.ExternalInterface;
-using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers
+namespace Atlas.ManualTesting.Common.Services.Storers
 {
-    internal class MatchingResultCountsStorer : MatchCountsStorer<MatchingAlgorithmResult>
+    public class MatchingLocusDetailsStorer : LocusMatchDetailsStorer<MatchingAlgorithmResult>
     {
-        public MatchingResultCountsStorer(
+        public MatchingLocusDetailsStorer(
             IProcessedResultsRepository<LocusMatchDetails> resultsRepository,
             IMatchedDonorsRepository matchedDonorsRepository)
             : base(resultsRepository, matchedDonorsRepository)
@@ -21,9 +17,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         }
     }
 
-    internal class SearchResultCountsStorer : MatchCountsStorer<SearchResult>
+    public class SearchLocusDetailsStorer : LocusMatchDetailsStorer<SearchResult>
     {
-        public SearchResultCountsStorer(
+        public SearchLocusDetailsStorer(
             IProcessedResultsRepository<LocusMatchDetails> resultsRepository,
             IMatchedDonorsRepository matchedDonorsRepository)
             : base(resultsRepository, matchedDonorsRepository)
@@ -31,11 +27,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         }
     }
 
-    internal abstract class MatchCountsStorer<TResult> : ResultsStorer<TResult, LocusMatchDetails> where TResult : Result
+    public abstract class LocusMatchDetailsStorer<TResult> : ResultsStorer<TResult, LocusMatchDetails> where TResult : Result
     {
         private readonly IMatchedDonorsRepository matchedDonorsRepository;
 
-        protected MatchCountsStorer(
+        protected LocusMatchDetailsStorer(
             IProcessedResultsRepository<LocusMatchDetails> resultsRepository,
             IMatchedDonorsRepository matchedDonorsRepository)
             : base(resultsRepository)
@@ -46,8 +42,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         /// <returns>Locus match counts greater than zero.</returns>
         protected override async Task<IEnumerable<LocusMatchDetails>> ProcessSingleSearchResult(int searchRequestRecordId, TResult result)
         {
-            var matchedDonorId = await matchedDonorsRepository.GetMatchedDonorId(
-                searchRequestRecordId, int.Parse(result.DonorCode));
+            var matchedDonorId = await matchedDonorsRepository.GetMatchedDonorId(searchRequestRecordId, result.DonorCode);
             
             if (matchedDonorId == null)
             {
@@ -61,9 +56,14 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
                 {
                     Locus = l,
                     MatchedDonor_Id = matchedDonorId.Value,
-                    MatchCount = lociResults.GetLocus(l).MatchCount
-                })
-                .Where(m => m.MatchCount > 0);
+                    MatchCount = lociResults.GetLocus(l).MatchCount,
+                    MatchGrade_1 = lociResults.GetLocus(l).ScoreDetailsAtPositionOne.MatchGrade,
+                    MatchGrade_2 = lociResults.GetLocus(l).ScoreDetailsAtPositionTwo.MatchGrade,
+                    MatchConfidence_1 = lociResults.GetLocus(l).ScoreDetailsAtPositionOne.MatchConfidence,
+                    MatchConfidence_2 = lociResults.GetLocus(l).ScoreDetailsAtPositionTwo.MatchConfidence,
+                    IsAntigenMatch_1 = lociResults.GetLocus(l).ScoreDetailsAtPositionOne.IsAntigenMatch,
+                    IsAntigenMatch_2 = lociResults.GetLocus(l).ScoreDetailsAtPositionTwo.IsAntigenMatch,
+                });
         }
     }
 }

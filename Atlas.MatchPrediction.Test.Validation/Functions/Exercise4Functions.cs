@@ -1,5 +1,7 @@
-﻿using Atlas.Common.Utils;
+﻿using Atlas.Client.Models.Search.Results;
+using Atlas.Common.Utils;
 using Atlas.Common.Utils.Http;
+using Atlas.ManualTesting.Common.Services;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Atlas.MatchPrediction.Test.Validation.Models;
 using Atlas.MatchPrediction.Test.Validation.Services.Exercise4;
@@ -10,6 +12,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
@@ -26,13 +29,16 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
 
         private readonly IValidationAtlasPreparer atlasPreparer;
         private readonly ISearchRequester searchRequester;
+        private readonly IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor;
 
         public Exercise4Functions(
             IValidationAtlasPreparer atlasPreparer,
-            ISearchRequester searchRequester)
+            ISearchRequester searchRequester,
+            IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor)
         {
             this.atlasPreparer = atlasPreparer;
             this.searchRequester = searchRequester;
+            this.searchResultSetProcessor = searchResultSetProcessor;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -71,6 +77,25 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             var searchSetId = await searchRequester.SubmitSearchRequests(searchRequest);
 
             return new OkObjectResult(searchSetId);
+        }
+
+        [FunctionName($"{FunctionNamePrefix}{nameof(FetchSearchResults)}")]
+        public async Task FetchSearchResults(
+            [ServiceBusTrigger(
+                "%Search:ResultsTopic%",
+                "%Search:ResultsTopicSubscription%",
+                Connection = "MessagingServiceBus:ConnectionString")]
+            SearchResultsNotification notification)
+        {
+            try
+            {
+                await searchResultSetProcessor.ProcessAndStoreResultSet(notification);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.WriteLine($"Error while downloading results for {notification.SearchRequestId}: {ex.GetBaseException()}");
+                throw;
+            }
         }
     }
 }

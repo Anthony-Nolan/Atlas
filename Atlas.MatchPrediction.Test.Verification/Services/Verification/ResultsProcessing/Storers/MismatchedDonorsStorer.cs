@@ -8,6 +8,7 @@ using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.ManualTesting.Common.Models.Entities;
+using Atlas.ManualTesting.Common.Repositories;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
@@ -15,7 +16,6 @@ using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.Test.Verification.Config;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
-using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using DonorScores = System.Collections.Generic.Dictionary<int, Atlas.MatchingAlgorithm.Data.Models.SearchResults.ScoreResult>;
 
@@ -125,12 +125,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             var matchedDonors = scores.Select(r => new MatchedDonor
                 {
                     SearchRequestRecord_Id = searchRequestId,
-                    DonorId = r.Key,
+                    DonorCode = r.Key.ToString(),
                     TotalMatchCount = r.Value.AggregateScoreDetails.MatchCount,
                     TypedLociCount = VerificationConstants.SearchLociCount
                 }).ToList();
 
-            await bulkInsertDonorRepository.BulkInsertResults(matchedDonors);
+            await bulkInsertDonorRepository.BulkInsert(matchedDonors);
         }
 
         private async Task StoreNonZeroLocusMatchCounts(int searchRequestId, DonorScores scores)
@@ -142,12 +142,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
                 matchCounts.AddRange(await BuildNonZeroMatchCounts(searchRequestId, donorSimulantId, scoreResult));
             }
 
-            await matchCountsRepository.BulkInsertResults(matchCounts);
+            await matchCountsRepository.BulkInsert(matchCounts);
         }
 
         private async Task<IEnumerable<LocusMatchDetails>> BuildNonZeroMatchCounts(int searchRequestId, int simulantDonorId, ScoreResult scoreResult)
         {
-            var matchedDonorId = await matchedDonorsRepository.GetMatchedDonorId(searchRequestId, simulantDonorId);
+            var matchedDonorId = await matchedDonorsRepository.GetMatchedDonorId(searchRequestId, simulantDonorId.ToString());
 
             if (matchedDonorId == null)
             {

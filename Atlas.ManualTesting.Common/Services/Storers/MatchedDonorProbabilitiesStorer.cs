@@ -1,33 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Results;
+﻿using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.ManualTesting.Common.Models.Entities;
+using Atlas.ManualTesting.Common.Repositories;
 using Atlas.MatchPrediction.ExternalInterface;
-using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers
+namespace Atlas.ManualTesting.Common.Services.Storers
 {
-    internal class MatchedProbabilitiesStorer : ResultsStorer<SearchResult, MatchProbability>
+    public class MatchedDonorProbabilitiesStorer : ResultsStorer<SearchResult, MatchedDonorProbability>
     {
         private readonly IMatchedDonorsRepository matchedDonorsRepository;
 
-        public MatchedProbabilitiesStorer(
-            IProcessedResultsRepository<MatchProbability> resultsRepository,
+        public MatchedDonorProbabilitiesStorer(
+            IProcessedResultsRepository<MatchedDonorProbability> resultsRepository,
             IMatchedDonorsRepository matchedDonorsRepository)
                 : base(resultsRepository)
         {
             this.matchedDonorsRepository = matchedDonorsRepository;
         }
 
-        protected override async Task<IEnumerable<MatchProbability>> ProcessSingleSearchResult(int searchRequestRecordId, SearchResult result)
+        protected override async Task<IEnumerable<MatchedDonorProbability>> ProcessSingleSearchResult(int searchRequestRecordId, SearchResult result)
         {
-            var matchedDonorId = await matchedDonorsRepository.GetMatchedDonorId(
-                searchRequestRecordId, int.Parse(result.DonorCode));
+            var matchedDonorId = await matchedDonorsRepository.GetMatchedDonorId(searchRequestRecordId, result.DonorCode);
 
             if (matchedDonorId == null)
             {
@@ -42,37 +37,40 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             return probabilities.Concat(locusProbabilities).ToList();
         }
 
-        private static IEnumerable<MatchProbability> BuildMatchProbabilities(
+        private static IEnumerable<MatchedDonorProbability> BuildMatchProbabilities(
             int matchedDonorId,
             Locus? locus,
             MatchProbabilities probabilities)
         {
-            return new List<MatchProbability>
+            return new List<MatchedDonorProbability>
             {
-                new MatchedDonorProbability
+                new()
                 {
                     MatchedDonor_Id = matchedDonorId,
                     Locus = locus,
                     MismatchCount = 0,
-                    Probability = probabilities.ZeroMismatchProbability?.Decimal
+                    Probability = probabilities.ZeroMismatchProbability?.Decimal,
+                    ProbabilityAsPercentage = probabilities.ZeroMismatchProbability?.Percentage
                 },
-                new MatchedDonorProbability
+                new()
                 {
                     MatchedDonor_Id = matchedDonorId,
                     Locus = locus,
                     MismatchCount = 1,
-                    Probability = probabilities.OneMismatchProbability?.Decimal
+                    Probability = probabilities.OneMismatchProbability?.Decimal,
+                    ProbabilityAsPercentage = probabilities.OneMismatchProbability?.Percentage
                 },
-                new MatchedDonorProbability
+                new()
                 {
                     MatchedDonor_Id = matchedDonorId,
                     Locus = locus,
                     MismatchCount = 2,
-                    Probability = probabilities.TwoMismatchProbability?.Decimal
+                    Probability = probabilities.TwoMismatchProbability?.Decimal,
+                    ProbabilityAsPercentage = probabilities.TwoMismatchProbability?.Percentage
                 },
             };
         }
-        private static IEnumerable<MatchProbability> BuildLocusMatchProbabilities(
+        private static IEnumerable<MatchedDonorProbability> BuildLocusMatchProbabilities(
             int matchedDonorId,
             LociInfoTransfer<MatchProbabilityPerLocusResponse> matchProbabilitiesPerLocus)
         {

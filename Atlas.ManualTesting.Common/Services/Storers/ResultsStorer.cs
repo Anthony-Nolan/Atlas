@@ -1,17 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Results;
+﻿using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.ResultSet;
-using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
+using Atlas.ManualTesting.Common.Repositories;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers
+namespace Atlas.ManualTesting.Common.Services.Storers
 {
-    internal interface IResultsStorer<TResult, TDbModel> where TResult : Result
+    public interface IResultsStorer<TResult, TDbModel> where TResult : Result
     {
         Task ProcessAndStoreResults(int searchRequestRecordId, ResultSet<TResult> resultSet);
     }
 
-    internal abstract class ResultsStorer<TResult, TDbModel> : IResultsStorer<TResult, TDbModel> where TResult : Result
+    public abstract class ResultsStorer<TResult, TDbModel> : IResultsStorer<TResult, TDbModel> where TResult : Result
     {
         private readonly IProcessedResultsRepository<TDbModel> resultsRepository;
 
@@ -35,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
 
             // important to delete before insertion to wipe any data from previous storage attempts
             await resultsRepository.DeleteResults(searchRequestRecordId);
-            await resultsRepository.BulkInsertResults(processedResults);
+            await resultsRepository.BulkInsert(processedResults);
         }
 
         protected abstract Task<IEnumerable<TDbModel>> ProcessSingleSearchResult(int searchRequestRecordId, TResult result);

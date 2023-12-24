@@ -33,14 +33,14 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4
 
         private readonly ITestDonorExportRepository testDonorExportRepository;
         private readonly ISearchSetRepository searchSetRepository;
-        private readonly ISearchRequestsRepository searchRequestsRepository;
+        private readonly ISearchRequestsRepository<ValidationSearchRequestRecord> searchRequestsRepository;
         private readonly ISubjectRepository subjectRepository;
         private readonly string searchRequestUrl;
 
         public SearchRequester(
             ITestDonorExportRepository testDonorExportRepository,
             ISearchSetRepository searchSetRepository,
-            ISearchRequestsRepository searchRequestsRepository,
+            ISearchRequestsRepository<ValidationSearchRequestRecord> searchRequestsRepository,
             ISubjectRepository subjectRepository,
             IOptions<ValidationSearchSettings> settings)
         {

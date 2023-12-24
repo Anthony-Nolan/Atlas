@@ -4,6 +4,7 @@ using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
 {
     [DbContext(typeof(MatchPredictionVerificationContext))]
-    partial class MatchPredictionVerificationContextModelSnapshot : ModelSnapshot
+    [Migration("20231223194808_RemovePerformanceChangeToDonorCode")]
+    partial class RemovePerformanceChangeToDonorCode
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -78,18 +80,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
-                    b.Property<int?>("DonorHfSetPopulationId")
-                        .HasColumnType("int");
-
                     b.Property<string>("MatchPredictionResult")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MatchingResult")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("PatientHfSetPopulationId")
-                        .HasColumnType("int");
 
                     b.Property<int>("SearchRequestRecord_Id")
                         .HasColumnType("int");
@@ -132,9 +128,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
 
                     b.Property<decimal?>("Probability")
                         .HasColumnType("decimal(6,5)");
-
-                    b.Property<int?>("ProbabilityAsPercentage")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

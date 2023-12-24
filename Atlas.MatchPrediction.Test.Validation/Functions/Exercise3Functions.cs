@@ -19,16 +19,16 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
     {
         private const string FunctionNamePrefix = "Exercise3_";
         private readonly IMatchPredictionRequester matchPredictionRequester;
-        private readonly IResultsProcessor resultsProcessor;
+        private readonly IMatchPredictionResultsProcessor matchPredictionResultsProcessor;
         private readonly IMessageSender messageSender;
 
         public Exercise3Functions(
             IMatchPredictionRequester matchPredictionRequester, 
-            IResultsProcessor resultsProcessor, 
+            IMatchPredictionResultsProcessor matchPredictionResultsProcessor, 
             IMessageSender messageSender)
         {
             this.matchPredictionRequester = matchPredictionRequester;
-            this.resultsProcessor = resultsProcessor;
+            this.matchPredictionResultsProcessor = matchPredictionResultsProcessor;
             this.messageSender = messageSender;
         }
 
@@ -90,7 +90,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
         {
             try
             {
-                await resultsProcessor.ProcessAndStoreResults(locations);
+                await matchPredictionResultsProcessor.ProcessAndStoreResults(locations);
             }
             catch (Exception ex)
             {

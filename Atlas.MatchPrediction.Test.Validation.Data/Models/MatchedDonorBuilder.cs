@@ -15,13 +15,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Models
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder
-                .HasOne<SubjectInfo>()
-                .WithMany()
-                .HasForeignKey(r => r.DonorId)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder
-                .HasIndex(r => new { r.SearchRequestRecord_Id, r.DonorId, r.TotalMatchCount });
+                .HasIndex(r => new { r.SearchRequestRecord_Id, r.DonorCode, r.TotalMatchCount });
         }
     }
 }

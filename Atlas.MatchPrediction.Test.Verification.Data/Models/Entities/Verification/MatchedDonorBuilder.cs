@@ -1,5 +1,4 @@
 ﻿using Atlas.ManualTesting.Common.Models.Entities;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,12 +15,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder
-                .HasOne<Simulant>()
-                .WithMany()
-                .HasForeignKey(r => r.DonorId);
-
-            modelBuilder
-                .HasIndex(r => new { r.SearchRequestRecord_Id, r.DonorId, r.TotalMatchCount });
+                .HasIndex(r => new { r.SearchRequestRecord_Id, r.DonorCode, r.TotalMatchCount });
         }
     }
 }

@@ -20,7 +20,9 @@
 
     "MessagingServiceBus:ConnectionString": "override-this",
 
-    "Search:RequestUrl": "override-this"
+    "Search:RequestUrl": "override-this",
+    "Search:ResultsTopic": "search-results-ready",
+    "Search:ResultsTopicSubscription": "override-this"
   },
   "ConnectionStrings": {
     "DonorImport:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",

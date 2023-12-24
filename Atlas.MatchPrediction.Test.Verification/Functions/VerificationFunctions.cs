@@ -1,21 +1,17 @@
 ﻿using Atlas.Client.Models.Search.Results;
-using Atlas.Common.Utils;
+using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.ManualTesting.Common.Services;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.Verification;
-using Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Results.Matching;
 
 namespace Atlas.MatchPrediction.Test.Verification.Functions
 {
