@@ -74,6 +74,7 @@ module "donor_import" {
   STALLED_FILE_DURATION                      = var.DONOR_IMPORT_STALLED_FILE_DURATION
   FAILURE_LOGS_CRONTAB                       = var.DONOR_IMPORT_FAILURE_LOGS_CRONTAB
   FAILURE_LOGS_EXPIRY_IN_DAYS                = var.DONOR_IMPORT_FAILURE_LOGS_EXPIRY_IN_DAYS
+  ALLOW_FULL_MODE_IMPORT                     = var.DONOR_IMPORT_ALLOW_FULL_MODE_IMPORT
 }
 
 module "matching_algorithm" {

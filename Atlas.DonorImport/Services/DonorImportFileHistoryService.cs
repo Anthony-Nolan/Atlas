@@ -30,7 +30,7 @@ namespace Atlas.DonorImport.Services
         public DonorImportFileHistoryService(
             IDonorImportHistoryRepository repository,
             INotificationSender notificationSender,
-            StalledFileSettings stalledFileSettings,
+            DonorImportSettings stalledFileSettings,
             ILogger logger)
         {
             this.repository = repository;

@@ -22,7 +22,7 @@ namespace Atlas.DonorImport.Functions
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationConfigurationSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
-                OptionsReaderFor<StalledFileSettings>(),
+                OptionsReaderFor<DonorImportSettings>(),
                 OptionsReaderFor<PublishDonorUpdatesSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<FailureLogsSettings>(),
@@ -38,7 +38,7 @@ namespace Atlas.DonorImport.Functions
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<NotificationConfigurationSettings>("NotificationConfiguration");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
-            services.RegisterAsOptions<StalledFileSettings>("DonorImport");
+            services.RegisterAsOptions<DonorImportSettings>("DonorImport");
             services.RegisterAsOptions<PublishDonorUpdatesSettings>("PublishDonorUpdates");
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<FailureLogsSettings>("FailureLogs");

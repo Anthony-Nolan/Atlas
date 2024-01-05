@@ -44,7 +44,7 @@ namespace Atlas.DonorImport.Services.DonorChecker
         public async Task CompareDonorInfoInFileToAtlasDonorStore(DonorImportFile file)
         {
             LogMessage($"Beginning Donor comparison for file '{file.FileLocation}'.");
-            var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents);
+            using var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents);
             var filename = $"{Path.GetFileNameWithoutExtension(file.FileLocation)}-{DateTime.Now:yyyyMMddhhmmssfff}.json";
             var checkedDonorsCount = 0;
             var checkerResults = new DonorCheckerResults();
