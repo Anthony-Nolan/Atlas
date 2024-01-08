@@ -1,7 +1,10 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
@@ -19,6 +22,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
     {
         private IDonorInspectionRepository donorRepository;
         private IDonorFileImporter donorFileImporter;
+        private IDonorImportFailuresInspectionRepository donorImportFailureInspectionRepository;
+        private IDonorImportFailuresCleaner donorImportFailuresCleaner;
+        private FailureLogsSettings failureLogsSettings;
+
         private readonly Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
 
         private Builder<DonorUpdate> DonorCreationBuilder =>
@@ -33,6 +40,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             {
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
                 donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
+                donorImportFailureInspectionRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportFailuresInspectionRepository>();
+                donorImportFailuresCleaner = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportFailuresCleaner>();
+                failureLogsSettings = DependencyInjection.DependencyInjection.Provider.GetService<FailureLogsSettings>();
             });
         }
 
@@ -438,5 +448,93 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         #endregion
+
+        [Test]
+        public async Task ImportDonors_WhenDonorUpdateIsInvalid_ValidationErrorsSavedToTable()
+        {
+            var fileName = Guid.NewGuid().ToString();
+            var donorUpdate = DonorCreationBuilder.Build();
+            donorUpdate.Hla.DQB1 = new ImportedLocus { Dna = new TwoFieldStringData { Field1 = "", Field2 = "01:01" } };
+
+            var file = fileBuilder.WithDonors(donorUpdate).With(x => x.FileLocation, fileName).Build();
+
+            await donorFileImporter.ImportDonorFile(file);
+
+            var validationErrors = (await donorImportFailureInspectionRepository.GetFailuresByFilename(fileName)).ToList();
+            validationErrors.Should().HaveCount(1);
+            var error = validationErrors.Single();
+            error.FailureReason.Should().Be("Optional locus Dqb1, Dna: Field1 cannot be empty when Field2 is provided");
+            error.ExternalDonorCode.Should().Be(donorUpdate.RecordId);
+        }
+
+        [Test]
+        public async Task ImportDonors_WhenSeveralDonorUpdatesAreInvalid_AllValidationErrorsSavedToTable()
+        {
+            var fileName = Guid.NewGuid().ToString();
+            (var donorUpdate1, var donorUpdate2) = (DonorCreationBuilder.Build(), DonorCreationBuilder.Build());
+            donorUpdate1.Hla.DQB1 = new ImportedLocus { Dna = new TwoFieldStringData { Field1 = "", Field2 = "01:01" } };
+            donorUpdate2.Hla.A = null;
+
+            var file = fileBuilder.WithDonors(donorUpdate1, donorUpdate2).With(x => x.FileLocation, fileName).Build();
+
+            await donorFileImporter.ImportDonorFile(file);
+
+            var validationErrors = (await donorImportFailureInspectionRepository.GetFailuresByFilename(fileName)).ToList();
+            validationErrors.Should().HaveCount(2);
+            var validationError1 = validationErrors.Single(x => x.ExternalDonorCode == donorUpdate1.RecordId);
+            var validationError2 = validationErrors.Single(x => x.ExternalDonorCode == donorUpdate2.RecordId);
+
+            validationError1.FailureReason.Should().NotBe(validationError2.FailureReason);
+        }
+
+        [Test]
+        public async Task ImportDonors_WhenDonorUpdateIsValid_NoValidationErrorsSavedToTable()
+        {
+            var fileName = Guid.NewGuid().ToString();
+            var donorUpdate = DonorCreationBuilder.Build();
+
+            const string hla = "*01:01";
+            donorUpdate.Hla.A = new ImportedLocus
+            {
+                Dna = new TwoFieldStringData
+                {
+                    Field1 = hla,
+                    Field2 = ""
+                }
+            };
+            var file = fileBuilder.WithDonors(donorUpdate).With(x => x.FileLocation, fileName).Build();
+
+            await donorFileImporter.ImportDonorFile(file);
+
+            var validationErrors = (await donorImportFailureInspectionRepository.GetFailuresByFilename(fileName)).ToList();
+            validationErrors.Should().BeEmpty();
+        }
+
+        [Test]
+        public async Task DeleteExpiredDonorImportFailures_ExpiredFailuresRemovedFromDB()
+        {
+            // Adding expired failures
+            await donorImportFailureInspectionRepository.CreateRecords(5, DateTime.Now.AddDays(-failureLogsSettings.ExpiryInDays - 1));
+
+            // Adding non expired failures
+            var fileName = Guid.NewGuid().ToString();
+            var donorUpdate = DonorCreationBuilder.Build();
+            donorUpdate.Hla.DQB1 = new ImportedLocus { Dna = new TwoFieldStringData { Field1 = "", Field2 = "01:01" } };
+
+            var file = fileBuilder.WithDonors(donorUpdate).With(x => x.FileLocation, fileName).Build();
+            await donorFileImporter.ImportDonorFile(file);
+
+            //Act
+            await donorImportFailuresCleaner.DeleteExpiredDonorImportFailures();
+
+            var failures = await donorImportFailureInspectionRepository.GetAll();
+            var cutOffDate = DateTime.Now - TimeSpan.FromDays(failureLogsSettings.ExpiryInDays);
+
+            foreach (var f in failures)
+            {
+                f.FailureTime.Should().BeAfter(cutOffDate);
+            }
+        }
+
     }
 }

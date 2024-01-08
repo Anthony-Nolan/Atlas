@@ -66,6 +66,9 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
 
             services.AddScoped<IPublishableDonorUpdatesInspectionRepository>(sp =>
                 new PublishableDonorUpdatesInspectionRepository(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
+
+            services.AddScoped<IDonorImportFailuresInspectionRepository>(sp => 
+                new DonorImportFailuresInspectionRepository(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
         }
 
         private static void SetUpConfiguration(IServiceCollection services)
