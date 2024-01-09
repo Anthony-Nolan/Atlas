@@ -30,6 +30,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Models
                 .HasDefaultValue(false);
 
             modelBuilder.HasIndex(r => r.AtlasSearchIdentifier);
+            modelBuilder.HasIndex(r => r.WasSuccessful);
         }
     }
 }
