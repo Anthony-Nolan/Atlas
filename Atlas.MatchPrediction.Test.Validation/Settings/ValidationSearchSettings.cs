@@ -3,5 +3,6 @@
     internal class ValidationSearchSettings
     {
         public string RequestUrl { get; set; }
+        public string ResultsTopic { get; set; }
     }
 }

@@ -3,6 +3,7 @@
   "Values": {
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:MatchPredictionResultsBlobContainer": "match-prediction-results",
+    "AzureStorage:SearchResultsBlobContainer": "atlas-search-results",
 
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
 
