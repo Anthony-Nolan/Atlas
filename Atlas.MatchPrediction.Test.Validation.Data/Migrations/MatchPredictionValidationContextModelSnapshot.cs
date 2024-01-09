@@ -60,7 +60,9 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MatchedDonor_Id", "Locus", "MatchCount");
+                    b.HasIndex("MatchedDonor_Id");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("MatchedDonor_Id"), new[] { "Locus", "MatchConfidence_1", "MatchConfidence_2", "IsAntigenMatch_1", "IsAntigenMatch_2" });
 
                     b.ToTable("LocusMatchDetails");
                 });
@@ -108,7 +110,9 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SearchRequestRecord_Id", "DonorCode", "TotalMatchCount");
+                    b.HasIndex("SearchRequestRecord_Id");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("SearchRequestRecord_Id"), new[] { "DonorCode", "TotalMatchCount", "PatientHfSetPopulationId", "DonorHfSetPopulationId", "WasPatientRepresented", "WasDonorRepresented" });
 
                     b.ToTable("MatchedDonors");
                 });
@@ -267,6 +271,8 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DonorType");
+
                     b.HasIndex("TestDonorExportRecord_Id");
 
                     b.ToTable("SearchSets");
@@ -389,6 +395,8 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
                     b.HasIndex("PatientId");
 
                     b.HasIndex("SearchSet_Id");
+
+                    b.HasIndex("WasSuccessful");
 
                     b.ToTable("SearchRequests");
                 });

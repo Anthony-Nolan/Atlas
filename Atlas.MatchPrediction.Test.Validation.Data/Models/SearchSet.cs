@@ -40,6 +40,8 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Models
                 .HasOne<TestDonorExportRecord>()
                 .WithMany()
                 .HasForeignKey(t => t.TestDonorExportRecord_Id);
+            
+            modelBuilder.HasIndex(t => t.DonorType);
         }
     }
 }

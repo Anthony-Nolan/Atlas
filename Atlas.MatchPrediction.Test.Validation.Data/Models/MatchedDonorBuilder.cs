@@ -15,7 +15,14 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Models
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder
-                .HasIndex(r => new { r.SearchRequestRecord_Id, r.DonorCode, r.TotalMatchCount });
+                .HasIndex(r => new { r.SearchRequestRecord_Id })
+                .IncludeProperties(r => new { 
+                    r.DonorCode, 
+                    r.TotalMatchCount, 
+                    r.PatientHfSetPopulationId, 
+                    r.DonorHfSetPopulationId, 
+                    r.WasPatientRepresented, 
+                    r.WasDonorRepresented });
         }
     }
 }
