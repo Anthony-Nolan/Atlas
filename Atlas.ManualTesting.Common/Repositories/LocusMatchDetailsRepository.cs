@@ -29,7 +29,7 @@ namespace Atlas.ManualTesting.Common.Repositories
 
             await using (var connection = new SqlConnection(connectionString))
             {
-                await connection.ExecuteAsync(sql, new { searchRequestRecordId });
+                await connection.ExecuteAsync(sql, new { searchRequestRecordId }, commandTimeout: 600);
             }
         }
     }

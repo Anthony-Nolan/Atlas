@@ -1,6 +1,7 @@
 ﻿using Atlas.Client.Models.Search.Results;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.Common.ServiceBus;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.ManualTesting.Common.Models;
@@ -43,7 +44,8 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
                 fetchValidationAzureStorageSettings,
                 fetchValidationSearchSettings);
             services.RegisterDatabaseServices(fetchMatchPredictionValidationSqlConnectionString);
-            services.RegisterServices(fetchValidationAzureStorageSettings, fetchDataRefreshSettings);
+            services.RegisterServices(
+                fetchValidationAzureStorageSettings, fetchDataRefreshSettings, fetchMessageServiceBusSettings, fetchValidationSearchSettings);
             services.RegisterHaplotypeFrequenciesReader(fetchMatchPredictionSqlConnectionString);
             services.RegisterImportDatabaseTypes(fetchDonorImportSqlConnectionString);
             services.RegisterMatchPredictionResultsLocationPublisher(fetchMessageServiceBusSettings, fetchMatchPredictionRequestSettings);
@@ -91,7 +93,9 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
         private static void RegisterServices(
             this IServiceCollection services,
             Func<IServiceProvider, ValidationAzureStorageSettings> fetchValidationAzureStorageSettings,
-            Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings)
+            Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessageServiceBusSettings,
+            Func<IServiceProvider, ValidationSearchSettings> fetchValidationSearchSettings)
         {
             services.AddScoped<ISubjectInfoImporter, SubjectInfoImporter>();
             services.AddScoped<IFileReader<ImportedSubject>, FileReader<ImportedSubject>>();
@@ -120,7 +124,21 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
                 return new BlobStreamer(settings.ConnectionString, sp.GetService<ILogger>());
             });
             services.AddScoped<IMatchPredictionResultsProcessor, MatchPredictionResultsProcessor>();
-            services.AddScoped<IMessageSender, MessageSender>();
+            services.AddScoped<IMatchPredictionLocationSender, MatchPredictionLocationSender>();
+
+            services.AddScoped<IMessageBatchPublisher<SearchResultsNotification>, MessageBatchPublisher<SearchResultsNotification>>(sp =>
+            {
+                var messageSettings = fetchMessageServiceBusSettings(sp);
+                var searchSettings = fetchValidationSearchSettings(sp);
+                return new MessageBatchPublisher<SearchResultsNotification>(messageSettings.ConnectionString, searchSettings.ResultsTopic);
+            });
+
+            services.AddScoped<ISearchResultNotificationSender, SearchResultNotificationSender>(sp =>
+            {
+                var publisher = sp.GetService<IMessageBatchPublisher<SearchResultsNotification>>();
+                var storageSettings = fetchValidationAzureStorageSettings(sp);
+                return new SearchResultNotificationSender(publisher, storageSettings.SearchResultsBlobContainer);
+            });
         }
     }
 }

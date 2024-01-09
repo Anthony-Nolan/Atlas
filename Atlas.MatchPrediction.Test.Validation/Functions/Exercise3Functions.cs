@@ -20,16 +20,16 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
         private const string FunctionNamePrefix = "Exercise3_";
         private readonly IMatchPredictionRequester matchPredictionRequester;
         private readonly IMatchPredictionResultsProcessor matchPredictionResultsProcessor;
-        private readonly IMessageSender messageSender;
+        private readonly IMatchPredictionLocationSender matchPredictionLocationSender;
 
         public Exercise3Functions(
             IMatchPredictionRequester matchPredictionRequester, 
             IMatchPredictionResultsProcessor matchPredictionResultsProcessor, 
-            IMessageSender messageSender)
+            IMatchPredictionLocationSender matchPredictionLocationSender)
         {
             this.matchPredictionRequester = matchPredictionRequester;
             this.matchPredictionResultsProcessor = matchPredictionResultsProcessor;
-            this.messageSender = messageSender;
+            this.matchPredictionLocationSender = matchPredictionLocationSender;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -72,7 +72,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
         {
             try
             {
-                await messageSender.SendNotificationsForMissingResults();
+                await matchPredictionLocationSender.PublishLocationsForMatchPredictionRequestMissingResults();
             }
             catch (Exception ex)
             {

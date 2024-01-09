@@ -30,15 +30,18 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
         private readonly IValidationAtlasPreparer atlasPreparer;
         private readonly ISearchRequester searchRequester;
         private readonly IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor;
+        private readonly ISearchResultNotificationSender messageSender;
 
         public Exercise4Functions(
             IValidationAtlasPreparer atlasPreparer,
             ISearchRequester searchRequester,
-            IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor)
+            IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor,
+            ISearchResultNotificationSender messageSender)
         {
             this.atlasPreparer = atlasPreparer;
             this.searchRequester = searchRequester;
             this.searchResultSetProcessor = searchResultSetProcessor;
+            this.messageSender = messageSender;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -95,6 +98,23 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             {
                 Debug.WriteLine($"Error while downloading results for {notification.SearchRequestId}: {ex.GetBaseException()}");
                 throw;
+            }
+        }
+
+        [FunctionName($"{FunctionNamePrefix}{nameof(ManuallySendSuccessNotificationForSearches)}")]
+        public async Task ManuallySendSuccessNotificationForSearches(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(string[]), "searchRequestIds")]
+            HttpRequest request)
+        {
+            try
+            {
+                var ids = JsonConvert.DeserializeObject<string[]>(await new StreamReader(request.Body).ReadToEndAsync());
+                await messageSender.SendSuccessNotifications(ids);
+            }
+            catch (Exception ex)
+            {
+                throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failure whilst downloading results.", ex);
             }
         }
     }
