@@ -7,6 +7,11 @@ This includes both schema and data workflow changes.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.6.1
+- Indexes on several tables have been add/amended to improve performance, based on Azure recommendations.
+  - Existing index on DonorManagementLogs table will be dropped and recreated via EF migration.
+  - New indexes on matching HLA tables will only be added during the next run of data refresh.
+
 ## 1.6.0
 
 ### Donors
