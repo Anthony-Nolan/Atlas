@@ -28,7 +28,7 @@ namespace Atlas.DonorImport.Services
 
         IEnumerable<DonorUpdate> ReadLazyDonorUpdates();
         /// <summary>
-        /// Reads and returns update mode from stream. Can be called only before <see cref="ReadUpdateMode"/>.
+        /// Reads and returns update mode from stream.
         /// </summary>
         /// <returns></returns>
         UpdateMode ReadUpdateMode();
@@ -56,9 +56,9 @@ namespace Atlas.DonorImport.Services
         public UpdateMode ReadUpdateMode()
         {
             if (updateMode != null)
-                throw new InvalidOperationException("Update mode was already read from input stream.");
+                return updateMode.Value;
 
-            EnsureReadersCreated();
+            CreateJsonReader();
 
             // Loops through top level JSON
             while (TryRead(jsonReader))
@@ -96,7 +96,7 @@ namespace Atlas.DonorImport.Services
 
         public IEnumerable<DonorUpdate> ReadLazyDonorUpdates()
         {
-            EnsureReadersCreated();
+            CreateJsonReader();
 
             if (updateMode == null)
                 ReadUpdateMode();
@@ -170,7 +170,7 @@ namespace Atlas.DonorImport.Services
             }
         }
         
-        private void EnsureReadersCreated()
+        private void CreateJsonReader()
         {
             if (jsonReader != null)
             {
