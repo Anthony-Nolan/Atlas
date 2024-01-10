@@ -32,7 +32,7 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
 
             while (count > 0)
             {
-                await db.ExecuteAsync("insert into Donors.DonorImportFailures(FailureTime) values (@failureTime)", new { FailureTime = date });
+                await db.ExecuteAsync($"insert into Donors.DonorImportFailures(FailureTime) values (@{nameof(date)})", new { date });
                 count--;
             }
 
@@ -42,8 +42,7 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
         {
             await using var db = new SqlConnection(connectionString);
 
-            return await db
-                .QueryAsync<DonorImportFailure>("select * from Donors.DonorImportFailures");
+            return await db.QueryAsync<DonorImportFailure>("select * from Donors.DonorImportFailures");
         }
 
         public async Task<IEnumerable<DonorImportFailure>> GetFailuresByFilename(string filename)
@@ -51,7 +50,7 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
             await using var db = new SqlConnection(connectionString);
 
             return await db
-                .QueryAsync<DonorImportFailure>("select * from Donors.DonorImportFailures where UpdateFile = @updateFile", new { updateFile = filename });
+                .QueryAsync<DonorImportFailure>($"select * from Donors.DonorImportFailures where UpdateFile = @{nameof(filename)}", new { filename });
         }
     }
 }
