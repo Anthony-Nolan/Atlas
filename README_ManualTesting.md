@@ -127,7 +127,7 @@ Validation of the match prediction algorithm against either [exercise 3 of the W
 - The steps of validation are managed by individual functions within the `Atlas.MatchPrediction.Test.Validation` project.
 - All validation functions and services are designed to be run locally, although they may be pointed to remote resources
   - e.g., you may wish to submit requests to a deployed Atlas instance to leverage Azure app scaling. 
-- For best performance, it is best _not_ to run the functions app in debug mode when running requests and downloading results.
+- For best performance, it is best to _not_ run the functions app in debug mode when running requests and downloading results.
 
 ### One time Set-up
 - Set up the Validation database by running EF core database migrations on `Atlas.MatchPrediction.Test.Validation.Data`.
@@ -160,18 +160,18 @@ After starting up the Functions app:
 ### Exercise 4
 
 #### HLA Nomenclature Version
-One of the requirement of excercise 4 is that the data should be interpreted to v3.52.0 of the IMGT/HLA nomenclature.
+One of the requirements of exercise 4 is that the data should be interpreted to v3.52.0 of the IMGT/HLA nomenclature.
 As newer versions of the database have been published and Atlas always runs matching at the latest available nomenclature version, the Atlas instance under test must be pointed to a different data source to force the use of v3.52.0.
 
 On the Atlas instance under test:
-  1. Point to a fork of the IMGT/HLA repository whose `Latest` branch is a snapshot of v3.52.0, via the Matching Algorithm functions app config setting: `HlaMetadataDictionary:HlaNomenclatureSourceUrl`.
-  2. Delete all rows from the data refresh history table ("shared db" > `MatchingAlgorithmPersistent.DataRefreshHistory`), if any present.
-  3. Delete all rows from the shared db `Donors.Donors` table, if any present.
-  4. Import a single, valid donor update in `Full` mode (the HLA profile doesn't matter as this donor will eventually be deleted).
+  1. Set the Matching Algorithm functions app setting, `HlaMetadataDictionary:HlaNomenclatureSourceUrl`, to a fork of the IMGT/HLA repository whose `Latest` branch is a snapshot of v3.52.0.
+  2. Delete all rows from the data refresh history table ("shared db" > `MatchingAlgorithmPersistent.DataRefreshHistory`).
+  3. Delete all rows from the shared db `Donors.Donors` table.
+  4. Import a single, valid donor `N` update in `Full` mode (the HLA profile doesn't matter as this donor will eventually be deleted).
   5. Initiate a data refresh job.
 
 The end result should be:
-  - The last row in data refresh table should show that the active db is on version "3520".
+  - A single row in the data refresh history table should show that the active db is on version "3520".
   - The HMD should have a newly generated copy of version 3520.
   - There should be a single donor in the `Donors` table of the active matching db.
 
@@ -183,22 +183,55 @@ The end result should be:
 #### Export Test Donors to Atlas
 Test donors need to be exported to the Atlas instance before search requests can be run.
 
-- Launch the local functions app and call the http function: `PrepareAtlasDonorStores`.
-  - This takes in the ID of a completed test harness (see Swagger UI for request model).
+- Launch the local functions app and call the http function: `Exercise4_1_PrepareAtlasDonorStores`.
   - The request will take several minutes to complete as it involves the following steps:
     1. Wipe the remote donor import donor store.
     2. Re-populate it with test donors.
     3. Force a data refresh on the matching algorithm.
   - Ensure the following settings have been overriden in `local.settings.json` with values for the remote environment:
       `DataRefresh:RequestUrl`, `DataRefresh:CompletionTopicSubscription`, and `DonorImport:Sql`.
-- As data refresh is a long-running process, a servicebus-triggered function, `HandleDataRefreshCompletion`, is used to determine when data refresh has actually completed.
-  - The local verification functions app should be left running to allow the triggering of `HandleDataRefreshCompletion`.
+- As data refresh is a long-running process, a servicebus-triggered function, `Exercise4_HandleDataRefreshCompletion`, is used to determine when data refresh has actually completed.
+  - The local verification functions app should be left running to allow the triggering of `Exercise4_HandleDataRefreshCompletion`.
   - On receipt of a new job completion message, the appropriate export record is updated with data refresh details,
     including whether the job succeeded or failed - a failure should prompt further investigation before re-attempting export.
 - Make sure to check support alerts and AI logs for info on single donor processing failures.
-- If the `PrepareAtlasDonorStores` function complains about an incomplete test donor export record, try the following:
+- If the `Exercise4_1_PrepareAtlasDonorStores` function complains about an incomplete test donor export record, try the following:
   - Check whether a data refresh is still in progress; if so, leave the local functions app running so it can detect the job completion message and update the open export record.
   - If the data refresh job failed, then manually delete the open export record from the local database, and start the export from scratch.
+
+#### Searching
+
+##### Send Search Requests
+- To generate search requests for each patient within the test dataset, invoke the http-triggered function, `Exercise4_2_SendSearchRequests`.
+  - Must define `DonorType`, `MismatchCount` and `MatchLoci` (see Swagger UI for exact request model)
+  - E.g., send search requests for `Adult` donors, with 1 mismatch allowed across loci A, B, C, DQB1 and DRB1.
+  - Invoke the function once for each kind of search you wish to run - each set of searches will be assigned a unique `Id` within the validation db table, `SearchSets`.
+- Search requests will be sent via http and logged to the validation db.
+  - Ensure `Search:RequestUrl` has been overriden in `local.settings.json` with the remote environment value.
+  - Check the Debug window for progress.
+- Note: Searches will not be sent if the last test donor export record is missing or incomplete.
+
+##### Retrieve Search Results
+- As search is an async process, service-bus triggered function `Exercise4_FetchSearchResults` is used to retrieve the results when they are ready to download from blob storage.
+  - Ensure `Search:ResultsTopicSubscription` has been overriden in `local.settings.json` of the validation functions app with the remote environment value.
+  - The `host.json` property `extensions:serviceBus:maxConcurrentCalls` determines how many results are processed at a time.
+    - This can be changed to a count that is optimal for the local environment, but the value `1` is recommended to avoid db deadlocks.
+- The functions app must be running for the function to listen for new messages.
+  - As it may take several hours for all requests to complete, it is advised to either leave the app running in the background, or only launch it when it seems the majority of requests have completed.
+- Make sure to check search servicebus topics/queues for dead-lettered messages, both requests and results-related.
+  - Dead-letters are safe to replay; downloaded search results will overwrite any existing results mapped to the same request.
+  - Check AI logs/Debug window for further info if messages repeatedly dead-letter.
+- The http function,`ManuallySendSuccessNotificationForSearches`, can be used to re-download the result of a sucessful search after its completion message has been consumed off the queue.
+  - See Swagger UI for request model.
+  - The function will publish success notifications for the search request IDs listed in the request, and thereby trigger the `Exercise4_FetchSearchResults` function.
+
+### Report Results
+- Once all the searches have completed and results have been downloaded, use the following SQL queries in `\MiscTestingAndDebuggingResources\ManualTesting\MatchPredictionValidation\`:
+  - `SQL_IncompleteOrFailedSearches.sql` - identifies failed searches or searches whose results have not yet been retrieved.
+  - `SQL_ReportAllResults.sql` - will select out results for successful searches in the required format by `SearchSet` ids.
+  - `SQL_Unrepresented.sql` - will select out any patients or donors that could not be explained by their assigned HF set.
+
+<br>
 
 ## Match Prediction Verification using simulated data
 Verification is the validation of match prediction using patient and donor data that has been simulated from a given HLA haplotype frequency dataset.
