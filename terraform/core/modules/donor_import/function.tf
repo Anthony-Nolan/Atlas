@@ -58,17 +58,24 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
   site_config {
     application_insights_key = var.application_insights.instrumentation_key
     application_stack {
-      dotnet_version = "6"
+      dotnet_version = "v6.0"
     }
     cors {
-      allowed_origins     = []
+      # allowed_origins     = []
       support_credentials = false
     }
+        dynamic "ip_restriction" {
+      for_each = var.IP_RESTRICTION_SETTINGS
+      content {
+        ip_address = ip_restriction
+      }
+    }
 
-    ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
-      ip_address = ip
-      subnet_id  = null
-    }]
+
+    # ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
+    #   ip_address = ip
+    #   subnet_id  = null
+    # }]
 
     ftps_state              = "AllAllowed"
     scm_minimum_tls_version = "1.0"
