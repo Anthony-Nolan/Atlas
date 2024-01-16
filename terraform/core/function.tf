@@ -20,18 +20,19 @@ resource "azurerm_windows_function_app" "atlas_function" {
     application_insights_key  = azurerm_application_insights.atlas.instrumentation_key
     pre_warmed_instance_count = 1
     use_32_bit_worker         = false
-    ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
-      ip_address = ip
-      subnet_id  = null
-    }]
-    ftps_state              = "AllAllowed"
-    scm_minimum_tls_version = "1.0"
+    ftps_state                = "AllAllowed"
+    scm_minimum_tls_version   = "1.0"
     cors {
-      allowed_origins     = []
       support_credentials = false
     }
     application_stack {
-      dotnet_version = "6"
+      dotnet_version = "v6.0"
+    }
+    dynamic "ip_restriction" {
+      for_each = var.IP_RESTRICTION_SETTINGS
+      content {
+        ip_address = ip_restriction
+      }
     }
   }
 
@@ -126,19 +127,21 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
   site_config {
     application_insights_key  = azurerm_application_insights.atlas.instrumentation_key
     pre_warmed_instance_count = 1
-    ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
-      ip_address = ip
-      subnet_id  = null
-    }]
     ftps_state              = "AllAllowed"
     scm_minimum_tls_version = "1.0"
     cors {
-      allowed_origins     = []
       support_credentials = false
     }
     application_stack {
-      dotnet_version = "6"
+      dotnet_version = "v6.0"
     }
+    dynamic "ip_restriction" {
+      for_each = var.IP_RESTRICTION_SETTINGS
+      content {
+        ip_address = ip_restriction
+      }
+    }
+
   }
 
   app_settings = {
