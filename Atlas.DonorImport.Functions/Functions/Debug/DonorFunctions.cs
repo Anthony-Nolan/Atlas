@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Atlas.Common.Debugging.Donors;
 using Atlas.Common.Utils.Http;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
@@ -11,10 +10,12 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Debug;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Functions.Models.Debug;
 using Atlas.DonorImport.Models;
+using Atlas.Common.Debugging;
 
 namespace Atlas.DonorImport.Functions.Functions.Debug
 {
@@ -28,7 +29,7 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
         }
 
         [FunctionName(nameof(GetDonors))]
-        [ProducesResponseType(typeof(DebugDonorsResult<Donor, string>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(DebugDonorsResult<Donor>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetDonors(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/donors")]
             [RequestBodyType(typeof(string[]), "Donor Record Ids")]

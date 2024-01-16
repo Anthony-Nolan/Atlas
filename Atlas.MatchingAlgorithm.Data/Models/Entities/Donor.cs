@@ -14,6 +14,7 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
         public bool IsAvailableForSearch { get; set; }
 
         [Required]
+        [MaxLength(64)]
         public string ExternalDonorCode { get; set; }
 
         public string EthnicityCode { get; set; }

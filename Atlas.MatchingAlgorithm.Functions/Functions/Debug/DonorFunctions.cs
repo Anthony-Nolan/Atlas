@@ -1,5 +1,4 @@
 ﻿using Atlas.Common.Utils.Http;
-using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
@@ -13,7 +12,9 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Linq;
-using Atlas.Common.Debugging.Donors;
+using Atlas.Client.Models.Debug;
+using Atlas.MatchingAlgorithm.Data.Models.Entities;
+using Atlas.Common.Debugging;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
 {
@@ -27,18 +28,20 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
         }
 
         [FunctionName(nameof(GetDonorsFromActiveDb))]
-        [ProducesResponseType(typeof(IEnumerable<DebugDonorsResult<DonorInfo, int>>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<DebugDonorsResult<Donor>>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetDonorsFromActiveDb(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/donors/active")]
-            [RequestBodyType(typeof(int[]), "Atlas Donor Ids")]
+            [RequestBodyType(typeof(string[]), "External Donor Codes")]
             HttpRequest request)
         {
-            var donorIds = JsonConvert.DeserializeObject<int[]>(await new StreamReader(request.Body).ReadToEndAsync());
-
-            var donors = await inspectionRepository.GetDonors(donorIds);
+            var externalDonorCodes = JsonConvert.DeserializeObject<string[]>(await new StreamReader(request.Body).ReadToEndAsync());
+            var donors = await inspectionRepository.GetDonorsByExternalDonorCodes(externalDonorCodes);
 
             return new JsonResult(
-                DebugDonorsHelper.BuildDebugDonorsResult(donorIds, donors.Values.ToList(), d => d.DonorId));
+                DebugDonorsHelper.BuildDebugDonorsResult(
+                    externalDonorCodes, 
+                    donors.ToList(), 
+                    d => d.ExternalDonorCode));
         }
     }
 }

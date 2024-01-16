@@ -4,6 +4,7 @@ using Atlas.MatchingAlgorithm.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.MatchingAlgorithm.Data.Migrations
 {
     [DbContext(typeof(SearchAlgorithmContext))]
-    partial class SearchAlgorithmContextModelSnapshot : ModelSnapshot
+    [Migration("20240116210024_IndexOnExternalDonorCode")]
+    partial class IndexOnExternalDonorCode
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
