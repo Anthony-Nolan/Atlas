@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
 
-namespace Atlas.Common.Debugging.Donors
+namespace Atlas.Client.Models.Debug
 {
-    public class DebugDonorsResult<TDonor, TDonorId>
+    public class DebugDonorsResult<TDonor>
     {
         public Counts DonorCounts { get; set; }
 
         /// <summary>
-        /// Ids of donors that were NOT found in the donor store
+        /// Codes of donors that were NOT found in the donor store
         /// </summary>
-        public IEnumerable<TDonorId> AbsentDonorIds { get; set; }
+        public IEnumerable<string> AbsentDonors { get; set; }
 
         /// <summary>
         /// Info of donors that were found in the donor store
@@ -17,9 +17,9 @@ namespace Atlas.Common.Debugging.Donors
         public IEnumerable<TDonor> PresentDonors { get; set; }
 
         /// <summary>
-        /// List of all ids provided in the debug request
+        /// List of all donor codes provided in the debug request
         /// </summary>
-        public IEnumerable<TDonorId> ReceivedDonorIds { get; set; }
+        public IEnumerable<string> ReceivedDonors { get; set; }
 
         public class Counts
         {

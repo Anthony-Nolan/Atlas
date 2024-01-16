@@ -50,6 +50,8 @@ namespace Atlas.MatchingAlgorithm.Data.Context
                 .HasFilter("[DQB1_1] IS NULL AND [DQB1_2] IS NULL")
                 .HasName("FI_DonorIdsWithoutLocusDQB1");
 
+            modelBuilder.Entity<Donor>().HasIndex(d => d.ExternalDonorCode);
+
             base.OnModelCreating(modelBuilder);
         }
 
