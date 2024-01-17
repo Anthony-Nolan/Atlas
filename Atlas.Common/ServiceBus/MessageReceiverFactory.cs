@@ -2,7 +2,7 @@
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 
-namespace Atlas.Common.ServiceBus.BatchReceiving
+namespace Atlas.Common.ServiceBus
 {
     public interface IMessageReceiverFactory
     {

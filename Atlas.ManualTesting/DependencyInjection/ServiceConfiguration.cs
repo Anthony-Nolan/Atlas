@@ -3,7 +3,7 @@ using Atlas.Client.Models.Search.Results;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Caching;
-using Atlas.Common.ServiceBus.BatchReceiving;
+using Atlas.Common.ServiceBus;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Repositories;

@@ -1,4 +1,4 @@
-﻿using Atlas.Common.ServiceBus.BatchReceiving;
+﻿using Atlas.Common.ServiceBus;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 

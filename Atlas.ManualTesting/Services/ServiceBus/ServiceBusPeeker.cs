@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Atlas.Common.ServiceBus.BatchReceiving;
+using Atlas.Common.ServiceBus;
 using Atlas.Common.ServiceBus.Models;
 using Atlas.ManualTesting.Models;
 using Microsoft.Azure.ServiceBus;
