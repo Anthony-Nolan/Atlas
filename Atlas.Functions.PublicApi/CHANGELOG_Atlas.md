@@ -28,8 +28,13 @@ Feature flags permit greater control over the release of new features (see this 
 * BREAKING - Breaking change at the API level
 * FBC - Functionally Breaking Change, i.e., significant change to the behaviour of an existing feature but the API remains unchanged
 
+### 1.6.2
+* E/BF: Null allele vs. expressing HLA typing is no longer assigned the grade of `Mismatch`, and instead is assigned the new grade, `ExpressingVsNull`.
+   * The most visible outcome of this change is that the match count calculated by scoring will now align with that of matching in this edge case.
+   * This can be interpreted as either an enhancement or a bug fix, depending on user expectations.
+
 ### 1.6.1
-- Indexes on several matching algorithm db tables have been add/amended to improve performance, based on Azure recommendations.
+* E: Indexes on several matching algorithm db tables have been add/amended to improve performance, based on Azure recommendations.
 
 ### 1.6.0
 This version has a significant set of changes that were prompted by the integration of Atlas into WMDA Search and Match. Several of them are around handling of searches with very large resultsets, improvements to donor import reporting, and bug fixes identified during testing.
