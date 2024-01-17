@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.Public.Models.ServiceBus;
+using Atlas.Client.Models.Debug;
 using Atlas.Common.ServiceBus;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.ManualTesting.Models;
@@ -10,7 +10,7 @@ namespace Atlas.ManualTesting.Services
 {
     public interface ISearchableDonorUpdatesPeeker
     {
-        Task<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>> GetMessagesByAtlasDonorId(PeekByAtlasDonorIdsRequest peekRequest);
+        Task<IEnumerable<PeekedServiceBusMessage<SearchableDonorUpdate>>> GetMessagesByAtlasDonorId(PeekByAtlasDonorIdsRequest peekRequest);
     }
 
     internal class SearchableDonorUpdatesPeeker : ISearchableDonorUpdatesPeeker
@@ -22,7 +22,8 @@ namespace Atlas.ManualTesting.Services
             this.messagesReceiver = messagesReceiver;
         }
 
-        public async Task<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>> GetMessagesByAtlasDonorId(PeekByAtlasDonorIdsRequest peekRequest)
+        public async Task<IEnumerable<PeekedServiceBusMessage<SearchableDonorUpdate>>> GetMessagesByAtlasDonorId(
+            PeekByAtlasDonorIdsRequest peekRequest)
         {
             var notifications = await messagesReceiver.Peek(peekRequest);
 
