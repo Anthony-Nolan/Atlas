@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 1.7.0
 * Added new namespace, `Debug`, for models that are used in debug endpoints.
 * Moved `DebugDonorResult` model that is used in existing donor debug endpoints to new `Debug` namespace.
+* Added new `Debug` model, `DonorUpdateFailureInfo`.
 
 ### 1.6.0
 * `Search.Results.Matching.PerLocus.LocusPositionScoreDetails` has been extended with a new field: `IsAntigenMatch`, which indicates whether the match grade for a position is an antigen match (`true`) or not (`false`).
