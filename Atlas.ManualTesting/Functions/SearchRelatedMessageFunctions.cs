@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Atlas.Client.Models.Debug;
 using Atlas.ManualTesting.Helpers;
 using Atlas.ManualTesting.Models;
 using Atlas.ManualTesting.Services;
@@ -26,10 +27,10 @@ namespace Atlas.ManualTesting.Functions
         [FunctionName(nameof(GetDeadLetteredMatchingRequestIds))]
         public async Task<IActionResult> GetDeadLetteredMatchingRequestIds(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(PeekRequest), nameof(PeekRequest))]
+            [RequestBodyType(typeof(PeekServiceBusMessagesRequest), nameof(PeekServiceBusMessagesRequest))]
             HttpRequest request)
         {
-            var peekRequest = await request.DeserialiseRequestBody<PeekRequest>();
+            var peekRequest = await request.DeserialiseRequestBody<PeekServiceBusMessagesRequest>();
 
             var ids = await matchingRequestsPeeker.GetIdsOfDeadLetteredMatchingRequests(peekRequest);
 
@@ -39,10 +40,10 @@ namespace Atlas.ManualTesting.Functions
         [FunctionName(nameof(GetFailedSearchIds))]
         public async Task<IActionResult> GetFailedSearchIds(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(PeekRequest), nameof(PeekRequest))]
+            [RequestBodyType(typeof(PeekServiceBusMessagesRequest), nameof(PeekServiceBusMessagesRequest))]
             HttpRequest request)
         {
-            var peekRequest = await request.DeserialiseRequestBody<PeekRequest>();
+            var peekRequest = await request.DeserialiseRequestBody<PeekServiceBusMessagesRequest>();
 
             var ids = await notificationsPeeker.GetIdsOfFailedSearches(peekRequest);
 
@@ -52,10 +53,10 @@ namespace Atlas.ManualTesting.Functions
         [FunctionName(nameof(GetSearchResultsNotificationsWithSummary))]
         public async Task<IActionResult> GetSearchResultsNotificationsWithSummary(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(PeekRequest), nameof(PeekRequest))]
+            [RequestBodyType(typeof(PeekServiceBusMessagesRequest), nameof(PeekServiceBusMessagesRequest))]
             HttpRequest request)
         {
-            var peekRequest = await request.DeserialiseRequestBody<PeekRequest>();
+            var peekRequest = await request.DeserialiseRequestBody<PeekServiceBusMessagesRequest>();
 
             var resultsNotifications = await notificationsPeeker.GetSearchResultsNotifications(peekRequest);
 

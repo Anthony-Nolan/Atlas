@@ -17,7 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 1.7.0
 * Added new namespace, `Debug`, for models that are used in debug endpoints.
-* Moved `DebugDonorResult` model that is used in existing donor debug endpoints to new `Debug` namespace.
+* Moved following models to `Debug` namespace:
+  * `DebugDonorResult` used in existing donor debug endpoints.
+  * `PeekServiceBusMessagesRequest` used in message peeker service.
 * Added new `Debug` model, `DonorUpdateFailureInfo`.
 
 ### 1.6.0

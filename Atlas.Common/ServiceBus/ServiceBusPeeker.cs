@@ -2,20 +2,19 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Atlas.Common.ServiceBus;
+using Atlas.Client.Models.Debug;
 using Atlas.Common.ServiceBus.Models;
-using Atlas.ManualTesting.Models;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 using Newtonsoft.Json;
 
-namespace Atlas.ManualTesting.Services.ServiceBus
+namespace Atlas.Common.ServiceBus
 {
-    internal interface IMessagesPeeker<T> : IServiceBusPeeker<T>
+    public interface IMessagesPeeker<T> : IServiceBusPeeker<T>
     {
     }
 
-    internal class MessagesPeeker<T> : ServiceBusPeeker<T>, IMessagesPeeker<T>
+    public class MessagesPeeker<T> : ServiceBusPeeker<T>, IMessagesPeeker<T>
     {
         public MessagesPeeker(IMessageReceiverFactory factory, string topicName, string subscriptionName)
             : base(factory, topicName, subscriptionName)
@@ -23,25 +22,12 @@ namespace Atlas.ManualTesting.Services.ServiceBus
         }
     }
 
-    internal interface IDeadLettersPeeker<T> : IServiceBusPeeker<T>
+    public interface IServiceBusPeeker<T>
     {
+        Task<IEnumerable<ServiceBusMessage<T>>> Peek(PeekServiceBusMessagesRequest peekRequest);
     }
 
-    internal class DeadLettersPeeker<T> : ServiceBusPeeker<T>, IDeadLettersPeeker<T>
-    {
-        // ReSharper disable once SuggestBaseTypeForParameter
-        public DeadLettersPeeker(IDeadLetterReceiverFactory factory, string topicName, string subscriptionName) 
-            : base(factory, topicName, subscriptionName)
-        {
-        }
-    }
-
-    internal interface IServiceBusPeeker<T>
-    {
-        Task<IEnumerable<ServiceBusMessage<T>>> Peek(PeekRequest peekRequest);
-    }
-
-    internal abstract class ServiceBusPeeker<T> : IServiceBusPeeker<T>
+    public abstract class ServiceBusPeeker<T> : IServiceBusPeeker<T>
     {
         private readonly IMessageReceiver messageReceiver;
 
@@ -53,7 +39,7 @@ namespace Atlas.ManualTesting.Services.ServiceBus
             messageReceiver = factory.GetMessageReceiver(topicName, subscriptionName);
         }
 
-        public async Task<IEnumerable<ServiceBusMessage<T>>> Peek(PeekRequest peekRequest)
+        public async Task<IEnumerable<ServiceBusMessage<T>>> Peek(PeekServiceBusMessagesRequest peekRequest)
         {
             var messages = new List<ServiceBusMessage<T>>();
 
