@@ -1,12 +1,12 @@
 ﻿using FluentAssertions;
 using Atlas.Common.ServiceBus.BatchReceiving;
-using Atlas.Common.ServiceBus.Models;
 using NSubstitute;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Atlas.Common.Public.Models.ServiceBus;
 
 namespace Atlas.Common.Test.ServiceBus.BatchReceiving
 {

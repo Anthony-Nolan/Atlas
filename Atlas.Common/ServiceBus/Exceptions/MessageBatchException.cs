@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.Common.ServiceBus.Models;
+using Atlas.Common.Public.Models.ServiceBus;
 
 namespace Atlas.Common.ServiceBus.Exceptions
 {
