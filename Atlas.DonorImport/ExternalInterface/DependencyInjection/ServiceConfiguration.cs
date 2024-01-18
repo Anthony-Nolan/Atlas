@@ -12,6 +12,7 @@ using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Logger;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
+using Atlas.DonorImport.Services.Debug;
 using Atlas.DonorImport.Services.DonorChecker;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Microsoft.Extensions.DependencyInjection;
@@ -153,6 +154,19 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IDonorUpdateMapper, DonorUpdateMapper>();
             services.AddScoped<IDonorImportMessageSender, DonorImportMessageSender>();
             services.AddScoped<IDonorImportFailuresCleaner, DonorImportFailuresCleaner>();
+
+            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
+                new MessageReceiverFactory(fetchMessagingServiceBusSettings(sp).ConnectionString)
+            );
+
+            services.AddScoped<IDonorImportResultsPeeker, DonorImportResultsPeeker>(sp =>
+            {
+                var settings = fetchMessagingServiceBusSettings(sp);
+                return new DonorImportResultsPeeker(
+                    sp.GetService<IMessageReceiverFactory>(), 
+                    settings.DonorImportResultsTopic, 
+                    settings.DonorImportResultsAuditSubscription);
+            });
         }
 
         private static void RegisterDonorReaderServices(this IServiceCollection services)
