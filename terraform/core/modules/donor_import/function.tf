@@ -26,17 +26,18 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
     "DonorImport:FileCheckCronSchedule"    = var.STALLED_FILE_CHECK_CRONTAB
     "DonorImport:HoursToCheckStalledFiles" = var.STALLED_FILE_DURATION
 
-    "MessagingServiceBus:ConnectionString"             = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
-    "MessagingServiceBus:ImportFileSubscription"       = azurerm_servicebus_subscription.donor-import-file-processor.name
-    "MessagingServiceBus:ImportFileTopic"              = azurerm_servicebus_topic.donor-import-file-uploads.name
-    "MessagingServiceBus:UpdatedSearchableDonorsTopic" = azurerm_servicebus_topic.updated-searchable-donors.name
-    "MessagingServiceBus:DonorIdCheckerTopic"          = azurerm_servicebus_topic.donor-id-checker-requests.name
-    "MessagingServiceBus:DonorIdCheckerSubscription"   = azurerm_servicebus_subscription.donor-id-checker.name
-    "MessagingServiceBus:DonorIdCheckerResultsTopic"   = azurerm_servicebus_topic.donor-id-checker-results.name
-    "MessagingServiceBus:DonorInfoCheckerTopic"        = azurerm_servicebus_topic.donor-info-checker-requests.name
-    "MessagingServiceBus:DonorInfoCheckerSubscription" = azurerm_servicebus_subscription.donor-info-checker.name
-    "MessagingServiceBus:DonorInfoCheckerResultsTopic" = azurerm_servicebus_topic.donor-info-checker-results.name
-    "MessagingServiceBus:DonorImportResultsTopic"      = azurerm_servicebus_topic.donor-import-results.name
+    "MessagingServiceBus:ConnectionString"                    = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
+    "MessagingServiceBus:ImportFileSubscription"              = azurerm_servicebus_subscription.donor-import-file-processor.name
+    "MessagingServiceBus:ImportFileTopic"                     = azurerm_servicebus_topic.donor-import-file-uploads.name
+    "MessagingServiceBus:UpdatedSearchableDonorsTopic"        = azurerm_servicebus_topic.updated-searchable-donors.name
+    "MessagingServiceBus:DonorIdCheckerTopic"                 = azurerm_servicebus_topic.donor-id-checker-requests.name
+    "MessagingServiceBus:DonorIdCheckerSubscription"          = azurerm_servicebus_subscription.donor-id-checker.name
+    "MessagingServiceBus:DonorIdCheckerResultsTopic"          = azurerm_servicebus_topic.donor-id-checker-results.name
+    "MessagingServiceBus:DonorInfoCheckerTopic"               = azurerm_servicebus_topic.donor-info-checker-requests.name
+    "MessagingServiceBus:DonorInfoCheckerSubscription"        = azurerm_servicebus_subscription.donor-info-checker.name
+    "MessagingServiceBus:DonorInfoCheckerResultsTopic"        = azurerm_servicebus_topic.donor-info-checker-results.name
+    "MessagingServiceBus:DonorImportResultsTopic"             = azurerm_servicebus_topic.donor-import-results.name
+    "MessagingServiceBus:DonorImportResultsAuditSubscription" = azurerm_servicebus_subscription.audit-donor-import-results.name
 
     "NotificationConfiguration:NotifyOnAttemptedDeletionOfUntrackedDonor" = var.NOTIFICATIONS_ON_DELETION_OF_INVALID_DONOR
 

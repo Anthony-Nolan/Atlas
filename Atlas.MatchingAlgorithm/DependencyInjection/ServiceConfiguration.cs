@@ -5,6 +5,7 @@ using Atlas.Common.FeatureManagement;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
+using Atlas.Common.ServiceBus;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;

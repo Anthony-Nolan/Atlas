@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
-namespace Atlas.ManualTesting.Helpers
+namespace Atlas.Common.Utils.Http
 {
-    internal static class RequestExtension
+    public static class HttpRequestExtension
     {
         public static async Task<T> DeserialiseRequestBody<T>(this HttpRequest request)
         {

@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Debug;
 using Atlas.Client.Models.Search.Results;
+using Atlas.Common.ServiceBus;
 using Atlas.ManualTesting.Models;
-using Atlas.ManualTesting.Services.ServiceBus;
 
 namespace Atlas.ManualTesting.Services
 {
     public interface ISearchResultNotificationsPeeker
     {
-        Task<IEnumerable<string>> GetIdsOfFailedSearches(PeekRequest peekRequest);
-        Task<PeekedSearchResultsNotifications> GetSearchResultsNotifications(PeekRequest peekRequest);
+        Task<IEnumerable<string>> GetIdsOfFailedSearches(PeekServiceBusMessagesRequest peekRequest);
+        Task<PeekedSearchResultsNotifications> GetSearchResultsNotifications(PeekServiceBusMessagesRequest peekRequest);
         Task<PeekedSearchResultsNotifications> GetNotificationsBySearchRequestId(PeekBySearchRequestIdRequest peekRequest);
     }
 
@@ -24,7 +25,7 @@ namespace Atlas.ManualTesting.Services
             this.messagesReceiver = messagesReceiver;
         }
 
-        public async Task<IEnumerable<string>> GetIdsOfFailedSearches(PeekRequest peekRequest)
+        public async Task<IEnumerable<string>> GetIdsOfFailedSearches(PeekServiceBusMessagesRequest peekRequest)
         {
             var notifications = await messagesReceiver.Peek(peekRequest);
 
@@ -34,7 +35,7 @@ namespace Atlas.ManualTesting.Services
                 .Distinct();
         }
 
-        public async Task<PeekedSearchResultsNotifications> GetSearchResultsNotifications(PeekRequest peekRequest)
+        public async Task<PeekedSearchResultsNotifications> GetSearchResultsNotifications(PeekServiceBusMessagesRequest peekRequest)
         {
             var notifications = await PeekNotifications(peekRequest);
 
@@ -50,7 +51,7 @@ namespace Atlas.ManualTesting.Services
             return BuildResponse(notifications);
         }
 
-        private async Task<IReadOnlyCollection<SearchResultsNotification>> PeekNotifications(PeekRequest peekRequest)
+        private async Task<IReadOnlyCollection<SearchResultsNotification>> PeekNotifications(PeekServiceBusMessagesRequest peekRequest)
         {
             return (await messagesReceiver.Peek(peekRequest))
                 .Select(m => m.DeserializedBody)

@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Versions
 
+### 1.7.0
+* `DonorImportMessage` model has been extended with `SuccessfulImportInfo` and `FailedImportInfo` props to replace the `SuccessDonorImportMessage` and `FailureDonorImportMessage` classes.
+  * `DonorImportMessage` is now the only model that needs to be consumed by a client.
+  * Further props (marked as `Obsolete`) permit backwards compatiblity with already published messages. Note: these will be removed in a future version.
+
 ### 1.6.0
 * Models have been added for new `Donor Checker` functionality.
 * Donor import enum, UpdateMode, has been extended with a new option: `check`, to be used when info in the import file should only be checked against the donor store but not imported.
