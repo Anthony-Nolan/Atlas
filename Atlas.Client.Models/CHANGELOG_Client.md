@@ -17,10 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 1.7.0
 * Added new namespace, `Debug`, for models that are used in debug endpoints.
-* Moved following models to `Debug` namespace:
-  * `DebugDonorResult` used in existing donor debug endpoints.
-  * `PeekServiceBusMessagesRequest` used in message peeker service.
-* Added new `Debug` model, `DonorUpdateFailureInfo`.
+    * Moved following models to `Debug` namespace:
+      * `DebugDonorResult` used in existing donor debug endpoints.
+      * `PeekServiceBusMessagesRequest` used in message peeker service.
+    * Added new `Debug` model, `DonorUpdateFailureInfo`.
+* Moved existing `Alert` and `Notification` message models (and dependent classes) to new `SupportMessages` namespace.
 
 ### 1.6.0
 * `Search.Results.Matching.PerLocus.LocusPositionScoreDetails` has been extended with a new field: `IsAntigenMatch`, which indicates whether the match grade for a position is an antigen match (`true`) or not (`false`).

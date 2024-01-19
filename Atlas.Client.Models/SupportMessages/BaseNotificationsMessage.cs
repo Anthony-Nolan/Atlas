@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Atlas.Common.Notifications.MessageModels
+namespace Atlas.Client.Models.SupportMessages
 {
     public abstract class BaseNotificationsMessage
     {
