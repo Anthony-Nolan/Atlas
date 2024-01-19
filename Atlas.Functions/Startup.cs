@@ -1,15 +1,16 @@
+using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Notifications;
-using Atlas.DonorImport.ExternalInterface.DependencyInjection;
+using Atlas.Common.ServiceBus;
 using Atlas.Functions;
 using Atlas.Functions.Config;
 using Atlas.Functions.Services;
 using Atlas.Functions.Services.BlobStorageClients;
+using Atlas.Functions.Services.Debug;
 using Atlas.Functions.Services.MatchCategories;
+using Atlas.Functions.Settings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
-using Atlas.MatchingAlgorithm.Settings.Azure;
-using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
@@ -17,6 +18,8 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
+using AzureStorageSettings = Atlas.MatchingAlgorithm.Settings.Azure.AzureStorageSettings;
+using MessagingServiceBusSettings = Atlas.MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
@@ -65,6 +68,7 @@ namespace Atlas.Functions
             // Shared settings
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
+            services.RegisterAsOptions<NotificationsDebugSettings>("NotificationsServiceBus:Debug");
 
             // Dictionary components
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
@@ -82,6 +86,9 @@ namespace Atlas.Functions
         private static void RegisterTopLevelFunctionServices(IServiceCollection services)
         {
             RegisterSearchLogger(services);
+
+            RegisterDebugServices(services);
+
             services.AddScoped<IMatchPredictionInputBuilder, MatchPredictionInputBuilder>();
             services.AddScoped<IResultsCombiner, ResultsCombiner>(sp =>
             {
@@ -118,6 +125,29 @@ namespace Atlas.Functions
             services.AddApplicationInsightsTelemetryWorkerService();
             services.AddScoped<SearchLoggingContext>();
             services.AddScoped(typeof(ISearchLogger<>), typeof(SearchLogger<>));
+        }
+
+        private static void RegisterDebugServices(IServiceCollection services)
+        {
+            services.AddScoped<IServiceBusPeeker<Alert>, AlertsPeeker>(sp =>
+            {
+                var notificationsOptions = sp.GetService<IOptions<NotificationsServiceBusSettings>>();
+                var debugOptions = sp.GetService<IOptions<NotificationsDebugSettings>>();
+                return new AlertsPeeker(
+                    new MessageReceiverFactory(notificationsOptions.Value.ConnectionString),
+                    notificationsOptions.Value.AlertsTopic,
+                    debugOptions.Value.AlertsSubscription);
+            });
+
+            services.AddScoped<IServiceBusPeeker<Notification>, NotificationsPeeker>(sp =>
+            {
+                var notificationsOptions = sp.GetService<IOptions<NotificationsServiceBusSettings>>();
+                var debugOptions = sp.GetService<IOptions<NotificationsDebugSettings>>();
+                return new NotificationsPeeker(
+                    new MessageReceiverFactory(notificationsOptions.Value.ConnectionString),
+                    notificationsOptions.Value.NotificationsTopic,
+                    debugOptions.Value.NotificationsSubscription);
+            });
         }
     }
 }

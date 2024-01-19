@@ -5,14 +5,18 @@
 
     "AtlasFunction:AzureStorage:MatchingConnectionString": "UseDevelopmentStorage=true",
     "AtlasFunction:AzureStorage:MatchingResultsBlobContainer": "matching-algorithm-results",
-    "AtlasFunction:AzureStorage:RepeatSearchMatchingResultsBlobContainer": "repeat-search-matching-results",
-    "AtlasFunction:AzureStorage:RepeatSearchResultsBlobContainer": "repeat-search-results",
-    "AtlasFunction:AzureStorage:SearchResultsBlobContainer": "atlas-search-results",
+
     "AtlasFunction:AzureStorage:MatchPredictionConnectionString": "UseDevelopmentStorage=true",
-    "AtlasFunction:AzureStorage:MatchPredictionRequestsBlobContainer": "match-prediction-requests",
-    "AtlasFunction:AzureStorage:MatchPredictionResultsBlobContainer": "match-prediction-results",
     "AtlasFunction:AzureStorage:MatchPredictionDownloadBatchSize": 10,
     "AtlasFunction:AzureStorage:MatchPredictionProcessingBatchSize": 1000,
+    "AtlasFunction:AzureStorage:MatchPredictionRequestsBlobContainer": "match-prediction-requests",
+    "AtlasFunction:AzureStorage:MatchPredictionResultsBlobContainer": "match-prediction-results",
+
+    "AtlasFunction:AzureStorage:RepeatSearchMatchingResultsBlobContainer": "repeat-search-matching-results",
+    "AtlasFunction:AzureStorage:RepeatSearchResultsBlobContainer": "repeat-search-results",
+
+    "AtlasFunction:AzureStorage:SearchResultsBlobContainer": "atlas-search-results",
+
     "AtlasFunction:AzureStorage:ShouldBatchResults": false,
 
     "AtlasFunction:MessagingServiceBus:ConnectionString": "override-this",
@@ -26,14 +30,15 @@
     "AtlasFunction:Orchestration:MatchPredictionBatchSize": 100,
 
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
 
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",
 
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
-    "MacDictionary:Import:CronSchedule": "0 0 2 * * *",
     "MacDictionary:Download:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
+    "MacDictionary:Import:CronSchedule": "0 0 2 * * *",
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
 
     "Matching:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
@@ -47,6 +52,8 @@
 
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
+    "NotificationsServiceBus:Debug:AlertsSubscription": "debug",
+    "NotificationsServiceBus:Debug:NotificationsSubscription": "debug",
     "NotificationsServiceBus:NotificationsTopic": "notifications"
   },
   "ConnectionStrings": {
