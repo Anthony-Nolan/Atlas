@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System;
 using System.Threading.Tasks;
+using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Services;

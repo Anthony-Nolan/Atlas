@@ -1,4 +1,4 @@
-﻿namespace Atlas.Common.Notifications.MessageModels
+﻿namespace Atlas.Client.Models.SupportMessages
 {
     public class Notification : BaseNotificationsMessage
     {

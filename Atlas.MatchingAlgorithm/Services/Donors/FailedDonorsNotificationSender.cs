@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.Notifications;
 using Atlas.MatchingAlgorithm.Config;
 using Atlas.MatchingAlgorithm.Models;

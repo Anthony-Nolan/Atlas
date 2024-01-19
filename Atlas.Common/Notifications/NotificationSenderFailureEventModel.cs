@@ -1,7 +1,7 @@
 ﻿using Atlas.Common.ApplicationInsights;
-using Atlas.Common.Notifications.MessageModels;
 using Newtonsoft.Json;
 using System;
+using Atlas.Client.Models.SupportMessages;
 
 namespace Atlas.Common.Notifications
 {

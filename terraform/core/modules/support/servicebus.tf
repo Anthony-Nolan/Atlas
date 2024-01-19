@@ -54,3 +54,23 @@ resource "azurerm_servicebus_subscription" "audit-alerts" {
   dead_lettering_on_message_expiration = false
 }
 
+resource "azurerm_servicebus_subscription" "debug-notifications" {
+  name                                 = "debug"
+  topic_id                             = azurerm_servicebus_topic.notifications.id
+  auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
+  default_message_ttl                  = var.default_servicebus_settings.debug-subscription-ttl-expiry
+  lock_duration                        = var.default_servicebus_settings.default-read-lock
+  max_delivery_count                   = var.default_servicebus_settings.default-message-retries
+  dead_lettering_on_message_expiration = false
+}
+
+resource "azurerm_servicebus_subscription" "debug-alerts" {
+  name                                 = "debug"
+  topic_id                             = azurerm_servicebus_topic.alerts.id
+  auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
+  default_message_ttl                  = var.default_servicebus_settings.debug-subscription-ttl-expiry
+  lock_duration                        = var.default_servicebus_settings.default-read-lock
+  max_delivery_count                   = var.default_servicebus_settings.default-message-retries
+  dead_lettering_on_message_expiration = false
+}
+

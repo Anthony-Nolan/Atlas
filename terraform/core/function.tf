@@ -79,11 +79,12 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "MatchPrediction:AzureStorage:ConnectionString"                    = azurerm_storage_account.azure_storage.primary_connection_string
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer" = module.match_prediction.storage.match_prediction_results_container_name
 
-    "NotificationsServiceBus:AlertsTopic"        = module.support.general.alerts_servicebus_topic.name
-    "NotificationsServiceBus:ConnectionString"   = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
-    "NotificationsServiceBus:NotificationsTopic" = module.support.general.notifications_servicebus_topic.name
-
-    "WEBSITE_RUN_FROM_PACKAGE" = var.WEBSITE_RUN_FROM_PACKAGE
+    "NotificationsServiceBus:AlertsTopic"                     = module.support.general.alerts_servicebus_topic.name
+    "NotificationsServiceBus:ConnectionString"                = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
+    "NotificationsServiceBus:Debug:AlertsSubscription"        = module.support.general.alerts_servicebus_debug_subscription
+    "NotificationsServiceBus:Debug:NotificationsSubscription" = module.support.general.notifications_servicebus_debug_subscription
+    "NotificationsServiceBus:NotificationsTopic"              = module.support.general.notifications_servicebus_topic.name
+    "WEBSITE_RUN_FROM_PACKAGE"                                = var.WEBSITE_RUN_FROM_PACKAGE
   }
 
   connection_string {

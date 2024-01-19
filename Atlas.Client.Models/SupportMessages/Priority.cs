@@ -1,4 +1,4 @@
-﻿namespace Atlas.Common.Notifications
+﻿namespace Atlas.Client.Models.SupportMessages
 {
     public enum Priority
     {
