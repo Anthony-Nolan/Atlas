@@ -165,7 +165,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
                 return new DonorImportResultsPeeker(
                     sp.GetService<IMessageReceiverFactory>(), 
                     settings.DonorImportResultsTopic, 
-                    settings.DonorImportResultsAuditSubscription);
+                    settings.DonorImportResultsDebugSubscription);
             });
         }
 

@@ -160,3 +160,13 @@ resource "azurerm_servicebus_subscription" "audit-donor-import-results" {
   max_delivery_count                   = var.default_servicebus_settings.default-message-retries
   dead_lettering_on_message_expiration = false
 }
+
+resource "azurerm_servicebus_subscription" "debug-donor-import-results" {
+  name                                 = "debug"
+  topic_id                             = azurerm_servicebus_topic.donor-import-results.id
+  auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
+  default_message_ttl                  = var.default_servicebus_settings.debug-subscription-ttl-expiry
+  lock_duration                        = var.default_servicebus_settings.default-read-lock
+  max_delivery_count                   = var.default_servicebus_settings.default-message-retries
+  dead_lettering_on_message_expiration = false
+}

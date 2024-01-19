@@ -6,8 +6,11 @@ locals {
     // Equivalent to 27.4 years - use on any prop that requires a long timespan before expiry
     long-expiry = "P9999D"
 
-    // Value should be long enough to allow time for debug/support but short enough to prevent messages piling up
+    // Value should be long enough to allow time to permit support investigations but short enough to prevent messages piling up
     audit-subscription-ttl-expiry = "P14D"
+
+    // Debug subscriptions are primarily used by quick-running automated tests, so a short message expiry is required to keep message count to a minimum.
+    debug-subscription-ttl-expiry = "PT1H"
 
     // 5GB
     default-bus-size = 5120
