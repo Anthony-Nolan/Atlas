@@ -28,6 +28,6 @@ namespace Atlas.DonorImport.ExternalInterface.Settings.ServiceBus
         /// <summary>
         /// Required by debug endpoint that peeks donor import results messages.
         /// </summary>
-        public string DonorImportResultsAuditSubscription { get; set; }
+        public string DonorImportResultsDebugSubscription { get; set; }
     }
 }
