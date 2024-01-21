@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Requests;
+﻿using Atlas.Client.Models.Search.Requests;
 using Atlas.ManualTesting.Common.Models;
 using Atlas.ManualTesting.Common.Services;
 using Atlas.ManualTesting.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Extensions;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.ManualTesting.Services.Scoring
 {
@@ -43,7 +42,7 @@ namespace Atlas.ManualTesting.Services.Scoring
 
             if (patients.Count == 0 || donors.Count == 0)
             {
-                Debug.WriteLine("Scoring request terminated early as no patient and/or donor data was read from file.");
+                System.Diagnostics.Debug.WriteLine("Scoring request terminated early as no patient and/or donor data was read from file.");
                 return;
             }
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Atlas.Client.Models.Debug
+namespace Atlas.Debug.Client.Models.DonorImport
 {
     public class DebugDonorsResult<TDonor>
     {

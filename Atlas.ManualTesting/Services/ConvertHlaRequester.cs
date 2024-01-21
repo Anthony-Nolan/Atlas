@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Atlas.Common.Public.Models.GeneticData;
+﻿using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.ManualTesting.Settings;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Polly;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Atlas.ManualTesting.Services
 {
@@ -75,13 +74,13 @@ namespace Atlas.ManualTesting.Services
                 response.EnsureSuccessStatusCode();
                 var hlaConversionResult = JsonConvert.DeserializeObject<List<string>>(await response.Content.ReadAsStringAsync());
 
-                Debug.WriteLine($"Result received: {request}");
+                System.Diagnostics.Debug.WriteLine($"Result received: {request}");
 
                 return hlaConversionResult;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"{FailedRequestPrefix} {request}. Details: {ex.Message}. Re-attempting until success or re-attempt count reached.");
+                System.Diagnostics.Debug.WriteLine($"{FailedRequestPrefix} {request}. Details: {ex.Message}. Re-attempting until success or re-attempt count reached.");
                 throw;
             }
         }

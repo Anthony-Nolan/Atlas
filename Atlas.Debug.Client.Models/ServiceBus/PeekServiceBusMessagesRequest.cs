@@ -1,4 +1,4 @@
-﻿namespace Atlas.Client.Models.Debug
+﻿namespace Atlas.Debug.Client.Models.ServiceBus
 {
     /// <summary>
     /// Request to peek at messages in a Service Bus subscription.

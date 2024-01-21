@@ -16,11 +16,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### 1.7.0
-* Added new namespace, `Debug`, for models that are used in debug endpoints.
-    * Moved following models to `Debug` namespace:
-      * `DebugDonorResult` used in existing donor debug endpoints.
-      * `PeekServiceBusMessagesRequest` used in message peeker service.
-    * Added new `Debug` model, `DonorUpdateFailureInfo`.
 * Moved existing `Alert` and `Notification` message models (and dependent classes) to new `SupportMessages` namespace.
 
 ### 1.6.0

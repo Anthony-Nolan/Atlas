@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
-using Atlas.Common.Public.Models.GeneticData;
+﻿using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Test.Verification.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
 {
@@ -73,7 +71,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
 
             foreach (var maskingRequest in request.MaskingRequests.Where(r => r.ProportionToMask > 0))
             {
-                Debug.WriteLine($"Masking {maskingRequest.ProportionToMask}% of {request.Locus} to {maskingRequest.MaskingCategory}.");
+                System.Diagnostics.Debug.WriteLine($"Masking {maskingRequest.ProportionToMask}% of {request.Locus} to {maskingRequest.MaskingCategory}.");
 
                 var transformationRequest = new TransformationRequest
                 {

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Requests;
+﻿using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.ManualTesting.Common.Models;
 using Atlas.ManualTesting.Models;
@@ -14,6 +7,12 @@ using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Polly;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Atlas.ManualTesting.Services.Scoring
 {
@@ -108,13 +107,13 @@ namespace Atlas.ManualTesting.Services.Scoring
                 response.EnsureSuccessStatusCode();
                 var scoringResult = JsonConvert.DeserializeObject<List<DonorScoringResult>>(await response.Content.ReadAsStringAsync());
 
-                Debug.WriteLine($"ScoreBatch result received for patient {patientId}, first donor in batch {firstDonorIdInBatch}");
+                System.Diagnostics.Debug.WriteLine($"ScoreBatch result received for patient {patientId}, first donor in batch {firstDonorIdInBatch}");
                 
                 return scoringResult;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"ScoreBatch request for failed for patient {patientId}, first donor in batch {firstDonorIdInBatch}. Details: {ex.Message} " +
+                System.Diagnostics.Debug.WriteLine($"ScoreBatch request for failed for patient {patientId}, first donor in batch {firstDonorIdInBatch}. Details: {ex.Message} " +
                                 "Re-attempting until success or re-attempt count reached.");
                 throw;
             }

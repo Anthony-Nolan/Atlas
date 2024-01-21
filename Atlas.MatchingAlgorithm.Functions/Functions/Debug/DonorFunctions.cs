@@ -12,9 +12,9 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Linq;
-using Atlas.Client.Models.Debug;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.Common.Debugging;
+using Atlas.Debug.Client.Models.DonorImport;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
 {

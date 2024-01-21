@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
-using Atlas.Client.Models.Debug;
 using Atlas.Common.Utils.Http;
+using Atlas.Debug.Client.Models.ServiceBus;
 using Atlas.ManualTesting.Models;
 using Atlas.ManualTesting.Services;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;

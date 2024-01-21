@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Atlas.Client.Models.Search.Results;
+﻿using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.ManualTesting.Common.Models;
@@ -37,7 +36,7 @@ namespace Atlas.ManualTesting.Common.Services
 
             if (record == null)
             {
-                Debug.WriteLine($"No record found with Atlas search id {notification.SearchRequestId}.");
+                System.Diagnostics.Debug.WriteLine($"No record found with Atlas search id {notification.SearchRequestId}.");
                 return;
             }
 
@@ -49,7 +48,7 @@ namespace Atlas.ManualTesting.Common.Services
             if (!notification.WasSuccessful)
             {
                 await searchRequestsRepository.MarkSearchResultsAsFailed(record.Id);
-                Debug.WriteLine($"Search request {record.Id} was not successful - record updated.");
+                System.Diagnostics.Debug.WriteLine($"Search request {record.Id} was not successful - record updated.");
                 return;
             }
 
@@ -61,7 +60,7 @@ namespace Atlas.ManualTesting.Common.Services
             var resultSet = JsonConvert.DeserializeObject<TResultSet>(await DownloadResults(notification));
             await ProcessAndStoreResults(searchRequest, resultSet);
             await searchRequestsRepository.MarkSearchResultsAsSuccessful(GetSuccessInfo(searchRequest.Id, resultSet.TotalResults));
-            Debug.WriteLine($"Search request {searchRequest.Id} was successful - {resultSet.TotalResults} matched donors found.");
+            System.Diagnostics.Debug.WriteLine($"Search request {searchRequest.Id} was successful - {resultSet.TotalResults} matched donors found.");
         }
 
         private async Task<string> DownloadResults(TNotification notification)

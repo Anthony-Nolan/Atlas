@@ -1,4 +1,3 @@
-using Atlas.Client.Models.Debug;
 using Atlas.Common.Utils.Http;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
@@ -11,6 +10,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ServiceBus;
+using Atlas.Debug.Client.Models.ServiceBus;
 
 namespace Atlas.Functions.Functions.Debug
 {

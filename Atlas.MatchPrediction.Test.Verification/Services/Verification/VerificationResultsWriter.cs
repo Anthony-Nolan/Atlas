@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
-using Atlas.Common.Public.Models.GeneticData;
+﻿using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.Verification.Compilation;
 using CsvHelper;
 using MoreLinq.Extensions;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 {
@@ -39,7 +37,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
             var results = await CompileResults(request);
             WriteResults(request, results);
 
-            Debug.WriteLine("Completed writing results.");
+            System.Diagnostics.Debug.WriteLine("Completed writing results.");
         }
 
         private async Task<IReadOnlyCollection<VerificationResult>> CompileResults(VerificationResultsRequest request)
@@ -53,7 +51,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
             foreach (var compileRequest in compileRequests)
             {
-                Debug.WriteLine($"Compiling results for {compileRequest}.");
+                System.Diagnostics.Debug.WriteLine($"Compiling results for {compileRequest}.");
                 results.Add(await resultsCompiler.CompileVerificationResults(compileRequest));
             }
 
@@ -84,7 +82,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
         {
             if (result.ActualVersusExpectedResults.IsNullOrEmpty())
             {
-                Debug.WriteLine($"No results found for {result.Request}.");
+                System.Diagnostics.Debug.WriteLine($"No results found for {result.Request}.");
                 return;
             }
 
@@ -94,7 +92,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
             using var csv = new CsvWriter(writer);
             csv.WriteRecords(result.ActualVersusExpectedResults.OrderBy(r => r.Probability));
 
-            Debug.WriteLine($"AvE results written for {result.Request}.");
+            System.Diagnostics.Debug.WriteLine($"AvE results written for {result.Request}.");
         }
 
         private static void WriteMetrics(string writeDirectory, int runId, IReadOnlyCollection<VerificationResult> results)

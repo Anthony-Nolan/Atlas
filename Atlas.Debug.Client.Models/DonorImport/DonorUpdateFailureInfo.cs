@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Atlas.Client.Models.Debug
+namespace Atlas.Debug.Client.Models.DonorImport
 {
     /// <summary>
     /// Information about why a donor update failed validation during donor import.

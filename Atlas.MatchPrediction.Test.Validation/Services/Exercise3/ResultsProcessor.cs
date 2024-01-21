@@ -9,7 +9,6 @@ using Atlas.MatchPrediction.Test.Validation.Data.Models;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -44,7 +43,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise3
 
             if (requests.IsNullOrEmpty())
             {
-                Debug.WriteLine("No match requests found for submitted algorithm IDs.");
+                System.Diagnostics.Debug.WriteLine("No match requests found for submitted algorithm IDs.");
                 return;
             }
 
@@ -93,29 +92,29 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise3
             MatchProbabilities probabilities)
         {
             return new List<MatchPredictionResults>
+        {
+            new()
             {
-                new()
-                {
-                    MatchPredictionRequestId = requestId,
-                    Locus = locus,
-                    MismatchCount = 0,
-                    Probability = probabilities.ZeroMismatchProbability?.Decimal
+                MatchPredictionRequestId = requestId,
+                Locus = locus,
+                MismatchCount = 0,
+                Probability = probabilities.ZeroMismatchProbability?.Decimal
+            },
+            new()
+            {
+                MatchPredictionRequestId = requestId,
+                Locus = locus,
+                MismatchCount = 1,
+                Probability = probabilities.OneMismatchProbability?.Decimal
+            },
+            new()
+            {
+                MatchPredictionRequestId = requestId,
+                Locus = locus,
+                MismatchCount = 2,
+                Probability = probabilities.TwoMismatchProbability?.Decimal
                 },
-                new()
-                {
-                    MatchPredictionRequestId = requestId,
-                    Locus = locus,
-                    MismatchCount = 1,
-                    Probability = probabilities.OneMismatchProbability?.Decimal
-                },
-                new()
-                {
-                    MatchPredictionRequestId = requestId,
-                    Locus = locus,
-                    MismatchCount = 2,
-                    Probability = probabilities.TwoMismatchProbability?.Decimal
-                },
-            };
+        };
         }
         private static IEnumerable<MatchPredictionResults> BuildLocusMatchProbabilities(
             int matchedDonorId,

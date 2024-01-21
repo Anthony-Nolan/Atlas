@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Concurrency;
@@ -213,7 +212,7 @@ namespace Atlas.Common.Caching
                 var message =
                     $"Exception thrown in {nameof(GenerateAndCacheCollectionWithTracking)}, with {nameof(collectionCacheKey)}: '{collectionCacheKey}'. Exception details: {e.ToString()}";
                 Console.WriteLine(message);
-                Debug.WriteLine(message);
+                System.Diagnostics.Debug.WriteLine(message);
                 //TODO: ATLAS-542 Create static Logger?
                 if (rethrowErrors)
                 {

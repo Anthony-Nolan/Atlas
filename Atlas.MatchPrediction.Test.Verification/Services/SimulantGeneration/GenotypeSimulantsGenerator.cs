@@ -1,10 +1,9 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
+﻿using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
+using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
 {
@@ -28,7 +27,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
 
         public async Task GenerateSimulants(GenerateSimulantsRequest request, NormalisedHaplotypePool pool)
         {
-            Debug.WriteLine($"Simulating {request.TestIndividualCategory} genotypes.");
+            System.Diagnostics.Debug.WriteLine($"Simulating {request.TestIndividualCategory} genotypes.");
 
             var genotypes = genotypeSimulator.SimulateGenotypes(request.SimulantCount, pool);
 

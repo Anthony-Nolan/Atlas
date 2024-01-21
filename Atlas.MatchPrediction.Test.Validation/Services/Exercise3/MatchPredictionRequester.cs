@@ -11,7 +11,6 @@ using Newtonsoft.Json;
 using Polly;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -72,7 +71,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise3
         {
             await validationRepository.DeleteMatchPredictionRequestData(fromPatientId);
 
-            Debug.WriteLine($"Starting to send match prediction requests from patient id {fromPatientId}...");
+            System.Diagnostics.Debug.WriteLine($"Starting to send match prediction requests from patient id {fromPatientId}...");
 
             var patients = await subjectRepository.GetPatients(fromPatientId);
             var donors = (await subjectRepository.GetDonors()).ToList();
@@ -84,10 +83,10 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise3
                     .Select(d => SendAndStoreMatchPredictionRequests(patient, d));
                 await Task.WhenAll(sendTasks);
 
-                Debug.WriteLine($"Requests submitted for {patient.ExternalId}");
+                System.Diagnostics.Debug.WriteLine($"Requests submitted for {patient.ExternalId}");
             }
 
-            Debug.WriteLine("Completed sending match prediction requests.");
+            System.Diagnostics.Debug.WriteLine("Completed sending match prediction requests.");
         }
 
         private async Task SendAndStoreMatchPredictionRequests(SubjectInfo patient, IEnumerable<SubjectInfo> donors)
@@ -142,7 +141,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise3
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Request failed for {patientId}. Details: {ex.Message}. {ex.InnerException} " +
+                System.Diagnostics.Debug.WriteLine($"Request failed for {patientId}. Details: {ex.Message}. {ex.InnerException} " +
                                 "Re-attempting until success or re-attempt count reached.");
                 throw;
             }

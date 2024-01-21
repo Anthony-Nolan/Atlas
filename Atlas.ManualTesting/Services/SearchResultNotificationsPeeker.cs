@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Debug;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Common.ServiceBus;
+using Atlas.Debug.Client.Models.ServiceBus;
 using Atlas.ManualTesting.Models;
 
 namespace Atlas.ManualTesting.Services
