@@ -42,6 +42,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
                 fetchNotificationConfigurationSettings, fetchStalledFileSettings, fetchPublishDonorUpdatesSettings, fetchAzureStorageSettings, fetchMessagingServiceBusSettings, fetchFailureLogsSettings);
             services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
             services.RegisterServices(fetchMessagingServiceBusSettings, fetchAzureStorageSettings);
+            services.RegisterDebugServices(fetchMessagingServiceBusSettings, fetchAzureStorageSettings);
             services.RegisterImportDatabaseTypes(fetchSqlConnectionString);
         }
 
@@ -154,7 +155,14 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IDonorUpdateMapper, DonorUpdateMapper>();
             services.AddScoped<IDonorImportMessageSender, DonorImportMessageSender>();
             services.AddScoped<IDonorImportFailuresCleaner, DonorImportFailuresCleaner>();
+        }
 
+        private static void RegisterDebugServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings
+            )
+        {
             services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
                 new MessageReceiverFactory(fetchMessagingServiceBusSettings(sp).ConnectionString)
             );
@@ -163,9 +171,16 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             {
                 var settings = fetchMessagingServiceBusSettings(sp);
                 return new DonorImportResultsPeeker(
-                    sp.GetService<IMessageReceiverFactory>(), 
-                    settings.DonorImportResultsTopic, 
+                    sp.GetService<IMessageReceiverFactory>(),
+                    settings.DonorImportResultsTopic,
                     settings.DonorImportResultsDebugSubscription);
+            });
+
+            services.AddScoped<IDonorImportBlobStorageClient, DonorImportBlobStorageClient>(sp =>
+            {
+                var storageSettings = fetchAzureStorageSettings(sp);
+                var logger = sp.GetService<ILogger>();
+                return new DonorImportBlobStorageClient(logger, storageSettings.ConnectionString, storageSettings.DonorFileBlobContainer);
             });
         }
 

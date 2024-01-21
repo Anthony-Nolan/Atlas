@@ -14,4 +14,4 @@ This package contains all client models utilised by the Atlas debug endpoints.
     * `DebugDonorResult` to `DonorImport` namespace.
     * `PeekServiceBusMessagesRequest` and `PeekedServiceBusMessage<T>` to `ServiceBus` namespace.
 * Added new models:
-    * `DonorUpdateFailureInfo` to `DonorImport` namespace.
+    * `DonorUpdateFailureInfo` and `DonorImportRequest` to `DonorImport` namespace.
