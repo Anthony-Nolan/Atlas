@@ -3,7 +3,6 @@ using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.ManualTesting.Common.Repositories;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Newtonsoft.Json;
-using System.Diagnostics;
 
 namespace Atlas.ManualTesting.Common.Services
 {
@@ -36,7 +35,7 @@ namespace Atlas.ManualTesting.Common.Services
             await exportRepository.SetCompletedDataRefreshInfo(dataRefresh);
 
             var successStatus = dataRefresh.WasSuccessful ? "" : "not ";
-            Debug.WriteLine($"Latest export record updated: data refresh {dataRefresh.DataRefreshRecordId} was {successStatus}successful.");
+            System.Diagnostics.Debug.WriteLine($"Latest export record updated: data refresh {dataRefresh.DataRefreshRecordId} was {successStatus}successful.");
         }
 
         /// <returns>Id of new <see cref="TestDonorExportRecord"/></returns>
@@ -75,7 +74,7 @@ namespace Atlas.ManualTesting.Common.Services
 
         private async Task InvokeDataRefresh(int exportRecordId)
         {
-            Debug.WriteLine("Requesting data refresh on matching algorithm.");
+            System.Diagnostics.Debug.WriteLine("Requesting data refresh on matching algorithm.");
 
             var httpRequestClient = new HttpClient
             {
@@ -89,12 +88,12 @@ namespace Atlas.ManualTesting.Common.Services
             if(response.IsSuccessStatusCode)
             {
                 var dataRefreshResponse = JsonConvert.DeserializeObject<DataRefreshResponse>(await response.Content.ReadAsStringAsync());
-                Debug.WriteLine("Data refresh request submitted - check relevant AI logs for detailed progress messages.");
+                System.Diagnostics.Debug.WriteLine("Data refresh request submitted - check relevant AI logs for detailed progress messages.");
                 await exportRepository.SetDataRefreshRecordId(exportRecordId, dataRefreshResponse.DataRefreshRecordId.Value);
                 return;
             }
 
-            Debug.WriteLine($"Data refresh request failed: {response.ReasonPhrase}");
+            System.Diagnostics.Debug.WriteLine($"Data refresh request failed: {response.ReasonPhrase}");
         }
     }
 }

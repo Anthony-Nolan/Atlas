@@ -1,14 +1,12 @@
-﻿using Atlas.Common.GeneticData.Hla.Services;
+﻿using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
 using Dasync.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services
 {
@@ -35,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
 
         public async Task ExpandAndStoreLatestGenericMacs()
         {
-            Debug.WriteLine("Fetching MACs for expansion.");
+            System.Diagnostics.Debug.WriteLine("Fetching MACs for expansion.");
 
             var genericMacs = await FetchLatestGenericMacs();
 
@@ -44,7 +42,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
                 .Batch(BatchSize)
                 .ForEachAsync(async batch => await repository.BulkInsert(batch));
 
-            Debug.WriteLine("MAC expansion completed.");
+            System.Diagnostics.Debug.WriteLine("MAC expansion completed.");
         }
 
         /// <summary>
@@ -74,7 +72,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
 
         private static IEnumerable<ExpandedMac> Expand(Mac mac)
         {
-            Debug.WriteLine($"Expanding code: {mac.Code}.");
+            System.Diagnostics.Debug.WriteLine($"Expanding code: {mac.Code}.");
 
             return AlleleStringSplitter.SplitAlleleString(mac.Hla).Select(secondField => new ExpandedMac
             {

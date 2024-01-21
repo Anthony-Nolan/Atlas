@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Debug;
 using Atlas.Common.ServiceBus;
+using Atlas.Debug.Client.Models.ServiceBus;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.ManualTesting.Models;
 

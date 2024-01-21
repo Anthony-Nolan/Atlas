@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.Client.Models.Debug;
+using Atlas.Debug.Client.Models.DonorImport;
 
 namespace Atlas.Common.Debugging
 {

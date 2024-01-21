@@ -1,18 +1,16 @@
-﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+﻿using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface;
+using Atlas.MatchPrediction.Models.FileSchema;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
-using Atlas.MatchPrediction.Models.FileSchema;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using MaskedHla = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<
         System.Collections.Generic.IReadOnlyCollection<Atlas.MatchPrediction.Test.Verification.Models.SimulantLocusHla>>;
 
@@ -51,7 +49,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
             string hlaNomenclatureVersion,
             ImportTypingCategory typingCategory)
         {
-            Debug.WriteLine($"Masking {request.TestIndividualCategory} genotypes.");
+            System.Diagnostics.Debug.WriteLine($"Masking {request.TestIndividualCategory} genotypes.");
 
             var maskedLoci = await MaskGenotypesByLocus(request, maskingRequests, hlaNomenclatureVersion, typingCategory);
             var maskedSimulants = BuildSimulantsFromMaskedLoci(maskedLoci, request);

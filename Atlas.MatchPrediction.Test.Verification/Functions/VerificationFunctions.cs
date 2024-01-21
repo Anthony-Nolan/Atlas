@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -62,7 +61,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
             }
             catch (System.Exception ex)
             {
-                Debug.WriteLine($"Error while downloading results for {notification.SearchRequestId}: {ex.GetBaseException()}");
+                System.Diagnostics.Debug.WriteLine($"Error while downloading results for {notification.SearchRequestId}: {ex.GetBaseException()}");
                 throw;
             }
         }
@@ -81,7 +80,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
             }
             catch (System.Exception ex)
             {
-                Debug.WriteLine($"Error while downloading results for {notification.SearchRequestId}: {ex.GetBaseException()}");
+                System.Diagnostics.Debug.WriteLine($"Error while downloading results for {notification.SearchRequestId}: {ex.GetBaseException()}");
                 throw;
             }
         }

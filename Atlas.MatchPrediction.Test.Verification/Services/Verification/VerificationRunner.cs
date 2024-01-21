@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Requests;
+﻿using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.ManualTesting.Common.Repositories;
@@ -18,6 +13,10 @@ using Atlas.MatchPrediction.Test.Verification.Settings;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Polly;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 {
@@ -73,11 +72,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
                                             "verification results to be useful.");
             }
 
-            Debug.WriteLine($"Start submitting search requests for test harness {testHarnessId}...");
+            System.Diagnostics.Debug.WriteLine($"Start submitting search requests for test harness {testHarnessId}...");
 
             var verificationRunId = await SubmitSearchRequests(testHarnessId);
 
-            Debug.WriteLine("Completed submitting search requests.");
+            System.Diagnostics.Debug.WriteLine("Completed submitting search requests.");
 
             return verificationRunId;
         }
@@ -199,13 +198,13 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
                 response.EnsureSuccessStatusCode();
 
                 var searchResponse = JsonConvert.DeserializeObject<SearchInitiationResponse>(await response.Content.ReadAsStringAsync());
-                Debug.WriteLine($"Search request (mm:{searchRequest.MatchCriteria.DonorMismatchCount}) submitted for {patientId} " +
+                System.Diagnostics.Debug.WriteLine($"Search request (mm:{searchRequest.MatchCriteria.DonorMismatchCount}) submitted for {patientId} " +
                                 $"with request id: {searchResponse.SearchIdentifier}.");
                 return searchResponse.SearchIdentifier;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Search request (mm:{searchRequest.MatchCriteria.DonorMismatchCount}) failed for {patientId}. Details: {ex.Message} " +
+                System.Diagnostics.Debug.WriteLine($"Search request (mm:{searchRequest.MatchCriteria.DonorMismatchCount}) failed for {patientId}. Details: {ex.Message} " +
                                 "Re-attempting until success or re-attempt count reached.");
                 throw;
             }

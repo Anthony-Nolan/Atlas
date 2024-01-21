@@ -1,4 +1,4 @@
-﻿namespace Atlas.Client.Models.Debug
+﻿namespace Atlas.Debug.Client.Models.ServiceBus
 {
     public class PeekedServiceBusMessage<T>
     {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Debug;
+using Atlas.Debug.Client.Models.ServiceBus;
 using Atlas.ManualTesting.Services.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 

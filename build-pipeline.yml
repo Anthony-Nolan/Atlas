@@ -36,6 +36,7 @@ jobs:
             Atlas.Functions
             Atlas.Functions.PublicApi
             Atlas.Functions.Test
+            Atlas.Debug.Client.Models
             Atlas.DonorImport.Data
             Atlas.DonorImport.FileSchema.Models
             Atlas.DonorImport.Functions
@@ -64,6 +65,13 @@ jobs:
         inputs:
           command: pack
           packagesToPack: '**/Atlas.Client.Models.csproj'
+          packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
+          nobuild: true
+      - task: DotNetCoreCLI@2
+        displayName: 'Prepare Debug Client Models'
+        inputs:
+          command: pack
+          packagesToPack: '**/Atlas.Debug.Client.Models.csproj'
           packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
           nobuild: true
       - task: DotNetCoreCLI@2
@@ -96,6 +104,8 @@ jobs:
         # Suffix version number with build ID to allow for a prerelease ci (continuous integration) packages to be published  
       - bash: dotnet pack **/Atlas.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Client Models
+      - bash: dotnet pack **/Atlas.Debug.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
+        displayName: Pack Prerelease Debug Client Models
       - bash: dotnet pack **/Atlas.MatchingAlgorithm.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Matching Algorithm Client Models
       - bash: dotnet pack **/Atlas.DonorImport.FileSchema.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"

@@ -1,11 +1,10 @@
-﻿using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.ManualTesting.Common.Models;
+﻿using Atlas.ManualTesting.Common.Models;
 using Atlas.ManualTesting.Common.Services;
 using Atlas.MatchPrediction.Test.Validation.Data.Models;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories;
 using Atlas.MatchPrediction.Test.Validation.Models;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Validation.Services
 {
@@ -48,7 +47,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services
                 .Where(PositionOneOfMandatoryLociAreTyped)
                 .Select(s => s.ToSubjectInfo(subjectType)).ToList();
             
-            Debug.WriteLine($"Imported {subjectType} count: {importedSubjects.Count}; count after filtering for required HLA: {filteredSubjects.Count}.");
+            System.Diagnostics.Debug.WriteLine($"Imported {subjectType} count: {importedSubjects.Count}; count after filtering for required HLA: {filteredSubjects.Count}.");
 
             await subjectRepository.BulkInsert(filteredSubjects);
         }

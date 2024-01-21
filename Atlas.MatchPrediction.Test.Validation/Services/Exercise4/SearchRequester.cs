@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Atlas.Client.Models.Search;
+﻿using Atlas.Client.Models.Search;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
@@ -15,6 +10,10 @@ using Atlas.MatchPrediction.Test.Validation.Settings;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Polly;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4
 {
@@ -180,12 +179,12 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4
                 response.EnsureSuccessStatusCode();
 
                 var searchResponse = JsonConvert.DeserializeObject<SearchInitiationResponse>(await response.Content.ReadAsStringAsync());
-                Debug.WriteLine($"Search request submitted for {patientId} with request id: {searchResponse.SearchIdentifier}.");
+                System.Diagnostics.Debug.WriteLine($"Search request submitted for {patientId} with request id: {searchResponse.SearchIdentifier}.");
                 return searchResponse.SearchIdentifier;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Search request failed for {patientId}. Details: {ex.Message} " +
+                System.Diagnostics.Debug.WriteLine($"Search request failed for {patientId}. Details: {ex.Message} " +
                                 "Re-attempting until success or re-attempt count reached.");
                 throw;
             }

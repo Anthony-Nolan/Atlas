@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Atlas.Client.Models.Debug;
+using Atlas.Debug.Client.Models.ServiceBus;
 
 namespace Atlas.ManualTesting.Models
 {

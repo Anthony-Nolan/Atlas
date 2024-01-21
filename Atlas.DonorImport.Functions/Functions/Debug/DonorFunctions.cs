@@ -10,12 +10,12 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Debug;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Functions.Models.Debug;
 using Atlas.DonorImport.Models;
 using Atlas.Common.Debugging;
+using Atlas.Debug.Client.Models.DonorImport;
 
 namespace Atlas.DonorImport.Functions.Functions.Debug
 {

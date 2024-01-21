@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Debug;
+﻿using Atlas.Debug.Client.Models.ServiceBus;
 using Atlas.Common.Utils.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

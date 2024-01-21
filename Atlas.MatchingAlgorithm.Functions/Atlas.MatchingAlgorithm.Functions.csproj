@@ -47,6 +47,7 @@
     </ItemGroup>
     
     <ItemGroup>
+      <ProjectReference Include="..\Atlas.Debug.Client.Models\Atlas.Debug.Client.Models.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
     </ItemGroup>
 </Project>

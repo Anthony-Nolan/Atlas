@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Atlas.DonorImport.Data.Repositories;
+﻿using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Data.Models;
 using MoreLinq;
 
@@ -23,10 +22,10 @@ namespace Atlas.ManualTesting.Common.Services
 
         public async Task ExportDonorsToDonorStore(IEnumerable<Donor> donors)
         {
-            Debug.WriteLine("Deleting all existing donors from donor store.");
+            System.Diagnostics.Debug.WriteLine("Deleting all existing donors from donor store.");
             await DeleteExistingDonorsFromDonorImportRepo();
 
-            Debug.WriteLine("Inserting test donors into donor store.");
+            System.Diagnostics.Debug.WriteLine("Inserting test donors into donor store.");
             await InsertTestDonorsIntoDonorImportRepo(donors);
         }
 

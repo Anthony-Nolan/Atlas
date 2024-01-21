@@ -1,10 +1,9 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
+﻿using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
+using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
 using Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration;
-using System.Diagnostics;
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services
 {
@@ -34,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
 
         public async Task<int> GenerateTestHarness(GenerateTestHarnessRequest request)
         {
-            Debug.WriteLine("Generating normalised frequency pool.");
+            System.Diagnostics.Debug.WriteLine("Generating normalised frequency pool.");
             var pool = await poolGenerator.GenerateNormalisedHaplotypeFrequencyPool();
 
             var testHarnessId = await testHarnessRepository.AddTestHarness(pool.Id, request.Comments);
@@ -44,7 +43,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
 
             await testHarnessRepository.MarkAsCompleted(testHarnessId);
 
-            Debug.WriteLine("Done.");
+            System.Diagnostics.Debug.WriteLine("Done.");
             return testHarnessId;
         }
 
