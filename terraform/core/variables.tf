@@ -119,7 +119,7 @@ variable "DONOR_IMPORT_STALLED_FILE_DURATION" {
 variable "DONOR_IMPORT_ALLOW_FULL_MODE_IMPORT" {
   type        = bool
   default     = false
-  description = "Accept or not import files with Full mode."
+  description = "Controls whether Full mode donor import files will be accepted (true) or rejected (false)"
 }
 
 variable "DONOR_IMPORT_FAILURE_LOGS_CRONTAB" {

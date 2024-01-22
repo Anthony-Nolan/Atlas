@@ -89,7 +89,6 @@ namespace Atlas.DonorImport.Services
                 if (updateMode == UpdateMode.Full && !settings.AllowFullModeImport)
                 {
                     const string message = "Importing donors with Full mode is not allowed when allowFullModeImport is false.";
-                    await donorImportFileHistoryService.RegisterFailedDonorImportWithPermanentError(file);
                     await NotifyOnFailure(file, message, $"Donor file: {file.FileLocation}");
                     return;
                 }

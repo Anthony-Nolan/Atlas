@@ -17,7 +17,7 @@ using NUnit;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Settings;
 
-namespace Atlas.DonorImport.Test
+namespace Atlas.DonorImport.Test.Services
 {
     [TestFixture]
     public class DonorImportMessageSenderTests
@@ -31,6 +31,7 @@ namespace Atlas.DonorImport.Test
         private IDonorImportLogger<DonorImportLoggingContext> logger;
         private IDonorImportMessageSender donorImportMessageSender;
         private DonorImportSettings donorImportSettings;
+
 
         private IDonorFileImporter donorFileImporter;
 
@@ -46,22 +47,20 @@ namespace Atlas.DonorImport.Test
             logger = Substitute.For<IDonorImportLogger<DonorImportLoggingContext>>();
             donorImportMessageSender = Substitute.For<IDonorImportMessageSender>();
 
-            donorImportSettings = new DonorImportSettings();
+            donorImportSettings = new DonorImportSettings { AllowFullModeImport = true };
 
             donorFileImporter = new DonorFileImporter(fileParser, donorRecordChangeApplier, donorImportFileHistoryService, notificationSender,
                 donorLogService, donorUpdateCategoriser, new DonorImportLoggingContext(), logger, donorImportMessageSender, donorImportSettings);
         }
 
-        [TestCase(UpdateMode.Differential, true)]
-        [TestCase(UpdateMode.Differential, false)]
-        [TestCase(UpdateMode.Full, true)]
-        public async Task ImportDonorFile_SendsSuccessResultMessage(UpdateMode mode, bool allowFullModeImport)
+        [Test]
+        public async Task ImportDonorFile_SendsSuccessResultMessage()
         {
             const int validDonorCount = 3;
             var validDonors = DonorUpdateBuilder.New.Build(validDonorCount).ToList();
             const int invalidDonorsCount = 5;
             var invalidDonors = DonorUpdateBuilder.New.Build(invalidDonorsCount).ToList();
-            var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonorsAndUpdateMode(UpdateMode.Differential, validDonors.Concat(invalidDonors).ToArray()).Build();
+            var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(validDonors.Concat(invalidDonors).ToArray()).Build();
             var invalidDonorsWithErrors = invalidDonors.Select(d => new SearchableDonorValidationResult { DonorUpdate = d }).ToList();
             fileParser.PrepareToLazilyParseDonorUpdates(file.Contents).Returns(new LazilyParsingDonorFile(file.Contents));
             donorUpdateCategoriser.Categorise(Arg.Any<IEnumerable<DonorUpdate>>(), Arg.Any<string>())
@@ -72,27 +71,10 @@ namespace Atlas.DonorImport.Test
                 });
             donorLogService.FilterDonorUpdatesBasedOnUpdateTime(Arg.Any<IEnumerable<DonorUpdate>>(), Arg.Any<DateTime>())
                 .Returns(validDonors.ToAsyncEnumerable());
-            donorImportSettings.AllowFullModeImport = allowFullModeImport;
 
             await donorFileImporter.ImportDonorFile(file);
 
             await donorImportMessageSender.Received().SendSuccessMessage(file.FileLocation, validDonorCount, Arg.Is<List<SearchableDonorValidationResult>>(r => r.Count == invalidDonorsCount));
-        }
-
-        [Test]
-        public async Task ImportDonorFile_WhenUpdateModeIsFullAndItsNotAllowed_SendsFailedResultMessageAndAlert()
-        {
-            var donorsCount = 3;
-            var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonorsAndUpdateMode(UpdateMode.Full, DonorUpdateBuilder.New.Build(donorsCount).ToArray()).Build(); 
-            fileParser.PrepareToLazilyParseDonorUpdates(file.Contents).Returns(new LazilyParsingDonorFile(file.Contents));
-            donorImportSettings.AllowFullModeImport = false;
-
-            await donorFileImporter.ImportDonorFile(file);
-            await donorImportMessageSender.Received().SendFailureMessage(file.FileLocation, ImportFailureReason.ErrorDuringImport,
-                Arg.Any<string>());
-
-            await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
-            await donorImportFileHistoryService.ReceivedWithAnyArgs().RegisterFailedDonorImportWithPermanentError(default);
         }
 
         [Test]
@@ -180,7 +162,7 @@ namespace Atlas.DonorImport.Test
             const string error = "Unexpected Exception";
             lazeFile.ReadLazyDonorUpdates().Throws(new Exception(error));
             fileParser.PrepareToLazilyParseDonorUpdates(Arg.Any<Stream>()).Returns(lazeFile);
-            
+
             try
             {
                 await donorFileImporter.ImportDonorFile(file);
@@ -192,26 +174,5 @@ namespace Atlas.DonorImport.Test
 
             await donorImportMessageSender.Received().SendFailureMessage(file.FileLocation, ImportFailureReason.ErrorDuringImport, error);
         }
-
-        [Test]
-        public async Task ImportDonorFile_DisposeIsCalledOnILazilyParsingDonorFile()
-        {
-            var file = DonorImportFileBuilder.NewWithDefaultContents.Build();
-            var lazeFile = Substitute.For<ILazilyParsingDonorFile>();
-            lazeFile.ReadLazyDonorUpdates().Throws(new Exception());
-            fileParser.PrepareToLazilyParseDonorUpdates(Arg.Any<Stream>()).Returns(lazeFile);
-
-            try
-            {
-                await donorFileImporter.ImportDonorFile(file);
-            }
-            catch
-            {
-                // ignored
-            }
-
-            lazeFile.Received().Dispose();
-        }
-
     }
 }

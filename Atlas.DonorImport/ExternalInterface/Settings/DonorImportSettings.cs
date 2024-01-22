@@ -9,10 +9,8 @@
         public int HoursToCheckStalledFiles { get; set; }
 
         /// <summary>
-        /// This setting indicates wrether accept or not import files with Full mode.
+        /// This setting indicates whether accept or not import files with Full mode.
         /// </summary>
         public bool AllowFullModeImport { get; set; }
-
-
     }
 }
