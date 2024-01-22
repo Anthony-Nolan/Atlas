@@ -27,6 +27,16 @@ Only the *public interface* of ATLAS is versioned in code. In practice, this mea
 
 All the above projects are versioned in-step with the public API.
 
+### Debug Client Versioning
+The debug client projects, `Atlas.Debug.Client` and `Atlas.Debug.Client.Models` have their own independently assigned version number (both share the same number).
+
+Their .`csproj` files also denote which version of Atlas the libraries currently target, via the XML tag `<TargetAtlasVersion>`.
+
+The `TargetAtlasVersion` should be updated in-step with the public API, after checking that the current debug client version is compatible with the newest Atlas version.
+
+If it is not compatible, then the appropriate fixes should be made to the debug client, then both the debug version and `TargetAtlasVersion` should be bumped accordingly.
+
+
 ## Releases
 
 Atlas has no central host, so it is expected that any registry running a copy of the Atlas application will manage their own release pipeline.
@@ -43,16 +53,19 @@ In order to "release" code in this manner, someone at Anthony Nolan should sign 
 
 This sign-off process should involve ensuring:
 
-* All automated tests have passed
-* Manual testing of the algorithm has been performed, if deemed necessary
+* All automated tests have passed.
+* Manual testing of the algorithm has been performed, if deemed necessary.
 * If algorithmic logic has changed, an expert in the field of HLA matching must sign off the algorithmic changes.
 * Documentation has been updated as appropriate, notably:
     * [Feature CHANGELOG](./Atlas.Functions.PublicApi/CHANGELOG_Atlas.md)
-    * [Client CHANGELOG](./Atlas.Client.Models/CHANGELOG_Client.md) 
+    * [Client CHANGELOG](./Atlas.Client.Models/CHANGELOG_Client.md)
     * Database changelogs (see invidivudal `.Data` projects)
 
 ### Other Tags
 
+* `debug/a.b.c/atlas-x.y.z`, where `a.b.c` is the stable [version of the debug client](#debug-client-versioning) and `atlas-x.y.z` denotes its `TargetAtlasVersion`.
+    * [Debug Client CHANGELOG](./Atlas.Debug.Client/CHANGELOG_DebugClient.md) 
+    * [Debug Client Model CHANGELOG](./Atlas.Debug.Client.Models/CHANGELOG_DebugClientModels.md)   
 * The `unverified/x.y.z` tag will be used occasionally to manage the release of versions to non-production environments.
 
 
