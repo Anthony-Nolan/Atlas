@@ -41,7 +41,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
                 sp => new MessagingServiceBusSettings(),
                 sp => new NotificationConfigurationSettings(),
                 sp => new NotificationsServiceBusSettings(),
-                sp => new StalledFileSettings { HoursToCheckStalledFiles = 2 },
+                sp => new DonorImportSettings { HoursToCheckStalledFiles = 2, AllowFullModeImport = true },
                 sp => new PublishDonorUpdatesSettings(),
                 sp => new AzureStorageSettings(),
                 sp => new FailureLogsSettings { ExpiryInDays = 60 },

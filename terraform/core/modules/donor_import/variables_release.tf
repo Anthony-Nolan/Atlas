@@ -52,3 +52,7 @@ variable "FAILURE_LOGS_CRONTAB" {
 variable "FAILURE_LOGS_EXPIRY_IN_DAYS" {
   type = number
 }
+
+variable "ALLOW_FULL_MODE_IMPORT" {
+  type = bool
+}

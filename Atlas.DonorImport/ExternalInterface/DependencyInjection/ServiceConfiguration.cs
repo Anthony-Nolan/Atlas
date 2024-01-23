@@ -27,7 +27,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, NotificationConfigurationSettings> fetchNotificationConfigurationSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
-            Func<IServiceProvider, StalledFileSettings> fetchStalledFileSettings,
+            Func<IServiceProvider, DonorImportSettings> fetchStalledFileSettings,
             Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, FailureLogsSettings> fetchFailureLogsSettings,
@@ -79,7 +79,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
         private static void RegisterSettings(
             this IServiceCollection services,
             Func<IServiceProvider, NotificationConfigurationSettings> fetchNotificationConfigurationSettings,
-            Func<IServiceProvider, StalledFileSettings> fetchStalledFileSettings,
+            Func<IServiceProvider, DonorImportSettings> fetchStalledFileSettings,
             Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,

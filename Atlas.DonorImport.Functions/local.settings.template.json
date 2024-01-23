@@ -9,6 +9,7 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "DonorImport:FileCheckCronSchedule": "0 */30 * * * *",
     "DonorImport:HoursToCheckStalledFiles": "2",
+    "DonorImport:AllowFullModeImport": false,
     "FUNCTIONS.WORKER.RUNTIME": "dotnet",
     "MessagingServiceBus:ConnectionString": "override-this",
     "MessagingServiceBus:ImportFileSubscription": "donor-import",

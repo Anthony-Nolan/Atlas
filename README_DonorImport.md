@@ -9,6 +9,8 @@ have imported via [Data Refresh](/README_Integration.md#data-refresh).
 
 This process is expected to be used as a one-off when installing ATLAS for the first time, to import all existing donors at the time of installation.
 
+> Important: To allow full mode import, the Donor Import Functions app setting, `DonorImport:AllowFullModeImport` must be set to `true`. Once initial import has completed, it is strongly recommended that the setting be reverted to `false` to stop donor import files being submitted in Full mode, which would prevent donor updates from reaching the matching algorithm. When the setting is `false`, full mode updates will not be imported and the file will be reported as permenantly failed.
+
 It should be able to handle millions of donors in a timeframe of hours. Performance can be improved further by manually scaling up the "-atlas" shared SQL database in Azure for
 the duration of the import process.
 

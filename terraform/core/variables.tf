@@ -116,6 +116,12 @@ variable "DONOR_IMPORT_STALLED_FILE_DURATION" {
   description = "How long, in hours, a file must have been in the 'Started' state to be considered stalled"
 }
 
+variable "DONOR_IMPORT_ALLOW_FULL_MODE_IMPORT" {
+  type        = bool
+  default     = false
+  description = "Controls whether Full mode donor import files will be accepted (true) or rejected (false)"
+}
+
 variable "DONOR_IMPORT_FAILURE_LOGS_CRONTAB" {
   type        = string
   default     = "0 0 0 * * *"

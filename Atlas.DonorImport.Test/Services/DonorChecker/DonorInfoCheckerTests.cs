@@ -171,5 +171,21 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
             await notificationSender.Received().SendAlert("Donor info checker file was present but it was empty.", $"Donors file: name-of-the-file.ext", Priority.Medium, Arg.Any<string>());
         }
 
+        [Test]
+        public async Task CompareDonorInfoInFileToAtlasDonorStore_DisposeIsCalledOnILazilyParsingDonorFile()
+        {
+            var file = DonorImportFileBuilder.NewWithoutContents.With(x => x.FileLocation, "name-of-the-file.ext");
+            var fileParserResult = Substitute.For<ILazilyParsingDonorFile>();
+
+            // Throwing an exception for not mocking parser beahvior. For purposes of this test should be enough, as Dispose is called anyway regardles was exception raised or not.
+            fileParserResult.ReadLazyDonorUpdates().Throws<EmptyDonorFileException>();
+            fileParser.PrepareToLazilyParseDonorUpdates(default).Returns(fileParserResult);
+
+            // Act
+            await donorInfoChecker.CompareDonorInfoInFileToAtlasDonorStore(file);
+
+            fileParserResult.Received().Dispose();
+        }
+
     }
 }

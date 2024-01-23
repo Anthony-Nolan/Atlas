@@ -15,8 +15,9 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using Atlas.DonorImport.Exceptions;
+using Atlas.DonorImport.ExternalInterface.Settings;
 
-namespace Atlas.DonorImport.Test
+namespace Atlas.DonorImport.Test.Services
 {
     [TestFixture]
     public class DonorImportMessageSenderTests
@@ -29,6 +30,8 @@ namespace Atlas.DonorImport.Test
         private IDonorUpdateCategoriser donorUpdateCategoriser;
         private IDonorImportLogger<DonorImportLoggingContext> logger;
         private IDonorImportMessageSender donorImportMessageSender;
+        private DonorImportSettings donorImportSettings;
+
 
         private IDonorFileImporter donorFileImporter;
 
@@ -44,8 +47,10 @@ namespace Atlas.DonorImport.Test
             logger = Substitute.For<IDonorImportLogger<DonorImportLoggingContext>>();
             donorImportMessageSender = Substitute.For<IDonorImportMessageSender>();
 
+            donorImportSettings = new DonorImportSettings { AllowFullModeImport = true };
+
             donorFileImporter = new DonorFileImporter(fileParser, donorRecordChangeApplier, donorImportFileHistoryService, notificationSender,
-                donorLogService, donorUpdateCategoriser, new DonorImportLoggingContext(), logger, donorImportMessageSender);
+                donorLogService, donorUpdateCategoriser, new DonorImportLoggingContext(), logger, donorImportMessageSender, donorImportSettings);
         }
 
         [Test]
@@ -157,7 +162,7 @@ namespace Atlas.DonorImport.Test
             const string error = "Unexpected Exception";
             lazeFile.ReadLazyDonorUpdates().Throws(new Exception(error));
             fileParser.PrepareToLazilyParseDonorUpdates(Arg.Any<Stream>()).Returns(lazeFile);
-            
+
             try
             {
                 await donorFileImporter.ImportDonorFile(file);
