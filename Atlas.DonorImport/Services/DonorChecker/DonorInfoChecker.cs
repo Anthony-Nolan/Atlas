@@ -44,7 +44,7 @@ namespace Atlas.DonorImport.Services.DonorChecker
         public async Task CompareDonorInfoInFileToAtlasDonorStore(DonorImportFile file)
         {
             LogMessage($"Beginning Donor comparison for file '{file.FileLocation}'.");
-            var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents);
+            using var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents);
             var filename = $"{Path.GetFileNameWithoutExtension(file.FileLocation)}-{DateTime.Now:yyyyMMddhhmmssfff}.json";
             var checkedDonorsCount = 0;
             var checkerResults = new DonorCheckerResults();
@@ -77,7 +77,7 @@ namespace Atlas.DonorImport.Services.DonorChecker
             }
             catch (EmptyDonorFileException e)
             {
-                await LogFileErrorAndSendAlert("Donors file was present but it was empty.", e.StackTrace);
+                await LogFileErrorAndSendAlert("Donor info checker file was present but it was empty.", $"Donors file: {file.FileLocation}");
             }
             catch (MalformedDonorFileException e)
             {

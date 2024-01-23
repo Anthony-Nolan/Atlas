@@ -30,12 +30,12 @@ namespace Atlas.DonorImport.Services
         public DonorImportFileHistoryService(
             IDonorImportHistoryRepository repository,
             INotificationSender notificationSender,
-            StalledFileSettings stalledFileSettings,
+            DonorImportSettings donorImportSettings,
             ILogger logger)
         {
             this.repository = repository;
             this.notificationSender = notificationSender;
-            this.durationToCheckForStalledFiles = new TimeSpan(stalledFileSettings.HoursToCheckStalledFiles, 0, 0);
+            this.durationToCheckForStalledFiles = new TimeSpan(donorImportSettings.HoursToCheckStalledFiles, 0, 0);
             this.logger = logger;
         }
 

@@ -25,6 +25,7 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
 
     "DonorImport:FileCheckCronSchedule"    = var.STALLED_FILE_CHECK_CRONTAB
     "DonorImport:HoursToCheckStalledFiles" = var.STALLED_FILE_DURATION
+    "DonorImport:AllowFullModeImport"      = var.ALLOW_FULL_MODE_IMPORT
 
     "MessagingServiceBus:ConnectionString"             = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
     "MessagingServiceBus:ImportFileSubscription"       = azurerm_servicebus_subscription.donor-import-file-processor.name

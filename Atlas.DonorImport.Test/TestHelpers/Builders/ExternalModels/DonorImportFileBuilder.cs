@@ -51,15 +51,18 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels
         }
 
         public static Builder<DonorImportFile> WithInitialDonors(this Builder<DonorImportFile> builder, params DonorUpdate[] donors)
+            => builder.WithInitialDonorsAndUpdateMode(UpdateMode.Full, donors);
+
+        public static Builder<DonorImportFile> WithInitialDonorsAndUpdateMode(this Builder<DonorImportFile> builder, UpdateMode updateMode, params DonorUpdate[] donors)
         {
             return builder
                 .With(f => f.Contents, DonorImportFileContentsBuilder.New
                     .WithDonors(donors)
-                    .WithUpdateMode(UpdateMode.Full)
+                    .WithUpdateMode(updateMode)
                     .Build()
                     .ToStream());
         }
-        
+
         private static Builder<DonorImportFile> WithFileLocation(this Builder<DonorImportFile> builder, string recordIdPrefix)
         {
             return builder.WithFactory(d => d.FileLocation, IncrementingIdGenerator.NextStringIdFactory(recordIdPrefix));

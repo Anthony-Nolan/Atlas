@@ -41,6 +41,7 @@ Settings for the donor import app (`ATLAS-DONOR-IMPORT-FUNCTIONS`).
 | -------------------------- | -------------------------- | -----------                | 
 | DONOR-IMPORT-NOTIFICATIONS-ON-DELETION-OF-INVALID-DONOR | NotificationConfiguration-NotifyOnAttemptedDeletionOfUntrackedDonor | When enabled, notifications will be sent if an import file attempts to delete a donor that was not tracked in Atlas. |
 | DONOR-IMPORT-NOTIFICATIONS-ON-SUCCESSFUL-IMPORT | NotificationConfiguration-NotifyOnSuccessfulDonorImport | When enabled, notifications will be sent for every imported donor file. May want to be disabled if donor imports are very frequent. |
+| DONOR-IMPORT-ALLOW-FULL-MODE-IMPORT | DonorImport-AllowFullModeImport | Controls whether Full mode donor import files will be accepted (true) or rejected (false) |
 
 ### Publishing Donor Updates
 Donor updates are published during donor import, and are consumed by the matching algorithm component, to keep its donor table in sync with that of donor import. The settings below control how often updates are published, and when published updates should be cleaned.
