@@ -35,6 +35,9 @@ Feature flags permit greater control over the release of new features (see this 
 #### Donor Import
 * E: Added new debug function to `DonorImport.Functions`, `GetRandomDonors`, to aid in the generation of test data.
 
+### 1.6.1
+- Indexes on several matching algorithm db tables have been add/amended to improve performance, based on Azure recommendations.
+
 ### 1.6.0
 This version has a significant set of changes that were prompted by the integration of Atlas into WMDA Search and Match. Several of them are around handling of searches with very large resultsets, improvements to donor import reporting, and bug fixes identified during testing.
 
