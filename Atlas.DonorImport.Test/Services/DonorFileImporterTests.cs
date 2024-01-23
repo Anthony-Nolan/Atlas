@@ -1,4 +1,5 @@
-﻿using Atlas.Common.ApplicationInsights;
+﻿using Atlas.Client.Models.SupportMessages;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.FileSchema.Models;
@@ -62,7 +63,7 @@ namespace Atlas.DonorImport.Test.Services
 
 
         [Test]
-        public async Task ImportDonorFile_RejectsImportFileAndSendsNotification_WhenUpdateModeIsFullAndAllowFullModeImportSettingIsFalse()
+        public async Task ImportDonorFile_WhenUpdateModeIsFull_AndAllowFullModeImportSettingIsFalse_RejectsImportFileAndSendsNotification()
         {
             var file = DonorImportFileBuilder.NewWithoutContents.Build();
             settings.AllowFullModeImport = false;
@@ -83,11 +84,11 @@ namespace Atlas.DonorImport.Test.Services
         [TestCase(UpdateMode.Full, true)]
         [TestCase(UpdateMode.Differential, true)]
         [TestCase(UpdateMode.Differential, false)]
-        public async Task ImportDonorFile_AcceptImportFile_WhenUpdateModeIsFullAndAllowFullModeImportSettingIsTrueOrUpdateIsNotFull(UpdateMode updateMode, bool allowFullModelImport)
+        public async Task ImportDonorFile_AcceptImportFile(UpdateMode updateMode, bool allowFullModelImport)
         {
             var file = DonorImportFileBuilder.NewWithoutContents.Build();
-            settings.AllowFullModeImport = true;
-            lazilyParsingDonorFile.ReadUpdateMode().Returns(UpdateMode.Full);
+            settings.AllowFullModeImport = allowFullModelImport;
+            lazilyParsingDonorFile.ReadUpdateMode().Returns(updateMode);
 
             await donorFileImporter.ImportDonorFile(file);
 

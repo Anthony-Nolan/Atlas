@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 {
     [TestFixture]
-    public class RejectFullModeDonorImportTests
+    public class FullModeDonorImportTests
     {
         private IDonorFileImporter donorFileImporter;
         private IDonorInspectionRepository donorInspectionRepository;
@@ -39,7 +39,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task ImportDonorFile_DoesntWriteToDatabase_WhenUpdateModeIsFullAndAllowFullModeImportSettingIsFalse()
+        public async Task ImportDonorFile_WhenUpdateModeIsFull_AndFullModeImportIsntAllowed_DoesNotWriteToDatabase()
         {
             var file = DonorImportFileBuilder.NewWithoutContents.WithDonorCount(10, true);
             settings.AllowFullModeImport = false;   
@@ -49,5 +49,18 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var donorCount = await donorInspectionRepository.DonorCount();
             donorCount.Should().Be(0);
         }
+
+        [Test]
+        public async Task ImportDonorFile_WhenUpdateModeIsFull_AndFullModeImportIsAllowed_WriteDonorsToDatabase()
+        {
+            var file = DonorImportFileBuilder.NewWithoutContents.WithDonorCount(10, true);
+            settings.AllowFullModeImport = true;
+
+            await donorFileImporter.ImportDonorFile(file);
+
+            var donorCount = await donorInspectionRepository.DonorCount();
+            donorCount.Should().Be(10);
+        }
+
     }
 }
