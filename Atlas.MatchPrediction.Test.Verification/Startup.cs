@@ -1,5 +1,6 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
+using Atlas.ManualTesting.Common.Settings;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchPrediction.Test.Verification;
 using Atlas.MatchPrediction.Test.Verification.DependencyInjection;
@@ -28,6 +29,7 @@ namespace Atlas.MatchPrediction.Test.Verification
                 ConnectionStringReader("MatchPrediction:Sql"),
                 ConnectionStringReader("DonorImport:Sql"),
                 OptionsReaderFor<VerificationAzureStorageSettings>(),
+                OptionsReaderFor<DataRefreshSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
@@ -45,6 +47,7 @@ namespace Atlas.MatchPrediction.Test.Verification
         {
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<VerificationAzureStorageSettings>("AzureStorage");
+            services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
             services.RegisterAsOptions<MacDownloadSettings>("MacDictionary:Download");

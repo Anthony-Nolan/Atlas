@@ -6,6 +6,7 @@ using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Client.Models.SupportMessages;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 {

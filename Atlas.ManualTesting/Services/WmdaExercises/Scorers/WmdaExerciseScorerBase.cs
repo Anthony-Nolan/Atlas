@@ -2,8 +2,8 @@
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.Public.Models.GeneticData;
-using Atlas.ManualTesting.Common;
-using Atlas.ManualTesting.Common.SubjectImport;
+using Atlas.ManualTesting.Common.Models;
+using Atlas.ManualTesting.Common.Services;
 using Atlas.ManualTesting.Models;
 using Atlas.ManualTesting.Services.Scoring;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;

@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
-using Atlas.Common.Notifications;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
@@ -17,6 +13,10 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using MoreLinq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using IDonorImportRepository = Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates.IDonorImportRepository;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport

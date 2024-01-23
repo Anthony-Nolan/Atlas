@@ -1,104 +1,47 @@
 ﻿using Microsoft.Data.SqlClient;
-using System.Linq;
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.Test.Verification.Data.Models;
+using Atlas.ManualTesting.Common.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Dapper;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {
-    public interface ISearchRequestsRepository
+    public class SearchRequestsRepository :
+        SearchRequestsRepositoryBase<VerificationSearchRequestRecord>,
+        ISearchRequestsRepository<VerificationSearchRequestRecord>
     {
-        Task AddSearchRequest(SearchRequestRecord request);
-        Task<SearchRequestRecord> GetRecordByAtlasSearchId(string atlasSearchId);
-        Task MarkSearchResultsAsFailed(int searchRequestRecordId);
-        Task MarkSearchResultsAsSuccessful(SuccessfulSearchRequestInfo info);
-    }
-
-    public class SearchRequestsRepository : ISearchRequestsRepository
-    {
-        private readonly string connectionString;
-
-        public SearchRequestsRepository(string connectionString)
+        public SearchRequestsRepository(string connectionString) : base(connectionString)
         {
-            this.connectionString = connectionString;
         }
 
-        public async Task AddSearchRequest(SearchRequestRecord request)
+        public async Task AddSearchRequest(VerificationSearchRequestRecord request)
         {
-            var sql = $@"INSERT INTO SearchRequests(
+            const string sql = $@"INSERT INTO SearchRequests(
                 VerificationRun_Id,
-                PatientSimulant_Id,
+                PatientId,
                 AtlasSearchIdentifier,
                 DonorMismatchCount,
                 WasSuccessful,
                 WasMatchPredictionRun)
                 VALUES(
                     @{nameof(request.VerificationRun_Id)},
-                    @{nameof(request.PatientSimulant_Id)},
+                    @{nameof(request.PatientId)},
                     @{nameof(request.AtlasSearchIdentifier)},
                     @{nameof(request.DonorMismatchCount)},
                     @{nameof(request.WasSuccessful)},
                     @{nameof(request.WasMatchPredictionRun)}
                 )";
 
-            await using (var connection = new SqlConnection(connectionString))
+            await using (var connection = new SqlConnection(ConnectionString))
             {
                 await connection.ExecuteAsync(sql, new
                 {
                     request.VerificationRun_Id,
-                    request.PatientSimulant_Id,
+                    request.PatientId,
                     request.AtlasSearchIdentifier,
                     request.DonorMismatchCount,
                     request.WasSuccessful,
                     request.WasMatchPredictionRun
-                });
-            }
-        }
-
-        public async Task<SearchRequestRecord> GetRecordByAtlasSearchId(string atlasSearchId)
-        {
-            var sql = @$"SELECT * FROM SearchRequests s WHERE s.AtlasSearchIdentifier = @{nameof(atlasSearchId)}";
-
-            await using (var conn = new SqlConnection(connectionString))
-            {
-                return (await conn.QueryAsync<SearchRequestRecord>(sql, new { atlasSearchId })).SingleOrDefault();
-            }
-        }
-
-        public async Task MarkSearchResultsAsFailed(int searchRequestRecordId)
-        {
-            var sql = $@"UPDATE SearchRequests SET 
-                SearchResultsRetrieved = 1,
-                WasSuccessful = 0
-                WHERE Id = @{nameof(searchRequestRecordId)}";
-
-            await using (var connection = new SqlConnection(connectionString))
-            {
-                await connection.ExecuteAsync(sql, new { searchRequestRecordId });
-            }
-        }
-
-        public async Task MarkSearchResultsAsSuccessful(SuccessfulSearchRequestInfo info)
-        {
-            var sql = $@"UPDATE SearchRequests SET 
-                SearchResultsRetrieved = 1,
-                WasSuccessful = 1,
-                MatchedDonorCount = @{nameof(info.MatchedDonorCount)},
-                MatchingAlgorithmTimeInMs = @{nameof(info.MatchingAlgorithmTimeInMs)},
-                MatchPredictionTimeInMs = @{nameof(info.MatchPredictionTimeInMs)},
-                OverallSearchTimeInMs = @{nameof(info.OverallSearchTimeInMs)}
-                WHERE Id = @{nameof(info.SearchRequestRecordId)}";
-
-            await using (var connection = new SqlConnection(connectionString))
-            {
-                await connection.ExecuteAsync(sql, new
-                {
-                    info.MatchedDonorCount,
-                    info.MatchingAlgorithmTimeInMs,
-                    info.MatchPredictionTimeInMs,
-                    info.OverallSearchTimeInMs,
-                    info.SearchRequestRecordId
                 });
             }
         }

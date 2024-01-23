@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.Public.Models.GeneticData;
-using Atlas.ManualTesting.Common;
-using Atlas.ManualTesting.Common.SubjectImport;
+using Atlas.ManualTesting.Common.Models;
+using Atlas.ManualTesting.Common.Services;
 using Atlas.ManualTesting.Models;
 
 namespace Atlas.ManualTesting.Services.WmdaConsensusResults

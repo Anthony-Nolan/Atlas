@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Public.Models.ServiceBus;
 using Atlas.Common.ServiceBus.Exceptions;
-using Atlas.Common.ServiceBus.Models;
 using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.Common.ServiceBus.BatchReceiving

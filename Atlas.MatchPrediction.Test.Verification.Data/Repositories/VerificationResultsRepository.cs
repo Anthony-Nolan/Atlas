@@ -39,9 +39,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 			    JOIN MatchProbabilities p
 			    ON d.Id = p.MatchedDonor_Id
 			    JOIN Simulants ps
-			    ON r.PatientSimulant_Id = ps.Id
+			    ON r.PatientId = ps.Id
 			    JOIN Simulants ds
-			    ON d.MatchedDonorSimulant_Id = ds.Id
+			    ON d.DonorId = ds.Id
 			    WHERE 
 				    r.SearchResultsRetrieved = 1 AND
 				    ps.SimulatedHlaTypingCategory = '{SimulatedHlaTypingCategory.Masked}' AND
@@ -67,9 +67,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 			    JOIN MatchedDonors d
 			    ON r.Id = d.SearchRequestRecord_Id
 			    JOIN Simulants ps
-			    ON r.PatientSimulant_Id = ps.Id
+			    ON r.PatientId = ps.Id
 			    JOIN Simulants ds
-			    ON d.MatchedDonorSimulant_Id = ds.Id
+			    ON d.DonorId = ds.Id
 			    WHERE 
 				    r.SearchResultsRetrieved = 1 AND
 				    r.VerificationRun_Id = @{nameof(request.VerificationRunId)} AND
@@ -96,10 +96,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 			    JOIN MatchedDonors d
 			    ON r.Id = d.SearchRequestRecord_Id
 			    JOIN Simulants ps
-			    ON r.PatientSimulant_Id = ps.Id
+			    ON r.PatientId = ps.Id
 			    JOIN Simulants ds
-			    ON d.MatchedDonorSimulant_Id = ds.Id
-                JOIN MatchCounts mc
+			    ON d.DonorId = ds.Id
+                JOIN LocusMatchDetails mc
                 ON d.Id = mc.MatchedDonor_Id
 			    WHERE 
 				    r.SearchResultsRetrieved = 1 AND

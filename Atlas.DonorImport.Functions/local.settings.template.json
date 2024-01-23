@@ -22,6 +22,7 @@
     "MessagingServiceBus:DonorInfoCheckerSubscription": "donor-info-checker",
     "MessagingServiceBus:DonorInfoCheckerResultsTopic": "donor-info-checker-results",
     "MessagingServiceBus:DonorImportResultsTopic": "donor-import-results",
+    "MessagingServiceBus:DonorImportResultsDebugSubscription": "debug",
     "NotificationConfiguration:NotifyOnAttemptedDeletionOfUntrackedDonor": true,
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",

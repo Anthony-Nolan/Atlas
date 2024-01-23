@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
-using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
+using Atlas.ManualTesting.Common.Models.Entities;
+using Atlas.ManualTesting.Common.Repositories;
+using Atlas.ManualTesting.Common.Services.Storers;
 using Newtonsoft.Json;
 
 #pragma warning disable 1998
@@ -16,13 +17,14 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         {
         }
 
-        protected override async Task<IEnumerable<MatchedDonor>> ProcessSingleSearchResult(int searchRequestRecordId, MatchingAlgorithmResult result)
+        protected override async Task<IEnumerable<MatchedDonor>> ProcessSingleSearchResult(int searchRequestRecordId,
+            MatchingAlgorithmResult result)
         {
             return new[]{
                 new MatchedDonor
                 {
                     SearchRequestRecord_Id = searchRequestRecordId,
-                    MatchedDonorSimulant_Id = int.Parse(result.DonorCode),
+                    DonorCode = result.DonorCode,
                     TotalMatchCount = result.MatchingResult.TotalMatchCount,
                     TypedLociCount = result.MatchingResult.TypedLociCount ?? 0,
                     MatchingResult = JsonConvert.SerializeObject(result)

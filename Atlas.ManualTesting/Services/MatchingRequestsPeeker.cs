@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.ManualTesting.Models;
+using Atlas.Client.Models.Debug;
 using Atlas.ManualTesting.Services.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 
@@ -9,7 +9,7 @@ namespace Atlas.ManualTesting.Services
 {
     public interface IMatchingRequestsPeeker
     {
-        Task<IEnumerable<string>> GetIdsOfDeadLetteredMatchingRequests(PeekRequest peekRequest);
+        Task<IEnumerable<string>> GetIdsOfDeadLetteredMatchingRequests(PeekServiceBusMessagesRequest peekRequest);
     }
 
     internal class MatchingRequestsPeeker : IMatchingRequestsPeeker
@@ -21,7 +21,7 @@ namespace Atlas.ManualTesting.Services
             this.deadLetterReceiver = deadLetterReceiver;
         }
 
-        public async Task<IEnumerable<string>> GetIdsOfDeadLetteredMatchingRequests(PeekRequest peekRequest)
+        public async Task<IEnumerable<string>> GetIdsOfDeadLetteredMatchingRequests(PeekServiceBusMessagesRequest peekRequest)
         {
             var deadLetteredRequests = await deadLetterReceiver.Peek(peekRequest);
 

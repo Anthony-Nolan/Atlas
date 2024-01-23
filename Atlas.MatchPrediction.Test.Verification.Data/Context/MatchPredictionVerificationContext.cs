@@ -1,11 +1,16 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
+﻿using Atlas.ManualTesting.Common.Contexts;
+using Atlas.ManualTesting.Common.Models.Entities;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Context
 {
-    public class MatchPredictionVerificationContext : DbContext
+    public class MatchPredictionVerificationContext : 
+        DbContext,
+        IDonorExportData,
+        ISearchData<VerificationSearchRequestRecord>
     {
         // ReSharper disable once SuggestBaseTypeForParameter
         public MatchPredictionVerificationContext(DbContextOptions<MatchPredictionVerificationContext> options) : base(options)
@@ -20,12 +25,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Context
             modelBuilder.Entity<Simulant>().SetUpModel();
             modelBuilder.Entity<ExpandedMac>().SetUpModel();
             modelBuilder.Entity<MaskingRecord>().SetUpModel();
-            modelBuilder.Entity<TestDonorExportRecord>().SetUpModel();
+            modelBuilder.Entity<TestDonorExportRecord>();
             modelBuilder.Entity<VerificationRun>().SetUpModel();
-            modelBuilder.Entity<SearchRequestRecord>().SetUpModel();
+            modelBuilder.Entity<VerificationSearchRequestRecord>().SetUpModel();
             modelBuilder.Entity<MatchedDonor>().SetUpModel();
-            modelBuilder.Entity<LocusMatchCount>().SetUpModel();
-            modelBuilder.Entity<MatchProbability>().SetUpModel();
+            modelBuilder.Entity<LocusMatchDetails>().SetUpModel();
+            modelBuilder.Entity<MatchedDonorProbability>().SetUpModel();
             base.OnModelCreating(modelBuilder);
         }
 
@@ -35,11 +40,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Context
         public DbSet<Simulant> Simulants { get; set; }
         public DbSet<ExpandedMac> ExpandedMacs { get; set; }
         public DbSet<MaskingRecord> MaskingRecords { get; set; }
-        public DbSet<TestDonorExportRecord> TestDonorExportRecords { get; set; }
         public DbSet<VerificationRun> VerificationRuns { get; set; }
-        public DbSet<SearchRequestRecord> SearchRequests { get; set; }
+        public DbSet<TestDonorExportRecord> TestDonorExportRecords { get; set; }
+        public DbSet<VerificationSearchRequestRecord> SearchRequests { get; set; }
         public DbSet<MatchedDonor> MatchedDonors { get; set; }
-        public DbSet<LocusMatchCount> MatchCounts { get; set; }
-        public DbSet<MatchProbability> MatchProbabilities { get; set; }
+        public DbSet<LocusMatchDetails> LocusMatchDetails { get; set; }
+        public DbSet<MatchedDonorProbability> MatchProbabilities { get; set; }
     }
 }

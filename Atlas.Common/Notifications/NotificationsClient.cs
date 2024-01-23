@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
-using Atlas.Common.Notifications.MessageModels;
+using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ServiceBus;
 using Atlas.Common.Utils;
 using Microsoft.Azure.ServiceBus;

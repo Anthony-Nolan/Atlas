@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Atlas.ManualTesting.Common.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness
@@ -11,6 +12,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarne
         /// Did test harness complete generation successfully?
         /// </summary>
         public bool WasCompleted { get; set; }
+
+        /// <summary>
+        /// Record of when the test harness was last exported (`NULL` if it has not yet been exported)
+        /// </summary>
+        public int? ExportRecord_Id { get; set; }
     }
     
     internal static class TestHarnessBuilder
@@ -24,7 +30,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarne
             modelBuilder
                 .HasOne<NormalisedPool>()
                 .WithMany()
-                .HasForeignKey(t => t.NormalisedPool_Id);
+                .HasForeignKey(x => x.NormalisedPool_Id);
+
+            modelBuilder
+                .HasOne<TestDonorExportRecord>()
+                .WithOne()
+                .HasForeignKey<TestHarness>(x => x.ExportRecord_Id);
         }
     }
 }

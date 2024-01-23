@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using Atlas.Common.ServiceBus;
+using Atlas.Common.ServiceBus.BatchReceiving;
 using FluentAssertions;
 using Microsoft.Azure.ServiceBus.Core;
-using Atlas.Common.ServiceBus.BatchReceiving;
 using NSubstitute;
 using NUnit.Framework;
+using System.Threading.Tasks;
 
 namespace Atlas.Common.Test.ServiceBus.BatchReceiving
 {

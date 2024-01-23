@@ -1,7 +1,9 @@
+using Atlas.ManualTesting.Common.Settings;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Test.Validation;
 using Atlas.MatchPrediction.Test.Validation.DependencyInjection;
 using Atlas.MatchPrediction.Test.Validation.Models;
+using Atlas.MatchPrediction.Test.Validation.Settings;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,17 +25,23 @@ namespace Atlas.MatchPrediction.Test.Validation
             builder.Services.RegisterValidationServices(
                 OptionsReaderFor<OutgoingMatchPredictionRequestSettings>(),
                 OptionsReaderFor<ValidationAzureStorageSettings>(),
+                OptionsReaderFor<DataRefreshSettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<MatchPredictionRequestsSettings>(),
-                ConnectionStringReader("MatchPredictionValidation:Sql"));
+                OptionsReaderFor<ValidationSearchSettings>(),
+                ConnectionStringReader("MatchPredictionValidation:Sql"),
+                ConnectionStringReader("MatchPrediction:Sql"),
+                ConnectionStringReader("DonorImport:Sql"));
         }
 
         private static void RegisterSettings(IServiceCollection services)
         {
             services.RegisterAsOptions<OutgoingMatchPredictionRequestSettings>("OutgoingMatchPredictionRequests");
             services.RegisterAsOptions<ValidationAzureStorageSettings>("AzureStorage");
+            services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<MatchPredictionRequestsSettings>("MatchPredictionRequests");
+            services.RegisterAsOptions<ValidationSearchSettings>("Search");
         }
     }
 }

@@ -31,10 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ServiceBus\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
   </ItemGroup>
 

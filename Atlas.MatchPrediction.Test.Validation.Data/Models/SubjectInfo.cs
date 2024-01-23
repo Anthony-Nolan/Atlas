@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Atlas.Common.GeneticData.PhenotypeInfo;
+﻿using Atlas.Client.Models.Search;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Sql.BulkInsert;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 // ReSharper disable InconsistentNaming
 
 namespace Atlas.MatchPrediction.Test.Validation.Data.Models
@@ -20,6 +20,9 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Models
 
         [Column(TypeName = "nvarchar(10)")]
         public SubjectType SubjectType { get; set; }
+
+        [Column(TypeName = "nvarchar(10)")]
+        public DonorType? DonorType { get; set; }
 
         [Required]
         [MaxLength(10)]
@@ -60,6 +63,12 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Models
         [Required]
         [MaxLength(64)]
         public string DRB1_2 { get; set; }
+
+        /// <summary>
+        /// Optional field to allow individual subjects to be mapped to a specific test HF set.
+        /// </summary>
+        [MaxLength(256)]
+        public int? ExternalHfSetId { get; set; }
     }
 
     public static class SubjectInfoBuilder

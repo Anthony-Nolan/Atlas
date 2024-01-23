@@ -41,10 +41,18 @@ namespace Atlas.DonorImport.Services
                 })
                 .ToList();
 
-            var donorImportMessage = new SuccessDonorImportMessage
+            var donorImportMessage = new DonorImportMessage
             {
                 FileName = fileName,
-                ImportedDonorCount = importedDonorCount, 
+                WasSuccessful = true,
+                SuccessfulImportInfo = new SuccessfulImportInfo
+                {
+                    ImportedDonorCount = importedDonorCount,
+                    FailedDonorCount = failedDonors.Count,
+                    FailedDonorSummary = failedSummary
+                },
+                // TODO: stop setting these obsolete properties in Atlas v.1.8.0
+                ImportedDonorCount = importedDonorCount,
                 FailedDonorCount = failedDonors.Count,
                 FailedDonorSummary = failedSummary
             };
@@ -54,9 +62,16 @@ namespace Atlas.DonorImport.Services
 
         public async Task SendFailureMessage(string fileName, ImportFailureReason failureReason, string failureReasonDescription)
         {
-            var donorImportMessage = new FailedDonorImportMessage
+            var donorImportMessage = new DonorImportMessage
             {
                 FileName = fileName,
+                WasSuccessful = false,
+                FailedImportInfo = new FailedImportInfo
+                {
+                    FileFailureReason = failureReason,
+                    FileFailureDescription = failureReasonDescription
+                },
+                // TODO: stop setting these obsolete properties in Atlas v.1.8.0
                 FailureReason = failureReason,
                 FailureReasonDescription = failureReasonDescription
             };
@@ -89,22 +104,16 @@ namespace Atlas.DonorImport.Services
             }
         }
 
-        private void LogMessage(SuccessDonorImportMessage donorImportMessage) =>
-            logger.SendTrace($"{nameof(SuccessDonorImportMessage)} send.", LogLevel.Info, new Dictionary<string, string>
+        private void LogMessage(DonorImportMessage donorImportMessage) =>
+            logger.SendTrace($"{nameof(DonorImportMessage)} send.", LogLevel.Info, new Dictionary<string, string>
             {
                 { nameof(donorImportMessage.FileName), donorImportMessage.FileName },
                 { nameof(donorImportMessage.WasSuccessful), donorImportMessage.WasSuccessful.ToString() },
-                { nameof(donorImportMessage.ImportedDonorCount), donorImportMessage.ImportedDonorCount.ToString() },
-                { nameof(donorImportMessage.FailedDonorCount), donorImportMessage.FailedDonorCount.ToString() }
+                { nameof(donorImportMessage.SuccessfulImportInfo.ImportedDonorCount), donorImportMessage.SuccessfulImportInfo?.ImportedDonorCount.ToString() },
+                { nameof(donorImportMessage.SuccessfulImportInfo.FailedDonorCount), donorImportMessage.SuccessfulImportInfo?.FailedDonorCount.ToString() },
+                { nameof(donorImportMessage.FailedImportInfo.FileFailureReason), donorImportMessage.FailedImportInfo?.FileFailureReason.ToString() },
+                { nameof(donorImportMessage.FailedImportInfo.FileFailureDescription), donorImportMessage.FailedImportInfo?.FileFailureDescription }
             });
 
-        private void LogMessage(FailedDonorImportMessage donorImportMessage) =>
-            logger.SendTrace($"{nameof(FailedDonorImportMessage)} send.", LogLevel.Info, new Dictionary<string, string>
-            {
-                { nameof(donorImportMessage.FileName), donorImportMessage.FileName },
-                { nameof(donorImportMessage.WasSuccessful), donorImportMessage.WasSuccessful.ToString() },
-                { nameof(donorImportMessage.FailureReason), donorImportMessage.FailureReason.ToString() },
-                { nameof(donorImportMessage.FailureReasonDescription), donorImportMessage.FailureReasonDescription }
-            });
     }
 }

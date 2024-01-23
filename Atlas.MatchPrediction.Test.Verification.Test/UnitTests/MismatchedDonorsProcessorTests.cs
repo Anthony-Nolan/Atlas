@@ -2,14 +2,14 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.ManualTesting.Common.Models.Entities;
+using Atlas.ManualTesting.Common.Repositories;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
-using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Services.Verification;
 using Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers;
 using Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
@@ -25,15 +25,15 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
         private IDonorScoringService scoringService;
         private IProcessedResultsRepository<MatchedDonor> bulkInsertDonorRepository;
         private IMatchedDonorsRepository matchedDonorsRepository;
-        private IProcessedResultsRepository<LocusMatchCount> matchCountsRepository;
+        private IProcessedResultsRepository<LocusMatchDetails> matchCountsRepository;
 
         private IMismatchedDonorsStorer<MatchingAlgorithmResult> mismatchedDonorsStorer;
 
         private static readonly Simulant Patient = SimulantBuilder.New.Build();
         private static readonly Simulant MissingDonor = SimulantBuilder.New.Build();
-        private static readonly SearchRequestRecord SearchRequest = new SearchRequestRecord
+        private static readonly VerificationSearchRequestRecord VerificationSearchRequest = new VerificationSearchRequestRecord
         {
-            PatientSimulant_Id = Patient.Id
+            PatientId = Patient.Id
         };
 
         [SetUp]
@@ -43,7 +43,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             scoringService = Substitute.For<IDonorScoringService>();
             bulkInsertDonorRepository = Substitute.For<IProcessedResultsRepository<MatchedDonor>>();
             matchedDonorsRepository = Substitute.For<IMatchedDonorsRepository>();
-            matchCountsRepository = Substitute.For<IProcessedResultsRepository<LocusMatchCount>>();
+            matchCountsRepository = Substitute.For<IProcessedResultsRepository<LocusMatchDetails>>();
 
             mismatchedDonorsStorer = new MismatchedDonorsStorer<MatchingAlgorithmResult>(
                 cache, scoringService, bulkInsertDonorRepository, matchedDonorsRepository, matchCountsRepository);
@@ -67,7 +67,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             const int runId = 12345;
 
             await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(
-                new SearchRequestRecord { VerificationRun_Id = runId }, default);
+                new VerificationSearchRequestRecord { VerificationRun_Id = runId }, default);
 
             await cache.Received().GetOrAddGenotypeSimulantsInfo(runId);
         }
@@ -78,9 +78,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             cache.GetOrAddGenotypeSimulantsInfo(default)
                 .ReturnsForAnyArgs(GenotypeSimulantsInfoBuilder.WithEmptySimulantsInfo);
 
-            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequest, default);
+            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, default);
 
-            await bulkInsertDonorRepository.DidNotReceiveWithAnyArgs().BulkInsertResults(default);
+            await bulkInsertDonorRepository.DidNotReceiveWithAnyArgs().BulkInsert(default);
         }
 
         [Test]
@@ -88,15 +88,15 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
         {
             var resultSet = MatchingResultSetBuilder.New.WithMatchingResult(MissingDonor.Id).Build();
 
-            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequest, resultSet);
+            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, resultSet);
 
-            await bulkInsertDonorRepository.DidNotReceiveWithAnyArgs().BulkInsertResults(default);
+            await bulkInsertDonorRepository.DidNotReceiveWithAnyArgs().BulkInsert(default);
         }
 
         [Test]
         public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches_ScoresMissingDonorHlaAgainstPatientHla()
         {
-            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequest, MatchingResultSetBuilder.Empty.Build());
+            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, MatchingResultSetBuilder.Empty.Build());
 
             await scoringService.Received().ScoreDonorHlaAgainstPatientHla(Arg.Any<DonorHlaScoringRequest>());
         }
@@ -107,9 +107,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             scoringService.ScoreDonorHlaAgainstPatientHla(default)
                 .ReturnsForAnyArgs(new ScoreResultBuilder().WithTotalMatchCount(0).Build());
 
-            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequest, MatchingResultSetBuilder.Empty.Build());
+            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, MatchingResultSetBuilder.Empty.Build());
 
-            await bulkInsertDonorRepository.DidNotReceiveWithAnyArgs().BulkInsertResults(default);
+            await bulkInsertDonorRepository.DidNotReceiveWithAnyArgs().BulkInsert(default);
         }
 
         [Test]
@@ -120,10 +120,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             scoringService.ScoreDonorHlaAgainstPatientHla(default)
                 .ReturnsForAnyArgs(new ScoreResultBuilder().WithTotalMatchCount(totalMatchCount).Build());
 
-            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequest, MatchingResultSetBuilder.Empty.Build());
+            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, MatchingResultSetBuilder.Empty.Build());
 
-            await bulkInsertDonorRepository.Received().BulkInsertResults(Arg.Is<IReadOnlyCollection<MatchedDonor>>(x =>
-                x.Single().MatchedDonorSimulant_Id == MissingDonor.Id &&
+            await bulkInsertDonorRepository.Received().BulkInsert(Arg.Is<IReadOnlyCollection<MatchedDonor>>(x =>
+                x.Single().DonorCode == MissingDonor.Id.ToString() &&
                 x.Single().TotalMatchCount == totalMatchCount));
         }
 
@@ -141,9 +141,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             const int matchedDonorId = 12345;
             matchedDonorsRepository.GetMatchedDonorId(default, default).ReturnsForAnyArgs(matchedDonorId);
 
-            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequest, MatchingResultSetBuilder.Empty.Build());
+            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, MatchingResultSetBuilder.Empty.Build());
 
-            await matchCountsRepository.Received().BulkInsertResults(Arg.Is<IReadOnlyCollection<LocusMatchCount>>(x =>
+            await matchCountsRepository.Received().BulkInsert(Arg.Is<IReadOnlyCollection<LocusMatchDetails>>(x =>
                 x.Single().Locus == nonZeroLocus &&
                 x.Single().MatchCount == matchCount &&
                 x.Single().MatchedDonor_Id == matchedDonorId));

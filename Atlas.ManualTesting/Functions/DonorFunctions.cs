@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
-using Atlas.ManualTesting.Helpers;
+using Atlas.Common.Utils.Http;
 using Atlas.ManualTesting.Models;
 using Atlas.ManualTesting.Services;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;

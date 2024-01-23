@@ -12,13 +12,16 @@ This package contains all client models utilised by the Atlas Public API to requ
     * `LogFile` - log file for a completed search request (note: a completely separate feature to Application Insights logging)
 
 ## Changelog
-
-All notable data structure changes to this project will be documented in this file.
-
-This includes both schema and data workflow changes.
-
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+### 1.7.0
+* Added new namespace, `Debug`, for models that are used in debug endpoints.
+    * Moved following models to `Debug` namespace:
+      * `DebugDonorResult` used in existing donor debug endpoints.
+      * `PeekServiceBusMessagesRequest` used in message peeker service.
+    * Added new `Debug` model, `DonorUpdateFailureInfo`.
+* Moved existing `Alert` and `Notification` message models (and dependent classes) to new `SupportMessages` namespace.
 
 ### 1.6.0
 * `Search.Results.Matching.PerLocus.LocusPositionScoreDetails` has been extended with a new field: `IsAntigenMatch`, which indicates whether the match grade for a position is an antigen match (`true`) or not (`false`).

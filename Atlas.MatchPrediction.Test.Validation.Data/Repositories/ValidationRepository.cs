@@ -7,19 +7,16 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories
 {
     public interface IValidationRepository
     {
-        Task DeleteAllExistingData();
+        Task DeleteSubjectInfo();
 
         /// <param name="firstPatientId">Delete data where patient ID is >= than this value.</param>
-        Task DeleteMatchPredictionRelatedData(int firstPatientId);
+        Task DeleteMatchPredictionRequestData(int firstPatientId);
 
-        Task<IEnumerable<string>> GetAlgorithmIdsOfRequestsMissingResults();
+        Task<IEnumerable<string>> GetAlgorithmIdsOfMatchPredictionRequestsMissingResults();
     }
 
     public class ValidationRepository : IValidationRepository
     {
-        private const string ResultsTable = nameof(ValidationContext.MatchPredictionResults);
-        private const string RequestsTable = nameof(ValidationContext.MatchPredictionRequests);
-
         private readonly string connectionString;
 
         public ValidationRepository(string connectionString)
@@ -27,43 +24,40 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories
             this.connectionString = connectionString;
         }
 
-        public async Task DeleteAllExistingData()
+        public async Task DeleteSubjectInfo()
         {
-            const string sql = @$"
-                DELETE FROM {ResultsTable}
-                DELETE FROM {RequestsTable}
-                DELETE FROM {nameof(ValidationContext.SubjectInfo)}";
+            const string sql = @$"DELETE FROM {nameof(ValidationContext.SubjectInfo)}";
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                await conn.ExecuteAsync(sql);
+                await conn.ExecuteAsync(sql, commandTimeout: 600);
             }
         }
 
-        public async Task DeleteMatchPredictionRelatedData(int firstPatientId)
+        public async Task DeleteMatchPredictionRequestData(int firstPatientId)
         {
             const string patientId = nameof(MatchPredictionRequest.PatientId);
 
             const string sql = @$"
-                DELETE FROM {ResultsTable}
-                FROM {ResultsTable} res
-                JOIN {RequestsTable} req
+                DELETE FROM MatchPredictionResults
+                FROM MatchPredictionResults res
+                JOIN MatchPredictionRequests req
                 ON res.{nameof(MatchPredictionResults.MatchPredictionRequestId)} = req.{nameof(MatchPredictionRequest.Id)}
                 WHERE req.{patientId} >= @{nameof(firstPatientId)}
                 
-                DELETE FROM {RequestsTable} WHERE {patientId} >= @{nameof(firstPatientId)}";
+                DELETE FROM MatchPredictionRequests WHERE {patientId} >= @{nameof(firstPatientId)}";
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                await conn.ExecuteAsync(sql, new { firstPatientId });
+                await conn.ExecuteAsync(sql, new { firstPatientId }, commandTimeout: 600);
             }
         }
 
-        public async Task<IEnumerable<string>> GetAlgorithmIdsOfRequestsMissingResults()
+        public async Task<IEnumerable<string>> GetAlgorithmIdsOfMatchPredictionRequestsMissingResults()
         {
             const string sql = @$"SELECT {nameof(MatchPredictionRequest.MatchPredictionAlgorithmRequestId)}
-                              FROM {RequestsTable} req
-                              LEFT JOIN {ResultsTable} res
+                              FROM MatchPredictionRequests req
+                              LEFT JOIN MatchPredictionResults res
                               ON req.{nameof(MatchPredictionRequest.Id)} = res.{nameof(MatchPredictionResults.MatchPredictionRequestId)}
                               WHERE res.{nameof(MatchPredictionResults.Id)} IS NULL";
 

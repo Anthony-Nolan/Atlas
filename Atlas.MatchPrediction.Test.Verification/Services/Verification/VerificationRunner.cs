@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.ManualTesting.Common.Repositories;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Test.Verification.Config;
@@ -29,14 +29,14 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
     internal class VerificationRunner : IVerificationRunner
     {
-        private static readonly HttpClient HttpRequestClient = new HttpClient();
+        private static readonly HttpClient HttpRequestClient = new();
 
         private readonly ITestDonorExportRepository exportRepository;
         private readonly ITestHarnessRepository harnessRepository;
         private readonly IHaplotypeFrequencySetReader setReader;
         private readonly IVerificationRunRepository verificationRunRepository;
         private readonly ISimulantsRepository simulantsRepository;
-        private readonly ISearchRequestsRepository searchRequestsRepository;
+        private readonly ISearchRequestsRepository<VerificationSearchRequestRecord> searchRequestsRepository;
         private readonly string searchRequestUrl;
 
         public VerificationRunner(
@@ -45,7 +45,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
             IHaplotypeFrequencySetReader setReader,
             IVerificationRunRepository verificationRunRepository,
             ISimulantsRepository simulantsRepository,
-            ISearchRequestsRepository searchRequestsRepository,
+            ISearchRequestsRepository<VerificationSearchRequestRecord> searchRequestsRepository,
             IOptions<VerificationSearchSettings> settings)
         {
             this.exportRepository = exportRepository;
@@ -84,9 +84,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
         private async Task<bool> TestHarnessDonorsNotOnAtlasDonorStores(int testHarnessId)
         {
-            var lastExport = await exportRepository.GetLastExportRecord();
+            var lastExportRecord = await exportRepository.GetLastExportRecord();
+            var harness = await harnessRepository.GetTestHarness(testHarnessId);
 
-            return lastExport == null || lastExport.TestHarness_Id != testHarnessId;
+            return lastExportRecord == null
+                || harness.ExportRecord_Id == null
+                || harness.ExportRecord_Id != lastExportRecord.Id;
         }
 
         private async Task<bool> TestHarnessHaplotypeFrequencySetNotActiveOnAtlas(int testHarnessId)
@@ -133,14 +136,14 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
             var searchFailed = requestResponse.Outcome == OutcomeType.Failure;
 
-            await searchRequestsRepository.AddSearchRequest(new SearchRequestRecord
+            await searchRequestsRepository.AddSearchRequest(new VerificationSearchRequestRecord
             {
                 VerificationRun_Id = verificationRunId,
-                PatientSimulant_Id = patient.Id,
+                PatientId = patient.Id,
                 DonorMismatchCount = searchRequest.MatchCriteria.DonorMismatchCount,
                 WasMatchPredictionRun = searchRequest.RunMatchPrediction,
                 AtlasSearchIdentifier = searchFailed ? failedSearchId : requestResponse.Result,
-                WasSuccessful = searchFailed ? false : (bool?)null
+                WasSuccessful = searchFailed ? false : null
             });
         }
 

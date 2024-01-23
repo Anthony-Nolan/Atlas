@@ -9,7 +9,6 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
@@ -35,7 +34,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         /// <summary>
         /// Requests a data refresh according to submitted request parameters.
         /// </summary>
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(SubmitDataRefreshRequestManual))]
         public async Task<IActionResult> SubmitDataRefreshRequestManual(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
@@ -45,8 +43,8 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             try
             {
                 var request = await ReadRequestBody<DataRefreshRequest>(httpRequest);
-                var recordId = await dataRefreshRequester.RequestDataRefresh(request, true);
-                return new JsonResult(recordId);
+                var result = await dataRefreshRequester.RequestDataRefresh(request, true);
+                return new JsonResult(result);
             }
             catch (Exception ex)
             {
@@ -65,7 +63,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             await dataRefreshRequester.RequestDataRefresh(request, false);
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(RunDataRefresh))]
         public async Task RunDataRefresh(
             [ServiceBusTrigger(
@@ -77,6 +74,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             await dataRefreshOrchestrator.OrchestrateDataRefresh(request.DataRefreshRecordId);
         }
 
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(RunDataRefreshCleanupAfterJobRequestDeadLetters))]
         public async Task RunDataRefreshCleanupAfterJobRequestDeadLetters(
             [ServiceBusTrigger(

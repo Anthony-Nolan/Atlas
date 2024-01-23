@@ -27,17 +27,18 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
     "DonorImport:HoursToCheckStalledFiles" = var.STALLED_FILE_DURATION
     "DonorImport:AllowFullModeImport" = var.ALLOW_FULL_MODE_IMPORT
 
-    "MessagingServiceBus:ConnectionString"             = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
-    "MessagingServiceBus:ImportFileSubscription"       = azurerm_servicebus_subscription.donor-import-file-processor.name
-    "MessagingServiceBus:ImportFileTopic"              = azurerm_servicebus_topic.donor-import-file-uploads.name
-    "MessagingServiceBus:UpdatedSearchableDonorsTopic" = azurerm_servicebus_topic.updated-searchable-donors.name
-    "MessagingServiceBus:DonorIdCheckerTopic"          = azurerm_servicebus_topic.donor-id-checker-requests.name
-    "MessagingServiceBus:DonorIdCheckerSubscription"   = azurerm_servicebus_subscription.donor-id-checker.name
-    "MessagingServiceBus:DonorIdCheckerResultsTopic"   = azurerm_servicebus_topic.donor-id-checker-results.name
-    "MessagingServiceBus:DonorInfoCheckerTopic"        = azurerm_servicebus_topic.donor-info-checker-requests.name
-    "MessagingServiceBus:DonorInfoCheckerSubscription" = azurerm_servicebus_subscription.donor-info-checker.name
-    "MessagingServiceBus:DonorInfoCheckerResultsTopic" = azurerm_servicebus_topic.donor-info-checker-results.name
-    "MessagingServiceBus:DonorImportResultsTopic"      = azurerm_servicebus_topic.donor-import-results.name
+    "MessagingServiceBus:ConnectionString"                    = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
+    "MessagingServiceBus:ImportFileSubscription"              = azurerm_servicebus_subscription.donor-import-file-processor.name
+    "MessagingServiceBus:ImportFileTopic"                     = azurerm_servicebus_topic.donor-import-file-uploads.name
+    "MessagingServiceBus:UpdatedSearchableDonorsTopic"        = azurerm_servicebus_topic.updated-searchable-donors.name
+    "MessagingServiceBus:DonorIdCheckerTopic"                 = azurerm_servicebus_topic.donor-id-checker-requests.name
+    "MessagingServiceBus:DonorIdCheckerSubscription"          = azurerm_servicebus_subscription.donor-id-checker.name
+    "MessagingServiceBus:DonorIdCheckerResultsTopic"          = azurerm_servicebus_topic.donor-id-checker-results.name
+    "MessagingServiceBus:DonorInfoCheckerTopic"               = azurerm_servicebus_topic.donor-info-checker-requests.name
+    "MessagingServiceBus:DonorInfoCheckerSubscription"        = azurerm_servicebus_subscription.donor-info-checker.name
+    "MessagingServiceBus:DonorInfoCheckerResultsTopic"        = azurerm_servicebus_topic.donor-info-checker-results.name
+    "MessagingServiceBus:DonorImportResultsTopic"             = azurerm_servicebus_topic.donor-import-results.name
+    "MessagingServiceBus:DonorImportResultsDebugSubscription" = azurerm_servicebus_subscription.debug-donor-import-results.name
 
     "NotificationConfiguration:NotifyOnAttemptedDeletionOfUntrackedDonor" = var.NOTIFICATIONS_ON_DELETION_OF_INVALID_DONOR
 
@@ -59,17 +60,18 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
   site_config {
     application_insights_key = var.application_insights.instrumentation_key
     application_stack {
-      dotnet_version = "6"
+      dotnet_version = "v6.0"
     }
     cors {
-      allowed_origins     = []
       support_credentials = false
     }
+    dynamic "ip_restriction" {
+      for_each = var.IP_RESTRICTION_SETTINGS
+      content {
+        ip_address = ip_restriction
+      }
+    }
 
-    ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
-      ip_address = ip
-      subnet_id  = null
-    }]
 
     ftps_state              = "AllAllowed"
     scm_minimum_tls_version = "1.0"

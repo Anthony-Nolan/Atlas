@@ -37,7 +37,11 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Context
 
             var optionsBuilder = new DbContextOptionsBuilder<MatchPredictionValidationContext>();
 
-            optionsBuilder.UseSqlServer(connectionString, builder => { builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null); });
+            optionsBuilder.UseSqlServer(connectionString, builder =>
+            {
+                builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null);
+                builder.CommandTimeout((int)TimeSpan.FromMinutes(10).TotalSeconds);
+            });
 
             return new MatchPredictionValidationContext(optionsBuilder.Options);
         }

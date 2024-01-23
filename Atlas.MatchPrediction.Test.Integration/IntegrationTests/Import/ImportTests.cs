@@ -1,8 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.Notifications;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
@@ -19,6 +15,9 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
 {

@@ -83,7 +83,8 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
 
                     b.Property<string>("ExternalDonorCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<bool>("IsAvailableForSearch")
                         .ValueGeneratedOnAdd()
@@ -100,6 +101,8 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                         .HasFilter("[DQB1_1] IS NULL AND [DQB1_2] IS NULL");
 
                     SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("DonorId"), new[] { "DQB1_1", "DQB1_2" });
+
+                    b.HasIndex("ExternalDonorCode");
 
                     b.ToTable("Donors");
                 });

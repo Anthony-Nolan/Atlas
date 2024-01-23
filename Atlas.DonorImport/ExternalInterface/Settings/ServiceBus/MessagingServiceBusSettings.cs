@@ -24,5 +24,10 @@ namespace Atlas.DonorImport.ExternalInterface.Settings.ServiceBus
         public string DonorInfoCheckerResultsTopic { get; set; }
         
         public string DonorImportResultsTopic { get; set; }
+
+        /// <summary>
+        /// Required by debug endpoint that peeks donor import results messages.
+        /// </summary>
+        public string DonorImportResultsDebugSubscription { get; set; }
     }
 }

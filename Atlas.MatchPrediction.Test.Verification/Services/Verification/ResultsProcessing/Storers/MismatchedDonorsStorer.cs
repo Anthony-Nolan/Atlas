@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.ResultSet;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.ManualTesting.Common.Models.Entities;
+using Atlas.ManualTesting.Common.Repositories;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
@@ -15,7 +16,6 @@ using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.Test.Verification.Config;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
-using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using DonorScores = System.Collections.Generic.Dictionary<int, Atlas.MatchingAlgorithm.Data.Models.SearchResults.ScoreResult>;
 
@@ -29,7 +29,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         /// returned in the search results due to having too many mismatches, by creating records with appropriate values.
         /// Note: 0/10 donors and 0/2 loci match counts will not be stored to reduce number of rows added to the database.
         /// </summary>
-        Task CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequestRecord searchRequest, ResultSet<TResult> resultSet);
+        Task CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequestRecord searchRequest, ResultSet<TResult> resultSet);
     }
 
     internal class MismatchedDonorsStorer<TResult> : IMismatchedDonorsStorer<TResult> where TResult : Result
@@ -38,14 +38,14 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         private readonly IDonorScoringService scoringService;
         private readonly IProcessedResultsRepository<MatchedDonor> bulkInsertDonorRepository;
         private readonly IMatchedDonorsRepository matchedDonorsRepository;
-        private readonly IProcessedResultsRepository<LocusMatchCount> matchCountsRepository;
+        private readonly IProcessedResultsRepository<LocusMatchDetails> matchCountsRepository;
 
         public MismatchedDonorsStorer(
             IGenotypeSimulantsInfoCache cache,
             IDonorScoringService scoringService,
             IProcessedResultsRepository<MatchedDonor> bulkInsertDonorRepository,
             IMatchedDonorsRepository matchedDonorsRepository,
-            IProcessedResultsRepository<LocusMatchCount> matchCountsRepository)
+            IProcessedResultsRepository<LocusMatchDetails> matchCountsRepository)
         {
             this.scoringService = scoringService;
             this.bulkInsertDonorRepository = bulkInsertDonorRepository;
@@ -54,11 +54,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             this.cache = cache;
         }
 
-        public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches(SearchRequestRecord searchRequest, ResultSet<TResult> resultSet)
+        public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequestRecord searchRequest, ResultSet<TResult> resultSet)
         {
             var info = await cache.GetOrAddGenotypeSimulantsInfo(searchRequest.VerificationRun_Id);
 
-            if (!info.Patients.Ids.Contains(searchRequest.PatientSimulant_Id))
+            if (!info.Patients.Ids.Contains(searchRequest.PatientId))
             {
                 return;
             }
@@ -76,10 +76,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
 
         private async Task CreateRecordsForDonorsWithAtLeastOneMatch(
             GenotypeSimulantsInfo info,
-            SearchRequestRecord searchRequest,
+            VerificationSearchRequestRecord searchRequest,
             IEnumerable<int> donorSimulantIds)
         {
-            var patient = info.Patients.Hla.Single(p => p.Id == searchRequest.PatientSimulant_Id);
+            var patient = info.Patients.Hla.Single(p => p.Id == searchRequest.PatientId);
             var scores = new DonorScores();
 
             foreach (var donorSimulantId in donorSimulantIds)
@@ -125,29 +125,29 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             var matchedDonors = scores.Select(r => new MatchedDonor
                 {
                     SearchRequestRecord_Id = searchRequestId,
-                    MatchedDonorSimulant_Id = r.Key,
+                    DonorCode = r.Key.ToString(),
                     TotalMatchCount = r.Value.AggregateScoreDetails.MatchCount,
                     TypedLociCount = VerificationConstants.SearchLociCount
                 }).ToList();
 
-            await bulkInsertDonorRepository.BulkInsertResults(matchedDonors);
+            await bulkInsertDonorRepository.BulkInsert(matchedDonors);
         }
 
         private async Task StoreNonZeroLocusMatchCounts(int searchRequestId, DonorScores scores)
         {
-            var matchCounts = new List<LocusMatchCount>();
+            var matchCounts = new List<LocusMatchDetails>();
 
             foreach (var (donorSimulantId, scoreResult) in scores)
             {
                 matchCounts.AddRange(await BuildNonZeroMatchCounts(searchRequestId, donorSimulantId, scoreResult));
             }
 
-            await matchCountsRepository.BulkInsertResults(matchCounts);
+            await matchCountsRepository.BulkInsert(matchCounts);
         }
 
-        private async Task<IEnumerable<LocusMatchCount>> BuildNonZeroMatchCounts(int searchRequestId, int simulantDonorId, ScoreResult scoreResult)
+        private async Task<IEnumerable<LocusMatchDetails>> BuildNonZeroMatchCounts(int searchRequestId, int simulantDonorId, ScoreResult scoreResult)
         {
-            var matchedDonorId = await matchedDonorsRepository.GetMatchedDonorId(searchRequestId, simulantDonorId);
+            var matchedDonorId = await matchedDonorsRepository.GetMatchedDonorId(searchRequestId, simulantDonorId.ToString());
 
             if (matchedDonorId == null)
             {
@@ -157,7 +157,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
 
             var lociInfo = scoreResult.ToLociScoreDetailsInfo();
             return MatchPredictionStaticData.MatchPredictionLoci.Select(l =>
-                    new LocusMatchCount
+                    new LocusMatchDetails
                     {
                         Locus = l,
                         MatchCount = lociInfo.GetLocus(l).MatchCount(),
