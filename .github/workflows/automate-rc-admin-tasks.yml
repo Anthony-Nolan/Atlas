@@ -1,0 +1,123 @@
+name: Update Atlas Versions and Generate Changelogs when creating an RC branch
+
+on:
+  push:
+    branches:
+      - 'test/*'
+
+jobs:
+  update-version-and-generate-changelogs:
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECTS: Atlas.Client.Models Atlas.Common.Public.Models Atlas.DonorImport.FileSchema.Models Atlas.Functions.PublicApi Atlas.MatchingAlgorithm.Client.Models
+      PACKAGES: Atlas.Client.Models Atlas.Common.Public.Models Atlas.DonorImport.FileSchema.Models Atlas.MatchingAlgorithm.Client.Models
+      ATLAS_VERSION: ""
+      FEATURE_BRANCH: ""
+      LAST_STABLE_TAG: ""
+        
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Get number of successful workflow runs
+      id: check_runs
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        REPO: ${{ github.repository }}
+        REF: ${{ github.ref }}
+      run: |
+        COUNT=$(curl -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+          "https://api.github.com/repos/${REPO}/actions/runs?branch=${REF}&status=success" | \
+          jq '.total_count')
+        echo "::set-output name=run_count::$COUNT"
+        echo $COUNT
+
+    - name: Exit if more than one successful run
+      if: steps.check_runs.outputs.run_count > 0
+      run: |
+        echo "This workflow has already been successfully run for this branch. Exiting workflow."
+        exit 0      
+
+    - name: Extract Atlas version from branch name
+      run: |
+        REF=${{ github.ref }}
+        VERSION=${REF#refs/heads/test/}
+        echo "ATLAS_VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: Check ATLAS_VERSION is set
+      run: |
+        if [[ -z "${{ env.ATLAS_VERSION }}" ]]; then
+          echo "ATLAS_VERSION is not set"
+          exit 1
+        elif [[ ! "${{ env.ATLAS_VERSION }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "ATLAS_VERSION does not follow the expected version naming pattern (1.2.3)"
+          exit 1
+        fi      
+
+    - name: Create new branch for automated changes
+      run: |
+        ATLAS_VERSION_FOR_BRANCH_NAME=$(echo $ATLAS_VERSION | tr '.' '-')
+        git checkout -b automatedRCActions_${ATLAS_VERSION_FOR_BRANCH_NAME}_$(date +%Y%m%d%H%M%S)
+        echo "FEATURE_BRANCH=$(git branch --show-current)" >> $GITHUB_ENV
+
+    - name: Configure git user
+      run: |
+        git config --global user.name "GitHub Workflow"
+        git config --global user.email "info@anthonynolan.org"
+
+    - name: Update projects with RC version number
+      run: |
+        for package in ${{ env.PROJECTS }}; do
+          echo "Updating $package to version ${{ env.ATLAS_VERSION }}..."
+          sed -i 's|<VersionPrefix>.*</VersionPrefix>|<VersionPrefix>${{ env.ATLAS_VERSION }}</VersionPrefix>|' $package/$package.csproj
+        done
+        git commit -am "chore: Updated Atlas version number to ${{ env.ATLAS_VERSION }}"
+
+    - name: Get git tag with "stable/" prefix that has the highest version number
+      run: |
+        git fetch --tags
+        TAG=$(git tag | grep '^stable/' | sort -V | tail -n 1)
+        echo "LAST_STABLE_TAG=$TAG" >> $GITHUB_ENV
+        
+    - name: Check LAST_STABLE_TAG is set
+      run: |
+        if [[ -z "${{ env.LAST_STABLE_TAG }}" ]]; then
+          echo "LAST_STABLE_TAG is not set"
+          exit 1
+        fi
+        echo "LAST_STABLE_TAG=${{ env.LAST_STABLE_TAG }}"
+
+    - name: Generate/update changelogs
+      run: |
+        for package in ${{ env.PACKAGES }}; do
+          if git diff --quiet HEAD ${{ env.LAST_STABLE_TAG }}; then
+            echo "No changes in $package"
+          else
+            echo "Changes detected in $package"
+            mkdir -p $package/changelogs
+            DIFF=$(git diff --summary HEAD ${{ env.LAST_STABLE_TAG }})
+            echo -e "Changes in $package:\n$DIFF" >> $package/changelogs/CHANGELOG_${package}-v${{ env.ATLAS_VERSION }}.md
+            git add $package/changelogs/CHANGELOG_${package}-v${{ env.ATLAS_VERSION }}.md
+            git commit -m "docs: Generated $package changelog for v${{ env.ATLAS_VERSION }}."
+          fi
+        done
+
+    - name: Push feature branch to remote
+      run: git push origin ${{ env.FEATURE_BRANCH }}
+
+    - name: Create Pull Request
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const ATLAS_VERSION = "${{ env.ATLAS_VERSION }}";
+          const FEATURE_BRANCH = "${{ env.FEATURE_BRANCH }}";
+          const BASE = "${{ github.ref }}";
+          github.pulls.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `Automated changes for rc ${ATLAS_VERSION}`,
+            head: FEATURE_BRANCH,
+            base: BASE
+          });
