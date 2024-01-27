@@ -5,7 +5,7 @@
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <OutputPath>bin/</OutputPath>
         <LangVersion>latest</LangVersion>
-        <VersionPrefix>1.6.2</VersionPrefix>
+        <VersionPrefix>1.6.100</VersionPrefix>
     </PropertyGroup>
 
     <Target Name="Scaffold local settings file" BeforeTargets="BeforeCompile" Condition="!EXISTS('$(ProjectDir)\local.settings.json')">
