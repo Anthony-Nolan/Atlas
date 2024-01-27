@@ -12,6 +12,7 @@ jobs:
     env:
       PROJECTS: Atlas.Client.Models Atlas.Common.Public.Models Atlas.DonorImport.FileSchema.Models Atlas.Functions.PublicApi Atlas.MatchingAlgorithm.Client.Models
       PACKAGES: Atlas.Client.Models Atlas.Common.Public.Models Atlas.DonorImport.FileSchema.Models Atlas.MatchingAlgorithm.Client.Models
+      WORKFLOW_RUN_COUNT: 0
       ATLAS_VERSION: ""
       FEATURE_BRANCH: ""
       LAST_STABLE_TAG: ""
@@ -21,7 +22,6 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Get number of successful workflow runs
-      id: check_runs
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
@@ -31,14 +31,15 @@ jobs:
         COUNT=$(curl -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
           "https://api.github.com/repos/${REPO}/actions/runs?branch=${BRANCH_NAME}&status=success" | \
           jq '.total_count')
-        echo "::set-output name=run_count::$COUNT"
-        echo $COUNT
+        echo "WORKFLOW_RUN_COUNT=$COUNT" >> $GITHUB_ENV
 
     - name: Exit if more than one successful run
-      if: steps.check_runs.outputs.run_count > 0
       run: |
-        echo "This workflow has already been successfully run for this branch. Exiting workflow."
-        exit 0      
+        RUN_COUNT=${{ env.WORKFLOW_RUN_COUNT }}
+        if [[ "$RUN_COUNT" -gt 0 ]]; then
+          echo "Exiting workflow as successful run count of this workflow against ref branch is ${RUN_COUNT}."
+          exit 0
+        fi 
 
     - name: Extract Atlas version from branch name
       run: |
