@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Atlas.Debug.Client.Models.DonorImport;
 
@@ -7,17 +6,16 @@ namespace Atlas.Common.Debugging
 {
     public static class DebugDonorsHelper
     {
-        public static DebugDonorsResult<TDonor> BuildDebugDonorsResult<TDonor>(
+        public static DebugDonorsResult BuildDebugDonorsResult(
             IReadOnlyCollection<string> externalDonorCodes,
-            IReadOnlyCollection<TDonor> presentDonors,
-            Func<TDonor, string> idSelector)
+            IReadOnlyCollection<DonorDebugInfo> presentDonors)
         {
             var distinctCodes = externalDonorCodes.Distinct().ToList();
-            var absentDonors = distinctCodes.Except(presentDonors.Select(idSelector)).ToList();
+            var absentDonors = distinctCodes.Except(presentDonors.Select(d => d.ExternalDonorCode)).ToList();
 
-            return new DebugDonorsResult<TDonor>
+            return new DebugDonorsResult
             {
-                DonorCounts = new DebugDonorsResult<TDonor>.Counts
+                DonorCounts = new DebugDonorsResult.Counts
                 {
                     Absent = absentDonors.Count,
                     Present = presentDonors.Count,
