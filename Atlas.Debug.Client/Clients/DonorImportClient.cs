@@ -2,6 +2,8 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Debug.Client.Models.DonorImport;
+using Atlas.Debug.Client.Models.ServiceBus;
+using Atlas.DonorImport.FileSchema.Models;
 
 namespace Atlas.Debug.Client.Clients
 {
@@ -19,6 +21,11 @@ namespace Atlas.Debug.Client.Clients
         /// Check for presence or absence of donors in donor import database (a.k.a. "Atlas donor store").
         /// </summary>
         Task<DebugDonorsResult> CheckDonors(IEnumerable<string> externalDonorCodes);
+
+        /// <summary>
+        /// Peek messages from the `debug` subscription of the donor-import-results service bus topic.
+        /// </summary>
+        Task<IEnumerable<DonorImportMessage>> PeekDonorImportResultMessages(PeekServiceBusMessagesRequest request);
     }
 
     /// <inheritdoc cref="IDonorImportClient" />
@@ -39,6 +46,12 @@ namespace Atlas.Debug.Client.Clients
         public async Task<DebugDonorsResult> CheckDonors(IEnumerable<string> externalDonorCodes)
         {
             return await PostRequest<IEnumerable<string>, DebugDonorsResult>("debug/donors", externalDonorCodes);
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<DonorImportMessage>> PeekDonorImportResultMessages(PeekServiceBusMessagesRequest request)
+        {
+            return await PostRequest<PeekServiceBusMessagesRequest, IEnumerable<DonorImportMessage>>("debug/donorImport/results", request);
         }
     }
 }

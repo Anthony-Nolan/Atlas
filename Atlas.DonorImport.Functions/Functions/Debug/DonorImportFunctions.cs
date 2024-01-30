@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Atlas.Debug.Client.Models.DonorImport;
@@ -60,7 +61,7 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
         {
             var peekRequest = await request.DeserialiseRequestBody<PeekServiceBusMessagesRequest>();
             var messages = await resultsPeeker.PeekResultsMessages(peekRequest);
-            return new JsonResult(messages);
+            return new JsonResult(messages.Select(m => m.DeserializedBody));
         }
     }
 }
