@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -28,9 +27,9 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
         /// </summary>
         /// <param name="request">The HTTP request.</param>
         /// <param name="fileName">The file name.</param>
-        /// <returns>The list of donor import failures. May be an empty list if no failures found.</returns>
+        /// <returns>Donor import failures found for the given <paramref name="fileName"/>.</returns>
         [FunctionName(nameof(GetDonorImportFailuresByFileName))]
-        [ProducesResponseType(typeof(IEnumerable<DonorUpdateFailureInfo>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(DonorImportFailureInfo), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetDonorImportFailuresByFileName(
             [HttpTrigger(
                 AuthorizationLevel.Function,
@@ -40,7 +39,14 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
             string fileName)
         {
             var failures = await donorImportFailureRepository.GetDonorImportFailuresByFileName(fileName);
-            return new JsonResult(failures.Select(f => f.ToDonorUpdateFailureInfo()));
+            var failedUpdates = failures.Select(f => f.ToFailedDonorUpdate()).ToList();
+
+            return new JsonResult(new DonorImportFailureInfo
+            {
+                FileName = fileName,
+                FailedUpdates = failedUpdates,
+                FailedUpdateCount = failedUpdates.Count
+            });
         }
     }
 }

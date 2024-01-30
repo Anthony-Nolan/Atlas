@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web;
 using Atlas.Debug.Client.Models.HttpFunctions;
 using Newtonsoft.Json;
 
@@ -13,10 +12,16 @@ namespace Atlas.Debug.Client
     public interface IHttpFunctionClient
     {
         /// <summary>
+        /// Get request to <paramref name="requestUri"/>.
+        /// </summary>
+        /// <param name="requestUri"></param>
+        Task<TResponse> GetRequest<TResponse>(string requestUri);
+
+        /// <summary>
         /// Post request to <paramref name="requestUri"/> with the given <paramref name="requestBody"/>.
         /// </summary>
         /// <exception cref="HttpFunctionException" />
-        Task PostRequest<T>(string requestUri, T requestBody);
+        Task PostRequest<TBody>(string requestUri, TBody requestBody);
 
         /// <inheritdoc cref="PostRequest{T}"/>
         /// <returns>The deserialized response as type, TResponse.</returns>
@@ -43,25 +48,33 @@ namespace Atlas.Debug.Client
         }
 
         /// <inheritdoc />
-        public async Task PostRequest<T>(string requestUri, T requestBody)
+        public async Task<TResponse> GetRequest<TResponse>(string requestUri)
         {
-            try
-            {
-                await SendRequestAndEnsureSuccess(HttpMethod.Post, requestUri, requestBody);
-            }
-            catch (Exception e)
-            {
-                throw WrappedException(requestUri, e);
-            }
+            var response = await SendRequestAndEnsureSuccess(HttpMethod.Get, requestUri);
+            return await DeserializeObject<TResponse>(response);
+        }
+
+        /// <inheritdoc />
+        public async Task PostRequest<TBody>(string requestUri, TBody requestBody)
+        {
+            await SendRequestAndEnsureSuccess(HttpMethod.Post, requestUri, requestBody);
         }
 
         /// <inheritdoc />
         public async Task<TResponse> PostRequest<TBody, TResponse>(string requestUri, TBody requestBody)
         {
+            var response = await SendRequestAndEnsureSuccess(HttpMethod.Post, requestUri, requestBody);
+            return await DeserializeObject<TResponse>(response);
+        }
+
+        private async Task<HttpResponseMessage> SendRequestAndEnsureSuccess<TBody>(HttpMethod method, string requestUri, TBody requestBody)
+        {
             try
             {
-                var response = await SendRequestAndEnsureSuccess(HttpMethod.Post, requestUri, requestBody);
-                return JsonConvert.DeserializeObject<TResponse>(await response.Content.ReadAsStringAsync());
+                var request = BuildRequest(method, requestUri, requestBody);
+                var response = await client.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                return response;
             }
             catch (Exception e)
             {
@@ -69,20 +82,25 @@ namespace Atlas.Debug.Client
             }
         }
 
-        private async Task<HttpResponseMessage> SendRequestAndEnsureSuccess<TBody>(HttpMethod method, string requestUri, TBody requestBody)
+        /// <summary>
+        /// Overload method to send a request without a request body.
+        /// </summary>
+        private async Task<HttpResponseMessage> SendRequestAndEnsureSuccess(HttpMethod method, string requestUri)
         {
-            var request = BuildRequest(method, requestUri, requestBody);
-            var response = await client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-            return response;
+            return await SendRequestAndEnsureSuccess<object>(method, requestUri, null);
         }
 
         private HttpRequestMessage BuildRequest<TBody>(HttpMethod method, string requestUri, TBody requestBody)
         {
-            return new HttpRequestMessage(method, AppendRequestUriWithApiKey(requestUri))
+            var requestMessage = new HttpRequestMessage(method, AppendRequestUriWithApiKey(requestUri));
+
+            if (requestBody == null)
             {
-                Content = new StringContent(JsonConvert.SerializeObject(requestBody))
-            };
+                return requestMessage;
+            }
+
+            requestMessage.Content = new StringContent(JsonConvert.SerializeObject(requestBody));
+            return requestMessage;
         }
 
         private string AppendRequestUriWithApiKey(string requestUri)
@@ -90,6 +108,9 @@ namespace Atlas.Debug.Client
             var delimiter = requestUri.Contains("?") ? "&" : "?";
             return $"{requestUri}{delimiter}code={apiKey}";
         }
+
+        private static async Task<TResponse> DeserializeObject<TResponse>(HttpResponseMessage response) =>
+            JsonConvert.DeserializeObject<TResponse>(await response.Content.ReadAsStringAsync());
 
         private HttpFunctionException WrappedException(string requestUri, Exception ex) => new(baseUrl, requestUri, ex);
     }
