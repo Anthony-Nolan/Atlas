@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Debug.Client.Models.ServiceBus;
@@ -14,12 +13,12 @@ namespace Atlas.Debug.Client.Clients
         /// <summary>
         /// Peek messages from the `debug` subscription of the alerts service bus topic.
         /// </summary>
-        Task<IEnumerable<Alert>> PeekAlerts(PeekServiceBusMessagesRequest request);
+        Task<PeekServiceBusMessagesResponse<Alert>> PeekAlerts(PeekServiceBusMessagesRequest request);
 
         /// <summary>
         /// Peek messages from the `debug` subscription of the notifications service bus topic.
         /// </summary>
-        Task<IEnumerable<Notification>> PeekNotifications(PeekServiceBusMessagesRequest request);
+        Task<PeekServiceBusMessagesResponse<Notification>> PeekNotifications(PeekServiceBusMessagesRequest request);
     }
 
     /// <inheritdoc cref="ISupportMessageClient" />
@@ -31,15 +30,15 @@ namespace Atlas.Debug.Client.Clients
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<Alert>> PeekAlerts(PeekServiceBusMessagesRequest request)
+        public async Task<PeekServiceBusMessagesResponse<Alert>> PeekAlerts(PeekServiceBusMessagesRequest request)
         {
-            return await PostRequest<PeekServiceBusMessagesRequest, IEnumerable<Alert>>("debug/alerts", request);
+            return await PostRequest<PeekServiceBusMessagesRequest, PeekServiceBusMessagesResponse<Alert>>("debug/alerts", request);
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<Notification>> PeekNotifications(PeekServiceBusMessagesRequest request)
+        public async Task<PeekServiceBusMessagesResponse<Notification>> PeekNotifications(PeekServiceBusMessagesRequest request)
         {
-            return await PostRequest<PeekServiceBusMessagesRequest, IEnumerable<Notification>>("debug/notifications", request);
+            return await PostRequest<PeekServiceBusMessagesRequest, PeekServiceBusMessagesResponse<Notification>>("debug/notifications", request);
         }
     }
 }

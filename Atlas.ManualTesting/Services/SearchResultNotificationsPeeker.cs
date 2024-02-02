@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
-using Atlas.Common.ServiceBus;
+using Atlas.Common.Debugging;
 using Atlas.Debug.Client.Models.ServiceBus;
 using Atlas.ManualTesting.Models;
 
@@ -29,9 +29,9 @@ namespace Atlas.ManualTesting.Services
         {
             var notifications = await messagesReceiver.Peek(peekRequest);
 
-            return notifications
-                .Where(n => !n.DeserializedBody.WasSuccessful)
-                .Select(n => n.DeserializedBody.SearchRequestId)
+            return notifications.PeekedMessages
+                .Where(n => !n.WasSuccessful)
+                .Select(n => n.SearchRequestId)
                 .Distinct();
         }
 
@@ -53,9 +53,7 @@ namespace Atlas.ManualTesting.Services
 
         private async Task<IReadOnlyCollection<SearchResultsNotification>> PeekNotifications(PeekServiceBusMessagesRequest peekRequest)
         {
-            return (await messagesReceiver.Peek(peekRequest))
-                .Select(m => m.DeserializedBody)
-                .ToList();
+            return (await messagesReceiver.Peek(peekRequest)).PeekedMessages.ToList();
         }
 
         private static PeekedSearchResultsNotifications BuildResponse(IReadOnlyCollection<SearchResultsNotification> notifications)

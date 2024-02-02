@@ -1,16 +1,14 @@
+using Atlas.Client.Models.SupportMessages;
+using Atlas.Common.Debugging;
 using Atlas.Common.Utils.Http;
+using Atlas.Debug.Client.Models.ServiceBus;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Atlas.Client.Models.SupportMessages;
-using Atlas.Common.ServiceBus;
-using Atlas.Debug.Client.Models.ServiceBus;
 
 namespace Atlas.Functions.Functions.Debug
 {
@@ -26,7 +24,7 @@ namespace Atlas.Functions.Functions.Debug
         }
 
         [FunctionName(nameof(PeekAlerts))]
-        [ProducesResponseType(typeof(IEnumerable<Alert>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(PeekServiceBusMessagesResponse<Alert>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> PeekAlerts(
             [HttpTrigger(
                 AuthorizationLevel.Function,
@@ -36,12 +34,12 @@ namespace Atlas.Functions.Functions.Debug
             HttpRequest request)
         {
             var peekRequest = await request.DeserialiseRequestBody<PeekServiceBusMessagesRequest>();
-            var messages = await alertsPeeker.Peek(peekRequest);
-            return new JsonResult(messages.Select(m => m.DeserializedBody));
+            var response = await alertsPeeker.Peek(peekRequest);
+            return new JsonResult(response);
         }
 
         [FunctionName(nameof(PeekNotifications))]
-        [ProducesResponseType(typeof(IEnumerable<Notification>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(PeekServiceBusMessagesResponse<Notification>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> PeekNotifications(
             [HttpTrigger(
                 AuthorizationLevel.Function,
@@ -51,8 +49,8 @@ namespace Atlas.Functions.Functions.Debug
             HttpRequest request)
         {
             var peekRequest = await request.DeserialiseRequestBody<PeekServiceBusMessagesRequest>();
-            var messages = await notificationsPeeker.Peek(peekRequest);
-            return new JsonResult(messages.Select(m => m.DeserializedBody));
+            var response = await notificationsPeeker.Peek(peekRequest);
+            return new JsonResult(response);
         }
     }
 }
