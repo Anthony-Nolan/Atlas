@@ -32,18 +32,15 @@ namespace Atlas.Debug.Client
     public abstract class HttpFunctionClient : IHttpFunctionClient
     {
         private readonly HttpClient client;
-        private readonly string apiKey;
         private readonly string baseUrl;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpFunctionClient"/> class.
         /// </summary>
         /// <param name="client">The <see cref="HttpClient"/> instance.</param>
-        /// <param name="apiKey">The API key.</param>
-        protected HttpFunctionClient(HttpClient client, string apiKey)
+        protected HttpFunctionClient(HttpClient client)
         {
             this.client = client;
-            this.apiKey = apiKey;
             baseUrl = client.BaseAddress?.ToString();
         }
 
@@ -90,9 +87,9 @@ namespace Atlas.Debug.Client
             return await SendRequestAndEnsureSuccess<object>(method, requestUri, null);
         }
 
-        private HttpRequestMessage BuildRequest<TBody>(HttpMethod method, string requestUri, TBody requestBody)
+        private static HttpRequestMessage BuildRequest<TBody>(HttpMethod method, string requestUri, TBody requestBody)
         {
-            var requestMessage = new HttpRequestMessage(method, AppendRequestUriWithApiKey(requestUri));
+            var requestMessage = new HttpRequestMessage(method, requestUri);
 
             if (requestBody == null)
             {
@@ -101,12 +98,6 @@ namespace Atlas.Debug.Client
 
             requestMessage.Content = new StringContent(JsonConvert.SerializeObject(requestBody));
             return requestMessage;
-        }
-
-        private string AppendRequestUriWithApiKey(string requestUri)
-        {
-            var delimiter = requestUri.Contains("?") ? "&" : "?";
-            return $"{requestUri}{delimiter}code={apiKey}";
         }
 
         private static async Task<TResponse> DeserializeObject<TResponse>(HttpResponseMessage response) =>

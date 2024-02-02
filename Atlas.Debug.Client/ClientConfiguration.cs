@@ -1,8 +1,10 @@
 ﻿using Atlas.Debug.Client.Clients;
 using Atlas.Debug.Client.Models.DonorImport;
+using Atlas.Debug.Client.Models.HttpFunctions;
+using Atlas.Debug.Client.Models.MatchingAlgorithm;
+using Atlas.Debug.Client.Models.SupportMessages;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Net.Http;
 
 namespace Atlas.Debug.Client
 {
@@ -13,6 +15,7 @@ namespace Atlas.Debug.Client
     {
         private const string Accept = "Accept";
         private const string ApplicationJson = "application/json";
+        private const string ApiKeyName = "x-functions-key";
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMinutes(5);
 
         /// <summary>
@@ -21,30 +24,31 @@ namespace Atlas.Debug.Client
         /// </summary>
         public static void RegisterDebugClients(
             this IServiceCollection services,
-            Func<IServiceProvider, DonorImportHttpFunctionSettings> fetchDonorImportHttpSettings)
+            Func<IServiceProvider, DonorImportHttpFunctionSettings> fetchDonorImportHttpSettings,
+            Func<IServiceProvider, MatchingAlgorithmHttpFunctionSettings> fetchMatchingAlgorithmHttpSettings,
+            Func<IServiceProvider, SupportMessageHttpFunctionSettings> fetchSupportMessageHttpSettings)
         {
-            services.RegisterDonorImportDebugClient(fetchDonorImportHttpSettings);
+            services.RegisterHttpFunctionClient<IDonorImportClient, DonorImportClient>(fetchDonorImportHttpSettings);
+            services.RegisterHttpFunctionClient<IMatchingAlgorithmClient, MatchingAlgorithmClient>(fetchMatchingAlgorithmHttpSettings);
+            services.RegisterHttpFunctionClient<ISupportMessageClient, SupportMessageClient>(fetchSupportMessageHttpSettings);
         }
 
-        private static void RegisterDonorImportDebugClient(
+        private static void RegisterHttpFunctionClient<TInterface, TClient>(
             this IServiceCollection services,
-            Func<IServiceProvider, DonorImportHttpFunctionSettings> fetchDonorImportHttpSettings)
+            Func<IServiceProvider, HttpFunctionSettings> fetchHttpFunctionSettings)
+                where TInterface : class
+                where TClient : HttpFunctionClient, TInterface
         {
-            services.AddHttpClient<IDonorImportClient, DonorImportClient>((sp, client) =>
+            // Using .NET Core's built-in HttpClientFactory to create the typed client.
+            // The factory automatically takes care of HttpClient management in a way that prevents socket exceptions.
+            services.AddHttpClient<TInterface, TClient>((sp, client) =>
             {
-                var settings = fetchDonorImportHttpSettings(sp);
+                var settings = fetchHttpFunctionSettings(sp);
                 client.BaseAddress = new Uri(settings.BaseUrl);
                 client.Timeout = settings.RequestTimeOut ?? DefaultTimeout;
                 client.DefaultRequestHeaders.Add(Accept, ApplicationJson);
+                client.DefaultRequestHeaders.Add(ApiKeyName, settings.ApiKey);
             });
-
-            services.AddSingleton<IDonorImportClient, DonorImportClient>(sp =>
-                {
-                    var clientFactory = sp.GetRequiredService<IHttpClientFactory>();
-                    var client = clientFactory.CreateClient(nameof(IDonorImportClient));
-                    var settings = fetchDonorImportHttpSettings(sp);
-                    return new DonorImportClient(client, settings.ApiKey);
-                });
         }
     }
 }

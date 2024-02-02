@@ -39,7 +39,7 @@ namespace Atlas.Debug.Client.Clients
     public class DonorImportClient : HttpFunctionClient, IDonorImportClient
     {
         /// <inheritdoc />
-        public DonorImportClient(HttpClient client, string apiKey) : base(client, apiKey)
+        public DonorImportClient(HttpClient client) : base(client)
         {
         }
 
