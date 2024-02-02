@@ -25,7 +25,7 @@ namespace Atlas.Debug.Client.Clients
         /// <summary>
         /// Peek messages from the `debug` subscription of the donor-import-results service bus topic.
         /// </summary>
-        Task<IEnumerable<DonorImportMessage>> PeekDonorImportResultMessages(PeekServiceBusMessagesRequest request);
+        Task<PeekServiceBusMessagesResponse<DonorImportMessage>> PeekDonorImportResultMessages(PeekServiceBusMessagesRequest request);
 
         /// <summary>
         /// Retrieves donor import failures by file name.
@@ -56,9 +56,9 @@ namespace Atlas.Debug.Client.Clients
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<DonorImportMessage>> PeekDonorImportResultMessages(PeekServiceBusMessagesRequest request)
+        public async Task<PeekServiceBusMessagesResponse<DonorImportMessage>> PeekDonorImportResultMessages(PeekServiceBusMessagesRequest request)
         {
-            return await PostRequest<PeekServiceBusMessagesRequest, IEnumerable<DonorImportMessage>>("debug/donorImport/results", request);
+            return await PostRequest<PeekServiceBusMessagesRequest, PeekServiceBusMessagesResponse<DonorImportMessage>>("debug/donorImport/results", request);
         }
 
         /// <inheritdoc />

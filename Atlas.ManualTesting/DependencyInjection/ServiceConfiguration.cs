@@ -21,6 +21,7 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
+using Atlas.Common.Debugging;
 
 namespace Atlas.ManualTesting.DependencyInjection
 {

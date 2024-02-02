@@ -50,7 +50,7 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
 
 
         [FunctionName(nameof(PeekDonorImportResultsMessages))]
-        [ProducesResponseType(typeof(IEnumerable<DonorImportMessage>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(PeekServiceBusMessagesResponse<DonorImportMessage>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> PeekDonorImportResultsMessages(
             [HttpTrigger(
                 AuthorizationLevel.Function,
@@ -60,8 +60,8 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
             HttpRequest request)
         {
             var peekRequest = await request.DeserialiseRequestBody<PeekServiceBusMessagesRequest>();
-            var messages = await resultsPeeker.PeekResultsMessages(peekRequest);
-            return new JsonResult(messages.Select(m => m.DeserializedBody));
+            var response = await resultsPeeker.PeekResultsMessages(peekRequest);
+            return new JsonResult(response);
         }
     }
 }

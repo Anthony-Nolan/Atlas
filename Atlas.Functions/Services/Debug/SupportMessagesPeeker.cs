@@ -1,4 +1,5 @@
 ﻿using Atlas.Client.Models.SupportMessages;
+using Atlas.Common.Debugging;
 using Atlas.Common.ServiceBus;
 
 namespace Atlas.Functions.Services.Debug
