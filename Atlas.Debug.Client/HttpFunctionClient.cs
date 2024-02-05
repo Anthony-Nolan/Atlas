@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Atlas.Debug.Client.Models.HttpFunctions;
+using Atlas.Debug.Client.Models.Exceptions;
 using Newtonsoft.Json;
 
 namespace Atlas.Debug.Client
