@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
@@ -56,6 +57,8 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
                     {nameof(MatchingResultsNotification.ElapsedTime), matchingResultsNotification.ElapsedTime},
                 }
             };
+
+            message.MessageId = Guid.NewGuid().ToString();
 
             var client = new TopicClient(connectionString, resultsNotificationTopicName);
             await client.SendAsync(message);
