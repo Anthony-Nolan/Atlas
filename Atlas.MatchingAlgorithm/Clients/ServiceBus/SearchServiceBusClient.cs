@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
@@ -56,6 +57,10 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
                     {nameof(MatchingResultsNotification.ElapsedTime), matchingResultsNotification.ElapsedTime},
                 }
             };
+
+            // That should help in investigation of #962. When matching-results-ready queue get two messages for same search id,
+            // the fact that messages have the same message id will prove that it happens because client auto retry functionality
+            message.MessageId = Guid.NewGuid().ToString();
 
             var client = new TopicClient(connectionString, resultsNotificationTopicName);
             await client.SendAsync(message);
