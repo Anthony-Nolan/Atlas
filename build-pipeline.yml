@@ -15,17 +15,20 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '6.0.x'
+
       - task: DotNetCoreCLI@2
         displayName: Install dotnet-ef
         inputs:
           command: 'custom'
           custom: 'tool'
           arguments: 'install dotnet-ef --global --ignore-failed-sources --version "6.0.*"'
+
       - task: DotNetCoreCLI@2
         displayName: 'Restore'
         inputs:
           command: 'restore'
           feedsToUse: 'select'
+
       - task: DotNetCoreCLI@2
         displayName: 'Build Projects'
         inputs:
@@ -54,6 +57,7 @@ jobs:
             Atlas.RepeatSearch.Test
             Atlas.RepeatSearch.Functions
           arguments: '--configuration Release --no-restore'
+
       - task: DotNetCoreCLI@2
         displayName: 'Run Unit Tests'
         inputs:
@@ -68,6 +72,7 @@ jobs:
           packagesToPack: '**/Atlas.Client.Models.csproj'
           packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
           nobuild: true
+
       - task: DotNetCoreCLI@2
         displayName: 'Prepare Debug Client'
         inputs:
@@ -75,6 +80,8 @@ jobs:
           packagesToPack: '**/Atlas.Debug.Client.csproj'
           packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
           nobuild: true
+          configuration: 'Release'
+
       - task: DotNetCoreCLI@2
         displayName: 'Prepare Debug Client Models'
         inputs:
@@ -82,6 +89,7 @@ jobs:
           packagesToPack: '**/Atlas.Debug.Client.Models.csproj'
           packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
           nobuild: true
+
       - task: DotNetCoreCLI@2
         displayName: 'Prepare Matching Algorithm Client Models'
         inputs:
@@ -89,6 +97,7 @@ jobs:
           packagesToPack: '**/Atlas.MatchingAlgorithm.Client.Models.csproj'
           packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
           nobuild: true
+
       - task: DotNetCoreCLI@2
         displayName: 'Prepare Donor Import File Schema Models'
         inputs:
@@ -96,6 +105,7 @@ jobs:
           packagesToPack: '**/Atlas.DonorImport.FileSchema.Models.csproj'
           packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
           nobuild: true
+
       - task: DotNetCoreCLI@2
         displayName: 'Prepare Common Public Models'
         inputs:
@@ -103,6 +113,7 @@ jobs:
           packagesToPack: '**/Atlas.Common.Public.Models.csproj'
           packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
           nobuild: true
+
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Artifact: Published Models'
         inputs:
@@ -112,16 +123,22 @@ jobs:
         # Suffix version number with build ID to allow for a prerelease ci (continuous integration) packages to be published  
       - bash: dotnet pack **/Atlas.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Client Models
-      - bash: dotnet pack **/Atlas.Debug.Client.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
+      
+      - bash: dotnet pack **/Atlas.Debug.Client.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build /p:Configuration=Release --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Debug Client
+      
       - bash: dotnet pack **/Atlas.Debug.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Debug Client Models
+      
       - bash: dotnet pack **/Atlas.MatchingAlgorithm.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Matching Algorithm Client Models
+      
       - bash: dotnet pack **/Atlas.DonorImport.FileSchema.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Donor Import File Schema Models
+      
       - bash: dotnet pack **/Atlas.Common.Public.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Common Public Models
+      
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Artifact: Published Models-CI'
         inputs:
