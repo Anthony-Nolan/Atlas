@@ -1,7 +1,7 @@
-﻿using Atlas.Common.ServiceBus;
+﻿using Atlas.Common.Debugging;
+using Atlas.Common.ServiceBus;
 using Atlas.Debug.Client.Models.ServiceBus;
 using Atlas.DonorImport.FileSchema.Models;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -9,7 +9,7 @@ namespace Atlas.DonorImport.Services.Debug
 {
     public interface IDonorImportResultsPeeker
     {
-        Task<IEnumerable<PeekedServiceBusMessage<DonorImportMessage>>> PeekResultsMessages(PeekServiceBusMessagesRequest peekRequest);
+        Task<PeekServiceBusMessagesResponse<DonorImportMessage>> PeekResultsMessages(PeekServiceBusMessagesRequest peekRequest);
     }
 
     internal class DonorImportResultsPeeker : ServiceBusPeeker<DonorImportMessage>, IDonorImportResultsPeeker
@@ -21,10 +21,16 @@ namespace Atlas.DonorImport.Services.Debug
         {
         }
 
-        public async Task<IEnumerable<PeekedServiceBusMessage<DonorImportMessage>>> PeekResultsMessages(PeekServiceBusMessagesRequest peekRequest)
+        public async Task<PeekServiceBusMessagesResponse<DonorImportMessage>> PeekResultsMessages(PeekServiceBusMessagesRequest peekRequest)
         {
-            var messages = await Peek(peekRequest);
-            return messages.Select(SetImportInfoPropsIfEmpty);
+            var response = await Peek(peekRequest);
+            var messages = response.PeekedMessages.Select(SetImportInfoPropsIfEmpty);
+            
+            return new PeekServiceBusMessagesResponse<DonorImportMessage>
+            {
+                PeekedMessages = messages,
+                MessageCount = response.MessageCount
+            };
         }
 
         /// <summary>
@@ -32,27 +38,25 @@ namespace Atlas.DonorImport.Services.Debug
         /// Manually set these properties if they are missing using the values held in obsolete props.
         /// TODO: Remove method in Atlas v1.8.0 when obsolete props are deleted.
         /// </summary>
-        private static PeekedServiceBusMessage<DonorImportMessage> SetImportInfoPropsIfEmpty(PeekedServiceBusMessage<DonorImportMessage> peekedMessage)
+        private static DonorImportMessage SetImportInfoPropsIfEmpty(DonorImportMessage peekedMessage)
         {
-            var messageBody = peekedMessage.DeserializedBody;
-
-            if (messageBody.WasSuccessful && messageBody.SuccessfulImportInfo == null)
+            if (peekedMessage.WasSuccessful && peekedMessage.SuccessfulImportInfo == null)
             {
-                peekedMessage.DeserializedBody.SuccessfulImportInfo = new SuccessfulImportInfo
+                peekedMessage.SuccessfulImportInfo = new SuccessfulImportInfo
                 {
-                    ImportedDonorCount = messageBody.ImportedDonorCount.Value,
-                    FailedDonorCount = messageBody.FailedDonorCount.Value,
-                    FailedDonorSummary = messageBody.FailedDonorSummary
+                    ImportedDonorCount = peekedMessage.ImportedDonorCount.Value,
+                    FailedDonorCount = peekedMessage.FailedDonorCount.Value,
+                    FailedDonorSummary = peekedMessage.FailedDonorSummary
                 };
                 return peekedMessage;
             }
 
-            if (!messageBody.WasSuccessful && messageBody.FailedImportInfo == null)
+            if (!peekedMessage.WasSuccessful && peekedMessage.FailedImportInfo == null)
             {
-                peekedMessage.DeserializedBody.FailedImportInfo = new FailedImportInfo
+                peekedMessage.FailedImportInfo = new FailedImportInfo
                 {
-                    FileFailureReason = messageBody.FailureReason.Value,
-                    FileFailureDescription = messageBody.FailureReasonDescription
+                    FileFailureReason = peekedMessage.FailureReason.Value,
+                    FileFailureDescription = peekedMessage.FailureReasonDescription
                 };
                 return peekedMessage;
             }

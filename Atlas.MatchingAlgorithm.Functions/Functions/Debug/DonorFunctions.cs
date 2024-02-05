@@ -1,5 +1,8 @@
-﻿using Atlas.Common.Utils.Http;
+﻿using Atlas.Common.Debugging;
+using Atlas.Common.Utils.Http;
+using Atlas.Debug.Client.Models.DonorImport;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
+using Atlas.MatchingAlgorithm.Functions.Models.Debug;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
@@ -7,14 +10,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using System.Linq;
-using Atlas.MatchingAlgorithm.Data.Models.Entities;
-using Atlas.Common.Debugging;
-using Atlas.Debug.Client.Models.DonorImport;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
 {
@@ -28,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
         }
 
         [FunctionName(nameof(GetDonorsFromActiveDb))]
-        [ProducesResponseType(typeof(IEnumerable<DebugDonorsResult<Donor>>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(DebugDonorsResult), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetDonorsFromActiveDb(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/donors/active")]
             [RequestBodyType(typeof(string[]), "External Donor Codes")]
@@ -40,8 +39,8 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             return new JsonResult(
                 DebugDonorsHelper.BuildDebugDonorsResult(
                     externalDonorCodes, 
-                    donors.ToList(), 
-                    d => d.ExternalDonorCode));
+                    donors.Select(d => d.ToDonorDebugInfo()).ToList()
+                    ));
         }
     }
 }

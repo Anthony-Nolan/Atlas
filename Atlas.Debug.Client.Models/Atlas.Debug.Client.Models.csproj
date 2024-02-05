@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -7,13 +7,14 @@
     <PackageReadmeFile>CHANGELOG_DebugClientModels.md</PackageReadmeFile>
     <Authors>Anthony Nolan</Authors>
     <Company>Anthony Nolan</Company>
-    <Description>Contains all client models utilised by Atlas debug endpoints. See package README for more details and changelog.</Description>
+    <Description>Contains client models utilised by Atlas debug endpoints. See package README for more details and changelog.</Description>
     <Copyright>https://github.com/Anthony-Nolan/Atlas/blob/master/LICENSE</Copyright>
     <PackageProjectUrl>https://github.com/Anthony-Nolan/Atlas</PackageProjectUrl>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Atlas.Common.Public.Models\Atlas.Common.Public.Models.csproj" />
     <ProjectReference Include="..\Atlas.DonorImport.FileSchema.Models\Atlas.DonorImport.FileSchema.Models.csproj" />
   </ItemGroup>
 

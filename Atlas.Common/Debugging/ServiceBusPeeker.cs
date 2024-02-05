@@ -2,12 +2,13 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Atlas.Common.ServiceBus;
 using Atlas.Debug.Client.Models.ServiceBus;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 using Newtonsoft.Json;
 
-namespace Atlas.Common.ServiceBus
+namespace Atlas.Common.Debugging
 {
     public interface IMessagesPeeker<T> : IServiceBusPeeker<T>
     {
@@ -23,7 +24,7 @@ namespace Atlas.Common.ServiceBus
 
     public interface IServiceBusPeeker<T>
     {
-        Task<IEnumerable<PeekedServiceBusMessage<T>>> Peek(PeekServiceBusMessagesRequest peekRequest);
+        Task<PeekServiceBusMessagesResponse<T>> Peek(PeekServiceBusMessagesRequest peekRequest);
     }
 
     public abstract class ServiceBusPeeker<T> : IServiceBusPeeker<T>
@@ -38,9 +39,9 @@ namespace Atlas.Common.ServiceBus
             messageReceiver = factory.GetMessageReceiver(topicName, subscriptionName);
         }
 
-        public async Task<IEnumerable<PeekedServiceBusMessage<T>>> Peek(PeekServiceBusMessagesRequest peekRequest)
+        public async Task<PeekServiceBusMessagesResponse<T>> Peek(PeekServiceBusMessagesRequest peekRequest)
         {
-            var messages = new List<PeekedServiceBusMessage<T>>();
+            var messages = new List<T>();
             var fromSequenceNumber = peekRequest.FromSequenceNumber;
 
             // The message receiver Peek method has an undocumented upper message count limit
@@ -49,7 +50,7 @@ namespace Atlas.Common.ServiceBus
             {
                 var messageCount = peekRequest.MessageCount - messages.Count;
                 var batch = await messageReceiver.PeekBySequenceNumberAsync(fromSequenceNumber, messageCount);
-                
+
                 if (!batch.Any())
                 {
                     break;
@@ -59,13 +60,16 @@ namespace Atlas.Common.ServiceBus
                 fromSequenceNumber = batch.Select(m => m.SystemProperties.SequenceNumber).MaxBy(i => i) + 1;
             }
 
-            return messages;
+            return new PeekServiceBusMessagesResponse<T>
+            {
+                MessageCount = messages.Count,
+                PeekedMessages = messages
+            };
         }
 
-        private static PeekedServiceBusMessage<T> GetServiceBusMessage(Message message)
+        private static T GetServiceBusMessage(Message message)
         {
-            var body = JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(message.Body));
-            return new PeekedServiceBusMessage<T>(body);
+            return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(message.Body));
         }
     }
 }

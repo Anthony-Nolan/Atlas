@@ -2,7 +2,10 @@
 
 namespace Atlas.Debug.Client.Models.DonorImport
 {
-    public class DebugDonorsResult<TDonor>
+    /// <summary>
+    /// Result of a debug request checking for presence or absence of a list of donors in the target database.
+    /// </summary>
+    public class DebugDonorsResult
     {
         public Counts DonorCounts { get; set; }
 
@@ -14,7 +17,7 @@ namespace Atlas.Debug.Client.Models.DonorImport
         /// <summary>
         /// Info of donors that were found in the donor store
         /// </summary>
-        public IEnumerable<TDonor> PresentDonors { get; set; }
+        public IEnumerable<DonorDebugInfo> PresentDonors { get; set; }
 
         /// <summary>
         /// List of all donor codes provided in the debug request

@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Atlas.ManualTesting.Services.ServiceBus;
+using Atlas.MatchingAlgorithm.Common.Models;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Debug.Client.Models.ServiceBus;
-using Atlas.ManualTesting.Services.ServiceBus;
-using Atlas.MatchingAlgorithm.Common.Models;
 
 namespace Atlas.ManualTesting.Services
 {
@@ -25,8 +25,8 @@ namespace Atlas.ManualTesting.Services
         {
             var deadLetteredRequests = await deadLetterReceiver.Peek(peekRequest);
 
-            return deadLetteredRequests
-                .Select(r => r.DeserializedBody.Id)
+            return deadLetteredRequests.PeekedMessages
+                .Select(r => r.Id)
                 .Distinct();
         }
     }

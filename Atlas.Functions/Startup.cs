@@ -1,6 +1,7 @@
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.Common.Debugging;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus;
 using Atlas.Functions;
