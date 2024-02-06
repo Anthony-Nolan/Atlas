@@ -8,7 +8,7 @@ namespace Atlas.Debug.Client.Clients
     /// <summary>
     /// Client for calling debug functions hosted on the top-level `Atlas.Functions` app.
     /// </summary>
-    public interface ITopLevelFunctionsClient
+    public interface ITopLevelFunctionsClient : ICommonAtlasFunctions
     {
         /// <summary>
         /// Peek messages from the `debug` subscription of the alerts service bus topic.

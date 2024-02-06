@@ -10,7 +10,7 @@ namespace Atlas.Debug.Client.Clients
     /// <summary>
     /// Client for calling the donor import debug functions.
     /// </summary>
-    public interface IDonorImportFunctionsClient
+    public interface IDonorImportFunctionsClient : ICommonAtlasFunctions
     {
         /// <summary>
         /// Import a donor import file.

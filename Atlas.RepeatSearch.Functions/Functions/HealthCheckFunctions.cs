@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Atlas.Common.Utils;
+using Atlas.Common.Utils.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -13,8 +14,7 @@ namespace Atlas.RepeatSearch.Functions.Functions
         [FunctionName(nameof(HealthCheck))]
         public static OkObjectResult HealthCheck([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
         {
-            const string responseMessage = "This HTTP triggered function executed successfully";
-            return new OkObjectResult(responseMessage);
+            return new OkObjectResult(HttpFunctionsConstants.HealthCheckResponse);
         }
     }
 }

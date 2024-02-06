@@ -1,3 +1,4 @@
+using Atlas.Common.Utils.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -11,8 +12,7 @@ namespace Atlas.Functions.PublicApi.Functions
         // ReSharper disable once UnusedParameter.Global
         public static OkObjectResult HealthCheck([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
         {
-            const string responseMessage = "This HTTP triggered function executed successfully";
-            return new OkObjectResult(responseMessage);
+            return new OkObjectResult(HttpFunctionsConstants.HealthCheckResponse);
         }
     }
 }

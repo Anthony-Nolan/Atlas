@@ -8,7 +8,7 @@ namespace Atlas.Debug.Client.Clients
     /// <summary>
     /// Client for calling matching algorithm-related debug functions.
     /// </summary>
-    public interface IMatchingAlgorithmFunctionsClient
+    public interface IMatchingAlgorithmFunctionsClient : ICommonAtlasFunctions
     {
         /// <summary>
         /// Check for presence or absence of donors in the active copy of the matching algorithm database.

@@ -4,11 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 
-namespace Atlas.Functions.Functions
+namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
     public static class HealthCheckFunctions
     {
         [FunctionName(nameof(HealthCheck))]
+        // ReSharper disable once UnusedParameter.Global
         public static OkObjectResult HealthCheck([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
         {
             return new OkObjectResult(HttpFunctionsConstants.HealthCheckResponse);
