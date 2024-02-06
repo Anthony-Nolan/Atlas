@@ -2,9 +2,9 @@ resource "azurerm_service_plan" "atlas-elastic-plan" {
   name                         = "${local.environment}-ATLAS-ELASTIC-PLAN"
   location                     = local.location
   resource_group_name          = azurerm_resource_group.atlas_resource_group.name
-  maximum_elastic_worker_count = var.SERVICE_PLAN_MAX_SCALE_OUT
+  # maximum_elastic_worker_count = var.SERVICE_PLAN_MAX_SCALE_OUT
 
-  sku_name = var.ELASTIC_SERVICE_PLAN_SKU_SIZE
+  sku_name = var.SPIKE_SERVICE_PLAN
   os_type  = "Windows"
 }
 
