@@ -41,7 +41,7 @@ namespace Atlas.Debug.Client
         protected HttpFunctionClient(HttpClient client)
         {
             this.client = client;
-            baseUrl = client.BaseAddress?.ToString();
+            baseUrl = FormatBaseUrl(client.BaseAddress?.ToString());
         }
 
         /// <inheritdoc />
@@ -63,6 +63,8 @@ namespace Atlas.Debug.Client
             var response = await SendRequestAndEnsureSuccess(HttpMethod.Post, requestUri, requestBody);
             return await DeserializeObject<TResponse>(response);
         }
+
+        private static string FormatBaseUrl(string baseUrl) => baseUrl.EndsWith("/") ? baseUrl : $"{baseUrl}/";
 
         private async Task<HttpResponseMessage> SendRequestAndEnsureSuccess<TBody>(HttpMethod method, string requestUri, TBody requestBody)
         {
