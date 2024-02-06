@@ -17,6 +17,7 @@ resource "azurerm_windows_function_app" "atlas_function" {
   tags = local.common_tags
 
   site_config {
+    always_on                 = true # Should be true for fucntion apps runnign on App Service plan
     application_insights_key  = azurerm_application_insights.atlas.instrumentation_key
     pre_warmed_instance_count = 1
     use_32_bit_worker         = false
@@ -85,6 +86,10 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "NotificationsServiceBus:Debug:NotificationsSubscription" = module.support.general.notifications_servicebus_debug_subscription
     "NotificationsServiceBus:NotificationsTopic"              = module.support.general.notifications_servicebus_topic.name
     "WEBSITE_RUN_FROM_PACKAGE"                                = var.WEBSITE_RUN_FROM_PACKAGE
+
+    "APPINSIGHTS_PROFILERFEATURE_VERSION"  = "1.0.0"
+    "DiagnosticServices_EXTENSION_VERSION" = "~3"
+
   }
 
   connection_string {
