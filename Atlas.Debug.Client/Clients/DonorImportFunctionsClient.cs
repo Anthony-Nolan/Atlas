@@ -10,7 +10,7 @@ namespace Atlas.Debug.Client.Clients
     /// <summary>
     /// Client for calling the donor import debug functions.
     /// </summary>
-    public interface IDonorImportClient
+    public interface IDonorImportFunctionsClient
     {
         /// <summary>
         /// Import a donor import file.
@@ -35,11 +35,11 @@ namespace Atlas.Debug.Client.Clients
         Task<DonorImportFailureInfo> GetDonorImportFailuresByFileName(string fileName);
     }
 
-    /// <inheritdoc cref="IDonorImportClient" />
-    public class DonorImportClient : HttpFunctionClient, IDonorImportClient
+    /// <inheritdoc cref="IDonorImportFunctionsClient" />
+    public class DonorImportFunctionsClient : HttpFunctionClient, IDonorImportFunctionsClient
     {
         /// <inheritdoc />
-        public DonorImportClient(HttpClient client) : base(client)
+        public DonorImportFunctionsClient(HttpClient client) : base(client)
         {
         }
 

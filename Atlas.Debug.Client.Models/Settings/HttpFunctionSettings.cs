@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Atlas.Debug.Client.Models.HttpFunctions
+namespace Atlas.Debug.Client.Models.Settings
 {
     /// <summary>
     /// Settings for calling HTTP-triggered functions.

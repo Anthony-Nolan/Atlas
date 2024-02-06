@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Atlas.Debug.Client.Models.HttpFunctions
+namespace Atlas.Debug.Client.Models.Exceptions
 {
     /// <summary>
     /// Represents an exception that occurs when invoking a http-triggered function.

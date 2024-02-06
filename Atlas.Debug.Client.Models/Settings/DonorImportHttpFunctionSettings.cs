@@ -1,6 +1,4 @@
-﻿using Atlas.Debug.Client.Models.HttpFunctions;
-
-namespace Atlas.Debug.Client.Models.DonorImport
+﻿namespace Atlas.Debug.Client.Models.Settings
 {
     /// <summary>
     /// Settings for calling the donor import debug functions.

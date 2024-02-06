@@ -6,9 +6,9 @@ using Atlas.Debug.Client.Models.ServiceBus;
 namespace Atlas.Debug.Client.Clients
 {
     /// <summary>
-    /// Client for calling support message-related debug functions.
+    /// Client for calling debug functions hosted on the top-level `Atlas.Functions` app.
     /// </summary>
-    public interface ISupportMessageClient
+    public interface ITopLevelFunctionsClient
     {
         /// <summary>
         /// Peek messages from the `debug` subscription of the alerts service bus topic.
@@ -21,11 +21,11 @@ namespace Atlas.Debug.Client.Clients
         Task<PeekServiceBusMessagesResponse<Notification>> PeekNotifications(PeekServiceBusMessagesRequest request);
     }
 
-    /// <inheritdoc cref="ISupportMessageClient" />
-    public class SupportMessageClient : HttpFunctionClient, ISupportMessageClient
+    /// <inheritdoc cref="ITopLevelFunctionsClient" />
+    public class TopLevelFunctionsClient : HttpFunctionClient, ITopLevelFunctionsClient
     {
         /// <inheritdoc />
-        public SupportMessageClient(HttpClient client) : base(client)
+        public TopLevelFunctionsClient(HttpClient client) : base(client)
         {
         }
 

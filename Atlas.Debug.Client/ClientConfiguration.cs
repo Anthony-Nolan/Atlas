@@ -1,8 +1,5 @@
 ﻿using Atlas.Debug.Client.Clients;
-using Atlas.Debug.Client.Models.DonorImport;
-using Atlas.Debug.Client.Models.HttpFunctions;
-using Atlas.Debug.Client.Models.MatchingAlgorithm;
-using Atlas.Debug.Client.Models.SupportMessages;
+using Atlas.Debug.Client.Models.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -26,11 +23,11 @@ namespace Atlas.Debug.Client
             this IServiceCollection services,
             Func<IServiceProvider, DonorImportHttpFunctionSettings> fetchDonorImportHttpSettings,
             Func<IServiceProvider, MatchingAlgorithmHttpFunctionSettings> fetchMatchingAlgorithmHttpSettings,
-            Func<IServiceProvider, SupportMessageHttpFunctionSettings> fetchSupportMessageHttpSettings)
+            Func<IServiceProvider, TopLevelHttpFunctionSettings> fetchTopLevelHttpSettings)
         {
-            services.RegisterHttpFunctionClient<IDonorImportClient, DonorImportClient>(fetchDonorImportHttpSettings);
-            services.RegisterHttpFunctionClient<IMatchingAlgorithmClient, MatchingAlgorithmClient>(fetchMatchingAlgorithmHttpSettings);
-            services.RegisterHttpFunctionClient<ISupportMessageClient, SupportMessageClient>(fetchSupportMessageHttpSettings);
+            services.RegisterHttpFunctionClient<IDonorImportFunctionsClient, DonorImportFunctionsClient>(fetchDonorImportHttpSettings);
+            services.RegisterHttpFunctionClient<IMatchingAlgorithmFunctionsClient, MatchingAlgorithmFunctionsClient>(fetchMatchingAlgorithmHttpSettings);
+            services.RegisterHttpFunctionClient<ITopLevelFunctionsClient, TopLevelFunctionsClient>(fetchTopLevelHttpSettings);
         }
 
         private static void RegisterHttpFunctionClient<TInterface, TClient>(
