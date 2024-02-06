@@ -65,6 +65,9 @@ locals {
     "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
 
     "WEBSITE_PROACTIVE_AUTOHEAL_ENABLED" = false
+
+    "APPINSIGHTS_PROFILERFEATURE_VERSION"  = "1.0.0"
+    "DiagnosticServices_EXTENSION_VERSION" = "~3"
   }
   matching_algorithm_function_app_name = "${var.general.environment}-ATLAS-MATCHING-ALGORITHM-FUNCTIONS"
 }
@@ -81,6 +84,7 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_function" {
   storage_account_name        = azurerm_storage_account.matching_function_storage.name
 
   site_config {
+    always_on                = true # Should be true for fucntion apps runnign on App Service plan    
     application_insights_key = var.application_insights.instrumentation_key
     application_stack {
       dotnet_version = "v6.0"
