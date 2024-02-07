@@ -307,7 +307,7 @@ this.ScenarioInitialize(scenarioInfo);
 #line 39
  testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-                TechTalk.SpecFlow.Table table83 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table85 = new TechTalk.SpecFlow.Table(new string[] {
                             "A_1",
                             "A_2",
                             "B_1",
@@ -316,7 +316,7 @@ this.ScenarioInitialize(scenarioInfo);
                             "DRB1_2",
                             "DPB1_1",
                             "DPB1_2"});
-                table83.AddRow(new string[] {
+                table85.AddRow(new string[] {
                             "*01:01",
                             "*66:01",
                             "*57:01",
@@ -326,9 +326,9 @@ this.ScenarioInitialize(scenarioInfo);
                             "*01:01",
                             "*191:01/192:01"});
 #line 40
- testRunner.And("the matching donor has the following HLA:", ((string)(null)), table83, "And ");
+ testRunner.And("the matching donor has the following HLA:", ((string)(null)), table85, "And ");
 #line hidden
-                TechTalk.SpecFlow.Table table84 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table86 = new TechTalk.SpecFlow.Table(new string[] {
                             "A_1",
                             "A_2",
                             "B_1",
@@ -337,7 +337,7 @@ this.ScenarioInitialize(scenarioInfo);
                             "DRB1_2",
                             "DPB1_1",
                             "DPB1_2"});
-                table84.AddRow(new string[] {
+                table86.AddRow(new string[] {
                             "*01:01",
                             "*66:01",
                             "*57:01",
@@ -347,7 +347,7 @@ this.ScenarioInitialize(scenarioInfo);
                             "*01:01",
                             "*02:01"});
 #line 43
- testRunner.And("the patient has the following HLA:", ((string)(null)), table84, "And ");
+ testRunner.And("the patient has the following HLA:", ((string)(null)), table86, "And ");
 #line hidden
 #line 46
  testRunner.And("scoring is enabled at locus DPB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");

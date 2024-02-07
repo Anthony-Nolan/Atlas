@@ -159,7 +159,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string firstAllele = "01:133";
             const string secondAllele = "01:158";
             const string alleleString = firstAllele + "/" + secondAllele;
-            
+
             var alleles = new[] { firstAllele, secondAllele };
             const string expectedSerology = "1";
 
@@ -208,6 +208,27 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
             scoringInfo.MatchingPGroups.Should().BeEquivalentTo(expressingAlleles);
             ((ConsolidatedMolecularScoringInfo)scoringInfo).MatchingGGroups.Should().BeEquivalentTo(expressingAlleles);
+        }
+
+        /// <summary>
+        /// Regression test for bug where a molecular HLA typing that only expands to null alleles was not being consolidated correctly
+        /// </summary>
+        [TestCase("*01:04",
+            new[] { "01:01:01G" },
+            Description = "Two field allele name that expands to A*01:04:01:01N and A*01:04:01:02N")]
+        [TestCase("*01:NUL",
+            new[] { "01:11N", "01:15N" },
+            Description = "Fake MAC that decodes to A*01:11N/01:15N")]
+        public async Task GetHlaLookupResult_WhenAmbiguousMolecularTypingExpandsToNullAllelesOnly_CorrectlyConsolidatesScoringInfo(
+            string hlaName,
+            string[] expectedGGroups)
+        {
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, hlaName, HlaVersion);
+
+            var scoringInfo = result.HlaScoringInfo;
+            scoringInfo.MatchingSerologies.Should().BeEmpty();
+            scoringInfo.MatchingPGroups.Should().BeEmpty();
+            scoringInfo.MatchingGGroups.Should().BeEquivalentTo(expectedGGroups);
         }
 
         /// <summary>

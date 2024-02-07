@@ -146,17 +146,21 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         {
             var infos = scoringInfos.ToList();
 
-            var singleAlleleInfos = infos.OfType<SingleAlleleScoringInfo>()
-                .Union(infos.OfType<MultipleAlleleScoringInfo>()
-                    .SelectMany(multiple => multiple.AlleleScoringInfos));
+            var allSingleAlleleInfos = infos.OfType<SingleAlleleScoringInfo>()
+                .Union(infos.OfType<MultipleAlleleScoringInfo>().SelectMany(multiple => multiple.AlleleScoringInfos))
+                .ToList();
 
-            return MultipleAlleleNullFilter.Filter(singleAlleleInfos);
+            var singleInfosWithoutNullAlleles = MultipleAlleleNullFilter.Filter(allSingleAlleleInfos).ToList();
+
+            // If all single alleles infos are for null alleles, then return the unfiltered list to ensure data is consolidated correctly.
+            return singleInfosWithoutNullAlleles.Any() ? singleInfosWithoutNullAlleles : allSingleAlleleInfos;
         }
 
         private static IEnumerable<string> GetMatchingPGroups(IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
         {
             return singleAlleleScoringInfos
                 .Select(single => single.MatchingPGroup)
+                .Where(x => x != null)
                 .Distinct();
         }
 
@@ -164,6 +168,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         {
             return singleAlleleScoringInfos
                 .Select(single => single.MatchingGGroup)
+                .Where(x => x != null)
                 .Distinct();
         }
 
@@ -171,6 +176,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         {
             return scoringInfos
                 .SelectMany(info => info.MatchingSerologies)
+                .Where(x => x != null)
                 .Distinct();
         }
     }
