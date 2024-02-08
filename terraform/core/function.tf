@@ -14,6 +14,7 @@ resource "azurerm_windows_function_app" "atlas_function" {
   storage_account_access_key  = azurerm_storage_account.atlas_durable_function_storage.primary_access_key
   storage_account_name        = azurerm_storage_account.atlas_durable_function_storage.name
 
+
   tags = local.common_tags
 
   site_config {
@@ -23,6 +24,7 @@ resource "azurerm_windows_function_app" "atlas_function" {
     use_32_bit_worker         = false
     ftps_state                = "AllAllowed"
     scm_minimum_tls_version   = "1.0"
+    worker_count              = 1
     cors {
       support_credentials = false
     }

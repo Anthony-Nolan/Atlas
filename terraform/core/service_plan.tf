@@ -9,13 +9,13 @@ resource "azurerm_service_plan" "atlas-elastic-plan" {
 }
 
 resource "azurerm_service_plan" "atlas-non-elastic-plan" {
-  name                         = "${local.environment}-ATLAS-NON-ELASTIC-PLAN"
-  location                     = local.location
-  resource_group_name          = azurerm_resource_group.atlas_resource_group.name
+  name                = "${local.environment}-ATLAS-NON-ELASTIC-PLAN"
+  location            = local.location
+  resource_group_name = azurerm_resource_group.atlas_resource_group.name
   # maximum_elastic_worker_count = var.SERVICE_PLAN_MAX_SCALE_OUT
   sku_name = var.SPIKE_SERVICE_PLAN
 
-  os_type  = "Windows"
+  os_type = "Windows"
 }
 
 
