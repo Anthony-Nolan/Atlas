@@ -84,8 +84,6 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_function" {
   storage_account_name        = azurerm_storage_account.matching_function_storage.name
 
   site_config {
-    always_on                = true # Should be true for fucntion apps runnign on App Service plan    
-    worker_count             = 1
     application_insights_key = var.application_insights.instrumentation_key
     application_stack {
       dotnet_version = "v6.0"

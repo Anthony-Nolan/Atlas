@@ -53,8 +53,6 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
   }
 
   site_config {
-    always_on    = true # Should be true for fucntion apps runnign on App Service plan
-    worker_count = 1
 
     application_insights_key = var.application_insights.instrumentation_key
     application_stack {

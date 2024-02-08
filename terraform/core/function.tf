@@ -7,7 +7,7 @@ resource "azurerm_windows_function_app" "atlas_function" {
   name                        = local.atlas_function_app_name
   resource_group_name         = azurerm_resource_group.atlas_resource_group.name
   location                    = local.location
-  service_plan_id             = azurerm_service_plan.atlas-non-elastic-plan.id
+  service_plan_id             = azurerm_service_plan.atlas-elastic-plan.id
   client_certificate_mode     = "Required"
   https_only                  = true
   functions_extension_version = "~4"
@@ -18,13 +18,11 @@ resource "azurerm_windows_function_app" "atlas_function" {
   tags = local.common_tags
 
   site_config {
-    always_on                 = true # Should be true for fucntion apps runnign on App Service plan
     application_insights_key  = azurerm_application_insights.atlas.instrumentation_key
     pre_warmed_instance_count = 1
     use_32_bit_worker         = false
     ftps_state                = "AllAllowed"
     scm_minimum_tls_version   = "1.0"
-    worker_count              = 1
     cors {
       support_credentials = false
     }

@@ -43,8 +43,6 @@ resource "azurerm_windows_function_app" "atlas_match_prediction_function" {
   }
 
   site_config {
-    always_on                = true # Should be true for fucntion apps runnign on App Service plan    
-    worker_count             = 1
     application_insights_key = var.application_insights.instrumentation_key
     application_stack {
       dotnet_version = "v6.0"
