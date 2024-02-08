@@ -42,7 +42,7 @@ module "donor_import" {
   default_servicebus_settings = local.service-bus
 
   // DI Variables 
-  app_service_plan        = azurerm_service_plan.atlas-elastic-plan
+  app_service_plan        = azurerm_service_plan.atlas-non-elastic-plan
   application_insights    = azurerm_application_insights.atlas
   azure_storage           = azurerm_storage_account.azure_storage
   servicebus_namespace    = azurerm_servicebus_namespace.general
@@ -94,7 +94,7 @@ module "matching_algorithm" {
   azure_app_configuration   = azurerm_app_configuration.atlas_app_configuration
   azure_storage             = azurerm_storage_account.azure_storage
   donor_import_sql_database = azurerm_mssql_database.atlas-database-shared
-  elastic_app_service_plan  = azurerm_service_plan.atlas-elastic-plan
+  elastic_app_service_plan  = azurerm_service_plan.atlas-non-elastic-plan
   mac_import_table          = module.multiple_allele_code_lookup.storage_table
   resource_group            = azurerm_resource_group.atlas_resource_group
   servicebus_namespace      = azurerm_servicebus_namespace.general
@@ -158,7 +158,7 @@ module "match_prediction" {
 
   // DI Variables
   application_insights    = azurerm_application_insights.atlas
-  app_service_plan        = azurerm_service_plan.atlas-elastic-plan
+  app_service_plan        = azurerm_service_plan.atlas-non-elastic-plan
   azure_storage           = azurerm_storage_account.azure_storage
   servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage
@@ -205,7 +205,7 @@ module "repeat_search" {
 
   // DI Variables
   application_insights                            = azurerm_application_insights.atlas
-  app_service_plan                                = azurerm_service_plan.atlas-elastic-plan
+  app_service_plan                                = azurerm_service_plan.atlas-non-elastic-plan
   azure_app_configuration                         = azurerm_app_configuration.atlas_app_configuration
   azure_storage                                   = azurerm_storage_account.azure_storage
   donor_database_connection_string                = module.donor_import.sql_database.connection_string
