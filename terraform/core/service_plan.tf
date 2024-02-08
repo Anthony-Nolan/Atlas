@@ -1,10 +1,11 @@
-resource "azurerm_service_plan" "atlas-non-elastic-plan" {
-  name                = "${local.environment}-ATLAS-NON-ELASTIC-PLAN"
-  location            = local.location
-  resource_group_name = azurerm_resource_group.atlas_resource_group.name
+resource "azurerm_service_plan" "atlas-elastic-plan" {
+  name                         = "${local.environment}-ATLAS-ELASTIC-PLAN"
+  location                     = local.location
+  resource_group_name          = azurerm_resource_group.atlas_resource_group.name
   # maximum_elastic_worker_count = var.SERVICE_PLAN_MAX_SCALE_OUT
   lifecycle {
     create_before_destroy = true
+    replace_triggered_by = [ null_resource.always_run ]
   }
 
   sku_name = var.SPIKE_SERVICE_PLAN
@@ -20,4 +21,10 @@ resource "azurerm_service_plan" "atlas-public-api-elastic-plan" {
 
   sku_name = "EP1"
   os_type  = "Windows"
+}
+
+resource "null_resource" "always_run" {
+  triggers = {
+    timestamp = "${timestamp()}"
+  }
 }
