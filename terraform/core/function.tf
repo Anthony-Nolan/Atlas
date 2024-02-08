@@ -7,7 +7,7 @@ resource "azurerm_windows_function_app" "atlas_function" {
   name                        = local.atlas_function_app_name
   resource_group_name         = azurerm_resource_group.atlas_resource_group.name
   location                    = local.location
-  service_plan_id             = azurerm_service_plan.atlas-elastic-plan.id
+  service_plan_id             = azurerm_service_plan.atlas-non-elastic-plan.id
   client_certificate_mode     = "Required"
   https_only                  = true
   functions_extension_version = "~4"
