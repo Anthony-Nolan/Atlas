@@ -80,7 +80,7 @@ WHERE p.Name IN {pGroupNames.ToInClause()}
 
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                return await conn.QueryAsync<int>(sql, commandTimeout: 300);
+                return await conn.QueryAsync<int>(sql, commandTimeout: 600);
             }
         }
 
