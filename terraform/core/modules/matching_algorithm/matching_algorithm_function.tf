@@ -71,7 +71,7 @@ locals {
   }
 
   matching_algorithm_function_app_name      = "${var.general.environment}-ATLAS-MATCHING-ALGORITHM-FUNCTIONS"
-  matching_algorithm_temp_function_app_name = "${var.general.environment}-ATLAS-MATCHING-ALGORITHM-FUNCTIONS-TEMP"
+  matching_algorithm_temp_function_app_name = "${var.general.environment}-TEMP-ATLAS-MATCHING-ALGORITHM-FUNCTIONS"
 }
 
 resource "azurerm_windows_function_app" "atlas_matching_algorithm_function" {

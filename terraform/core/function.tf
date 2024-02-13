@@ -1,6 +1,6 @@
 locals {
   atlas_function_app_name            = "${local.environment}-ATLAS-FUNCTIONS"
-  atlas_temporary_function_app_name  = "${local.environment}-ATLAS-FUNCTIONS-TEMP"
+  atlas_temporary_function_app_name  = "${local.environment}-TEMP-ATLAS-FUNCTIONS"
   atlas_public_api_function_app_name = "${local.environment}-ATLAS-API"
 }
 
