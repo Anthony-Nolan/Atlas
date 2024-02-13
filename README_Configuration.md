@@ -30,6 +30,8 @@ readable manner.
 | Terraform Setting          | Functions App Name                 | Functions App Setting Name | Description                |
 | -------------------------- | ------------------                 | -------------------------- | -----------                | 
 | IP-RESTRICTION-SETTINGS | all | N/A | Allows restriction of functions app access to specified IPs only. |
+| LOG-ANALYTICS-DAILY-QUOTA-GB | N/A | N/A | The Log Analytics workspace daily quota for ingestion in GB. Default is -1 (unlimited). |
+| LOG-ANALYTICS-SKU | N/A | N/A | Log Analytics Workspace SKU. Default is `Pay As You Go`. |
 | MATCHING-DATA-REFRESH-AUTO-RUN | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | DataRefresh-AutoRunDataRefresh | When set, the data refresh will automatically run once new HLA nomenclature is detected. This can be disabled to allow manual control on when new nomenclature is imported. |
 
 ## Donor Import

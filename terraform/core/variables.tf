@@ -153,6 +153,18 @@ variable "LOCATION" {
   description = "GeoLocation of all Azure resources for this ATLAS installation."
 }
 
+variable "LOG_ANALYTICS_DAILY_QUOTA_GB" {
+  type        = number
+  default     = -1
+  description = "The Log Analytics workspace daily quota for ingestion in GB. Default is -1 (unlimited)."
+}
+
+variable "LOG_ANALYTICS_SKU" {
+  type        = string
+  default     = "PerGB2018"
+  description = "Log Analytics Workspace SKU. Default is Pay As You Go."
+}
+
 variable "MAC_IMPORT_CRON_SCHEDULE" {
   type        = string
   default     = "0 0 2 * * *"
