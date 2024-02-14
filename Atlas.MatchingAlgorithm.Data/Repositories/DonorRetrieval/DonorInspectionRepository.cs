@@ -25,8 +25,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
         /// <summary>
         /// Note: this method is intended for use in debugging to lookup data for a short list (tens to hundreds) of external donor codes.
         /// It is not optimized for use in donor search.
+        /// Only donors available for search will be returned.
         /// </summary>
-        Task<IEnumerable<Donor>> GetDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes);
+        Task<IEnumerable<Donor>> GetAvailableDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes);
 
         Task<IEnumerable<DonorIdWithPGroupNames>> GetPGroupsForDonors(IEnumerable<int> donorIds);
     }
@@ -54,9 +55,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                 : (await GetDonorInfos(donorIds)).ToDictionary(d => d.DonorId, d => d);
         }
 
-        public async Task<IEnumerable<Donor>> GetDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes)
+        public async Task<IEnumerable<Donor>> GetAvailableDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes)
         {
-            const string sql = $@"SELECT * FROM Donors WHERE {nameof(Donor.ExternalDonorCode)} IN @{nameof(externalDonorCodes)}";
+            const string sql = $@"SELECT * FROM Donors WHERE 
+                    {nameof(Donor.ExternalDonorCode)} IN @{nameof(externalDonorCodes)} AND
+                    {nameof(Donor.IsAvailableForSearch)} = 1";
 
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {

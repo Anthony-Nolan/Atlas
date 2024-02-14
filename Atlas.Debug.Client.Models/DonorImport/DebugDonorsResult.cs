@@ -10,12 +10,12 @@ namespace Atlas.Debug.Client.Models.DonorImport
         public Counts DonorCounts { get; set; }
 
         /// <summary>
-        /// Codes of donors that were NOT found in the donor store
+        /// Codes of donors that were NOT found or were unavailable for search
         /// </summary>
         public IEnumerable<string> AbsentDonors { get; set; }
 
         /// <summary>
-        /// Info of donors that were found in the donor store
+        /// Info of donors that were found and were available for search
         /// </summary>
         public IEnumerable<DonorDebugInfo> PresentDonors { get; set; }
 
@@ -27,12 +27,12 @@ namespace Atlas.Debug.Client.Models.DonorImport
         public class Counts
         {
             /// <summary>
-            /// Count of donors NOT found in the donor store
+            /// Count of donors NOT found or were unavailable for search
             /// </summary>
             public int Absent { get; set; }
 
             /// <summary>
-            /// Count of donors that were found in the donor store
+            /// Count of donors that were found and were available for search
             /// </summary>
             public int Present { get; set; }
 

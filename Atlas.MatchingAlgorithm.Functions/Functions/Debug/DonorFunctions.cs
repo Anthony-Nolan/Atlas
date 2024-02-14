@@ -26,15 +26,15 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             inspectionRepository = activeRepositoryFactory.GetDonorInspectionRepository();
         }
 
-        [FunctionName(nameof(GetDonorsFromActiveDb))]
+        [FunctionName(nameof(GetAvailableDonorsFromActiveDb))]
         [ProducesResponseType(typeof(DebugDonorsResult), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetDonorsFromActiveDb(
+        public async Task<IActionResult> GetAvailableDonorsFromActiveDb(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/donors/active")]
             [RequestBodyType(typeof(string[]), "External Donor Codes")]
             HttpRequest request)
         {
             var externalDonorCodes = JsonConvert.DeserializeObject<string[]>(await new StreamReader(request.Body).ReadToEndAsync());
-            var donors = await inspectionRepository.GetDonorsByExternalDonorCodes(externalDonorCodes);
+            var donors = await inspectionRepository.GetAvailableDonorsByExternalDonorCodes(externalDonorCodes);
 
             return new JsonResult(
                 DebugDonorsHelper.BuildDebugDonorsResult(
