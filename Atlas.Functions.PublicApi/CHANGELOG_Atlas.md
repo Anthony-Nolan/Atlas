@@ -32,6 +32,8 @@ Feature flags permit greater control over the release of new features (see this 
 - E: Terraform-mediated migration of classic Application Insights to workspace-based Application Insights.
   - This required the creation of a new Log Analytics workspace, named `<env>-ATLAS`
   - New release variables have been added to determine the workspace daily quota (default: unlimited) and SKU (default: PAYG).
+  - Note: terraform may recreate the feature flag, `useDonorInfoStoredInMatchingAlgorithmDb`, due to [this bug](https://github.com/hashicorp/terraform-provider-azurerm/issues/23315).
+    - If so, the flag will need to be manually re-enabled post release.
 
 ### 1.6.2
 - BF: Fix for a failing search request by enhancing the scoring HMD lookup to support ambiguous molecular typings that only expands to null alleles.
