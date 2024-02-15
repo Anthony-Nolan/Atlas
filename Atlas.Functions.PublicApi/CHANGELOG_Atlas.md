@@ -28,6 +28,11 @@ Feature flags permit greater control over the release of new features (see this 
 * BREAKING - Breaking change at the API level
 * FBC - Functionally Breaking Change, i.e., significant change to the behaviour of an existing feature but the API remains unchanged
 
+### 1.6.3
+- E: Terraform-mediated migration of classic Application Insights to workspace-based Application Insights.
+  - This required the creation of a new Log Analytics workspace, named `<env>-ATLAS`
+  - New release variables have been added to determine the workspace daily quota (default: unlimited) and SKU (default: PAYG).
+
 ### 1.6.2
 - BF: Fix for a failing search request by enhancing the scoring HMD lookup to support ambiguous molecular typings that only expands to null alleles.
 
