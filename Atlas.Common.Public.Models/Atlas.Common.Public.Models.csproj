@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <VersionPrefix>2.0.0</VersionPrefix>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <VersionPrefix>1.6.3</VersionPrefix>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <PackageReadmeFile>CHANGELOG_CommonPublicModels.md</PackageReadmeFile>
     <Authors>Anthony Nolan</Authors>

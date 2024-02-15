@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+      <VersionPrefix>2.0.0</VersionPrefix>
+      <TargetFramework>net6.0</TargetFramework>
         <AzureFunctionsVersion>v4</AzureFunctionsVersion>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <OutputPath>bin/</OutputPath>
         <LangVersion>latest</LangVersion>
-        <VersionPrefix>1.6.3</VersionPrefix>
     </PropertyGroup>
 
     <Target Name="Scaffold local settings file" BeforeTargets="BeforeCompile" Condition="!EXISTS('$(ProjectDir)\local.settings.json')">
