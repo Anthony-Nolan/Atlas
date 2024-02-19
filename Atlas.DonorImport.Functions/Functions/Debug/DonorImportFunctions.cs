@@ -1,17 +1,16 @@
-﻿using Atlas.Debug.Client.Models.ServiceBus;
-using Atlas.Common.Utils.Http;
+﻿using Atlas.Common.Utils.Http;
+using Atlas.Debug.Client.Models.DonorImport;
+using Atlas.Debug.Client.Models.ServiceBus;
+using Atlas.DonorImport.ExternalInterface.Settings;
+using Atlas.DonorImport.FileSchema.Models;
+using Atlas.DonorImport.Services.Debug;
+using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Atlas.Debug.Client.Models.DonorImport;
-using Atlas.DonorImport.FileSchema.Models;
-using Atlas.DonorImport.Services.Debug;
-using AzureFunctions.Extensions.Swashbuckle.Attribute;
 
 namespace Atlas.DonorImport.Functions.Functions.Debug
 {
@@ -21,13 +20,16 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
 
         private readonly IDonorImportBlobStorageClient donorImportBlobStorageClient;
         private readonly IDonorImportResultsPeeker resultsPeeker;
+        private readonly bool allowFullModeImport;
 
         public DonorImportFunctions(
             IDonorImportBlobStorageClient donorImportBlobStorageClient,
-            IDonorImportResultsPeeker resultsPeeker)
+            IDonorImportResultsPeeker resultsPeeker,
+            DonorImportSettings settings)
         {
             this.donorImportBlobStorageClient = donorImportBlobStorageClient;
             this.resultsPeeker = resultsPeeker;
+            allowFullModeImport = settings.AllowFullModeImport;
         }
 
         /// <summary>
@@ -62,6 +64,15 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
             var peekRequest = await request.DeserialiseRequestBody<PeekServiceBusMessagesRequest>();
             var response = await resultsPeeker.PeekResultsMessages(peekRequest);
             return new JsonResult(response);
+        }
+
+        [FunctionName(nameof(IsFullModeImportAllowed))]
+        [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> IsFullModeImportAllowed(
+            [HttpTrigger(AuthorizationLevel.Function,"get", Route = $"{RoutePrefix}isFullModeImportAllowed")]
+            HttpRequest request)
+        {
+            return new JsonResult(allowFullModeImport);
         }
     }
 }

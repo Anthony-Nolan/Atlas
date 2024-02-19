@@ -33,6 +33,12 @@ namespace Atlas.Debug.Client.Clients
         /// <param name="fileName"></param>
         /// <returns></returns>
         Task<DonorImportFailureInfo> GetDonorImportFailuresByFileName(string fileName);
+
+        /// <summary>
+        /// Check if full mode import is allowed.
+        /// </summary>
+        /// <returns></returns>
+        Task<bool> IsFullModeImportAllowed();
     }
 
     /// <inheritdoc cref="IDonorImportFunctionsClient" />
@@ -65,6 +71,11 @@ namespace Atlas.Debug.Client.Clients
         public async Task<DonorImportFailureInfo> GetDonorImportFailuresByFileName(string fileName)
         {
             return await GetRequest<DonorImportFailureInfo>($"debug/donorUpdates/failures/{fileName}");
+        }
+
+        public async Task<bool> IsFullModeImportAllowed()
+        {
+            return await GetRequest<bool>($"debug/donorImport/isFullModeImportAllowed");
         }
     }
 }
