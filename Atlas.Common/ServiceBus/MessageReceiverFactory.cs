@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 
@@ -13,7 +14,7 @@ namespace Atlas.Common.ServiceBus
     {
         private readonly string connectionString;
 
-        private readonly IDictionary<string, IMessageReceiver> messageReceivers = new Dictionary<string, IMessageReceiver>();
+        private readonly ConcurrentDictionary<string, IMessageReceiver> messageReceivers = new ConcurrentDictionary<string, IMessageReceiver>();
 
         public MessageReceiverFactory(string connectionString)
         {
@@ -28,7 +29,8 @@ namespace Atlas.Common.ServiceBus
                 messageReceiver = new MessageReceiver(
                     connectionString,
                     EntityNameHelper.FormatSubscriptionPath(topicName, subscriptionName));
-                messageReceivers.Add(cacheKey, messageReceiver);
+
+                messageReceivers.GetOrAdd(cacheKey, messageReceiver);
             }
 
             return messageReceiver;
