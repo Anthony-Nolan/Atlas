@@ -167,7 +167,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             logger.SendTrace($"{TraceMessagePrefix}: {updatesList.Count} donor updates to be applied.");
 
             var (availableUpdates, unavailableUpdates) = updatesList.ReifyAndSplit(upd => upd.IsAvailableForSearch);
-            var recordOfUpdatesApplied = updatesList
+            var managementInfo = updatesList
                 .Select(upd => new DonorManagementInfo { DonorId = upd.DonorId, UpdateDateTime = upd.UpdateDateTime, UpdateSequenceNumber = upd.UpdateSequenceNumber })
                 .ToDictionary(x => x.DonorId);
 
@@ -186,12 +186,12 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
                 await SetDonorsAsUnavailableForSearch(unavailableUpdates, targetDatabase);
 
 
-                var updatedDonors = processedUpdates
-                    .Select(x => recordOfUpdatesApplied[x.DonorId])
-                    .Concat(unavailableUpdates.Select(x => recordOfUpdatesApplied[x.DonorId]))
+                var successfullyAppliedUpdates = processedUpdates
+                    .Select(x => managementInfo[x.DonorId])
+                    .Concat(unavailableUpdates.Select(x => managementInfo[x.DonorId]))
                     .ToList();
 
-                await CreateOrUpdateManagementLogBatch(updatedDonors, targetDatabase);
+                await CreateOrUpdateManagementLogBatch(successfullyAppliedUpdates, targetDatabase);
                 transactionScope.Complete();
             }
         }
