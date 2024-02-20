@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -9,6 +10,7 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Models;
+using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Models;
@@ -165,7 +167,9 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             logger.SendTrace($"{TraceMessagePrefix}: {updatesList.Count} donor updates to be applied.");
 
             var (availableUpdates, unavailableUpdates) = updatesList.ReifyAndSplit(upd => upd.IsAvailableForSearch);
-            var recordOfUpdatesApplied = updatesList.Select(upd => new DonorManagementInfo{ DonorId = upd.DonorId, UpdateDateTime = upd.UpdateDateTime, UpdateSequenceNumber = upd.UpdateSequenceNumber}).ToList();
+            var recordOfUpdatesApplied = updatesList
+                .Select(upd => new DonorManagementInfo { DonorId = upd.DonorId, UpdateDateTime = upd.UpdateDateTime, UpdateSequenceNumber = upd.UpdateSequenceNumber })
+                .ToDictionary(x => x.DonorId);
 
             // Note that as of .NET Core 3, TransactionScope does not support Distributed Transactions: https://github.com/dotnet/runtime/issues/715
             // It's slated for .NET Core 5, which is some way off.
@@ -178,14 +182,21 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             // Hopefully DT support will comeback sooner rather than later, and we can re-parallelize the per-Loci matching PGroup writing.
             using (var transactionScope = new OptionalAsyncTransactionScope(runAllHlaInsertionsInASingleTransactionScope))
             {
-                await AddOrUpdateDonors(availableUpdates, targetDatabase, targetHlaNomenclatureVersion, runAllHlaInsertionsInASingleTransactionScope);
+                var processedUpdates = await AddOrUpdateDonors(availableUpdates, targetDatabase, targetHlaNomenclatureVersion, runAllHlaInsertionsInASingleTransactionScope);
                 await SetDonorsAsUnavailableForSearch(unavailableUpdates, targetDatabase);
-                await CreateOrUpdateManagementLogBatch(recordOfUpdatesApplied, targetDatabase);
+
+
+                var updatedDonors = processedUpdates
+                    .Select(x => recordOfUpdatesApplied[x.DonorId])
+                    .Concat(unavailableUpdates.Select(x => recordOfUpdatesApplied[x.DonorId]))
+                    .ToList();
+
+                await CreateOrUpdateManagementLogBatch(updatedDonors, targetDatabase);
                 transactionScope.Complete();
             }
         }
 
-        private async Task AddOrUpdateDonors(
+        private async Task<IEnumerable<DonorInfo>> AddOrUpdateDonors(
             List<DonorAvailabilityUpdate> availableUpdates,
             TransientDatabase targetDatabase,
             string targetHlaNomenclatureVersion,
@@ -209,8 +220,10 @@ Invalid DonorIds: " + donorIds);
             {
                 logger.SendTrace($"{TraceMessagePrefix}: {availableDonors.Count} donors to be added or updated.");
 
-                await donorService.CreateOrUpdateDonorBatch(availableDonors, targetDatabase, targetHlaNomenclatureVersion, runAllHlaInsertionsInASingleTransactionScope);
+                return await donorService.CreateOrUpdateDonorBatch(availableDonors, targetDatabase, targetHlaNomenclatureVersion, runAllHlaInsertionsInASingleTransactionScope);
             }
+
+            return Enumerable.Empty<DonorInfo>();
         }
 
         private async Task SetDonorsAsUnavailableForSearch(List<DonorAvailabilityUpdate> unavailableUpdates, TransientDatabase targetDatabase)

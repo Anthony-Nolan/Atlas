@@ -5,6 +5,7 @@ using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+using Microsoft.VisualBasic;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,7 +23,10 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
         /// <param name="hlaNomenclatureVersion">
         ///  This method includes processing the HLA, thus we need to know which version of the HLA nomenclature to be using for that interpretation
         /// </param>
-        Task CreateOrUpdateDonorBatch(IEnumerable<DonorInfo> donorInfos, TransientDatabase targetDatabase, string hlaNomenclatureVersion, bool runAllHlaInsertionsInASingleTransactionScope);
+        /// <returns>
+        /// Donor information which has been processed.
+        /// </returns>
+        Task<IEnumerable<DonorInfo>> CreateOrUpdateDonorBatch(IEnumerable<DonorInfo> donorInfos, TransientDatabase targetDatabase, string hlaNomenclatureVersion, bool runAllHlaInsertionsInASingleTransactionScope);
     }
 
     public class DonorService : IDonorService
@@ -53,7 +57,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             }
         }
 
-        public async Task CreateOrUpdateDonorBatch(
+        public async Task<IEnumerable<DonorInfo>> CreateOrUpdateDonorBatch(
             IEnumerable<DonorInfo> donorInfos,
             TransientDatabase targetDatabase,
             string hlaNomenclatureVersion,
@@ -63,14 +67,17 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 
             if (!donorInfos.Any())
             {
-                return;
+                return Enumerable.Empty<DonorInfo>();
             }
+
             var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersion);
             var expansionResult = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorInfos, ExpansionFailureEventName);
             EnsureAllPGroupsExist(expansionResult.ProcessingResults, targetDatabase);
 
             await CreateOrUpdateDonorsWithHla(expansionResult.ProcessingResults, targetDatabase, runAllHlaInsertionsInASingleTransactionScope);
             await SendFailedDonorsAlert(expansionResult.FailedDonors);
+
+            return expansionResult.ProcessingResults;
         }
 
         /// <remarks>
