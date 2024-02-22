@@ -73,9 +73,10 @@ namespace Atlas.Debug.Client.Clients
             return await GetRequest<DonorImportFailureInfo>($"debug/donorUpdates/failures/{fileName}");
         }
 
+        /// <inheritdoc />
         public async Task<bool> IsFullModeImportAllowed()
         {
-            return await GetRequest<bool>($"debug/donorImport/isFullModeImportAllowed");
+            return await GetRequest<bool>("debug/donorImport/isFullModeImportAllowed");
         }
     }
 }

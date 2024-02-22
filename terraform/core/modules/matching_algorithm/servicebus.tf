@@ -66,6 +66,16 @@ resource "azurerm_servicebus_subscription" "audit-matching-results-ready" {
   dead_lettering_on_message_expiration = false
 }
 
+resource "azurerm_servicebus_subscription" "debug-matching-results-ready" {
+  name                                 = "debug"
+  topic_id                             = azurerm_servicebus_topic.matching-results-ready.id
+  auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
+  default_message_ttl                  = var.default_servicebus_settings.debug-subscription-ttl-expiry
+  lock_duration                        = var.default_servicebus_settings.default-read-lock
+  max_delivery_count                   = var.default_servicebus_settings.default-message-retries
+  dead_lettering_on_message_expiration = false
+}
+
 resource "azurerm_servicebus_topic" "data-refresh-requests" {
   name                  = "data-refresh-requests"
   namespace_id          = var.servicebus_namespace.id

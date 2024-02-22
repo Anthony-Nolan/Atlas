@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Debug.Client.Models.DonorImport;
+using Atlas.Debug.Client.Models.ServiceBus;
 
 namespace Atlas.Debug.Client.Clients
 {
@@ -14,6 +16,11 @@ namespace Atlas.Debug.Client.Clients
         /// Check for presence or absence of donors in the active copy of the matching algorithm database.
         /// </summary>
         Task<DebugDonorsResult> CheckDonors(IEnumerable<string> externalDonorCodes);
+
+        /// <summary>
+        /// Peek messages from the `debug` subscription of the `matching-results` service bus topic.
+        /// </summary>
+        Task<PeekServiceBusMessagesResponse<MatchingResultsNotification>> PeekMatchingResultNotifications(PeekServiceBusMessagesRequest request);
     }
 
     /// <inheritdoc cref="IMatchingAlgorithmFunctionsClient" />
@@ -28,6 +35,12 @@ namespace Atlas.Debug.Client.Clients
         public async Task<DebugDonorsResult> CheckDonors(IEnumerable<string> externalDonorCodes)
         {
             return await PostRequest<IEnumerable<string>, DebugDonorsResult>("debug/donors/active", externalDonorCodes);
+        }
+
+        /// <inheritdoc />
+        public async Task<PeekServiceBusMessagesResponse<MatchingResultsNotification>> PeekMatchingResultNotifications(PeekServiceBusMessagesRequest request)
+        {
+            return await PostRequest<PeekServiceBusMessagesRequest, PeekServiceBusMessagesResponse<MatchingResultsNotification>>("debug/matching/notifications", request);
         }
     }
 }

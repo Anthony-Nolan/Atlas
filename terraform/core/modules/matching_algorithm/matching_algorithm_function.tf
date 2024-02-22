@@ -51,6 +51,7 @@ locals {
     "MessagingServiceBus:SearchRequestsSubscription"     = azurerm_servicebus_subscription.matching-requests-matching-algorithm.name
     "MessagingServiceBus:SearchRequestsTopic"            = azurerm_servicebus_topic.matching-requests.name
     "MessagingServiceBus:SearchResultsTopic"             = azurerm_servicebus_topic.matching-results-ready.name
+    "MessagingServiceBus:SearchResultsDebugSubscription" = azurerm_servicebus_subscription.debug-matching-results-ready.name
 
     "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
