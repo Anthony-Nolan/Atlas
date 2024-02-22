@@ -10,4 +10,4 @@ This package is a collection of Atlas debug endpoints intended for use by automa
 
 ### 1.0.0 (targets Atlas v1.7.0)
 * Creation of new library, `Atlas.Debug.Client`.
-* Clients added for debug endpoints on the Donor Import, Matching Algorithm, and Top-level Function apps.
+* Clients added for debug endpoints on the Public API, Donor Import, Matching Algorithm, and Top-level Function apps.
