@@ -16,8 +16,8 @@ namespace Atlas.Common.Debugging
 
     public class MessagesPeeker<T> : ServiceBusPeeker<T>, IMessagesPeeker<T>
     {
-        public MessagesPeeker(IMessageReceiverFactory factory, string topicName, string subscriptionName)
-            : base(factory, topicName, subscriptionName)
+        public MessagesPeeker(IMessageReceiverFactory factory, string connectionString, string topicName, string subscriptionName)
+            : base(factory, connectionString, topicName, subscriptionName)
         {
         }
     }
@@ -33,10 +33,11 @@ namespace Atlas.Common.Debugging
 
         protected ServiceBusPeeker(
             IMessageReceiverFactory factory,
+            string connectionString,
             string topicName,
             string subscriptionName)
         {
-            messageReceiver = factory.GetMessageReceiver(topicName, subscriptionName);
+            messageReceiver = factory.GetMessageReceiver(connectionString, topicName, subscriptionName);
         }
 
         public async Task<PeekServiceBusMessagesResponse<T>> Peek(PeekServiceBusMessagesRequest peekRequest)

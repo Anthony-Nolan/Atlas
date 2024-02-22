@@ -143,15 +143,14 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
-            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
-                new MessageReceiverFactory(fetchMessagingServiceBusSettings(sp).ConnectionString)
-            );
+            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>();
 
             services.AddScoped<IServiceBusPeeker<MatchingResultsNotification>, MatchingResultNotificationsPeeker>(sp =>
             {
                 var settings = fetchMessagingServiceBusSettings(sp);
                 return new MatchingResultNotificationsPeeker(
                     sp.GetService<IMessageReceiverFactory>(),
+                    settings.ConnectionString,
                     settings.SearchResultsTopic,
                     settings.SearchResultsDebugSubscription);
             });
@@ -282,23 +281,25 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IDonorManagementService, DonorManagementService>();
             services.AddScoped<ISearchableDonorUpdateConverter, SearchableDonorUpdateConverter>();
 
-            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
-                new MessageReceiverFactory(fetchMessagingServiceBusSettings(sp).ConnectionString)
-            );
+            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>();
 
             services.AddScoped<IMessageProcessorForDbADonorUpdates, DonorUpdateMessageProcessor>(sp =>
             {
-                var settings = fetchDonorManagementSettings(sp);
+                var messagingSettings = fetchMessagingServiceBusSettings(sp);
+                var donorManagementSettings = fetchDonorManagementSettings(sp);
                 var factory = sp.GetService<IMessageReceiverFactory>();
-                var messageReceiver = new ServiceBusMessageReceiver<SearchableDonorUpdate>(factory, settings.Topic, settings.SubscriptionForDbA);
+                var messageReceiver = new ServiceBusMessageReceiver<SearchableDonorUpdate>(
+                    factory, messagingSettings.ConnectionString, donorManagementSettings.Topic, donorManagementSettings.SubscriptionForDbA);
                 return new DonorUpdateMessageProcessor(messageReceiver);
             });
 
             services.AddScoped<IMessageProcessorForDbBDonorUpdates, DonorUpdateMessageProcessor>(sp =>
             {
-                var settings = fetchDonorManagementSettings(sp);
+                var messagingSettings = fetchMessagingServiceBusSettings(sp);
+                var donorManagementSettings = fetchDonorManagementSettings(sp);
                 var factory = sp.GetService<IMessageReceiverFactory>();
-                var messageReceiver = new ServiceBusMessageReceiver<SearchableDonorUpdate>(factory, settings.Topic, settings.SubscriptionForDbB);
+                var messageReceiver = new ServiceBusMessageReceiver<SearchableDonorUpdate>(
+                    factory, messagingSettings.ConnectionString, donorManagementSettings.Topic, donorManagementSettings.SubscriptionForDbB);
                 return new DonorUpdateMessageProcessor(messageReceiver);
             });
 

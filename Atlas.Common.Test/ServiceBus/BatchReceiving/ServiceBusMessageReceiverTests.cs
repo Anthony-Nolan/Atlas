@@ -11,6 +11,7 @@ namespace Atlas.Common.Test.ServiceBus.BatchReceiving
     [TestFixture]
     public class ServiceBusMessageReceiverTests
     {
+        private const string ConnectionString = "connectionString";
         private const string TopicName = "topic";
         private const string SubscriptionName = "subscription";
 
@@ -24,9 +25,9 @@ namespace Atlas.Common.Test.ServiceBus.BatchReceiving
             messageReceiverFactory = Substitute.For<IMessageReceiverFactory>();
             messageReceiver = Substitute.For<IMessageReceiver>();
 
-            messageReceiverFactory.GetMessageReceiver(TopicName, SubscriptionName).Returns(messageReceiver);
+            messageReceiverFactory.GetMessageReceiver(ConnectionString, TopicName, SubscriptionName).Returns(messageReceiver);
 
-            serviceBusMessageReceiver = new ServiceBusMessageReceiver<string>(messageReceiverFactory, TopicName, SubscriptionName);
+            serviceBusMessageReceiver = new ServiceBusMessageReceiver<string>(messageReceiverFactory, ConnectionString, TopicName, SubscriptionName);
         }
 
         [Test]

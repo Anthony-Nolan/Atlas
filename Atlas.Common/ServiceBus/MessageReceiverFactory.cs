@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 
@@ -7,32 +6,26 @@ namespace Atlas.Common.ServiceBus
 {
     public interface IMessageReceiverFactory
     {
-        IMessageReceiver GetMessageReceiver(string topicName, string subscriptionName);
+        IMessageReceiver GetMessageReceiver(string connectionString, string topicName, string subscriptionName);
     }
 
     public class MessageReceiverFactory : IMessageReceiverFactory
     {
-        private readonly string connectionString;
+        private static readonly ConcurrentDictionary<string, IMessageReceiver> MessageReceivers = new();
 
-        private readonly ConcurrentDictionary<string, IMessageReceiver> messageReceivers = new ConcurrentDictionary<string, IMessageReceiver>();
-
-        public MessageReceiverFactory(string connectionString)
-        {
-            this.connectionString = connectionString;
-        }
-
-        public IMessageReceiver GetMessageReceiver(string topicName, string subscriptionName)
+        public IMessageReceiver GetMessageReceiver(string connectionString, string topicName, string subscriptionName)
         {
             var cacheKey = CacheKey(topicName, subscriptionName);
-            if (!messageReceivers.TryGetValue(cacheKey, out var messageReceiver))
-            {
-                messageReceiver = new MessageReceiver(
-                    connectionString,
-                    EntityNameHelper.FormatSubscriptionPath(topicName, subscriptionName));
 
-                messageReceivers.GetOrAdd(cacheKey, messageReceiver);
+            if (MessageReceivers.TryGetValue(cacheKey, out var messageReceiver))
+            {
+                return messageReceiver;
             }
 
+            messageReceiver = new MessageReceiver(
+                connectionString,
+                EntityNameHelper.FormatSubscriptionPath(topicName, subscriptionName));
+            MessageReceivers.GetOrAdd(cacheKey, messageReceiver);
             return messageReceiver;
         }
 

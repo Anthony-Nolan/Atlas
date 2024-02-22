@@ -130,12 +130,15 @@ namespace Atlas.Functions
 
         private static void RegisterDebugServices(IServiceCollection services)
         {
+            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>();
+
             services.AddScoped<IServiceBusPeeker<Alert>, AlertsPeeker>(sp =>
             {
                 var notificationsOptions = sp.GetService<IOptions<NotificationsServiceBusSettings>>();
                 var debugOptions = sp.GetService<IOptions<NotificationsDebugSettings>>();
                 return new AlertsPeeker(
-                    new MessageReceiverFactory(notificationsOptions.Value.ConnectionString),
+                    sp.GetService<IMessageReceiverFactory>(),
+                    notificationsOptions.Value.ConnectionString,
                     notificationsOptions.Value.AlertsTopic,
                     debugOptions.Value.AlertsSubscription);
             });
@@ -145,7 +148,8 @@ namespace Atlas.Functions
                 var notificationsOptions = sp.GetService<IOptions<NotificationsServiceBusSettings>>();
                 var debugOptions = sp.GetService<IOptions<NotificationsDebugSettings>>();
                 return new NotificationsPeeker(
-                    new MessageReceiverFactory(notificationsOptions.Value.ConnectionString),
+                    sp.GetService<IMessageReceiverFactory>(),
+                    notificationsOptions.Value.ConnectionString,
                     notificationsOptions.Value.NotificationsTopic,
                     debugOptions.Value.NotificationsSubscription);
             });

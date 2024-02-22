@@ -163,15 +163,14 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings
             )
         {
-            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
-                new MessageReceiverFactory(fetchMessagingServiceBusSettings(sp).ConnectionString)
-            );
+            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>();
 
             services.AddScoped<IDonorImportResultsPeeker, DonorImportResultsPeeker>(sp =>
             {
                 var settings = fetchMessagingServiceBusSettings(sp);
                 return new DonorImportResultsPeeker(
                     sp.GetService<IMessageReceiverFactory>(),
+                    settings.ConnectionString,
                     settings.DonorImportResultsTopic,
                     settings.DonorImportResultsDebugSubscription);
             });

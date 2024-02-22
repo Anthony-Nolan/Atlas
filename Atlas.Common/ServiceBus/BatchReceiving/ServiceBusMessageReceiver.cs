@@ -29,10 +29,11 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
 
         public ServiceBusMessageReceiver(
             IMessageReceiverFactory factory,
+            string connectionString,
             string topicName,
             string subscriptionName)
         {
-            messageReceiver = factory.GetMessageReceiver(topicName, subscriptionName);
+            messageReceiver = factory.GetMessageReceiver(connectionString, topicName, subscriptionName);
         }
 
         public async Task<IEnumerable<ServiceBusMessage<T>>> ReceiveMessageBatchAsync(int batchSize, int prefetchCount)
