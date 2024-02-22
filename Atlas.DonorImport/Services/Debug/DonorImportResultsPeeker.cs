@@ -16,8 +16,9 @@ namespace Atlas.DonorImport.Services.Debug
     {
         public DonorImportResultsPeeker(
             IMessageReceiverFactory factory,
+            string connectionString,
             string topicName,
-            string subscriptionName) : base(factory, topicName, subscriptionName)
+            string subscriptionName) : base(factory, connectionString, topicName, subscriptionName)
         {
         }
 

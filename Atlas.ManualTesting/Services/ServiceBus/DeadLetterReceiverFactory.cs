@@ -10,14 +10,7 @@ namespace Atlas.ManualTesting.Services.ServiceBus
 
     internal class DeadLetterReceiverFactory : IDeadLetterReceiverFactory
     {
-        private readonly string connectionString;
-
-        public DeadLetterReceiverFactory(string connectionString)
-        {
-            this.connectionString = connectionString;
-        }
-
-        public IMessageReceiver GetMessageReceiver(string topicName, string subscriptionName)
+        public IMessageReceiver GetMessageReceiver(string connectionString, string topicName, string subscriptionName)
         {
             return new MessageReceiver(connectionString, DeadLetterPath(topicName, subscriptionName));
         }
