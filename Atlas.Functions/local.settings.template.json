@@ -26,6 +26,7 @@
     "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic": "repeat-search-matching-results-ready",
     "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic": "search-results-ready",
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic": "search-results-ready",
+    "AtlasFunction:MessagingServiceBus:SearchResultsDebugSubscription": "debug",
 
     "AtlasFunction:Orchestration:MatchPredictionBatchSize": 100,
 

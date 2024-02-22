@@ -1,3 +1,4 @@
+using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
@@ -152,6 +153,16 @@ namespace Atlas.Functions
                     notificationsOptions.Value.ConnectionString,
                     notificationsOptions.Value.NotificationsTopic,
                     debugOptions.Value.NotificationsSubscription);
+            });
+
+            services.AddScoped<IServiceBusPeeker<SearchResultsNotification>, SearchResultNotificationsPeeker>(sp =>
+            {
+                var messagingOptions = sp.GetService<IOptions<Settings.MessagingServiceBusSettings>>();
+                return new SearchResultNotificationsPeeker(
+                    sp.GetService<IMessageReceiverFactory>(),
+                    messagingOptions.Value.ConnectionString,
+                    messagingOptions.Value.SearchResultsTopic,
+                    messagingOptions.Value.SearchResultsDebugSubscription);
             });
         }
     }
