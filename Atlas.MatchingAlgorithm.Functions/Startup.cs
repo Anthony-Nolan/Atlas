@@ -48,6 +48,8 @@ namespace Atlas.MatchingAlgorithm.Functions
                 ConnectionStringReader("SqlA"),
                 ConnectionStringReader("SqlB"), 
                 ConnectionStringReader("DonorSql"));
+
+            builder.Services.RegisterDebugServices(OptionsReaderFor<MessagingServiceBusSettings>());
         }
 
         /// <summary>

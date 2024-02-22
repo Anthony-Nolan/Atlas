@@ -1,6 +1,8 @@
+using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Caching;
+using Atlas.Common.Debugging;
 using Atlas.Common.FeatureManagement;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Matching.Services;
@@ -28,6 +30,7 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
+using Atlas.MatchingAlgorithm.Services.Debug;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.Search;
@@ -134,6 +137,24 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchMessagingServiceBusSettings,
                 fetchDonorImportSqlConnectionString
             );
+        }
+
+        public static void RegisterDebugServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
+        {
+            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
+                new MessageReceiverFactory(fetchMessagingServiceBusSettings(sp).ConnectionString)
+            );
+
+            services.AddScoped<IServiceBusPeeker<MatchingResultsNotification>, MatchingResultNotificationsPeeker>(sp =>
+            {
+                var settings = fetchMessagingServiceBusSettings(sp);
+                return new MatchingResultNotificationsPeeker(
+                    sp.GetService<IMessageReceiverFactory>(),
+                    settings.SearchResultsTopic,
+                    settings.SearchResultsDebugSubscription);
+            });
         }
 
         /// <summary>

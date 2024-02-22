@@ -41,6 +41,7 @@
     "MessagingServiceBus:SearchRequestsSubscription": "matching-algorithm",
     "MessagingServiceBus:SearchRequestsTopic": "matching-requests",
     "MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
+    "MessagingServiceBus:SearchResultsDebugSubscription": "debug",
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications",
