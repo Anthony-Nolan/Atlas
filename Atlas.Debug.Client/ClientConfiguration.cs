@@ -23,11 +23,13 @@ namespace Atlas.Debug.Client
             this IServiceCollection services,
             Func<IServiceProvider, DonorImportHttpFunctionSettings> fetchDonorImportHttpSettings,
             Func<IServiceProvider, MatchingAlgorithmHttpFunctionSettings> fetchMatchingAlgorithmHttpSettings,
-            Func<IServiceProvider, TopLevelHttpFunctionSettings> fetchTopLevelHttpSettings)
+            Func<IServiceProvider, TopLevelHttpFunctionSettings> fetchTopLevelHttpSettings,
+            Func<IServiceProvider, PublicApiHttpFunctionSettings> fetchPublicApiHttpSettings)
         {
             services.RegisterHttpFunctionClient<IDonorImportFunctionsClient, DonorImportFunctionsClient>(fetchDonorImportHttpSettings);
             services.RegisterHttpFunctionClient<IMatchingAlgorithmFunctionsClient, MatchingAlgorithmFunctionsClient>(fetchMatchingAlgorithmHttpSettings);
             services.RegisterHttpFunctionClient<ITopLevelFunctionsClient, TopLevelFunctionsClient>(fetchTopLevelHttpSettings);
+            services.RegisterHttpFunctionClient<IPublicApiFunctionsClient, PublicApiFunctionsClient>(fetchPublicApiHttpSettings);
         }
 
         private static void RegisterHttpFunctionClient<TInterface, TClient>(

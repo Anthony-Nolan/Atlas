@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Debug.Client.Models.Exceptions;
+using Atlas.Debug.Client.Models.Validation;
 using Newtonsoft.Json;
 
 namespace Atlas.Debug.Client.Clients
@@ -31,7 +34,7 @@ namespace Atlas.Debug.Client.Clients
         public async Task<TResponse> GetRequest<TResponse>(string requestUri)
         {
             var response = await SendRequestAndEnsureSuccess(HttpMethod.Get, requestUri);
-            return await DeserializeObject<TResponse>(response);
+            return await DeserializeResponseContent<TResponse>(response.Content);
         }
 
         /// <summary>
@@ -48,7 +51,28 @@ namespace Atlas.Debug.Client.Clients
         public async Task<TResponse> PostRequest<TBody, TResponse>(string requestUri, TBody requestBody)
         {
             var response = await SendRequestAndEnsureSuccess(HttpMethod.Post, requestUri, requestBody);
-            return await DeserializeObject<TResponse>(response);
+            return await DeserializeResponseContent<TResponse>(response.Content);
+        }
+
+        /// <inheritdoc cref="PostRequest{T}"/>
+        /// <returns>
+        /// The deserialized response as type, TResponse, if the request was successful.
+        /// Or the deserialized collection of validation failures in the case of a bad request.
+        /// </returns>
+        public async Task<ResponseFromValidatedRequest<TResponse>> PostValidatedRequest<TBody, TResponse>(string requestUri, TBody requestBody)
+        {
+            try
+            {
+                var response = await SendRequestAndEnsureSuccess(HttpMethod.Post, requestUri, requestBody);
+                var successfulResult = await DeserializeResponseContent<TResponse>(response.Content);
+                return new ResponseFromValidatedRequest<TResponse>(successfulResult);
+            }
+            catch (HttpFunctionException e) when (e.HttpStatusCode == HttpStatusCode.BadRequest)
+            {
+                var failures = await DeserializeResponseContent<List<RequestValidationFailure>>(e.ResponseContent);
+                return new ResponseFromValidatedRequest<TResponse>(failures);
+            }
+            // any other kind of exception is unexpected and should be thrown.
         }
 
         /// <inheritdoc />
@@ -61,16 +85,19 @@ namespace Atlas.Debug.Client.Clients
 
         private async Task<HttpResponseMessage> SendRequestAndEnsureSuccess<TBody>(HttpMethod method, string requestUri, TBody requestBody)
         {
+            // default to a bad request response in case something goes wrong with building the request before its even sent
+            var response = new HttpResponseMessage(HttpStatusCode.BadRequest);
+
             try
             {
                 var request = BuildRequest(method, requestUri, requestBody);
-                var response = await client.SendAsync(request);
+                response = await client.SendAsync(request);
                 response.EnsureSuccessStatusCode();
                 return response;
             }
             catch (Exception e)
             {
-                throw WrappedException(requestUri, e);
+                throw new HttpFunctionException(response.StatusCode, response.Content, baseUrl, requestUri, e);
             }
         }
 
@@ -95,9 +122,7 @@ namespace Atlas.Debug.Client.Clients
             return requestMessage;
         }
 
-        private static async Task<TResponse> DeserializeObject<TResponse>(HttpResponseMessage response) =>
-            JsonConvert.DeserializeObject<TResponse>(await response.Content.ReadAsStringAsync());
-
-        private HttpFunctionException WrappedException(string requestUri, Exception ex) => new(baseUrl, requestUri, ex);
+        private static async Task<TResponse> DeserializeResponseContent<TResponse>(HttpContent responseContent) =>
+            JsonConvert.DeserializeObject<TResponse>(await responseContent.ReadAsStringAsync());
     }
 }
