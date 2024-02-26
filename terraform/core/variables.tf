@@ -134,6 +134,12 @@ variable "ELASTIC_SERVICE_PLAN_SKU_SIZE" {
   description = "This database will be on the Elastic Premium tier, so only elastic premium sku sizes are appropriate e.g. EP1, EP2, EP3. Each tier represents a double in service plan price, and a corresponding halving of algorithm time."
 }
 
+variable "SPIKE_SERVICE_PLAN" {
+  type        = string
+  default     = "B1"
+  description = "Service plan for function apps, used only for profiler spike purpose"
+}
+
 variable "ENVIRONMENT" {
   type        = string
   description = "Prepended to all ATLAS resources, to indicate which environment of the installation they represent. Some alphanumeric characters must be present, as non-alphanumeric characters will be stripped from the storage account name. Max 8 alphanumeric characters. e.g. DEV/UAT/LIVE"

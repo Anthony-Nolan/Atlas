@@ -18,7 +18,7 @@ output "donor-matching-function-name" {
 }
 
 output "function-app-name" {
-  value = local.atlas_function_app_name
+  value = local.atlas_temporary_function_app_name
 }
 
 output "match-prediction-database-name" {

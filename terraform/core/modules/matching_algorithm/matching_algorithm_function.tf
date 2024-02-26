@@ -65,8 +65,13 @@ locals {
     "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
 
     "WEBSITE_PROACTIVE_AUTOHEAL_ENABLED" = false
+
+    "APPINSIGHTS_PROFILERFEATURE_VERSION"  = "1.0.0"
+    "DiagnosticServices_EXTENSION_VERSION" = "~3"
   }
-  matching_algorithm_function_app_name = "${var.general.environment}-ATLAS-MATCHING-ALGORITHM-FUNCTIONS"
+
+  matching_algorithm_function_app_name      = "${var.general.environment}-ATLAS-MATCHING-ALGORITHM-FUNCTIONS"
+  matching_algorithm_temp_function_app_name = "${var.general.environment}-TEMP-ATLAS-MATCHING-ALGORITHM-FUNCTIONS"
 }
 
 resource "azurerm_windows_function_app" "atlas_matching_algorithm_function" {
@@ -80,7 +85,72 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_function" {
   storage_account_access_key  = azurerm_storage_account.matching_function_storage.primary_access_key
   storage_account_name        = azurerm_storage_account.matching_function_storage.name
 
+  # Disable for profiling
+  enabled = false
+
+
   site_config {
+    application_insights_key = var.application_insights.instrumentation_key
+    application_stack {
+      dotnet_version = "v6.0"
+    }
+    cors {
+      support_credentials = false
+    }
+    dynamic "ip_restriction" {
+      for_each = var.IP_RESTRICTION_SETTINGS
+      content {
+        ip_address = ip_restriction
+      }
+    }
+
+    pre_warmed_instance_count = 1
+    use_32_bit_worker         = false
+    ftps_state                = "AllAllowed"
+    scm_minimum_tls_version   = "1.0"
+  }
+
+  tags = var.general.common_tags
+
+  app_settings = local.matching_func_app_settings
+
+  connection_string {
+    name  = "SqlA"
+    type  = "SQLAzure"
+    value = local.matching_transient_database_a_connection_string
+  }
+  connection_string {
+    name  = "SqlB"
+    type  = "SQLAzure"
+    value = local.matching_transient_database_b_connection_string
+  }
+  connection_string {
+    name  = "PersistentSql"
+    type  = "SQLAzure"
+    value = local.matching_persistent_database_connection_string
+  }
+
+  connection_string {
+    name  = "DonorSql"
+    type  = "SQLAzure"
+    value = "Server=tcp:${var.sql_server.fully_qualified_domain_name},1433;Initial Catalog=${var.donor_import_sql_database.name};Persist Security Info=False;User ID=${var.DONOR_IMPORT_DATABASE_USERNAME};Password=${var.DONOR_IMPORT_DATABASE_PASSWORD};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
+  }
+}
+
+resource "azurerm_windows_function_app" "atlas_matching_algorithm_function_temp" {
+  name                        = local.matching_algorithm_temp_function_app_name
+  resource_group_name         = var.resource_group.name
+  location                    = var.general.location
+  service_plan_id             = var.tempfunction_app_service_plan.id
+  client_certificate_mode     = "Required"
+  https_only                  = true
+  functions_extension_version = "~4"
+  storage_account_access_key  = azurerm_storage_account.matching_function_storage.primary_access_key
+  storage_account_name        = azurerm_storage_account.matching_function_storage.name
+
+  site_config {
+    always_on                = true
+    worker_count             = 1
     application_insights_key = var.application_insights.instrumentation_key
     application_stack {
       dotnet_version = "v6.0"
