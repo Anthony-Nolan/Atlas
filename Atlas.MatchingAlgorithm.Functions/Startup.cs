@@ -49,7 +49,10 @@ namespace Atlas.MatchingAlgorithm.Functions
                 ConnectionStringReader("SqlB"), 
                 ConnectionStringReader("DonorSql"));
 
-            builder.Services.RegisterDebugServices(OptionsReaderFor<MessagingServiceBusSettings>());
+            builder.Services.RegisterDebugServices(
+                OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<AzureStorageSettings>());
         }
 
         /// <summary>
