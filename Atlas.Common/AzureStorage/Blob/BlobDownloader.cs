@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Azure.Storage.Blobs;
 using System.Linq;
 using MoreLinq;
-using System;
+using Azure;
 
 namespace Atlas.Common.AzureStorage.Blob
 {
@@ -122,17 +122,24 @@ namespace Atlas.Common.AzureStorage.Blob
             EndAzureStorageCommunication(azureStorageEventModel);
         }
 
-        private async Task<T> GetBlobData<T>(BlobContainerClient containerClient, string filename)
+        private static async Task<T> GetBlobData<T>(BlobContainerClient containerClient, string filename)
         {
-            var blobClient = containerClient.GetBlobClient(filename);
-            var downloadedBlob = await blobClient.DownloadContentAsync();
+            try
+            {
+                var blobClient = containerClient.GetBlobClient(filename);
+                var downloadedBlob = await blobClient.DownloadContentAsync();
 
-            if (downloadedBlob is not { HasValue: true })
+                if (downloadedBlob is not { HasValue: true })
+                {
+                    throw new BlobNotFoundException(containerClient.Name, filename);
+                }
+
+                return JsonConvert.DeserializeObject<T>(downloadedBlob.Value.Content.ToString());
+            }
+            catch (RequestFailedException ex) when(ex.ErrorCode == "BlobNotFound")
             {
                 throw new BlobNotFoundException(containerClient.Name, filename);
             }
-
-            return JsonConvert.DeserializeObject<T>(downloadedBlob.Value.Content.ToString());
         }
     }
 }

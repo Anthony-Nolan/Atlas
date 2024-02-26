@@ -141,7 +141,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
         public static void RegisterDebugServices(
             this IServiceCollection services,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
         {
             services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>();
 
@@ -153,6 +155,16 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                     settings.ConnectionString,
                     settings.SearchResultsTopic,
                     settings.SearchResultsDebugSubscription);
+            });
+
+            services.RegisterDebugLogger(fetchApplicationInsightsSettings);
+
+            services.AddScoped<IMatchingResultsDownloader, MatchingResultsDownloader>();
+            services.AddScoped<IBlobDownloader, BlobDownloader>(sp =>
+            {
+                var settings = fetchAzureStorageSettings(sp);
+                var logger = sp.GetService<IDebugLogger>();
+                return new BlobDownloader(settings.ConnectionString, logger);
             });
         }
 
