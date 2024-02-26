@@ -15,8 +15,11 @@ This package contains all client models utilised by the Atlas Public API to requ
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-### 1.7.0
+### 2.1.0
 * Moved existing `Alert` and `Notification` message models (and dependent classes) to new `SupportMessages` namespace.
+
+### 2.0.0
+* BREAKING CHANGE: Existing enum, `Search.Results.Matching.MatchGrade`, has been extended with a new value, `ExpressingVsNull`, to represent the edge case of expressing typing against null allele.
 
 ### 1.6.0
 * `Search.Results.Matching.PerLocus.LocusPositionScoreDetails` has been extended with a new field: `IsAntigenMatch`, which indicates whether the match grade for a position is an antigen match (`true`) or not (`false`).

@@ -30,10 +30,24 @@ Feature flags permit greater control over the release of new features (see this 
 * BREAKING - Breaking change at the API level
 * FBC - Functionally Breaking Change, i.e., significant change to the behaviour of an existing feature but the API remains unchanged
 
-### 1.7.0
+### 2.1.0
 
 #### Donor Import
 * E: Added new debug function to `DonorImport.Functions`, `GetRandomDonors`, to aid in the generation of test data.
+
+### 2.0.0
+Major version number bump due to breaking change in the client. See [client changelog](../Atlas.Client.Models/CHANGELOG_Client.md) for details.
+
+* E/BF: Null allele vs. expressing HLA typing is no longer assigned the grade of `Mismatch`, and instead is assigned the new grade, `ExpressingVsNull`.
+   * The most visible outcome of this change is that the match count calculated by scoring will now align with that of matching in this edge case.
+   * This can be interpreted as either an enhancement or a bug fix, depending on user expectations.
+
+### 1.6.3
+- E: Terraform-mediated migration of classic Application Insights to workspace-based Application Insights.
+  - This required the creation of a new Log Analytics workspace, named `<env>-ATLAS`
+  - New release variables have been added to determine the workspace daily quota (default: unlimited) and SKU (default: PAYG).
+  - Note: terraform may recreate the feature flag, `useDonorInfoStoredInMatchingAlgorithmDb`, due to [this bug](https://github.com/hashicorp/terraform-provider-azurerm/issues/23315).
+    - If so, the flag will need to be manually re-enabled post release.
 
 ### 1.6.2
 - BF: Fix for a failing search request by enhancing the scoring HMD lookup to support ambiguous molecular typings that only expands to null alleles.
