@@ -1,7 +1,9 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
+using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Client.Models.SupportMessages;
+using Atlas.Debug.Client.Models.SearchResults;
 using Atlas.Debug.Client.Models.ServiceBus;
 
 namespace Atlas.Debug.Client.Clients
@@ -25,6 +27,11 @@ namespace Atlas.Debug.Client.Clients
         /// Peek messages from the `debug` subscription of the `search-results-ready` service bus topic.
         /// </summary>
         Task<PeekServiceBusMessagesResponse<SearchResultsNotification>> PeekSearchResultNotifications(PeekServiceBusMessagesRequest request);
+
+        /// <summary>
+        /// Fetch search result set from the search results blob storage.
+        /// </summary>
+        Task<OriginalSearchResultSet> FetchSearchResultSet(DebugSearchResultsRequest request);
     }
 
     /// <inheritdoc cref="ITopLevelFunctionsClient" />
@@ -51,6 +58,12 @@ namespace Atlas.Debug.Client.Clients
         public async Task<PeekServiceBusMessagesResponse<SearchResultsNotification>> PeekSearchResultNotifications(PeekServiceBusMessagesRequest request)
         {
             return await PostRequest<PeekServiceBusMessagesRequest, PeekServiceBusMessagesResponse<SearchResultsNotification>>("debug/search/notifications", request);
+        }
+
+        /// <inheritdoc />
+        public async Task<OriginalSearchResultSet> FetchSearchResultSet(DebugSearchResultsRequest request)
+        {
+            return await PostRequest<DebugSearchResultsRequest, OriginalSearchResultSet>("debug/search/resultSet", request);
         }
     }
 }

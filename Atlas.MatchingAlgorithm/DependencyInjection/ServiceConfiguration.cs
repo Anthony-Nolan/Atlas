@@ -159,12 +159,16 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.RegisterDebugLogger(fetchApplicationInsightsSettings);
 
-            services.AddScoped<IMatchingResultsDownloader, MatchingResultsDownloader>();
             services.AddScoped<IBlobDownloader, BlobDownloader>(sp =>
             {
                 var settings = fetchAzureStorageSettings(sp);
-                var logger = sp.GetService<IDebugLogger>();
-                return new BlobDownloader(settings.ConnectionString, logger);
+                return new BlobDownloader(settings.ConnectionString, sp.GetService<IDebugLogger>());
+            });
+
+            services.AddScoped<IDebugResultsDownloader, DebugResultsDownloader>(sp =>
+            {
+                var settings = fetchAzureStorageSettings(sp);
+                return new DebugResultsDownloader(settings.SearchResultsBlobContainer, sp.GetService<IBlobDownloader>());
             });
         }
 

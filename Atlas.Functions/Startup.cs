@@ -164,6 +164,15 @@ namespace Atlas.Functions
                     messagingOptions.Value.SearchResultsTopic,
                     messagingOptions.Value.SearchResultsDebugSubscription);
             });
+
+            services.RegisterDebugLogger(OptionsReaderFor<ApplicationInsightsSettings>());
+
+            services.AddScoped<IDebugResultsDownloader, DebugResultsDownloader>(sp =>
+            {
+                var settings = sp.GetService<IOptions<Settings.AzureStorageSettings>>();
+                var downloader = new BlobDownloader(settings.Value.MatchingConnectionString, sp.GetService<IDebugLogger>());
+                return new DebugResultsDownloader(settings.Value.SearchResultsBlobContainer, downloader);
+            });
         }
     }
 }
