@@ -28,6 +28,9 @@ Feature flags permit greater control over the release of new features (see this 
 * BREAKING - Breaking change at the API level
 * FBC - Functionally Breaking Change, i.e., significant change to the behaviour of an existing feature but the API remains unchanged
 
+### 2.0.1
+- E: Atlas can now be configured to reject Full mode import files. See [Donor Import README](../README_DonorImport.md#full-mode) for more details.
+
 ### 2.0.0
 Major version number bump due to breaking change in the client. See [client changelog](../Atlas.Client.Models/CHANGELOG_Client.md) for details.
 
