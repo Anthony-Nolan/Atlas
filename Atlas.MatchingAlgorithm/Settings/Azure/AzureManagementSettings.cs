@@ -5,6 +5,7 @@ namespace Atlas.MatchingAlgorithm.Settings.Azure
         public string ClientId { get; set; }
         public string ClientSecret { get; set; }
         public string OAuthBaseUrl { get; set; }
+        public string TenantId { get; set; }
     }
     
     public class AzureManagementSettings
@@ -17,5 +18,10 @@ namespace Atlas.MatchingAlgorithm.Settings.Azure
     {
         public string ServerName { get; set; }
         public string PollingRetryIntervalMilliseconds { get; set; }
+    }
+
+    public class AzureMonitoringSettings
+    {
+        public string WorkspaceId { set; get; }
     }
 }

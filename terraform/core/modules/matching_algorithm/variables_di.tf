@@ -22,6 +22,12 @@ variable "application_insights" {
   })
 }
 
+variable "application_insights_workspace" {
+  type = object({
+    workspace_id = string
+  })
+}
+
 variable "donor_import_sql_database" {
   type = object({
     name = string

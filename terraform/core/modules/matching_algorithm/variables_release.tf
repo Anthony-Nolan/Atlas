@@ -16,6 +16,10 @@ variable "AZURE_OAUTH_BASEURL" {
   type = string
 }
 
+variable "AZURE_TENANT_ID" {
+  type = string
+}
+
 variable "DATA_REFRESH_AUTO_RUN" {
   type = bool
 }
