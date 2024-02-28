@@ -7,7 +7,9 @@ using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Azure.Identity;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -49,6 +51,8 @@ namespace Atlas.MatchingAlgorithm.Functions
                 ConnectionStringReader("SqlB"), 
                 ConnectionStringReader("DonorSql"));
 
+            RegisterLogQueryClient(builder.Services, builder.GetContext().Configuration);
+
             builder.Services.RegisterDebugServices(
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
@@ -77,6 +81,7 @@ namespace Atlas.MatchingAlgorithm.Functions
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<AzureAuthenticationSettings>("AzureManagement:Authentication");
             services.RegisterAsOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");
+            services.RegisterAsOptions<AzureMonitoringSettings>("AzureManagement:Monitoring");
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
             services.RegisterAsOptions<DonorManagementSettings>("DataRefresh:DonorManagement");
@@ -85,6 +90,22 @@ namespace Atlas.MatchingAlgorithm.Functions
             services.RegisterAsOptions<MatchingConfigurationSettings>("MatchingConfiguration");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
+
         }
+
+        private static void RegisterLogQueryClient(IServiceCollection services, IConfiguration config)
+        {
+            services.AddAzureClients(clientBuilder =>
+            {
+                var authSetting = config.GetSection("AzureManagement:Authentication").Get<AzureAuthenticationSettings>();
+                clientBuilder.UseCredential(new ClientSecretCredential(
+                    tenantId: authSetting.TenantId,
+                    clientId: authSetting.ClientId,
+                    clientSecret: authSetting.ClientSecret));
+
+                clientBuilder.AddLogsQueryClient();
+            });
+        }
+
     }
 }
