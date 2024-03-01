@@ -21,6 +21,7 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
 {
     public class DonorFunctions
     {
+        private const string RoutePrefix = $"{RouteConstants.DebugRoutePrefix}/donors/";
         private readonly IDonorReadRepository donorReadRepository;
 
         public DonorFunctions(IDonorReadRepository donorReadRepository)
@@ -31,7 +32,7 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
         [FunctionName(nameof(GetDonors))]
         [ProducesResponseType(typeof(DebugDonorsResult), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetDonors(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/donors")]
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RoutePrefix}")]
             [RequestBodyType(typeof(string[]), "Donor Record Ids")]
             HttpRequest request)
         {
@@ -44,10 +45,22 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
                 ));
         }
 
+        [FunctionName(nameof(GetDonorCodesByRegistry))]
+        [ProducesResponseType(typeof(IEnumerable<string>), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetDonorCodesByRegistry(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = RoutePrefix + "{registryCode}/externalDonorCodes")]
+            HttpRequest request,
+            string registryCode)
+        {
+            var donors = await donorReadRepository.GetExternalDonorCodes(registryCode, DatabaseDonorType.Adult);
+            var cords = await donorReadRepository.GetExternalDonorCodes(registryCode, DatabaseDonorType.Cord);
+            return new JsonResult(donors.Concat(cords));
+        }
+
         [FunctionName(nameof(GetRandomDonors))]
         [ProducesResponseType(typeof(IEnumerable<Donor>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetRandomDonors(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/donors/random")]
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RoutePrefix}random")]
             [RequestBodyType(typeof(DonorRequest), "Donors to retrieve")]
             HttpRequest request)
         {

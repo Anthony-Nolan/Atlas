@@ -39,6 +39,11 @@ namespace Atlas.Debug.Client.Clients
         /// </summary>
         /// <returns></returns>
         Task<bool> IsFullModeImportAllowed();
+
+        /// <summary>
+        /// Get external donor codes by registry.
+        /// </summary>
+        Task<IEnumerable<string>> GetExternalDonorCodesByRegistry(string registryCode);
     }
 
     /// <inheritdoc cref="IDonorImportFunctionsClient" />
@@ -77,6 +82,12 @@ namespace Atlas.Debug.Client.Clients
         public async Task<bool> IsFullModeImportAllowed()
         {
             return await GetRequest<bool>("debug/donorImport/isFullModeImportAllowed");
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<string>> GetExternalDonorCodesByRegistry(string registryCode)
+        {
+            return await GetRequest<IEnumerable<string>>($"debug/donors/{registryCode}/externalDonorCodes");
         }
     }
 }
