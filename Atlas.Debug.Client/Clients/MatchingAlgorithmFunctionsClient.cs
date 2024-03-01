@@ -3,7 +3,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
-using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Debug.Client.Models.DonorImport;
 using Atlas.Debug.Client.Models.SearchResults;
 using Atlas.Debug.Client.Models.ServiceBus;
@@ -29,6 +28,11 @@ namespace Atlas.Debug.Client.Clients
         /// Fetch matching result set from the matching algorithm results blob storage.
         /// </summary>
         Task<OriginalMatchingAlgorithmResultSet> FetchMatchingResultSet(DebugSearchResultsRequest request);
+
+        /// <summary>
+        /// Sets donors as unavailable for search in the active matching algorithm db.
+        /// </summary>
+        Task SetDonorsAsUnavailableForSearch(IEnumerable<string> externalDonorCodes);
     }
 
     /// <inheritdoc cref="IMatchingAlgorithmFunctionsClient" />
@@ -55,6 +59,12 @@ namespace Atlas.Debug.Client.Clients
         public async Task<OriginalMatchingAlgorithmResultSet> FetchMatchingResultSet(DebugSearchResultsRequest request)
         {
             return await PostRequest<DebugSearchResultsRequest, OriginalMatchingAlgorithmResultSet>("debug/matching/resultSet", request);
+        }
+
+        /// <inheritdoc />
+        public async Task SetDonorsAsUnavailableForSearch(IEnumerable<string> externalDonorCodes)
+        {
+            await PostRequest("debug/donors/makeUnavailableForSearch", externalDonorCodes);
         }
     }
 }

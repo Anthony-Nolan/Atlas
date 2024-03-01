@@ -23,10 +23,14 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
     {
         private const string RoutePrefix = $"{RouteConstants.DebugRoutePrefix}/donors/";
         private readonly IDonorReadRepository donorReadRepository;
+        private readonly IDonorImportRepository donorImportRepository;
 
-        public DonorFunctions(IDonorReadRepository donorReadRepository)
+        public DonorFunctions(
+            IDonorReadRepository donorReadRepository,
+            IDonorImportRepository donorImportRepository)
         {
             this.donorReadRepository = donorReadRepository;
+            this.donorImportRepository = donorImportRepository;
         }
 
         [FunctionName(nameof(GetDonors))]
@@ -55,6 +59,18 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
             var donors = await donorReadRepository.GetExternalDonorCodes(registryCode, DatabaseDonorType.Adult);
             var cords = await donorReadRepository.GetExternalDonorCodes(registryCode, DatabaseDonorType.Cord);
             return new JsonResult(donors.Concat(cords));
+        }
+
+        [FunctionName(nameof(DeleteDonors))]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        public async Task DeleteDonors(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = RoutePrefix + "delete")]
+            [RequestBodyType(typeof(string[]), "External donor codes")]
+            HttpRequest request)
+        {
+            var donorCodes = await request.DeserialiseRequestBody<string[]>();
+            var atlasIds = await donorReadRepository.GetDonorIdsByExternalDonorCodes(donorCodes);
+            await donorImportRepository.DeleteDonorBatch(atlasIds.Values.ToList());
         }
 
         [FunctionName(nameof(GetRandomDonors))]

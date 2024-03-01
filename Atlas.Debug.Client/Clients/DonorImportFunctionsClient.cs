@@ -44,6 +44,13 @@ namespace Atlas.Debug.Client.Clients
         /// Get external donor codes by registry.
         /// </summary>
         Task<IEnumerable<string>> GetExternalDonorCodesByRegistry(string registryCode);
+
+        /// <summary>
+        /// Delete donors from donor store by external donor codes.
+        /// Note: this change will NOT be propagated to the matching algorithm db.
+        /// Donors have to be made unavailable for search by calling <see cref="MatchingAlgorithmFunctionsClient.SetDonorsAsUnavailableForSearch"/>.
+        /// </summary>
+        Task DeleteDonors(IEnumerable<string> externalDonorCodes);
     }
 
     /// <inheritdoc cref="IDonorImportFunctionsClient" />
@@ -88,6 +95,12 @@ namespace Atlas.Debug.Client.Clients
         public async Task<IEnumerable<string>> GetExternalDonorCodesByRegistry(string registryCode)
         {
             return await GetRequest<IEnumerable<string>>($"debug/donors/{registryCode}/externalDonorCodes");
+        }
+
+        /// <inheritdoc />
+        public async Task DeleteDonors(IEnumerable<string> externalDonorCodes)
+        {
+            await PostRequest("debug/donors/delete", externalDonorCodes);
         }
     }
 }

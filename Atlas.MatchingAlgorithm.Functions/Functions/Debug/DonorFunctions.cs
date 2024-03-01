@@ -2,6 +2,7 @@
 using Atlas.Common.Utils.Http;
 using Atlas.Debug.Client.Models.DonorImport;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
+using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Functions.Models.Debug;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
@@ -20,10 +21,12 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
     public class DonorFunctions
     {
         private readonly IDonorInspectionRepository inspectionRepository;
+        private readonly IDonorUpdateRepository donorUpdateRepository;
 
         public DonorFunctions(IActiveRepositoryFactory activeRepositoryFactory)
         {
             inspectionRepository = activeRepositoryFactory.GetDonorInspectionRepository();
+            donorUpdateRepository = activeRepositoryFactory.GetDonorUpdateRepository();
         }
 
         [FunctionName(nameof(GetAvailableDonorsFromActiveDb))]
@@ -41,6 +44,18 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
                     externalDonorCodes, 
                     donors.Select(d => d.ToDonorDebugInfo()).ToList()
                     ));
+        }
+
+        [FunctionName(nameof(SetDonorsAsUnavailableForSearch))]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        public async Task SetDonorsAsUnavailableForSearch(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/donors/makeUnavailableForSearch")]
+            [RequestBodyType(typeof(string[]), "External Donor Codes")]
+            HttpRequest request)
+        {
+            var externalDonorCodes = await request.DeserialiseRequestBody<string[]>();
+            var donors = await inspectionRepository.GetAvailableDonorsByExternalDonorCodes(externalDonorCodes);
+            await donorUpdateRepository.SetDonorBatchAsUnavailableForSearch(donors.Select(d => d.DonorId));
         }
     }
 }
