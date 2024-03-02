@@ -1,21 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using Atlas.Common.Debugging;
 using Atlas.Common.Utils.Http;
+using Atlas.Debug.Client.Models.DonorImport;
+using Atlas.DonorImport.Data.Models;
+using Atlas.DonorImport.Data.Repositories;
+using Atlas.DonorImport.Functions.Models.Debug;
+using Atlas.DonorImport.Models;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Atlas.DonorImport.Data.Models;
-using Atlas.DonorImport.Data.Repositories;
-using Atlas.DonorImport.Functions.Models.Debug;
-using Atlas.DonorImport.Models;
-using Atlas.Common.Debugging;
-using Atlas.Debug.Client.Models.DonorImport;
 
 namespace Atlas.DonorImport.Functions.Functions.Debug
 {
@@ -49,16 +51,31 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
                 ));
         }
 
+        /// <summary>
+        /// <paramref name="updatedBeforeDate"/> is optional, and if provided, must be encoded as "yyyyMMdd".
+        /// It is a non-inclusive filter - only donors updated before the given date will be returned.
+        /// </summary>
         [FunctionName(nameof(GetDonorCodesByRegistry))]
         [ProducesResponseType(typeof(IEnumerable<string>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetDonorCodesByRegistry(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = RoutePrefix + "{registryCode}/externalDonorCodes")]
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = RoutePrefix + "{registryCode}/externalDonorCodes/{updatedBeforeDate?}")]
             HttpRequest request,
-            string registryCode)
+            string registryCode,
+            string updatedBeforeDate = null)
         {
             var donors = await donorReadRepository.GetExternalDonorCodes(registryCode, DatabaseDonorType.Adult);
             var cords = await donorReadRepository.GetExternalDonorCodes(registryCode, DatabaseDonorType.Cord);
-            return new JsonResult(donors.Concat(cords));
+            var allDonors = donors.Concat(cords);
+
+            if (updatedBeforeDate == null)
+            {
+                return new JsonResult(allDonors);
+            }
+
+            var dateTime = DateTime.ParseExact(updatedBeforeDate, "yyyyMMdd", CultureInfo.InvariantCulture);
+            var donorsUpdatedSince = await donorReadRepository.GetDonorIdsUpdatedSince(dateTime);
+            var donorsUpdatedBefore = allDonors.Where(d => !donorsUpdatedSince.ContainsKey(d));
+            return new JsonResult(donorsUpdatedBefore);
         }
 
         [FunctionName(nameof(DeleteDonors))]
