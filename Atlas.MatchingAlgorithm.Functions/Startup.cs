@@ -51,12 +51,11 @@ namespace Atlas.MatchingAlgorithm.Functions
                 ConnectionStringReader("SqlB"), 
                 ConnectionStringReader("DonorSql"));
 
-            RegisterLogQueryClient(builder.Services, builder.GetContext().Configuration);
-
             builder.Services.RegisterDebugServices(
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<AzureStorageSettings>());
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<AzureAuthenticationSettings>());
         }
 
         /// <summary>
@@ -92,20 +91,5 @@ namespace Atlas.MatchingAlgorithm.Functions
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
 
         }
-
-        private static void RegisterLogQueryClient(IServiceCollection services, IConfiguration config)
-        {
-            services.AddAzureClients(clientBuilder =>
-            {
-                var authSetting = config.GetSection("AzureManagement:Authentication").Get<AzureAuthenticationSettings>();
-                clientBuilder.UseCredential(new ClientSecretCredential(
-                    tenantId: authSetting.TenantId,
-                    clientId: authSetting.ClientId,
-                    clientSecret: authSetting.ClientSecret));
-
-                clientBuilder.AddLogsQueryClient();
-            });
-        }
-
     }
 }
