@@ -15,6 +15,7 @@
     <ItemGroup>
       <PackageReference Include="AsyncEnumerator" Version="4.0.2" />
       <PackageReference Include="AutoMapper" Version="8.1.1" />
+      <PackageReference Include="Azure.Monitor.Query" Version="1.2.0" />
       <PackageReference Include="EnumStringValues" Version="4.0.2" />
       <PackageReference Include="FluentValidation" Version="8.4.0" />
       <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4">
@@ -26,6 +27,7 @@
       <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.14.0" />
       <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
       <PackageReference Include="Microsoft.Azure.ServiceBus" Version="5.2.0" />
+      <PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.2" />
       <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.1" />
       <PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="6.1.0" />
       <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
