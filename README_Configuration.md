@@ -91,6 +91,7 @@ Most Atlas functions apps run on a shared service plan, which will also impact t
 | MATCHING-DATA-REFRESH-DB-SIZE-ACTIVE | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | DataRefresh-ActiveDatabaseSize | Determines the size (in scale, not bytes) of the active matching database. | 
 | REPEAT-SEARCH-MATCHING-MAX-CONCURRENT-PROCESSES-PER-INSTANCE | ATLAS-REPEAT-SEARCH-FUNCTION |AzureFunctionsJobHost--extensions--serviceBus--messageHandlerOptions--maxConcurrentCalls| Same as the similar setting above, but for the repeat search module. Note that when repeat searches are run concurrently with first time searches, the database should be able to handle the max concurrent load of *both* apps.  |
 | REPEAT-SEARCH-MATCHING-MAX-SCALE-OUT | ATLAS-REPEAT-SEARCH-FUNCTION | WEBSITE-MAX-DYNAMIC-APPLICATION-SCALE-OUT | Same as the similar setting above, but for the repeat search module. Note that when repeat searches are run concurrently with first time searches, the database should be able to handle the max concurrent load of *both* apps. |
+| AZURE-TENANT-ID | ATLAS-MATCHING-ALGORITHM-FUNCTIONS  | Tenant id used for authenticating with Azure via OAuth, when querying log analytics workspace from code. Expected to be domain name or GUID. Currently used only for debug endpoint to query application insigths logs |
 
 
 ### Match Prediction Algorithm

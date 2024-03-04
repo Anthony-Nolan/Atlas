@@ -67,7 +67,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             
             return new ContentResult
             {
-                Content = output.ToString(),
+                Content = JToken.FromObject(output).ToString(), // Serializing in human friendly way
                 StatusCode = StatusCodes.Status200OK,
                 ContentType = ContentType.ApplicationJson.ToString()
             };

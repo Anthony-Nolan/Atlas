@@ -1,6 +1,9 @@
-﻿using Atlas.MatchingAlgorithm.Settings.Azure;
+﻿using Atlas.Debug.Client.Models.HlaExpansionFailures;
+using Atlas.MatchingAlgorithm.Settings.Azure;
 using Azure.Monitor.Query;
+using Azure.Monitor.Query.Models;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -17,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Services.Debug
         /// </summary>
         /// <param name="daysToQuery"></param>
         /// <returns></returns>
-        public Task<object> Query(int daysToQuery);
+        public Task<IEnumerable<HlaExpansionFailure>> Query(int daysToQuery);
     }
 
     public class HlaExpansionFailuresService : IHlaExpansionFailuresService
@@ -48,28 +51,21 @@ namespace Atlas.MatchingAlgorithm.Services.Debug
             this.azureMonitoringSettings = azureMonitoringSettings.Value;
         }
 
-        public async Task<object> Query(int daysToQuery)
+        public async Task<IEnumerable<HlaExpansionFailure>> Query(int daysToQuery)
         {
             var response = await logsQueryClient.QueryWorkspaceAsync(azureMonitoringSettings.WorkspaceId, HlaExpansionFailuresQuery, new QueryTimeRange(TimeSpan.FromDays(daysToQuery)));
             var result = response.Value;
-            var output = new JArray();
 
-            foreach (var row in result.Table.Rows)
-            {
-                var outputRow = new JObject();
-
-                foreach (var (name, value) in result.Table.Columns.Select(col => (name: col.Name, value: row[col.Name])))
-                {
-                    outputRow.Add(
-                        name,
-                        value is BinaryData binaryData ? JToken.FromObject(binaryData.ToString()) : JToken.FromObject(value));
-                }
-
-
-                output.Add(outputRow);
-            }
-
-            return output;
+            return result.Table.Rows.Select(MapHlaExpansionFailureFailure);
         }
+
+
+        private static HlaExpansionFailure MapHlaExpansionFailureFailure(LogsTableRow input) => new HlaExpansionFailure
+        {
+            DonorCount = (long)input[nameof(HlaExpansionFailure.DonorCount)],
+            ExceptionType = input[nameof(HlaExpansionFailure.ExceptionType)].ToString(),
+            ExternalDonorCodes = JsonConvert.DeserializeObject<string[]>(input[nameof(HlaExpansionFailure.ExternalDonorCodes)].ToString()),
+            InvalidHLA = (string)input[nameof(HlaExpansionFailure.InvalidHLA)]
+        };
     }
 }
