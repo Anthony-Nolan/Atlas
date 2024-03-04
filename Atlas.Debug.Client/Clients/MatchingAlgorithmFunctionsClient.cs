@@ -6,6 +6,7 @@ using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Debug.Client.Models.DonorImport;
 using Atlas.Debug.Client.Models.SearchResults;
 using Atlas.Debug.Client.Models.ServiceBus;
+using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 
 namespace Atlas.Debug.Client.Clients
 {
@@ -33,6 +34,13 @@ namespace Atlas.Debug.Client.Clients
         /// Sets donors as unavailable for search in the active matching algorithm db.
         /// </summary>
         Task SetDonorsAsUnavailableForSearch(IEnumerable<string> externalDonorCodes);
+
+        /// <summary>
+        /// Scores a batch of donors via production endpoint on the matching algorithm app.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<IEnumerable<DonorScoringResult>> ScoreBatch(BatchScoringRequest request);
     }
 
     /// <inheritdoc cref="IMatchingAlgorithmFunctionsClient" />
@@ -65,6 +73,12 @@ namespace Atlas.Debug.Client.Clients
         public async Task SetDonorsAsUnavailableForSearch(IEnumerable<string> externalDonorCodes)
         {
             await PostRequest("debug/donors/makeUnavailableForSearch", externalDonorCodes);
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<DonorScoringResult>> ScoreBatch(BatchScoringRequest request)
+        {
+            return await PostRequest<BatchScoringRequest, IEnumerable<DonorScoringResult>>("ScoreBatch", request);
         }
     }
 }
