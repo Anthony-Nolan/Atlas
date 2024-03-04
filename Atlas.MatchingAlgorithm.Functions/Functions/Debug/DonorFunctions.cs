@@ -5,12 +5,19 @@ using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Functions.Models.Debug;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+using Atlas.MatchingAlgorithm.Services.Debug;
+using Atlas.MatchingAlgorithm.Settings.Azure;
+using Azure.Core;
+using Azure.Monitor.Query;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -21,11 +28,13 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
     public class DonorFunctions
     {
         private readonly IDonorInspectionRepository inspectionRepository;
+        private readonly IHlaExpansionFailuresService hlaExpansionFailuresService;
         private readonly IDonorUpdateRepository donorUpdateRepository;
 
-        public DonorFunctions(IActiveRepositoryFactory activeRepositoryFactory)
+        public DonorFunctions(IActiveRepositoryFactory activeRepositoryFactory, IHlaExpansionFailuresService hlaExpansionFailuresService)
         {
             inspectionRepository = activeRepositoryFactory.GetDonorInspectionRepository();
+            this.hlaExpansionFailuresService = hlaExpansionFailuresService;
             donorUpdateRepository = activeRepositoryFactory.GetDonorUpdateRepository();
         }
 
@@ -44,6 +53,27 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
                     externalDonorCodes, 
                     donors.Select(d => d.ToDonorDebugInfo()).ToList()
                     ));
+        }
+
+        [FunctionName(nameof(GetHlaExpansionFailures))]
+        public async Task<IActionResult> GetHlaExpansionFailures(
+            [HttpTrigger(
+                AuthorizationLevel.Function,
+                "get",
+                Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(GetHlaExpansionFailures)}/" + "{daysToQuery?}"
+                )]
+            HttpRequest request,
+            int? daysToQuery
+        )
+        {
+            var output = await hlaExpansionFailuresService.Query(daysToQuery ?? 14);
+            
+            return new ContentResult
+            {
+                Content = output.ToString(),
+                StatusCode = StatusCodes.Status200OK,
+                ContentType = ContentType.ApplicationJson.ToString()
+            };
         }
 
         [FunctionName(nameof(SetDonorsAsUnavailableForSearch))]

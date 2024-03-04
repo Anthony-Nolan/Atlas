@@ -47,6 +47,8 @@ using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Azure.Identity;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -143,7 +145,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings
+            )
         {
             services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>();
 
@@ -170,6 +174,23 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 var settings = fetchAzureStorageSettings(sp);
                 return new DebugResultsDownloader(settings.SearchResultsBlobContainer, sp.GetService<IBlobDownloader>());
             });
+
+            services.AddAzureClients(clientBuilder =>
+            {
+                clientBuilder.UseCredential(sp => 
+                {
+                    var authSetting = fetchAzureAuthenticationSettings(sp);
+
+                    return new ClientSecretCredential(
+                        tenantId: authSetting.TenantId,
+                        clientId: authSetting.ClientId,
+                        clientSecret: authSetting.ClientSecret);
+                });
+
+                clientBuilder.AddLogsQueryClient();
+            });
+
+            services.AddTransient<IHlaExpansionFailuresService, HlaExpansionFailuresService>();
         }
 
         /// <summary>

@@ -14,52 +14,23 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.MatchingAlgorithm.Functions.Models.Debug;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Settings.Azure;
-using Azure.Core;
-using Azure.Monitor.Query;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
 {
     public class HlaMetadataDictionaryFunctions //TODO: ATLAS-262 - migrate to new project
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
-        private readonly LogsQueryClient logsQueryClient;
-        private readonly AzureMonitoringSettings azureMonitoringSettings;
-
-        private const string HlaExpansionFailuresQuery = @"
-            AppEvents
-            | where Name startswith ""HLA Expansion""
-            | extend
-                DonorInfo = parse_json(tostring(Properties[""DonorInfo""])),
-                Locus = tostring(Properties[""Locus""]),
-                HlaName = tostring(Properties[""HlaName""])
-            | distinct
-                InvalidHLA = strcat(Locus, HlaName),
-                ExternalDonorCode = tostring(DonorInfo[""ExternalDonorCode""]),
-                ExceptionType = tostring(Properties[""InnerExceptionType""])
-            | summarize
-                ExceptionType = make_list(ExceptionType, 10)[0],
-                ExternalDonorCodes = make_list(ExternalDonorCode, 1000),
-                DonorCount = count() by InvalidHLA
-            | order by DonorCount desc";
 
         public HlaMetadataDictionaryFunctions(
             IHlaMetadataDictionaryFactory factory,
-            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
-            LogsQueryClient logsQueryClient,
-            IOptions<AzureMonitoringSettings> azureMonitoringSettings)
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
         {
             hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
-            this.logsQueryClient = logsQueryClient;
-            this.azureMonitoringSettings = azureMonitoringSettings.Value;
         }
 
         [FunctionName(nameof(ConvertHla))]
@@ -147,44 +118,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             {
                 throw new AtlasHttpException(HttpStatusCode.BadRequest, "Failed to retrieve serology to allele mappings.", ex);
             }
-        }
-
-        [FunctionName(nameof(GetHlaExpansionFailures))]
-        public async Task<IActionResult> GetHlaExpansionFailures(
-            [HttpTrigger(
-            AuthorizationLevel.Function,
-            "get",
-            Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(GetHlaExpansionFailures)}/" + "{daysToQuery?}"
-            )]
-            HttpRequest request,
-            int? daysToQuery
-            )
-        {
-            var response = await logsQueryClient.QueryWorkspaceAsync(azureMonitoringSettings.WorkspaceId, HlaExpansionFailuresQuery, new QueryTimeRange(TimeSpan.FromDays(daysToQuery ?? 14)));
-            var result = response.Value;
-            var output = new JArray();
-
-            foreach (var row in result.Table.Rows) 
-            {
-                var outputRow = new JObject();
-
-                foreach (var (name, value) in result.Table.Columns.Select(col => (name: col.Name, value: row[col.Name])))
-                {
-                    outputRow.Add(
-                        name, 
-                        value is BinaryData binaryData ? JToken.FromObject(binaryData.ToString()) : JToken.FromObject(value));
-                }
-
-
-                output.Add(outputRow);
-            }
-            
-            return new ContentResult 
-            { 
-                Content = output.ToString(), 
-                StatusCode = StatusCodes.Status200OK, 
-                ContentType = ContentType.ApplicationJson.ToString() 
-            };
         }
     }
 }
