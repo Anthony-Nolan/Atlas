@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Injection = Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection.DependencyInjection;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 {
@@ -27,29 +28,25 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         private IDonorManagementLogRepository donorManagementLogRepository;
 
         private TransientDatabase activeDb;
-        private long expectedSequenceNumber;
 
 
         [SetUp]
         public async Task SetUp()
         {
-            service = DependencyInjection.DependencyInjection.Provider.GetService<IDonorManagementService>();
-            donorManagementLogRepository = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>().GetDonorManagementLogRepository();
+            service = Injection.Provider.GetService<IDonorManagementService>();
+            donorManagementLogRepository = Injection.Provider.GetService<IActiveRepositoryFactory>().GetDonorManagementLogRepository();
 
             DatabaseManager.ClearTransientDatabases();
 
-            var update = new DonorInfoBuilder(DonorId).Build().ToUpdate();
-            var dbProvider = DependencyInjection.DependencyInjection.Provider.GetService<IActiveDatabaseProvider>();
+            var dbProvider = Injection.Provider.GetService<IActiveDatabaseProvider>();
             activeDb = dbProvider.GetActiveDatabase();
-            expectedSequenceNumber = update.UpdateSequenceNumber;
-
-            await service.ApplyDonorUpdatesToDatabase(new[] { update }, activeDb, FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion, false);
         }
 
 
         [Test]
         public async Task ApplyDonorUpdatesToDatabase_WhenDonorHlaIsInvalid_DonorManagementLogIsntUpdated()
         {
+            var expectedSequenceNumber = await AddUpdateDatabaseWithDonor();
             var update = new DonorInfoBuilder(DonorId)
                 .WithHlaAtLocus(Atlas.Common.Public.Models.GeneticData.Locus.A, Atlas.Common.Public.Models.GeneticData.LocusPosition.One, "*01:ZZZZZZZ")
                 .Build()
@@ -63,6 +60,16 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
             var logEntry = (await donorManagementLogRepository.GetDonorManagementLogBatch(new[] { DonorId })).Single();
             logEntry.SequenceNumberOfLastUpdate.Should().Be(expectedSequenceNumber);
+        }
+
+        private async Task<long> AddUpdateDatabaseWithDonor()
+        {
+            var update = new DonorInfoBuilder(DonorId).Build().ToUpdate();
+            var sequenceNumber = update.UpdateSequenceNumber;
+
+            await service.ApplyDonorUpdatesToDatabase(new[] { update }, activeDb, FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion, false);
+
+            return sequenceNumber;
         }
     }
 }
