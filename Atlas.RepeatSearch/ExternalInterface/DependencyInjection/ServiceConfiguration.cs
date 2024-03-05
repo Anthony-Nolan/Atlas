@@ -134,18 +134,12 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             });
 
             services.RegisterDebugLogger(fetchApplicationInsightsSettings);
-
             services.AddScoped<IBlobDownloader, BlobDownloader>(sp =>
             {
                 var settings = fetchAzureStorageSettings(sp);
                 return new BlobDownloader(settings.ConnectionString, sp.GetService<IDebugLogger>());
             });
-
-            services.AddScoped<IDebugResultsDownloader, DebugResultsDownloader>(sp =>
-            {
-                var settings = fetchAzureStorageSettings(sp);
-                return new DebugResultsDownloader(settings.MatchingResultsBlobContainer, sp.GetService<IBlobDownloader>());
-            });
+            services.AddScoped<IDebugResultsDownloader, DebugResultsDownloader>();
         }
     }
 }

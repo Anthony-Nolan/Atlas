@@ -58,8 +58,7 @@ namespace Atlas.Functions.Functions.Debug
             try
             {
                 var debugRequest = await request.DeserialiseRequestBody<DebugSearchResultsRequest>();
-                var resultSet = await resultsDownloader.DownloadResultSet<OriginalSearchResultSet, SearchResult>(
-                    debugRequest.SearchResultFileName, debugRequest.BatchFolderName);
+                var resultSet = await resultsDownloader.DownloadResultSet<OriginalSearchResultSet, SearchResult>(debugRequest);
                 return new JsonResult(resultSet);
             }
             catch (BlobNotFoundException ex)

@@ -171,7 +171,7 @@ namespace Atlas.Functions
             {
                 var settings = sp.GetService<IOptions<Settings.AzureStorageSettings>>();
                 var downloader = new BlobDownloader(settings.Value.MatchingConnectionString, sp.GetService<IDebugLogger>());
-                return new DebugResultsDownloader(settings.Value.SearchResultsBlobContainer, downloader);
+                return new DebugResultsDownloader(downloader);
             });
         }
     }

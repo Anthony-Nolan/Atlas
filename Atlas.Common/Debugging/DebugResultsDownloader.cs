@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.Debug.Client.Models.SearchResults;
 
 namespace Atlas.Common.Debugging
 {
@@ -12,41 +13,34 @@ namespace Atlas.Common.Debugging
     public interface IDebugResultsDownloader
     {
         /// <summary>
-        /// If <paramref name="batchFolder"/> is not null, results will be loaded from all files within this folder.
-        /// Otherwise, results will be loaded along with search summary from <paramref name="searchResultFileName"/> file.
+        /// If batch folder is provided, results will be loaded from all files within this folder.
+        /// Otherwise, results will be loaded along with search summary from the main search results file.
         /// </summary>
-        public Task<TResultSet> DownloadResultSet<TResultSet, TResult>(string searchResultFileName, string batchFolder = null)
+        public Task<TResultSet> DownloadResultSet<TResultSet, TResult>(DebugSearchResultsRequest request)
             where TResultSet : ResultSet<TResult>
             where TResult : Result;
     }
 
     public class DebugResultsDownloader : IDebugResultsDownloader
     {
-        private readonly string searchResultBlobContainer;
         private readonly IBlobDownloader blobDownloader;
 
-        public DebugResultsDownloader(string searchResultBlobContainer, IBlobDownloader blobDownloader)
+        public DebugResultsDownloader(IBlobDownloader blobDownloader)
         {
-            this.searchResultBlobContainer = searchResultBlobContainer;
             this.blobDownloader = blobDownloader;
         }
 
-        public async Task<TResultSet> DownloadResultSet<TResultSet, TResult>(string searchResultFileName, string batchFolder = null)
+        public async Task<TResultSet> DownloadResultSet<TResultSet, TResult>(DebugSearchResultsRequest request)
             where TResultSet : ResultSet<TResult> 
             where TResult : Result
         {
-            var resultSet = await DownloadResultSetFile<TResultSet>(searchResultFileName);
+            var resultSet = await blobDownloader.Download<TResultSet>(request.SearchResultBlobContainer, request.SearchResultFileName);
 
-            resultSet.Results ??= !string.IsNullOrEmpty(batchFolder)
-                ? await blobDownloader.DownloadFolderContents<TResult>(searchResultBlobContainer, batchFolder)
+            resultSet.Results ??= !string.IsNullOrEmpty(request.BatchFolderName)
+                ? await blobDownloader.DownloadFolderContents<TResult>(request.SearchResultBlobContainer, request.BatchFolderName)
                 : new List<TResult>();
 
             return resultSet;
-        }
-
-        private async Task<TResultSet> DownloadResultSetFile<TResultSet>(string searchResultFileName)
-        {
-            return await blobDownloader.Download<TResultSet>(searchResultBlobContainer, searchResultFileName);
         }
     }
 }
