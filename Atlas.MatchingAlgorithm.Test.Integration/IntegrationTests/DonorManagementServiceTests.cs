@@ -53,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
                 .Build()
                 .ToUpdate();
 
-            update.UpdateSequenceNumber = expectedSequenceNumber;
+            update.UpdateSequenceNumber = expectedSequenceNumber + 1;
 
             // Act
             await service.ApplyDonorUpdatesToDatabase(new[] { update }, activeDb, FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion, false);
