@@ -29,13 +29,17 @@
     "Debug:Matching:ApiKey": "test-key",
     "Debug:Matching:RequestTimeOut": "00:10:00",
 
-    "Debug:TopLevel:BaseUrl": "http://localhost:7080/api/",
-    "Debug:TopLevel:ApiKey": "test-key",
-    "Debug:TopLevel:RequestTimeOut": "00:11:00",
-
     "Debug:PublicApi:BaseUrl": "http://localhost:7071/api/",
     "Debug:PublicApi:ApiKey": "test-key",
-    "Debug:PublicApi:RequestTimeOut": "00:12:00"
+    "Debug:PublicApi:RequestTimeOut": "00:11:00",
+
+    "Debug:RepeatSearch:BaseUrl": "http://localhost:7087/api/",
+    "Debug:RepeatSearch:ApiKey": "test-key",
+    "Debug:RepeatSearch:RequestTimeOut": "00:12:00",
+
+    "Debug:TopLevel:BaseUrl": "http://localhost:7080/api/",
+    "Debug:TopLevel:ApiKey": "test-key",
+    "Debug:TopLevel:RequestTimeOut": "00:13:00"
   },
   "ConnectionStrings": {
     "ActiveMatchingSql": "Data Source=(local);Initial Catalog=AtlasMatchingA;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",

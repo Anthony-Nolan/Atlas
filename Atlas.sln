@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.3.32825.248
+VisualStudioVersion = 17.8.34525.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E5979876-0294-475D-8970-A384B2DDEB8C}"
 	ProjectSection(SolutionItems) = preProject
@@ -106,7 +106,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Readmes", "Readmes", "{122DA7C4-50ED-45A5-97D9-9CFC3391A87B}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
-		README_Specifications.md = README_Specifications.md
+		README_Configuration.md = README_Configuration.md
+		README_Deployment.md = README_Deployment.md
+		README_DevelopmentStartUpGuide.md = README_DevelopmentStartUpGuide.md
+		README_Integration.md = README_Integration.md
+		README_Support.md = README_Support.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ManualTesting", "ManualTesting", "{EF1B180D-37D3-4A7A-9F2D-0E7DF3F14D36}"
@@ -148,21 +152,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Validation", "Validation", "{C144C94A-45FE-48D0-9200-5C97F531AF00}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Development", "Development", "{58156A0D-2C65-48B6-8E69-3E3F58C893B9}"
-	ProjectSection(SolutionItems) = preProject
-		README_ArchitecturalOverview.md = README_ArchitecturalOverview.md
-		README_Contribution_Versioning.md = README_Contribution_Versioning.md
-		README_DevelopmentSettings.md = README_DevelopmentSettings.md
-		README_DevelopmentStartUpGuide.md = README_DevelopmentStartUpGuide.md
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InstallationAndUsage", "InstallationAndUsage", "{CC374510-5C1B-435D-9F9F-37E943D9A840}"
-	ProjectSection(SolutionItems) = preProject
-		README_Configuration.md = README_Configuration.md
-		README_Deployment.md = README_Deployment.md
-		README_Integration.md = README_Integration.md
-		README_Maintenance.md = README_Maintenance.md
-		README_Support.md = README_Support.md
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.Common.Public.Models", "Atlas.Common.Public.Models\Atlas.Common.Public.Models.csproj", "{01BA6FE0-B631-4262-A8B8-9EC27636A65D}"
 EndProject
@@ -516,9 +507,9 @@ Global
 		{506F18FC-DAF2-4DE5-B853-F50E5638EC11} = {86922A44-CA43-4DC8-A6A0-3973117C77EB}
 		{DA4729BC-8829-474F-9DDC-257F61AC07BC} = {DCB9E81B-16A1-4D0D-BB02-42A138B4D078}
 		{122DA7C4-50ED-45A5-97D9-9CFC3391A87B} = {E5979876-0294-475D-8970-A384B2DDEB8C}
-		{2D4D9130-B6B4-49CD-BFB8-FB2779277220} = {9D6BFC30-2117-429B-8464-F0C067812E82}
+		{2D4D9130-B6B4-49CD-BFB8-FB2779277220} = {EF1B180D-37D3-4A7A-9F2D-0E7DF3F14D36}
 		{F1FC0799-415E-405B-B2DB-24AE6204F508} = {9D6BFC30-2117-429B-8464-F0C067812E82}
-		{E9E4EFDF-7AAC-4881-89EB-AC884D257748} = {9D6BFC30-2117-429B-8464-F0C067812E82}
+		{E9E4EFDF-7AAC-4881-89EB-AC884D257748} = {EF1B180D-37D3-4A7A-9F2D-0E7DF3F14D36}
 		{AE342924-9AEF-4D6A-BE56-BBF137FF784E} = {EF1B180D-37D3-4A7A-9F2D-0E7DF3F14D36}
 		{C3E25C07-E1A5-4672-83FE-77E042E588E3} = {025C2DDA-6FBF-4323-ABE4-3468CD025FB1}
 		{32F284B6-5941-48A4-B1B9-C3E924D72E6B} = {025C2DDA-6FBF-4323-ABE4-3468CD025FB1}

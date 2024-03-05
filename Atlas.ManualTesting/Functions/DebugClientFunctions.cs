@@ -31,17 +31,20 @@ namespace Atlas.ManualTesting.Functions
         private readonly IMatchingAlgorithmFunctionsClient matchingClient;
         private readonly ITopLevelFunctionsClient topLevelClient;
         private readonly IPublicApiFunctionsClient publicApiClient;
+        private readonly IRepeatSearchFunctionsClient repeatSearchClient;
 
         public DebugClientFunctions(
             IDonorImportFunctionsClient donorImportClient, 
             ITopLevelFunctionsClient topLevelClient, 
             IMatchingAlgorithmFunctionsClient matchingClient,
-            IPublicApiFunctionsClient publicApiClient)
+            IPublicApiFunctionsClient publicApiClient,
+            IRepeatSearchFunctionsClient repeatSearchClient)
         {
             this.donorImportClient = donorImportClient;
             this.topLevelClient = topLevelClient;
             this.matchingClient = matchingClient;
             this.publicApiClient = publicApiClient;
+            this.repeatSearchClient = repeatSearchClient;
         }
 
         [FunctionName(nameof(TestDonorImportDebugClientTest))]
@@ -98,6 +101,17 @@ namespace Atlas.ManualTesting.Functions
             {
                 return new StatusCodeResult(StatusCodes.Status500InternalServerError);
             }
+        }
+
+        [FunctionName(nameof(TestRepeatSearchDebugClientTest))]
+        public async Task<IActionResult> TestRepeatSearchDebugClientTest(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            HttpRequest request)
+        {
+            return new JsonResult(await repeatSearchClient.PeekMatchingResultNotifications(new PeekServiceBusMessagesRequest()
+            {
+                MessageCount = 10
+            }));
         }
 
         [FunctionName(nameof(HealthCheckTest))]
