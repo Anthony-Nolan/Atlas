@@ -36,6 +36,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Atlas.Debug.Client">
+        <HintPath>..\Atlas.Debug.Client\bin\Debug\net6.0\Atlas.Debug.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="Atlas.DonorImport.FileSchema.Models">
+        <HintPath>..\Atlas.Debug.Client\bin\Debug\net6.0\Atlas.DonorImport.FileSchema.Models.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Atlas.ManualTesting.Test" />
   </ItemGroup>
 

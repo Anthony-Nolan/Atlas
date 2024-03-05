@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Atlas.ManualTesting": {
+      "commandName": "Project",
+      "commandLineArgs": "host start --port 7088 --nodeDebugPort 5860"
+    }
+  }
+}

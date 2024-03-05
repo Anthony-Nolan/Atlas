@@ -1,11 +1,13 @@
-﻿using System;
-using Atlas.Client.Models.Search.Results;
+﻿using Atlas.Client.Models.Search.Results;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Caching;
+using Atlas.Common.Debugging;
 using Atlas.Common.ServiceBus;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Utils.Extensions;
+using Atlas.Debug.Client;
+using Atlas.Debug.Client.Models.Settings;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
@@ -20,8 +22,8 @@ using Atlas.ManualTesting.Settings;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
-using Atlas.Common.Debugging;
 
 namespace Atlas.ManualTesting.DependencyInjection
 {
@@ -39,6 +41,11 @@ namespace Atlas.ManualTesting.DependencyInjection
             );
             services.RegisterDatabaseServices(ConnectionStringReader("ActiveMatchingSql"), ConnectionStringReader("DonorImportSql"));
             services.RegisterLifeTimeScopedCacheTypes();
+            services.RegisterDebugClients(
+                OptionsReaderFor<DonorImportHttpFunctionSettings>(),
+                OptionsReaderFor<MatchingAlgorithmHttpFunctionSettings>(),
+                OptionsReaderFor<TopLevelHttpFunctionSettings>(),
+                OptionsReaderFor<PublicApiHttpFunctionSettings>());
         }
 
         private static void RegisterSettings(this IServiceCollection services)
@@ -50,6 +57,10 @@ namespace Atlas.ManualTesting.DependencyInjection
             services.RegisterAsOptions<ScoringSettings>("Scoring");
             services.RegisterAsOptions<SearchSettings>("Search");
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
+            services.RegisterAsOptions<DonorImportHttpFunctionSettings>("Debug:DonorImport");
+            services.RegisterAsOptions<MatchingAlgorithmHttpFunctionSettings>("Debug:Matching");
+            services.RegisterAsOptions<TopLevelHttpFunctionSettings>("Debug:TopLevel");
+            services.RegisterAsOptions<PublicApiHttpFunctionSettings>("Debug:PublicApi");
         }
 
         private static void RegisterServices(
