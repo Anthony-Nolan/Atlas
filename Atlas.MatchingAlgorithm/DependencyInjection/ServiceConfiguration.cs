@@ -175,6 +175,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 return new DebugResultsDownloader(settings.SearchResultsBlobContainer, sp.GetService<IBlobDownloader>());
             });
 
+            // Register azure App.Insights API client and configure EntraId's Client Secret authentification
+            // Another azure clients can be added here and they will share authentification configuration
             services.AddAzureClients(clientBuilder =>
             {
                 clientBuilder.UseCredential(sp => 

@@ -52,19 +52,19 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
                     ));
         }
 
-        [FunctionName(nameof(GetHlaExpansionFailures))]
-        public async Task<IActionResult> GetHlaExpansionFailures(
+        [FunctionName(nameof(HlaExpansionFailures))]
+        public async Task<IActionResult> HlaExpansionFailures(
             [HttpTrigger(
                 AuthorizationLevel.Function,
                 "get",
-                Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(GetHlaExpansionFailures)}/" + "{daysToQuery?}"
+                Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(HlaExpansionFailures)}/" + "{daysToQuery?}"
                 )]
             HttpRequest request,
             int? daysToQuery
         )
         {
             var output = await hlaExpansionFailuresService.Query(daysToQuery ?? 14);
-            
+
             return new ContentResult
             {
                 Content = JToken.FromObject(output).ToString(), // Serializing in human friendly way
