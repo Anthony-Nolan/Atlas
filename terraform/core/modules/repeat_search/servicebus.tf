@@ -19,6 +19,16 @@ resource "azurerm_servicebus_subscription" "audit-repeat-search-matching-results
   dead_lettering_on_message_expiration = false
 }
 
+resource "azurerm_servicebus_subscription" "debug-repeat-search-matching-results" {
+  name                                 = "debug"
+  topic_id                             = azurerm_servicebus_topic.repeat-search-matching-results-ready.id
+  auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
+  default_message_ttl                  = var.default_servicebus_settings.debug-subscription-ttl-expiry
+  lock_duration                        = var.default_servicebus_settings.default-read-lock
+  max_delivery_count                   = var.default_servicebus_settings.default-message-retries
+  dead_lettering_on_message_expiration = false
+}
+
 resource "azurerm_servicebus_subscription" "match-prediction-orchestration-repeat-search-results-ready" {
   name                                 = "match-prediction-orchestration"
   topic_id                             = azurerm_servicebus_topic.repeat-search-matching-results-ready.id

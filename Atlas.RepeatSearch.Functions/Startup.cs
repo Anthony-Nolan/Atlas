@@ -35,6 +35,10 @@ namespace Atlas.RepeatSearch.Functions
                 ConnectionStringReader("MatchingSqlB"),
                 ConnectionStringReader("DonorSql")
                 );
+            builder.Services.RegisterDebugServices(
+                OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<RepeatSearch.Settings.Azure.AzureStorageSettings>());
         }
 
         /// <summary>

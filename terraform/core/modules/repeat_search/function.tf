@@ -40,10 +40,10 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
     "MessagingServiceBus:RepeatSearchRequestsMaxDeliveryCount" = azurerm_servicebus_subscription.repeat-search-repeat-search-requests.max_delivery_count
     "MessagingServiceBus:RepeatSearchRequestsTopic"            = azurerm_servicebus_topic.repeat-search-requests.name
     "MessagingServiceBus:RepeatSearchMatchingResultsTopic"     = azurerm_servicebus_topic.repeat-search-matching-results-ready.name
-
-    "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
-    "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
-    "NotificationsServiceBus:NotificationsTopic" = var.servicebus_topics.notifications.name
+    "MessagingServiceBus:RepeatSearchResultsDebugSubscription" = azurerm_servicebus_subscription.debug-repeat-search-matching-results.name
+    "NotificationsServiceBus:AlertsTopic"                      = var.servicebus_topics.alerts.name
+    "NotificationsServiceBus:ConnectionString"                 = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:NotificationsTopic"               = var.servicebus_topics.notifications.name
 
     // maximum running instances of the algorithm = maximum_worker_count * maxConcurrentCalls (in host.json).
     // together, alongside the non-repeat matching processes, these must ensure that the number of allowed concurrent SQL connections to the matching SQL DB is not exceeded.

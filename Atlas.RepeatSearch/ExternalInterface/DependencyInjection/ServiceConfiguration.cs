@@ -1,23 +1,27 @@
-﻿using Atlas.Common.ApplicationInsights;
+﻿using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.AzureStorage.Blob;
+using Atlas.Common.Debugging;
 using Atlas.Common.Notifications;
+using Atlas.Common.ServiceBus;
 using Atlas.Common.Utils.Extensions;
+using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.RepeatSearch.Clients;
+using Atlas.RepeatSearch.Data.Context;
+using Atlas.RepeatSearch.Data.Repositories;
+using Atlas.RepeatSearch.Services.Debug;
+using Atlas.RepeatSearch.Services.ResultSetTracking;
 using Atlas.RepeatSearch.Services.Search;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Atlas.Common.AzureStorage.Blob;
-using Atlas.DonorImport.ExternalInterface.DependencyInjection;
-using Atlas.RepeatSearch.Data.Context;
-using Atlas.RepeatSearch.Data.Repositories;
-using Atlas.RepeatSearch.Services.ResultSetTracking;
 using ConnectionStrings = Atlas.RepeatSearch.Data.Settings.ConnectionStrings;
-using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 
 namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
 {
@@ -108,6 +112,40 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             services.AddScoped<IRepeatSearchValidator, RepeatSearchValidator>();
             services.AddScoped<IRepeatSearchDifferentialCalculator, RepeatSearchDifferentialCalculator>();
             services.AddScoped<IRepeatSearchMatchingFailureNotificationSender, RepeatSearchMatchingFailureNotificationSender>();
+        }
+
+        public static void RegisterDebugServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, Settings.Azure.AzureStorageSettings> fetchAzureStorageSettings
+            )
+        {
+            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>();
+
+            services.AddScoped<IServiceBusPeeker<MatchingResultsNotification>, MatchingResultNotificationsPeeker>(sp =>
+            {
+                var settings = fetchMessagingServiceBusSettings(sp);
+                return new MatchingResultNotificationsPeeker(
+                    sp.GetService<IMessageReceiverFactory>(),
+                    settings.ConnectionString,
+                    settings.RepeatSearchMatchingResultsTopic,
+                    settings.RepeatSearchResultsDebugSubscription);
+            });
+
+            services.RegisterDebugLogger(fetchApplicationInsightsSettings);
+
+            services.AddScoped<IBlobDownloader, BlobDownloader>(sp =>
+            {
+                var settings = fetchAzureStorageSettings(sp);
+                return new BlobDownloader(settings.ConnectionString, sp.GetService<IDebugLogger>());
+            });
+
+            services.AddScoped<IDebugResultsDownloader, DebugResultsDownloader>(sp =>
+            {
+                var settings = fetchAzureStorageSettings(sp);
+                return new DebugResultsDownloader(settings.MatchingResultsBlobContainer, sp.GetService<IBlobDownloader>());
+            });
         }
     }
 }
