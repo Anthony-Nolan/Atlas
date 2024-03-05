@@ -1,23 +1,20 @@
 ﻿using Atlas.Common.Debugging;
 using Atlas.Common.Utils.Http;
+using Atlas.Debug.Client.Models.ApplicationInsights;
 using Atlas.Debug.Client.Models.DonorImport;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Functions.Models.Debug;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Debug;
-using Atlas.MatchingAlgorithm.Settings.Azure;
-using Azure.Core;
-using Azure.Monitor.Query;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -56,6 +53,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
         }
 
         [FunctionName(nameof(HlaExpansionFailures))]
+        [ProducesResponseType(typeof(IEnumerable<HlaExpansionFailure>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> HlaExpansionFailures(
             [HttpTrigger(
                 AuthorizationLevel.Function,
@@ -68,12 +66,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
         {
             var output = await hlaExpansionFailuresService.Query(daysToQuery ?? 14);
 
-            return new ContentResult
-            {
-                Content = JToken.FromObject(output).ToString(), // Serializing in human friendly way
-                StatusCode = StatusCodes.Status200OK,
-                ContentType = ContentType.ApplicationJson.ToString()
-            };
+            return new JsonResult(output);
         }
 
         [FunctionName(nameof(SetDonorsAsUnavailableForSearch))]
