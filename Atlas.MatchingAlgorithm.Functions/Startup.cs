@@ -7,7 +7,9 @@ using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Azure.Identity;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -52,7 +54,8 @@ namespace Atlas.MatchingAlgorithm.Functions
             builder.Services.RegisterDebugServices(
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<AzureStorageSettings>());
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<AzureAuthenticationSettings>());
         }
 
         /// <summary>
@@ -77,6 +80,7 @@ namespace Atlas.MatchingAlgorithm.Functions
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<AzureAuthenticationSettings>("AzureManagement:Authentication");
             services.RegisterAsOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");
+            services.RegisterAsOptions<AzureMonitoringSettings>("AzureManagement:Monitoring");
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
             services.RegisterAsOptions<DonorManagementSettings>("DataRefresh:DonorManagement");

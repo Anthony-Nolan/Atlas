@@ -4,13 +4,17 @@ locals {
 
     "AzureFunctionsJobHost__extensions__serviceBus__messageHandlerOptions__maxConcurrentCalls" = var.MAX_CONCURRENT_SERVICEBUS_FUNCTIONS
 
-    "AzureManagement:Authentication:ClientId"                   = var.AZURE_CLIENT_ID
-    "AzureManagement:Authentication:ClientSecret"               = var.AZURE_CLIENT_SECRET
-    "AzureManagement:Authentication:OAuthBaseUrl"               = var.AZURE_OAUTH_BASEURL
+    "AzureManagement:Authentication:ClientId"     = var.AZURE_CLIENT_ID
+    "AzureManagement:Authentication:ClientSecret" = var.AZURE_CLIENT_SECRET
+    "AzureManagement:Authentication:OAuthBaseUrl" = var.AZURE_OAUTH_BASEURL
+    "AzureManagement:Authentication:TenantId"     = var.AZURE_TENANT_ID
+
     "AzureManagement:Database:ServerName"                       = var.sql_server.name
     "AzureManagement:Database:PollingRetryIntervalMilliseconds" = var.DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS
     "AzureManagement:Database:ResourceGroupName"                = var.resource_group.name
     "AzureManagement:Database:SubscriptionId"                   = var.general.subscription_id
+
+    "AzureManagement:Monitoring:WorkspaceId" = var.application_insights_workspace.workspace_id
 
     "AzureAppConfiguration:ConnectionString" = var.azure_app_configuration.primary_read_key[0].connection_string
 

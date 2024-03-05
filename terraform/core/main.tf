@@ -90,17 +90,18 @@ module "matching_algorithm" {
   default_servicebus_settings = local.service-bus
 
   // DI variables
-  application_insights      = azurerm_application_insights.atlas
-  azure_app_configuration   = azurerm_app_configuration.atlas_app_configuration
-  azure_storage             = azurerm_storage_account.azure_storage
-  donor_import_sql_database = azurerm_mssql_database.atlas-database-shared
-  elastic_app_service_plan  = azurerm_service_plan.atlas-elastic-plan
-  mac_import_table          = module.multiple_allele_code_lookup.storage_table
-  resource_group            = azurerm_resource_group.atlas_resource_group
-  servicebus_namespace      = azurerm_servicebus_namespace.general
-  shared_function_storage   = azurerm_storage_account.function_storage
-  sql_database_shared       = azurerm_mssql_database.atlas-database-shared
-  sql_server                = azurerm_mssql_server.atlas_sql_server
+  application_insights           = azurerm_application_insights.atlas
+  application_insights_workspace = azurerm_log_analytics_workspace.ai_workspace
+  azure_app_configuration        = azurerm_app_configuration.atlas_app_configuration
+  azure_storage                  = azurerm_storage_account.azure_storage
+  donor_import_sql_database      = azurerm_mssql_database.atlas-database-shared
+  elastic_app_service_plan       = azurerm_service_plan.atlas-elastic-plan
+  mac_import_table               = module.multiple_allele_code_lookup.storage_table
+  resource_group                 = azurerm_resource_group.atlas_resource_group
+  servicebus_namespace           = azurerm_servicebus_namespace.general
+  shared_function_storage        = azurerm_storage_account.function_storage
+  sql_database_shared            = azurerm_mssql_database.atlas-database-shared
+  sql_server                     = azurerm_mssql_server.atlas_sql_server
 
   servicebus_namespace_authorization_rules = {
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
@@ -119,6 +120,7 @@ module "matching_algorithm" {
   AZURE_CLIENT_ID                                  = var.AZURE_CLIENT_ID
   AZURE_CLIENT_SECRET                              = var.AZURE_CLIENT_SECRET
   AZURE_OAUTH_BASEURL                              = var.AZURE_OAUTH_BASEURL
+  AZURE_TENANT_ID                                  = var.AZURE_TENANT_ID
   DATA_REFRESH_AUTO_RUN                            = var.MATCHING_DATA_REFRESH_AUTO_RUN
   DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE                = var.MATCHING_DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE
   DATA_REFRESH_DB_AUTO_PAUSE_DORMANT               = var.MATCHING_DATA_REFRESH_DB_AUTO_PAUSE_DORMANT

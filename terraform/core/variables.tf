@@ -19,6 +19,11 @@ variable "AZURE_OAUTH_BASEURL" {
   description = "Base Url used for authenticating with Azure via OAuth, when managing Azure resources from code. Expected to be of form: 'https://login.microsoftonline.com/<domain>/oauth2/v2.0/token'"
 }
 
+variable "AZURE_TENANT_ID" {
+  type        = string
+  description = "Tenant id used for authenticating with Azure via OAuth, when querying log analytics workspace from code. Expected to be domain name or GUID"
+}
+
 variable "AZURE_SUBSCRIPTION_ID" {
   type        = string
   description = "ID of the Azure subscription into which the system will be deployed."
