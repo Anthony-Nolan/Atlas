@@ -45,7 +45,8 @@ namespace Atlas.ManualTesting.DependencyInjection
                 OptionsReaderFor<DonorImportHttpFunctionSettings>(),
                 OptionsReaderFor<MatchingAlgorithmHttpFunctionSettings>(),
                 OptionsReaderFor<TopLevelHttpFunctionSettings>(),
-                OptionsReaderFor<PublicApiHttpFunctionSettings>());
+                OptionsReaderFor<PublicApiHttpFunctionSettings>(),
+                OptionsReaderFor<RepeatSearchHttpFunctionSettings>());
         }
 
         private static void RegisterSettings(this IServiceCollection services)
@@ -59,6 +60,7 @@ namespace Atlas.ManualTesting.DependencyInjection
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DonorImportHttpFunctionSettings>("Debug:DonorImport");
             services.RegisterAsOptions<MatchingAlgorithmHttpFunctionSettings>("Debug:Matching");
+            services.RegisterAsOptions<RepeatSearchHttpFunctionSettings>("Debug:RepeatSearch");
             services.RegisterAsOptions<TopLevelHttpFunctionSettings>("Debug:TopLevel");
             services.RegisterAsOptions<PublicApiHttpFunctionSettings>("Debug:PublicApi");
         }
