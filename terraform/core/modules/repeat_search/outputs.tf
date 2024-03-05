@@ -12,6 +12,7 @@ output "service_bus" {
     repeat_search_matching_results_topic        = azurerm_servicebus_topic.repeat-search-matching-results-ready.name
     repeat_search_requests_topic                = azurerm_servicebus_topic.repeat-search-requests.name
     repeat_search_results_topic                 = azurerm_servicebus_topic.repeat-search-results-ready.name
+    repeat_search_results_debug_subscription    = azurerm_servicebus_subscription.debug-repeat-search-results.name
   }
 }
 

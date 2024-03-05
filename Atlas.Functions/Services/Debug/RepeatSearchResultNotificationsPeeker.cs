@@ -4,13 +4,13 @@ using Atlas.Common.ServiceBus;
 
 namespace Atlas.Functions.Services.Debug
 {
-    public interface ISearchResultNotificationsPeeker : IServiceBusPeeker<SearchResultsNotification>
+    public interface IRepeatSearchResultNotificationsPeeker : IServiceBusPeeker<SearchResultsNotification>
     {
     }
 
-    internal class SearchResultNotificationsPeeker : ServiceBusPeeker<SearchResultsNotification>, ISearchResultNotificationsPeeker
+    internal class RepeatSearchResultNotificationsPeeker : ServiceBusPeeker<SearchResultsNotification>, IRepeatSearchResultNotificationsPeeker
     {
-        public SearchResultNotificationsPeeker(
+        public RepeatSearchResultNotificationsPeeker(
             IMessageReceiverFactory factory, string connectionString, string topicName, string subscriptionName)
             : base(factory, connectionString, topicName, subscriptionName)
         {

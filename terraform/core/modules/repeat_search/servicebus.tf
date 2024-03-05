@@ -60,6 +60,16 @@ resource "azurerm_servicebus_subscription" "audit-repeat-search-results" {
   dead_lettering_on_message_expiration = false
 }
 
+resource "azurerm_servicebus_subscription" "debug-repeat-search-results" {
+  name                                 = "debug"
+  topic_id                             = azurerm_servicebus_topic.repeat-search-results-ready.id
+  auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
+  default_message_ttl                  = var.default_servicebus_settings.debug-subscription-ttl-expiry
+  lock_duration                        = var.default_servicebus_settings.default-read-lock
+  max_delivery_count                   = var.default_servicebus_settings.default-message-retries
+  dead_lettering_on_message_expiration = false
+}
+
 resource "azurerm_servicebus_subscription" "readers-repeat-search-results" {
   for_each                             = toset(var.REPEAT_SEARCH_RESULTS_READY_SUBSCRIPTION_NAMES)
   name                                 = each.value

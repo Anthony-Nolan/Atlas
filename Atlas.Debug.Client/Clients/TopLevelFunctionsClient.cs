@@ -29,9 +29,19 @@ namespace Atlas.Debug.Client.Clients
         Task<PeekServiceBusMessagesResponse<SearchResultsNotification>> PeekSearchResultNotifications(PeekServiceBusMessagesRequest request);
 
         /// <summary>
-        /// Fetch search result set from the search results blob storage.
+        /// Fetch search result set from blob storage.
         /// </summary>
         Task<OriginalSearchResultSet> FetchSearchResultSet(DebugSearchResultsRequest request);
+
+        /// <summary>
+        /// Peek messages from the `debug` subscription of the `repeat-search-results-ready` service bus topic.
+        /// </summary>
+        Task<PeekServiceBusMessagesResponse<SearchResultsNotification>> PeekRepeatSearchResultNotifications(PeekServiceBusMessagesRequest request);
+
+        /// <summary>
+        /// Fetch repeat search result set from blob storage.
+        /// </summary>
+        Task<RepeatSearchResultSet> FetchRepeatSearchResultSet(DebugSearchResultsRequest request);
     }
 
     /// <inheritdoc cref="ITopLevelFunctionsClient" />
@@ -64,6 +74,18 @@ namespace Atlas.Debug.Client.Clients
         public async Task<OriginalSearchResultSet> FetchSearchResultSet(DebugSearchResultsRequest request)
         {
             return await PostRequest<DebugSearchResultsRequest, OriginalSearchResultSet>("debug/search/resultSet", request);
+        }
+
+        /// <inheritdoc />
+        public async Task<PeekServiceBusMessagesResponse<SearchResultsNotification>> PeekRepeatSearchResultNotifications(PeekServiceBusMessagesRequest request)
+        {
+            return await PostRequest<PeekServiceBusMessagesRequest, PeekServiceBusMessagesResponse<SearchResultsNotification>>("debug/repeatSearch/notifications", request);
+        }
+
+        /// <inheritdoc />
+        public async Task<RepeatSearchResultSet> FetchRepeatSearchResultSet(DebugSearchResultsRequest request)
+        {
+            return await PostRequest<DebugSearchResultsRequest, RepeatSearchResultSet>("debug/repeatSearch/resultSet", request);
         }
     }
 }

@@ -66,6 +66,7 @@ namespace Atlas.ManualTesting.Functions
         {
             return await topLevelClient.FetchSearchResultSet(new DebugSearchResultsRequest
             {
+                SearchResultBlobContainer = "override-this",
                 SearchResultFileName = "override-this.json",
                 BatchFolderName = "override-this"
             });
