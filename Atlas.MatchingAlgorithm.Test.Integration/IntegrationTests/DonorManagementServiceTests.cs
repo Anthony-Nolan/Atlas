@@ -1,4 +1,5 @@
-﻿using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
+﻿using Atlas.Common.Public.Models.GeneticData;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Models;
@@ -46,14 +47,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         [Test]
         public async Task ApplyDonorUpdatesToDatabase_WhenDonorHlaIsInvalid_DonorManagementLogIsntUpdated()
         {
-            var expectedSequenceNumber = await AddUpdateDatabaseWithDonor();
+            var expectedSequenceNumber = await AddDonorUpdateToDatabase();
             var update = new DonorInfoBuilder(DonorId)
-                .WithHlaAtLocus(Atlas.Common.Public.Models.GeneticData.Locus.A, Atlas.Common.Public.Models.GeneticData.LocusPosition.One, "*01:ZZZZZZZ")
+                .WithHlaAtLocus(Locus.A, LocusPosition.One, "*01:ZZZZZZZ")
                 .Build()
                 .ToUpdate();
 
-            if (update.UpdateSequenceNumber == expectedSequenceNumber)
-                update.UpdateSequenceNumber++;
+            update.UpdateSequenceNumber = expectedSequenceNumber;
 
             // Act
             await service.ApplyDonorUpdatesToDatabase(new[] { update }, activeDb, FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion, false);
@@ -62,7 +62,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             logEntry.SequenceNumberOfLastUpdate.Should().Be(expectedSequenceNumber);
         }
 
-        private async Task<long> AddUpdateDatabaseWithDonor()
+        private async Task<long> AddDonorUpdateToDatabase()
         {
             var update = new DonorInfoBuilder(DonorId).Build().ToUpdate();
             var sequenceNumber = update.UpdateSequenceNumber;
