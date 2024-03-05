@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Atlas.Debug.Client.Models.HlaExpansionFailures
+namespace Atlas.Debug.Client.Models.ApplicationInsights
 {
     public class HlaExpansionFailure
     {

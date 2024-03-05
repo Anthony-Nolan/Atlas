@@ -1,4 +1,4 @@
-﻿using Atlas.Debug.Client.Models.HlaExpansionFailures;
+﻿using Atlas.Debug.Client.Models.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Azure.Monitor.Query;
 using Azure.Monitor.Query.Models;
@@ -53,7 +53,10 @@ namespace Atlas.MatchingAlgorithm.Services.Debug
 
         public async Task<IEnumerable<HlaExpansionFailure>> Query(int daysToQuery)
         {
-            var response = await logsQueryClient.QueryWorkspaceAsync(azureMonitoringSettings.WorkspaceId, HlaExpansionFailuresQuery, new QueryTimeRange(TimeSpan.FromDays(daysToQuery)));
+            var response = await logsQueryClient.QueryWorkspaceAsync(
+                azureMonitoringSettings.WorkspaceId, 
+                HlaExpansionFailuresQuery, 
+                new QueryTimeRange(TimeSpan.FromDays(daysToQuery)));
             var result = response.Value;
 
             return result.Table.Rows.Select(MapHlaExpansionFailureFailure);
