@@ -58,8 +58,7 @@ namespace Atlas.RepeatSearch.Functions.Functions.Debug
             try
             {
                 var debugRequest = await request.DeserialiseRequestBody<DebugSearchResultsRequest>();
-                var resultSet = await resultsDownloader.DownloadResultSet<RepeatMatchingAlgorithmResultSet, MatchingAlgorithmResult>(
-                    debugRequest.SearchResultFileName, debugRequest.BatchFolderName);
+                var resultSet = await resultsDownloader.DownloadResultSet<RepeatMatchingAlgorithmResultSet, MatchingAlgorithmResult>(debugRequest);
                 return new JsonResult(resultSet);
             }
             catch (BlobNotFoundException ex)

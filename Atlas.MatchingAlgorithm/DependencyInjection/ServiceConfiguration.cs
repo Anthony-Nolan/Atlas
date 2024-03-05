@@ -162,21 +162,15 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             });
 
             services.RegisterDebugLogger(fetchApplicationInsightsSettings);
-
             services.AddScoped<IBlobDownloader, BlobDownloader>(sp =>
             {
                 var settings = fetchAzureStorageSettings(sp);
                 return new BlobDownloader(settings.ConnectionString, sp.GetService<IDebugLogger>());
             });
+            services.AddScoped<IDebugResultsDownloader, DebugResultsDownloader>();
 
-            services.AddScoped<IDebugResultsDownloader, DebugResultsDownloader>(sp =>
-            {
-                var settings = fetchAzureStorageSettings(sp);
-                return new DebugResultsDownloader(settings.SearchResultsBlobContainer, sp.GetService<IBlobDownloader>());
-            });
-
-            // Register azure App.Insights API client and configure EntraId's Client Secret authentification
-            // Another azure clients can be added here and they will share authentification configuration
+            // Register azure App.Insights API client and configure EntraId's Client Secret authentication
+            // Another azure clients can be added here and they will share authentication configuration
             services.AddAzureClients(clientBuilder =>
             {
                 clientBuilder.UseCredential(sp => 

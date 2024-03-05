@@ -58,8 +58,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             try
             {
                 var debugRequest = await request.DeserialiseRequestBody<DebugSearchResultsRequest>();
-                var resultSet = await resultsDownloader.DownloadResultSet <OriginalMatchingAlgorithmResultSet, MatchingAlgorithmResult>(
-                    debugRequest.SearchResultFileName, debugRequest.BatchFolderName);
+                var resultSet = await resultsDownloader.DownloadResultSet <OriginalMatchingAlgorithmResultSet, MatchingAlgorithmResult>(debugRequest);
                 return new JsonResult(resultSet);
             }
             catch (BlobNotFoundException ex)
