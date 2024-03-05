@@ -7,15 +7,21 @@ namespace Atlas.Debug.Client.Clients
 {
     /// <summary>
     /// Client for calling functions hosted on Public API app.
+    /// Note, methods do not call a debug function, but the "production" endpoints.
+    /// They have been added to the debug client to facilitate the automated testing of search functionality.
     /// </summary>
     public interface IPublicApiFunctionsClient : ICommonAtlasFunctions
     {
         /// <summary>
         /// Initiates a new search request.
-        /// Note, this does not call a debug function, but the "production" endpoint.
-        /// It has been added to the debug client to facilitate the automated testing of search functionality.
+
         /// </summary>
-        Task<ResponseFromValidatedRequest<SearchInitiationResponse>> PostSearchRequest(SearchRequest searchRequest);
+        Task<ResponseFromValidatedRequest<SearchInitiationResponse>> PostSearchRequest(SearchRequest request);
+
+        /// <summary>
+        /// Initiates a new repeat search request.
+        /// </summary>
+        Task<ResponseFromValidatedRequest<SearchInitiationResponse>> PostRepeatSearchRequest(RepeatSearchRequest request);
     }
 
     /// <inheritdoc cref="IPublicApiFunctionsClient" />
@@ -27,9 +33,15 @@ namespace Atlas.Debug.Client.Clients
         }
 
         /// <inheritdoc />
-        public async Task<ResponseFromValidatedRequest<SearchInitiationResponse>> PostSearchRequest(SearchRequest searchRequest)
+        public async Task<ResponseFromValidatedRequest<SearchInitiationResponse>> PostSearchRequest(SearchRequest request)
         {
-            return await PostValidatedRequest<SearchRequest, SearchInitiationResponse>("Search", searchRequest);
+            return await PostValidatedRequest<SearchRequest, SearchInitiationResponse>("Search", request);
+        }
+
+        /// <inheritdoc />
+        public async Task<ResponseFromValidatedRequest<SearchInitiationResponse>> PostRepeatSearchRequest(RepeatSearchRequest request)
+        {
+            return await PostValidatedRequest<RepeatSearchRequest, SearchInitiationResponse>("RepeatSearch", request);
         }
     }
 }
