@@ -5,7 +5,6 @@ using Atlas.Common.Debugging;
 using Atlas.Common.Utils.Http;
 using Atlas.Debug.Client.Models.SearchResults;
 using Atlas.Debug.Client.Models.ServiceBus;
-using Atlas.Functions.Services.Debug;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,27 +12,28 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using System.Net;
 using System.Threading.Tasks;
+using Atlas.Functions.Services.Debug;
 
 namespace Atlas.Functions.Functions.Debug
 {
-    public class SearchFunctions
+    public class RepeatSearchFunctions
     {
-        private const string RoutePrefix = $"{RouteConstants.DebugRoutePrefix}/search/";
+        private const string RoutePrefix = $"{RouteConstants.DebugRoutePrefix}/repeatSearch/";
 
-        private readonly ISearchResultNotificationsPeeker notificationsPeeker;
+        private readonly IRepeatSearchResultNotificationsPeeker notificationsPeeker;
         private readonly IDebugResultsDownloader resultsDownloader;
 
-        public SearchFunctions(
-            ISearchResultNotificationsPeeker notificationsPeeker,
+        public RepeatSearchFunctions(
+            IRepeatSearchResultNotificationsPeeker notificationsPeeker,
             IDebugResultsDownloader resultsDownloader)
         {
             this.notificationsPeeker = notificationsPeeker;
             this.resultsDownloader = resultsDownloader;
         }
 
-        [FunctionName(nameof(PeekSearchResultsNotifications))]
+        [FunctionName(nameof(PeekRepeatSearchResultsNotifications))]
         [ProducesResponseType(typeof(PeekServiceBusMessagesResponse<SearchResultsNotification>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> PeekSearchResultsNotifications(
+        public async Task<IActionResult> PeekRepeatSearchResultsNotifications(
             [HttpTrigger(
                 AuthorizationLevel.Function,
                 "post",
@@ -46,9 +46,9 @@ namespace Atlas.Functions.Functions.Debug
             return new JsonResult(response);
         }
 
-        [FunctionName(nameof(FetchSearchResultSet))]
-        [ProducesResponseType(typeof(OriginalSearchResultSet), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> FetchSearchResultSet(
+        [FunctionName(nameof(FetchRepeatSearchResultSet))]
+        [ProducesResponseType(typeof(RepeatSearchResultSet), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> FetchRepeatSearchResultSet(
             [HttpTrigger(
                 AuthorizationLevel.Function,
                 "post",
@@ -59,7 +59,7 @@ namespace Atlas.Functions.Functions.Debug
             try
             {
                 var debugRequest = await request.DeserialiseRequestBody<DebugSearchResultsRequest>();
-                var resultSet = await resultsDownloader.DownloadResultSet<OriginalSearchResultSet, SearchResult>(debugRequest);
+                var resultSet = await resultsDownloader.DownloadResultSet<RepeatSearchResultSet, SearchResult>(debugRequest);
                 return new JsonResult(resultSet);
             }
             catch (BlobNotFoundException ex)

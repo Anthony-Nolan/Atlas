@@ -155,7 +155,7 @@ namespace Atlas.Functions
                     debugOptions.Value.NotificationsSubscription);
             });
 
-            services.AddScoped<IServiceBusPeeker<SearchResultsNotification>, SearchResultNotificationsPeeker>(sp =>
+            services.AddScoped<ISearchResultNotificationsPeeker, SearchResultNotificationsPeeker>(sp =>
             {
                 var messagingOptions = sp.GetService<IOptions<Settings.MessagingServiceBusSettings>>();
                 return new SearchResultNotificationsPeeker(
@@ -164,9 +164,18 @@ namespace Atlas.Functions
                     messagingOptions.Value.SearchResultsTopic,
                     messagingOptions.Value.SearchResultsDebugSubscription);
             });
+            
+            services.AddScoped<IRepeatSearchResultNotificationsPeeker, RepeatSearchResultNotificationsPeeker>(sp =>
+            {
+                var messagingOptions = sp.GetService<IOptions<Settings.MessagingServiceBusSettings>>();
+                return new RepeatSearchResultNotificationsPeeker(
+                    sp.GetService<IMessageReceiverFactory>(),
+                    messagingOptions.Value.ConnectionString,
+                    messagingOptions.Value.RepeatSearchResultsTopic,
+                    messagingOptions.Value.RepeatSearchResultsDebugSubscription);
+            });
 
             services.RegisterDebugLogger(OptionsReaderFor<ApplicationInsightsSettings>());
-
             services.AddScoped<IDebugResultsDownloader, DebugResultsDownloader>(sp =>
             {
                 var settings = sp.GetService<IOptions<Settings.AzureStorageSettings>>();

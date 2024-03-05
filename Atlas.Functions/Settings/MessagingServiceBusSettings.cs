@@ -10,5 +10,10 @@ namespace Atlas.Functions.Settings
         /// Required by debug endpoint that peeks `search-results-ready` messages.
         /// </summary>
         public string SearchResultsDebugSubscription { get; set; }
+
+        /// <summary>
+        /// Required by debug endpoint that peeks `repeat-search-results-ready` messages.
+        /// </summary>
+        public string RepeatSearchResultsDebugSubscription { get; set; }
     }
 }
