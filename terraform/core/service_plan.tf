@@ -18,3 +18,12 @@ resource "azurerm_service_plan" "atlas-public-api-elastic-plan" {
   sku_name = "EP1"
   os_type  = "Windows"
 }
+
+resource "azurerm_service_plan" "atlas-non-elastic-plan" {
+  name                = "${local.environment}-ATLAS-NON-ELASTIC-PLAN"
+  location            = local.location
+  resource_group_name = azurerm_resource_group.atlas_resource_group.name
+  sku_name            = var.SPIKE_SERVICE_PLAN
+
+  os_type = "Windows"
+}

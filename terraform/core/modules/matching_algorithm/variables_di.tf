@@ -35,6 +35,13 @@ variable "elastic_app_service_plan" {
   })
 }
 
+variable "tempfunction_app_service_plan" {
+  type = object({
+    id                  = string
+    resource_group_name = string
+  })
+}
+
 variable "shared_function_storage" {
   type = object({
     primary_access_key = string
