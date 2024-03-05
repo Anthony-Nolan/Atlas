@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Client.Models.Search.Results.ResultSet;
+using Atlas.Debug.Client.Models.ApplicationInsights;
 using Atlas.Debug.Client.Models.DonorImport;
 using Atlas.Debug.Client.Models.SearchResults;
 using Atlas.Debug.Client.Models.ServiceBus;
@@ -29,6 +30,13 @@ namespace Atlas.Debug.Client.Clients
         /// Fetch matching result set from the matching algorithm results blob storage.
         /// </summary>
         Task<OriginalMatchingAlgorithmResultSet> FetchMatchingResultSet(DebugSearchResultsRequest request);
+
+        /// <summary>
+        /// Returns Hla Expansion Failures from logs for last <paramref name="daysToQuery"/> days
+        /// </summary>
+        /// <param name="daysToQuery"></param>
+        /// <returns></returns>
+        Task<IEnumerable<HlaExpansionFailure>> GetHlaExpansionFailures(int daysToQuery = 14);
     }
 
     /// <inheritdoc cref="IMatchingAlgorithmFunctionsClient" />
@@ -55,6 +63,12 @@ namespace Atlas.Debug.Client.Clients
         public async Task<OriginalMatchingAlgorithmResultSet> FetchMatchingResultSet(DebugSearchResultsRequest request)
         {
             return await PostRequest<DebugSearchResultsRequest, OriginalMatchingAlgorithmResultSet>("debug/matching/resultSet", request);
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<HlaExpansionFailure>> GetHlaExpansionFailures(int daysToQuery = 14)
+        {
+            return await GetRequest<IEnumerable<HlaExpansionFailure>>($"debug/HlaExpansionFailures/{daysToQuery}");
         }
     }
 }
