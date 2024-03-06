@@ -13,12 +13,12 @@ namespace Atlas.Debug.Client.Clients
     public interface IRepeatSearchFunctionsClient : ICommonAtlasFunctions
     {
         /// <summary>
-        /// Peek messages from the `debug` subscription of the `matching-results` service bus topic.
+        /// Peek messages from the `debug` subscription of the `repeat-search-matching-results-ready` service bus topic.
         /// </summary>
         Task<PeekServiceBusMessagesResponse<MatchingResultsNotification>> PeekMatchingResultNotifications(PeekServiceBusMessagesRequest request);
 
         /// <summary>
-        /// Fetch matching result set from the matching algorithm results blob storage.
+        /// Fetch repeat search matching result set from blob storage.
         /// </summary>
         Task<RepeatMatchingAlgorithmResultSet> FetchMatchingResultSet(DebugSearchResultsRequest request);
     }
