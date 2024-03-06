@@ -27,8 +27,9 @@ readable manner.
 
 ## Feature functionality
 
-| Terraform Setting          | Functions App Name                 | Functions App Setting Name | Description                |
-| -------------------------- | ------------------                 | -------------------------- | -----------                | 
+| Terraform Setting          | Functions App Name | Functions App Setting Name | Description |
+| -------------------------- | ------------------ | -------------------------- | ----------- | 
+| AZURE-TENANT-ID | ATLAS-MATCHING-ALGORITHM-FUNCTIONS  | AzureManagement-Authentication-TenantId | Tenant id used for authenticating with Azure via OAuth, when querying log analytics workspace from code. Expected to be domain name or GUID. Currently used only for debug endpoint to query application insigths logs. |
 | IP-RESTRICTION-SETTINGS | all | N/A | Allows restriction of functions app access to specified IPs only. |
 | LOG-ANALYTICS-DAILY-QUOTA-GB | N/A | N/A | The Log Analytics workspace daily quota for ingestion in GB. Default is -1 (unlimited). |
 | LOG-ANALYTICS-SKU | N/A | N/A | Log Analytics Workspace SKU. Default is `Pay As You Go`. |
@@ -91,8 +92,6 @@ Most Atlas functions apps run on a shared service plan, which will also impact t
 | MATCHING-DATA-REFRESH-DB-SIZE-ACTIVE | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | DataRefresh-ActiveDatabaseSize | Determines the size (in scale, not bytes) of the active matching database. | 
 | REPEAT-SEARCH-MATCHING-MAX-CONCURRENT-PROCESSES-PER-INSTANCE | ATLAS-REPEAT-SEARCH-FUNCTION |AzureFunctionsJobHost--extensions--serviceBus--messageHandlerOptions--maxConcurrentCalls| Same as the similar setting above, but for the repeat search module. Note that when repeat searches are run concurrently with first time searches, the database should be able to handle the max concurrent load of *both* apps.  |
 | REPEAT-SEARCH-MATCHING-MAX-SCALE-OUT | ATLAS-REPEAT-SEARCH-FUNCTION | WEBSITE-MAX-DYNAMIC-APPLICATION-SCALE-OUT | Same as the similar setting above, but for the repeat search module. Note that when repeat searches are run concurrently with first time searches, the database should be able to handle the max concurrent load of *both* apps. |
-| AZURE-TENANT-ID | ATLAS-MATCHING-ALGORITHM-FUNCTIONS  | Tenant id used for authenticating with Azure via OAuth, when querying log analytics workspace from code. Expected to be domain name or GUID. Currently used only for debug endpoint to query application insigths logs |
-
 
 ### Match Prediction Algorithm
 
