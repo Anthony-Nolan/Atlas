@@ -26,6 +26,7 @@
     <ProjectReference Include="..\Atlas.Client.Models\Atlas.Client.Models.csproj" />
     <ProjectReference Include="..\Atlas.Common.Test\Atlas.Common.Test.csproj" />
     <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
+    <ProjectReference Include="..\Atlas.Debug.Client\Atlas.Debug.Client.csproj" />
     <ProjectReference Include="..\Atlas.Debug.Client.Models\Atlas.Debug.Client.Models.csproj" />
     <ProjectReference Include="..\Atlas.DonorImport\Atlas.DonorImport.csproj" />
     <ProjectReference Include="..\Atlas.ManualTesting.Common\Atlas.ManualTesting.Common.csproj" />
@@ -33,15 +34,6 @@
     <ProjectReference Include="..\Atlas.MatchingAlgorithm.Common\Atlas.MatchingAlgorithm.Common.csproj" />
     <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
     <ProjectReference Include="..\Atlas.MatchPrediction\Atlas.MatchPrediction.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Atlas.Debug.Client">
-        <HintPath>..\Atlas.Debug.Client\bin\Debug\net6.0\Atlas.Debug.Client.dll</HintPath>
-    </Reference>
-    <Reference Include="Atlas.DonorImport.FileSchema.Models">
-        <HintPath>..\Atlas.Debug.Client\bin\Debug\net6.0\Atlas.DonorImport.FileSchema.Models.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>

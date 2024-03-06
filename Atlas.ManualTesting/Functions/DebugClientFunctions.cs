@@ -22,8 +22,6 @@ namespace Atlas.ManualTesting.Functions
     /// Set of functions to help test the `Atlas.Debug.Client`.
     /// Not every debug endpoint should be included here.
     /// The intended usage is that method contents can be overridden as needed when testing locally.
-    /// Note: the csproj points to `Atlas.Debug.Client` project dll in `bin/Debug` folder to emulate how the client will be used by external end-to-end tests.
-    /// So the `Atlas.Debug.Client` project must be built before running these functions.
     /// </summary>
     public class DebugClientFunctions
     {
