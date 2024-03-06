@@ -67,25 +67,26 @@ namespace Atlas.DonorImport.Services
         {
             loggingContext.Filename = file.FileLocation;
             logger.SendTrace($"Beginning Donor Import for file '{file.FileLocation}'.");
-            var importRecord = await donorImportFileHistoryService.RegisterStartOfDonorImport(file);
 
             var importedDonorCount = 0;
             var invalidDonors = new List<SearchableDonorValidationResult>();
-            var donorUpdatesToSkip = importRecord?.ImportedDonorsCount ?? 0;
-
-            if (donorUpdatesToSkip > 0)
-            {
-                logger.SendTrace($"Donor Import: {donorUpdatesToSkip} donors have already been imported from this file and will be skipped.",
-                    props: new Dictionary<string, string>
-                    {
-                        { "FileLocation", file.FileLocation }
-                    });
-            }
-
-            using var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents); 
+            int donorUpdatesToSkip = 0;
+            using var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents);
 
             try
             {
+                var importRecord = await donorImportFileHistoryService.RegisterStartOfDonorImport(file);
+                donorUpdatesToSkip = importRecord?.ImportedDonorsCount ?? 0;
+
+                if (donorUpdatesToSkip > 0)
+                {
+                    logger.SendTrace($"Donor Import: {donorUpdatesToSkip} donors have already been imported from this file and will be skipped.",
+                        props: new Dictionary<string, string>
+                        {
+                            { "FileLocation", file.FileLocation }
+                        });
+                }
+
                 var updateMode = lazyFile.ReadUpdateMode();
                 if (updateMode == UpdateMode.Full && !settings.AllowFullModeImport)
                 {
