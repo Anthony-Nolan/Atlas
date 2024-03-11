@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
 using Atlas.RepeatSearch.Data.Models;
@@ -40,8 +41,11 @@ namespace Atlas.RepeatSearch.Data.Repositories
         {
             using (var transactionScope = new AsyncTransactionScope())
             {
-                var resultSetId = await CreateResultSetEntity(searchRequestId);
-                await AddResultsToSet(externalDonorCodes, resultSetId);
+                var resultSetId = await TryCreateResultSetEntity(searchRequestId);
+                if (resultSetId is null)
+                    return;
+
+                await AddResultsToSet(externalDonorCodes, resultSetId.Value);
                 transactionScope.Complete();
             }
         }
@@ -104,19 +108,24 @@ AND sr.{nameof(SearchResult.ExternalDonorCode)} IN @Ids
             }
         }
 
-        private async Task<int> CreateResultSetEntity(string searchRequestId)
+        private async Task<int?> TryCreateResultSetEntity(string searchRequestId)
         {
             var sql = @$"
-INSERT INTO {CanonicalResultSet.QualifiedTableName}
-({nameof(CanonicalResultSet.OriginalSearchRequestId)})
-VALUES(@{nameof(searchRequestId)});
+BEGIN TRY
+    INSERT INTO {CanonicalResultSet.QualifiedTableName}
+    ({nameof(CanonicalResultSet.OriginalSearchRequestId)})
+    VALUES(@{nameof(searchRequestId)});
 
-SELECT CAST(SCOPE_IDENTITY() as int);
+    SELECT CAST(SCOPE_IDENTITY() as int);
+END TRY
+BEGIN CATCH
+    SELECT null 
+END CATCH
 ";
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                return await conn.QuerySingleAsync<int>(sql, new {searchRequestId});
+                return await conn.QuerySingleAsync<int?>(sql, new {searchRequestId});
             }
         }
 
