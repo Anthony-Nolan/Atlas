@@ -35,6 +35,10 @@ Feature flags permit greater control over the release of new features (see this 
 #### Donor Import
 * E: Added new debug function to `DonorImport.Functions`, `GetRandomDonors`, to aid in the generation of test data.
 
+### 2.0.1
+- E: Atlas can now be configured to reject Full mode import files. See [Donor Import README](../README_DonorImport.md#full-mode) for more details.
+- E: For donor import `EmptyDonorFileException`: alert description now contains the name of the failed file instead of the exception stack trace.
+
 ### 2.0.0
 Major version number bump due to breaking change in the client. See [client changelog](../Atlas.Client.Models/CHANGELOG_Client.md) for details.
 
