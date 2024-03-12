@@ -52,7 +52,7 @@ for the desired rollback, and will take longer than the manual SQL approach - es
 
 ## Data Refresh 
 
-## Manual Trigger
+### Manual Trigger
 
 Atlas can be configured to automatically re-run the data refresh process as soon as it detects a new HLA nomenclature version. There are some cases when it may be preferable to run the job manually: 
 
@@ -260,3 +260,15 @@ In this case, identify the *actual* last imported MAC manually, and update the "
 ### Donors are failed to import
 
 All donors that didn't pass validation are logged not only to AI, but also to a database table where could be queried ([see donor import README](/README_DonorImport.md/#file-validation)).
+
+### Re-publish failed `updated-searchable-donors` messages
+After completion of donor import, any detected donor changes are published as messages to the `updated-searchable-donors` topic, for consumption by the matching algorithm donor management functions.
+They process the updates in batches and apply them to the active matching algorothm database, so that the changes will be visible to search requests.
+
+Sometimes an update may fail to be applied when it should have been.
+A real world example: the donor HLA contains a very new MAC which has not yet made it to the MAC dictionary, resulting in a HLA expansion failure.
+In such a case, after updating the MAC dictionary, invoke the http endpoint `ManuallyPublishDonorUpdatesByDonorId` on `<ENV>-ATLAS-DONOR-IMPORT-FUNCTIONS` with the Atlas donor ID in the request body (wrap one or more IDs in an `int[]`).
+This will re-publish an update for the affected donor.
+
+Note, this function publishes a brand new update message containing the latest data held for the donor, as the data within the original failed update may be out of date.
+If the donor has been deleted from the donor store since the original update failure, then the new message will reflect that to ensure the donor is no longer searchable.

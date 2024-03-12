@@ -41,7 +41,10 @@ namespace Atlas.DonorImport.Functions.Functions
         [FunctionName(nameof(ManuallyPublishDonorUpdatesByDonorId))]
         [ProducesResponseType(200)]
         [ProducesResponseType(500)]
-        public async Task<IActionResult> ManuallyPublishDonorUpdatesByDonorId([HttpTrigger(AuthorizationLevel.Function, "post")][RequestBodyType(typeof(int[]), "Donor ids")] HttpRequest request)
+        public async Task<IActionResult> ManuallyPublishDonorUpdatesByDonorId(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(int[]), "Donor ids")] 
+            HttpRequest request)
         {
             using var reader = new StreamReader(request.Body);
             var ids = JsonConvert.DeserializeObject<int[]>(await reader.ReadToEndAsync());

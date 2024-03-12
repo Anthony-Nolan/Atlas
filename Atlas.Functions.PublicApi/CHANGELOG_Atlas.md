@@ -28,6 +28,14 @@ Feature flags permit greater control over the release of new features (see this 
 * BREAKING - Breaking change at the API level
 * FBC - Functionally Breaking Change, i.e., significant change to the behaviour of an existing feature but the API remains unchanged
 
+### 2.0.2
+- E: Match prediction optimisation: do not load haplotype frequencies into memory when the subject is high-res typed and so does not require imputation.
+
+#### Support
+- E: Added `InnerException` name to the App Insights custom event that logs HLA expansion failures.
+- E: Added new endpoint to allow `updated-searchable-donors` message to be re-published for a given donor, in the event the original message failed to be applied. [See Support README for more info](/README_Support.md#re-publish-failed-updated-searchable-donors-messages).
+- BF: For scheduled, automated data refresh attempts, do not throw an exception if a new HLA nomenclature version has not been detected.
+
 ### 2.0.1
 - E: Atlas can now be configured to reject Full mode import files. See [Donor Import README](../README_DonorImport.md#full-mode) for more details.
 - E: For donor import `EmptyDonorFileException`: alert description now contains the name of the failed file instead of the exception stack trace.
