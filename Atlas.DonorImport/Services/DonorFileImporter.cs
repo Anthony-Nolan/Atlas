@@ -136,6 +136,8 @@ namespace Atlas.DonorImport.Services
             }
             catch (DuplicateDonorFileImportException e)
             {
+                // Not failing the import, as it is already performed and there's already
+                // a record for this file
                 await SendFailedImportMessage(file.FileLocation, e.Message);
             }
             catch (DuplicateDonorException e)
