@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
 using Atlas.RepeatSearch.Data.Models;
@@ -40,8 +41,11 @@ namespace Atlas.RepeatSearch.Data.Repositories
         {
             using (var transactionScope = new AsyncTransactionScope())
             {
-                var resultSetId = await CreateResultSetEntity(searchRequestId);
-                await AddResultsToSet(externalDonorCodes, resultSetId);
+                var resultSetId = await CreateResultSetIfNotExists(searchRequestId);
+                if (resultSetId is null) // null is returned - results are already saved
+                    return;
+
+                await AddResultsToSet(externalDonorCodes, resultSetId.Value);
                 transactionScope.Complete();
             }
         }
@@ -104,19 +108,34 @@ AND sr.{nameof(SearchResult.ExternalDonorCode)} IN @Ids
             }
         }
 
-        private async Task<int> CreateResultSetEntity(string searchRequestId)
+        /// <returns>The id of created result set entity or null if it already exists</returns>
+        private async Task<int?> CreateResultSetIfNotExists(string searchRequestId)
         {
+            // Don't use early return approach because it won't work without query hints: record may appear in database
+            // after we checked if it exists, but before we insert 'our' record.
+            // With hints (updlock, serializable), it will use update lock and range locks which may prevent 
+            // from inserting results from other searches until we commit current transaction (i.e. when we insert all donor ids)
+            // With all above and the fact that existing record for search request id is rare case, we're tring to insert the record first. 
+            // Then in case of exception, we're checking if records exists and return null idicating that new record wasn't created.
             var sql = @$"
-INSERT INTO {CanonicalResultSet.QualifiedTableName}
-({nameof(CanonicalResultSet.OriginalSearchRequestId)})
-VALUES(@{nameof(searchRequestId)});
+BEGIN TRY
+    INSERT INTO {CanonicalResultSet.QualifiedTableName}
+    ({nameof(CanonicalResultSet.OriginalSearchRequestId)})
+    VALUES(@{nameof(searchRequestId)});
 
-SELECT CAST(SCOPE_IDENTITY() as int);
+    SELECT CAST(SCOPE_IDENTITY() as int);
+END TRY
+BEGIN CATCH 
+    IF EXISTS (SELECT id FROM RepeatSearch.CanonicalResultSets WHERE OriginalSearchRequestId = @searchRequestId)
+        SELECT null
+    ELSE
+    THROW
+END CATCH
 ";
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                return await conn.QuerySingleAsync<int>(sql, new {searchRequestId});
+                return await conn.QuerySingleAsync<int?>(sql, new {searchRequestId});
             }
         }
 
