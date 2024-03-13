@@ -136,7 +136,7 @@ namespace Atlas.DonorImport.Services
             }
             catch (DuplicateDonorFileImportException e)
             {
-                await NotifyOnFailure(file, e.Message, e.InnerException?.Message);
+                await SendFailedImportMessage(file.FileLocation, e.Message);
             }
             catch (DuplicateDonorException e)
             {
@@ -165,7 +165,7 @@ namespace Atlas.DonorImport.Services
             await LogFileErrorAndSendAlert(file, message, description);
         }
 
-        private async Task LogFileErrorAndSendAlert(DonorImportFile file, string message, string description)
+        private async Task LogFileErrorAndSendAlert(DonorImportFile file, string message, string description, bool updateDonorImportHistory = true)
         {
             await donorImportFileHistoryService.RegisterFailedDonorImportWithPermanentError(file);
             logger.SendTrace(message, LogLevel.Warn);
