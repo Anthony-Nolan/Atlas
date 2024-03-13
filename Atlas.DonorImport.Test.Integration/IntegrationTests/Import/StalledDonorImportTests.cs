@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Notifications;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
@@ -22,6 +25,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         private IDonorFileImporter donorFileImporter;
         private IDonorImportFileHistoryService donorImportFileHistoryService;
         private IDonorInspectionRepository donorRepository;
+        private IDonorImportMessageSender mockDonorImportMessageSender;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -29,6 +33,13 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
                 DatabaseManager.ClearDatabases();
+
+                mockDonorImportMessageSender = Substitute.For<IDonorImportMessageSender>();
+
+                var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
+                services.AddScoped(sp => mockDonorImportMessageSender);
+                DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
+
                 donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
                 donorImportFileHistoryService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportFileHistoryService>();
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
@@ -77,7 +88,14 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             var donorFileRetry = DonorImportFileBuilder.NewWithMetadata(fileName, "Different-Message_Id", uploadTime).WithDonorCount(10);
 
-            await donorFileImporter.Invoking(i => i.ImportDonorFile(donorFileRetry)).Should().ThrowAsync<DuplicateDonorFileImportException>();
+            // Act
+            await donorFileImporter.ImportDonorFile(donorFileRetry);
+
+            // Check
+            await mockDonorImportMessageSender.Received().SendFailureMessage(
+                fileName,
+                ImportFailureReason.ErrorDuringImport,
+                Arg.Is<string>(x => x.Contains("Duplicate Donor File")));
         }
 
     }

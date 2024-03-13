@@ -91,7 +91,7 @@ namespace Atlas.DonorImport.Services
                 if (updateMode == UpdateMode.Full && !settings.AllowFullModeImport)
                 {
                     const string message = "Importing donors with Full mode is not allowed when allowFullModeImport is false.";
-                    await NotifyOnFailure(file, message, $"Donor file: {file.FileLocation}");
+                    await FailImportAndNotify(file, message, $"Donor file: {file.FileLocation}");
                     return;
                 }
 
@@ -124,27 +124,29 @@ namespace Atlas.DonorImport.Services
             catch (EmptyDonorFileException e)
             {
                 const string summary = "Donor file was present but it was empty.";
-                await NotifyOnFailure(file, summary, $"Donor file: {file.FileLocation}");
+                await FailImportAndNotify(file, summary, $"Donor file: {file.FileLocation}");
             }
             catch (MalformedDonorFileException e)
             {
-                await NotifyOnFailure(file, e.Message, e.StackTrace);
+                await FailImportAndNotify(file, e.Message, e.StackTrace);
             }
             catch (DonorFormatException e)
             {
-                await NotifyOnFailure(file, e.Message, e.InnerException?.Message);
+                await FailImportAndNotify(file, e.Message, e.InnerException?.Message);
             }
             catch (DuplicateDonorFileImportException e)
             {
-                await NotifyOnFailure(file, e.Message, e.InnerException?.Message);
+                // Not failing the import, as it is already performed and there's already
+                // a record for this file
+                await SendFailedImportMessage(file.FileLocation, e.Message);
             }
             catch (DuplicateDonorException e)
             {
-                await NotifyOnFailure(file, e.Message, e.InnerException?.Message);
+                await FailImportAndNotify(file, e.Message, e.InnerException?.Message);
             }
             catch (DonorNotFoundException e)
             {
-                await NotifyOnFailure(file, e.Message, e.InnerException?.Message); 
+                await FailImportAndNotify(file, e.Message, e.InnerException?.Message); 
             }
             catch (Exception e)
             {
@@ -159,13 +161,13 @@ namespace Atlas.DonorImport.Services
             }
         }
 
-        private async Task NotifyOnFailure(DonorImportFile file, string message, string description)
+        private async Task FailImportAndNotify(DonorImportFile file, string message, string description)
         {
             await SendFailedImportMessage(file.FileLocation, message);
-            await LogFileErrorAndSendAlert(file, message, description);
+            await RegisterImportAsPermenantlyFailed(file, message, description);
         }
 
-        private async Task LogFileErrorAndSendAlert(DonorImportFile file, string message, string description)
+        private async Task RegisterImportAsPermenantlyFailed(DonorImportFile file, string message, string description)
         {
             await donorImportFileHistoryService.RegisterFailedDonorImportWithPermanentError(file);
             logger.SendTrace(message, LogLevel.Warn);
