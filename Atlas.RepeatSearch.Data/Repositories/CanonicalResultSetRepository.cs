@@ -41,8 +41,8 @@ namespace Atlas.RepeatSearch.Data.Repositories
         {
             using (var transactionScope = new AsyncTransactionScope())
             {
-                var resultSetId = await TryCreateResultSetEntity(searchRequestId);
-                if (resultSetId is null)
+                var resultSetId = await CreateResultSetIfNotExists(searchRequestId);
+                if (resultSetId is null) // null is returned - results are already saved
                     return;
 
                 await AddResultsToSet(externalDonorCodes, resultSetId.Value);
@@ -108,8 +108,15 @@ AND sr.{nameof(SearchResult.ExternalDonorCode)} IN @Ids
             }
         }
 
-        private async Task<int?> TryCreateResultSetEntity(string searchRequestId)
+        /// <returns>The id of created result set entity or null if it already exists</returns>
+        private async Task<int?> CreateResultSetIfNotExists(string searchRequestId)
         {
+            // Don't use early return approach because it won't work without query hints: record may appear in database
+            // after we checked if it exists, but before we insert 'our' record.
+            // With hints (updlock, serializable), it will use update lock and range locks which may prevent 
+            // from inserting results from other searches until we commit current transaction (i.e. when we insert all donor ids)
+            // With all above and the fact that existing record for search request id is rare case, we're tring to insert the record first. 
+            // Then in case of exception, we're checking if records exists and return null idicating that new record wasn't created.
             var sql = @$"
 BEGIN TRY
     INSERT INTO {CanonicalResultSet.QualifiedTableName}
@@ -118,8 +125,11 @@ BEGIN TRY
 
     SELECT CAST(SCOPE_IDENTITY() as int);
 END TRY
-BEGIN CATCH
-    SELECT null 
+BEGIN CATCH 
+    IF EXISTS (SELECT id FROM RepeatSearch.CanonicalResultSets WHERE OriginalSearchRequestId = @searchRequestId)
+        SELECT null
+    ELSE
+    THROW
 END CATCH
 ";
 
