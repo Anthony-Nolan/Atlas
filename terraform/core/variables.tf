@@ -134,10 +134,22 @@ variable "DONOR_IMPORT_FAILURE_LOGS_EXPIRY_IN_DAYS" {
   description = "Number of days after donor import failure logs will expire and be eligible for deletion."
 }
 
+variable "ELASTIC_SERVICE_PLAN_MAX_SCALE_OUT" {
+  type        = number
+  default     = 50
+  description = "The maximum number of workers that can be scaled out on the service plan. Affects all functions apps - which can be further restricted, but can never exceed this limit."
+}
+
 variable "ELASTIC_SERVICE_PLAN_SKU_SIZE" {
   type        = string
   default     = "EP1"
   description = "This database will be on the Elastic Premium tier, so only elastic premium sku sizes are appropriate e.g. EP1, EP2, EP3. Each tier represents a double in service plan price, and a corresponding halving of algorithm time."
+}
+
+variable "ELASTIC_SERVICE_PLAN_FOR_PUBLIC_API" {
+  type        = bool
+  default     = true
+  description = "Should there be a separate elastic service plan for the public API functions app? If false, the public API will be hosted on the same elastic service plan as all other functions."
 }
 
 variable "ENVIRONMENT" {
@@ -367,24 +379,6 @@ variable "SEARCH_RESULTS_READY_SUBSCRIPTION_NAMES" {
   type        = list(string)
   default     = []
   description = "Subscription names for the search-results-ready and repeat-search-results-ready Service Bus topics (in addition to Audit subscriptions). If not provided, no additional subscriptions will be created."
-}
-
-variable "SERVICE_PLAN_MAX_SCALE_OUT" {
-  type        = number
-  default     = 50
-  description = "The maximum number of workers that can be scaled out on the service plan. Affects all functions apps - which can be further restricted, but can never exceed this limit."
-}
-
-variable "SERVICE_PLAN_SKU" {
-  type = object({
-    tier = string,
-    size = string
-  })
-  default = {
-    tier = "Standard"
-    size = "S1"
-  }
-  description = "The SKU size for the *non-elastic* service plan. This only hosts the donor import functions, all other services live on the elastic plan."
 }
 
 variable "SHOULD_BATCH_RESULTS" {
