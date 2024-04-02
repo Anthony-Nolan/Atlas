@@ -17,10 +17,6 @@ locals {
   }
 }
 
-resource "terraform_data" "elastic_service_plan_for_public_api" {
-  input = var.ELASTIC_SERVICE_PLAN_FOR_PUBLIC_API
-}
-
 provider "azurerm" {
   subscription_id = local.subscription_id
 
