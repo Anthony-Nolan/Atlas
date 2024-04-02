@@ -28,6 +28,11 @@ Feature flags permit greater control over the release of new features (see this 
 * BREAKING - Breaking change at the API level
 * FBC - Functionally Breaking Change, i.e., significant change to the behaviour of an existing feature but the API remains unchanged
 
+### 2.0.3
+- E: Add new terraform var to control whether a separate elastic service plan will be created for the Public API app, or whether it will run on the same elastic plan as all other functions apps.
+  - See [Configuration README](/README_Configuration.md#shared) and [this ADR](/ArchitecturalDecisionRecord/Phase2/010-Elastic_Plan_for_Public_API_Optional.md) for more info.
+  - Note: the existing terraform var, `SERVICE-PLAN-MAX-SCALE-OUT`, has been renamed to `ELASTIC-SERVICE-PLAN-MAX-SCALE-OUT`. It has the same default value of `50`.
+
 ### 2.0.2
 - E: Match prediction optimisation: do not load haplotype frequencies into memory when the subject is high-res typed and so does not require imputation.
 
