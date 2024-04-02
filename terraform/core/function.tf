@@ -115,7 +115,7 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
   name                        = local.atlas_public_api_function_app_name
   resource_group_name         = azurerm_resource_group.atlas_resource_group.name
   location                    = local.location
-  service_plan_id             = azurerm_service_plan.atlas-public-api-elastic-plan.id
+  service_plan_id             = var.ELASTIC_SERVICE_PLAN_FOR_PUBLIC_API ? azurerm_service_plan.atlas-public-api-elastic-plan[0].id : azurerm_service_plan.atlas-elastic-plan.id
   client_certificate_mode     = "Required"
   https_only                  = true
   functions_extension_version = "~4"
