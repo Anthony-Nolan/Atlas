@@ -6,16 +6,21 @@ using System.Threading.Tasks;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs;
 using MoreLinq;
+using System.IO;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.Common.AzureStorage.Blob
 {
     public class BlobUploader : AzureStorageBlobClient
     {
+        private readonly JsonSerializer serializer;
+
         public BlobUploader(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString, logger, "Upload")
         {
+            serializer = new JsonSerializer();
         }
 
-        public async Task Upload(string container, string filename, string fileContents)
+        public async Task Upload<T>(string container, string filename, T fileContents)
         {
             var azureStorageEventModel = StartAzureStorageCommunication(filename, container);
 
@@ -34,8 +39,7 @@ namespace Atlas.Common.AzureStorage.Blob
             var batchNumber = 0;
             foreach (var batch in list.Batch(batchSize))
             {
-                var serializedBatch = JsonConvert.SerializeObject(batch);
-                await UploadBlob(containerClient, $"{blobFolder}/{++batchNumber}.json", serializedBatch);
+                await UploadBlob(containerClient, $"{blobFolder}/{++batchNumber}.json", batch);
             }
 
             EndAzureStorageCommunication(azureStorageEventModel);
@@ -49,18 +53,23 @@ namespace Atlas.Common.AzureStorage.Blob
 
             foreach (var file in fileContentsWithNames)
             {
-                var fileContent = JsonConvert.SerializeObject(file.Value);
-                await UploadBlob(containerClient, file.Key, fileContent);
+                await UploadBlob(containerClient, file.Key, file.Value);
             }
 
             EndAzureStorageCommunication(azureStorageEventModel);
         }
 
-        private async Task UploadBlob(BlobContainerClient containerClient, string filename, string fileContents)
+        private async Task UploadBlob<T>(BlobContainerClient containerClient, string filename, T fileContents)
         {
+            using var memoryStream = new MemoryStream();
+            serializer.SerializeToStream(fileContents, memoryStream);
+
+            memoryStream.Seek(0, SeekOrigin.Begin); // Stream position will be on the end of the stream. Need to rewind it to the beginning
+
             var blobClient = containerClient.GetBlobClient(filename);
             var uploadOptions = new BlobUploadOptions { HttpHeaders = new BlobHttpHeaders { ContentType = "text/plain" } };
-            await blobClient.UploadAsync(BinaryData.FromString(fileContents), uploadOptions);
+
+            await blobClient.UploadAsync(memoryStream, uploadOptions);
         }
     }
 }

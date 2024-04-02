@@ -32,8 +32,7 @@ namespace Atlas.Common.AzureStorage.Blob
         public async Task UploadResults<T>(T results, string blobContainerName, string fileName)
         {
             // Results will not be serialised if results are being batched
-            var serialisedResults = JsonConvert.SerializeObject(results);
-            await Upload(blobContainerName, fileName, serialisedResults);
+            await Upload(blobContainerName, fileName, results);
         }
     }
 }

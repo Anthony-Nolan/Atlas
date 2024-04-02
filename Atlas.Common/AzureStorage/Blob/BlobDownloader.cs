@@ -6,6 +6,7 @@ using Azure.Storage.Blobs;
 using System.Linq;
 using MoreLinq;
 using Azure;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.Common.AzureStorage.Blob
 {
@@ -51,8 +52,11 @@ namespace Atlas.Common.AzureStorage.Blob
     
     public class BlobDownloader : AzureStorageBlobClient, IBlobDownloader
     {
+        private readonly JsonSerializer serializer;
+
         public BlobDownloader(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString, logger, "Download")
         {
+            serializer = new JsonSerializer();
         }
 
         public async Task<T> Download<T>(string container, string filename)
@@ -122,19 +126,19 @@ namespace Atlas.Common.AzureStorage.Blob
             EndAzureStorageCommunication(azureStorageEventModel);
         }
 
-        private static async Task<T> GetBlobData<T>(BlobContainerClient containerClient, string filename)
+        private async Task<T> GetBlobData<T>(BlobContainerClient containerClient, string filename)
         {
             try
             {
                 var blobClient = containerClient.GetBlobClient(filename);
                 var downloadedBlob = await blobClient.DownloadContentAsync();
-
                 if (downloadedBlob is not { HasValue: true })
                 {
                     throw new BlobNotFoundException(containerClient.Name, filename);
                 }
 
-                return JsonConvert.DeserializeObject<T>(downloadedBlob.Value.Content.ToString());
+                using var contentStream = downloadedBlob.Value.Content.ToStream();
+                return serializer.DeserializeFromStream<T>(contentStream);
             }
             catch (RequestFailedException ex) when(ex.ErrorCode == "BlobNotFound")
             {

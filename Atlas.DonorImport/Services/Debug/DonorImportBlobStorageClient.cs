@@ -25,8 +25,7 @@ namespace Atlas.DonorImport.Services.Debug
 
         public async Task UploadFile(DonorImportFileSchema fileContents, string fileName)
         {
-            var serialisedResults = JsonConvert.SerializeObject(fileContents);
-            await Upload(donorBlobContainer, fileName, serialisedResults);
+            await Upload(donorBlobContainer, fileName, fileContents);
         }
     }
 }
