@@ -27,8 +27,7 @@ namespace Atlas.DonorImport.Services.DonorChecker
 
         public async Task UploadResults<T>(T checkerResults, string filename) where T : IDonorCheckerResults
         {
-            var serialisedResults = JsonConvert.SerializeObject(checkerResults);
-            await Upload(donorBlobContainer, $"{checkerFolderName}/{filename}", serialisedResults);
+            await Upload(donorBlobContainer, $"{checkerFolderName}/{filename}", checkerResults);
         }
     }
 }
