@@ -96,17 +96,27 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             DateTimeOffset? cutOffDate,
             IAsyncEnumerable<MatchResult> previousLociResultStream = null)
         {
-            using (searchLogger.RunTimed($"Matching at Locus {locus}. (Timing cumulative across loci.)"))
+            using (searchLogger.RunTimed($"Matching at Locus {locus}. (Timing cumulative across loci.)", verboseAtStart: true))
             {
                 var locusCriteria = criteria.LocusCriteria.GetLocus(locus);
                 if (!CanFilterByDonorIds(criteria, matchedLoci))
                 {
+                    if (previousLociResultStream != null)
+                    {
+                        searchLogger.SendTrace($"{nameof(MatchAtLocus)} is going to load all data from {nameof(previousLociResultStream)}", LogLevel.Verbose);
+                    }
+
                     var results = previousLociResultStream == null
                         // If no previous results stream, this is the first locus to be matched.
                         ? null
                         // Loads all results from previous loci into memory. This is expected to be very memory intensive, and is only necessary for searches that allow two mismatches at all required loci, e.g. 8/10, 4/8
                         // If this still causes OutOfMemory exceptions, we may need to look into Zipping multiple ordered streams from different loci.
                         : (await System.Linq.AsyncEnumerable.ToListAsync(previousLociResultStream)).ToDictionary(x => x.DonorId, x => x);
+
+                    if (results != null)
+                    {
+                        searchLogger.SendTrace($"{nameof(MatchAtLocus)} has loaded all data from {nameof(previousLociResultStream)}. Count is {results.Count}", LogLevel.Verbose);
+                    }
 
                     var locusStream = perLocusDonorMatchingService.FindMatchesAtLocus(locus, locusCriteria, criteria.SearchType, cutOffDate);
 
@@ -118,6 +128,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 }
                 else
                 {
+                    searchLogger.SendTrace($"{nameof(MatchAtLocus)} is going to batch results", LogLevel.Verbose);
+
                     // Batching is implemented, as each SQL query needs a concrete list of filtered IDs, rather than a stream. 
                     // This batch size control a balance between performance and memory footprint - larger batches will lead to a higher memory footprint, but fewer SQL connections (and therefore faster searches)
                     await foreach (var resultBatch in previousLociResultStream.Batch(matchingConfigurationSettings.MatchingBatchSize))
@@ -129,10 +141,13 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                             perLocusDonorMatchingService.FindMatchesAtLocus(locus, locusCriteria, criteria.SearchType, cutOffDate, donorIds);
 
                         var filteredResults = await ConsolidateAndFilterResults(criteria, matchedLoci, locus, locusBatchStream, donorBatch);
+
+                        searchLogger.SendTrace($"{nameof(MatchAtLocus)} starts to enumerate batch results", LogLevel.Verbose);
                         await foreach (var result in filteredResults)
                         {
                             yield return result;
                         }
+                        searchLogger.SendTrace($"{nameof(MatchAtLocus)} finished to enumerate batch results", LogLevel.Verbose);
                     }
                 }
             }
