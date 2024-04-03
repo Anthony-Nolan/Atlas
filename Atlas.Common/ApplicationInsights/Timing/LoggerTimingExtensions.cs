@@ -14,8 +14,14 @@ namespace Atlas.Common.ApplicationInsights.Timing
             this ILogger logger,
             string completionMessage,
             LogLevel logLevel = LogLevel.Info,
-            bool logAtStart = false)
+            bool logAtStart = false,
+            bool verboseAtStart = false)
         {
+            if (verboseAtStart)
+            {
+                logger.SendTrace($"Just started: {completionMessage}", LogLevel.Verbose);
+            }
+
             return new LoggingStopwatch.LoggingStopwatch(
                 completionMessage, (text, milliseconds) => logger.SendTrace(text, logLevel, BuildProperties(milliseconds)),
                 logAtStart

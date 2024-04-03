@@ -23,6 +23,9 @@ namespace Atlas.MatchingAlgorithm.Common.Models
                 .ToEnumerable()
                 .Where(x => x != null)
                 .Select(x => x.Value);
+
+        public override string ToString()
+            => $"{LocusCriteria.A?.MismatchCount}{LocusCriteria.B?.MismatchCount}{LocusCriteria.Drb1?.MismatchCount}{LocusCriteria.C?.MismatchCount}{LocusCriteria.Dqb1?.MismatchCount}";
     }
 
     public class AlleleLevelLocusMatchCriteria
