@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -92,11 +93,18 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
         private async IAsyncEnumerable<MatchAndScoreResult> StreamScoringUnranked(StreamingMatchResultsScoringRequest request)
         {
+            searchLogger.SendTrace($"Starting {nameof(StreamScoringUnranked)}", LogLevel.Verbose);
+            var processedRecords = 0l;
+            const long reportMask = 0x1fff;
+
             if (request.ScoringCriteria.LociToScore.IsNullOrEmpty())
             {
                 await foreach (var result in request.MatchResults.SelectAsync(m => new MatchAndScoreResult {MatchResult = m}))
                 {
                     yield return result;
+
+                    if ((++processedRecords & reportMask) == 0)
+                        searchLogger.SendTrace($"{nameof(StreamScoringUnranked)} returned {processedRecords} records so far", LogLevel.Verbose);
                 }
             }
             else
@@ -109,8 +117,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                         MatchResult = matchResult,
                         ScoreResult = await ScoreDonorHlaAgainstPatientMetadata(matchResult.DonorInfo.HlaNames, request.ScoringCriteria, patientScoringMetadata)
                     };
+
+                    if ((++processedRecords & reportMask) == 0)
+                        searchLogger.SendTrace($"{nameof(StreamScoringUnranked)} returned {processedRecords} records so far", LogLevel.Verbose);
                 }
             }
+            searchLogger.SendTrace($"Finishing {nameof(StreamScoringUnranked)} with {processedRecords} records returned", LogLevel.Verbose);
         }
     }
 
