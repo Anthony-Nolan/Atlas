@@ -63,9 +63,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             var splitSearch = MatchCriteriaSimplifier.SplitSearch(criteria);
             searchLogger.SendTrace(
-                $"Split into {splitSearch.Count} sub-searches: {splitSearch.Select(s => $"{s.LocusCriteria.A?.MismatchCount}{s.LocusCriteria.B?.MismatchCount}{s.LocusCriteria.Drb1?.MismatchCount}{s.LocusCriteria.C?.MismatchCount}{s.LocusCriteria.Dqb1?.MismatchCount}").StringJoin("|")}");
+                $"Split into {splitSearch.Count} sub-searches: {splitSearch.Select(s => s.ToString()).StringJoin("|")}");
 
             var matches = RunSubSearches(splitSearch, cutOffDate);
+
+            searchLogger.SendTrace($"{nameof(RunSubSearches)} has prepared enumeration to consume", LogLevel.Verbose);
 
 
             var request = new StreamingMatchResultsScoringRequest
@@ -80,15 +82,21 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             // If memory continues to be a concern on large datasets, it wouldn't be much work from here to stream results to file so we don't even need to store all results in memory! Though 
             // to do so would be to remove ranking of results, and may cause issues down the line where all results *do* need to be loaded into memory.
             var scoredMatches = await scoringService.StreamScoring(request);
-            var reifiedScoredMatches = scoredMatches.DistinctBy(m => m.MatchResult.DonorId).ToList();
+            searchLogger.SendTrace($"{nameof(IMatchScoringService.StreamScoring)} has prepared enumeration to consume", LogLevel.Verbose);
+            var reifiedScoredMatches = scoredMatches.DistinctBy(m => m.MatchResult.DonorId).ToList(); // Should we load all 300k results in memory despite all batching?
+
             searchLogger.SendTrace($"Via {splitSearch.Count} sub-searches, matched {reifiedScoredMatches.Count} donors total.");
 
             var donorLookup = await donorHelper.GetDonorLookup(reifiedScoredMatches);
-            var resultsFilteredByDonorDetails = donorDetailsResultFilterer.FilterResultsByDonorData(
-                new DonorFilteringCriteria { RegistryCodes = matchingRequest.DonorRegistryCodes },
+            searchLogger.SendTrace("Donor lookup has been prepared", LogLevel.Verbose);
+
+            var resultsFilteredByDonorDetails = donorDetailsResultFilterer.FilterResultsByDonorData(        // In order to speed up searches and reduce memory used this filtering should be applied before stage 1&2. 
+                new DonorFilteringCriteria { RegistryCodes = matchingRequest.DonorRegistryCodes },          // Because it is simple criteria which can greatly reduce dataset for searching
                 reifiedScoredMatches,
                 donorLookup
             ).ToList();
+            searchLogger.SendTrace($"{nameof(IDonorDetailsResultFilterer.FilterResultsByDonorData)} has completed filtering results", LogLevel.Verbose);
+
 
             return resultsFilteredByDonorDetails.Select(scoredMatch => MapSearchResultToApiSearchResult(scoredMatch, donorLookup));
         }
@@ -97,11 +105,16 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         {
             foreach (var subSearch in splitSearch)
             {
+                searchLogger.SendTrace($"Preparing enumeration for subsearch: {subSearch}", LogLevel.Verbose);
+
                 var subSearchResults = matchingService.GetMatches(subSearch, cutOffDate);
+                searchLogger.SendTrace($"Starting enumerating {subSearch} results", LogLevel.Verbose);
                 await foreach (var result in subSearchResults)
                 {
                     yield return result;
                 }
+
+                searchLogger.SendTrace($"Finishing enumerating {subSearch} results", LogLevel.Verbose);
             }
         }
 
