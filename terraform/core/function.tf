@@ -118,7 +118,7 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
   name                        = local.atlas_public_api_function_app_name
   resource_group_name         = azurerm_resource_group.atlas_resource_group.name
   location                    = local.location
-  service_plan_id             = azurerm_service_plan.atlas-public-api-elastic-plan.id
+  service_plan_id             = var.ELASTIC_SERVICE_PLAN_FOR_PUBLIC_API ? azurerm_service_plan.atlas-public-api-elastic-plan[0].id : azurerm_service_plan.atlas-elastic-plan.id
   client_certificate_mode     = "Required"
   https_only                  = true
   functions_extension_version = "~4"
@@ -163,6 +163,21 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
 
     "WEBSITE_RUN_FROM_PACKAGE" = var.WEBSITE_RUN_FROM_PACKAGE
   }
+
+  lifecycle {
+    replace_triggered_by = [
+      # Recreate the entire functions app if the service plan changes.
+      # This is necessary in case of updating var from `true` to `false`, as terraform attempts to destroy the public API service plan /before/ modifying the function app's service_plan_id.
+      # This causes a 409 conflict error as the old service plan is still in use by the function app.
+      # Adding a `depends_on` to the service plan does not work, so the only option is to recreate the app.
+      # WARNING: recreating the app will cause the app host keys to be regenerated.
+      terraform_data.elastic_service_plan_for_public_api
+    ]
+  }
+}
+
+resource "terraform_data" "elastic_service_plan_for_public_api" {
+  input = var.ELASTIC_SERVICE_PLAN_FOR_PUBLIC_API
 }
 
 data "azurerm_function_app_host_keys" "atlas_public_api_function_keys" {
