@@ -83,15 +83,15 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             // to do so would be to remove ranking of results, and may cause issues down the line where all results *do* need to be loaded into memory.
             var scoredMatches = await scoringService.StreamScoring(request);
             searchLogger.SendTrace($"{nameof(IMatchScoringService.StreamScoring)} has prepared enumeration to consume", LogLevel.Verbose);
-            var reifiedScoredMatches = scoredMatches.DistinctBy(m => m.MatchResult.DonorId).ToList(); // Should we load all 300k results in memory despite all batching?
+            var reifiedScoredMatches = scoredMatches.DistinctBy(m => m.MatchResult.DonorId).ToList(); 
 
             searchLogger.SendTrace($"Via {splitSearch.Count} sub-searches, matched {reifiedScoredMatches.Count} donors total.");
 
             var donorLookup = await donorHelper.GetDonorLookup(reifiedScoredMatches);
             searchLogger.SendTrace("Donor lookup has been prepared", LogLevel.Verbose);
 
-            var resultsFilteredByDonorDetails = donorDetailsResultFilterer.FilterResultsByDonorData(        // In order to speed up searches and reduce memory used this filtering should be applied before stage 1&2. 
-                new DonorFilteringCriteria { RegistryCodes = matchingRequest.DonorRegistryCodes },          // Because it is simple criteria which can greatly reduce dataset for searching
+            var resultsFilteredByDonorDetails = donorDetailsResultFilterer.FilterResultsByDonorData(        
+                new DonorFilteringCriteria { RegistryCodes = matchingRequest.DonorRegistryCodes },          
                 reifiedScoredMatches,
                 donorLookup
             ).ToList();
