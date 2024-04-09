@@ -139,7 +139,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                         count++;
                         yield return result.Value;
 
-                        LogReturnedRecordsCount(count, $"{nameof(PerformMatchingPhaseOne)} returned {{0}} results so far");
+                        LogReturnedRecordsCount(count, $"{nameof(PerformMatchingPhaseTwo)} returned {{0}} results so far");
                     }
 
                     searchLogger.SendTrace($"{nameof(PerformMatchingPhaseTwo)}: finish batch processing", LogLevel.Verbose);
