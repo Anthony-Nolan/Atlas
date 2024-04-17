@@ -5,6 +5,7 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 {
@@ -73,4 +74,68 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             return criteria;
         }
     }
+
+    public class MatchCriteriaBuilder 
+    {
+        private readonly AlleleLevelMatchCriteriaBuilder inner;
+
+        public MatchCriteriaBuilder()
+        {
+            inner = new AlleleLevelMatchCriteriaBuilder();
+        }
+
+
+        public MatchCriteriaBuilder WithDonorMismatchCount(int mismatchCount)
+        {
+            inner.WithDonorMismatchCount(mismatchCount);
+            return this;
+        }
+
+        public MatchCriteriaBuilder WithRequiredLociMatchCriteria(int mismatchCount)
+        {
+            inner.WithRequiredLociMatchCriteria(mismatchCount);
+            return this;
+        }
+
+        public MatchCriteriaBuilder WithLocusMatchCriteria(Locus locus, AlleleLevelLocusMatchCriteria locusMatchCriteria)
+        {
+            inner.WithLocusMatchCriteria(locus, locusMatchCriteria);
+            return this;
+        }
+
+        public MatchCriteriaBuilder WithLocusMismatchCount(Locus locus, int mismatchCount)
+        {
+            inner.WithLocusMismatchCount(locus, mismatchCount);
+            return this;
+        }
+
+        public MatchCriteriaBuilder WithDefaultLocusMatchCriteria(AlleleLevelLocusMatchCriteria locusMatchCriteria)
+        {
+            inner.WithDefaultLocusMatchCriteria(locusMatchCriteria);
+            return this;
+        }
+
+        public MatchCriteriaBuilder WithSearchType(DonorType searchType)
+        {
+            inner.WithSearchType(searchType);
+            return this;
+        }
+
+        public MatchCriteriaBuilder WithShouldIncludeBetterMatches(bool shouldIncludeBetterMatches)        
+        {
+            inner.WithShouldIncludeBetterMatches(shouldIncludeBetterMatches);
+            return this;
+        }
+
+
+        public MatchCriteria Build()
+        {
+            return new MatchCriteria
+            {
+                NonHlaFilteringCriteria = new NonHlaFilteringCriteria(),
+                AlleleLevelMatchCriteria = inner.Build()
+            };
+        }
+    }
+
 }

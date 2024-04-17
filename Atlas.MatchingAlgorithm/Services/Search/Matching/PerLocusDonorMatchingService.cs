@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.Common.Models.Matching;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
@@ -30,7 +31,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             AlleleLevelLocusMatchCriteria criteria,
             DonorType searchType,
             DateTimeOffset? cutOffDate,
-            HashSet<int> donorIds = null);
+            HashSet<int> donorIds = null,
+            ICollection<string> donorRegistryCodes = null
+            );
     }
 
     internal class PerLocusDonorMatchingService : IPerLocusDonorMatchingService
@@ -52,7 +55,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             AlleleLevelLocusMatchCriteria criteria,
             DonorType searchType,
             DateTimeOffset? cutOffDate,
-            HashSet<int> donorIds = null)
+            HashSet<int> donorIds = null,
+            ICollection<string> donorRegistryCodes = null)
         {
             var repoCriteria = new LocusSearchCriteria
             {
@@ -65,7 +69,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             var filteringOptions = new MatchingFilteringOptions
             {
                 DonorType = databaseFilteringAnalyser.ShouldFilterOnDonorTypeInDatabase(repoCriteria) ? searchType : (DonorType?) null,
-                DonorIds = donorIds
+                DonorIds = donorIds,
+                RegistryCodes = donorRegistryCodes,
             };
 
             var donorMatchRelations = donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions, cutOffDate);
