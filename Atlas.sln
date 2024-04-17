@@ -106,11 +106,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Readmes", "Readmes", "{122DA7C4-50ED-45A5-97D9-9CFC3391A87B}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
-		README_Configuration.md = README_Configuration.md
-		README_Deployment.md = README_Deployment.md
-		README_DevelopmentStartUpGuide.md = README_DevelopmentStartUpGuide.md
-		README_Integration.md = README_Integration.md
-		README_Support.md = README_Support.md
+		README_Specifications.md = README_Specifications.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ManualTesting", "ManualTesting", "{EF1B180D-37D3-4A7A-9F2D-0E7DF3F14D36}"
@@ -152,8 +148,22 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Validation", "Validation", "{C144C94A-45FE-48D0-9200-5C97F531AF00}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Development", "Development", "{58156A0D-2C65-48B6-8E69-3E3F58C893B9}"
+	ProjectSection(SolutionItems) = preProject
+		README_ArchitecturalOverview.md = README_ArchitecturalOverview.md
+		README_Contribution_Versioning.md = README_Contribution_Versioning.md
+		README_DevelopmentSettings.md = README_DevelopmentSettings.md
+		README_DevelopmentStartUpGuide.md = README_DevelopmentStartUpGuide.md
+		README_Maintenance.md = README_Maintenance.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InstallationAndUsage", "InstallationAndUsage", "{CC374510-5C1B-435D-9F9F-37E943D9A840}"
+	ProjectSection(SolutionItems) = preProject
+		README_Configuration.md = README_Configuration.md
+		README_Deployment.md = README_Deployment.md
+		README_Integration.md = README_Integration.md
+		README_Maintenance.md = README_Maintenance.md
+		README_Support.md = README_Support.md
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.Common.Public.Models", "Atlas.Common.Public.Models\Atlas.Common.Public.Models.csproj", "{01BA6FE0-B631-4262-A8B8-9EC27636A65D}"
 EndProject

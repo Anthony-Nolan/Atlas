@@ -14,7 +14,10 @@ The project version will be appropriately incremented with each change to the pr
 ## Feature Flags
 Feature flags permit greater control over the release of new features (see this [ADR](/ArchitecturalDecisionRecord/Phase2/009-Feature_Flags.md) for more background). FFs are managed within Azure using an App Configuration resource (`[ENV]-ATLAS-APP-CONFIGURATION`). This section of the changelog documents feature flags, their state within an Atlas version (new (`N`), removed (`R`), or inherited from previous version (`P`)), and the ticket that describes their eventual removal ("retirement plan").
 
-### 1.7.0
+### 2.1.0
+|State|Name|Component|Description|Retirement Plan|
+|-----|----|---------|-----------|---------------|
+|**R**|useDonorInfoStoredInMatchingAlgorithmDb|Matching Algorithm| IMPORTANT: Donor metadata will now _only_ be read from the matching db, instead of from the donor store, during the matching phase of search. |#1067|
 
 ### 1.6.0
 
@@ -30,50 +33,76 @@ Feature flags permit greater control over the release of new features (see this 
 * BREAKING - Breaking change at the API level
 * FBC - Functionally Breaking Change, i.e., significant change to the behaviour of an existing feature but the API remains unchanged
 
-### 2.1.0
+### 2.1.0 ([issue list](https://github.com/Anthony-Nolan/Atlas/milestone/8?closed=1))
+The main goal of this version was to add the debug endpoints needed to enable automated end-to-end testing (E2E) of an existing Atlas installation.
+A new public, open-source project has been released to host Atlas E2E tests: https://github.com/Anthony-Nolan/Atlas.Auto.Tests
 
-#### Donor Import
-* E: Added new debug function to `DonorImport.Functions`, `GetRandomDonors`, to aid in the generation of test data.
+#### IMPORTANT
+* FBC: The feature flag, `useDonorInfoStoredInMatchingAlgorithmDb` has been removed in this version ([see section above](#210)).
+  - Donor metadata will now only be read from the matching algorithm db.
+  - If upgrading Atlas from a version before `1.6.0`, when the flag was introduced, then you should:
+    1) First upgrade Atlas to `v2.0.3` (i.e., the version previous to this one).
+    2) Run a data refresh job to populate the new metadata columns in the `Donors` table.
+    3) Finally, deploy Atlas `v2.1.0`.
 
-### 2.0.3
+#### Debug
+* E: A host of new endpoints has been added for the debug of the most critical and oft-used production workflows: Donor Import, Search, Repeat Search and Scoring.
+* E: New projects, `Atlas.Debug.Client` and `Atlas.Debug.Client.Models`, collate these debug endpoints into client libraries that can be used by the E2E tests.
+  * These projects have been added to the build pipeline to generate NuGet packages and have their own changelogs and versioning.
+
+#### WMDA Validation Set 4
+* E: `ManualTesting` projects have been refactored and enhanced to allow running of the new WMDA validation dataset for exercise 4. See [Manual Testing README](/README_ManualTesting.md#match-prediction-validation-using-wmda-datasets) for more details.
+
+#### Search Performance
+* E: Reduced RAM usage by handling blob data using streams.
+
+#### Bug Fixes
+A variety of non-critical bug fixes:
+* BF: Donor import message will no longer dead-letter due to `DuplicateDonorFileImportException`.
+* BF: `StoreOriginalSearchResults` ignores multiple plays of the same `matching-results-ready` message and will no longer throw `DuplicateKeyException` in this edge case.
+* BF: Failed `updated-searchable-donors` messages will now be applied upon replay (assuming the underlying issue has been addressed between attempts).
+* BF: Exceptions thrown on startup of `MatchingAlgorithm.Functions.DonorManagement` app have been resolved by making `MessageReceiverFactory.GetMessageReceiver` threadsafe.
+
+### 2.0.3 ([issue list](https://github.com/Anthony-Nolan/Atlas/milestone/11?closed=1))
 - E: Added new terraform var, ELASTIC_SERVICE_PLAN_FOR_PUBLIC_API, to control whether a separate elastic service plan will be created for the Public API app, or whether it will run on the same elastic plan as all other functions apps.
   - See [Configuration README](/README_Configuration.md#shared) for important release notes.
   - See [this ADR](/ArchitecturalDecisionRecord/Phase2/010-Elastic_Plan_for_Public_API_Optional.md) for general info.
   - Note: the existing terraform var, `SERVICE-PLAN-MAX-SCALE-OUT`, has been renamed to `ELASTIC-SERVICE-PLAN-MAX-SCALE-OUT`. It has the same default value of `50`.
 
-### 2.0.2
-- E: Match prediction optimisation: do not load haplotype frequencies into memory when the subject is high-res typed and so does not require imputation.
+### 2.0.2 ([issue list](https://github.com/Anthony-Nolan/Atlas/milestone/10?closed=1))
+#### Match Prediction
+- E: Optimisation: do not load haplotype frequencies into memory when the subject is high-res typed and does not require imputation.
 
 #### Support
 - E: Added `InnerException` name to the App Insights custom event that logs HLA expansion failures.
 - E: Added new endpoint to allow `updated-searchable-donors` message to be re-published for a given donor, in the event the original message failed to be applied. [See Support README for more info](/README_Support.md#re-publish-failed-updated-searchable-donors-messages).
 - BF: For scheduled, automated data refresh attempts, do not throw an exception if a new HLA nomenclature version has not been detected.
 
-### 2.0.1
+### 2.0.1 ([issue list](https://github.com/Anthony-Nolan/Atlas/milestone/9?closed=1))
 - E: Atlas can now be configured to reject Full mode import files. See [Donor Import README](../README_DonorImport.md#full-mode) for more details.
 - E: For donor import `EmptyDonorFileException`: alert description now contains the name of the failed file instead of the exception stack trace.
 
-### 2.0.0
+### 2.0.0 ([issue list](https://github.com/Anthony-Nolan/Atlas/milestone/7?closed=1))
 Major version number bump due to breaking change in the client. See [client changelog](../Atlas.Client.Models/CHANGELOG_Client.md) for details.
 
 * E/BF: Null allele vs. expressing HLA typing is no longer assigned the grade of `Mismatch`, and instead is assigned the new grade, `ExpressingVsNull`.
    * The most visible outcome of this change is that the match count calculated by scoring will now align with that of matching in this edge case.
    * This can be interpreted as either an enhancement or a bug fix, depending on user expectations.
 
-### 1.6.3
+### 1.6.3 ([issue list](https://github.com/Anthony-Nolan/Atlas/milestone/6?closed=1))
 - E: Terraform-mediated migration of classic Application Insights to workspace-based Application Insights.
   - This required the creation of a new Log Analytics workspace, named `<env>-ATLAS`
   - New release variables have been added to determine the workspace daily quota (default: unlimited) and SKU (default: PAYG).
   - Note: terraform may recreate the feature flag, `useDonorInfoStoredInMatchingAlgorithmDb`, due to [this bug](https://github.com/hashicorp/terraform-provider-azurerm/issues/23315).
     - If so, the flag will need to be manually re-enabled post release.
 
-### 1.6.2
+### 1.6.2 ([issue list](https://github.com/Anthony-Nolan/Atlas/milestone/5?closed=1))
 - BF: Fix for a failing search request by enhancing the scoring HMD lookup to support ambiguous molecular typings that only expands to null alleles.
 
-### 1.6.1
+### 1.6.1 ([issue list](https://github.com/Anthony-Nolan/Atlas/milestone/4?closed=1))
 - E: Indexes on several matching algorithm db tables have been add/amended to improve performance, based on Azure recommendations.
 
-### 1.6.0
+### 1.6.0 ([issue list](https://github.com/Anthony-Nolan/Atlas/milestone/2?closed=1))
 This version has a significant set of changes that were prompted by the integration of Atlas into WMDA Search and Match. Several of them are around handling of searches with very large resultsets, improvements to donor import reporting, and bug fixes identified during testing.
 
 #### Blob Storage
@@ -143,7 +172,7 @@ This version has a significant set of changes that were prompted by the integrat
 - BREAKING: URL of all debug endpoints (including those added before this version) now have `/debug/` as a route prefix.
 
 
-### 1.5.0
+### 1.5.0 ([issue list](https://github.com/Anthony-Nolan/Atlas/milestone/1?closed=1))
 
 #### API Documentation
 * Added new http function that generates a JSON schema for the requested ResultSet client model.
