@@ -206,11 +206,15 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             };
         }
 
-        private async Task<AlleleLevelMatchCriteria> GetSixOutOfSixMatchCriteria()
+        private async Task<MatchCriteria> GetSixOutOfSixMatchCriteria()
         {
             var matchCriteriaMapper = DependencyInjection.DependencyInjection.Provider.GetService<IMatchCriteriaMapper>();
             var searchRequest = new SearchRequestFromHlasBuilder(MatchingDonorHla).SixOutOfSix().Build();
-            return await matchCriteriaMapper.MapRequestToAlleleLevelMatchCriteria(searchRequest);
+            return new MatchCriteria
+            {
+                AlleleLevelMatchCriteria = await matchCriteriaMapper.MapRequestToAlleleLevelMatchCriteria(searchRequest),
+                NonHlaFilteringCriteria = new NonHlaFilteringCriteria()
+            };
         }
     }
 }

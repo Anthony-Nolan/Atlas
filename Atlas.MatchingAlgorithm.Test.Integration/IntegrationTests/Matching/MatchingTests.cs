@@ -211,9 +211,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         /// <returns> A criteria builder pre-populated with default criteria data of an exact search. </returns>
-        private static AlleleLevelMatchCriteriaBuilder GetDefaultCriteriaBuilder()
+        private static MatchCriteriaBuilder GetDefaultCriteriaBuilder()
         {
-            return new AlleleLevelMatchCriteriaBuilder()
+            return new MatchCriteriaBuilder()
                 .WithSearchType(DefaultDonorType)
                 .WithShouldIncludeBetterMatches(true)
                 .WithDonorMismatchCount(0)

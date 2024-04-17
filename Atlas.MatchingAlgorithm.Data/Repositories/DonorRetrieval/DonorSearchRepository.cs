@@ -17,6 +17,7 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Sql;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {
@@ -76,7 +77,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 
             if (donorIds != null && !TypingIsRequiredAtLocus(locus))
             {
-                var untypedResults = await GetResultsForDonorsUntypedAtLocus(locus, donorIds.ToList());
+                var untypedResults = await GetResultsForDonorsUntypedAtLocus(locus, donorIds);
                 foreach (var untypedResult in untypedResults)
                 {
                     yield return untypedResult;
@@ -163,6 +164,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                         filteringOptions.DonorIds,
                         new TempTableFilterConfiguration {TempTableName = "Donors", InsertTimeoutInSeconds = 300}
                     );
+
                     var pGroups1TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering(
                         "hlaPGroupRelations",
                         "PGroupId",
@@ -176,7 +178,17 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                         new TempTableFilterConfiguration {TempTableName = "PGroups2", InsertTimeoutInSeconds = 300}
                     );
 
+                    var donorRegistryCodeTempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering(
+                            "d",
+                            "RegistryCode",
+                            filteringOptions.RegistryCodes,
+                            new TempTableFilterConfiguration { TempTableName = "RegistryCodes", InsertTimeoutInSeconds = 300 });
+                        
                     var donorIdTempTableJoin = filteringOptions.ShouldFilterOnDonorIds ? donorIdTempTableJoinConfig.FilteredJoinQueryString : "";
+
+                    var donorRegistryCodeTempTableJoin = filteringOptions.ShouldFilterOnRegistryCodeIds 
+                        ? $" JOIN Donors d on m.DonorId = d.DonorId {donorRegistryCodeTempTableJoinConfig.FilteredJoinQueryString}" 
+                        : "";
 
                     var joinType = mustBeDoubleMatch ? "INNER" : "FULL OUTER";
 
@@ -189,6 +201,7 @@ FROM {hlaPGroupRelationTableName} hlaPGroupRelations
 JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
 {donorIdTempTableJoin}
 {donorUpdatedJoin}
+{donorRegistryCodeTempTableJoin}
 ) as m_1; 
 
 CREATE INDEX IX_Temp_Position1 ON #Pos1(DonorId1);
@@ -201,6 +214,7 @@ FROM {hlaPGroupRelationTableName} hlaPGroupRelations
 JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
 {donorIdTempTableJoin}
 {donorUpdatedJoin}
+{donorRegistryCodeTempTableJoin}
 ) as m_2;
 
 CREATE INDEX IX_Temp_Position2 ON #Pos2(DonorId2);
@@ -213,6 +227,11 @@ ORDER BY DonorId
 ";
                     await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
                     {
+                        if (filteringOptions.ShouldFilterOnRegistryCodeIds)
+                        {
+                            await donorRegistryCodeTempTableJoinConfig.BuildTempTableFactory(conn);
+                        }
+
                         if (filteringOptions.DonorIds != null)
                         {
                             await donorIdTempTableJoinConfig.BuildTempTableFactory(conn);
@@ -240,7 +259,7 @@ ORDER BY DonorId
             }
         }
 
-        private async Task<IEnumerable<PotentialHlaMatchRelation>> GetResultsForDonorsUntypedAtLocus(Locus locus, IList<int> donorIds)
+        private async Task<IEnumerable<PotentialHlaMatchRelation>> GetResultsForDonorsUntypedAtLocus(Locus locus, ICollection<int> donorIds)
         {
             using (logger.RunTimed($"Fetched untyped Donor IDs at Locus: {locus}"))
             {
@@ -271,7 +290,7 @@ ORDER BY DonorId
             return Attribute.IsDefined(locusProperty, typeof(RequiredAttribute));
         }
 
-        private async Task<IEnumerable<int>> GetIdsOfDonorsUntypedAtLocus(Locus locus, IList<int> donorIds)
+        private async Task<IEnumerable<int>> GetIdsOfDonorsUntypedAtLocus(Locus locus, ICollection<int> donorIds)
         {
             if (!donorIds.Any())
             {
