@@ -23,10 +23,10 @@ namespace Atlas.MatchingAlgorithm.Common.Models.Matching
         /// </summary>
         public ICollection<int> DonorIds { get; set; }
 
-        public bool ShouldFilterOnDonorIds => DonorIds != null;
+        public bool ShouldFilterOnDonorIds => DonorIds != null && DonorIds.Count > 0;
 
         public ICollection<string> RegistryCodes { get; set; }
 
-        public bool ShouldFilterOnRegistryCodeIds => RegistryCodes != null;  
+        public bool ShouldFilterOnRegistryCodeIds => RegistryCodes != null && RegistryCodes.Count > 0;
     }
 }
