@@ -232,7 +232,7 @@ ORDER BY DonorId
                             await donorRegistryCodeTempTableJoinConfig.BuildTempTableFactory(conn);
                         }
 
-                        if (filteringOptions.DonorIds != null)
+                        if (filteringOptions.ShouldFilterOnDonorIds)
                         {
                             await donorIdTempTableJoinConfig.BuildTempTableFactory(conn);
                         }

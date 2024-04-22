@@ -145,14 +145,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithNoAllowedMismatches_MatchesDonorWithTwoOfTwoHomozygousMatchesAtLocus()
         {
-            var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build(), null).ToListAsync();
+            var results = await matchingService.GetMatches(new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()).Build(), null).ToListAsync();
             results.ShouldContainDonor(DonorInfoWithFullHomozygousMatchAtLocus.DonorId);
         }
 
         [Test]
         public async Task Search_WithNoAllowedMismatches_MatchesDonorWithTwoOfTwoHeterozygousMatchesAtLocus()
         {
-            var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build(), null).ToListAsync();
+            var results = await matchingService.GetMatches(new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()).Build(), null).ToListAsync();
 
             results.ShouldContainDonor(DonorInfoWithFullExactHeterozygousMatchAtLocus.DonorId);
             results.ShouldContainDonor(DonorInfoWithFullCrossHeterozygousMatchAtLocus.DonorId);
@@ -161,7 +161,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithNoAllowedMismatches_DoesNotMatchDonorsWithFewerThanTwoMatchesAtLocus()
         {
-            var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build(), null).ToListAsync();
+            var results = await matchingService.GetMatches(new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()).Build(), null).ToListAsync();
             results.ShouldNotContainDonor(DonorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
             results.ShouldNotContainDonor(DonorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
             results.ShouldNotContainDonor(DonorInfoWithNoMatchAtLocus.DonorId);
@@ -170,9 +170,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithOneAllowedMismatchAtLocus_MatchesDonorsWithTwoMatchesAtLocus()
         {
-            var criteria = GetDefaultCriteriaBuilder()
+            var criteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(1)
-                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1))
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1)))
                 .Build();
 
             var results = await matchingService.GetMatches(criteria, null).ToListAsync();
@@ -185,9 +185,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithOneAllowedMismatchAtLocus_MatchesDonorWithOneOfTwoHvGAtLocus()
         {
-            var criteria = GetDefaultCriteriaBuilder()
+            var criteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(1)
-                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1))
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1)))
                 .Build();
 
             var results = await matchingService.GetMatches(criteria, null).ToListAsync();
@@ -198,9 +198,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithOneAllowedMismatchAtLocus_MatchesDonorWithOneOfTwoBothDirectionsAtLocus()
         {
-            var criteria = GetDefaultCriteriaBuilder()
+            var criteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(1)
-                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1))
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1)))
                 .Build();
 
             var results = await matchingService.GetMatches(criteria, null).ToListAsync();
@@ -211,9 +211,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithOneAllowedMismatchAtLocus_DoesNotMatchDonorsWithNoMatchAtLocus()
         {
-            var criteria = GetDefaultCriteriaBuilder()
+            var criteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(1)
-                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1))
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1)))
                 .Build();
 
             var results = await matchingService.GetMatches(criteria, null).ToListAsync();
@@ -224,9 +224,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithTwoAllowedMismatchesAtLocus_MatchesDonorWithNoMatchAtLocus()
         {
-            var criteria = GetDefaultCriteriaBuilder()
+            var criteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(2)
-                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2))
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2)))
                 .Build();
 
             var results = await matchingService.GetMatches(criteria, null).ToListAsync();
@@ -237,9 +237,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithTwoAllowedMismatchesAtLocus_MatchesDonorsWithExactMatchAtLocus()
         {
-            var criteria = GetDefaultCriteriaBuilder()
+            var criteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(2)
-                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2))
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2)))
                 .Build();
 
             var results = await matchingService.GetMatches(criteria, null).ToListAsync();
@@ -252,9 +252,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithTwoAllowedMismatchesAtLocus_MatchesDonorsWithSingleMatchAtLocus()
         {
-            var criteria = GetDefaultCriteriaBuilder()
+            var criteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(2)
-                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2))
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2)))
                 .Build();
 
             var results = await matchingService.GetMatches(criteria, null).ToListAsync();
@@ -264,8 +264,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         /// <returns> A criteria builder pre-populated with default criteria data of an exact search. </returns>
-        private MatchCriteriaBuilder GetDefaultCriteriaBuilder() =>
-            new MatchCriteriaBuilder()
+        private AlleleLevelMatchCriteriaBuilder GetDefaultCriteriaBuilder() =>
+            new AlleleLevelMatchCriteriaBuilder()
                 .WithShouldIncludeBetterMatches(true)
                 .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().Build())
                 .WithDefaultLocusMatchCriteria(DefaultMatchingCriteriaBuilder().Build())

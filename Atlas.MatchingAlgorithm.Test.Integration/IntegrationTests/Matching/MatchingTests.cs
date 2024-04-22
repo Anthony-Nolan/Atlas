@@ -148,8 +148,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task GetMatches_ForAdultDonors_DoesNotMatchCordDonors()
         {
-            var searchCriteria = GetDefaultCriteriaBuilder()
-                .WithSearchType(DonorType.Adult)
+            var searchCriteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
+                .WithSearchType(DonorType.Adult))
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria, null).ToListAsync();
             results.Should().NotContain(d => d.DonorInfo.DonorId == cordDonorInfoWithFullHeterozygousMatchAtLocusA.DonorId);
@@ -159,8 +159,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task GetMatches_ForCordDonors_DoesNotMatchAdultDonors()
         {
-            var searchCriteria = GetDefaultCriteriaBuilder()
-                .WithSearchType(DonorType.Cord)
+            var searchCriteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
+                .WithSearchType(DonorType.Cord))
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria, null).ToListAsync();
             results.Should().NotContain(d => d.DonorInfo.DonorId == adultDonorInfoWithFullMatch.DonorId);
@@ -169,8 +169,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task GetMatches_ForCordDonors_MatchesCordDonors()
         {
-            var searchCriteria = GetDefaultCriteriaBuilder()
-                .WithSearchType(DonorType.Cord)
+            var searchCriteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
+                .WithSearchType(DonorType.Cord))
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria, null).ToListAsync();
             results.ShouldContainDonor(cordDonorInfoWithFullHeterozygousMatchAtLocusA.DonorId);
@@ -180,9 +180,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task GetMatches_WhenBetterMatchesDisallowed_DoesNotMatchDonorsWithFewerMismatchesThanSpecified()
         {
-            var searchCriteria = GetDefaultCriteriaBuilder()
+            var searchCriteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
                 .WithShouldIncludeBetterMatches(false)
-                .WithDonorMismatchCount(1)
+                .WithDonorMismatchCount(1))
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria, null).ToListAsync();
             results.Should().NotContain(d => d.DonorInfo.DonorId == adultDonorInfoWithFullMatch.DonorId);
@@ -191,8 +191,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task GetMatches_WhenBetterMatchesAllowed_MatchesDonorsWithFewerMismatchesThanSpecified()
         {
-            var searchCriteria = GetDefaultCriteriaBuilder()
-                .WithDonorMismatchCount(1)
+            var searchCriteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
+                .WithDonorMismatchCount(1))
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria, null).ToListAsync();
             results.ShouldContainDonor(cordDonorInfoWithFullHeterozygousMatchAtLocusA.DonorId);
@@ -204,16 +204,17 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             var unavailableDonor = DefaultDonorBuilder().Build();
             await AddTestDonorUnavailableForSearch(unavailableDonor);
 
-            var searchCriteria = GetDefaultCriteriaBuilder().Build();
+            var searchCriteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder())
+                .Build();
 
             var results = await matchingService.GetMatches(searchCriteria, null).ToListAsync();
             results.ShouldNotContainDonor(unavailableDonor.DonorId);
         }
 
         /// <returns> A criteria builder pre-populated with default criteria data of an exact search. </returns>
-        private static MatchCriteriaBuilder GetDefaultCriteriaBuilder()
+        private static AlleleLevelMatchCriteriaBuilder GetDefaultCriteriaBuilder()
         {
-            return new MatchCriteriaBuilder()
+            return new AlleleLevelMatchCriteriaBuilder()
                 .WithSearchType(DefaultDonorType)
                 .WithShouldIncludeBetterMatches(true)
                 .WithDonorMismatchCount(0)
