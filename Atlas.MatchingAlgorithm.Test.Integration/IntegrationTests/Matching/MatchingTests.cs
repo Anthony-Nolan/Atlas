@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
@@ -145,6 +146,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             await donorUpdateRepository.SetDonorBatchAsUnavailableForSearch(new[] {donorInfoWithExpandedHla.DonorId});
         }
 
+        private static async Task AddTestDonors(params DonorInfoWithExpandedHla[] donors)
+        {
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
+            var donorUpdateRepository = repositoryFactory.GetDonorUpdateRepository();
+
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(donors, false);
+        }
+
         [Test]
         public async Task GetMatches_ForAdultDonors_DoesNotMatchCordDonors()
         {
@@ -209,6 +218,59 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
             var results = await matchingService.GetMatches(searchCriteria, null).ToListAsync();
             results.ShouldNotContainDonor(unavailableDonor.DonorId);
+        }
+
+        [Test]
+        public async Task GetMatches_WhenRegistryCodeFilterSet_ReturnsOnlyDonorsBelongToSpecifiedRegistryCode()
+        {
+            var registryCode = Guid.NewGuid().ToString();
+
+            var donor1 = DefaultDonorBuilder()
+                .WithRegistryCode(registryCode)
+                .Build();
+
+            var donor2 = DefaultDonorBuilder()
+                .WithRegistryCode(registryCode)
+                .Build();
+
+            await AddTestDonors(donor1, donor2);
+
+            // Act
+            var searchCriteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder())
+                .WithRegistryCodesFilter(new[] { registryCode })
+                .Build();
+
+            var results = await matchingService.GetMatches(searchCriteria, null).ToListAsync();
+
+            results.Should().HaveCount(2);
+            results.Should().Contain(x => x.DonorId == donor1.DonorId);
+            results.Should().Contain(x => x.DonorId == donor2.DonorId);
+        }
+
+        [Test]
+        public async Task GetMatches_WhenSeveralRegistryCodeFilterSet_ReturnsOnlyDonorsBelongToSpecifiedRegistryCodes()
+        {
+            var registryCodes = new[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
+            var donor1 = DefaultDonorBuilder()
+                .WithRegistryCode(registryCodes[0])
+                .Build();
+
+            var donor2 = DefaultDonorBuilder()
+                .WithRegistryCode(registryCodes[1])
+                .Build();
+
+            await AddTestDonors(donor1, donor2);
+
+            // Act
+            var searchCriteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder())
+                .WithRegistryCodesFilter(registryCodes)
+                .Build();
+
+            var results = await matchingService.GetMatches(searchCriteria, null).ToListAsync();
+
+            results.Should().HaveCount(2);
+            results.Should().Contain(x => x.DonorId == donor1.DonorId);
+            results.Should().Contain(x => x.DonorId == donor2.DonorId);
         }
 
         /// <returns> A criteria builder pre-populated with default criteria data of an exact search. </returns>
