@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections;
+using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData;
@@ -78,6 +79,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
     public class MatchCriteriaBuilder 
     {
         private readonly AlleleLevelMatchCriteriaBuilder inner;
+        private string[] registryCodes;
 
         public MatchCriteriaBuilder(AlleleLevelMatchCriteriaBuilder alleleLevelMatchCriteriaBuilder)
         {
@@ -92,11 +94,17 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             return new MatchCriteriaBuilder(builder);
         }
 
+        public MatchCriteriaBuilder WithRegistryCodesFilter(string[] codes)
+        {
+            registryCodes = codes;
+            return this;
+        }
+
         public MatchCriteria Build()
         {
             return new MatchCriteria
             {
-                NonHlaFilteringCriteria = new NonHlaFilteringCriteria(),
+                NonHlaFilteringCriteria = new NonHlaFilteringCriteria() { RegistryCodes = registryCodes?.ToList()},
                 AlleleLevelMatchCriteria = inner.Build()
             };
         }
