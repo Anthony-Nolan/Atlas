@@ -66,39 +66,15 @@ jobs:
           arguments: '--no-restore'
 
       - task: DotNetCoreCLI@2
-        displayName: 'Prepare Client Models'
+        displayName: 'Pack API Client Packages'
         inputs:
           command: pack
-          packagesToPack: '**/Atlas.Client.Models.csproj'
-          packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
-          nobuild: true
-
-      - task: DotNetCoreCLI@2
-        displayName: 'Prepare Matching Algorithm Client Models'
-        inputs:
-          command: pack
-          packagesToPack: '**/Atlas.MatchingAlgorithm.Client.Models.csproj'
-          packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
-          nobuild: true
-
-      - task: DotNetCoreCLI@2
-        displayName: 'Prepare Donor Import File Schema Models'
-        inputs:
-          command: pack
-          packagesToPack: '**/Atlas.DonorImport.FileSchema.Models.csproj'
-          packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
-          nobuild: true
-
-      - task: DotNetCoreCLI@2
-        displayName: 'Prepare Common Public Models'
-        inputs:
-          command: pack
-          packagesToPack: '**/Atlas.Common.Public.Models.csproj'
+          packagesToPack: '**/Atlas.Client.Models.csproj;**/Atlas.MatchingAlgorithm.Client.Models.csproj;**/Atlas.DonorImport.FileSchema.Models.csproj;**/Atlas.Common.Public.Models.csproj'
           packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
           nobuild: true
 
       - task: PublishBuildArtifacts@1
-        displayName: 'Publish Artifact: Published Models'
+        displayName: 'Publish API Client Packages'
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/published-models'
           ArtifactName: published-models
@@ -123,19 +99,10 @@ jobs:
           ArtifactName: published-models-ci
 
       - task: DotNetCoreCLI@2
-        displayName: 'Prepare Debug Client'
+        displayName: 'Prepare Debug Clients'
         inputs:
           command: pack
-          packagesToPack: '**/Atlas.Debug.Client.csproj'
-          packDirectory: '$(Build.ArtifactStagingDirectory)/debug-client'
-          nobuild: true
-          configuration: 'Release'
-
-      - task: DotNetCoreCLI@2
-        displayName: 'Prepare Debug Client Models'
-        inputs:
-          command: pack
-          packagesToPack: '**/Atlas.Debug.Client.Models.csproj'
+          packagesToPack: '**/Atlas.Debug.Client*.csproj'
           packDirectory: '$(Build.ArtifactStagingDirectory)/debug-client'
           nobuild: true
 
