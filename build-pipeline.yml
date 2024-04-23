@@ -98,6 +98,22 @@ jobs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/published-models-ci'
           ArtifactName: published-models-ci
 
+      - script: |
+          echo "##vso[task.setvariable variable=TargetAtlasVersion;]atlas$(grep -oP '(?<=<TargetAtlasVersion>).*?(?=</TargetAtlasVersion>)' **/Atlas.Debug.Client.csproj)"
+        displayName: 'Extract Target Atlas Version'
+
+      - script: |
+          echo "TargetAtlasVersion: $(TargetAtlasVersion)"
+        displayName: 'Print target Atlas version'
+
+      - script: |
+          echo "##vso[task.setvariable variable=CombinedDebugVersion;]$(grep -oP '(?<=<VersionPrefix>).*?(?=</VersionPrefix>)' **/Atlas.Debug.Client.csproj)-$(TargetAtlasVersion)"
+        displayName: 'Set Debug Client version'
+
+      - script: |
+          echo "CombinedDebugVersion: $(CombinedDebugVersion)"
+        displayName: 'Print Debug Clients version'
+
       - task: DotNetCoreCLI@2
         displayName: 'Prepare Debug Clients'
         inputs:
@@ -105,6 +121,8 @@ jobs:
           packagesToPack: '**/Atlas.Debug.Client*.csproj'
           packDirectory: '$(Build.ArtifactStagingDirectory)/debug-client'
           nobuild: true
+          versioningScheme: byEnvVar
+          versionEnvVar: CombinedDebugVersion
 
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Debug Client Packages'
@@ -113,10 +131,10 @@ jobs:
           ArtifactName: debug-client
 
         # Suffix version number with build ID to allow for a prerelease ci (continuous integration) packages to be published
-      - bash: dotnet pack **/Atlas.Debug.Client.csproj --output $(Build.ArtifactStagingDirectory)/debug-client-ci --no-build /p:Configuration=Release --version-suffix "ci-$(Build.BuildId)"
+      - bash: dotnet pack **/Atlas.Debug.Client.csproj --output $(Build.ArtifactStagingDirectory)/debug-client-ci --no-build /p:Configuration=Release --version-suffix "$(TargetAtlasVersion)-ci-$(Build.BuildId)"
         displayName: Pack Prerelease Debug Client
       
-      - bash: dotnet pack **/Atlas.Debug.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/debug-client-ci --no-build --version-suffix "ci-$(Build.BuildId)"
+      - bash: dotnet pack **/Atlas.Debug.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/debug-client-ci --no-build --version-suffix "$(TargetAtlasVersion)-ci-$(Build.BuildId)"
         displayName: Pack Prerelease Debug Client Models
 
       - task: PublishBuildArtifacts@1
