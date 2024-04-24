@@ -48,7 +48,7 @@ A new public, open-source project has been released to host Atlas E2E tests: htt
 #### Debug
 * E: A host of new endpoints has been added for the debug of the most critical and oft-used production workflows: Donor Import, Search, Repeat Search and Scoring.
 * E: New projects, `Atlas.Debug.Client` and `Atlas.Debug.Client.Models`, collate these debug endpoints into client libraries that can be used by the E2E tests.
-  * These projects have been added to the build pipeline to generate NuGet packages and have their own changelogs and versioning.
+  * These projects have been added to the build pipeline to generate NuGet packages and have their own changelogs.
 
 #### WMDA Validation Set 4
 * E: `ManualTesting` projects have been refactored and enhanced to allow running of the new WMDA validation dataset for exercise 4. See [Manual Testing README](/README_ManualTesting.md#match-prediction-validation-using-wmda-datasets) for more details.

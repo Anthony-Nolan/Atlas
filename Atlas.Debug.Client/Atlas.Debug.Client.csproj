@@ -2,8 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <VersionPrefix>1.0.0</VersionPrefix>
-    <TargetAtlasVersion>2.1.0</TargetAtlasVersion>
+    <VersionPrefix>2.1.0</VersionPrefix>
     <PackageReadmeFile>CHANGELOG_DebugClient.md</PackageReadmeFile>
     <Authors>Anthony Nolan</Authors>
     <Company>Anthony Nolan</Company>
