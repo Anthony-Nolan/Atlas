@@ -66,56 +66,15 @@ jobs:
           arguments: '--no-restore'
 
       - task: DotNetCoreCLI@2
-        displayName: 'Prepare Client Models'
+        displayName: 'Pack API Client Packages'
         inputs:
           command: pack
-          packagesToPack: '**/Atlas.Client.Models.csproj'
-          packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
-          nobuild: true
-
-      - task: DotNetCoreCLI@2
-        displayName: 'Prepare Debug Client'
-        inputs:
-          command: pack
-          packagesToPack: '**/Atlas.Debug.Client.csproj'
-          packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
-          nobuild: true
-          configuration: 'Release'
-
-      - task: DotNetCoreCLI@2
-        displayName: 'Prepare Debug Client Models'
-        inputs:
-          command: pack
-          packagesToPack: '**/Atlas.Debug.Client.Models.csproj'
-          packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
-          nobuild: true
-
-      - task: DotNetCoreCLI@2
-        displayName: 'Prepare Matching Algorithm Client Models'
-        inputs:
-          command: pack
-          packagesToPack: '**/Atlas.MatchingAlgorithm.Client.Models.csproj'
-          packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
-          nobuild: true
-
-      - task: DotNetCoreCLI@2
-        displayName: 'Prepare Donor Import File Schema Models'
-        inputs:
-          command: pack
-          packagesToPack: '**/Atlas.DonorImport.FileSchema.Models.csproj'
-          packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
-          nobuild: true
-
-      - task: DotNetCoreCLI@2
-        displayName: 'Prepare Common Public Models'
-        inputs:
-          command: pack
-          packagesToPack: '**/Atlas.Common.Public.Models.csproj'
+          packagesToPack: '**/Atlas.Client.Models.csproj;**/Atlas.MatchingAlgorithm.Client.Models.csproj;**/Atlas.DonorImport.FileSchema.Models.csproj;**/Atlas.Common.Public.Models.csproj'
           packDirectory: '$(Build.ArtifactStagingDirectory)/published-models'
           nobuild: true
 
       - task: PublishBuildArtifacts@1
-        displayName: 'Publish Artifact: Published Models'
+        displayName: 'Publish API Client Packages'
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/published-models'
           ArtifactName: published-models
@@ -123,12 +82,6 @@ jobs:
         # Suffix version number with build ID to allow for a prerelease ci (continuous integration) packages to be published  
       - bash: dotnet pack **/Atlas.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Client Models
-      
-      - bash: dotnet pack **/Atlas.Debug.Client.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build /p:Configuration=Release --version-suffix "ci-$(Build.BuildId)"
-        displayName: Pack Prerelease Debug Client
-      
-      - bash: dotnet pack **/Atlas.Debug.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
-        displayName: Pack Prerelease Debug Client Models
       
       - bash: dotnet pack **/Atlas.MatchingAlgorithm.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Matching Algorithm Client Models
@@ -138,12 +91,49 @@ jobs:
       
       - bash: dotnet pack **/Atlas.Common.Public.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Common Public Models
-      
+
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Artifact: Published Models-CI'
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/published-models-ci'
           ArtifactName: published-models-ci
+
+      - script: |
+          echo "##vso[task.setvariable variable=TargetAtlasVersion;]atlas$(grep -oP '(?<=<TargetAtlasVersion>).*?(?=</TargetAtlasVersion>)' **/Atlas.Debug.Client.csproj)"
+        displayName: 'Extract Target Atlas version'
+
+      - script: |
+          echo "##vso[task.setvariable variable=CombinedDebugVersion;]$(grep -oP '(?<=<VersionPrefix>).*?(?=</VersionPrefix>)' **/Atlas.Debug.Client.csproj)-$(TargetAtlasVersion)"
+        displayName: 'Combine Debug Client version with Target Atlas version'
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Prepare Debug Clients'
+        inputs:
+          command: pack
+          packagesToPack: '**/Atlas.Debug.Client*.csproj'
+          packDirectory: '$(Build.ArtifactStagingDirectory)/debug-client'
+          nobuild: true
+          versioningScheme: byEnvVar
+          versionEnvVar: CombinedDebugVersion
+
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Debug Client Packages'
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/debug-client'
+          ArtifactName: debug-client
+
+        # Suffix version number with build ID to allow for a prerelease ci (continuous integration) packages to be published
+      - bash: dotnet pack **/Atlas.Debug.Client.csproj --output $(Build.ArtifactStagingDirectory)/debug-client-ci --no-build /p:Configuration=Release --version-suffix "$(TargetAtlasVersion)-ci-$(Build.BuildId)"
+        displayName: Pack Prerelease Debug Client
+      
+      - bash: dotnet pack **/Atlas.Debug.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/debug-client-ci --no-build --version-suffix "$(TargetAtlasVersion)-ci-$(Build.BuildId)"
+        displayName: Pack Prerelease Debug Client Models
+
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: Debug Client-CI'
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/debug-client-ci'
+          ArtifactName: debug-client-ci
 
       - task: CopyFiles@2
         displayName: 'Copy Atlas Functions Build'
