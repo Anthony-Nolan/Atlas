@@ -14,10 +14,14 @@ As they are spread across different apps, it makes sense to collate them into a 
   * `Atlas.Debug.Client` - a collection of the debug endpoints.
 * Models are published separately so that Atlas functions projects that host debug endpoints need only reference the models package, and not the entire client library.
 * Libraries will be published as NuGet packages in the same manner as existing packages (see [ADR 008](008-Publish_NuGet_Packages.md)).
-* These packages will be versioned independently of the main Atlas solution, and the `.csproj` file will note the Atlas version number that the library targets, via the XML tag, `<TargetAtlasVersion>`.
-  * This means changes to the debug client will not require a bump to the main Atlas version.
-* Git tag, `debug/<version>/atlas-<targetAtlasVersion>`, will be used to mark new stable versions of the debug libraries.
-  * This tag communicates that a single debug client version maybe compatible with multiple versions of Atlas.
+* [See [Update below](#update)] 
+* ~~These packages will be versioned independently of the main Atlas solution, and the `.csproj` file will note the Atlas version number that the library targets, via the XML tag, `<TargetAtlasVersion>`.~~
+  * ~~This means changes to the debug client will not require a bump to the main Atlas version.~~
+* ~~Git tag, `debug/<version>/atlas-<targetAtlasVersion>`, will be used to mark new stable versions of the debug libraries.~~
+  * ~~This tag communicates that a single debug client version maybe compatible with multiple versions of Atlas.~~
 
 ## Consequences
 * Atlas Debug client and models are now built as independently versioned NuGet packages that can be published to either a private or public feed, e.g., Azure Artifacts or NuGet.org, making it easier to write E2E tests against Atlas.
+
+## Update
+* Versioning the debug client packages independently of the other Atlas packages did not prove feasible (see [this ticket](https://github.com/Anthony-Nolan/Atlas/issues/1295)). They will instead be versioned in step with Atlas, and instead the changelog should indicate the Atlas version range that the client is compatible with.
