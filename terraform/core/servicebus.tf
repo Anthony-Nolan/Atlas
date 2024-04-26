@@ -112,3 +112,32 @@ resource "azurerm_servicebus_subscription" "match-prediction-orchestration-searc
   max_delivery_count                   = local.service-bus.default-message-retries
   dead_lettering_on_message_expiration = false
 }
+
+resource "azurerm_servicebus_topic" "search-tracking-events" {
+  name                  = "search-tracking-events"
+  namespace_id          = azurerm_servicebus_namespace.general.id
+  auto_delete_on_idle   = local.service-bus.long-expiry
+  default_message_ttl   = local.service-bus.long-expiry
+  max_size_in_megabytes = local.service-bus.default-bus-size
+  support_ordering      = true
+}
+
+resource "azurerm_servicebus_subscription" "audit" {
+  name                                 = "audit"
+  topic_id                             = azurerm_servicebus_topic.search-tracking-events.id
+  auto_delete_on_idle                  = local.service-bus.long-expiry
+  default_message_ttl                  = local.service-bus.audit-subscription-ttl-expiry
+  lock_duration                        = local.service-bus.default-read-lock
+  max_delivery_count                   = local.service-bus.default-message-retries
+  dead_lettering_on_message_expiration = false
+}
+
+resource "azurerm_servicebus_subscription" "search-tracking" {
+  name                                 = "search-tracking"
+  topic_id                             = azurerm_servicebus_topic.search-tracking-events.id
+  auto_delete_on_idle                  = local.service-bus.long-expiry
+  default_message_ttl                  = local.service-bus.long-expiry
+  lock_duration                        = local.service-bus.default-read-lock
+  max_delivery_count                   = local.service-bus.default-message-retries
+  dead_lettering_on_message_expiration = false
+}
