@@ -22,6 +22,8 @@ using Atlas.MatchPrediction.Test.Validation.Services.Exercise4;
 using Atlas.MatchPrediction.Test.Validation.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
+using Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework;
 
 namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
 {
@@ -43,12 +45,17 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
                 fetchOutgoingMatchPredictionRequestSettings,
                 fetchValidationAzureStorageSettings,
                 fetchValidationSearchSettings);
+
             services.RegisterDatabaseServices(fetchMatchPredictionValidationSqlConnectionString);
+
             services.RegisterServices(
                 fetchValidationAzureStorageSettings, fetchDataRefreshSettings, fetchMessageServiceBusSettings, fetchValidationSearchSettings);
+            
             services.RegisterHaplotypeFrequenciesReader(fetchMatchPredictionSqlConnectionString);
             services.RegisterImportDatabaseTypes(fetchDonorImportSqlConnectionString);
             services.RegisterMatchPredictionResultsLocationPublisher(fetchMessageServiceBusSettings, fetchMatchPredictionRequestSettings);
+            
+            services.RegisterHomeworkServices(fetchMatchPredictionValidationSqlConnectionString);
         }
 
         private static void RegisterSettings(
@@ -139,6 +146,18 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
                 var storageSettings = fetchValidationAzureStorageSettings(sp);
                 return new SearchResultNotificationSender(publisher, storageSettings.SearchResultsBlobContainer);
             });
+        }
+
+        private static void RegisterHomeworkServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, string> fetchSqlConnectionString)
+        {
+            services.AddScoped<IHomeworkSetRepository, HomeworkSetRepository>(sp =>
+                new HomeworkSetRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<IPatientDonorPairRepository, PatientDonorPairRepository>(sp =>
+                new PatientDonorPairRepository(fetchSqlConnectionString(sp)));
+
+            services.AddScoped<IHomeworkRequestProcessor, HomeworkRequestProcessor>();
         }
     }
 }
