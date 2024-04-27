@@ -105,7 +105,7 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
             Func<IServiceProvider, ValidationSearchSettings> fetchValidationSearchSettings)
         {
             services.AddScoped<ISubjectInfoImporter, SubjectInfoImporter>();
-            services.AddScoped<IFileReader<ImportedSubject>, FileReader<ImportedSubject>>();
+            services.AddScoped(typeof(IFileReader<>), typeof(FileReader<>));
             services.AddScoped<ITestDonorExporter, TestDonorExporter>();
             services.AddScoped<ISearchRequester, SearchRequester>();
 
