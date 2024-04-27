@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
+using Atlas.ManualTesting.Common.Services;
 using Atlas.MatchPrediction.Test.Validation.Data.Models.Homework;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
 using Atlas.MatchPrediction.Test.Validation.Models;
@@ -18,16 +20,20 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
 
     internal class HomeworkRequestProcessor : IHomeworkRequestProcessor
     {
+        private const string FileDelimiter = ",";
         private readonly IHomeworkSetRepository setRepository;
+        private readonly IFileReader<SubjectIdPair> fileReader;
         private readonly IPatientDonorPairRepository pdpRepository;
         private readonly IPatientDonorPairProcessor pdpProcessor;
 
         public HomeworkRequestProcessor(
             IHomeworkSetRepository setRepository,
+            IFileReader<SubjectIdPair> fileReader,
             IPatientDonorPairRepository pdpRepository, 
             IPatientDonorPairProcessor pdpProcessor)
         {
             this.setRepository = setRepository;
+            this.fileReader = fileReader;
             this.pdpRepository = pdpRepository;
             this.pdpProcessor = pdpProcessor;
         }
@@ -35,8 +41,19 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
         /// <inheritdoc />
         public async Task<int> StoreHomeworkRequest(HomeworkRequest request)
         {
-            var setId = await setRepository.Add(request.HomeworkSetName, request.ResultsPath, request.MatchLoci.MatchLociToString());
-            await pdpRepository.BulkInsert(request.PatientDonorPairs.Select(pdp => MapToDatabaseModel(pdp, setId)).ToList());
+            var subjectIdPairs = await fileReader.ReadAllLines(
+                FileDelimiter,
+                Path.Combine(request.InputPath, request.SetFileName),
+                hasHeaderRecord: false);
+
+            if (subjectIdPairs.IsNullOrEmpty())
+            {
+                throw new ArgumentException($"No patient-donor pairs found in file {request.SetFileName}.");
+            }
+
+            var setId = await setRepository.Add(request.SetFileName, request.ResultsPath, request.MatchLoci.MatchLociToString());
+
+            await pdpRepository.BulkInsert(subjectIdPairs.Select(ids => MapToDatabaseModel(ids, setId)).ToList());
             return setId;
         }
 
@@ -65,19 +82,12 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
             }
         }
 
-        private static PatientDonorPair MapToDatabaseModel(string patientDonorPair, int homeworkSetId)
+        private static PatientDonorPair MapToDatabaseModel(SubjectIdPair ids, int homeworkSetId)
         {
-            var ids = patientDonorPair.Split(',');
-
-            if (ids.Length != 2)
-            {
-                throw new ArgumentException($"{nameof(patientDonorPair)} must contain exactly two ids separated by a comma; instead found {patientDonorPair}.");
-            }
-
             return new PatientDonorPair
             {
-                PatientId = ids[0],
-                DonorId = ids[1],
+                PatientId = ids.PatientId,
+                DonorId = ids.DonorId,
                 HomeworkSet_Id = homeworkSetId
             };
         }
