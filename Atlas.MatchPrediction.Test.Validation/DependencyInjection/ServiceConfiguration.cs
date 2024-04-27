@@ -158,6 +158,7 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
                 new PatientDonorPairRepository(fetchSqlConnectionString(sp)));
 
             services.AddScoped<IHomeworkRequestProcessor, HomeworkRequestProcessor>();
+            services.AddScoped<IPatientDonorPairProcessor, PatientDonorPairProcessor>();
         }
     }
 }
