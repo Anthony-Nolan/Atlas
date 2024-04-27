@@ -4,7 +4,6 @@ using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.ServiceBus;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
-using Atlas.ManualTesting.Common.Models;
 using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.ManualTesting.Common.Repositories;
 using Atlas.ManualTesting.Common.Services;
@@ -152,12 +151,15 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, string> fetchSqlConnectionString)
         {
+            services.AddScoped<IHomeworkDeletionRepository, HomeworkDeletionRepository>(sp =>
+                new HomeworkDeletionRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<IHomeworkSetRepository, HomeworkSetRepository>(sp =>
                 new HomeworkSetRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<IPatientDonorPairRepository, PatientDonorPairRepository>(sp =>
                 new PatientDonorPairRepository(fetchSqlConnectionString(sp)));
 
-            services.AddScoped<IHomeworkRequestProcessor, HomeworkRequestProcessor>();
+            services.AddScoped<IHomeworkCreator, HomeworkCreator>();
+            services.AddScoped<IHomeworkProcessor, HomeworkProcessor>();
             services.AddScoped<IPatientDonorPairProcessor, PatientDonorPairProcessor>();
         }
     }
