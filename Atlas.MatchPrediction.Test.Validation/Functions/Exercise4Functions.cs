@@ -3,6 +3,7 @@ using Atlas.Common.Utils;
 using Atlas.Common.Utils.Http;
 using Atlas.ManualTesting.Common.Services;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
+using Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
 using Atlas.MatchPrediction.Test.Validation.Models;
 using Atlas.MatchPrediction.Test.Validation.Services.Exercise4;
 using Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework;
@@ -13,6 +14,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
@@ -31,20 +33,26 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
         private readonly ISearchRequester searchRequester;
         private readonly IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor;
         private readonly ISearchResultNotificationSender messageSender;
-        private readonly IHomeworkRequestProcessor homeworkRequestProcessor;
+        private readonly IHomeworkDeletionRepository deletionRepository;
+        private readonly IHomeworkCreator homeworkCreator;
+        private readonly IHomeworkProcessor homeworkProcessor;
 
         public Exercise4Functions(
             IValidationAtlasPreparer atlasPreparer,
             ISearchRequester searchRequester,
             IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor,
             ISearchResultNotificationSender messageSender,
-            IHomeworkRequestProcessor homeworkRequestProcessor)
+            IHomeworkDeletionRepository deletionRepository,
+            IHomeworkCreator homeworkCreator,
+            IHomeworkProcessor homeworkProcessor)
         {
             this.atlasPreparer = atlasPreparer;
             this.searchRequester = searchRequester;
             this.searchResultSetProcessor = searchResultSetProcessor;
             this.messageSender = messageSender;
-            this.homeworkRequestProcessor = homeworkRequestProcessor;
+            this.deletionRepository = deletionRepository;
+            this.homeworkCreator = homeworkCreator;
+            this.homeworkProcessor = homeworkProcessor;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -121,23 +129,24 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             }
         }
 
-        [FunctionName($"{FunctionNamePrefix}3_{nameof(SubmitHomeworkRequest)}")]
-        public async Task<IActionResult> SubmitHomeworkRequest(
+        [FunctionName($"{FunctionNamePrefix}3_{nameof(CreateNewHomeworkSets)}")]
+        public async Task<IActionResult> CreateNewHomeworkSets(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(HomeworkRequest), nameof(HomeworkRequest))]
             HttpRequest request)
         {
             var homeworkRequest = await request.DeserialiseRequestBody<HomeworkRequest>();
-            return new OkObjectResult(await homeworkRequestProcessor.StoreHomeworkRequest(homeworkRequest));
+            if(homeworkRequest.DeletePreviousHomeworkSets) await deletionRepository.DeleteAll();
+            return new OkObjectResult(await homeworkCreator.CreateHomeworkSets(homeworkRequest));
         }
 
-        [FunctionName($"{FunctionNamePrefix}4_{nameof(StartOrContinueHomeworkSet)}")]
-        public async Task StartOrContinueHomeworkSet(
+        [FunctionName($"{FunctionNamePrefix}4_{nameof(StartOrContinueHomeworkSets)}")]
+        public async Task StartOrContinueHomeworkSets(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(int), "homeworkSetId")]
+            [RequestBodyType(typeof(IEnumerable<int>), "homeworkSetIds")]
             HttpRequest request)
         {
-            await homeworkRequestProcessor.StartOrContinueHomeworkRequest(await request.DeserialiseRequestBody<int>());
+            await homeworkProcessor.StartOrContinueHomeworkSets(await request.DeserialiseRequestBody<IEnumerable<int>>());
         }
     }
 }

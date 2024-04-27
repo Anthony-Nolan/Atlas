@@ -5,7 +5,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Models
     public class HomeworkRequest
     {
         /// <summary>
-        /// Path where homework set file should be read from.
+        /// Path where homework set files should be read from.
         /// Make sure to escape the backslashes in the path.
         /// </summary>
         public string InputPath { get; set; }
@@ -17,13 +17,13 @@ namespace Atlas.MatchPrediction.Test.Validation.Models
         public string ResultsPath { get; set; }
 
         /// <summary>
-        /// Include the file extension, e.g., "A.csv".
-        /// </summary>
-        public string SetFileName { get; set; }
-
-        /// <summary>
         /// Loci set to `true` will be included in the analysis.
         /// </summary>
         public LociInfoTransfer<bool> MatchLoci { get; set; }
+
+        /// <summary>
+        /// If `true`, all previously stored homework sets will be deleted from the validation database.
+        /// </summary>
+        public bool DeletePreviousHomeworkSets { get; set; }
     }
 }
