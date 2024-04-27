@@ -5,6 +5,7 @@ using Atlas.ManualTesting.Common.Services;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Atlas.MatchPrediction.Test.Validation.Models;
 using Atlas.MatchPrediction.Test.Validation.Services.Exercise4;
+using Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -30,17 +31,20 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
         private readonly ISearchRequester searchRequester;
         private readonly IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor;
         private readonly ISearchResultNotificationSender messageSender;
+        private readonly IHomeworkRequestProcessor homeworkRequestProcessor;
 
         public Exercise4Functions(
             IValidationAtlasPreparer atlasPreparer,
             ISearchRequester searchRequester,
             IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor,
-            ISearchResultNotificationSender messageSender)
+            ISearchResultNotificationSender messageSender,
+            IHomeworkRequestProcessor homeworkRequestProcessor)
         {
             this.atlasPreparer = atlasPreparer;
             this.searchRequester = searchRequester;
             this.searchResultSetProcessor = searchResultSetProcessor;
             this.messageSender = messageSender;
+            this.homeworkRequestProcessor = homeworkRequestProcessor;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -115,6 +119,25 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             {
                 throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failure whilst downloading results.", ex);
             }
+        }
+
+        [FunctionName($"{FunctionNamePrefix}3_{nameof(SubmitHomeworkRequest)}")]
+        public async Task<IActionResult> SubmitHomeworkRequest(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(HomeworkRequest), nameof(HomeworkRequest))]
+            HttpRequest request)
+        {
+            var homeworkRequest = await request.DeserialiseRequestBody<HomeworkRequest>();
+            return new OkObjectResult(await homeworkRequestProcessor.StoreHomeworkRequest(homeworkRequest));
+        }
+
+        [FunctionName($"{FunctionNamePrefix}4_{nameof(StartOrContinueHomeworkSet)}")]
+        public async Task StartOrContinueHomeworkSet(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(int), "homeworkSetId")]
+            HttpRequest request)
+        {
+            await homeworkRequestProcessor.StartOrContinueHomeworkRequest(await request.DeserialiseRequestBody<int>());
         }
     }
 }
