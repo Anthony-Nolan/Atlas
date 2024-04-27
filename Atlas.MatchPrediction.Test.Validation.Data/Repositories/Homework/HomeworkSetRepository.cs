@@ -7,6 +7,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
     public interface IHomeworkSetRepository
     {
         Task<int> Add(string setName, string resultsPath, string matchLoci);
+        Task<HomeworkSet> Get(int setId);
     }
 
     public class HomeworkSetRepository : IHomeworkSetRepository
@@ -35,6 +36,16 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
             await using (var connection = new SqlConnection(connectionString))
             {
                 return (await connection.QueryAsync<int>(sql, new { setName, resultsPath, matchLoci })).Single();
+            }
+        }
+
+        public async Task<HomeworkSet> Get(int setId)
+        {
+            const string sql = $@" SELECT * FROM HomeworkSets WHERE Id = @{nameof(setId)}";
+
+            await using (var connection = new SqlConnection(connectionString))
+            {
+                return connection.QuerySingleOrDefault<HomeworkSet>(sql, new { setId });
             }
         }
     }
