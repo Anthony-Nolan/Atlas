@@ -1,6 +1,7 @@
 ﻿using Atlas.ManualTesting.Common.Contexts;
 using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.MatchPrediction.Test.Validation.Data.Models;
+using Atlas.MatchPrediction.Test.Validation.Data.Models.Homework;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchPrediction.Test.Validation.Data.Context
@@ -26,6 +27,9 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Context
             modelBuilder.Entity<LocusMatchDetails>().SetUpModel();
             modelBuilder.Entity<MatchedDonorProbability>().SetUpModel();
 
+            modelBuilder.Entity<HomeworkSet>().SetUpModel();
+            modelBuilder.Entity<PatientDonorPair>().SetUpModel();
+
             base.OnModelCreating(modelBuilder);
         }
 
@@ -40,5 +44,8 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Context
         public DbSet<MatchedDonor> MatchedDonors { get; set; }
         public DbSet<LocusMatchDetails> LocusMatchDetails { get; set; }
         public DbSet<MatchedDonorProbability> MatchProbabilities { get; set; }
+
+        public DbSet<HomeworkSet> HomeworkSets { get; set; }
+        public DbSet<PatientDonorPair> PatientDonorPairs { get; set; }
     }
 }
