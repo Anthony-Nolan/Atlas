@@ -4,13 +4,16 @@ namespace Atlas.ManualTesting.Common.Services
 {
     public interface IFileReader<T>
     {
-        Task<IReadOnlyCollection<T>> ReadAllLines(string delimiter, string filePath);
+        Task<IReadOnlyCollection<T>> ReadAllLines(string delimiter, string filePath, bool hasHeaderRecord = true);
         IAsyncEnumerable<T> ReadAsync(string delimiter, string filePath);
     }
 
     public class FileReader<T> : IFileReader<T>
     {
-        public async Task<IReadOnlyCollection<T>> ReadAllLines(string delimiter, string filePath)
+        public async Task<IReadOnlyCollection<T>> ReadAllLines(
+            string delimiter,
+            string filePath,
+            bool hasHeaderRecord = true)
         {
             FileChecks(filePath);
 
@@ -19,6 +22,7 @@ namespace Atlas.ManualTesting.Common.Services
             using var csv = new CsvReader(reader);
 
             csv.Configuration.Delimiter = delimiter;
+            csv.Configuration.HasHeaderRecord = hasHeaderRecord;
             csv.Configuration.HeaderValidated = null;
             csv.Configuration.MissingFieldFound = null;
             csv.Configuration.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("");

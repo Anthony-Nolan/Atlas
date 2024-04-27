@@ -1,14 +1,14 @@
 ﻿using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
-using System.Collections.Generic;
 
 namespace Atlas.MatchPrediction.Test.Validation.Models
 {
     public class HomeworkRequest
     {
         /// <summary>
-        /// Each string should have format: "PatientId,DonorId"
+        /// Path where homework set file should be read from.
+        /// Make sure to escape the backslashes in the path.
         /// </summary>
-        public IEnumerable<string> PatientDonorPairs { get; set; }
+        public string InputPath { get; set; }
 
         /// <summary>
         /// Path where results should be written to.
@@ -17,9 +17,9 @@ namespace Atlas.MatchPrediction.Test.Validation.Models
         public string ResultsPath { get; set; }
 
         /// <summary>
-        /// Used to identify the result set.
+        /// Include the file extension, e.g., "A.csv".
         /// </summary>
-        public string HomeworkSetName { get; set; }
+        public string SetFileName { get; set; }
 
         /// <summary>
         /// Loci set to `true` will be included in the analysis.
