@@ -71,8 +71,14 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
                 return null;
             }
 
-            var setId = await setRepository.Add(setFileName, request.ResultsPath, request.MatchLoci.MatchLociToString());
+            var setId = await setRepository.Add(
+                setFileName,
+                request.ResultsPath,
+                request.MatchLoci.MatchLociToString(),
+                request.MatchingAlgorithmHlaNomenclatureVersion);
+
             await pdpRepository.BulkInsert(subjectIdPairs.Select(ids => MapToDatabaseModel(ids, setId)).ToList());
+
             return setId;
         }
 

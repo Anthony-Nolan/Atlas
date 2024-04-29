@@ -6,7 +6,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
 {
     public interface IHomeworkSetRepository
     {
-        Task<int> Add(string setName, string resultsPath, string matchLoci);
+        Task<int> Add(string setName, string resultsPath, string matchLoci, string hlaNomenclatureVersion);
         Task<HomeworkSet> Get(int setId);
     }
 
@@ -19,17 +19,19 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
             this.connectionString = connectionString;
         }
 
-        public async Task<int> Add(string setName, string resultsPath, string matchLoci)
+        public async Task<int> Add(string setName, string resultsPath, string matchLoci, string hlaNomenclatureVersion)
         {
             const string sql = $@"
                 INSERT INTO HomeworkSets(
                     {nameof(HomeworkSet.SetName)},
                     {nameof(HomeworkSet.ResultsPath)},
-                    {nameof(HomeworkSet.MatchLoci)}
+                    {nameof(HomeworkSet.MatchLoci)},
+                    {nameof(HomeworkSet.HlaNomenclatureVersion)}
                 ) VALUES(
                     @{nameof(setName)},
                     @{nameof(resultsPath)},
-                    @{nameof(matchLoci)}
+                    @{nameof(matchLoci)},
+                    @{nameof(hlaNomenclatureVersion)}
                 );
                 SELECT CAST(SCOPE_IDENTITY() as int);";
 
