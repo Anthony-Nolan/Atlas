@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
-using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using FluentAssertions;
