@@ -17,6 +17,9 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Models.Homework
         [Column(TypeName = "nvarchar(128)")]
         public string MatchLoci { get; set; }
 
+        [Column(TypeName = "nvarchar(8)")]
+        public string HlaNomenclatureVersion { get; set; }
+
         public DateTimeOffset SubmittedDateTime { get; set; }
     }
 
