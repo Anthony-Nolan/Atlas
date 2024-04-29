@@ -13,6 +13,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Public.Models.MatchPrediction;
 
 namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 {

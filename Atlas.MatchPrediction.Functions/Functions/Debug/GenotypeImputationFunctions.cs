@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Utils.Http;
-using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
-using Atlas.MatchPrediction.Functions.Models.Debug;
+using Atlas.Debug.Client.Models.MatchPrediction;
 using Atlas.MatchPrediction.Functions.Services.Debug;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using MoreLinq;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Functions.Functions.Debug

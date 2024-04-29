@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
-using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;

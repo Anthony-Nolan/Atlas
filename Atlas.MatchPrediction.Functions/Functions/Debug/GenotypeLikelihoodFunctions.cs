@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Utils.Http;
-using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
