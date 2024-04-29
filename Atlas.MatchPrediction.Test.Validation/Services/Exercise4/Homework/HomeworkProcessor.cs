@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
-using Atlas.MatchPrediction.Test.Validation.Models;
 
 namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
 {
@@ -54,11 +53,9 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
                 return;
             }
 
-            var matchLoci = set.MatchLoci.ToLociInfo();
-
             foreach (var pdp in pdps)
             {
-                await pdpProcessor.Process(pdp, matchLoci);
+                await pdpProcessor.Process(pdp, set.MatchLoci, set.HlaNomenclatureVersion);
             }
         }
     }

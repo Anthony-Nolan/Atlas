@@ -1,99 +1,107 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
-using Atlas.MatchPrediction.Test.Validation.Data.Models;
 using Atlas.MatchPrediction.Test.Validation.Data.Models.Homework;
-using Atlas.MatchPrediction.Test.Validation.Data.Repositories;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
+using Atlas.MatchPrediction.Test.Validation.Models;
+
+// ReSharper disable InconsistentNaming
 
 namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
 {
     public interface IPatientDonorPairProcessor
     {
-        Task Process(PatientDonorPair pdp, LociInfo<bool> matchLoci);
+        Task Process(PatientDonorPair pdp, string matchLoci, string hlaVersion);
     }
 
     internal class PatientDonorPairProcessor : IPatientDonorPairProcessor
     {
-        private readonly ISubjectRepository subjectRepository;
+        private static readonly ConcurrentDictionary<string, SubjectGenotypeResult> subjectResultCache = new();
+
         private readonly IPatientDonorPairRepository pdpRepository;
+        private readonly IMissingHlaChecker missingHlaChecker;
+        private readonly ISubjectGenotypesProcessor genotypesProcessor;
 
         public PatientDonorPairProcessor(
-            ISubjectRepository subjectRepository,
-            IPatientDonorPairRepository pdpRepository)
+            IPatientDonorPairRepository pdpRepository,
+            IMissingHlaChecker missingHlaChecker,
+            ISubjectGenotypesProcessor genotypesProcessor)
         {
             this.pdpRepository = pdpRepository;
-            this.subjectRepository = subjectRepository;
+            this.missingHlaChecker = missingHlaChecker;
+            this.genotypesProcessor = genotypesProcessor;
         }
 
         /// <inheritdoc />
-        public async Task Process(PatientDonorPair pdp, LociInfo<bool> matchLoci)
+        public async Task Process(PatientDonorPair pdp, string matchLoci, string hlaVersion)
         {
-            if (await PatientHasMissingHla(pdp, matchLoci)) return;
+            var matchLociInfo = matchLoci.ToLociInfo();
 
-            if (await DonorHasMissingHla(pdp, matchLoci)) return;
+            var patientResult = await CheckPatientHasMissingHla(pdp, matchLociInfo);
+            if (patientResult.HasMissingHla) return;
 
-            // Else submit patient imputation request
+            var donorResult = await CheckDonorHasMissingHla(pdp, matchLociInfo);
+            if (donorResult.HasMissingHla) return;
 
-            // Then submit donor imputation request
-
+            await Task.WhenAll(
+                Impute(pdp, patientResult, matchLoci, hlaVersion, true),
+                Impute(pdp, donorResult, matchLoci, hlaVersion, false)
             // Then submit matching genotypes request
+            );
         }
 
-        private async Task<bool> PatientHasMissingHla(PatientDonorPair pdp, LociInfo<bool> matchLoci)
+        private async Task<SubjectGenotypeResult> CheckPatientHasMissingHla(PatientDonorPair pdp, LociInfo<bool> matchLoci)
         {
-            var patientHasMissingHla = !await HasAllRequiredLoci(pdp.PatientId, false, matchLoci);
-
-            // ReSharper disable once InvertIf
-            if (patientHasMissingHla)
+            async Task<SubjectGenotypeResult> GetResult()
             {
-                pdp.DidPatientHaveMissingHla = true;
-                pdp.IsProcessed = true;
-                await UpdatePatientDonorPairRecord(pdp);
+                var (hasMissingHla, patientInfo) = await missingHlaChecker.SubjectHasMissingHla(pdp.PatientId, false, matchLoci);
+                pdp.DidPatientHaveMissingHla = hasMissingHla;
+                pdp.IsProcessed = hasMissingHla;
+                await UpdateRecord(pdp);
+                return new SubjectGenotypeResult(hasMissingHla, patientInfo);
             }
 
-            return patientHasMissingHla;
+            return subjectResultCache.GetOrAdd(pdp.PatientId, await GetResult());
         }
 
-        private async Task<bool> DonorHasMissingHla(PatientDonorPair pdp, LociInfo<bool> matchLoci)
+        private async Task<SubjectGenotypeResult> CheckDonorHasMissingHla(PatientDonorPair pdp, LociInfo<bool> matchLoci)
         {
-            var donorHasMissingHla = !await HasAllRequiredLoci(pdp.DonorId, true, matchLoci);
-
-            // ReSharper disable once InvertIf
-            if (donorHasMissingHla)
+            async Task<SubjectGenotypeResult> GetResult()
             {
-                pdp.DidDonorHaveMissingHla = true;
-                pdp.IsProcessed = true;
-                await UpdatePatientDonorPairRecord(pdp);
+                var (hasMissingHla, donorInfo) = await missingHlaChecker.SubjectHasMissingHla(pdp.DonorId, false, matchLoci);
+                pdp.DidDonorHaveMissingHla = hasMissingHla;
+                pdp.IsProcessed = hasMissingHla;
+                await UpdateRecord(pdp);
+                return new SubjectGenotypeResult(hasMissingHla, donorInfo);
             }
 
-            return donorHasMissingHla;
+            return subjectResultCache.GetOrAdd(pdp.DonorId, await GetResult());
         }
 
-        /// <returns>
-        /// Will return false if either the subject is missing required HLA,
-        /// or if the subject does not exist, as this suggests it was not imported due to missing required HLA.
-        /// </returns>
-        private async Task<bool> HasAllRequiredLoci(string externalId, bool isDonor, LociInfo<bool> matchLoci)
+        private async Task Impute(
+            PatientDonorPair pdp,
+            SubjectGenotypeResult result,
+            string matchLoci,
+            string hlaVersion,
+            bool isPatient)
         {
-            var subject = await subjectRepository.GetByExternalId(externalId);
+            // Only request imputation if subject has not been processed before
+            // This step should update the cache as well
+            result.Genotypes ??= await genotypesProcessor.RequestAndSaveImputation(result.SubjectInfo, matchLoci, hlaVersion);
 
-            if (subject == null)
+            if (isPatient)
             {
-                return false;
+                pdp.PatientImputationCompleted = true;
             }
-
-            // Can assume that if donor is in the db, it has all the required loci
-            if (isDonor)
+            else
             {
-                return true;
+                pdp.DonorImputationCompleted = true;
             }
-
-            // patient must be typed at all match loci
-            var patientHla = subject.ToPhenotypeInfo();
-            return matchLoci.AllAtLoci((locus, isRequired) => !isRequired || patientHla.GetLocus(locus).Position1And2NotNull());
+            
+            await UpdateRecord(pdp);
         }
 
-        private async Task UpdatePatientDonorPairRecord(PatientDonorPair pdp)
+        private async Task UpdateRecord(PatientDonorPair pdp)
         {
             await pdpRepository.UpdateEditableFields(pdp);
         }
