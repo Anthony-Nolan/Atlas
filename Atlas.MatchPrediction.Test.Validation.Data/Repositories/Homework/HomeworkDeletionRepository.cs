@@ -20,18 +20,25 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
         /// <inheritdoc />
         public async Task DeleteAll()
         {
+            const string deleteGenotypes = "DELETE FROM SubjectGenotypes";
+            const string deleteImputationSummaries = "DELETE FROM ImputationSummaries";
             const string deleteAllPairs = "DELETE FROM PatientDonorPairs";
-
-            await using (var connection = new SqlConnection(connectionString))
-            {
-                await connection.ExecuteAsync(deleteAllPairs);
-            }
-
             const string deleteAllSets = "DELETE FROM HomeworkSets";
 
+            var sqlCollection = new[]
+            {
+                deleteGenotypes,
+                deleteImputationSummaries,
+                deleteAllPairs, 
+                deleteAllSets
+            };
+
             await using (var connection = new SqlConnection(connectionString))
             {
-                await connection.ExecuteAsync(deleteAllSets);
+                foreach (var sql in sqlCollection)
+                {
+                    await connection.ExecuteAsync(sql);
+                }
             }
         }
     }

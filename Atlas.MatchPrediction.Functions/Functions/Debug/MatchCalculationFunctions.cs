@@ -69,7 +69,7 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
                 subjectResult.IsUnrepresented,
                 subjectResult.GenotypeCount,
                 subjectResult.SumOfLikelihoods,
-                set, 
+                set.ToClientHaplotypeFrequencySet(), 
                 subjectInfo.HlaTyping.ToPhenotypeInfo().PrettyPrint());
         }
     }

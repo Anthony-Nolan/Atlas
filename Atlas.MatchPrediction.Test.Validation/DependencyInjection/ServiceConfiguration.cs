@@ -21,6 +21,7 @@ using Atlas.MatchPrediction.Test.Validation.Services.Exercise4;
 using Atlas.MatchPrediction.Test.Validation.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Atlas.MatchPrediction.Test.Validation.Data.Models.Homework;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
 using Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework;
 
@@ -36,6 +37,7 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessageServiceBusSettings,
             Func<IServiceProvider, MatchPredictionRequestsSettings> fetchMatchPredictionRequestSettings,
             Func<IServiceProvider, ValidationSearchSettings> fetchValidationSearchSettings,
+            Func<IServiceProvider, ValidationHomeworkSettings> fetchValidationHomeworkSettings,
             Func<IServiceProvider, string> fetchMatchPredictionValidationSqlConnectionString,
             Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString,
             Func<IServiceProvider, string> fetchDonorImportSqlConnectionString)
@@ -43,7 +45,8 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
             services.RegisterSettings(
                 fetchOutgoingMatchPredictionRequestSettings,
                 fetchValidationAzureStorageSettings,
-                fetchValidationSearchSettings);
+                fetchValidationSearchSettings,
+                fetchValidationHomeworkSettings);
 
             services.RegisterDatabaseServices(fetchMatchPredictionValidationSqlConnectionString);
 
@@ -61,11 +64,13 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, OutgoingMatchPredictionRequestSettings> fetchOutgoingMatchPredictionRequestSettings,
             Func<IServiceProvider, ValidationAzureStorageSettings> fetchValidationAzureStorageSettings,
-            Func<IServiceProvider, ValidationSearchSettings> fetchValidationSearchSettings)
+            Func<IServiceProvider, ValidationSearchSettings> fetchValidationSearchSettings,
+            Func<IServiceProvider, ValidationHomeworkSettings> fetchValidationHomeworkSettings)
         {
             services.MakeSettingsAvailableForUse(fetchOutgoingMatchPredictionRequestSettings);
             services.MakeSettingsAvailableForUse(fetchValidationAzureStorageSettings);
             services.MakeSettingsAvailableForUse(fetchValidationSearchSettings);
+            services.MakeSettingsAvailableForUse(fetchValidationHomeworkSettings);
         }
 
         private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)
@@ -157,10 +162,17 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
                 new HomeworkSetRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<IPatientDonorPairRepository, PatientDonorPairRepository>(sp =>
                 new PatientDonorPairRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<IImputationSummaryRepository, ImputationSummaryRepository>(sp =>
+                new ImputationSummaryRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<ISubjectGenotypeRepository, SubjectGenotypeRepository>(sp =>
+                new SubjectGenotypeRepository(fetchSqlConnectionString(sp)));
 
             services.AddScoped<IHomeworkCreator, HomeworkCreator>();
             services.AddScoped<IHomeworkProcessor, HomeworkProcessor>();
             services.AddScoped<IPatientDonorPairProcessor, PatientDonorPairProcessor>();
+            services.AddScoped<IMissingHlaChecker, MissingHlaChecker>();
+            services.AddScoped<ISubjectGenotypesProcessor, SubjectGenotypesProcessor>();
+            services.AddScoped<IImputationRequester, ImputationRequester>();
         }
     }
 }
