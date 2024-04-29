@@ -32,5 +32,13 @@ namespace Atlas.MatchPrediction.Test.Validation.Models
                     new LociInfo<bool>(false),
                     (currentLociInfo, locus) => currentLociInfo.SetLocus(Enum.Parse<Locus>(locus), true));
         }
+
+        public static ISet<Locus> ToSet(this string matchLoci)
+        {
+            return matchLoci
+                .Split(MatchLociSeparator)
+                .Select(Enum.Parse<Locus>)
+                .ToHashSet();
+        }
     }
 }

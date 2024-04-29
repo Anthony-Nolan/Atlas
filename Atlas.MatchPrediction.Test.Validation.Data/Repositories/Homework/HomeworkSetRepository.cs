@@ -37,7 +37,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
 
             await using (var connection = new SqlConnection(connectionString))
             {
-                return (await connection.QueryAsync<int>(sql, new { setName, resultsPath, matchLoci })).Single();
+                return (await connection.QueryAsync<int>(sql, new { setName, resultsPath, matchLoci, hlaNomenclatureVersion })).Single();
             }
         }
 

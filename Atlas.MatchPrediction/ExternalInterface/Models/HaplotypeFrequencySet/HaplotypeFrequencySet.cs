@@ -9,7 +9,7 @@
         public string Name { get; set; }
         public int PopulationId { get; set; }
 
-        internal Client.Models.Search.Results.MatchPrediction.HaplotypeFrequencySet ToClientHaplotypeFrequencySet()
+        public Client.Models.Search.Results.MatchPrediction.HaplotypeFrequencySet ToClientHaplotypeFrequencySet()
         {
             return new Client.Models.Search.Results.MatchPrediction.HaplotypeFrequencySet
             {

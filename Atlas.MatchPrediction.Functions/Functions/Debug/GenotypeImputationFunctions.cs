@@ -51,7 +51,7 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
             {
                 HlaTyping = input.SubjectInfo.HlaTyping.ToPhenotypeInfo().PrettyPrint(),
                 MatchPredictionParameters = input.MatchPredictionParameters,
-                HaplotypeFrequencySet = frequencySet,
+                HaplotypeFrequencySet = frequencySet.ToClientHaplotypeFrequencySet(),
                 GenotypeCount = imputedGenotypes.GenotypeLikelihoods.Count,
                 SumOfLikelihoods = imputedGenotypes.SumOfLikelihoods,
                 GenotypeLikelihoods = imputedGenotypes.GenotypeLikelihoods.ToSingleDelimitedString()
