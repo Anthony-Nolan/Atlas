@@ -48,6 +48,10 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
                 Impute(pdp, donorResult, matchLoci, hlaVersion, false)
             // Then submit matching genotypes request
             );
+
+            // store matching genotypes after imputation as need the subject genotype ids
+
+            await UpdateRecord(pdp);
         }
 
         private async Task<SubjectGenotypeResult> CheckPatientHasMissingHla(PatientDonorPair pdp, LociInfo<bool> matchLoci)
@@ -85,8 +89,8 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
             string hlaVersion,
             bool isPatient)
         {
-            // Only request imputation if subject has not been processed before
-            // This step should update the cache as well
+            // Only request imputation if subject has not been processed before.
+            // This step will update the cache as well.
             result.Genotypes ??= await genotypesProcessor.RequestAndSaveImputation(result.SubjectInfo, matchLoci, hlaVersion);
 
             if (isPatient)
@@ -97,8 +101,6 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
             {
                 pdp.DonorImputationCompleted = true;
             }
-            
-            await UpdateRecord(pdp);
         }
 
         private async Task UpdateRecord(PatientDonorPair pdp)

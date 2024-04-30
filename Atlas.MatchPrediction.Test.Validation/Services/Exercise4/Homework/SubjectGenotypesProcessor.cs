@@ -41,6 +41,12 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
             string hlaVersion)
         {
             var subjectId = subjectInfo.ExternalId;
+            var summaryId = await summaryRepo.Get(subjectId);
+
+            if (summaryId != null)
+            {
+                return await subjectGenotypeRepo.Get(summaryId.Value);
+            }
 
             var response = await imputationRequester.Request(new HomeworkImputationRequest
             {
@@ -57,8 +63,8 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
                 return null;
             }
 
-            var summaryId = await summaryRepo.Add(BuildSummary(subjectId, response.Result!));
-            var genotypes = SplitIntoGenotypes(response.Result!.GenotypeLikelihoods, summaryId).ToList();
+            summaryId = await summaryRepo.Add(BuildSummary(subjectId, response.Result!));
+            var genotypes = SplitIntoGenotypes(response.Result!.GenotypeLikelihoods, summaryId.Value).ToList();
             await subjectGenotypeRepo.BulkInsert(genotypes);
             return genotypes;
         }
