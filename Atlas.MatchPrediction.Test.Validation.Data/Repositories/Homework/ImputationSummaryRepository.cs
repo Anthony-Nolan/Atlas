@@ -8,6 +8,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
     public interface IImputationSummaryRepository
     {
         Task<int> Add(ImputationSummary imputationSummary);
+        Task<int?> Get(string externalSubjectId);
     }
 
     public class ImputationSummaryRepository : IImputationSummaryRepository
@@ -46,6 +47,20 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
                     imputationSummary.GenotypeCount,
                     imputationSummary.SumOfLikelihoods
                 })).Single();
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<int?> Get(string externalSubjectId)
+        {
+            const string sql = $@"
+                SELECT Id
+                FROM {nameof(MatchPredictionValidationContext.ImputationSummaries)}
+                WHERE ExternalSubjectId = @{nameof(externalSubjectId)}";
+
+            await using (var connection = new SqlConnection(connectionString))
+            {
+                return await connection.QuerySingleOrDefaultAsync<int?>(sql, new { externalSubjectId });
             }
         }
     }
