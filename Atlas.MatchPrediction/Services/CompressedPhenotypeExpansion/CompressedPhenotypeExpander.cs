@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using Atlas.Common.Maths;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
-using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 
 // ReSharper disable SuggestBaseTypeForParameter
@@ -33,7 +33,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
         /// </summary>
         public string HfSetHlaNomenclatureVersion { get; set; }
 
-        /// <inheritdoc cref="Models.MatchPredictionParameters" />
+        /// <inheritdoc cref="Common.Public.Models.MatchPrediction.MatchPredictionParameters" />
         public MatchPredictionParameters MatchPredictionParameters { get; set; }
     }
 

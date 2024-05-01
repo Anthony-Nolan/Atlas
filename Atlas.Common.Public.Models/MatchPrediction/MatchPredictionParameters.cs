@@ -1,8 +1,7 @@
 ﻿using Atlas.Common.Public.Models.GeneticData;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Atlas.MatchPrediction.Models
+namespace Atlas.Common.Public.Models.MatchPrediction
 {
     /// <summary>
     /// Parameters controlling Match Prediction behaviour (in addition to <see cref="SubjectData"/>)

@@ -4,7 +4,6 @@ using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.ServiceBus;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
-using Atlas.ManualTesting.Common.Models;
 using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.ManualTesting.Common.Repositories;
 using Atlas.ManualTesting.Common.Services;
@@ -22,6 +21,9 @@ using Atlas.MatchPrediction.Test.Validation.Services.Exercise4;
 using Atlas.MatchPrediction.Test.Validation.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Atlas.MatchPrediction.Test.Validation.Data.Models.Homework;
+using Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
+using Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework;
 
 namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
 {
@@ -35,6 +37,7 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessageServiceBusSettings,
             Func<IServiceProvider, MatchPredictionRequestsSettings> fetchMatchPredictionRequestSettings,
             Func<IServiceProvider, ValidationSearchSettings> fetchValidationSearchSettings,
+            Func<IServiceProvider, ValidationHomeworkSettings> fetchValidationHomeworkSettings,
             Func<IServiceProvider, string> fetchMatchPredictionValidationSqlConnectionString,
             Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString,
             Func<IServiceProvider, string> fetchDonorImportSqlConnectionString)
@@ -42,24 +45,32 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
             services.RegisterSettings(
                 fetchOutgoingMatchPredictionRequestSettings,
                 fetchValidationAzureStorageSettings,
-                fetchValidationSearchSettings);
+                fetchValidationSearchSettings,
+                fetchValidationHomeworkSettings);
+
             services.RegisterDatabaseServices(fetchMatchPredictionValidationSqlConnectionString);
+
             services.RegisterServices(
                 fetchValidationAzureStorageSettings, fetchDataRefreshSettings, fetchMessageServiceBusSettings, fetchValidationSearchSettings);
+
             services.RegisterHaplotypeFrequenciesReader(fetchMatchPredictionSqlConnectionString);
             services.RegisterImportDatabaseTypes(fetchDonorImportSqlConnectionString);
             services.RegisterMatchPredictionResultsLocationPublisher(fetchMessageServiceBusSettings, fetchMatchPredictionRequestSettings);
+
+            services.RegisterHomeworkServices(fetchMatchPredictionValidationSqlConnectionString);
         }
 
         private static void RegisterSettings(
             this IServiceCollection services,
             Func<IServiceProvider, OutgoingMatchPredictionRequestSettings> fetchOutgoingMatchPredictionRequestSettings,
             Func<IServiceProvider, ValidationAzureStorageSettings> fetchValidationAzureStorageSettings,
-            Func<IServiceProvider, ValidationSearchSettings> fetchValidationSearchSettings)
+            Func<IServiceProvider, ValidationSearchSettings> fetchValidationSearchSettings,
+            Func<IServiceProvider, ValidationHomeworkSettings> fetchValidationHomeworkSettings)
         {
             services.MakeSettingsAvailableForUse(fetchOutgoingMatchPredictionRequestSettings);
             services.MakeSettingsAvailableForUse(fetchValidationAzureStorageSettings);
             services.MakeSettingsAvailableForUse(fetchValidationSearchSettings);
+            services.MakeSettingsAvailableForUse(fetchValidationHomeworkSettings);
         }
 
         private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)
@@ -68,7 +79,7 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
                 new ValidationRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<ISubjectRepository, SubjectRepository>(sp =>
                 new SubjectRepository(fetchSqlConnectionString(sp)));
-            
+
             services.AddScoped<ITestDonorExportRepository>(sp =>
              new TestDonorExportRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<ISearchSetRepository>(sp =>
@@ -98,7 +109,7 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
             Func<IServiceProvider, ValidationSearchSettings> fetchValidationSearchSettings)
         {
             services.AddScoped<ISubjectInfoImporter, SubjectInfoImporter>();
-            services.AddScoped<IFileReader<ImportedSubject>, FileReader<ImportedSubject>>();
+            services.AddScoped(typeof(IFileReader<>), typeof(FileReader<>));
             services.AddScoped<ITestDonorExporter, TestDonorExporter>();
             services.AddScoped<ISearchRequester, SearchRequester>();
 
@@ -139,6 +150,29 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
                 var storageSettings = fetchValidationAzureStorageSettings(sp);
                 return new SearchResultNotificationSender(publisher, storageSettings.SearchResultsBlobContainer);
             });
+        }
+
+        private static void RegisterHomeworkServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, string> fetchSqlConnectionString)
+        {
+            services.AddScoped<IHomeworkDeletionRepository, HomeworkDeletionRepository>(sp =>
+                new HomeworkDeletionRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<IHomeworkSetRepository, HomeworkSetRepository>(sp =>
+                new HomeworkSetRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<IPatientDonorPairRepository, PatientDonorPairRepository>(sp =>
+                new PatientDonorPairRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<IImputationSummaryRepository, ImputationSummaryRepository>(sp =>
+                new ImputationSummaryRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<IMatchingGenotypesRepository, MatchingGenotypesRepository>(sp =>
+                new MatchingGenotypesRepository(fetchSqlConnectionString(sp)));
+
+            services.AddScoped<IHomeworkCreator, HomeworkCreator>();
+            services.AddScoped<IHomeworkProcessor, HomeworkProcessor>();
+            services.AddScoped<IPatientDonorPairProcessor, PatientDonorPairProcessor>();
+            services.AddScoped<IMissingHlaChecker, MissingHlaChecker>();
+            services.AddScoped<IMatchingGenotypesRequester, MatchingGenotypesRequester>();
+            services.AddScoped<IMatchingGenotypesProcessor, MatchingGenotypesProcessor>();
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;

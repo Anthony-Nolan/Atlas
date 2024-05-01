@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Utils.Extensions;
 using static Atlas.Common.Maths.Combinations;
 

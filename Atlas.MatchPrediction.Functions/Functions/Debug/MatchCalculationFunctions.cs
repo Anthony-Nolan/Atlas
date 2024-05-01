@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Http;
+using Atlas.Debug.Client.Models.MatchPrediction;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
-using Atlas.MatchPrediction.Functions.Models.Debug;
 using Atlas.MatchPrediction.Functions.Services.Debug;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -49,15 +49,15 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
                 MatchPredictionParameters = input.MatchPredictionParameters
             });
 
-            var response = new GenotypeMatcherResponse
+            var matcherResponse = new GenotypeMatcherResponse
             {
                 MatchPredictionParameters = input.MatchPredictionParameters,
                 PatientInfo = BuildSubjectResult(result.PatientResult, frequencySet.PatientSet, input.Patient),
                 DonorInfo = BuildSubjectResult(result.DonorResult, frequencySet.DonorSet, input.Donor),
-                MatchedGenotypePairs = result.GenotypeMatchDetails.ToSingleDelimitedString()
+                MatchedGenotypePairs = result.GenotypeMatchDetails.ToFormattedStrings(),
             };
 
-            return new JsonResult(response);
+            return new JsonResult(matcherResponse);
         }
 
         private static SubjectResult BuildSubjectResult(
@@ -69,7 +69,7 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
                 subjectResult.IsUnrepresented,
                 subjectResult.GenotypeCount,
                 subjectResult.SumOfLikelihoods,
-                set, 
+                set.ToClientHaplotypeFrequencySet(), 
                 subjectInfo.HlaTyping.ToPhenotypeInfo().PrettyPrint());
         }
     }
