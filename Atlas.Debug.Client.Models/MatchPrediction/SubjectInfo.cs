@@ -1,7 +1,7 @@
 ﻿using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
-using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
+using Atlas.Common.Public.Models.MatchPrediction;
 
-namespace Atlas.MatchPrediction.Functions.Models.Debug
+namespace Atlas.Debug.Client.Models.MatchPrediction
 {
     public class SubjectInfo
     {

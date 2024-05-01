@@ -3,6 +3,7 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Atlas.Common.Utils.Extensions;
 using Microsoft.Data.SqlClient;
 
 namespace Atlas.Common.Sql.BulkInsert
@@ -13,7 +14,7 @@ namespace Atlas.Common.Sql.BulkInsert
         /// <summary>
         /// Note, `Id` and properties annotated with <see cref="BulkInsertIgnoreAttribute"/> will not be included in the bulk insert. 
         /// </summary>
-        Task BulkInsert(IReadOnlyCollection<TEntity> entities);
+        Task BulkInsert(IEnumerable<TEntity> entities);
     }
 
     public abstract class BulkInsertRepository<TEntity> : IBulkInsertRepository<TEntity> where TEntity : IBulkInsertModel
@@ -29,14 +30,17 @@ namespace Atlas.Common.Sql.BulkInsert
             this.bulkInsertTableName = bulkInsertTableName;
         }
 
-        public async Task BulkInsert(IReadOnlyCollection<TEntity> entities)
+        public async Task BulkInsert(IEnumerable<TEntity> entities)
         {
-            if (!entities.Any())
+            // ReSharper disable once PossibleMultipleEnumeration - `IsNullOrEmpty` does not enumerate the collection
+            if (entities.IsNullOrEmpty())
             {
                 return;
             }
 
             var columnNames = GetColumnNames();
+
+            // ReSharper disable once PossibleMultipleEnumeration
             var dataTable = BuildDataTable(entities, columnNames);
 
             using (var sqlBulk = BuildSqlBulkCopy(columnNames))

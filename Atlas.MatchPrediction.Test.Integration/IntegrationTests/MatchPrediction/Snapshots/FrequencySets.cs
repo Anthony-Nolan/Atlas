@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using NUnit.Framework;
