@@ -64,7 +64,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
         {
             async Task<SubjectGenotypeResult> GetResult()
             {
-                var (hasMissingHla, donorInfo) = await missingHlaChecker.SubjectHasMissingHla(pdp.DonorId, false, matchLoci);
+                var (hasMissingHla, donorInfo) = await missingHlaChecker.SubjectHasMissingHla(pdp.DonorId, true, matchLoci);
                 pdp.DidDonorHaveMissingHla = hasMissingHla;
                 pdp.IsProcessed = hasMissingHla;
                 await UpdatePatientDonorPair(pdp);
