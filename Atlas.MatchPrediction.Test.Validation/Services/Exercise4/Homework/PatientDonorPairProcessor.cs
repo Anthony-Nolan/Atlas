@@ -20,16 +20,16 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
 
         private readonly IPatientDonorPairRepository pdpRepository;
         private readonly IMissingHlaChecker missingHlaChecker;
-        private readonly ISubjectGenotypesProcessor genotypesProcessor;
+        private readonly IMatchingGenotypesProcessor processor;
 
         public PatientDonorPairProcessor(
             IPatientDonorPairRepository pdpRepository,
             IMissingHlaChecker missingHlaChecker,
-            ISubjectGenotypesProcessor genotypesProcessor)
+            IMatchingGenotypesProcessor processor)
         {
             this.pdpRepository = pdpRepository;
             this.missingHlaChecker = missingHlaChecker;
-            this.genotypesProcessor = genotypesProcessor;
+            this.processor = processor;
         }
 
         /// <inheritdoc />
@@ -43,15 +43,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
             var donorResult = await CheckDonorHasMissingHla(pdp, matchLociInfo);
             if (donorResult.HasMissingHla) return;
 
-            await Task.WhenAll(
-                Impute(pdp, patientResult, matchLoci, hlaVersion, true),
-                Impute(pdp, donorResult, matchLoci, hlaVersion, false)
-            // Then submit matching genotypes request
-            );
-
-            // store matching genotypes after imputation as need the subject genotype ids
-
-            await UpdateRecord(pdp);
+            await MatchGenotypes(patientResult, donorResult, matchLoci, hlaVersion, pdp);
         }
 
         private async Task<SubjectGenotypeResult> CheckPatientHasMissingHla(PatientDonorPair pdp, LociInfo<bool> matchLoci)
@@ -61,7 +53,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
                 var (hasMissingHla, patientInfo) = await missingHlaChecker.SubjectHasMissingHla(pdp.PatientId, false, matchLoci);
                 pdp.DidPatientHaveMissingHla = hasMissingHla;
                 pdp.IsProcessed = hasMissingHla;
-                await UpdateRecord(pdp);
+                await UpdatePatientDonorPair(pdp);
                 return new SubjectGenotypeResult(hasMissingHla, patientInfo);
             }
 
@@ -75,35 +67,33 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
                 var (hasMissingHla, donorInfo) = await missingHlaChecker.SubjectHasMissingHla(pdp.DonorId, false, matchLoci);
                 pdp.DidDonorHaveMissingHla = hasMissingHla;
                 pdp.IsProcessed = hasMissingHla;
-                await UpdateRecord(pdp);
+                await UpdatePatientDonorPair(pdp);
                 return new SubjectGenotypeResult(hasMissingHla, donorInfo);
             }
 
             return subjectResultCache.GetOrAdd(pdp.DonorId, await GetResult());
         }
 
-        private async Task Impute(
-            PatientDonorPair pdp,
-            SubjectGenotypeResult result,
+        private async Task MatchGenotypes(
+            SubjectGenotypeResult patientResult,
+            SubjectGenotypeResult donorResult,
             string matchLoci,
             string hlaVersion,
-            bool isPatient)
+            PatientDonorPair pdp)
         {
-            // Only request imputation if subject has not been processed before.
-            // This step will update the cache as well.
-            result.Genotypes ??= await genotypesProcessor.RequestAndSaveImputation(result.SubjectInfo, matchLoci, hlaVersion);
+            var matchingResult = await processor.RequestAndSaveMatchingGenotypes(
+                patientResult.SubjectInfo, donorResult.SubjectInfo, matchLoci, hlaVersion);
 
-            if (isPatient)
+            if (matchingResult)
             {
-                pdp.PatientImputationCompleted = true;
+                pdp.MatchingGenotypesCalculated = true;
+                pdp.IsProcessed = true;
             }
-            else
-            {
-                pdp.DonorImputationCompleted = true;
-            }
+
+            await UpdatePatientDonorPair(pdp);
         }
 
-        private async Task UpdateRecord(PatientDonorPair pdp)
+        private async Task UpdatePatientDonorPair(PatientDonorPair pdp)
         {
             await pdpRepository.UpdateEditableFields(pdp);
         }

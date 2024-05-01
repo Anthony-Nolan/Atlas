@@ -28,12 +28,6 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Models.Homework
         public bool? DidDonorHaveMissingHla { get; set; }
 
         [BulkInsertIgnoreAttribute]
-        public bool? PatientImputationCompleted { get; set; }
-
-        [BulkInsertIgnoreAttribute]
-        public bool? DonorImputationCompleted { get; set; }
-
-        [BulkInsertIgnoreAttribute]
         public bool? MatchingGenotypesCalculated { get; set; }
 
         public int HomeworkSet_Id { get; set; }

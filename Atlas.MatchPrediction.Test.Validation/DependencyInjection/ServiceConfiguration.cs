@@ -52,11 +52,11 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
 
             services.RegisterServices(
                 fetchValidationAzureStorageSettings, fetchDataRefreshSettings, fetchMessageServiceBusSettings, fetchValidationSearchSettings);
-            
+
             services.RegisterHaplotypeFrequenciesReader(fetchMatchPredictionSqlConnectionString);
             services.RegisterImportDatabaseTypes(fetchDonorImportSqlConnectionString);
             services.RegisterMatchPredictionResultsLocationPublisher(fetchMessageServiceBusSettings, fetchMatchPredictionRequestSettings);
-            
+
             services.RegisterHomeworkServices(fetchMatchPredictionValidationSqlConnectionString);
         }
 
@@ -79,7 +79,7 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
                 new ValidationRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<ISubjectRepository, SubjectRepository>(sp =>
                 new SubjectRepository(fetchSqlConnectionString(sp)));
-            
+
             services.AddScoped<ITestDonorExportRepository>(sp =>
              new TestDonorExportRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<ISearchSetRepository>(sp =>
@@ -164,15 +164,15 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
                 new PatientDonorPairRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<IImputationSummaryRepository, ImputationSummaryRepository>(sp =>
                 new ImputationSummaryRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<ISubjectGenotypeRepository, SubjectGenotypeRepository>(sp =>
-                new SubjectGenotypeRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<IMatchingGenotypesRepository, MatchingGenotypesRepository>(sp =>
+                new MatchingGenotypesRepository(fetchSqlConnectionString(sp)));
 
             services.AddScoped<IHomeworkCreator, HomeworkCreator>();
             services.AddScoped<IHomeworkProcessor, HomeworkProcessor>();
             services.AddScoped<IPatientDonorPairProcessor, PatientDonorPairProcessor>();
             services.AddScoped<IMissingHlaChecker, MissingHlaChecker>();
-            services.AddScoped<ISubjectGenotypesProcessor, SubjectGenotypesProcessor>();
-            services.AddScoped<IImputationRequester, ImputationRequester>();
+            services.AddScoped<IMatchingGenotypesRequester, MatchingGenotypesRequester>();
+            services.AddScoped<IMatchingGenotypesProcessor, MatchingGenotypesProcessor>();
         }
     }
 }
