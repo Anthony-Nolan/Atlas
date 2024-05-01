@@ -11,12 +11,6 @@ namespace Atlas.MatchPrediction.Test.Validation.Models
         public string InputPath { get; set; }
 
         /// <summary>
-        /// Path where results should be written to.
-        /// Make sure to escape the backslashes in the path.
-        /// </summary>
-        public string ResultsPath { get; set; }
-
-        /// <summary>
         /// Loci set to `true` will be included in the analysis.
         /// </summary>
         public LociInfoTransfer<bool> MatchLoci { get; set; }
