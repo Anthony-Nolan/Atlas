@@ -6,7 +6,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
 {
     public interface IHomeworkSetRepository
     {
-        Task<int> Add(string setName, string resultsPath, string matchLoci, string hlaNomenclatureVersion);
+        Task<int> Add(string setName, string matchLoci, string hlaNomenclatureVersion);
         Task<HomeworkSet> Get(int setId);
     }
 
@@ -19,17 +19,15 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
             this.connectionString = connectionString;
         }
 
-        public async Task<int> Add(string setName, string resultsPath, string matchLoci, string hlaNomenclatureVersion)
+        public async Task<int> Add(string setName, string matchLoci, string hlaNomenclatureVersion)
         {
             const string sql = $@"
                 INSERT INTO HomeworkSets(
                     {nameof(HomeworkSet.SetName)},
-                    {nameof(HomeworkSet.ResultsPath)},
                     {nameof(HomeworkSet.MatchLoci)},
                     {nameof(HomeworkSet.HlaNomenclatureVersion)}
                 ) VALUES(
                     @{nameof(setName)},
-                    @{nameof(resultsPath)},
                     @{nameof(matchLoci)},
                     @{nameof(hlaNomenclatureVersion)}
                 );
@@ -37,7 +35,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
 
             await using (var connection = new SqlConnection(connectionString))
             {
-                return (await connection.QueryAsync<int>(sql, new { setName, resultsPath, matchLoci, hlaNomenclatureVersion })).Single();
+                return (await connection.QueryAsync<int>(sql, new { setName, matchLoci, hlaNomenclatureVersion })).Single();
             }
         }
 
