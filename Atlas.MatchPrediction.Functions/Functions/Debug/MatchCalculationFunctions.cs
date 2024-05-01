@@ -67,6 +67,7 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
         {
             return new SubjectResult(
                 subjectResult.IsUnrepresented,
+                subjectResult.GenotypeCount,
                 subjectResult.SumOfLikelihoods,
                 set, 
                 subjectInfo.HlaTyping.ToPhenotypeInfo().PrettyPrint());

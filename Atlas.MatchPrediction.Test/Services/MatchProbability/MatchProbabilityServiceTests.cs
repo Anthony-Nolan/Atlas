@@ -60,8 +60,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(new GenotypeMatcherResult
             {
-                PatientResult = new GenotypeMatcherResult.SubjectResult(false, 0m),
-                DonorResult = new GenotypeMatcherResult.SubjectResult(false, 0m),
+                PatientResult = new GenotypeMatcherResult.SubjectResult(false, 1, 0m),
+                DonorResult = new GenotypeMatcherResult.SubjectResult(false, 1, 0m),
                 GenotypeMatchDetails = new List<GenotypeMatchDetails>()
             });
 
@@ -100,8 +100,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         {
             genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(new GenotypeMatcherResult
             {
-                PatientResult = new GenotypeMatcherResult.SubjectResult(true, 0m),
-                DonorResult = new GenotypeMatcherResult.SubjectResult(false, 0.1m),
+                PatientResult = new GenotypeMatcherResult.SubjectResult(true, 0, 0m),
+                DonorResult = new GenotypeMatcherResult.SubjectResult(false, 1, 0.1m),
                 GenotypeMatchDetails = new List<GenotypeMatchDetails>()
             });
 
@@ -126,8 +126,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(new GenotypeMatcherResult
             {
-                PatientResult = new GenotypeMatcherResult.SubjectResult(true, 0m),
-                DonorResult = new GenotypeMatcherResult.SubjectResult(false, 0.1m),
+                PatientResult = new GenotypeMatcherResult.SubjectResult(true, 0, 0m),
+                DonorResult = new GenotypeMatcherResult.SubjectResult(false, 1, 0.1m),
                 GenotypeMatchDetails = new List<GenotypeMatchDetails>()
             });
 
@@ -146,8 +146,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         {
             genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(new GenotypeMatcherResult
             {
-                PatientResult = new GenotypeMatcherResult.SubjectResult(false, 0.1m),
-                DonorResult = new GenotypeMatcherResult.SubjectResult(true, 0m),
+                PatientResult = new GenotypeMatcherResult.SubjectResult(false, 1, 0.1m),
+                DonorResult = new GenotypeMatcherResult.SubjectResult(true, 0, 0m),
                 GenotypeMatchDetails = new List<GenotypeMatchDetails>()
             });
 
@@ -172,8 +172,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(new GenotypeMatcherResult
             {
-                PatientResult = new GenotypeMatcherResult.SubjectResult(false, 0.1m),
-                DonorResult = new GenotypeMatcherResult.SubjectResult(true, 0m),
+                PatientResult = new GenotypeMatcherResult.SubjectResult(false, 1, 0.1m),
+                DonorResult = new GenotypeMatcherResult.SubjectResult(true,0, 0m),
                 GenotypeMatchDetails = new List<GenotypeMatchDetails>()
             });
 
@@ -194,8 +194,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(new GenotypeMatcherResult
             {
-                PatientResult = new GenotypeMatcherResult.SubjectResult(false, patientLikelihood),
-                DonorResult = new GenotypeMatcherResult.SubjectResult(false, donorLikelihood),
+                PatientResult = new GenotypeMatcherResult.SubjectResult(false, 1, patientLikelihood),
+                DonorResult = new GenotypeMatcherResult.SubjectResult(false, 1, donorLikelihood),
                 GenotypeMatchDetails = new List<GenotypeMatchDetails>()
             });
 
@@ -217,8 +217,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(new GenotypeMatcherResult
             {
-                PatientResult = new GenotypeMatcherResult.SubjectResult(false, 0.1m),
-                DonorResult = new GenotypeMatcherResult.SubjectResult(false, 0.1m),
+                PatientResult = new GenotypeMatcherResult.SubjectResult(false, 1, 0.1m),
+                DonorResult = new GenotypeMatcherResult.SubjectResult(false, 1, 0.1m),
                 GenotypeMatchDetails = new List<GenotypeMatchDetails>()
             });
 
