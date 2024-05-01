@@ -18,17 +18,20 @@ namespace Atlas.MatchPrediction.Functions.Models.Debug
     public class SubjectResult
     {
         public bool IsUnrepresented { get; set; }
+        public int GenotypeCount { get; set; }
         public decimal SumOfLikelihoods { get; set; }
         public HaplotypeFrequencySet HaplotypeFrequencySet { get; set; }
         public string HlaTyping { get; set; }
 
         public SubjectResult(
             bool isUnrepresented,
+            int genotypeCount,
             decimal sumOfLikelihoods,
             HaplotypeFrequencySet haplotypeFrequencySet,
             string hlaTyping)
         {
             IsUnrepresented = isUnrepresented;
+            GenotypeCount = genotypeCount;
             SumOfLikelihoods = sumOfLikelihoods;
             HaplotypeFrequencySet = haplotypeFrequencySet;
             HlaTyping = hlaTyping;
