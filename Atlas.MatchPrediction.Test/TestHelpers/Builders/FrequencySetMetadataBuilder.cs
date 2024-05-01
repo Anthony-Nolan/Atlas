@@ -1,4 +1,4 @@
-using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
+using Atlas.Common.Public.Models.MatchPrediction;
 using LochNessBuilder;
 
 namespace Atlas.MatchPrediction.Test.TestHelpers.Builders

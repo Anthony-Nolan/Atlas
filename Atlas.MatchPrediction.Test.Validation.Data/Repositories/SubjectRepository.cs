@@ -10,6 +10,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories
     {
         Task<IEnumerable<SubjectInfo>> GetPatients(int firstPatientId = 0);
         Task<IEnumerable<SubjectInfo>> GetDonors();
+        Task<SubjectInfo?> GetByExternalId(string externalId);
     }
 
     public class SubjectRepository : BulkInsertRepository<SubjectInfo>, ISubjectRepository
@@ -41,6 +42,17 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories
         public async Task<IEnumerable<SubjectInfo>> GetDonors()
         {
             return await GetAllSubjects(SubjectType.Donor);
+        }
+
+        /// <inheritdoc />
+        public async Task<SubjectInfo?> GetByExternalId(string externalId)
+        {
+            const string sql = @$"SELECT * FROM {TableName} WHERE {nameof(SubjectInfo.ExternalId)} = @{nameof(externalId)}";
+
+            await using (var conn = new SqlConnection(ConnectionString))
+            {
+                return await conn.QuerySingleOrDefaultAsync<SubjectInfo>(sql, new { externalId });
+            }
         }
 
         private async Task<IEnumerable<SubjectInfo>> GetAllSubjects(SubjectType subjectType)

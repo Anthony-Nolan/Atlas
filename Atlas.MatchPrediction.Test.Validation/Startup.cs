@@ -29,6 +29,7 @@ namespace Atlas.MatchPrediction.Test.Validation
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<MatchPredictionRequestsSettings>(),
                 OptionsReaderFor<ValidationSearchSettings>(),
+                OptionsReaderFor<ValidationHomeworkSettings>(),
                 ConnectionStringReader("MatchPredictionValidation:Sql"),
                 ConnectionStringReader("MatchPrediction:Sql"),
                 ConnectionStringReader("DonorImport:Sql"));
@@ -39,6 +40,7 @@ namespace Atlas.MatchPrediction.Test.Validation
             services.RegisterAsOptions<OutgoingMatchPredictionRequestSettings>("OutgoingMatchPredictionRequests");
             services.RegisterAsOptions<ValidationAzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
+            services.RegisterAsOptions<ValidationHomeworkSettings>("Homework");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<MatchPredictionRequestsSettings>("MatchPredictionRequests");
             services.RegisterAsOptions<ValidationSearchSettings>("Search");

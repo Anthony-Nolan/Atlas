@@ -1,7 +1,7 @@
-﻿using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
-using Atlas.MatchPrediction.Models;
+﻿using Atlas.Client.Models.Search.Results.MatchPrediction;
+using Atlas.Common.Public.Models.MatchPrediction;
 
-namespace Atlas.MatchPrediction.Functions.Models.Debug
+namespace Atlas.Debug.Client.Models.MatchPrediction
 {
     public class GenotypeImputationResponse
     {
