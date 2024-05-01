@@ -30,7 +30,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Context
             modelBuilder.Entity<HomeworkSet>().SetUpModel();
             modelBuilder.Entity<PatientDonorPair>().SetUpModel();
             modelBuilder.Entity<ImputationSummary>().SetUpModel();
-            modelBuilder.Entity<SubjectGenotype>().SetUpModel();
+            modelBuilder.Entity<MatchingGenotypes>().SetUpModel();
 
             base.OnModelCreating(modelBuilder);
         }
@@ -50,6 +50,6 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Context
         public DbSet<HomeworkSet> HomeworkSets { get; set; }
         public DbSet<PatientDonorPair> PatientDonorPairs { get; set; }
         public DbSet<ImputationSummary> ImputationSummaries { get; set; }
-        public DbSet<SubjectGenotype> SubjectGenotypes { get; set; }
+        public DbSet<MatchingGenotypes> MatchingGenotypes { get; set; }
     }
 }

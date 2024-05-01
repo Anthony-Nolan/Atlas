@@ -40,9 +40,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
                 UPDATE PatientDonorPairs SET 
                     IsProcessed = @{nameof(pdp.IsProcessed)},
                     DidPatientHaveMissingHla = @{nameof(pdp.DidPatientHaveMissingHla)}, 
-                    DidDonorHaveMissingHla = @{nameof(pdp.DidDonorHaveMissingHla)}, 
-                    PatientImputationCompleted = @{nameof(pdp.PatientImputationCompleted)},
-                    DonorImputationCompleted = @{nameof(pdp.DonorImputationCompleted)},
+                    DidDonorHaveMissingHla = @{nameof(pdp.DidDonorHaveMissingHla)},
                     MatchingGenotypesCalculated = @{nameof(pdp.MatchingGenotypesCalculated)}
                 WHERE Id = @{nameof(pdp.Id)}";
 

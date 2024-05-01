@@ -20,7 +20,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
         /// <inheritdoc />
         public async Task DeleteAll()
         {
-            const string deleteGenotypes = "DELETE FROM SubjectGenotypes";
+            const string deleteGenotypes = "DELETE FROM MatchingGenotypes";
             const string deleteImputationSummaries = "DELETE FROM ImputationSummaries";
             const string deleteAllPairs = "DELETE FROM PatientDonorPairs";
             const string deleteAllSets = "DELETE FROM HomeworkSets";
