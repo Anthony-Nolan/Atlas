@@ -1,11 +1,11 @@
-﻿using Atlas.MatchPrediction.Models;
+﻿using Atlas.Common.Public.Models.MatchPrediction;
 
-namespace Atlas.MatchPrediction.Functions.Models.Debug
+namespace Atlas.Debug.Client.Models.MatchPrediction
 {
     public class GenotypeMatcherRequest
     {
         /// <summary>
-        /// <inheritdoc cref="MatchPrediction.Models.MatchPredictionParameters"/> 
+        /// <inheritdoc cref="Common.Public.Models.MatchPrediction.MatchPredictionParameters"/> 
         /// </summary>
         public MatchPredictionParameters MatchPredictionParameters { get; set; }
 

@@ -63,7 +63,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4
                 lastExportId.Value,
                 request.DonorType.ToString(),
                 request.MismatchCount,
-                MatchLociAsString(request));
+                request.MatchLoci.MatchLociToString());
 
             await SubmitSearchRequests(searchSetId, request);
 
@@ -76,19 +76,6 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4
             return lastRecord?.WasDataRefreshSuccessful == null || !lastRecord.WasDataRefreshSuccessful.Value
                 ? null
                 : lastRecord.Id;
-        }
-
-        private static string MatchLociAsString(ValidationSearchRequest request)
-        {
-            var matchLoci = request.MatchLoci.ToLociInfo().Reduce(
-                (locus, isMatchLocus, loci) =>
-                {
-                    if (isMatchLocus) loci.Add(locus);
-                    return loci;
-                },
-                new List<Locus>());
-
-            return string.Join(",", matchLoci);
         }
 
         private async Task SubmitSearchRequests(int searchSetId, ValidationSearchRequest request)

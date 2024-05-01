@@ -1,9 +1,9 @@
 ﻿using System;
-using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.Common.Public.Models.MatchPrediction;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models
 {

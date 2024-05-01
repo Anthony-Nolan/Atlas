@@ -3,8 +3,10 @@ using Atlas.Common.Utils;
 using Atlas.Common.Utils.Http;
 using Atlas.ManualTesting.Common.Services;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
+using Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
 using Atlas.MatchPrediction.Test.Validation.Models;
 using Atlas.MatchPrediction.Test.Validation.Services.Exercise4;
+using Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +14,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
@@ -30,17 +33,26 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
         private readonly ISearchRequester searchRequester;
         private readonly IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor;
         private readonly ISearchResultNotificationSender messageSender;
+        private readonly IHomeworkDeletionRepository deletionRepository;
+        private readonly IHomeworkCreator homeworkCreator;
+        private readonly IHomeworkProcessor homeworkProcessor;
 
         public Exercise4Functions(
             IValidationAtlasPreparer atlasPreparer,
             ISearchRequester searchRequester,
             IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor,
-            ISearchResultNotificationSender messageSender)
+            ISearchResultNotificationSender messageSender,
+            IHomeworkDeletionRepository deletionRepository,
+            IHomeworkCreator homeworkCreator,
+            IHomeworkProcessor homeworkProcessor)
         {
             this.atlasPreparer = atlasPreparer;
             this.searchRequester = searchRequester;
             this.searchResultSetProcessor = searchResultSetProcessor;
             this.messageSender = messageSender;
+            this.deletionRepository = deletionRepository;
+            this.homeworkCreator = homeworkCreator;
+            this.homeworkProcessor = homeworkProcessor;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -115,6 +127,26 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             {
                 throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failure whilst downloading results.", ex);
             }
+        }
+
+        [FunctionName($"{FunctionNamePrefix}3_{nameof(CreateNewHomeworkSets)}")]
+        public async Task<IActionResult> CreateNewHomeworkSets(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(HomeworkRequest), nameof(HomeworkRequest))]
+            HttpRequest request)
+        {
+            var homeworkRequest = await request.DeserialiseRequestBody<HomeworkRequest>();
+            if(homeworkRequest.DeletePreviousHomeworkSets) await deletionRepository.DeleteAll();
+            return new OkObjectResult(await homeworkCreator.CreateHomeworkSets(homeworkRequest));
+        }
+
+        [FunctionName($"{FunctionNamePrefix}4_{nameof(StartOrContinueHomeworkSets)}")]
+        public async Task StartOrContinueHomeworkSets(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(IEnumerable<int>), "homeworkSetIds")]
+            HttpRequest request)
+        {
+            await homeworkProcessor.StartOrContinueHomeworkSets(await request.DeserialiseRequestBody<IEnumerable<int>>());
         }
     }
 }

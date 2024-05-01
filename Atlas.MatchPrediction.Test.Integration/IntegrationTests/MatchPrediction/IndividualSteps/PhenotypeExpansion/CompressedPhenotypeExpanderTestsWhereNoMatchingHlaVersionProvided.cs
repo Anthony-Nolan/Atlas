@@ -1,12 +1,12 @@
 ﻿using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using FluentAssertions;
 using NUnit.Framework;
 using static Atlas.MatchPrediction.Test.Integration.Resources.Alleles.Alleles;
-using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.IndividualSteps.PhenotypeExpansion
 {

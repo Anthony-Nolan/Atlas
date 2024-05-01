@@ -2,8 +2,7 @@
 using System.Linq;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
-using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
-using Atlas.MatchPrediction.Models;
+using Atlas.Common.Public.Models.MatchPrediction;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 {
