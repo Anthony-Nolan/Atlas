@@ -73,7 +73,6 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
 
             var setId = await setRepository.Add(
                 setFileName,
-                request.ResultsPath,
                 request.MatchLoci.MatchLociToString(),
                 request.MatchingAlgorithmHlaNomenclatureVersion);
 

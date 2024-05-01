@@ -11,9 +11,6 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Models.Homework
         [Column(TypeName = "nvarchar(256)")]
         public string SetName { get; set; }
 
-        [Column(TypeName = "nvarchar(516)")]
-        public string ResultsPath { get; set; }
-
         [Column(TypeName = "nvarchar(128)")]
         public string MatchLoci { get; set; }
 
