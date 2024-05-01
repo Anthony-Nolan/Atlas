@@ -175,6 +175,253 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
                     b.ToTable("TestDonorExportRecords");
                 });
 
+            modelBuilder.Entity("Atlas.MatchPrediction.Test.Validation.Data.Models.Homework.HomeworkSet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("HlaNomenclatureVersion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<string>("MatchLoci")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("SetName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTimeOffset>("SubmittedDateTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SetName");
+
+                    b.ToTable("HomeworkSets");
+                });
+
+            modelBuilder.Entity("Atlas.MatchPrediction.Test.Validation.Data.Models.Homework.ImputationSummary", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("ExternalSubjectId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("GenotypeCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HfSetPopulationId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("SumOfLikelihoods")
+                        .HasColumnType("decimal(21,20)");
+
+                    b.Property<bool>("WasRepresented")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExternalSubjectId");
+
+                    b.ToTable("ImputationSummaries");
+                });
+
+            modelBuilder.Entity("Atlas.MatchPrediction.Test.Validation.Data.Models.Homework.MatchingGenotypes", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("A_Count")
+                        .HasColumnType("int");
+
+                    b.Property<int>("B_Count")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("C_Count")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DQB1_Count")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DRB1_Count")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Donor_A_1")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Donor_A_2")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Donor_B_1")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Donor_B_2")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Donor_C_1")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Donor_C_2")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Donor_DQB1_1")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Donor_DQB1_2")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Donor_DRB1_1")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Donor_DRB1_2")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int>("Donor_ImputationSummary_Id")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Donor_Likelihood")
+                        .HasColumnType("decimal(21,20)");
+
+                    b.Property<string>("Patient_A_1")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Patient_A_2")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Patient_B_1")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Patient_B_2")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Patient_C_1")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Patient_C_2")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Patient_DQB1_1")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Patient_DQB1_2")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Patient_DRB1_1")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Patient_DRB1_2")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int>("Patient_ImputationSummary_Id")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Patient_Likelihood")
+                        .HasColumnType("decimal(21,20)");
+
+                    b.Property<int>("TotalCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Donor_ImputationSummary_Id");
+
+                    b.HasIndex("Patient_ImputationSummary_Id");
+
+                    b.HasIndex("TotalCount");
+
+                    b.ToTable("MatchingGenotypes");
+                });
+
+            modelBuilder.Entity("Atlas.MatchPrediction.Test.Validation.Data.Models.Homework.PatientDonorPair", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<bool?>("DidDonorHaveMissingHla")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("DidPatientHaveMissingHla")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DonorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("HomeworkSet_Id")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsProcessed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool?>("MatchingGenotypesCalculated")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PatientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HomeworkSet_Id");
+
+                    b.HasIndex("DonorId", "PatientId", "HomeworkSet_Id", "IsProcessed")
+                        .IsUnique();
+
+                    b.ToTable("PatientDonorPairs");
+                });
+
             modelBuilder.Entity("Atlas.MatchPrediction.Test.Validation.Data.Models.MatchPredictionRequest", b =>
                 {
                     b.Property<int>("Id")
@@ -424,6 +671,30 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Migrations
                     b.HasOne("Atlas.ManualTesting.Common.Models.Entities.MatchedDonor", null)
                         .WithMany()
                         .HasForeignKey("MatchedDonor_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Atlas.MatchPrediction.Test.Validation.Data.Models.Homework.MatchingGenotypes", b =>
+                {
+                    b.HasOne("Atlas.MatchPrediction.Test.Validation.Data.Models.Homework.ImputationSummary", null)
+                        .WithMany()
+                        .HasForeignKey("Donor_ImputationSummary_Id")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Atlas.MatchPrediction.Test.Validation.Data.Models.Homework.ImputationSummary", null)
+                        .WithMany()
+                        .HasForeignKey("Patient_ImputationSummary_Id")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Atlas.MatchPrediction.Test.Validation.Data.Models.Homework.PatientDonorPair", b =>
+                {
+                    b.HasOne("Atlas.MatchPrediction.Test.Validation.Data.Models.Homework.HomeworkSet", null)
+                        .WithMany()
+                        .HasForeignKey("HomeworkSet_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

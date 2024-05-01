@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
