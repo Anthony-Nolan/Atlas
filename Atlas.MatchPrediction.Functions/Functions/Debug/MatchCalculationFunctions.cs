@@ -49,15 +49,15 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
                 MatchPredictionParameters = input.MatchPredictionParameters
             });
 
-            var response = new GenotypeMatcherResponse
+            var matcherResponse = new GenotypeMatcherResponse
             {
                 MatchPredictionParameters = input.MatchPredictionParameters,
                 PatientInfo = BuildSubjectResult(result.PatientResult, frequencySet.PatientSet, input.Patient),
                 DonorInfo = BuildSubjectResult(result.DonorResult, frequencySet.DonorSet, input.Donor),
-                MatchedGenotypePairs = result.GenotypeMatchDetails.ToSingleDelimitedString()
+                MatchedGenotypePairs = result.GenotypeMatchDetails.ToFormattedStrings(),
             };
 
-            return new JsonResult(response);
+            return new JsonResult(matcherResponse);
         }
 
         private static SubjectResult BuildSubjectResult(

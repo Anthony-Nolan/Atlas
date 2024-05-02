@@ -24,47 +24,34 @@ namespace Atlas.MatchPrediction.Functions.Services.Debug
             return builder.ToString();
         }
 
-        public static string ToSingleDelimitedString(this IEnumerable<GenotypeMatchDetails> genotypeMatchDetails)
+        /// <summary>
+        /// Converts a collection of GenotypeMatchDetails to a collection of formatted strings.
+        /// Uses yield return to avoid creating a large collection in memory.
+        /// </summary>
+        public static IEnumerable<string> ToFormattedStrings(this IEnumerable<GenotypeMatchDetails> genotypeMatchDetails)
         {
             // ReSharper disable once PossibleMultipleEnumeration - `IsNullOrEmpty` extension method does not enumerate full collection
             if (genotypeMatchDetails.IsNullOrEmpty())
             {
-                return "No available genotype match details.";
+                yield return "No available genotype match details.";
             }
 
-            var builder = new StringBuilder();
+            yield return $"Total{FieldDelimiter}" +
+                         $"A{FieldDelimiter}" +
+                         $"B{FieldDelimiter}" +
+                         $"C{FieldDelimiter}" +
+                         $"DQB1{FieldDelimiter}" +
+                         $"DRB1{FieldDelimiter}" +
+                         $"{BuildGenotypeLikelihoodHeader("P-")}{FieldDelimiter}" +
+                         $"{BuildGenotypeLikelihoodHeader("D-")}";
 
-            var genotypePairs = BuildGenotypePairsWithMatchCounts(genotypeMatchDetails);
-
-            foreach (var pair in genotypePairs)
+            // ReSharper disable once PossibleMultipleEnumeration
+            foreach (var details in genotypeMatchDetails.OrderByDescending(x => x.MatchCount))
             {
-                builder.AppendLine(pair);
+                yield return $"{BuildCounts(details.MatchCount, details.MatchCounts)}{FieldDelimiter}" +
+                             $"{details.PatientGenotype.ToDelimitedString(details.PatientGenotypeLikelihood)}{FieldDelimiter}" +
+                             $"{details.DonorGenotype.ToDelimitedString(details.DonorGenotypeLikelihood)}";
             }
-
-            return builder.ToString();
-        }
-
-        private static IEnumerable<string> BuildGenotypePairsWithMatchCounts(IEnumerable<GenotypeMatchDetails> genotypeMatchDetails)
-        {
-            var header =  $"Total{FieldDelimiter}" +
-                                $"A{FieldDelimiter}" +
-                                $"B{FieldDelimiter}" +
-                                $"C{FieldDelimiter}" +
-                                $"DQB1{FieldDelimiter}" +
-                                $"DRB1{FieldDelimiter}" +
-                                $"{BuildGenotypeLikelihoodHeader("P-")}{FieldDelimiter}" +
-                                $"{BuildGenotypeLikelihoodHeader("D-")}";
-
-            var formattedStrings = new List<string> { header };
-            formattedStrings.AddRange(
-                genotypeMatchDetails
-                .OrderByDescending(x => x.MatchCount)
-                .Select(x =>
-                    $"{BuildCounts(x.MatchCount, x.MatchCounts)}{FieldDelimiter}" +
-                    $"{x.PatientGenotype.ToDelimitedString(x.PatientGenotypeLikelihood)}{FieldDelimiter}" +
-                    $"{x.DonorGenotype.ToDelimitedString(x.DonorGenotypeLikelihood)}"));
-
-            return formattedStrings;
 
             string BuildCounts(int totalCount, LociInfo<int?> locusCounts) =>
                 $"{totalCount}{FieldDelimiter}" +
