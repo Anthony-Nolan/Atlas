@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
@@ -33,7 +34,10 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
 
     internal class MatchingGenotypesRequester : AtlasHttpRequester, IMatchingGenotypesRequester
     {
-        private static readonly HttpClient HttpRequestClient = new();
+        private static readonly HttpClient HttpRequestClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromMinutes(10)
+        };
 
         /// <inheritdoc />
         public MatchingGenotypesRequester(IOptions<ValidationHomeworkSettings> settings) 

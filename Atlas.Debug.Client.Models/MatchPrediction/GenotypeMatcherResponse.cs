@@ -1,4 +1,5 @@
-﻿using Atlas.Client.Models.Search.Results.MatchPrediction;
+﻿using System.Collections.Generic;
+using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.Public.Models.MatchPrediction;
 
 namespace Atlas.Debug.Client.Models.MatchPrediction
@@ -10,9 +11,9 @@ namespace Atlas.Debug.Client.Models.MatchPrediction
         public SubjectResult DonorInfo { get; set; }
 
         /// <summary>
-        /// Patient-donor genotype pairs (represented as a single, formatted string) and their match counts.
+        /// Patient-donor genotype pairs and their match counts.
         /// </summary>
-        public string MatchedGenotypePairs { get; set; }
+        public IEnumerable<string> MatchedGenotypePairs { get; set; }
     }
 
     public class SubjectResult
