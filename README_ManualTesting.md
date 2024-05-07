@@ -266,7 +266,7 @@ The PDPs were split into several CSV files, with format: `PatientId,DonorId`, wi
 ##### Reporting the Results
 The following SQL queries in `\MiscTestingAndDebuggingResources\ManualTesting\MatchPredictionValidation\exercise4\` can be used to report/investigate results:
 - `SQL_Homework_2_SubjectsWithMissingHla.sql` - selects patients and donors that have missing required HLA typings, and so would not have been included in the results of the original MV4 exercise.
-- `SQL_Homework_3_ImputationResults.sql` - selects info for a given PDP:
+- `SQL_Homework_3_HomeworkResults.sql` - selects info for a given PDP:
   - Match grades and counts from original MV4 search results (if PDP was returned therein AND data is still held within the validation db) 
   - Original HLA phenotype, frequency metadata, and imputation summary: patient, donor.
   - List of potential genotypes with likelihoods: patient, donor.
