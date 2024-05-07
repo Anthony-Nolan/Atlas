@@ -115,6 +115,15 @@ Therefore, at present there is no plan to curate `rel_dna_ser` assignments. Howe
 The HMD is automatically regenerated to the latest IMGT/HLA version on every [data refresh,](https://github.com/Anthony-Nolan/Atlas/blob/master/README_Integration.md#data-refresh) but can also hold multiple older IMGT/HLA versions. The main use case for this is the need to upload haplotype frequency set files that have been encoded to an older HLA version.
 [See integration README for instructions on how to regenerate the HMD to an older version](https://github.com/Anthony-Nolan/Atlas/blob/master/README_Integration.md#hla-metadata).
 
+To see what versions of the HMD are currently available, you can run the following SQL query on the shared Atlas database:
+
+```sql
+SELECT DISTINCT HlaNomenclatureVersion
+FROM MatchingAlgorithmPersistent.DataRefreshHistory
+WHERE WasSuccessful = 1
+ORDER BY HlaNomenclatureVersion DESC
+```
+
 ### Caching
 When used, the HMD then caches the contents of its CloudTables in memory, although that initial caching is slightly slow. Cache-Warming methods are available to trigger that cache-to-memory action, if desired.
 
