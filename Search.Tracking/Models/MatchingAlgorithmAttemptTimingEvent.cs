@@ -1,4 +1,4 @@
-﻿namespace Atlas.Search.Tracking.Models
+﻿namespace Atlas.SearchTracking.Models
 {
     public class MatchingAlgorithmAttemptTimingEvent
     {
