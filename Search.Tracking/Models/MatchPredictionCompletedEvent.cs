@@ -12,6 +12,6 @@
         public bool IsSuccessful { get; set; }
         public string? FailureInfoJson { get; set; }
         public int? DonorsPerBatch { get; set; }
-        public int TotalNumberOfBatches { get; set; }
+        public int? TotalNumberOfBatches { get; set; }
     }
 }
