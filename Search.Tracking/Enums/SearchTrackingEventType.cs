@@ -4,10 +4,20 @@
     {
         SearchRequested,
         MatchingAlgorithmAttemptStarted,
-        MatchingAlgorithmAttemptTiming,
+        MatchingAlgorithmCoreMatchingStarted,
+        MatchingAlgorithmCoreMatchingEnded,
+        MatchingAlgorithmCoreScoringStarted,
+        MatchingAlgorithmCoreScoringEnded,
+        MatchingAlgorithmPersistingResultsStarted,
+        MatchingAlgorithmPersistingResultsEnded,
         MatchingAlgorithmCompleted,
         MatchPredictionStarted,
-        MatchPredictionTiming,
+        MatchPredictionBatchPreparationStarted,
+        MatchPredictionBatchPreparationEnded,
+        MatchPredictionRunningBatchesStarted,
+        MatchPredictionRunningBatchesEnded,
+        MatchPredictionPersistingResultsStarted,
+        MatchPredictionPersistingResultsEnded,
         MatchPredictionCompleted,
         SearchRequestCompleted
     }
