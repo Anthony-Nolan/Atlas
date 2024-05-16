@@ -15,7 +15,7 @@ namespace Atlas.SearchTracking.Clients
     {
         private readonly string connectionString;
         private readonly string searchTrackingEventsTopicName;
-        private readonly string EventType = "EventTypePropertyName";
+        private readonly string EventTypePropertyName = "EventType";
 
         public SearchTrackingServiceBusClient(MessagingServiceBusSettings messagingServiceBusSettings)
         {
@@ -25,10 +25,10 @@ namespace Atlas.SearchTracking.Clients
 
         public async Task PublishSearchTrackingEvent<TEvent>(TEvent searchTrackingEvent, SearchTrackingEventType eventType)
         {
-            var json = JsonConvert.SerializeObject(eventType);
+            var json = JsonConvert.SerializeObject(searchTrackingEvent);
             var message = new Message(Encoding.UTF8.GetBytes(json));
 
-            message.UserProperties[EventType] = searchTrackingEvent.ToString();
+            message.UserProperties[EventTypePropertyName] = eventType.ToString();
 
             var client = new TopicClient(connectionString, searchTrackingEventsTopicName);
             await client.SendAsync(message);
