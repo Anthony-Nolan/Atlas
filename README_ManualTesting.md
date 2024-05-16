@@ -275,6 +275,7 @@ The following SQL queries in `\MiscTestingAndDebuggingResources\ManualTesting\Ma
 
 ##### Useful SQL for checking PDP results 
 - `SQL_Find_Patients_And_Donors_Missing_HLA` - selects patients and donors that are missing HLA-C or HLA-DQB1
+- `SQL_Find_Patients_And_And_Donors_With_Null_Alleles` - select patients and donors that have a null allele in their HLA typing
 
 <br>
 
