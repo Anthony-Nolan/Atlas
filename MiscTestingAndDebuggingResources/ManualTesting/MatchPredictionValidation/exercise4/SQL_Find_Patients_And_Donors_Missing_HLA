@@ -1,0 +1,17 @@
+/*
+ * RETURN PATIENTS AND DONORS IN HOMEWORK SETS THAT ARE MISSING HLA
+ * Note that patients who are missing A, B or DRB1 will not have been processed
+ * as this is the minimum requirement for a search. Also, donors who are
+ * missing A, B or DRB1 will not have been loaded.
+ */
+
+SELECT pdp.HomeworkSet_Id, si.*
+FROM PatientDonorPairs pdp, SubjectInfo si
+WHERE pdp.PatientId = si.ExternalId
+AND DidPatientHaveMissingHla = 1
+UNION
+SELECT pdp.HomeworkSet_Id, si.*
+FROM PatientDonorPairs pdp, SubjectInfo si
+WHERE pdp.DonorId = si.ExternalId
+AND (C_1 IS NULL OR C_2 IS NULL OR DQB1_1 IS NULL OR DQB1_2 IS NULL)
+ORDER BY SubjectType DESC, ExternalId

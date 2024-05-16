@@ -273,6 +273,9 @@ The following SQL queries in `\MiscTestingAndDebuggingResources\ManualTesting\Ma
   - List of patient/donor genotype combinations, with match counts and likelihoods.
   - Match probabilities for total number of mismatches, and locus mismatches.
 
+##### Useful SQL for checking PDP results 
+- `SQL_Find_Patients_And_Donors_Missing_HLA` - selects patients and donors that are missing HLA-C or HLA-DQB1
+
 <br>
 
 ## Match Prediction Verification using simulated data
