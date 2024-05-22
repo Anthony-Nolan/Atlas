@@ -5,7 +5,7 @@ using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -28,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(ProcessDifferentialDonorUpdatesForMatchingDbA))]
+        [Function(nameof(ProcessDifferentialDonorUpdatesForMatchingDbA))]
         public async Task ProcessDifferentialDonorUpdatesForMatchingDbA(
             [TimerTrigger("%MessagingServiceBus:DonorManagement:CronSchedule%")]
             TimerInfo myTimer)
@@ -37,7 +37,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(ProcessDifferentialDonorUpdatesForMatchingDbB))]
+        [Function(nameof(ProcessDifferentialDonorUpdatesForMatchingDbB))]
         public async Task ProcessDifferentialDonorUpdatesForMatchingDbB(
             [TimerTrigger("%MessagingServiceBus:DonorManagement:CronSchedule%")]
             TimerInfo myTimer)
@@ -45,7 +45,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
             await ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase.DatabaseB);
         }
 
-        [FunctionName(nameof(ProcessDifferentialDonorUpdatesForMatchingDbADeadLetterQueueListener))]
+        [Function(nameof(ProcessDifferentialDonorUpdatesForMatchingDbADeadLetterQueueListener))]
         public async Task ProcessDifferentialDonorUpdatesForMatchingDbADeadLetterQueueListener(
             [ServiceBusTrigger(
                 "%MessagingServiceBus:DonorManagement:Topic%/Subscriptions/%MessagingServiceBus:DonorManagement:SubscriptionForDbA%/$DeadLetterQueue",
@@ -56,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
             await donorUpdateProcessor.ProcessDeadLetterDifferentialDonorUpdates(searchableDonorUpdates);
         }
 
-        [FunctionName(nameof(ProcessDifferentialDonorUpdatesForMatchingDbBDeadLetterQueueListener))]
+        [Function(nameof(ProcessDifferentialDonorUpdatesForMatchingDbBDeadLetterQueueListener))]
         public async Task ProcessDifferentialDonorUpdatesForMatchingDbBDeadLetterQueueListener(
             [ServiceBusTrigger(
                 "%MessagingServiceBus:DonorManagement:Topic%/Subscriptions/%MessagingServiceBus:DonorManagement:SubscriptionForDbB%/$DeadLetterQueue",

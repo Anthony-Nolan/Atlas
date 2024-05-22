@@ -8,16 +8,15 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
-[assembly: FunctionsStartup(typeof(Startup))]
 
 namespace Atlas.DonorImport.Functions
 {
-    internal class Startup : FunctionsStartup
+    internal class Startup 
     {
-        public override void Configure(IFunctionsHostBuilder builder)
+        public static void Configure(IServiceCollection services)
         {
-            RegisterSettings(builder.Services);
-            builder.Services.RegisterDonorImport(
+            RegisterSettings(services);
+            services.RegisterDonorImport(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationConfigurationSettings>(),
@@ -29,7 +28,7 @@ namespace Atlas.DonorImport.Functions
             ConnectionStringReader("DonorStoreSql")
             );
 
-            builder.Services.RegisterDonorReader(ConnectionStringReader("DonorStoreSql"));
+            services.RegisterDonorReader(ConnectionStringReader("DonorStoreSql"));
         }
 
         private static void RegisterSettings(IServiceCollection services)

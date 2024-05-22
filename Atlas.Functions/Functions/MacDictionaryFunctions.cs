@@ -7,8 +7,7 @@ using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 
 namespace Atlas.Functions.Functions
 {
@@ -24,14 +23,14 @@ namespace Atlas.Functions.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(ImportMacs))]
+        [Function(nameof(ImportMacs))]
         public async Task ImportMacs([TimerTrigger("%MacDictionary:Import:CronSchedule%")] TimerInfo timer)
         {
             await macImporter.ImportLatestMacs();
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(ManuallyImportMacs))]
+        [Function(nameof(ManuallyImportMacs))]
         public async Task ManuallyImportMacs(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             HttpRequestMessage request)
@@ -51,7 +50,7 @@ namespace Atlas.Functions.Functions
         //}
 
         [QueryStringParameter("macCode", "macCode", DataType = typeof(string))]
-        [FunctionName(nameof(GetMac))]
+        [Function(nameof(GetMac))]
         public async Task<Mac> GetMac(
             [HttpTrigger(AuthorizationLevel.Function, "get")]
             HttpRequest request)
@@ -62,7 +61,7 @@ namespace Atlas.Functions.Functions
 
         [QueryStringParameter("macCode", "macCode", DataType = typeof(string))]
         [QueryStringParameter("firstField", "firstField", DataType = typeof(string))]
-        [FunctionName(nameof(GetHlaFromMac))]
+        [Function(nameof(GetHlaFromMac))]
         public async Task<IEnumerable<string>> GetHlaFromMac(
             [HttpTrigger(AuthorizationLevel.Function, "get")]
             HttpRequest request)

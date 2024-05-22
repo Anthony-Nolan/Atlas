@@ -2,8 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Atlas.Common.Utils;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using ServiceStatusModel = Atlas.Common.Utils.Models.ServiceStatus;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
@@ -11,7 +10,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
     public class ServiceStatusFunctions
     {
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(ServiceStatus))]
+        [Function(nameof(ServiceStatus))]
         public ServiceStatusModel ServiceStatus([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest request)
         {
             var assembly = Assembly.GetExecutingAssembly();

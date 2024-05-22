@@ -11,8 +11,7 @@ using Atlas.MatchPrediction.Services.MatchProbability;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Functions.Functions.Debug
@@ -30,7 +29,7 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
             this.genotypeMatcher = genotypeMatcher;
         }
 
-        [FunctionName(nameof(MatchPatientDonorGenotypes))]
+        [Function(nameof(MatchPatientDonorGenotypes))]
         public async Task<IActionResult> MatchPatientDonorGenotypes(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(MatchPatientDonorGenotypes)}")]
             [RequestBodyType(typeof(GenotypeMatcherRequest), nameof(GenotypeMatcherRequest))]

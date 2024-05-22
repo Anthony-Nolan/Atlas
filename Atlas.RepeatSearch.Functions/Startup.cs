@@ -12,16 +12,15 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
-[assembly: FunctionsStartup(typeof(Startup))]
 
 namespace Atlas.RepeatSearch.Functions
 {
-    internal class Startup : FunctionsStartup
+    internal static class Startup
     {
-        public override void Configure(IFunctionsHostBuilder builder)
+        public static void Configure(IServiceCollection services)
         {
-            RegisterSettings(builder.Services);
-            builder.Services.RegisterRepeatSearch(
+            RegisterSettings(services);
+            services.RegisterRepeatSearch(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<RepeatSearch.Settings.Azure.AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
@@ -35,27 +34,10 @@ namespace Atlas.RepeatSearch.Functions
                 ConnectionStringReader("MatchingSqlB"),
                 ConnectionStringReader("DonorSql")
                 );
-            builder.Services.RegisterDebugServices(
+            services.RegisterDebugServices(
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<RepeatSearch.Settings.Azure.AzureStorageSettings>());
-        }
-
-        /// <summary>
-        /// Feature management, leave it configured even if there is no active feature flags in use
-        /// </summary>
-        /// <param name="builder">Configuration builder</param>
-        public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
-        {
-            var azureConfigurationConnectionString = Environment.GetEnvironmentVariable("AzureAppConfiguration:ConnectionString");
-            builder.ConfigurationBuilder.AddAzureAppConfiguration(options =>
-            {
-                options.Connect(azureConfigurationConnectionString)
-                    .Select("_")
-                    .UseFeatureFlags();
-            });
-
-            base.ConfigureAppConfiguration(builder);
         }
 
         private static void RegisterSettings(IServiceCollection services)

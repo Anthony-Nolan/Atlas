@@ -7,7 +7,8 @@
         <UserSecretsId>aab26637-4420-468a-86c5-e1e5508c5bcd</UserSecretsId>
         <LangVersion>latest</LangVersion>
         <RootNamespace>Atlas.MatchingAlgorithm.Functions</RootNamespace>
-    </PropertyGroup>
+		<OutputType>Exe</OutputType>
+	</PropertyGroup>
 
     <Target Name="Scaffold local settings file" BeforeTargets="BeforeCompile" Condition="!EXISTS('$(ProjectDir)\local.settings.json')">
         <Copy SourceFiles="$(ProjectDir)\local.settings.template.json" DestinationFiles="$(ProjectDir)\local.settings.json" />
@@ -15,24 +16,36 @@
     
     <ItemGroup>
         <PackageReference Include="Azure.Monitor.Query" Version="1.2.0" />
-        <PackageReference Include="AzureExtensions.Swashbuckle" Version="3.2.2" />
+        <PackageReference Include="AzureExtensions.Swashbuckle" Version="3.3.2" />
         <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.3.7" />
-        <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
-        <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="5.3.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="6.1.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
         <PackageReference Include="Microsoft.FeatureManagement" Version="2.6.1" />
-        <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.1.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="System.Runtime" Version="4.3.1" />
-    </ItemGroup>
-    
-    <ItemGroup>
+
+		<PackageReference Include="Microsoft.Azure.Core.NewtonsoftJson" Version="2.0.0" />
+
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.21.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.17.2" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="1.2.1" />
+		<PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="1.2.0" />
+
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.18.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.3.0" />
+		<PackageReference Include="Microsoft.Azure.AppConfiguration.Functions.Worker" Version="7.2.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext"/>
+	</ItemGroup>
+
+	<ItemGroup>
         <None Update="ApplicationInsights.config">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>

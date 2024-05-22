@@ -4,14 +4,13 @@ using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.Test.Verification.Services;
+using Microsoft.Azure.Functions.Worker;
 
 namespace Atlas.MatchPrediction.Test.Verification.Functions
 {
@@ -26,7 +25,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
             this.testHarnessRepository = testHarnessRepository;
         }
 
-        [FunctionName(nameof(PrepareAtlasDonorStores))]
+        [Function(nameof(PrepareAtlasDonorStores))]
         public async Task PrepareAtlasDonorStores(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(TestHarnessDetails), nameof(TestHarnessDetails))]
@@ -50,7 +49,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
             }
         }
 
-        [FunctionName(nameof(HandleDataRefreshCompletion))]
+        [Function(nameof(HandleDataRefreshCompletion))]
         public async Task HandleDataRefreshCompletion(
             [ServiceBusTrigger(
                 "%DataRefresh:CompletionTopic%",

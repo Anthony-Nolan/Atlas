@@ -6,8 +6,7 @@ using Atlas.MatchPrediction.Test.Verification.Services.Verification;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 using System.IO;
 using System.Threading.Tasks;
@@ -33,7 +32,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
             this.resultsWriter = resultsWriter;
         }
 
-        [FunctionName(nameof(SendVerificationSearchRequests))]
+        [Function(nameof(SendVerificationSearchRequests))]
         public async Task<IActionResult> SendVerificationSearchRequests(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(TestHarnessDetails), nameof(TestHarnessDetails))]
@@ -47,7 +46,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
             return new JsonResult(verificationRunId);
         }
 
-        [FunctionName(nameof(FetchMatchingResults))]
+        [Function(nameof(FetchMatchingResults))]
         public async Task FetchMatchingResults(
             [ServiceBusTrigger(
                 "%Matching:ResultsTopic%",
@@ -66,7 +65,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
             }
         }
 
-        [FunctionName(nameof(FetchSearchResults))]
+        [Function(nameof(FetchSearchResults))]
         public async Task FetchSearchResults(
             [ServiceBusTrigger(
                 "%Search:ResultsTopic%",
@@ -85,7 +84,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
             }
         }
 
-        [FunctionName(nameof(WriteVerificationResultsToFile))]
+        [Function(nameof(WriteVerificationResultsToFile))]
         public async Task WriteVerificationResultsToFile(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(VerificationResultsRequest), nameof(VerificationResultsRequest))]

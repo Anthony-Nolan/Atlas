@@ -9,16 +9,14 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
-[assembly: FunctionsStartup(typeof(Startup))]
-
 namespace Atlas.MatchPrediction.Functions
 {
-    internal class Startup : FunctionsStartup
+    internal static class Startup
     {
-        public override void Configure(IFunctionsHostBuilder builder)
+        public static void Configure(IServiceCollection services)
         {
-            RegisterSettings(builder.Services);
-            builder.Services.RegisterMatchPredictionAlgorithm(
+            RegisterSettings(services);
+            services.RegisterMatchPredictionAlgorithm(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
@@ -27,7 +25,7 @@ namespace Atlas.MatchPrediction.Functions
                 ConnectionStringReader("MatchPredictionSql")
             );
 
-            builder.Services.RegisterMatchPredictionRequester(
+            services.RegisterMatchPredictionRequester(
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<MatchPredictionRequestsSettings>());
         }

@@ -1,18 +1,15 @@
 ﻿using System.Reflection;
 using Atlas.ManualTesting;
 using AzureFunctions.Extensions.Swashbuckle;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Hosting;
-
-[assembly: WebJobsStartup(typeof(SwashBuckleStartup))]
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.ManualTesting
 {
-    internal class SwashBuckleStartup : IWebJobsStartup
+    internal static class SwashBuckleStartup
     {
-        public void Configure(IWebJobsBuilder builder)
+        public static void Configure(IServiceCollection services)
         {
-            builder.AddSwashBuckle(Assembly.GetExecutingAssembly());
+            services.AddSwashBuckle(Assembly.GetExecutingAssembly());
         }
     }
 }

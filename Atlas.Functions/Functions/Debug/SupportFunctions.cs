@@ -5,8 +5,7 @@ using Atlas.Debug.Client.Models.ServiceBus;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -23,7 +22,7 @@ namespace Atlas.Functions.Functions.Debug
             this.notificationsPeeker = notificationsPeeker;
         }
 
-        [FunctionName(nameof(PeekAlerts))]
+        [Function(nameof(PeekAlerts))]
         [ProducesResponseType(typeof(PeekServiceBusMessagesResponse<Alert>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> PeekAlerts(
             [HttpTrigger(
@@ -38,7 +37,7 @@ namespace Atlas.Functions.Functions.Debug
             return new JsonResult(response);
         }
 
-        [FunctionName(nameof(PeekNotifications))]
+        [Function(nameof(PeekNotifications))]
         [ProducesResponseType(typeof(PeekServiceBusMessagesResponse<Notification>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> PeekNotifications(
             [HttpTrigger(

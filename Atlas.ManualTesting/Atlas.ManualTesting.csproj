@@ -4,6 +4,7 @@
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin/</OutputPath>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <Target Name="Scaffold local settings file" BeforeTargets="Build" Condition="!EXISTS('$(ProjectDir)\local.settings.json')">
@@ -11,16 +12,24 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="AzureExtensions.Swashbuckle" Version="3.2.2" />
+    <PackageReference Include="AzureExtensions.Swashbuckle" Version="3.3.2" />
     <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="5.3.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+
+	<PackageReference Include="Microsoft.Azure.Core.NewtonsoftJson" Version="2.0.0" />
+
+	<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	<PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.21.0" />
+	<PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.17.2" />
+	<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="1.2.1" />
+	<PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0" />
+	<PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="1.2.0" />
+
+	<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.18.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Atlas.Client.Models\Atlas.Client.Models.csproj" />
@@ -34,6 +43,10 @@
     <ProjectReference Include="..\Atlas.MatchingAlgorithm.Common\Atlas.MatchingAlgorithm.Common.csproj" />
     <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
     <ProjectReference Include="..\Atlas.MatchPrediction\Atlas.MatchPrediction.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext"/>
   </ItemGroup>
 
   <ItemGroup>

@@ -1,17 +1,15 @@
 ﻿using System.Reflection;
 using Atlas.MatchPrediction.Functions;
 using AzureFunctions.Extensions.Swashbuckle;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
-[assembly: WebJobsStartup(typeof(SwashBuckleStartup))]
 namespace Atlas.MatchPrediction.Functions
 {
-    internal class SwashBuckleStartup : IWebJobsStartup
+    internal static class SwashBuckleStartup
     {
-        public void Configure(IWebJobsBuilder builder)
+        public static void Configure(IServiceCollection services)
         {
-            builder.AddSwashBuckle(Assembly.GetExecutingAssembly());
+            services.AddSwashBuckle(Assembly.GetExecutingAssembly());
         }
     }
 }

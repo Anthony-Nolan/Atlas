@@ -2,17 +2,15 @@
 using Atlas.Functions;
 using AzureFunctions.Extensions.Swashbuckle;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
-[assembly: FunctionsStartup(typeof(SwashBuckleStartup))]
 namespace Atlas.Functions
 {
-    internal class SwashBuckleStartup : IWebJobsStartup
+    internal static class SwashBuckleStartup 
     {
-        public void Configure(IWebJobsBuilder builder)
+        public static void Configure(IServiceCollection services)
         {
-            builder.AddSwashBuckle(Assembly.GetExecutingAssembly());
+            services.AddSwashBuckle(Assembly.GetExecutingAssembly());
         }
     }
 }

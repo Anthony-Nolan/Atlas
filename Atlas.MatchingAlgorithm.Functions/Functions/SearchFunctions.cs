@@ -10,8 +10,7 @@ using Atlas.MatchingAlgorithm.Services.Search;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 using SearchInitiationResponse = Atlas.MatchingAlgorithm.Client.Models.SearchRequests.SearchInitiationResponse;
 
@@ -31,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(InitiateSearch))]
+        [Function(nameof(InitiateSearch))]
         public async Task<IActionResult> InitiateSearch(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             HttpRequest request)
@@ -49,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(RunSearch))]
+        [Function(nameof(RunSearch))]
         public async Task RunSearch(
             [ServiceBusTrigger(
                 "%MessagingServiceBus:SearchRequestsTopic%",
@@ -62,7 +61,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             await searchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc);
         }
 
-        [FunctionName(nameof(MatchingRequestsDeadLetterQueueListener))]
+        [Function(nameof(MatchingRequestsDeadLetterQueueListener))]
         public async Task MatchingRequestsDeadLetterQueueListener(
             [ServiceBusTrigger(
                 "%MessagingServiceBus:SearchRequestsTopic%/Subscriptions/%MessagingServiceBus:SearchRequestsSubscription%/$DeadLetterQueue",

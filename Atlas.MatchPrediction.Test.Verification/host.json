@@ -1,9 +1,7 @@
 {
   "extensions": {
     "serviceBus": {
-      "messageHandlerOptions": {
-        "maxConcurrentCalls": 1
-      }
+      "maxConcurrentCalls": 1
     }
   },
   "functionTimeout": "01:00:00",

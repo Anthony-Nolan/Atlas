@@ -3,8 +3,6 @@ using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.Utils.Http;
 using AzureFunctions.Extensions.Swashbuckle;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using NJsonSchema;
 using System.Net.Http;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
@@ -12,32 +10,33 @@ using Newtonsoft.Json;
 using System.IO;
 using Atlas.Functions.PublicApi.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.Functions.Worker;
 
 namespace Atlas.Functions.PublicApi.Functions
 {
     public static class ApiDocumentationFunctions
     {
-        [SwaggerIgnore]
-        [FunctionName(nameof(Swagger))]
-        public static HttpResponseMessage Swagger(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "swagger/json")]
-            HttpRequestMessage req,
-            [SwashBuckleClient] ISwashBuckleClient swashBuckleClient)
-        {
-            return swashBuckleClient.CreateSwaggerDocumentResponse(req);
-        }
+        //[SwaggerIgnore]
+        //[Function(nameof(Swagger))]
+        //public static HttpResponseMessage Swagger(
+        //    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "swagger/json")]
+        //    HttpRequestMessage req,
+        //    [SwashBuckleClient] ISwashBuckleClient swashBuckleClient)
+        //{
+        //    return swashBuckleClient.CreateSwaggerJsonDocumentResponse(req);
+        //}
 
-        [SwaggerIgnore]
-        [FunctionName(nameof(SwaggerUi))]
-        public static HttpResponseMessage SwaggerUi(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "swagger/ui")]
-            HttpRequestMessage req,
-            [SwashBuckleClient] ISwashBuckleClient swashBuckleClient)
-        {
-            return swashBuckleClient.CreateSwaggerUIResponse(req, "swagger/json");
-        }
+        //[SwaggerIgnore]
+        //[Function(nameof(SwaggerUi))]
+        //public static HttpResponseMessage SwaggerUi(
+        //    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "swagger/ui")]
+        //    HttpRequestMessage req,
+        //    [SwashBuckleClient] ISwashBuckleClient swashBuckleClient)
+        //{
+        //    return swashBuckleClient.CreateSwaggerUIResponse(req, "swagger/json");
+        //}
 
-        [FunctionName(nameof(GenerateJsonSchemaForResultSet))]
+        [Function(nameof(GenerateJsonSchemaForResultSet))]
         public static string GenerateJsonSchemaForResultSet(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = RouteConstants.SchemaRoutePrefix + "/resultSet")]
             [RequestBodyType(typeof(ResultSetSchemaGenerationRequest), nameof(ResultSetSchemaGenerationRequest))]

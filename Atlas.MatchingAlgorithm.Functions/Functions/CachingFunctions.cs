@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Common.Utils;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
@@ -30,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(UpdateHlaMetadataDictionaryCache))]
+        [Function(nameof(UpdateHlaMetadataDictionaryCache))]
         public async Task UpdateHlaMetadataDictionaryCache(
             [TimerTrigger("00 00 02 * * *", RunOnStartup = true)]
             TimerInfo timerInfo)
