@@ -17,7 +17,7 @@ namespace Atlas.SearchTracking.Data.Context
             modelBuilder.HasDefaultSchema(Schema);
 
             modelBuilder.Entity<SearchRequestMatchingAlgorithmAttemptTiming>().SetUpModel();
-            //modelBuilder.Entity<SearchRequestMatchPredictionTiming>().SetUpModel();
+            modelBuilder.Entity<SearchRequest>().SetUpModel();
 
             modelBuilder.Entity<SearchRequest>()
                 .HasOne(x => x.SearchRequestMatchPredictionTiming)

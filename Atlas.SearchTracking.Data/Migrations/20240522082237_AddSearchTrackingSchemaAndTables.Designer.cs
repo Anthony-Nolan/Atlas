@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.SearchTracking.Data.Migrations
 {
     [DbContext(typeof(SearchTrackingContext))]
-    [Migration("20240521085229_AddSearchTrackingSchemaAndTables")]
+    [Migration("20240522082237_AddSearchTrackingSchemaAndTables")]
     partial class AddSearchTrackingSchemaAndTables
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,7 +38,7 @@ namespace Atlas.SearchTracking.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<bool?>("IsRepeatSearch")
+                    b.Property<bool>("IsRepeatSearch")
                         .HasColumnType("bit");
 
                     b.Property<int?>("MatchPrediction_DonorsPerBatch")
@@ -67,9 +67,6 @@ namespace Atlas.SearchTracking.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<int?>("MatchingAlgorithm_NumberOfNoLongerMatching")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("MatchingAlgorithm_NumberOfResults")
                         .HasColumnType("int");
 
                     b.Property<bool?>("MatchingAlgorithm_ResultsSent")
@@ -109,6 +106,10 @@ namespace Atlas.SearchTracking.Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SearchRequestId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_SearchRequestId");
 
                     b.ToTable("SearchRequests", "SearchTracking");
                 });

@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.SearchTracking.Data.Models
 {
@@ -9,7 +11,7 @@ namespace Atlas.SearchTracking.Data.Models
         [Required]
         public Guid SearchRequestId { get; set; }
 
-        public bool? IsRepeatSearch { get; set; }
+        public bool IsRepeatSearch { get; set; }
 
         public Guid? OriginalSearchRequestId { get; set; }
 
@@ -39,8 +41,6 @@ namespace Atlas.SearchTracking.Data.Models
 
         public int? MatchingAlgorithm_NumberOfNoLongerMatching { get; set; }
 
-        public int? MatchingAlgorithm_NumberOfResults { get; set; }
-
         [MaxLength(10)]
         public string? MatchingAlgorithm_HlaNomenclatureVersion { get; set; }
 
@@ -63,5 +63,15 @@ namespace Atlas.SearchTracking.Data.Models
         public SearchRequestMatchPredictionTiming? SearchRequestMatchPredictionTiming { get; set; }
 
         public ICollection<SearchRequestMatchingAlgorithmAttemptTiming>? SearchRequestMatchingAlgorithmAttemptTimings { get; set; }
+    }
+
+    internal static class SearchRequestModelBuilder
+    {
+        public static void SetUpModel(this EntityTypeBuilder<SearchRequest> modelBuilder)
+        {
+            modelBuilder.HasIndex(d => d.SearchRequestId)
+                .HasDatabaseName("IX_SearchRequestId")
+                .IsUnique();
+        }
     }
 }

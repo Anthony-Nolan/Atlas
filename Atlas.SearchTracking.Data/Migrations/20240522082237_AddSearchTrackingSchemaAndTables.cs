@@ -20,7 +20,7 @@ namespace Atlas.SearchTracking.Data.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     SearchRequestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IsRepeatSearch = table.Column<bool>(type: "bit", nullable: true),
+                    IsRepeatSearch = table.Column<bool>(type: "bit", nullable: false),
                     OriginalSearchRequestId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     RepeatSearchCutOffDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     RequestJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -32,7 +32,6 @@ namespace Atlas.SearchTracking.Data.Migrations
                     MatchingAlgorithm_TotalAttemptsNumber = table.Column<byte>(type: "tinyint", nullable: true),
                     MatchingAlgorithm_NumberOfMatching = table.Column<int>(type: "int", nullable: true),
                     MatchingAlgorithm_NumberOfNoLongerMatching = table.Column<int>(type: "int", nullable: true),
-                    MatchingAlgorithm_NumberOfResults = table.Column<int>(type: "int", nullable: true),
                     MatchingAlgorithm_HlaNomenclatureVersion = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     MatchingAlgorithm_ResultsSent = table.Column<bool>(type: "bit", nullable: true),
                     MatchingAlgorithm_ResultsSentTimeUTC = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -120,6 +119,13 @@ namespace Atlas.SearchTracking.Data.Migrations
                 name: "IX_SearchRequestMatchPredictionTimings_SearchRequestId",
                 schema: "SearchTracking",
                 table: "SearchRequestMatchPredictionTimings",
+                column: "SearchRequestId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SearchRequestId",
+                schema: "SearchTracking",
+                table: "SearchRequests",
                 column: "SearchRequestId",
                 unique: true);
         }
