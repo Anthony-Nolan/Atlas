@@ -8,7 +8,7 @@
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:MatchingResultsBlobContainer": "repeat-search-matching-results",
     "AzureStorage:SearchResultsBatchSize": 0,
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",

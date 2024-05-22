@@ -2,10 +2,8 @@
   "version": "2.0",
   "extensions": {
     "serviceBus": {
-      "messageHandlerOptions": {
-        "maxConcurrentCalls": 1,
-        "maxAutoRenewDuration": "02:00:00"
-      }
+      "maxConcurrentCalls": 1,
+      "maxAutoLockRenewalDuration": "02:00:00"
     }
   },
   "logging": {

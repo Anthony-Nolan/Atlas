@@ -8,8 +8,7 @@ using Atlas.DonorImport.Models;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -35,7 +34,7 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
             this.donorImportRepository = donorImportRepository;
         }
 
-        [FunctionName(nameof(GetDonors))]
+        [Function(nameof(GetDonors))]
         [ProducesResponseType(typeof(DebugDonorsResult), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetDonors(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RoutePrefix}")]
@@ -55,7 +54,7 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
         /// <paramref name="updatedBeforeDate"/> is optional, and if provided, must be encoded as "yyyyMMdd".
         /// It is a non-inclusive filter - only donors updated before the given date will be returned.
         /// </summary>
-        [FunctionName(nameof(GetDonorCodesByRegistry))]
+        [Function(nameof(GetDonorCodesByRegistry))]
         [ProducesResponseType(typeof(IEnumerable<string>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetDonorCodesByRegistry(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = RoutePrefix + "{registryCode}/externalDonorCodes/{updatedBeforeDate?}")]
@@ -78,7 +77,7 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
             return new JsonResult(donorsUpdatedBefore);
         }
 
-        [FunctionName(nameof(DeleteDonors))]
+        [Function(nameof(DeleteDonors))]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task DeleteDonors(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = RoutePrefix + "delete")]
@@ -90,7 +89,7 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
             await donorImportRepository.DeleteDonorBatch(atlasIds.Values.ToList());
         }
 
-        [FunctionName(nameof(GetRandomDonors))]
+        [Function(nameof(GetRandomDonors))]
         [ProducesResponseType(typeof(IEnumerable<Donor>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetRandomDonors(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RoutePrefix}random")]

@@ -3,8 +3,7 @@ using Atlas.Common.Utils.Http;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Test.Validation.Services.Exercise3;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
@@ -33,7 +32,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName($"{FunctionNamePrefix}{nameof(SendMatchPredictionRequests)}")]
+        [Function($"{FunctionNamePrefix}{nameof(SendMatchPredictionRequests)}")]
         public async Task SendMatchPredictionRequests(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             HttpRequest request)
@@ -49,7 +48,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName($"{FunctionNamePrefix}{nameof(ResumeMatchPredictionRequests)}")]
+        [Function($"{FunctionNamePrefix}{nameof(ResumeMatchPredictionRequests)}")]
         public async Task ResumeMatchPredictionRequests(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             HttpRequest request)
@@ -65,7 +64,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName($"{FunctionNamePrefix}{nameof(PromptDownloadOfMissingResults)}")]
+        [Function($"{FunctionNamePrefix}{nameof(PromptDownloadOfMissingResults)}")]
         public async Task PromptDownloadOfMissingResults(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             HttpRequest request)
@@ -80,7 +79,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             }
         }
 
-        [FunctionName($"{FunctionNamePrefix}{nameof(ProcessResults)}")]
+        [Function($"{FunctionNamePrefix}{nameof(ProcessResults)}")]
         public async Task ProcessResults(
             [ServiceBusTrigger(
                 "%MatchPredictionRequests:ResultsTopic%",

@@ -8,8 +8,7 @@ using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Functions.Functions.Debug
@@ -25,7 +24,7 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
             this.frequencyService = frequencyService;
         }
 
-        [FunctionName(nameof(CalculateGenotypeLikelihood))]
+        [Function(nameof(CalculateGenotypeLikelihood))]
         public async Task<IActionResult> CalculateGenotypeLikelihood(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(CalculateGenotypeLikelihood)}")]
             [RequestBodyType(typeof(GenotypeLikelihoodInput), nameof(GenotypeLikelihoodInput))]

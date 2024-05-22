@@ -1,29 +1,36 @@
 ﻿using System.Net.Http;
+using System.Threading.Tasks;
 using AzureFunctions.Extensions.Swashbuckle;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
-    public static class SwaggerFunctions
+    public class SwaggerFunctions
     {
-        [SwaggerIgnore]
-        [FunctionName(nameof(Swagger))]
-        public static HttpResponseMessage Swagger(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "swagger/json")]
-            HttpRequestMessage req,
-            [SwashBuckleClient] ISwashBuckleClient swashBuckleClient)
+        private readonly ISwashBuckleClient swashBuckleClient;
+        public SwaggerFunctions(ISwashBuckleClient swashbuckleClient)
         {
-            return swashBuckleClient.CreateSwaggerDocumentResponse(req);
+            this.swashBuckleClient = swashbuckleClient;
         }
 
         [SwaggerIgnore]
-        [FunctionName(nameof(SwaggerUi))]
-        public static HttpResponseMessage SwaggerUi(
+        [Function(nameof(Swagger))]
+        public Task<HttpResponseData> Swagger(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "swagger/json")]
+            HttpRequestData req
+            )
+        {
+            return swashBuckleClient.CreateSwaggerJsonDocumentResponse(req);
+        }
+
+        [SwaggerIgnore]
+        [Function(nameof(SwaggerUi))]
+        public Task<HttpResponseData> SwaggerUi(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "swagger/ui")]
-            HttpRequestMessage req,
-            [SwashBuckleClient] ISwashBuckleClient swashBuckleClient)
+            HttpRequestData req
+            )
         {
             return swashBuckleClient.CreateSwaggerUIResponse(req, "swagger/json");
         }

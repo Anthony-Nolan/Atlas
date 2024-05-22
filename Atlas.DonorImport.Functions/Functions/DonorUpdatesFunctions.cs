@@ -1,12 +1,11 @@
-﻿using Microsoft.Azure.WebJobs;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Atlas.DonorImport.Services.DonorUpdates;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
 using System.IO;
+using Microsoft.Azure.Functions.Worker;
 
 namespace Atlas.DonorImport.Functions.Functions
 {
@@ -26,19 +25,19 @@ namespace Atlas.DonorImport.Functions.Functions
             this.donorUpdatesSaver = donorUpdatesSaver;
         }
 
-        [FunctionName(nameof(PublishSearchableDonorUpdates))]
+        [Function(nameof(PublishSearchableDonorUpdates))]
         public async Task PublishSearchableDonorUpdates([TimerTrigger("%PublishDonorUpdates:PublishCronSchedule%")] TimerInfo timer)
         {
             await updatesPublisher.PublishSearchableDonorUpdatesBatch();
         }
 
-        [FunctionName(nameof(DeleteExpiredPublishedDonorUpdates))]
+        [Function(nameof(DeleteExpiredPublishedDonorUpdates))]
         public async Task DeleteExpiredPublishedDonorUpdates([TimerTrigger("%PublishDonorUpdates:DeletionCronSchedule%")] TimerInfo timer)
         {
             await updatesCleaner.DeleteExpiredPublishedDonorUpdates();
         }
 
-        [FunctionName(nameof(ManuallyPublishDonorUpdatesByDonorId))]
+        [Function(nameof(ManuallyPublishDonorUpdatesByDonorId))]
         [ProducesResponseType(200)]
         [ProducesResponseType(500)]
         public async Task<IActionResult> ManuallyPublishDonorUpdatesByDonorId(

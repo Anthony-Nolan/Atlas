@@ -6,8 +6,7 @@ using Atlas.ManualTesting.Services;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 
 namespace Atlas.ManualTesting.Functions
 {
@@ -24,7 +23,7 @@ namespace Atlas.ManualTesting.Functions
             this.notificationsPeeker = notificationsPeeker;
         }
 
-        [FunctionName(nameof(GetDeadLetteredMatchingRequestIds))]
+        [Function(nameof(GetDeadLetteredMatchingRequestIds))]
         public async Task<IActionResult> GetDeadLetteredMatchingRequestIds(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(PeekServiceBusMessagesRequest), nameof(PeekServiceBusMessagesRequest))]
@@ -37,7 +36,7 @@ namespace Atlas.ManualTesting.Functions
             return new JsonResult(ids);
         }
 
-        [FunctionName(nameof(GetFailedSearchIds))]
+        [Function(nameof(GetFailedSearchIds))]
         public async Task<IActionResult> GetFailedSearchIds(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(PeekServiceBusMessagesRequest), nameof(PeekServiceBusMessagesRequest))]
@@ -50,7 +49,7 @@ namespace Atlas.ManualTesting.Functions
             return new JsonResult(ids);
         }
 
-        [FunctionName(nameof(GetSearchResultsNotificationsWithSummary))]
+        [Function(nameof(GetSearchResultsNotificationsWithSummary))]
         public async Task<IActionResult> GetSearchResultsNotificationsWithSummary(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(PeekServiceBusMessagesRequest), nameof(PeekServiceBusMessagesRequest))]
@@ -63,7 +62,7 @@ namespace Atlas.ManualTesting.Functions
             return new JsonResult(resultsNotifications);
         }
 
-        [FunctionName(nameof(FilterSearchResultsNotificationsBySearchRequestId))]
+        [Function(nameof(FilterSearchResultsNotificationsBySearchRequestId))]
         public async Task<IActionResult> FilterSearchResultsNotificationsBySearchRequestId(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(PeekBySearchRequestIdRequest), nameof(PeekBySearchRequestIdRequest))]

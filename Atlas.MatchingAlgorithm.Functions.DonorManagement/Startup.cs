@@ -7,20 +7,17 @@ using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
-[assembly: FunctionsStartup(typeof(Startup))]
-
 namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
 {
-    internal class Startup : FunctionsStartup
+    internal static class Startup
     {
-        public override void Configure(IFunctionsHostBuilder builder)
+        public static void Configure(IServiceCollection services)
         {
-            RegisterSettings(builder.Services);
-            builder.Services.RegisterDonorManagement(
+            RegisterSettings(services);
+            services.RegisterDonorManagement(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<DonorManagementSettings>(),

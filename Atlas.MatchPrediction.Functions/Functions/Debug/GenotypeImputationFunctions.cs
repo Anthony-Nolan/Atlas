@@ -11,8 +11,7 @@ using Atlas.MatchPrediction.Services.MatchProbability;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Functions.Functions.Debug
@@ -30,7 +29,7 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
             this.frequencyService = frequencyService;
         }
 
-        [FunctionName(nameof(Impute))]
+        [Function(nameof(Impute))]
         public async Task<IActionResult> Impute(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(Impute)}")]
             [RequestBodyType(typeof(GenotypeImputationRequest), nameof(GenotypeImputationRequest))]

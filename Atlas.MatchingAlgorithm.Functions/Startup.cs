@@ -8,23 +8,20 @@ using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Azure.Identity;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
-[assembly: FunctionsStartup(typeof(Startup))]
-
 namespace Atlas.MatchingAlgorithm.Functions
 {
-    internal class Startup : FunctionsStartup
+    internal static class Startup 
     {
-        public override void Configure(IFunctionsHostBuilder builder)
+        public static void Configure(IServiceCollection services)
         {
-            RegisterSettings(builder.Services);
-            builder.Services.RegisterSearchForMatchingAlgorithm(OptionsReaderFor<ApplicationInsightsSettings>(),
+            RegisterSettings(services);
+            services.RegisterSearchForMatchingAlgorithm(OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
@@ -36,7 +33,7 @@ namespace Atlas.MatchingAlgorithm.Functions
                 ConnectionStringReader("SqlB"),
                 ConnectionStringReader("DonorSql"));
             
-            builder.Services.RegisterDataRefresh(OptionsReaderFor<AzureAuthenticationSettings>(),
+            services.RegisterDataRefresh(OptionsReaderFor<AzureAuthenticationSettings>(),
                 OptionsReaderFor<AzureDatabaseManagementSettings>(),
                 OptionsReaderFor<DataRefreshSettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
@@ -51,28 +48,11 @@ namespace Atlas.MatchingAlgorithm.Functions
                 ConnectionStringReader("SqlB"), 
                 ConnectionStringReader("DonorSql"));
 
-            builder.Services.RegisterDebugServices(
+            services.RegisterDebugServices(
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<AzureAuthenticationSettings>());
-        }
-
-        /// <summary>
-        /// Feature management, leave it configured even if there is no active feature flags in use
-        /// </summary>
-        /// <param name="builder">Configuration builder</param>
-        public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
-        {
-            var azureConfigurationConnectionString = Environment.GetEnvironmentVariable("AzureAppConfiguration:ConnectionString");
-            builder.ConfigurationBuilder.AddAzureAppConfiguration(options =>
-            {
-                options.Connect(azureConfigurationConnectionString)
-                    .Select("_")
-                    .UseFeatureFlags();
-            });
-
-            base.ConfigureAppConfiguration(builder);
         }
 
         private static void RegisterSettings(IServiceCollection services)

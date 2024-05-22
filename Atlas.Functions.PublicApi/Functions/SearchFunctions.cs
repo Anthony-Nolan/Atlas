@@ -11,8 +11,7 @@ using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
 namespace Atlas.Functions.PublicApi.Functions
@@ -30,7 +29,7 @@ namespace Atlas.Functions.PublicApi.Functions
             this.matchPredictionValidator = matchPredictionValidator;
         }
 
-        [FunctionName(nameof(Search))]
+        [Function(nameof(Search))]
         public async Task<IActionResult> Search(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(SearchRequest), nameof(SearchRequest))]
@@ -55,7 +54,7 @@ namespace Atlas.Functions.PublicApi.Functions
             return new JsonResult(new SearchInitiationResponse {SearchIdentifier = id});
         }
 
-        [FunctionName(nameof(RepeatSearch))]
+        [Function(nameof(RepeatSearch))]
         public async Task<IActionResult> RepeatSearch(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(RepeatSearchRequest), nameof(RepeatSearchRequest))]

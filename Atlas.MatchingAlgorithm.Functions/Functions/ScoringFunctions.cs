@@ -7,8 +7,7 @@ using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
@@ -23,7 +22,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(Score))]
+        [Function(nameof(Score))]
         public async Task<ScoringResult> Score(
             [HttpTrigger(AuthorizationLevel.Function, "post")] 
             [RequestBodyType(typeof(DonorHlaScoringRequest), nameof(DonorHlaScoringRequest))]
@@ -33,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             return await scoringRequestService.Score(scoringRequest);
         }
 
-        [FunctionName(nameof(ScoreBatch))]
+        [Function(nameof(ScoreBatch))]
         public async Task<List<DonorScoringResult>> ScoreBatch(
             [HttpTrigger(AuthorizationLevel.Function, "post")] 
             [RequestBodyType(typeof(BatchScoringRequest), nameof(BatchScoringRequest))]

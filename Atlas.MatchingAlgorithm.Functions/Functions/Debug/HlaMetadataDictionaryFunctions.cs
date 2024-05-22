@@ -16,8 +16,7 @@ using Atlas.MatchingAlgorithm.Functions.Models.Debug;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
@@ -33,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
-        [FunctionName(nameof(ConvertHla))]
+        [Function(nameof(ConvertHla))]
         public async Task<IEnumerable<string>> ConvertHla(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(ConvertHla)}")]
             [RequestBodyType(typeof(HlaConversionRequest), nameof(HlaConversionRequest))]
@@ -52,7 +51,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(ScoringMetadata))]
+        [Function(nameof(ScoringMetadata))]
         public async Task<IHlaScoringMetadata> ScoringMetadata(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(ScoringMetadata)}/"+"{locusName}/{hlaName}")]
             HttpRequest httpRequest,
@@ -71,7 +70,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(Dpb1TceGroups))]
+        [Function(nameof(Dpb1TceGroups))]
         public async Task<string> Dpb1TceGroups(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(Dpb1TceGroups)}/"+"{hlaName}")]
             HttpRequest httpRequest,
@@ -88,7 +87,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             }
         }
 
-        [FunctionName(nameof(SerologyToAlleleMapping))]
+        [Function(nameof(SerologyToAlleleMapping))]
         public async Task<IEnumerable<SerologyToAlleleMappingSummary>> SerologyToAlleleMapping(
             [HttpTrigger(
                 AuthorizationLevel.Function,

@@ -10,8 +10,7 @@ using Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -56,7 +55,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName($"{FunctionNamePrefix}1_{nameof(PrepareAtlasDonorStores)}")]
+        [Function($"{FunctionNamePrefix}1_{nameof(PrepareAtlasDonorStores)}")]
         public async Task PrepareAtlasDonorStores(
         [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request)
         {
@@ -70,7 +69,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             }
         }
 
-        [FunctionName($"{FunctionNamePrefix}{nameof(HandleDataRefreshCompletion)}")]
+        [Function($"{FunctionNamePrefix}{nameof(HandleDataRefreshCompletion)}")]
         public async Task HandleDataRefreshCompletion(
         [ServiceBusTrigger(
                 "%DataRefresh:CompletionTopic%",
@@ -81,7 +80,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             await atlasPreparer.SaveDataRefreshDetails(dataRefresh);
         }
 
-        [FunctionName($"{FunctionNamePrefix}2_{nameof(SendSearchRequests)}")]
+        [Function($"{FunctionNamePrefix}2_{nameof(SendSearchRequests)}")]
         public async Task<IActionResult> SendSearchRequests(
         [HttpTrigger(AuthorizationLevel.Function, "post")]
         [RequestBodyType(typeof(ValidationSearchRequest), nameof(ValidationSearchRequest))]
@@ -93,7 +92,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             return new OkObjectResult(searchSetId);
         }
 
-        [FunctionName($"{FunctionNamePrefix}{nameof(FetchSearchResults)}")]
+        [Function($"{FunctionNamePrefix}{nameof(FetchSearchResults)}")]
         public async Task FetchSearchResults(
             [ServiceBusTrigger(
                 "%Search:ResultsTopic%",
@@ -112,7 +111,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             }
         }
 
-        [FunctionName($"{FunctionNamePrefix}{nameof(ManuallySendSuccessNotificationForSearches)}")]
+        [Function($"{FunctionNamePrefix}{nameof(ManuallySendSuccessNotificationForSearches)}")]
         public async Task ManuallySendSuccessNotificationForSearches(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(string[]), "searchRequestIds")]
@@ -129,7 +128,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             }
         }
 
-        [FunctionName($"{FunctionNamePrefix}3_{nameof(CreateNewHomeworkSets)}")]
+        [Function($"{FunctionNamePrefix}3_{nameof(CreateNewHomeworkSets)}")]
         public async Task<IActionResult> CreateNewHomeworkSets(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(HomeworkRequest), nameof(HomeworkRequest))]
@@ -140,7 +139,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             return new OkObjectResult(await homeworkCreator.CreateHomeworkSets(homeworkRequest));
         }
 
-        [FunctionName($"{FunctionNamePrefix}4_{nameof(StartOrContinueHomeworkSets)}")]
+        [Function($"{FunctionNamePrefix}4_{nameof(StartOrContinueHomeworkSets)}")]
         public async Task StartOrContinueHomeworkSets(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(IEnumerable<int>), "homeworkSetIds")]

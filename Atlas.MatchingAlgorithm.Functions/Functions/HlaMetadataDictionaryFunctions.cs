@@ -7,8 +7,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
@@ -25,7 +24,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(RefreshHlaMetadataDictionary))]
+        [Function(nameof(RefreshHlaMetadataDictionary))]
         public async Task RefreshHlaMetadataDictionary([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
         {
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
@@ -43,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         }
         
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(RefreshHlaMetadataDictionaryToSpecificVersion))]
+        [Function(nameof(RefreshHlaMetadataDictionaryToSpecificVersion))]
         public async Task RefreshHlaMetadataDictionaryToSpecificVersion(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(VersionRequest), nameof(VersionRequest))]

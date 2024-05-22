@@ -8,11 +8,10 @@ using Atlas.Debug.Client.Models.ServiceBus;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using System.Net;
 using System.Threading.Tasks;
 using Atlas.Functions.Services.Debug;
+using Microsoft.Azure.Functions.Worker;
 
 namespace Atlas.Functions.Functions.Debug
 {
@@ -31,7 +30,7 @@ namespace Atlas.Functions.Functions.Debug
             this.resultsDownloader = resultsDownloader;
         }
 
-        [FunctionName(nameof(PeekRepeatSearchResultsNotifications))]
+        [Function(nameof(PeekRepeatSearchResultsNotifications))]
         [ProducesResponseType(typeof(PeekServiceBusMessagesResponse<SearchResultsNotification>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> PeekRepeatSearchResultsNotifications(
             [HttpTrigger(
@@ -46,7 +45,7 @@ namespace Atlas.Functions.Functions.Debug
             return new JsonResult(response);
         }
 
-        [FunctionName(nameof(FetchRepeatSearchResultSet))]
+        [Function(nameof(FetchRepeatSearchResultSet))]
         [ProducesResponseType(typeof(RepeatSearchResultSet), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> FetchRepeatSearchResultSet(
             [HttpTrigger(

@@ -10,8 +10,7 @@ using Atlas.MatchingAlgorithm.Services.Debug;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -35,7 +34,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             donorUpdateRepository = activeRepositoryFactory.GetDonorUpdateRepository();
         }
 
-        [FunctionName(nameof(GetAvailableDonorsFromActiveDb))]
+        [Function(nameof(GetAvailableDonorsFromActiveDb))]
         [ProducesResponseType(typeof(DebugDonorsResult), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAvailableDonorsFromActiveDb(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/donors/active")]
@@ -52,7 +51,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
                     ));
         }
 
-        [FunctionName(nameof(HlaExpansionFailures))]
+        [Function(nameof(HlaExpansionFailures))]
         [ProducesResponseType(typeof(IEnumerable<HlaExpansionFailure>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> HlaExpansionFailures(
             [HttpTrigger(
@@ -69,7 +68,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             return new JsonResult(output);
         }
 
-        [FunctionName(nameof(SetDonorsAsUnavailableForSearch))]
+        [Function(nameof(SetDonorsAsUnavailableForSearch))]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task SetDonorsAsUnavailableForSearch(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/donors/makeUnavailableForSearch")]

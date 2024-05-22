@@ -4,7 +4,7 @@ using Atlas.Common.AzureEventGrid;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 
 namespace Atlas.DonorImport.Functions.Functions
 {
@@ -27,15 +27,14 @@ namespace Atlas.DonorImport.Functions.Functions
             this.donorImportFailuresCleaner = donorImportFailuresCleaner;
         }
 
-        [FunctionName(nameof(ImportDonorFile))]
-        [StorageAccount("AzureStorage:ConnectionString")]
+        [Function(nameof(ImportDonorFile))]
         public async Task ImportDonorFile(
             [ServiceBusTrigger(
                 "%MessagingServiceBus:ImportFileTopic%",
                 "%MessagingServiceBus:ImportFileSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString"
             )] EventGridSchema blobCreatedEvent, string messageId,
-            [Blob("{data.url}", FileAccess.Read)] Stream blobStream // Raw JSON Text file containing donor updates in expected schema
+            [BlobInput("{data.url}", Connection = "AzureStorage:ConnectionString")] Stream blobStream // Raw JSON Text file containing donor updates in expected schema
         )
         {
             await donorFileImporter.ImportDonorFile(new DonorImportFile
@@ -47,13 +46,13 @@ namespace Atlas.DonorImport.Functions.Functions
             });
         }
 
-        [FunctionName(nameof(CheckForStalledImport))]
+        [Function(nameof(CheckForStalledImport))]
         public async Task CheckForStalledImport([TimerTrigger("%DonorImport:FileCheckCronSchedule%")] TimerInfo timer)
         {
             await donorHistoryService.SendNotificationForStalledImports();
         }
 
-        [FunctionName(nameof(ImportDonorFileDeadLetterQueueListener))]
+        [Function(nameof(ImportDonorFileDeadLetterQueueListener))]
         public async Task ImportDonorFileDeadLetterQueueListener(
             [ServiceBusTrigger(
                 "%MessagingServiceBus:ImportFileTopic%/Subscriptions/%MessagingServiceBus:ImportFileSubscription%/$DeadLetterQueue",
@@ -64,7 +63,7 @@ namespace Atlas.DonorImport.Functions.Functions
             await donorImportMessageSender.SendFailureMessage(blobCreatedEvent.Subject, ImportFailureReason.RequestDeadlettered, string.Empty);
         }
 
-        [FunctionName(nameof(DeleteDonorImportFailures))]
+        [Function(nameof(DeleteDonorImportFailures))]
         public async Task DeleteDonorImportFailures([TimerTrigger("%FailureLogs:DeletionCronSchedule%")] TimerInfo timer)
         {
             await donorImportFailuresCleaner.DeleteExpiredDonorImportFailures();
