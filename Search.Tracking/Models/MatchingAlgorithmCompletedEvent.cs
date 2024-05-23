@@ -18,6 +18,8 @@
         public byte TotalAttemptsNumber { get; set; }
         public int? NumberOfResults { get; set; }
         public int? NumberOfMatching { get; set; }
-        public int? NumberOfNoLongerMatching { get; set; }
+        public int? RepeatSearch_AddedResultCount { get; set; }
+        public int? RepeatSearch_RemovedResultCount { get; set; }
+        public int? RepeatSearch_UpdatedResultCount { get; set; }
     }
 }
