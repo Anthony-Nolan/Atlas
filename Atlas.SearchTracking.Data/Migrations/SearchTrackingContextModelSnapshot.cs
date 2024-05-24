@@ -67,6 +67,15 @@ namespace Atlas.SearchTracking.Data.Migrations
                     b.Property<int?>("MatchingAlgorithm_NumberOfResults")
                         .HasColumnType("int");
 
+                    b.Property<int?>("MatchingAlgorithm_RepeatSearch_AddedResultCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MatchingAlgorithm_RepeatSearch_RemovedResultCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MatchingAlgorithm_RepeatSearch_UpdatedResultCount")
+                        .HasColumnType("int");
+
                     b.Property<bool?>("MatchingAlgorithm_ResultsSent")
                         .HasColumnType("bit");
 
@@ -81,15 +90,6 @@ namespace Atlas.SearchTracking.Data.Migrations
 
                     b.Property<DateTime?>("RepeatSearchCutOffDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<int?>("RepeatSearch_AddedResultCount")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("RepeatSearch_RemovedResultCount")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("RepeatSearch_UpdatedResultCount")
-                        .HasColumnType("int");
 
                     b.Property<string>("RequestJson")
                         .IsRequired()

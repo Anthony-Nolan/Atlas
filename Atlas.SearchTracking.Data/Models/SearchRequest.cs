@@ -41,11 +41,11 @@ namespace Atlas.SearchTracking.Data.Models
 
         public int? MatchingAlgorithm_NumberOfResults { get; set; }
 
-        public int? RepeatSearch_AddedResultCount { get; set; }
+        public int? MatchingAlgorithm_RepeatSearch_AddedResultCount { get; set; }
 
-        public int? RepeatSearch_RemovedResultCount { get; set; }
+        public int? MatchingAlgorithm_RepeatSearch_RemovedResultCount { get; set; }
 
-        public int? RepeatSearch_UpdatedResultCount { get; set; }
+        public int? MatchingAlgorithm_RepeatSearch_UpdatedResultCount { get; set; }
 
         [MaxLength(10)]
         public string? MatchingAlgorithm_HlaNomenclatureVersion { get; set; }
