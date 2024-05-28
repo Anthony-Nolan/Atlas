@@ -88,7 +88,8 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_function" {
   site_config {
     application_insights_key = var.application_insights.instrumentation_key
     application_stack {
-      dotnet_version = "v6.0"
+      dotnet_version              = "v8.0"
+      use_dotnet_isolated_runtime = true
     }
     cors {
       support_credentials = false

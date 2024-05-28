@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <UserSecretsId>074207e0-3edc-4e19-a3c2-a7ba1b01e6f6</UserSecretsId>
@@ -15,12 +15,12 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="8.1.1" />
-    <PackageReference Include="AzureExtensions.Swashbuckle" Version="3.3.2" />
+    <PackageReference Include="AzureExtensions.Swashbuckle" Version="4.0.2" />
     <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
 	<PackageReference Include="Polly" Version="7.2.1" />
 
 	<FrameworkReference Include="Microsoft.AspNetCore.App" />

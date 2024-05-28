@@ -7,7 +7,6 @@ using Atlas.MatchPrediction.Test.Verification.DependencyInjection;
 using Atlas.MatchPrediction.Test.Verification.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 

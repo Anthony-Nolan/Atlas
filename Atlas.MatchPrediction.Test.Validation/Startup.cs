@@ -5,7 +5,6 @@ using Atlas.MatchPrediction.Test.Validation.DependencyInjection;
 using Atlas.MatchPrediction.Test.Validation.Models;
 using Atlas.MatchPrediction.Test.Validation.Settings;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 

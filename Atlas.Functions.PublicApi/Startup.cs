@@ -4,7 +4,6 @@ using Atlas.Functions.PublicApi;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.RepeatSearch.ExternalInterface.DependencyInjection;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 

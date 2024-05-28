@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 
 namespace Atlas.Functions.Functions
@@ -62,13 +64,20 @@ namespace Atlas.Functions.Functions
         [QueryStringParameter("macCode", "macCode", DataType = typeof(string))]
         [QueryStringParameter("firstField", "firstField", DataType = typeof(string))]
         [Function(nameof(GetHlaFromMac))]
-        public async Task<IEnumerable<string>> GetHlaFromMac(
+        public async Task<IActionResult> GetHlaFromMac(
             [HttpTrigger(AuthorizationLevel.Function, "get")]
             HttpRequest request)
         {
-            var macCode = request.Query["macCode"];
-            var firstField = request.Query["firstField"];
-            return await macDictionary.GetHlaFromMac(firstField, macCode);
+            try
+            {
+                var macCode = request.Query["macCode"];
+                var firstField = request.Query["firstField"];
+                return new OkObjectResult(await macDictionary.GetHlaFromMac(firstField, macCode));
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
         
     }

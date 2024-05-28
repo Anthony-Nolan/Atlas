@@ -6,7 +6,6 @@ using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.RepeatSearch.ExternalInterface.DependencyInjection;
 using Atlas.RepeatSearch.Functions;
 using Atlas.RepeatSearch.Settings.ServiceBus;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;

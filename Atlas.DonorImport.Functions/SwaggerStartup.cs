@@ -2,7 +2,6 @@
 using System.Reflection;
 using Atlas.DonorImport.Functions;
 using AzureFunctions.Extensions.Swashbuckle;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.DonorImport.Functions
@@ -13,13 +12,16 @@ namespace Atlas.DonorImport.Functions
         {
             var executingAssembly = Assembly.GetExecutingAssembly();
 
-            services.AddSwashBuckle(executingAssembly, opts =>
+            services.AddSwashBuckle(opts =>
             {
                 // Set the comments path for the Swagger JSON and UI.
                 var xmlFile = $"{executingAssembly.GetName().Name}.xml";
                 var xmlPath = Path.Combine(GetTopBinPath(executingAssembly), xmlFile);
                 opts.XmlPath = xmlPath;
-            });
+
+                opts.RoutePrefix = "api";
+            },
+            executingAssembly: executingAssembly);
         }
 
         private static string GetTopBinPath(Assembly executingAssembly)

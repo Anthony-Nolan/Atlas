@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using Atlas.MatchingAlgorithm.Functions;
 using AzureFunctions.Extensions.Swashbuckle;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.MatchingAlgorithm.Functions
@@ -10,7 +9,11 @@ namespace Atlas.MatchingAlgorithm.Functions
     {
         public static void Configure(IServiceCollection services)
         {
-            services.AddSwashBuckle(Assembly.GetExecutingAssembly());
+            services.AddSwashBuckle(opts =>
+            {
+                opts.RoutePrefix = "api";
+            },
+                executingAssembly: Assembly.GetExecutingAssembly());
         }
     }
 }

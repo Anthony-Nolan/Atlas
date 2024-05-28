@@ -1,7 +1,6 @@
 using Atlas.ManualTesting;
 using Atlas.ManualTesting.DependencyInjection;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.ManualTesting

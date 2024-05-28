@@ -54,9 +54,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             try
             {
                 logger.SendTrace($"Started match prediction orchestration with ID = '{searchId}'. Orchestration Instance: {instanceId}");
-                // TODO: Just log instanceId                
-                //var statusCheck = await GetStatusCheckEndpoints(starter, instanceId);
-                //logger.SendTrace(statusCheck.StatusQueryGetUri);
             }
             catch (Exception)
             {
@@ -88,10 +85,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             try
             {
                 logger.SendTrace($"Started match prediction orchestration with Repeat Search ID = '{repeatSearchId}'. Orchestration Instance: {instanceId}");
-
-                // TODO: Just log instanceId
-                //var statusCheck = await GetStatusCheckEndpoints(starter, instanceId);
-                //logger.SendTrace(statusCheck.StatusQueryGetUri);
             }
             catch (Exception)
             {
@@ -100,17 +93,12 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             }
         }
 
-        //private static async Task<StatusCheckEndpoints> GetStatusCheckEndpoints(DurableTaskClient orchestrationClient, string instanceId)
-        //{
-        //    // Log status check endpoints for convenience of debugging long search requests
-        //    var checkStatusResponse = orchestrationClient.CreateCheckStatusResponse(new HttpRequestData(), instanceId);
-        //    return JsonConvert.DeserializeObject<StatusCheckEndpoints>(await checkStatusResponse.Content.ReadAsStringAsync());
-        //}
-
-        private class StatusCheckEndpoints
+        [Function(nameof(GetStatusCheckEndpoints))]
+        public HttpResponseData GetStatusCheckEndpoints([HttpTrigger(AuthorizationLevel.Function, "get", Route = $"match-prediction-status/{{{nameof(instanceId)}}}")] HttpRequestData request,
+            string instanceId,
+            [DurableClient] DurableTaskClient orchestrationClient)
         {
-            // ReSharper disable once UnusedAutoPropertyAccessor.Local
-            public string StatusQueryGetUri { get; set; }
+            return orchestrationClient.CreateCheckStatusResponse(request, instanceId);
         }
     }
 }

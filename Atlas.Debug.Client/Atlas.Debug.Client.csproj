@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <VersionPrefix>2.2.0</VersionPrefix>
     <PackageReadmeFile>CHANGELOG_DebugClient.md</PackageReadmeFile>
     <Authors>Anthony Nolan</Authors>
@@ -16,9 +16,9 @@
     <ProjectReference Include="..\Atlas.Client.Models\Atlas.Client.Models.csproj" />
     <ProjectReference Include="..\Atlas.Debug.Client.Models\Atlas.Debug.Client.Models.csproj" />
     <ProjectReference Include="..\Atlas.MatchingAlgorithm.Client.Models\Atlas.MatchingAlgorithm.Client.Models.csproj" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 

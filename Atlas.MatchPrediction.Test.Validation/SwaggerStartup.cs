@@ -8,7 +8,11 @@ namespace Atlas.MatchPrediction.Test.Validation
     {
         public static void Configure(IServiceCollection services)
         {
-            services.AddSwashBuckle(Assembly.GetExecutingAssembly());
+            services.AddSwashBuckle(opts =>
+            {
+                opts.RoutePrefix = "api";
+            },
+                executingAssembly: Assembly.GetExecutingAssembly());
         }
     }
 }

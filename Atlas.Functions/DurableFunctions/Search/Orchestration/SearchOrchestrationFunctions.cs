@@ -238,7 +238,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
             return new TimedResultSet<IReadOnlyDictionary<int, string>>
             {
-                ResultSet = matchPredictionResultLocations.ToDictionary(),
+                ResultSet = MoreLinq.Extensions.ToDictionaryExtension.ToDictionary(matchPredictionResultLocations),
                 // If the previous stage did not successfully report a timespan, we do not want to report an error - so we allow it to be null.
                 // TimedResultSet promises a non-null timestamp, so return MaxValue to be clear that this timing was not successful
                 ElapsedTime = totalElapsedTime ?? TimeSpan.MaxValue
