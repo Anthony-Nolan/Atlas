@@ -10,7 +10,9 @@ namespace Atlas.SearchTracking.Data.Repositories
     {
        Task Create(MatchingAlgorithmAttemptStartedEvent matchingAlgorithmStartedEvent);
 
-       Task UpdateTimingInformation(int searchRequestId, int attemptNumber, MatchingAlgorithmTimingEventType eventType);
+       Task Completed(int searchRequestId, int attemptNumber, MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent);
+
+       Task UpdateTimingInformation(int searchRequestId, int attemptNumber, SearchTrackingEventType eventType);
     }
 
     public class MatchingAlgorithmRepository : IMatchingAlgorithmRepository
@@ -38,7 +40,7 @@ namespace Atlas.SearchTracking.Data.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdateTimingInformation(int searchRequestId, int attemptNumber, MatchingAlgorithmTimingEventType eventType)
+        public async Task Completed(int searchRequestId, int attemptNumber, MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent)
         {
             var matchingAlgorithmAttempt = await MatchingAlgorithmAttempts.FindAsync(searchRequestId, attemptNumber);
 
@@ -47,7 +49,21 @@ namespace Atlas.SearchTracking.Data.Repositories
                 throw new Exception($"Search request with id {searchRequestId} and {attemptNumber} not found");
             }
 
-            var timingProperty = SearchTiming.EventDictionary[eventType];
+            matchingAlgorithmAttempt.CompletionTimeUtc = matchingAlgorithmCompletedEvent.CompletionTimeUtc;
+
+            await context.SaveChangesAsync();
+        }
+
+        public async Task UpdateTimingInformation(int searchRequestId, int attemptNumber, SearchTrackingEventType eventType)
+        {
+            var matchingAlgorithmAttempt = await MatchingAlgorithmAttempts.FindAsync(searchRequestId, attemptNumber);
+
+            if (matchingAlgorithmAttempt == null)
+            {
+                throw new Exception($"Search request with id {searchRequestId} and {attemptNumber} not found");
+            }
+
+            var timingProperty = SearchTrackingConstants.MatchingAlgorithmColumnMappings[eventType];
 
             matchingAlgorithmAttempt.GetType().GetProperty(timingProperty)?.SetValue(matchingAlgorithmAttempt, DateTime.UtcNow);
 

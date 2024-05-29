@@ -43,21 +43,6 @@ namespace Atlas.SearchTracking.Data.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdateResultsSent(SearchRequestCompletedEvent searchRequestCompletedEvent)
-        {
-            var searchRequest = await searchRequests.FindAsync(searchRequestCompletedEvent.SearchRequestId);
-
-            if (searchRequest == null)
-            {
-                throw new Exception($"Search request with id {searchRequestCompletedEvent.SearchRequestId} not found");
-            }
-
-            searchRequest.ResultsSent = searchRequestCompletedEvent.ResultsSent;
-            searchRequest.ResultsSentTimeUTC = searchRequestCompletedEvent.ResultsSentTimeUtc;
-
-            await context.SaveChangesAsync();
-        }
-
         public async Task UpdateMatchPredictionCompleted(MatchPredictionCompletedEvent matchPredictionCompletedEvent)
         {
             var searchRequest = await searchRequests.FindAsync(matchPredictionCompletedEvent.SearchRequestId);
@@ -102,6 +87,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
             searchRequest.MatchingAlgorithm_HlaNomenclatureVersion = matchingAlgorithmCompletedEvent.HlaNomenclatureVersion;
             searchRequest.MatchingAlgorithm_ResultsSent = matchingAlgorithmCompletedEvent.ResultsSent;
+            searchRequest.ResultsSent = matchingAlgorithmCompletedEvent.ResultsSent;
             searchRequest.MatchingAlgorithm_ResultsSentTimeUTC = matchingAlgorithmCompletedEvent.ResultsSentTimeUtc;
 
             await context.SaveChangesAsync();

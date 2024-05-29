@@ -10,7 +10,9 @@ namespace Atlas.SearchTracking.Data.Repositories
     {
         Task Create(MatchPredictionStartedEvent matchPredictionStartedEvent);
 
-        Task UpdateTimingInformation(int searchRequestId, MatchingAlgorithmTimingEventType eventType);
+        Task Completed(int searchRequestId, MatchPredictionCompletedEvent matchPredictionCompletedEvent);
+
+        Task UpdateTimingInformation(int searchRequestId, SearchTrackingEventType eventType);
     }
 
     public class MatchPredictionRepository : IMatchPredictionRepository
@@ -37,7 +39,7 @@ namespace Atlas.SearchTracking.Data.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdateTimingInformation(int searchRequestId, MatchingAlgorithmTimingEventType eventType)
+        public async Task Completed(int searchRequestId, MatchPredictionCompletedEvent matchPredictionCompletedEvent)
         {
             var matchPrediction = await MatchingAlgorithmPrediction
                 .FirstOrDefaultAsync(x => x.SearchRequestId == searchRequestId);
@@ -47,7 +49,22 @@ namespace Atlas.SearchTracking.Data.Repositories
                 throw new Exception($"Search request with id {searchRequestId} not found");
             }
 
-            var timingProperty = SearchTiming.EventDictionary[eventType];
+            matchPrediction.CompletionTimeUtc = matchPredictionCompletedEvent.CompletionTimeUtc;
+
+            await context.SaveChangesAsync();
+        }
+
+        public async Task UpdateTimingInformation(int searchRequestId, SearchTrackingEventType eventType)
+        {
+            var matchPrediction = await MatchingAlgorithmPrediction
+                .FirstOrDefaultAsync(x => x.SearchRequestId == searchRequestId);
+
+            if (matchPrediction == null)
+            {
+                throw new Exception($"Search request with id {searchRequestId} not found");
+            }
+
+            var timingProperty = SearchTrackingConstants.MatchPredictionColumnMappings[eventType];
 
             matchPrediction.GetType().GetProperty(timingProperty)?.SetValue(matchPrediction, DateTime.UtcNow);
 
