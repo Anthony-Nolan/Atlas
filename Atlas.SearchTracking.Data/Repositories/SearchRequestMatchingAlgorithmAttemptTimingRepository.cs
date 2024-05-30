@@ -19,7 +19,7 @@ namespace Atlas.SearchTracking.Data.Repositories
     {
         private readonly SearchTrackingContext context;
 
-        private DbSet<SearchRequestMatchingAlgorithmAttemptTiming> MatchingAlgorithmAttempts => context.SearchRequestMatchingAlgorithmAttemptTimings;
+        private DbSet<SearchRequestMatchingAlgorithmAttemptTiming> MatchingAlgorithmAttemptTimings => context.SearchRequestMatchingAlgorithmAttemptTimings;
 
         public SearchRequestMatchingAlgorithmAttemptTimingRepository(SearchTrackingContext context)
         {
@@ -36,43 +36,41 @@ namespace Atlas.SearchTracking.Data.Repositories
                 StartTimeUtc = matchingAlgorithmStartedEvent.StartTimeUtc
             };
 
-            MatchingAlgorithmAttempts.Add(matchingAlgorithmAttempt);
+            MatchingAlgorithmAttemptTimings.Add(matchingAlgorithmAttempt);
             await context.SaveChangesAsync();
         }
 
         public async Task TrackCompletedEvent(MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent)
         {
-            var matchingAlgorithmAttempt = await MatchingAlgorithmAttempts
-                .FindAsync(matchingAlgorithmCompletedEvent.SearchRequestId, matchingAlgorithmCompletedEvent.AttemptNumber);
-
-            if (matchingAlgorithmAttempt == null)
-            {
-                throw new Exception($"Search request with id {matchingAlgorithmCompletedEvent.SearchRequestId}" +
-                                    $" and {matchingAlgorithmCompletedEvent.AttemptNumber} not found");
-            }
+            var matchingAlgorithmAttempt = await GetRequiredMatchingAlgorithmAttemptTiming(
+                matchingAlgorithmCompletedEvent.SearchRequestId, matchingAlgorithmCompletedEvent.AttemptNumber);
 
             matchingAlgorithmAttempt.CompletionTimeUtc = matchingAlgorithmCompletedEvent.CompletionTimeUtc;
-
             await context.SaveChangesAsync();
         }
 
         public async Task TrackTimingEvent(MatchingAlgorithmAttemptTimingEvent matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType eventType)
         {
-            var matchingAlgorithmAttempt = await MatchingAlgorithmAttempts
-                .FindAsync(matchingAlgorithmAttemptTimingEvent.SearchRequestId, matchingAlgorithmAttemptTimingEvent.AttemptNumber);
-
-            if (matchingAlgorithmAttempt == null)
-            {
-                throw new Exception($"Search request with id {matchingAlgorithmAttemptTimingEvent.SearchRequestId}" +
-                                    $" and {matchingAlgorithmAttemptTimingEvent.AttemptNumber} not found");
-            }
-
+            var matchingAlgorithmAttempt = await GetRequiredMatchingAlgorithmAttemptTiming(
+                matchingAlgorithmAttemptTimingEvent.SearchRequestId, matchingAlgorithmAttemptTimingEvent.AttemptNumber);
             var timingProperty = SearchTrackingConstants.MatchingAlgorithmColumnMappings[eventType];
 
             matchingAlgorithmAttempt.GetType().GetProperty(timingProperty)?
                 .SetValue(matchingAlgorithmAttempt, matchingAlgorithmAttemptTimingEvent.TimeUtc);
-
             await context.SaveChangesAsync();
+        }
+
+        private async Task<SearchRequestMatchingAlgorithmAttemptTiming> GetRequiredMatchingAlgorithmAttemptTiming(int searchRequestId, int attemptNumber)
+        {
+            var matchingAlgorithmAttempt = await MatchingAlgorithmAttemptTimings
+                .FirstOrDefaultAsync(x => x.SearchRequestId == searchRequestId && x.AttemptNumber == attemptNumber);
+
+            if (matchingAlgorithmAttempt == null)
+            {
+                throw new Exception($"Matching algorithm attempt timing for search id {searchRequestId} and attempt number {attemptNumber} not found");
+            }
+
+            return matchingAlgorithmAttempt;
         }
     }
 }
