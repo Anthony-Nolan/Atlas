@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Search.Tracking\Atlas.SearchTracking.csproj" />
+    <ProjectReference Include="..\Atlas.SearchTracking\Atlas.SearchTracking.csproj" />
   </ItemGroup>
 
 </Project>

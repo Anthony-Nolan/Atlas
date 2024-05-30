@@ -2,7 +2,7 @@
 
 namespace Atlas.SearchTracking.Data.Models
 {
-    public static class SearchTrackingConstants
+    internal static class SearchTrackingConstants
     {
         public static Dictionary<SearchTrackingEventType, string> MatchPredictionColumnMappings { get; set; }
         public static Dictionary<SearchTrackingEventType, string> MatchingAlgorithmColumnMappings { get; set; }

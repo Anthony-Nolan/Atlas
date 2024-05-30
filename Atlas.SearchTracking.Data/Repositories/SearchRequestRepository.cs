@@ -7,11 +7,11 @@ namespace Atlas.SearchTracking.Data.Repositories
 {
     public interface ISearchRequestRepository
     {
-        Task Create(SearchRequestedEvent requestedEvent);
+        Task TrackSearchRequestedEvent(SearchRequestedEvent requestedEvent);
 
-        Task UpdateMatchPredictionCompleted(MatchPredictionCompletedEvent matchPredictionCompletedEvent);
+        Task TrackMatchPredictionCompletedEvent(MatchPredictionCompletedEvent matchPredictionCompletedEvent);
 
-        Task UpdateMatchingAlgorithmCompleted(MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent);
+        Task TrackMatchingAlgorithmCompletedEvent(MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent);
     }
 
     public class SearchRequestRepository : ISearchRequestRepository
@@ -25,7 +25,7 @@ namespace Atlas.SearchTracking.Data.Repositories
             this.context = context;
         }
 
-        public async Task Create(SearchRequestedEvent requestedEvent)
+        public async Task TrackSearchRequestedEvent(SearchRequestedEvent requestedEvent)
         {
             var searchRequest = new SearchRequest
             {
@@ -43,7 +43,7 @@ namespace Atlas.SearchTracking.Data.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdateMatchPredictionCompleted(MatchPredictionCompletedEvent matchPredictionCompletedEvent)
+        public async Task TrackMatchPredictionCompletedEvent(MatchPredictionCompletedEvent matchPredictionCompletedEvent)
         {
             var searchRequest = await searchRequests.FindAsync(matchPredictionCompletedEvent.SearchRequestId);
 
@@ -60,7 +60,7 @@ namespace Atlas.SearchTracking.Data.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdateMatchingAlgorithmCompleted(MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent)
+        public async Task TrackMatchingAlgorithmCompletedEvent(MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent)
         {
             var searchRequest = await searchRequests.FindAsync(matchingAlgorithmCompletedEvent.SearchRequestId);
 
