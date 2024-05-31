@@ -183,7 +183,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DebugClient", "DebugClient"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SearchTracking", "SearchTracking", "{54F8399E-A9E6-4D36-A5B2-73C2023EF133}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.SearchTracking", "Search.Tracking\Atlas.SearchTracking.csproj", "{A6F2616B-3EEC-465C-BDBD-EC604ADB3CE2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.SearchTracking", "Atlas.SearchTracking\Atlas.SearchTracking.csproj", "{A6F2616B-3EEC-465C-BDBD-EC604ADB3CE2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.SearchTracking.Data", "Atlas.SearchTracking.Data\Atlas.SearchTracking.Data.csproj", "{D8C1D69F-78F1-48B0-BC1D-54096BE10124}"
 EndProject
