@@ -14,7 +14,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         Task TrackTimingEvent(MatchPredictionTimingEvent matchPredictionTimingEvent, SearchTrackingEventType eventType);
 
-        Task<SearchRequestMatchPredictionTiming?> GetSearchRequestMatchPredictionById(int id);
+        Task<SearchRequestMatchPredictionTiming> GetSearchRequestMatchPredictionById(int id);
     }
 
     public class MatchPredictionRepository : IMatchPredictionRepository
@@ -58,7 +58,7 @@ namespace Atlas.SearchTracking.Data.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task<SearchRequestMatchPredictionTiming?> GetSearchRequestMatchPredictionById(int id)
+        public async Task<SearchRequestMatchPredictionTiming> GetSearchRequestMatchPredictionById(int id)
         {
             var matchPrediction = await MatchPredictionTimings
                 .FirstOrDefaultAsync(x => x.SearchRequestId == id);
