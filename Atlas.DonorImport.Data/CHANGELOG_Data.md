@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Versions
 
+### 3.0.0
+* Updated .NET version from 6.0 to 8.0
+
 ### 1.6.0
 * New data table added, `DonorImportFailures`, to capture info on individual donor updates that failed to be applied to the donor store.
   * `Id` - unique PK

@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Versions
 
+### 3.0.0
+* Updated .NET version from 6.0 to 8.0
+
 ### 1.7.0
 * `DonorImportMessage` model has been extended with `SuccessfulImportInfo` and `FailedImportInfo` props to replace the `SuccessDonorImportMessage` and `FailureDonorImportMessage` classes.
   * `DonorImportMessage` is now the only model that needs to be consumed by a client.
