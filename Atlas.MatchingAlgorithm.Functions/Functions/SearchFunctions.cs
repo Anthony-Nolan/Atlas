@@ -58,7 +58,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             int deliveryCount,
             DateTime enqueuedTimeUtc)
         {
-            throw new NotImplementedException();
             await searchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc);
         }
 
