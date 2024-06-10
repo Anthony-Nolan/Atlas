@@ -3,7 +3,6 @@ using Atlas.SearchTracking.Data.Models;
 using Atlas.SearchTracking.Enums;
 using Atlas.SearchTracking.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
 
 namespace Atlas.SearchTracking.Data.Repositories
 {
@@ -14,6 +13,8 @@ namespace Atlas.SearchTracking.Data.Repositories
         Task TrackCompletedEvent(MatchPredictionCompletedEvent matchPredictionCompletedEvent);
 
         Task TrackTimingEvent(MatchPredictionTimingEvent matchPredictionTimingEvent, SearchTrackingEventType eventType);
+
+        Task<SearchRequestMatchPredictionTiming> GetSearchRequestMatchPredictionById(int id);
     }
 
     public class MatchPredictionRepository : IMatchPredictionRepository
@@ -29,7 +30,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackStartedEvent(MatchPredictionStartedEvent matchPredictionStartedEvent)
         {
-            var matchPrediction = new SearchRequestMatchPredictionTiming()
+            var matchPrediction = new SearchRequestMatchPredictionTiming
             {
                 SearchRequestId = matchPredictionStartedEvent.SearchRequestId,
                 InitiationTimeUtc = matchPredictionStartedEvent.InitiationTimeUtc,
@@ -55,6 +56,19 @@ namespace Atlas.SearchTracking.Data.Repositories
 
             matchPrediction.GetType().GetProperty(timingProperty)?.SetValue(matchPrediction, matchPredictionTimingEvent.TimeUtc);
             await context.SaveChangesAsync();
+        }
+
+        public async Task<SearchRequestMatchPredictionTiming> GetSearchRequestMatchPredictionById(int id)
+        {
+            var matchPrediction = await MatchPredictionTimings
+                .FirstOrDefaultAsync(x => x.SearchRequestId == id);
+
+            if (matchPrediction == null)
+            {
+                throw new Exception($"Match prediction timing for search id { id } not found");
+            }
+
+            return matchPrediction;
         }
 
         private async Task<SearchRequestMatchPredictionTiming> GetRequiredMatchPredictionTiming(int searchRequestId)
