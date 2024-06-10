@@ -13,6 +13,8 @@ namespace Atlas.SearchTracking.Data.Repositories
        Task TrackCompletedEvent(MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent);
 
        Task TrackTimingEvent(MatchingAlgorithmAttemptTimingEvent matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType eventType);
+
+       Task<SearchRequestMatchingAlgorithmAttemptTiming?> GetSearchRequestMatchingAlgorithmAttemptTimingById(int id);
     }
 
     public class SearchRequestMatchingAlgorithmAttemptTimingRepository : ISearchRequestMatchingAlgorithmAttemptTimingRepository
@@ -58,6 +60,19 @@ namespace Atlas.SearchTracking.Data.Repositories
             matchingAlgorithmAttempt.GetType().GetProperty(timingProperty)?
                 .SetValue(matchingAlgorithmAttempt, matchingAlgorithmAttemptTimingEvent.TimeUtc);
             await context.SaveChangesAsync();
+        }
+
+        public async Task<SearchRequestMatchingAlgorithmAttemptTiming> GetSearchRequestMatchingAlgorithmAttemptTimingById(int id)
+        {
+            var matchingAlgorithmAttempt = await MatchingAlgorithmAttemptTimings
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (matchingAlgorithmAttempt == null)
+            {
+                throw new Exception($"Matching algorithm attempt timing with id {id} not found");
+            }
+
+            return matchingAlgorithmAttempt;
         }
 
         private async Task<SearchRequestMatchingAlgorithmAttemptTiming> GetRequiredMatchingAlgorithmAttemptTiming(int searchRequestId, int attemptNumber)
