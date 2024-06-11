@@ -25,13 +25,10 @@ var host = new HostBuilder()
     })
     .ConfigureFunctionsWebApplication(builder =>
     {
-        builder.Services.Configure<WorkerOptions>(options =>
+        // Workaround to set Json.NET json serializer
+        builder.Services.AddMvcCore().AddNewtonsoftJson(options =>
         {
-            var settings = NewtonsoftJsonObjectSerializer.CreateJsonSerializerSettings();
-            settings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-            settings.NullValueHandling = NullValueHandling.Ignore;
-
-            options.Serializer = new NewtonsoftJsonObjectSerializer();
+            options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
         });
 
         builder.UseMiddleware<ExceptionHandlingMiddleware>();
