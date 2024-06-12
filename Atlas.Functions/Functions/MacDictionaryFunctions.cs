@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
@@ -53,12 +54,13 @@ namespace Atlas.Functions.Functions
 
         [QueryStringParameter("macCode", "macCode", DataType = typeof(string))]
         [Function(nameof(GetMac))]
-        public async Task<Mac> GetMac(
+        [ProducesResponseType(typeof(Mac), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetMac(
             [HttpTrigger(AuthorizationLevel.Function, "get")]
             HttpRequest request)
         {
             var macCode = request.Query["macCode"];
-            return await macDictionary.GetMac(macCode);
+            return new JsonResult(await macDictionary.GetMac(macCode));
         }
 
         [QueryStringParameter("macCode", "macCode", DataType = typeof(string))]
