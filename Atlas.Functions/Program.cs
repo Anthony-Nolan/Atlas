@@ -12,7 +12,16 @@ using System.Linq;
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication(builder =>
     {
-        // Workaround to set Json.NET json serializer
+        builder.Services.Configure<WorkerOptions>(options =>
+        {
+            var settings = NewtonsoftJsonObjectSerializer.CreateJsonSerializerSettings();
+            settings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            settings.NullValueHandling = NullValueHandling.Ignore;
+
+            options.Serializer = new NewtonsoftJsonObjectSerializer();
+        });
+
+        // Workaround to set Json.NET json serializer. Registration above is also required to make Json.Net work in non-http triggered functions
         builder.Services.AddMvcCore().AddNewtonsoftJson(options =>
         {
             options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
