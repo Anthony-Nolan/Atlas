@@ -22,17 +22,9 @@ namespace Atlas.Common.ServiceBus
                 return messageReceiver;
             }
 
-            //messageReceiver = new MessageReceiver(
-            //    connectionString,
-            //    EntityNameHelper.FormatSubscriptionPath(topicName, subscriptionName));
-
-            var builder = new ServiceBusConnectionStringBuilder(connectionString);
-            builder.TransportType = TransportType.Amqp;
-
-
-
-            messageReceiver = new MessageReceiver(new ServiceBusConnection(builder), EntityNameHelper.FormatSubscriptionPath(topicName, subscriptionName));
-
+            messageReceiver = new MessageReceiver(
+                connectionString,
+                EntityNameHelper.FormatSubscriptionPath(topicName, subscriptionName));
             MessageReceivers.GetOrAdd(cacheKey, messageReceiver);
             return messageReceiver;
         }
