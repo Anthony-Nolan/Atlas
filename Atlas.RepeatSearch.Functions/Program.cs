@@ -1,5 +1,4 @@
-﻿using Atlas.Common.FunctionsWorker;
-using Atlas.RepeatSearch.Functions;
+﻿using Atlas.RepeatSearch.Functions;
 using Azure.Core.Serialization;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
@@ -39,8 +38,6 @@ var host = new HostBuilder()
         {
             options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
         });
-
-        builder.UseMiddleware<ExceptionHandlingMiddleware>();
     })
     .ConfigureServices(services => {
         services.AddApplicationInsightsTelemetryWorkerService();

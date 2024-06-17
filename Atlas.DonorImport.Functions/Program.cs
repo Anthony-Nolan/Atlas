@@ -14,7 +14,6 @@ using System.Linq;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using Azure.Core.Serialization;
-using Atlas.Common.FunctionsWorker;
 
 
 var host = new HostBuilder()
@@ -34,8 +33,6 @@ var host = new HostBuilder()
         {
             options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
         });
-
-        builder.UseMiddleware<ExceptionHandlingMiddleware>();
     })
     .ConfigureServices(services => {
         services.AddApplicationInsightsTelemetryWorkerService();
