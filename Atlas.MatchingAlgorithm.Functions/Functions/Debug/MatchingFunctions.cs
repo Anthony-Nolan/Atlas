@@ -10,8 +10,7 @@ using Atlas.Debug.Client.Models.ServiceBus;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
 {
@@ -30,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             this.resultsDownloader = resultsDownloader;
         }
 
-        [FunctionName(nameof(PeekMatchingResultNotifications))]
+        [Function(nameof(PeekMatchingResultNotifications))]
         [ProducesResponseType(typeof(PeekServiceBusMessagesResponse<MatchingResultsNotification>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> PeekMatchingResultNotifications(
             [HttpTrigger(
@@ -45,7 +44,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             return new JsonResult(response);
         }
 
-        [FunctionName(nameof(FetchMatchingResultSet))]
+        [Function(nameof(FetchMatchingResultSet))]
         [ProducesResponseType(typeof(OriginalMatchingAlgorithmResultSet), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> FetchMatchingResultSet(
             [HttpTrigger(

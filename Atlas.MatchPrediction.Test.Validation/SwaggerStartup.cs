@@ -1,18 +1,18 @@
 ﻿using AzureFunctions.Extensions.Swashbuckle;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Hosting;
 using System.Reflection;
-using Atlas.MatchPrediction.Test.Validation;
-
-[assembly: WebJobsStartup(typeof(SwashBuckleStartup))]
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.MatchPrediction.Test.Validation
 {
-    internal class SwashBuckleStartup : IWebJobsStartup
+    internal static class SwashBuckleStartup
     {
-        public void Configure(IWebJobsBuilder builder)
+        public static void Configure(IServiceCollection services)
         {
-            builder.AddSwashBuckle(Assembly.GetExecutingAssembly());
+            services.AddSwashBuckle(opts =>
+            {
+                opts.RoutePrefix = "api";
+            },
+                executingAssembly: Assembly.GetExecutingAssembly());
         }
     }
 }

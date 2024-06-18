@@ -9,8 +9,7 @@ using Atlas.Functions.Services.Debug;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -31,7 +30,7 @@ namespace Atlas.Functions.Functions.Debug
             this.resultsDownloader = resultsDownloader;
         }
 
-        [FunctionName(nameof(PeekSearchResultsNotifications))]
+        [Function(nameof(PeekSearchResultsNotifications))]
         [ProducesResponseType(typeof(PeekServiceBusMessagesResponse<SearchResultsNotification>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> PeekSearchResultsNotifications(
             [HttpTrigger(
@@ -46,7 +45,7 @@ namespace Atlas.Functions.Functions.Debug
             return new JsonResult(response);
         }
 
-        [FunctionName(nameof(FetchSearchResultSet))]
+        [Function(nameof(FetchSearchResultSet))]
         [ProducesResponseType(typeof(OriginalSearchResultSet), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> FetchSearchResultSet(
             [HttpTrigger(

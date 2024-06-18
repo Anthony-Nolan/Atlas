@@ -33,6 +33,9 @@ Feature flags permit greater control over the release of new features (see this 
 * BREAKING - Breaking change at the API level
 * FBC - Functionally Breaking Change, i.e., significant change to the behaviour of an existing feature but the API remains unchanged
 
+### 3.0.0
+* E: Updated .NET version from 6.0 to 8.0
+
 ### 2.1.0 ([issue list](https://github.com/Anthony-Nolan/Atlas/milestone/8?closed=1))
 The main goal of this version was to add the debug endpoints needed to enable automated end-to-end testing (E2E) of an existing Atlas installation.
 A new public, open-source project has been released to host Atlas E2E tests: https://github.com/Anthony-Nolan/Atlas.Auto.Tests

@@ -7,8 +7,7 @@ using Atlas.MatchPrediction.Test.Validation.Models;
 using Atlas.MatchPrediction.Test.Validation.Services;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Test.Validation.Functions
@@ -26,7 +25,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             this.subjectInfoImporter = subjectInfoImporter;
         }
 
-        [FunctionName($"{FunctionNamePrefix}{nameof(ImportSubjects)}")]
+        [Function($"{FunctionNamePrefix}{nameof(ImportSubjects)}")]
         public async Task ImportSubjects(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(ImportRequest), nameof(ImportRequest))]

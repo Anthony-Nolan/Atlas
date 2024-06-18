@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Versions
 
+### 3.0.0
+* Updated .NET version from 6.0 to 8.0
+
 ### 1.5.0
 * Versioning and changelog added as client will now be published as NuGet package.
 * Removed `SearchableDonorInformation` model and `DonorType` extensions as they are not used by the Matching Algorithm API.

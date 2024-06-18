@@ -10,8 +10,8 @@ using Atlas.Functions.Exceptions;
 using Atlas.Functions.Models;
 using Atlas.Functions.Settings;
 using AutoMapper;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.DurableTask;
 using Microsoft.Extensions.Options;
 using MoreLinq.Extensions;
 
@@ -27,7 +27,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
     // ReSharper disable once ClassNeverInstantiated.Global
     public class SearchOrchestrationFunctions
     {
-        private static readonly RetryOptions RetryOptions = new(TimeSpan.FromSeconds(5), 5) { BackoffCoefficient = 2 };
+        private static readonly TaskOptions RetryOptions = new (new TaskRetryOptions(new RetryPolicy(5, TimeSpan.FromSeconds(5), backoffCoefficient: 2)));
 
         private readonly ILogger logger;
         private readonly IMapper mapper;
@@ -42,8 +42,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             matchPredictionProcessingBatchSize = azureStorageSettings.Value.MatchPredictionProcessingBatchSize;
         }
 
-        [FunctionName(nameof(SearchOrchestrator))]
-        public async Task<SearchOrchestrationOutput> SearchOrchestrator([OrchestrationTrigger] IDurableOrchestrationContext context)
+        [Function(nameof(SearchOrchestrator))]
+        public async Task<SearchOrchestrationOutput> SearchOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
         {
             var parameters = context.GetInput<SearchOrchestratorParameters>();
             var notification = parameters.MatchingResultsNotification;
@@ -120,8 +120,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
         }
 
-        [FunctionName(nameof(RepeatSearchOrchestrator))]
-        public async Task<SearchOrchestrationOutput> RepeatSearchOrchestrator([OrchestrationTrigger] IDurableOrchestrationContext context)
+        [Function(nameof(RepeatSearchOrchestrator))]
+        public async Task<SearchOrchestrationOutput> RepeatSearchOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
         {
             var notification = context.GetInput<MatchingResultsNotification>();
             var requestInfo = mapper.Map<FailureNotificationRequestInfo>(notification);
@@ -174,17 +174,17 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         }
 
         private async Task<TimedResultSet<IList<string>>> PrepareMatchPrediction(
-            IDurableOrchestrationContext context,
+            TaskOrchestrationContext context,
             MatchingResultsNotification notification,
             FailureNotificationRequestInfo requestInfo)
         {
             requestInfo.StageReached = nameof(SearchActivityFunctions.PrepareMatchPredictionBatches);
 
             var batchIds = await RunStageAndHandleFailures(async () =>
-                    await context.CallActivityWithRetryAsync<TimedResultSet<IList<string>>>(
+                    await context.CallActivityAsync<TimedResultSet<IList<string>>>(
                         nameof(SearchActivityFunctions.PrepareMatchPredictionBatches),
-                        RetryOptions,
-                        notification
+                        notification,
+                        RetryOptions
                     ),
                 context,
                 requestInfo
@@ -200,7 +200,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         }
 
         private async Task<TimedResultSet<IReadOnlyDictionary<int, string>>> RunMatchPredictionAlgorithm(
-            IDurableOrchestrationContext context,
+            TaskOrchestrationContext context,
             FailureNotificationRequestInfo requestInfo,
             TimedResultSet<IList<string>> matchPredictionRequestLocations
         )
@@ -238,7 +238,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
             return new TimedResultSet<IReadOnlyDictionary<int, string>>
             {
-                ResultSet = matchPredictionResultLocations.ToDictionary(),
+                ResultSet = MoreLinq.Extensions.ToDictionaryExtension.ToDictionary(matchPredictionResultLocations),
                 // If the previous stage did not successfully report a timespan, we do not want to report an error - so we allow it to be null.
                 // TimedResultSet promises a non-null timestamp, so return MaxValue to be clear that this timing was not successful
                 ElapsedTime = totalElapsedTime ?? TimeSpan.MaxValue
@@ -247,20 +247,20 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
         /// <returns>A Task a list of locations in which MPA results (per donor) can be found.</returns>
         private static async Task<IReadOnlyDictionary<int, string>> RunMatchPredictionForDonorBatch(
-            IDurableOrchestrationContext context,
+            TaskOrchestrationContext context,
             string requestLocation
         )
         {
             // Do not add error handling to this, as we will then see multiple failure notifications with multiple batches
-            return await context.CallActivityWithRetryAsync<IReadOnlyDictionary<int, string>>(
+            return await context.CallActivityAsync<IReadOnlyDictionary<int, string>>(
                 nameof(SearchActivityFunctions.RunMatchPredictionBatch),
-                RetryOptions,
-                requestLocation
+                requestLocation,
+                RetryOptions
             );
         }
 
         private async Task PersistSearchResults(
-            IDurableOrchestrationContext context,
+            TaskOrchestrationContext context,
             PersistSearchResultsFunctionParameters parameters,
             FailureNotificationRequestInfo requestInfo
         )
@@ -268,8 +268,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             requestInfo.StageReached = nameof(PersistSearchResults);
 
             await RunStageAndHandleFailures(
-                async () => await context.CallActivityWithRetryAsync(nameof(SearchActivityFunctions.PersistSearchResults), RetryOptions,
-                    parameters),
+                async () => await context.CallActivityAsync(nameof(SearchActivityFunctions.PersistSearchResults), parameters,
+                RetryOptions),
                 context,
                 requestInfo
             );
@@ -283,7 +283,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
         private async Task RunStageAndHandleFailures(
             Func<Task> runStage,
-            IDurableOrchestrationContext context,
+            TaskOrchestrationContext context,
             FailureNotificationRequestInfo requestInfo) =>
             await RunStageAndHandleFailures(async () =>
             {
@@ -293,7 +293,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
         private async Task<T> RunStageAndHandleFailures<T>(
             Func<Task<T>> runStage,
-            IDurableOrchestrationContext context,
+            TaskOrchestrationContext context,
             FailureNotificationRequestInfo requestInfo)
         {
             try
@@ -309,25 +309,25 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         }
 
         private static async Task SendFailureNotification(
-            IDurableOrchestrationContext context,
+            TaskOrchestrationContext context,
             FailureNotificationRequestInfo requestInfo)
         {
-            await context.CallActivityWithRetryAsync(
+            await context.CallActivityAsync(
                 nameof(SearchActivityFunctions.SendFailureNotification),
-                RetryOptions,
-                requestInfo
+                requestInfo,
+                RetryOptions
             );
 
             context.SetCustomStatus($"Search failed, during stage: {requestInfo.StageReached}");
         }
 
         private static async Task UploadSearchLogs(
-            IDurableOrchestrationContext context,
+            TaskOrchestrationContext context,
             SearchLog searchLog) =>
-            await context.CallActivityWithRetryAsync(
+            await context.CallActivityAsync(
                 nameof(SearchActivityFunctions.UploadSearchLog),
-                RetryOptions,
-                searchLog
+                searchLog,
+                RetryOptions
             );
     }
 }

@@ -7,24 +7,21 @@ using Atlas.MatchPrediction.Test.Verification.DependencyInjection;
 using Atlas.MatchPrediction.Test.Verification.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
-[assembly: FunctionsStartup(typeof(Startup))]
-
 namespace Atlas.MatchPrediction.Test.Verification
 {
-    internal class Startup : FunctionsStartup
+    internal static class Startup
     {
-        public override void Configure(IFunctionsHostBuilder builder)
+        public static void Configure(IServiceCollection services)
         {
             // Stops the Visual Studio debug window from being flooded with not-very-helpful AI telemetry messages!
             TelemetryDebugWriter.IsTracingDisabled = true;
 
-            RegisterSettings(builder.Services);
+            RegisterSettings(services);
 
-            builder.Services.RegisterVerificationServices(
+            services.RegisterVerificationServices(
                 ConnectionStringReader("MatchPredictionVerification:Sql"),
                 ConnectionStringReader("MatchPrediction:Sql"),
                 ConnectionStringReader("DonorImport:Sql"),
@@ -35,7 +32,7 @@ namespace Atlas.MatchPrediction.Test.Verification
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MacDownloadSettings>());
 
-            builder.Services.RegisterMatchingAlgorithmScoring(
+            services.RegisterMatchingAlgorithmScoring(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),

@@ -9,8 +9,7 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
@@ -34,7 +33,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         /// <summary>
         /// Requests a data refresh according to submitted request parameters.
         /// </summary>
-        [FunctionName(nameof(SubmitDataRefreshRequestManual))]
+        [Function(nameof(SubmitDataRefreshRequestManual))]
         public async Task<IActionResult> SubmitDataRefreshRequestManual(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(DataRefreshRequest), nameof(DataRefreshRequest))]
@@ -56,14 +55,14 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         /// Requests a full data refresh, if necessary.
         /// </summary>
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(SubmitDataRefreshRequest))]
+        [Function(nameof(SubmitDataRefreshRequest))]
         public async Task SubmitDataRefreshRequest([TimerTrigger("%DataRefresh:CronTab%")] TimerInfo timerInfo)
         {
             var request = new DataRefreshRequest { ForceDataRefresh = false };
             await dataRefreshRequester.RequestDataRefresh(request, false);
         }
 
-        [FunctionName(nameof(RunDataRefresh))]
+        [Function(nameof(RunDataRefresh))]
         public async Task RunDataRefresh(
             [ServiceBusTrigger(
                 "%DataRefresh:RequestsTopic%",
@@ -75,7 +74,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(RunDataRefreshCleanupAfterJobRequestDeadLetters))]
+        [Function(nameof(RunDataRefreshCleanupAfterJobRequestDeadLetters))]
         public async Task RunDataRefreshCleanupAfterJobRequestDeadLetters(
             [ServiceBusTrigger(
                 "%DataRefresh:RequestsTopic%/Subscriptions/%DataRefresh:RequestsTopicSubscription%/$DeadLetterQueue",
@@ -93,7 +92,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         /// The only time this should be triggered is if the server running the data refresh was restarted while the job was in progress, causing it to skip tear-down.
         /// </summary>
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(RunDataRefreshCleanup))]
+        [Function(nameof(RunDataRefreshCleanup))]
         public async Task RunDataRefreshCleanup([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
         {
             await dataRefreshCleanupService.RunDataRefreshCleanup();

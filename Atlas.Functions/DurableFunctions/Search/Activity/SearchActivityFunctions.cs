@@ -15,8 +15,7 @@ using Atlas.Functions.Services;
 using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.Functions.Settings;
 using Atlas.MatchPrediction.ExternalInterface;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Options;
 
 namespace Atlas.Functions.DurableFunctions.Search.Activity
@@ -62,7 +61,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             this.azureStorageSettings = azureStorageSettings.Value;
         }
 
-        [FunctionName(nameof(PrepareMatchPredictionBatches))]
+        [Function(nameof(PrepareMatchPredictionBatches))]
         public async Task<TimedResultSet<IList<string>>> PrepareMatchPredictionBatches(
             [ActivityTrigger] MatchingResultsNotification matchingResultsNotification)
         {
@@ -95,14 +94,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             }
         }
 
-        [FunctionName(nameof(RunMatchPredictionBatch))]
+        [Function(nameof(RunMatchPredictionBatch))]
         public async Task<IReadOnlyDictionary<int, string>> RunMatchPredictionBatch([ActivityTrigger] string requestLocation)
         {
             var matchProbabilityInput = await matchPredictionRequestBlobClient.DownloadBatchRequest(requestLocation);
             return await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(matchProbabilityInput);
         }
 
-        [FunctionName(nameof(PersistSearchResults))]
+        [Function(nameof(PersistSearchResults))]
         public async Task PersistSearchResults([ActivityTrigger] PersistSearchResultsFunctionParameters parameters)
         {
             InitializeLoggingContext(parameters.MatchingResultsNotification.SearchRequestId);
@@ -136,13 +135,13 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated, matchingResultsNotification.BatchFolderName);
         }
 
-        [FunctionName(nameof(SendFailureNotification))]
+        [Function(nameof(SendFailureNotification))]
         public async Task SendFailureNotification([ActivityTrigger] FailureNotificationRequestInfo requestInfo)
         {
             await searchCompletionMessageSender.PublishFailureMessage(requestInfo);
         }
 
-        [FunctionName(nameof(UploadSearchLog))]
+        [Function(nameof(UploadSearchLog))]
         public async Task UploadSearchLog([ActivityTrigger] SearchLog searchLog)
         {
             try

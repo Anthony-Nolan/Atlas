@@ -10,8 +10,7 @@ using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
 namespace Atlas.RepeatSearch.Functions.Functions
@@ -30,7 +29,7 @@ namespace Atlas.RepeatSearch.Functions.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(InitiateRepeatSearch))]
+        [Function(nameof(InitiateRepeatSearch))]
         public async Task<IActionResult> InitiateRepeatSearch(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(RepeatSearchRequest), nameof(RepeatSearchRequest))]
@@ -49,7 +48,7 @@ namespace Atlas.RepeatSearch.Functions.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(RunRepeatSearch))]
+        [Function(nameof(RunRepeatSearch))]
         public async Task RunRepeatSearch(
             [ServiceBusTrigger(
                 "%MessagingServiceBus:RepeatSearchRequestsTopic%",
@@ -61,7 +60,7 @@ namespace Atlas.RepeatSearch.Functions.Functions
             await repeatSearchRunner.RunSearch(request, deliveryCount);
         }
 
-        [FunctionName(nameof(RepeatSearchMatchingRequestsDeadLetterQueueListener))]
+        [Function(nameof(RepeatSearchMatchingRequestsDeadLetterQueueListener))]
         public async Task RepeatSearchMatchingRequestsDeadLetterQueueListener(
             [ServiceBusTrigger(
                 "%MessagingServiceBus:RepeatSearchRequestsTopic%/Subscriptions/%MessagingServiceBus:RepeatSearchRequestsSubscription%/$DeadLetterQueue",

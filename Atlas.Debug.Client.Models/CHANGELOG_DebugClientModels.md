@@ -6,6 +6,9 @@ This package contains client models utilised by the Atlas debug endpoints.
 ## Changelog
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### 3.0.0
+* Updated .NET version from 6.0 to 8.0
+
 ### 2.2.0
 * Created new namespace `Atlas.Debug.Client.Models.MatchPrediction` and moved various models related to debugging match prediction here.
   * Extended existing model, `GenotypeImputationResponse`, with new prop, `GenotypeCount`.

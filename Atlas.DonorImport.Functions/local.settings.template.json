@@ -10,7 +10,7 @@
     "DonorImport:FileCheckCronSchedule": "0 */30 * * * *",
     "DonorImport:HoursToCheckStalledFiles": "2",
     "DonorImport:AllowFullModeImport": false,
-    "FUNCTIONS.WORKER.RUNTIME": "dotnet",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "MessagingServiceBus:ConnectionString": "override-this",
     "MessagingServiceBus:ImportFileSubscription": "donor-import",
     "MessagingServiceBus:ImportFileTopic": "donor-import-file-uploads",

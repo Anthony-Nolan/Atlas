@@ -1,9 +1,9 @@
 ﻿using Atlas.Common.AzureEventGrid;
 using Atlas.DonorImport.ExternalInterface.Models;
-using Microsoft.Azure.WebJobs;
 using System.IO;
 using System.Threading.Tasks;
 using Atlas.DonorImport.Services.DonorChecker;
+using Microsoft.Azure.Functions.Worker;
 
 namespace Atlas.DonorImport.Functions.Functions
 {
@@ -18,15 +18,14 @@ namespace Atlas.DonorImport.Functions.Functions
             this.donorInfoChecker = donorInfoChecker;
         }
 
-        [FunctionName(nameof(CheckDonorIdsFromFile))]
-        [StorageAccount("AzureStorage:ConnectionString")]
+        [Function(nameof(CheckDonorIdsFromFile))]
         public async Task CheckDonorIdsFromFile(
             [ServiceBusTrigger(
                 "%MessagingServiceBus:DonorIdCheckerTopic%",
                 "%MessagingServiceBus:DonorIdCheckerSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString"
             )] EventGridSchema blobCreatedEvent,
-            [Blob("{data.url}", FileAccess.Read)] Stream blobStream // Raw JSON Text file containing donor updates in expected schema
+            [BlobInput("{data.url}", Connection = "AzureStorage:ConnectionString")] Stream blobStream // Raw JSON Text file containing donor updates in expected schema
         )
         {
             await donorIdChecker.CheckDonorIdsFromFile(new DonorIdCheckFile
@@ -36,15 +35,14 @@ namespace Atlas.DonorImport.Functions.Functions
             });
         }
 
-        [FunctionName(nameof(CheckDonorInfoFromFile))]
-        [StorageAccount("AzureStorage:ConnectionString")]
+        [Function(nameof(CheckDonorInfoFromFile))]
         public async Task CheckDonorInfoFromFile(
             [ServiceBusTrigger(
                 "%MessagingServiceBus:DonorInfoCheckerTopic%",
                 "%MessagingServiceBus:DonorInfoCheckerSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString"
             )] EventGridSchema blobCreatedEvent,
-            [Blob("{data.url}", FileAccess.Read)] Stream blobStream // Raw JSON Text file containing donor updates in expected schema
+            [BlobInput("{data.url}", Connection = "AzureStorage:ConnectionString")] Stream blobStream // Raw JSON Text file containing donor updates in expected schema
         )
         {
             await donorInfoChecker.CompareDonorInfoInFileToAtlasDonorStore(new DonorImportFile()

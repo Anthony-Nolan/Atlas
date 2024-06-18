@@ -6,8 +6,7 @@ using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 using System;
 using System.IO;
@@ -27,7 +26,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
             this.macExpander = macExpander;
         }
 
-        [FunctionName(nameof(ExpandGenericMacs))]
+        [Function(nameof(ExpandGenericMacs))]
         public async Task ExpandGenericMacs([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request)
         {
             try
@@ -41,7 +40,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
             }
         }
 
-        [FunctionName(nameof(GenerateTestHarness))]
+        [Function(nameof(GenerateTestHarness))]
         public async Task<IActionResult> GenerateTestHarness(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(GenerateTestHarnessRequest), nameof(GenerateTestHarnessRequest))]

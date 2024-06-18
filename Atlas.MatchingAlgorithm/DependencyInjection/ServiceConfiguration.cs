@@ -384,6 +384,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddApplicationInsightsTelemetryWorkerService();
             services.AddScoped<MatchingAlgorithmSearchLoggingContext>();
             services.AddScoped<IMatchingAlgorithmSearchLogger, MatchingAlgorithmSearchLogger>();
+            services.AddScoped<MatchingAlgorithmImportLoggingContext>();
+            services.AddScoped<IMatchingAlgorithmImportLogger, MatchingAlgorithmImportLogger>();
 
             // Matching Services
             services.AddScoped<IMatchingService, MatchingService>();

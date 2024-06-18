@@ -1,9 +1,7 @@
 {
   "extensions": {
     "serviceBus": {
-      "messageHandlerOptions": {
-        "maxAutoRenewDuration": "2.00:30:00"
-      }
+      "maxAutoLockRenewalDuration": "2.00:30:00"
     }
   },
   "functionTimeout": "2.00:00:00",
