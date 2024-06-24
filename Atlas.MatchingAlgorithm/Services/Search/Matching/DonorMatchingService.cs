@@ -125,7 +125,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                     await foreach (var resultBatch in previousLociResultStream.Batch(matchingConfigurationSettings.MatchingBatchSize))
                     {
                         var donorBatch = resultBatch.ToDictionary(r => r.DonorId, r => r);
-                        var donorIds = donorBatch.Keys.ToHashSet();
+                        var donorIds = donorBatch.Keys.ToList();
 
                         var locusBatchStream =
                             perLocusDonorMatchingService.FindMatchesAtLocus(locus, locusCriteria, alleleLevelCriteria.SearchType, cutOffDate, donorIds: donorIds);
