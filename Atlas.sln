@@ -187,7 +187,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.SearchTracking", "Atl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.SearchTracking.Data", "Atlas.SearchTracking.Data\Atlas.SearchTracking.Data.csproj", "{D8C1D69F-78F1-48B0-BC1D-54096BE10124}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.SearchTracking.Data.Test", "Atlas.SearchTracking.Data.Test\Atlas.SearchTracking.Data.Test.csproj", "{CA459680-D84D-40C5-81A2-A907177E70D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.SearchTracking.Data.Test", "Atlas.SearchTracking.Data.Test\Atlas.SearchTracking.Data.Test.csproj", "{CA459680-D84D-40C5-81A2-A907177E70D5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.SearchTracking.Functions", "Atlas.SearchTracking.Functions\Atlas.SearchTracking.Functions.csproj", "{BD29A7C5-30DA-49F4-9D5B-304BF75406C7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.SearchTracking.Common", "Atlas.SearchTracking.Common\Atlas.SearchTracking.Common.csproj", "{E7567A4A-9F17-4A27-96D7-D1B072BB6EFF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.SearchTracking.Test", "Atlas.SearchTracking.Test\Atlas.SearchTracking.Test.csproj", "{0F8CE404-8B26-4BB7-A9EA-EE2670C7ED4C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -508,6 +514,24 @@ Global
 		{CA459680-D84D-40C5-81A2-A907177E70D5}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{CA459680-D84D-40C5-81A2-A907177E70D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA459680-D84D-40C5-81A2-A907177E70D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD29A7C5-30DA-49F4-9D5B-304BF75406C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD29A7C5-30DA-49F4-9D5B-304BF75406C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD29A7C5-30DA-49F4-9D5B-304BF75406C7}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD29A7C5-30DA-49F4-9D5B-304BF75406C7}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{BD29A7C5-30DA-49F4-9D5B-304BF75406C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD29A7C5-30DA-49F4-9D5B-304BF75406C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7567A4A-9F17-4A27-96D7-D1B072BB6EFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7567A4A-9F17-4A27-96D7-D1B072BB6EFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7567A4A-9F17-4A27-96D7-D1B072BB6EFF}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7567A4A-9F17-4A27-96D7-D1B072BB6EFF}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{E7567A4A-9F17-4A27-96D7-D1B072BB6EFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7567A4A-9F17-4A27-96D7-D1B072BB6EFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F8CE404-8B26-4BB7-A9EA-EE2670C7ED4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F8CE404-8B26-4BB7-A9EA-EE2670C7ED4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F8CE404-8B26-4BB7-A9EA-EE2670C7ED4C}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F8CE404-8B26-4BB7-A9EA-EE2670C7ED4C}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{0F8CE404-8B26-4BB7-A9EA-EE2670C7ED4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F8CE404-8B26-4BB7-A9EA-EE2670C7ED4C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -565,6 +589,9 @@ Global
 		{A6F2616B-3EEC-465C-BDBD-EC604ADB3CE2} = {54F8399E-A9E6-4D36-A5B2-73C2023EF133}
 		{D8C1D69F-78F1-48B0-BC1D-54096BE10124} = {54F8399E-A9E6-4D36-A5B2-73C2023EF133}
 		{CA459680-D84D-40C5-81A2-A907177E70D5} = {54F8399E-A9E6-4D36-A5B2-73C2023EF133}
+		{BD29A7C5-30DA-49F4-9D5B-304BF75406C7} = {54F8399E-A9E6-4D36-A5B2-73C2023EF133}
+		{E7567A4A-9F17-4A27-96D7-D1B072BB6EFF} = {54F8399E-A9E6-4D36-A5B2-73C2023EF133}
+		{0F8CE404-8B26-4BB7-A9EA-EE2670C7ED4C} = {54F8399E-A9E6-4D36-A5B2-73C2023EF133}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB0B0AD5-58AC-4CDF-826D-C653D03DC2AC}

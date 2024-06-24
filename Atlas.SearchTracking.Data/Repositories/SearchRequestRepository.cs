@@ -1,6 +1,6 @@
 ﻿using Atlas.SearchTracking.Data.Context;
 using Atlas.SearchTracking.Data.Models;
-using Atlas.SearchTracking.Models;
+using Atlas.SearchTracking.Common.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.SearchTracking.Data.Repositories
@@ -20,11 +20,11 @@ namespace Atlas.SearchTracking.Data.Repositories
 
     public class SearchRequestRepository : ISearchRequestRepository
     {
-        private readonly SearchTrackingContext context;
+        private readonly ISearchTrackingContext context;
 
         private DbSet<SearchRequest> searchRequests => context.SearchRequests;
 
-        public SearchRequestRepository(SearchTrackingContext context)
+        public SearchRequestRepository(ISearchTrackingContext context)
         {
             this.context = context;
         }

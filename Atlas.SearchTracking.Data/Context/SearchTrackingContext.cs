@@ -3,7 +3,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.SearchTracking.Data.Context
 {
-    public class SearchTrackingContext : DbContext
+    public interface ISearchTrackingContext : IDisposable
+    {
+        public DbSet<SearchRequest> SearchRequests { get; }
+
+        public DbSet<SearchRequestMatchingAlgorithmAttemptTiming> SearchRequestMatchingAlgorithmAttemptTimings { get; }
+
+        public DbSet<SearchRequestMatchPredictionTiming> SearchRequestMatchPredictionTimings { get; }
+
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+    }
+    public class SearchTrackingContext : DbContext, ISearchTrackingContext
     {
         internal const string Schema = "SearchTracking";
 
