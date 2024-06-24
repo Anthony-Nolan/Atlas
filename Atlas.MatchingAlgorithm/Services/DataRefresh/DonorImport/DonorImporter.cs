@@ -73,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
                 foreach (var streamedDonorBatch in donorsStream.Batch(BatchSize))
                 {
                     var reifiedDonorBatch = streamedDonorBatch.ToList();
-                    var failedDonors = await InsertDonorBatch(reifiedDonorBatch, shouldMarkDonorsAsUpdated, DateTimeOffset.UtcNow);
+                    var failedDonors = await InsertDonorBatch(reifiedDonorBatch, shouldMarkDonorsAsUpdated);
                     allFailedDonors.AddRange(failedDonors);
                 }
 
@@ -97,8 +97,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         /// <returns>Details of donors in the batch that failed import</returns>
         private async Task<IEnumerable<FailedDonorInfo>> InsertDonorBatch(
             List<SearchableDonorInformation> donors,
-            bool shouldMarkDonorsAsUpdated,
-            DateTimeOffset batchFetchTime)
+            bool shouldMarkDonorsAsUpdated)
         {
             using (logger.RunTimed($"Import donor batch (BatchSize: {BatchSize})", LogLevel.Verbose))
             {
@@ -110,7 +109,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
                     await donorManagementLogRepository.CreateOrUpdateDonorManagementLogBatch(donors.Select(d => new DonorManagementInfo
                         {
                             DonorId = d.DonorId,
-                            UpdateDateTime = batchFetchTime,
+                            UpdateDateTime = d.LastUpdated,
                             // This assumes that all updates come from a service bus message, which is incorrect for the initial donor import
                             // TODO: ATLAS-972: Confirm this is unused and remove
                             UpdateSequenceNumber = -1

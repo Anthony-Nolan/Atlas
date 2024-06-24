@@ -15,6 +15,7 @@ namespace Atlas.DonorImport.ExternalInterface.Models
         public string ExternalDonorCode { get; set; }
         public string EthnicityCode { get; set; }
         public string RegistryCode { get; set; }
+        public DateTimeOffset LastUpdated { get; set; }
         public string A_1 { get; set; }
         public string A_2 { get; set; }
         public string B_1 { get; set; }

@@ -1,4 +1,5 @@
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
+using System;
 
 // ReSharper disable InconsistentNaming
 
@@ -15,6 +16,8 @@ namespace Atlas.DonorImport.ExternalInterface.Models
         public string EthnicityCode { get; set; }
 
         public string RegistryCode { get; set; }
+
+        public DateTimeOffset LastUpdated { get; set; }
 
         public string A_1 { get; set; }
         public string A_2 { get; set; }
