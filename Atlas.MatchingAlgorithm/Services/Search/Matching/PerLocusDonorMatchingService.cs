@@ -31,7 +31,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             AlleleLevelLocusMatchCriteria criteria,
             DonorType searchType,
             DateTimeOffset? cutOffDate,
-            HashSet<int> donorIds = null,
+            ICollection<int> donorIds = null,
             ICollection<string> donorRegistryCodes = null
             );
     }
@@ -55,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             AlleleLevelLocusMatchCriteria criteria,
             DonorType searchType,
             DateTimeOffset? cutOffDate,
-            HashSet<int> donorIds = null,
+            ICollection<int> donorIds = null,
             ICollection<string> donorRegistryCodes = null)
         {
             var repoCriteria = new LocusSearchCriteria
