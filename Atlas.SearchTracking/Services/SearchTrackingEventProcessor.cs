@@ -5,18 +5,18 @@ using Atlas.SearchTracking.Common.Models;
 
 namespace Atlas.SearchTracking.Services
 {
-    public interface ISearchTrackingProcess
+    public interface ISearchTrackingEventProcessor
     {
         public Task HandleEvent(string body, SearchTrackingEventType eventType);
     }
 
-    public class SearchTrackingProcess : ISearchTrackingProcess
+    public class SearchTrackingEventProcessor : ISearchTrackingEventProcessor
     {
         private readonly ISearchRequestRepository searchRequestRepository;
         private readonly IMatchPredictionRepository matchPredictionRepository;
         private readonly ISearchRequestMatchingAlgorithmAttemptTimingRepository searchRequestMatchingAlgorithmAttemptRepository;
 
-        public SearchTrackingProcess(ISearchRequestRepository searchRequestRepository,
+        public SearchTrackingEventProcessor(ISearchRequestRepository searchRequestRepository,
             IMatchPredictionRepository matchPredictionRepository,
             ISearchRequestMatchingAlgorithmAttemptTimingRepository searchRequestMatchingAlgorithmAttemptRepository)
         {

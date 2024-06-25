@@ -1,9 +1,9 @@
 ﻿
 namespace Atlas.SearchTracking.Settings.ServiceBus
 {
-    public class MessagingServiceBusSettings
+    public class SearchTrackingServiceBusSettings
     {
         public string ConnectionString { get; set; }
-        public string SearchTrackingEventsTopic { get; set; }
+        public string SearchTrackingTopic { get; set; }
     }
 }

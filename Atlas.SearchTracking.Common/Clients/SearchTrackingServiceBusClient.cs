@@ -14,13 +14,13 @@ namespace Atlas.SearchTracking.Common.Clients
     public class SearchTrackingServiceBusClient : ISearchTrackingServiceBusClient
     {
         private readonly string connectionString;
-        private readonly string searchTrackingEventsTopicName;
+        private readonly string searchTrackingTopicName;
         private readonly string EventTypePropertyName = "EventType";
 
-        public SearchTrackingServiceBusClient(MessagingServiceBusSettings messagingServiceBusSettings)
+        public SearchTrackingServiceBusClient(SearchTrackingServiceBusSettings searchTrackingServiceBusSettings)
         {
-            connectionString = messagingServiceBusSettings.ConnectionString;
-            searchTrackingEventsTopicName = messagingServiceBusSettings.SearchTrackingEventsTopic;
+            connectionString = searchTrackingServiceBusSettings.ConnectionString;
+            searchTrackingTopicName = searchTrackingServiceBusSettings.SearchTrackingTopic;
         }
 
         public async Task PublishSearchTrackingEvent<TEvent>(TEvent searchTrackingEvent, SearchTrackingEventType eventType)
@@ -30,7 +30,7 @@ namespace Atlas.SearchTracking.Common.Clients
 
             message.UserProperties[EventTypePropertyName] = eventType.ToString();
 
-            var client = new TopicClient(connectionString, searchTrackingEventsTopicName);
+            var client = new TopicClient(connectionString, searchTrackingTopicName);
             await client.SendAsync(message);
         }
     }

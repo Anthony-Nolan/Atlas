@@ -10,13 +10,13 @@ using FluentAssertions;
 namespace Atlas.SearchTracking.Test.Services
 {
     [TestFixture]
-    public class SearchTrackingProcessTests
+    public class SearchTrackingEventProcessorTests
     {
         private ISearchRequestRepository searchRequestRepository;
         private ISearchRequestMatchingAlgorithmAttemptTimingRepository searchRequestMatchingAlgorithmAttemptTimingRepository;
         private IMatchPredictionRepository matchPredictionRepository;
 
-        private ISearchTrackingProcess searchTrackingProcess;
+        private ISearchTrackingEventProcessor searchTrackingEventProcessor;
 
         [SetUp]
         public void Setup()
@@ -25,14 +25,14 @@ namespace Atlas.SearchTracking.Test.Services
             searchRequestMatchingAlgorithmAttemptTimingRepository = Substitute.For<ISearchRequestMatchingAlgorithmAttemptTimingRepository>();
             matchPredictionRepository = Substitute.For<IMatchPredictionRepository>();
 
-            searchTrackingProcess = new SearchTrackingProcess(
+            searchTrackingEventProcessor = new SearchTrackingEventProcessor(
                 searchRequestRepository,
                 matchPredictionRepository,
                 searchRequestMatchingAlgorithmAttemptTimingRepository);
         }
 
         [Test]
-        public async Task SearchTrackingProcess_WhenSearchRequested_UpdatesRepository()
+        public async Task SearchTrackingEventProcessor_WhenSearchRequested_UpdatesRepository()
         {
             SearchRequestedEvent actualSearchRequestedEvent = null;
 
@@ -52,14 +52,14 @@ namespace Atlas.SearchTracking.Test.Services
             var eventType = SearchTrackingEventType.SearchRequested;
 
             await searchRequestRepository.TrackSearchRequestedEvent(Arg.Do<SearchRequestedEvent>(x => actualSearchRequestedEvent = x));
-            await searchTrackingProcess.HandleEvent(body, eventType);
+            await searchTrackingEventProcessor.HandleEvent(body, eventType);
 
             actualSearchRequestedEvent.Should().BeEquivalentTo(expectedSearchRequestedEvent);
             await searchRequestRepository.Received(1).TrackSearchRequestedEvent(Arg.Any<SearchRequestedEvent>());
         }
 
         [Test]
-        public async Task SearchTrackingProcess_WhenSearchRequestCompleted_UpdatesRepository()
+        public async Task SearchTrackingEventProcessor_WhenSearchRequestCompleted_UpdatesRepository()
         {
             SearchRequestCompletedEvent actualSearchRequestCompletedEvent = null;
 
@@ -75,14 +75,14 @@ namespace Atlas.SearchTracking.Test.Services
 
             await searchRequestRepository.TrackSearchRequestCompletedEvent(
                 Arg.Do<SearchRequestCompletedEvent>(x => actualSearchRequestCompletedEvent = x));
-            await searchTrackingProcess.HandleEvent(body, eventType);
+            await searchTrackingEventProcessor.HandleEvent(body, eventType);
 
             actualSearchRequestCompletedEvent.Should().BeEquivalentTo(expectedSearchRequestCompletedEvent);
             await searchRequestRepository.Received(1).TrackSearchRequestCompletedEvent(Arg.Any<SearchRequestCompletedEvent>());
         }
 
         [Test]
-        public async Task SearchTrackingProcess_WhenMatchingAlgorithmStarted_UpdatesRepository()
+        public async Task SearchTrackingEventProcessor_WhenMatchingAlgorithmStarted_UpdatesRepository()
         {
             MatchingAlgorithmAttemptStartedEvent actualMatchingAlgorithmAttemptStartedEvent = null;
 
@@ -99,7 +99,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             await searchRequestMatchingAlgorithmAttemptTimingRepository.TrackStartedEvent(
                 Arg.Do<MatchingAlgorithmAttemptStartedEvent>(x => actualMatchingAlgorithmAttemptStartedEvent = x));
-            await searchTrackingProcess.HandleEvent(body, eventType);
+            await searchTrackingEventProcessor.HandleEvent(body, eventType);
 
             actualMatchingAlgorithmAttemptStartedEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptStartedEvent);
             await searchRequestMatchingAlgorithmAttemptTimingRepository.Received(1)
@@ -113,7 +113,7 @@ namespace Atlas.SearchTracking.Test.Services
         [TestCase(SearchTrackingEventType.MatchingAlgorithmCoreMatchingEnded)]
         [TestCase(SearchTrackingEventType.MatchingAlgorithmCoreMatchingStarted)]
         [Test]
-        public async Task SearchTrackingProcess_WhenTimingEventReceived_UpdatesMatchingAlgorithmRepository(SearchTrackingEventType eventType)
+        public async Task SearchTrackingEventProcessor_WhenTimingEventReceived_UpdatesMatchingAlgorithmRepository(SearchTrackingEventType eventType)
         {
             MatchingAlgorithmAttemptTimingEvent actualMatchingAlgorithmAttemptTimingEvent = null;
 
@@ -128,7 +128,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             await searchRequestMatchingAlgorithmAttemptTimingRepository.TrackTimingEvent(
                 Arg.Do<MatchingAlgorithmAttemptTimingEvent>(x => actualMatchingAlgorithmAttemptTimingEvent = x), eventType);
-            await searchTrackingProcess.HandleEvent(body, eventType);
+            await searchTrackingEventProcessor.HandleEvent(body, eventType);
 
             actualMatchingAlgorithmAttemptTimingEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptTimingEvent);
             await searchRequestMatchingAlgorithmAttemptTimingRepository.Received(1).TrackTimingEvent(
@@ -136,7 +136,7 @@ namespace Atlas.SearchTracking.Test.Services
         }
 
         [Test]
-        public async Task SearchTrackingProcess_WhenMatchingAlgorithmCompleted_UpdatesSearchRequestAndMatchingAlgorithmRepository()
+        public async Task SearchTrackingEventProcessor_WhenMatchingAlgorithmCompleted_UpdatesSearchRequestAndMatchingAlgorithmRepository()
         {
             MatchingAlgorithmCompletedEvent actualMatchingAlgorithmCompletedEvent = null;
 
@@ -158,7 +158,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             await searchRequestMatchingAlgorithmAttemptTimingRepository.TrackCompletedEvent(
                 Arg.Do<MatchingAlgorithmCompletedEvent>(x => actualMatchingAlgorithmCompletedEvent = x));
-            await searchTrackingProcess.HandleEvent(body, eventType);
+            await searchTrackingEventProcessor.HandleEvent(body, eventType);
 
             actualMatchingAlgorithmCompletedEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmCompletedEvent);
             await searchRequestMatchingAlgorithmAttemptTimingRepository.Received(1).TrackCompletedEvent(Arg.Any<MatchingAlgorithmCompletedEvent>());
@@ -167,7 +167,7 @@ namespace Atlas.SearchTracking.Test.Services
         }
 
         [Test]
-        public async Task SearchTrackingProcess_WhenMatchPredictionStarted_UpdatesRepository()
+        public async Task SearchTrackingEventProcessor_WhenMatchPredictionStarted_UpdatesRepository()
         {
             MatchPredictionStartedEvent actualMatchPredictionStartedEvent = null;
 
@@ -183,7 +183,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             await matchPredictionRepository.TrackStartedEvent(
                 Arg.Do<MatchPredictionStartedEvent>(x => actualMatchPredictionStartedEvent = x));
-            await searchTrackingProcess.HandleEvent(body, eventType);
+            await searchTrackingEventProcessor.HandleEvent(body, eventType);
 
             actualMatchPredictionStartedEvent.Should().BeEquivalentTo(expectedMatchPredictionStartedEvent);
             await matchPredictionRepository.Received(1).TrackStartedEvent(Arg.Any<MatchPredictionStartedEvent>());
@@ -197,7 +197,7 @@ namespace Atlas.SearchTracking.Test.Services
         [TestCase(SearchTrackingEventType.MatchPredictionPersistingResultsEnded)]
         [TestCase(SearchTrackingEventType.MatchPredictionPersistingResultsStarted)]
         [Test]
-        public async Task SearchTrackingProcess_WhenTimingEventReceived_UpdatesMatchPredictionRepository(SearchTrackingEventType eventType)
+        public async Task SearchTrackingEventProcessor_WhenTimingEventReceived_UpdatesMatchPredictionRepository(SearchTrackingEventType eventType)
         {
             MatchPredictionTimingEvent actualMatchPredictionTimingEvent = null;
 
@@ -211,14 +211,14 @@ namespace Atlas.SearchTracking.Test.Services
 
             await matchPredictionRepository.TrackTimingEvent(
                 Arg.Do<MatchPredictionTimingEvent>(x => actualMatchPredictionTimingEvent = x), eventType);
-            await searchTrackingProcess.HandleEvent(body, eventType);
+            await searchTrackingEventProcessor.HandleEvent(body, eventType);
 
             actualMatchPredictionTimingEvent.Should().BeEquivalentTo(expectedMatchPredictionTimingEvent);
             await matchPredictionRepository.Received(1).TrackTimingEvent(Arg.Any<MatchPredictionTimingEvent>(), eventType);
         }
 
         [Test]
-        public async Task SearchTrackingProcess_WhenMatchPredictionCompleted_UpdatesSearchRequestAndMatchPredictionRepository()
+        public async Task SearchTrackingEventProcessor_WhenMatchPredictionCompleted_UpdatesSearchRequestAndMatchPredictionRepository()
         {
             MatchPredictionCompletedEvent actualMatchPredictionCompletedEvent = null;
 
@@ -240,7 +240,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             await matchPredictionRepository.TrackCompletedEvent(
                 Arg.Do<MatchPredictionCompletedEvent>(x => actualMatchPredictionCompletedEvent = x));
-            await searchTrackingProcess.HandleEvent(body, eventType);
+            await searchTrackingEventProcessor.HandleEvent(body, eventType);
 
             actualMatchPredictionCompletedEvent.Should().BeEquivalentTo(expectedMatchPredictionCompletedEvent);
             await matchPredictionRepository.Received(1).TrackCompletedEvent(Arg.Any<MatchPredictionCompletedEvent>());

@@ -13,6 +13,7 @@ namespace Atlas.SearchTracking.Data.Context
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
+
     public class SearchTrackingContext : DbContext, ISearchTrackingContext
     {
         internal const string Schema = "SearchTracking";

@@ -33,11 +33,11 @@ var host = new HostBuilder()
             options.UseSqlServer(Environment.GetEnvironmentVariable("ConnectionStrings:SearchTrackingSql"));
         });
 
-        services.AddScoped<ISearchTrackingProcess, SearchTrackingProcess>();
+        services.AddScoped<ISearchTrackingEventProcessor, SearchTrackingEventProcessor>();
         services.AddScoped<ISearchRequestRepository, SearchRequestRepository>();
         services.AddScoped<IMatchPredictionRepository, MatchPredictionRepository>();
         services.AddScoped<ISearchRequestMatchingAlgorithmAttemptTimingRepository, SearchRequestMatchingAlgorithmAttemptTimingRepository>();
-        services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+        services.RegisterAsOptions<SearchTrackingServiceBusSettings>("MessagingServiceBus");
     })
     .Build();
 

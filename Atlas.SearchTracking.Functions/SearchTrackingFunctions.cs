@@ -8,24 +8,24 @@ namespace Atlas.SearchTracking.Functions
 {
     public class SearchTrackingFunctions
     {
-        private readonly ISearchTrackingProcess searchTrackingProcess;
+        private readonly ISearchTrackingEventProcessor searchTrackingEventProcessor;
 
-        public SearchTrackingFunctions(ISearchTrackingProcess searchTrackingProcess)
+        public SearchTrackingFunctions(ISearchTrackingEventProcessor searchTrackingEventProcessor)
         {
-            this.searchTrackingProcess = searchTrackingProcess;
+            this.searchTrackingEventProcessor = searchTrackingEventProcessor;
         }
 
         [Function(nameof(HandleSearchTrackingEvent))]
         public async Task HandleSearchTrackingEvent(
-            [ServiceBusTrigger("search-tracking-events", "search-tracking",
+            [ServiceBusTrigger("%MessagingServiceBus:SearchTrackingTopic%",
+                "%MessagingServiceBus:SearchTrackingSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString")]
                 ServiceBusReceivedMessage message)
         {
             var body = Encoding.UTF8.GetString(message.Body);
-            Enum.TryParse(message.ApplicationProperties.GetValueOrDefault("SearchTrackingEventType")!.ToString(),
-                out SearchTrackingEventType eventType);
+            var eventType = Enum.Parse<SearchTrackingEventType>(message.ApplicationProperties.GetValueOrDefault("SearchTrackingEventType").ToString());
 
-            await searchTrackingProcess.HandleEvent(body, eventType);
+            await searchTrackingEventProcessor.HandleEvent(body, eventType);
         }
     }
 }
