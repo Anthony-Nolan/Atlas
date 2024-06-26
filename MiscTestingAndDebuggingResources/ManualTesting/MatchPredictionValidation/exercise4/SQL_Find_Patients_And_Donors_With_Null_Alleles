@@ -1,0 +1,24 @@
+/*
+ * RETURN PATIENTS AND DONORS IN HOMEWORK SETS THAT HAVE A NULL ALLELE
+ */
+
+ SELECT *
+  FROM SubjectInfo
+  WHERE ExternalId IN (SELECT DonorId FROM PatientDonorPairs)
+  AND (REPLACE(TRANSLATE(A_1, '1234567890:', '###########'),'#','') = 'N'
+  OR REPLACE(TRANSLATE(A_2, '1234567890:', '###########'),'#','') = 'N'
+  OR REPLACE(TRANSLATE(B_1, '1234567890:', '###########'),'#','') = 'N'
+  OR REPLACE(TRANSLATE(B_2, '1234567890:', '###########'),'#','') = 'N'
+  OR REPLACE(TRANSLATE(C_1, '1234567890:', '###########'),'#','') = 'N'
+  OR REPLACE(TRANSLATE(C_2, '1234567890:', '###########'),'#','') = 'N')
+  UNION
+  SELECT *
+  FROM SubjectInfo
+  WHERE ExternalId IN (SELECT PatientId FROM PatientDonorPairs)
+  AND (REPLACE(TRANSLATE(A_1, '1234567890:', '###########'),'#','') = 'N'
+  OR REPLACE(TRANSLATE(A_2, '1234567890:', '###########'),'#','') = 'N'
+  OR REPLACE(TRANSLATE(B_1, '1234567890:', '###########'),'#','') = 'N'
+  OR REPLACE(TRANSLATE(B_2, '1234567890:', '###########'),'#','') = 'N'
+  OR REPLACE(TRANSLATE(C_1, '1234567890:', '###########'),'#','') = 'N'
+  OR REPLACE(TRANSLATE(C_2, '1234567890:', '###########'),'#','') = 'N')
+  ORDER BY SubjectType DESC, ExternalId

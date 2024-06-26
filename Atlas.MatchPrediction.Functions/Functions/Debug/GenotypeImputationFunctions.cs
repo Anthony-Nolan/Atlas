@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Utils.Http;
-using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
-using Atlas.MatchPrediction.Functions.Models.Debug;
+using Atlas.Debug.Client.Models.MatchPrediction;
 using Atlas.MatchPrediction.Functions.Services.Debug;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -11,9 +11,7 @@ using Atlas.MatchPrediction.Services.MatchProbability;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using MoreLinq;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Functions.Functions.Debug
@@ -31,7 +29,7 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
             this.frequencyService = frequencyService;
         }
 
-        [FunctionName(nameof(Impute))]
+        [Function(nameof(Impute))]
         public async Task<IActionResult> Impute(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(Impute)}")]
             [RequestBodyType(typeof(GenotypeImputationRequest), nameof(GenotypeImputationRequest))]
@@ -52,7 +50,7 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
             {
                 HlaTyping = input.SubjectInfo.HlaTyping.ToPhenotypeInfo().PrettyPrint(),
                 MatchPredictionParameters = input.MatchPredictionParameters,
-                HaplotypeFrequencySet = frequencySet,
+                HaplotypeFrequencySet = frequencySet.ToClientHaplotypeFrequencySet(),
                 GenotypeCount = imputedGenotypes.GenotypeLikelihoods.Count,
                 SumOfLikelihoods = imputedGenotypes.SumOfLikelihoods,
                 GenotypeLikelihoods = imputedGenotypes.GenotypeLikelihoods.ToSingleDelimitedString()

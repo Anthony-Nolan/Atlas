@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.Utils;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 
 namespace Atlas.RepeatSearch.Functions.Functions
 {
@@ -17,7 +17,7 @@ namespace Atlas.RepeatSearch.Functions.Functions
         }
         
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(StoreOriginalSearchResults))]
+        [Function(nameof(StoreOriginalSearchResults))]
         public async Task StoreOriginalSearchResults(
             [ServiceBusTrigger(
                 "%MessagingServiceBus:OriginalSearchRequestsTopic%",

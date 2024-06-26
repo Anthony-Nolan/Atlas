@@ -6,8 +6,7 @@ using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
 namespace Atlas.ManualTesting.Functions
@@ -28,7 +27,7 @@ namespace Atlas.ManualTesting.Functions
             this.setWriter = setWriter;
         }
 
-        [FunctionName(nameof(TransformHaplotypeFrequencySet))]
+        [Function(nameof(TransformHaplotypeFrequencySet))]
         public async Task TransformHaplotypeFrequencySet(
             [RequestBodyType(typeof(TransformHaplotypeFrequencySetRequest), nameof(TransformHaplotypeFrequencySetRequest))]
             [HttpTrigger(AuthorizationLevel.Function, "post")]

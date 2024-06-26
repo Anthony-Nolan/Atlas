@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
@@ -7,8 +9,8 @@ using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Worker;
 
 namespace Atlas.Functions.Functions
 {
@@ -24,14 +26,14 @@ namespace Atlas.Functions.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(ImportMacs))]
+        [Function(nameof(ImportMacs))]
         public async Task ImportMacs([TimerTrigger("%MacDictionary:Import:CronSchedule%")] TimerInfo timer)
         {
             await macImporter.ImportLatestMacs();
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(ManuallyImportMacs))]
+        [Function(nameof(ManuallyImportMacs))]
         public async Task ManuallyImportMacs(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             HttpRequestMessage request)
@@ -51,25 +53,26 @@ namespace Atlas.Functions.Functions
         //}
 
         [QueryStringParameter("macCode", "macCode", DataType = typeof(string))]
-        [FunctionName(nameof(GetMac))]
-        public async Task<Mac> GetMac(
+        [Function(nameof(GetMac))]
+        [ProducesResponseType(typeof(Mac), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetMac(
             [HttpTrigger(AuthorizationLevel.Function, "get")]
             HttpRequest request)
         {
             var macCode = request.Query["macCode"];
-            return await macDictionary.GetMac(macCode);
+            return new JsonResult(await macDictionary.GetMac(macCode));
         }
 
         [QueryStringParameter("macCode", "macCode", DataType = typeof(string))]
         [QueryStringParameter("firstField", "firstField", DataType = typeof(string))]
-        [FunctionName(nameof(GetHlaFromMac))]
-        public async Task<IEnumerable<string>> GetHlaFromMac(
+        [Function(nameof(GetHlaFromMac))]
+        public async Task<IActionResult> GetHlaFromMac(
             [HttpTrigger(AuthorizationLevel.Function, "get")]
             HttpRequest request)
         {
             var macCode = request.Query["macCode"];
             var firstField = request.Query["firstField"];
-            return await macDictionary.GetHlaFromMac(firstField, macCode);
+            return new OkObjectResult(await macDictionary.GetHlaFromMac(firstField, macCode));
         }
         
     }

@@ -16,41 +16,39 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 using AzureStorageSettings = Atlas.MatchingAlgorithm.Settings.Azure.AzureStorageSettings;
 using MessagingServiceBusSettings = Atlas.MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings;
 
-[assembly: FunctionsStartup(typeof(Startup))]
 
 namespace Atlas.Functions
 {
-    internal class Startup : FunctionsStartup
+    internal static class Startup 
     {
-        public override void Configure(IFunctionsHostBuilder builder)
+        public static void Configure(IServiceCollection services)
         {
-            RegisterSettings(builder.Services);
-            RegisterTopLevelFunctionServices(builder.Services);
+            RegisterSettings(services);
+            RegisterTopLevelFunctionServices(services);
 
-            builder.Services.RegisterNotificationSender(
+            services.RegisterNotificationSender(
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>()
             );
 
-            builder.Services.RegisterMacDictionary(
+            services.RegisterMacDictionary(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MacDictionarySettings>()
             );
 
-            builder.Services.RegisterMacImport(
+            services.RegisterMacImport(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MacDownloadSettings>()
             );
 
-            builder.Services.RegisterMatchPredictionAlgorithm(
+            services.RegisterMatchPredictionAlgorithm(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),

@@ -16,9 +16,9 @@ Having read it from raw data files, the HMD converts it into the format that is 
 ### Supported HLA categories
 - Molecular:
   - Allele
-  - Allele string
+  - Allele string with format of either `99:01/02/05` or `99:01:01/99:02:03/100:05`
   - [Allele group](#allele-groups) (P/G/"Small g")
-  - MAC (a.k.a. NMDP code)
+  - MAC (a.k.a. "NMDP code")
   - XX code
 - Serology  
 
@@ -28,11 +28,25 @@ These are the different allele grouping that the HMD currently handles:
 - P group: alleles that share the same protein sequence at the ABD region - excludes null alleles, as they do not result in a protein.
 - Small g group: alleles that share the same protein sequence at the ABD region - includes null alleles.
 
-P group and G group definitions are directly extracted from the WMDA files.
-There is currently no WMDA file for small g groups; instead they are built by logic held in the HMD using P group and G group data.
-
 Due to the use of the camel-case in the codebase, the word "small" is used to differentiate between the two types of G group.
 I.e., "GGroup" without the qualifier refers to the nucleotide-level group, and "SmallGGroup" refers to the protein-level group.
+
+P group and G group definitions are directly extracted from the WMDA files, `hla_nom_p` and `hla_nom_g`, respectively.
+
+There is no WMDA file for small g groups; instead they are built by logic held in the HMD using P group and G group data:
+* For each P group `p`:
+  * Identify null alleles that share the same ABD by expanding `p` to a list of G groups, and extracting the null alleles from these G group definitions.
+  * Combine the null allele list with list of expressing alleles that map to `p`.
+  * Name the new group:
+    * If all alleles in final list share the same first two fields (`999:999`), group will be named `999:999`.
+    * Else, existing name of P group `p` will be used, replacing the `P` suffix with a lowercase `g`, where relevant.
+  * Final data object will contain: locus, name of small g group, list of alleles mapped to the group, name of the equivalent P group.
+* Select null alleles that do not share their ABD sequence with a P group:
+  * Select alleles that map to G groups whose allele list does _not_ intersect with any P group.
+  * For each locus:
+    * Group these alleles by their first two fields (`999:999`).
+    * Name each group after its key, `999:999`, adding an expression suffix if the group's allele count is 1 and the single allele has a suffix, i.e., `999:999N`.
+  * The final data object will contain: locus, name of small g group, and list of alleles mapped to the group (equivalent P group field will be empty).
 
 ### HLA Conversion
 The HMD holds metadata about a variety of HLA typing categories, and provides the means to convert between them.
@@ -100,6 +114,15 @@ Therefore, at present there is no plan to curate `rel_dna_ser` assignments. Howe
 ### Versioning
 The HMD is automatically regenerated to the latest IMGT/HLA version on every [data refresh,](https://github.com/Anthony-Nolan/Atlas/blob/master/README_Integration.md#data-refresh) but can also hold multiple older IMGT/HLA versions. The main use case for this is the need to upload haplotype frequency set files that have been encoded to an older HLA version.
 [See integration README for instructions on how to regenerate the HMD to an older version](https://github.com/Anthony-Nolan/Atlas/blob/master/README_Integration.md#hla-metadata).
+
+To see what versions of the HMD are currently available, you can run the following SQL query on the shared Atlas database:
+
+```sql
+SELECT DISTINCT HlaNomenclatureVersion
+FROM MatchingAlgorithmPersistent.DataRefreshHistory
+WHERE WasSuccessful = 1
+ORDER BY HlaNomenclatureVersion DESC
+```
 
 ### Caching
 When used, the HMD then caches the contents of its CloudTables in memory, although that initial caching is slightly slow. Cache-Warming methods are available to trigger that cache-to-memory action, if desired.

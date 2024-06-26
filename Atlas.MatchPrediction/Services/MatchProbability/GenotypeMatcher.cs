@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Utils.Extensions;
 using static Atlas.Common.Maths.Combinations;
 
@@ -30,11 +31,18 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         public class SubjectResult
         {
             public bool IsUnrepresented { get; set; }
+
+            /// <summary>
+            /// Note: This was added for debugging purposes, it is isn't (currently) needed for calculating match probabilities.
+            /// </summary>
+            public int GenotypeCount { get; set; }
+
             public decimal SumOfLikelihoods { get; set; }
 
-            public SubjectResult(bool isUnrepresented, decimal sumOfLikelihoods)
+            public SubjectResult(bool isUnrepresented, int genotypeCount, decimal sumOfLikelihoods)
             {
                 IsUnrepresented = isUnrepresented;
+                GenotypeCount = genotypeCount;
                 SumOfLikelihoods = sumOfLikelihoods;
             }
         }
@@ -77,8 +85,14 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             {
                 return new GenotypeMatcherResult
                 {
-                    PatientResult = new GenotypeMatcherResult.SubjectResult(patientGenotypeSet.IsUnrepresented, patientGenotypeSet.SumOfLikelihoods),
-                    DonorResult = new GenotypeMatcherResult.SubjectResult(donorGenotypeSet.IsUnrepresented, donorGenotypeSet.SumOfLikelihoods)
+                    PatientResult = new GenotypeMatcherResult.SubjectResult(
+                        patientGenotypeSet.IsUnrepresented,
+                        patientGenotypeSet.Genotypes.Count,
+                        patientGenotypeSet.SumOfLikelihoods),
+                    DonorResult = new GenotypeMatcherResult.SubjectResult(
+                        donorGenotypeSet.IsUnrepresented,
+                        donorGenotypeSet.Genotypes.Count,
+                        donorGenotypeSet.SumOfLikelihoods)
                 };
             }
 
@@ -91,8 +105,16 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             return new GenotypeMatcherResult
             {
-                PatientResult = new GenotypeMatcherResult.SubjectResult(false, patientGenotypeSet.SumOfLikelihoods),
-                DonorResult = new GenotypeMatcherResult.SubjectResult(false, donorGenotypeSet.SumOfLikelihoods),
+                PatientResult = new GenotypeMatcherResult.SubjectResult(
+                    false,
+                    patientGenotypeSet.Genotypes.Count,
+                    patientGenotypeSet.SumOfLikelihoods),
+
+                DonorResult = new GenotypeMatcherResult.SubjectResult(
+                    false,
+                    donorGenotypeSet.Genotypes.Count,
+                    donorGenotypeSet.SumOfLikelihoods),
+
                 GenotypeMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, input.MatchPredictionParameters.AllowedLoci, matchCountLogger)
             };
         }
@@ -107,7 +129,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             if (imputedGenotypes.Genotypes.IsNullOrEmpty())
             {
-                return new GenotypeSet(true, null, 0m);
+                return new GenotypeSet(true, new List<GenotypeAtDesiredResolutions>(), 0m);
             }
 
             var convertedGenotypes = await genotypeConverter.ConvertGenotypesForMatchCalculation(new GenotypeConverterInput

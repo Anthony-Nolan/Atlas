@@ -5,8 +5,9 @@ using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Functions.DurableFunctions.Search.Orchestration;
 using Atlas.Functions.Models;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.DurableTask.Client;
 using Newtonsoft.Json;
 
 namespace Atlas.Functions.DurableFunctions.Search.Client
@@ -27,7 +28,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             this.logger = logger;
         }
 
-        [FunctionName(nameof(Search))]
+        [Function(nameof(Search))]
         public async Task Search(
             [ServiceBusTrigger(
                 "%AtlasFunction:MessagingServiceBus:MatchingResultsTopic%",
@@ -35,7 +36,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
                 Connection = "AtlasFunction:MessagingServiceBus:ConnectionString"
             )]
             MatchingResultsNotification resultsNotification,
-            [DurableClient] IDurableOrchestrationClient starter,
+            [DurableClient] DurableTaskClient starter,
             DateTime enqueuedTimeUtc)
         {
             var searchId = resultsNotification.SearchRequestId;
@@ -46,13 +47,13 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
                 return;
             }
 
-            var instanceId = await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.SearchOrchestrator), new SearchOrchestratorParameters{ MatchingResultsNotification = resultsNotification, InitiationTime = enqueuedTimeUtc });
+            var instanceId = await starter.ScheduleNewOrchestrationInstanceAsync(
+                nameof(SearchOrchestrationFunctions.SearchOrchestrator),
+                input: new SearchOrchestratorParameters{ MatchingResultsNotification = resultsNotification, InitiationTime = enqueuedTimeUtc });
 
             try
             {
                 logger.SendTrace($"Started match prediction orchestration with ID = '{searchId}'. Orchestration Instance: {instanceId}");
-                var statusCheck = await GetStatusCheckEndpoints(starter, instanceId);
-                logger.SendTrace(statusCheck.StatusQueryGetUri);
             }
             catch (Exception)
             {
@@ -61,7 +62,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             }
         }
 
-        [FunctionName(nameof(RepeatSearch))]
+        [Function(nameof(RepeatSearch))]
         public async Task RepeatSearch(
             [ServiceBusTrigger(
                 "%AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic%",
@@ -69,7 +70,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
                 Connection = "AtlasFunction:MessagingServiceBus:ConnectionString"
             )]
             MatchingResultsNotification resultsNotification,
-            [DurableClient] IDurableOrchestrationClient starter)
+            [DurableClient] DurableTaskClient starter)
         {
             var repeatSearchId = resultsNotification.RepeatSearchRequestId;
             if (!resultsNotification.SearchRequest?.RunMatchPrediction ?? false)
@@ -79,13 +80,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
                 return;
             }
 
-            var instanceId = await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.RepeatSearchOrchestrator), resultsNotification);
+            var instanceId = await starter.ScheduleNewOrchestrationInstanceAsync(nameof(SearchOrchestrationFunctions.RepeatSearchOrchestrator), input: resultsNotification);
 
             try
             {
                 logger.SendTrace($"Started match prediction orchestration with Repeat Search ID = '{repeatSearchId}'. Orchestration Instance: {instanceId}");
-                var statusCheck = await GetStatusCheckEndpoints(starter, instanceId);
-                logger.SendTrace(statusCheck.StatusQueryGetUri);
             }
             catch (Exception)
             {
@@ -94,17 +93,12 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             }
         }
 
-        private static async Task<StatusCheckEndpoints> GetStatusCheckEndpoints(IDurableOrchestrationClient orchestrationClient, string instanceId)
+        [Function(nameof(GetStatusCheckEndpoints))]
+        public HttpResponseData GetStatusCheckEndpoints([HttpTrigger(AuthorizationLevel.Function, "get", Route = $"match-prediction-status/{{{nameof(instanceId)}}}")] HttpRequestData request,
+            string instanceId,
+            [DurableClient] DurableTaskClient orchestrationClient)
         {
-            // Log status check endpoints for convenience of debugging long search requests
-            var checkStatusResponse = orchestrationClient.CreateCheckStatusResponse(new HttpRequestMessage(), instanceId);
-            return JsonConvert.DeserializeObject<StatusCheckEndpoints>(await checkStatusResponse.Content.ReadAsStringAsync());
-        }
-
-        private class StatusCheckEndpoints
-        {
-            // ReSharper disable once UnusedAutoPropertyAccessor.Local
-            public string StatusQueryGetUri { get; set; }
+            return orchestrationClient.CreateCheckStatusResponse(request, instanceId);
         }
     }
 }

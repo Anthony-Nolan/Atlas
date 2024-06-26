@@ -8,8 +8,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Functions.Functions
@@ -34,7 +33,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
         /// Submits a batch of match prediction requests - one patient vs. a set of donors - without running a full search.
         /// </summary>
         /// <returns>Set of match prediction request IDs.</returns>
-        [FunctionName(nameof(BatchMatchPredictionRequests))]
+        [Function(nameof(BatchMatchPredictionRequests))]
         public async Task<IActionResult> BatchMatchPredictionRequests(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(BatchedMatchPredictionRequests), nameof(BatchMatchPredictionRequests))]
@@ -67,7 +66,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
             }
         }
         
-        [FunctionName(nameof(RunMatchPredictionRequestBatch))]
+        [Function(nameof(RunMatchPredictionRequestBatch))]
         public async Task RunMatchPredictionRequestBatch(
             [ServiceBusTrigger(
                 "%MatchPredictionRequests:RequestsTopic%",

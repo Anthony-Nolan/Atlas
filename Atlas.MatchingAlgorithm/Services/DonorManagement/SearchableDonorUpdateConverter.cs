@@ -48,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             return new DonorAvailabilityUpdate
             {
                 UpdateSequenceNumber = update.SequenceNumber,
-                UpdateDateTime = body.PublishedDateTime,
+                UpdateDateTime = body.SearchableDonorInformation?.LastUpdated ?? body.PublishedDateTime,
                 DonorId = body.DonorId,
                 DonorInfo = body.SearchableDonorInformation?.ToDonorInfo(),
                 IsAvailableForSearch = body.IsAvailableForSearch

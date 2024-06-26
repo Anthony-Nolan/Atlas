@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.AzureEventGrid;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
@@ -10,8 +11,7 @@ using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 
 namespace Atlas.MatchPrediction.Functions.Functions
 {
@@ -33,15 +33,14 @@ namespace Atlas.MatchPrediction.Functions.Functions
 
         /// IMPORTANT: Do not rename this function without careful consideration. This function is called by event grid, which has the function name set by terraform.
         // If changing this, you must also change the value hardcoded in the event_grid.tf terraform file. 
-        [FunctionName(nameof(ImportHaplotypeFrequencySet))]
-        [StorageAccount("AzureStorage:ConnectionString")]
+        [Function(nameof(ImportHaplotypeFrequencySet))]
         public async Task ImportHaplotypeFrequencySet(
             [ServiceBusTrigger(
                 "%MessagingServiceBus:ImportFileTopic%",
                 "%MessagingServiceBus:ImportFileSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString"
             )] EventGridSchema blobCreatedEvent,
-            [Blob("{data.url}", FileAccess.Read)] Stream blobStream
+            [BlobInput("{data.url}", Connection = "AzureStorage:ConnectionString")] Stream blobStream
         )
         {
             using (var file = new FrequencySetFile
@@ -58,8 +57,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
         [QueryStringParameter(DonorEthnicityQueryParam, "Ethnicity ID of the donor", DataType = typeof(string))]
         [QueryStringParameter(DonorRegistryQueryParam, "Registry ID of the donor", DataType = typeof(string))]
         [QueryStringParameter(PatientEthnicityQueryParam, "Ethnicity ID of the patient", DataType = typeof(string))]
-        [FunctionName((nameof(GetHaplotypeFrequencySet)))]
-        [StorageAccount("AzureStorage:ConnectionString")]
+        [Function((nameof(GetHaplotypeFrequencySet)))]
         public async Task<IActionResult> GetHaplotypeFrequencySet(
             [HttpTrigger(AuthorizationLevel.Function, "get")]
             HttpRequest request)

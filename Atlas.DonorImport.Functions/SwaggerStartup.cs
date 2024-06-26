@@ -2,25 +2,26 @@
 using System.Reflection;
 using Atlas.DonorImport.Functions;
 using AzureFunctions.Extensions.Swashbuckle;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
-[assembly: FunctionsStartup(typeof(SwashBuckleStartup))]
 namespace Atlas.DonorImport.Functions
 {
-    internal class SwashBuckleStartup : IWebJobsStartup
+    internal class SwashBuckleStartup 
     {
-        public void Configure(IWebJobsBuilder builder)
+        public static void Configure(IServiceCollection services)
         {
             var executingAssembly = Assembly.GetExecutingAssembly();
-            builder.AddSwashBuckle(executingAssembly, opts =>
+
+            services.AddSwashBuckle(opts =>
             {
                 // Set the comments path for the Swagger JSON and UI.
                 var xmlFile = $"{executingAssembly.GetName().Name}.xml";
                 var xmlPath = Path.Combine(GetTopBinPath(executingAssembly), xmlFile);
                 opts.XmlPath = xmlPath;
-            });
+
+                opts.RoutePrefix = "api";
+            },
+            executingAssembly: executingAssembly);
         }
 
         private static string GetTopBinPath(Assembly executingAssembly)

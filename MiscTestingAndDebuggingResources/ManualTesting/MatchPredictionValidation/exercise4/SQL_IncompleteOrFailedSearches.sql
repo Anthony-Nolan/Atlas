@@ -12,5 +12,5 @@ WHERE
 	-- Failed Search
 	(SearchResultsRetrieved = 1 AND (ISNULL(WasSuccessful,0) = 0) OR
 	-- Search result has not yet been downloaded
-	SearchResultsRetrieved = 0
+	SearchResultsRetrieved = 0)
 ORDER BY ExternalId

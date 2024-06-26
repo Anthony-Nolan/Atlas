@@ -11,7 +11,10 @@
     "DataRefresh:CompletionTopic": "completed-data-refresh-jobs",
     "DataRefresh:CompletionTopicSubscription": "override-this",
 
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+
+    "Homework:ImputationRequestUrl": "override-this",
+    "Homework:MatchingGenotypesRequestUrl": "override-this",
 
     "OutgoingMatchPredictionRequests:RequestBatchSize": 1000,
     "OutgoingMatchPredictionRequests:RequestUrl": "http://localhost:7085/api/BatchMatchPredictionRequests",

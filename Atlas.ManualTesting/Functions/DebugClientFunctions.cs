@@ -3,8 +3,6 @@ using Atlas.Common.Utils.Http;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using System.Net;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
@@ -15,6 +13,7 @@ using Atlas.Debug.Client.Models.SearchResults;
 using Atlas.Debug.Client.Models.ServiceBus;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
+using Microsoft.Azure.Functions.Worker;
 
 namespace Atlas.ManualTesting.Functions
 {
@@ -45,7 +44,7 @@ namespace Atlas.ManualTesting.Functions
             this.repeatSearchClient = repeatSearchClient;
         }
 
-        [FunctionName(nameof(TestDonorImportDebugClientTest))]
+        [Function(nameof(TestDonorImportDebugClientTest))]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<PeekServiceBusMessagesResponse<DonorImportMessage>> TestDonorImportDebugClientTest(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
@@ -57,7 +56,7 @@ namespace Atlas.ManualTesting.Functions
             });
         }
 
-        [FunctionName(nameof(TestTopLevelDebugClientTest))]
+        [Function(nameof(TestTopLevelDebugClientTest))]
         public async Task<SearchResultSet> TestTopLevelDebugClientTest(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             HttpRequest request)
@@ -70,7 +69,7 @@ namespace Atlas.ManualTesting.Functions
             });
         }
 
-        [FunctionName(nameof(TestMatchingAlgorithmDebugClientTest))]
+        [Function(nameof(TestMatchingAlgorithmDebugClientTest))]
         public async Task<OriginalMatchingAlgorithmResultSet> TestMatchingAlgorithmDebugClientTest(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             HttpRequest request)
@@ -81,7 +80,7 @@ namespace Atlas.ManualTesting.Functions
             });
         }
 
-        [FunctionName(nameof(TestPublicApiDebugClientTest))]
+        [Function(nameof(TestPublicApiDebugClientTest))]
         public async Task<IActionResult> TestPublicApiDebugClientTest(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(RepeatSearchRequest), "Search Request")]
@@ -102,7 +101,7 @@ namespace Atlas.ManualTesting.Functions
             }
         }
 
-        [FunctionName(nameof(TestRepeatSearchDebugClientTest))]
+        [Function(nameof(TestRepeatSearchDebugClientTest))]
         public async Task<IActionResult> TestRepeatSearchDebugClientTest(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             HttpRequest request)
@@ -113,7 +112,7 @@ namespace Atlas.ManualTesting.Functions
             }));
         }
 
-        [FunctionName(nameof(HealthCheckTest))]
+        [Function(nameof(HealthCheckTest))]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<string> HealthCheckTest(
             [HttpTrigger(AuthorizationLevel.Function, "get")]

@@ -32,11 +32,6 @@ namespace Atlas.Common.Utils.Extensions
             return dictionary;
         }
 
-        public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(
-            this IEnumerable<KeyValuePair<TKey, TValue>> keyValuePair)
-        {
-            return keyValuePair.ToDictionary(p => p.Key, p => p.Value);
-        }
 
         /// <summary>
         /// Splits a collection into 2 groups whilst performing only a single pass through the data.

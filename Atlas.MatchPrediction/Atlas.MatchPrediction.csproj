@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.10.0" />
         <PackageReference Include="FluentValidation" Version="8.4.0" />
         <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4" />
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
         <PackageReference Include="morelinq" Version="3.3.2" />
         <ProjectReference Include="..\Atlas.Client.Models\Atlas.Client.Models.csproj" />
         <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />

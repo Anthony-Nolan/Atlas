@@ -1,7 +1,6 @@
 ﻿using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchPrediction.ExternalInterface.Models;
-using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Test.Validation.Data.Models;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories;
 using Atlas.MatchPrediction.Test.Validation.Models;
@@ -14,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Atlas.Common.Public.Models.MatchPrediction;
 using MatchPredictionRequest = Atlas.MatchPrediction.Test.Validation.Data.Models.MatchPredictionRequest;
 
 namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise3

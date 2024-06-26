@@ -66,7 +66,7 @@ namespace Atlas.Common.Utils.Extensions
         /// Any duplicate key/value pairs will be de-duplicated and returned once.
         /// Any duplicate keys with differing values make the merge invalid - <see cref="ArgumentException"/> will be thrown.
         /// </summary>
-        public static IDictionary<TKey, TValue> Merge<TKey, TValue>(
+        public static Dictionary<TKey, TValue> Merge<TKey, TValue>(
             this IReadOnlyDictionary<TKey, TValue> dictionary,
             IReadOnlyDictionary<TKey, TValue> otherDictionary)
         {

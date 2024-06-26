@@ -5,8 +5,7 @@ using Atlas.ManualTesting.Services.WmdaConsensusResults;
 using Atlas.ManualTesting.Services.WmdaConsensusResults.Scorers;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
 namespace Atlas.ManualTesting.Functions
@@ -36,7 +35,7 @@ namespace Atlas.ManualTesting.Functions
             this.resultsWriter = resultsWriter;
         }
 
-        [FunctionName(nameof(ProcessWmdaConsensusDataset_Exercise1))]
+        [Function(nameof(ProcessWmdaConsensusDataset_Exercise1))]
         public async Task ProcessWmdaConsensusDataset_Exercise1(
             [RequestBodyType(typeof(ImportAndScoreRequest), nameof(ImportAndScoreRequest))]
             [HttpTrigger(AuthorizationLevel.Function, "post")]
@@ -46,7 +45,7 @@ namespace Atlas.ManualTesting.Functions
             await scorerOne.ProcessScoreRequest(importAndScoreRequest);
         }
 
-        [FunctionName(nameof(ProcessWmdaConsensusDataset_Exercise2))]
+        [Function(nameof(ProcessWmdaConsensusDataset_Exercise2))]
         public async Task ProcessWmdaConsensusDataset_Exercise2(
             [RequestBodyType(typeof(ImportAndScoreRequest), nameof(ImportAndScoreRequest))]
             [HttpTrigger(AuthorizationLevel.Function, "post")]
@@ -59,7 +58,7 @@ namespace Atlas.ManualTesting.Functions
         /// <summary>
         /// Report discrepant total mismatches - can be used on results from both exercise 1 and 2.
         /// </summary>
-        [FunctionName(nameof(ReportDiscrepantResults_TotalMismatches))]
+        [Function(nameof(ReportDiscrepantResults_TotalMismatches))]
         public async Task ReportDiscrepantResults_TotalMismatches(
             [RequestBodyType(typeof(ReportDiscrepanciesRequest), nameof(ReportDiscrepanciesRequest))]
             [HttpTrigger(AuthorizationLevel.Function, "post")]
@@ -73,7 +72,7 @@ namespace Atlas.ManualTesting.Functions
         /// <summary>
         /// Report discrepant antigen mismatches - can only be used on results from exercise 2.
         /// </summary>
-        [FunctionName(nameof(ReportDiscrepantResults_AntigenMismatches))]
+        [Function(nameof(ReportDiscrepantResults_AntigenMismatches))]
         public async Task ReportDiscrepantResults_AntigenMismatches(
             [RequestBodyType(typeof(ReportDiscrepanciesRequest), nameof(ReportDiscrepanciesRequest))]
             [HttpTrigger(AuthorizationLevel.Function, "post")]

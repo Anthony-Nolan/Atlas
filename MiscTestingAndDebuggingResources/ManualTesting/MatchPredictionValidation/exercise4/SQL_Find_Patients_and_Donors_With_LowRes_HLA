@@ -1,0 +1,28 @@
+SELECT pdp.HomeworkSet_Id, si.*
+FROM PatientDonorPairs pdp, SubjectInfo si
+WHERE pdp.PatientId = si.ExternalId
+AND (RIGHT(A_1, 3) = ':XX' OR RIGHT(A_2, 3) = ':XX'
+OR RIGHT(B_1, 3) = ':XX' OR RIGHT(B_2, 3) = ':XX'
+OR RIGHT(C_1, 3) = ':XX' OR RIGHT(C_2, 3) = ':XX'
+OR RIGHT(DQB1_1, 3) = ':XX' OR RIGHT(DQB1_2, 3) = ':XX'
+OR RIGHT(DRB1_1, 3) = ':XX' OR RIGHT(DRB1_2, 3) = ':XX'
+OR LEN(A_1) < 5 OR LEN(A_2) < 5
+OR LEN(B_1) < 5 OR LEN(B_2) < 5
+OR LEN(C_1) < 5 OR LEN(C_2) < 5
+OR LEN(DQB1_1) < 5 OR LEN(DQB1_2) < 5
+OR LEN(DRB1_1) < 5 OR LEN(DRB1_2) < 5)
+UNION
+SELECT pdp.HomeworkSet_Id, si.*
+FROM PatientDonorPairs pdp, SubjectInfo si
+WHERE pdp.DonorId = si.ExternalId
+AND (RIGHT(A_1, 3) = ':XX' OR RIGHT(A_2, 3) = ':XX'
+OR RIGHT(B_1, 3) = ':XX' OR RIGHT(B_2, 3) = ':XX'
+OR RIGHT(C_1, 3) = ':XX' OR RIGHT(C_2, 3) = ':XX'
+OR RIGHT(DQB1_1, 3) = ':XX' OR RIGHT(DQB1_2, 3) = ':XX'
+OR RIGHT(DRB1_1, 3) = ':XX' OR RIGHT(DRB1_2, 3) = ':XX'
+OR LEN(A_1) < 5 OR LEN(A_2) < 5
+OR LEN(B_1) < 5 OR LEN(B_2) < 5
+OR LEN(C_1) < 5 OR LEN(C_2) < 5
+OR LEN(DQB1_1) < 5 OR LEN(DQB1_2) < 5
+OR LEN(DRB1_1) < 5 OR LEN(DRB1_2) < 5)
+ORDER BY SubjectType DESC, ExternalId

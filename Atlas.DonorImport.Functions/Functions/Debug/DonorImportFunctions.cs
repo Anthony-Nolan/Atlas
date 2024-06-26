@@ -7,8 +7,7 @@ using Atlas.DonorImport.Services.Debug;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -36,7 +35,7 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
         /// Debug endpoint to post a donor import file.
         /// This endpoint is intended for requests with a small number of records for debug and testing purposes only.
         /// </summary>
-        [FunctionName(nameof(PostDonorImportFile))]
+        [Function(nameof(PostDonorImportFile))]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task PostDonorImportFile(
             [HttpTrigger(
@@ -51,7 +50,7 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
         }
 
 
-        [FunctionName(nameof(PeekDonorImportResultsMessages))]
+        [Function(nameof(PeekDonorImportResultsMessages))]
         [ProducesResponseType(typeof(PeekServiceBusMessagesResponse<DonorImportMessage>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> PeekDonorImportResultsMessages(
             [HttpTrigger(
@@ -66,7 +65,7 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
             return new JsonResult(response);
         }
 
-        [FunctionName(nameof(IsFullModeImportAllowed))]
+        [Function(nameof(IsFullModeImportAllowed))]
         [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> IsFullModeImportAllowed(
             [HttpTrigger(AuthorizationLevel.Function,"get", Route = $"{RoutePrefix}isFullModeImportAllowed")]

@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Http;
+using Atlas.Debug.Client.Models.MatchPrediction;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
-using Atlas.MatchPrediction.Functions.Models.Debug;
 using Atlas.MatchPrediction.Functions.Services.Debug;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -11,8 +11,7 @@ using Atlas.MatchPrediction.Services.MatchProbability;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Functions.Functions.Debug
@@ -30,7 +29,7 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
             this.genotypeMatcher = genotypeMatcher;
         }
 
-        [FunctionName(nameof(MatchPatientDonorGenotypes))]
+        [Function(nameof(MatchPatientDonorGenotypes))]
         public async Task<IActionResult> MatchPatientDonorGenotypes(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(MatchPatientDonorGenotypes)}")]
             [RequestBodyType(typeof(GenotypeMatcherRequest), nameof(GenotypeMatcherRequest))]
@@ -49,15 +48,15 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
                 MatchPredictionParameters = input.MatchPredictionParameters
             });
 
-            var response = new GenotypeMatcherResponse
+            var matcherResponse = new GenotypeMatcherResponse
             {
                 MatchPredictionParameters = input.MatchPredictionParameters,
                 PatientInfo = BuildSubjectResult(result.PatientResult, frequencySet.PatientSet, input.Patient),
                 DonorInfo = BuildSubjectResult(result.DonorResult, frequencySet.DonorSet, input.Donor),
-                MatchedGenotypePairs = result.GenotypeMatchDetails.ToSingleDelimitedString()
+                MatchedGenotypePairs = result.GenotypeMatchDetails.ToFormattedStrings(),
             };
 
-            return new JsonResult(response);
+            return new JsonResult(matcherResponse);
         }
 
         private static SubjectResult BuildSubjectResult(
@@ -67,8 +66,9 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
         {
             return new SubjectResult(
                 subjectResult.IsUnrepresented,
+                subjectResult.GenotypeCount,
                 subjectResult.SumOfLikelihoods,
-                set, 
+                set.ToClientHaplotypeFrequencySet(), 
                 subjectInfo.HlaTyping.ToPhenotypeInfo().PrettyPrint());
         }
     }

@@ -7,8 +7,7 @@ using Atlas.ManualTesting.Services;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 
 namespace Atlas.ManualTesting.Functions
 {
@@ -23,7 +22,7 @@ namespace Atlas.ManualTesting.Functions
             this.donorStoresInspector = donorStoresInspector;
         }
 
-        [FunctionName(nameof(FilterSearchableDonorUpdatesByAtlasDonorIds))]
+        [Function(nameof(FilterSearchableDonorUpdatesByAtlasDonorIds))]
         public async Task<IActionResult> FilterSearchableDonorUpdatesByAtlasDonorIds(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(PeekByAtlasDonorIdsRequest), nameof(PeekByAtlasDonorIdsRequest))]
@@ -37,7 +36,7 @@ namespace Atlas.ManualTesting.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(GetDonorsMissingFromActiveMatchingDatabase))]
+        [Function(nameof(GetDonorsMissingFromActiveMatchingDatabase))]
         public async Task<IActionResult> GetDonorsMissingFromActiveMatchingDatabase(
             [HttpTrigger(AuthorizationLevel.Function, "get")]
             HttpRequest request)

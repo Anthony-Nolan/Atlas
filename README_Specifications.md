@@ -78,3 +78,16 @@ Below is a list of features and requirements for the Atlas product. This is not 
 - Allele and antigen matching features have been validation using exercise 1 and 2 of the WMDA consensus dataset ([internal link to test results](https://github.com/Anthony-Nolan/Atlas/issues/964)).
 - User Acceptance Testing (UAT) and Clinical Validation completed for MUD search by the Anthony Nolan Search team: Vivers, S., _et al._ "Validation for a new search algorithm for unrelated donor selection for haematopoietic stem cell transplantation in the United Kingdom.”; _HLA_, **95**(4):111.
 - In November 2023, Atlas was approved for use in the WMDA Search & Match service after two rounds of testing by "super-users" ([external link to summary of UAT outcomes](https://docs.google.com/document/d/1AmELwwIT9Xa7VDxegvrKHw_8sCB76mF2/edit?usp=drive_link&ouid=106959511840121245431&rtpof=true&sd=true)).
+
+## Search Algorithm References
+Search algorithm implementation is largely based on these publications:
+* Bochtler, W., _et al_ (2011) “World Marrow Donor Association framework for the implementation of HLA
+matching programs in hematopoietic stem cell donor registries and cord blood banks.”; Bone Marrow
+Transplant, 46(3):338-43
+* Madbouly, A., _et al_ (2014) “Validation of statistical imputation of allele-level multilocus phased genotypes
+from ambiguous HLA assignments.”; Tissue Antigens, 84(3):285-92
+* Crivello, P., _et al_ (2015) “The impact of amino acid variability on alloreactivity defines a functional
+distance predictive of permissive HLA-DPB1 mismatches in hematopoietic stem cell transplantation.”;
+Biol Blood Marrow Transplant, 21(2):233-41
+
+For the most common cases, Atlas follows the frameworks and recommendations outlined above. Any other logic for the handling of special, edge cases will have been derived from direct consultation with expert users in Search, HLA, and Bioinformatics at Anthony Nolan.

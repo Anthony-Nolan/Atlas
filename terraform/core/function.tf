@@ -26,7 +26,8 @@ resource "azurerm_windows_function_app" "atlas_function" {
       support_credentials = false
     }
     application_stack {
-      dotnet_version = "v6.0"
+      dotnet_version              = "v8.0"
+      use_dotnet_isolated_runtime = true
     }
     dynamic "ip_restriction" {
       for_each = var.IP_RESTRICTION_SETTINGS
@@ -136,7 +137,8 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
       support_credentials = false
     }
     application_stack {
-      dotnet_version = "v6.0"
+      dotnet_version              = "v8.0"
+      use_dotnet_isolated_runtime = true
     }
     dynamic "ip_restriction" {
       for_each = var.IP_RESTRICTION_SETTINGS
