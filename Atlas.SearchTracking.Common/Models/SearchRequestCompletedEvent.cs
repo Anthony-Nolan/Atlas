@@ -1,4 +1,4 @@
-﻿namespace Atlas.SearchTracking.Models
+﻿namespace Atlas.SearchTracking.Common.Models
 {
     public class SearchRequestCompletedEvent
     {

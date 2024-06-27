@@ -1,9 +1,9 @@
-﻿using Atlas.SearchTracking.Data.Models;
+﻿using Atlas.SearchTracking.Common.Enums;
+using Atlas.SearchTracking.Common.Models;
+using Atlas.SearchTracking.Data.Models;
 using Atlas.SearchTracking.Data.Repositories;
 using Atlas.SearchTracking.Data.Test.Builders;
 using Atlas.SearchTracking.Data.Test.TestHelpers;
-using Atlas.SearchTracking.Enums;
-using Atlas.SearchTracking.Models;
 using FluentAssertions;
 using NUnit.Framework;
 

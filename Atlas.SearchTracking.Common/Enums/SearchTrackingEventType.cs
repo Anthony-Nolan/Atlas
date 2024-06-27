@@ -1,4 +1,4 @@
-﻿namespace Atlas.SearchTracking.Enums
+﻿namespace Atlas.SearchTracking.Common.Enums
 {
     public enum SearchTrackingEventType
     {

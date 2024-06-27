@@ -1,9 +1,8 @@
-﻿namespace Atlas.SearchTracking.Models
+﻿namespace Atlas.SearchTracking.Common.Models
 {
-    public class MatchingAlgorithmAttemptStartedEvent
+    public class MatchPredictionStartedEvent
     {
         public int SearchRequestId { get; set; }
-        public byte AttemptNumber { get; set; }
         public DateTime InitiationTimeUtc { get; set; }
         public DateTime StartTimeUtc { get; set; }
     }
