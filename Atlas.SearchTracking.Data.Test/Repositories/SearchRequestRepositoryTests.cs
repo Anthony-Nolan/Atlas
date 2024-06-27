@@ -1,7 +1,7 @@
-﻿using Atlas.SearchTracking.Data.Repositories;
+﻿using Atlas.SearchTracking.Common.Models;
+using Atlas.SearchTracking.Data.Repositories;
 using Atlas.SearchTracking.Data.Test.Builders;
 using Atlas.SearchTracking.Data.Test.TestHelpers;
-using Atlas.SearchTracking.Models;
 using FluentAssertions;
 using NUnit.Framework;
 
