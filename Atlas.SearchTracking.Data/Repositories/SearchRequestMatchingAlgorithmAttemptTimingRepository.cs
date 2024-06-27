@@ -1,7 +1,7 @@
-﻿using Atlas.SearchTracking.Data.Context;
+﻿using Atlas.SearchTracking.Common.Enums;
+using Atlas.SearchTracking.Common.Models;
+using Atlas.SearchTracking.Data.Context;
 using Atlas.SearchTracking.Data.Models;
-using Atlas.SearchTracking.Enums;
-using Atlas.SearchTracking.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.SearchTracking.Data.Repositories
@@ -19,11 +19,11 @@ namespace Atlas.SearchTracking.Data.Repositories
 
     public class SearchRequestMatchingAlgorithmAttemptTimingRepository : ISearchRequestMatchingAlgorithmAttemptTimingRepository
     {
-        private readonly SearchTrackingContext context;
+        private readonly ISearchTrackingContext context;
 
         private DbSet<SearchRequestMatchingAlgorithmAttemptTiming> MatchingAlgorithmAttemptTimings => context.SearchRequestMatchingAlgorithmAttemptTimings;
 
-        public SearchRequestMatchingAlgorithmAttemptTimingRepository(SearchTrackingContext context)
+        public SearchRequestMatchingAlgorithmAttemptTimingRepository(ISearchTrackingContext context)
         {
             this.context = context;
         }
