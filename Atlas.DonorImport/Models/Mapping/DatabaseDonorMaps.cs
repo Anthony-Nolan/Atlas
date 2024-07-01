@@ -13,6 +13,7 @@ namespace Atlas.DonorImport.Models.Mapping
                 DonorType = donor.DonorType.ToMatchingAlgorithmType(),
                 EthnicityCode = donor.EthnicityCode,
                 RegistryCode = donor.RegistryCode,
+                LastUpdated = donor.LastUpdated,
                 A_1 = donor.A_1,
                 A_2 = donor.A_2,
                 B_1 = donor.B_1,
