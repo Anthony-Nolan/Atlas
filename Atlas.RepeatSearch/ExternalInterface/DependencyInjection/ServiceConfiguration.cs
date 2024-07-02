@@ -21,6 +21,7 @@ using Atlas.RepeatSearch.Services.Search;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Atlas.SearchTracking.Settings.ServiceBus;
 using ConnectionStrings = Atlas.RepeatSearch.Data.Settings.ConnectionStrings;
 
 namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
@@ -47,7 +48,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
                 fetchAzureStorageSettings,
                 fetchMessagingServiceBusSettings,
                 fetchRepeatSqlConnectionString);
-            
+
             services.RegisterServices(fetchRepeatSqlConnectionString, fetchAzureStorageSettings);
 
             services.RegisterSearch(
@@ -58,13 +59,14 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
                 fetchMacDictionarySettings,
                 // Matching algorithm doesn't require a service bus setting as results notifications are handled by repeat search.
                 _ => new MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings(),
+                _ => new SearchTrackingServiceBusSettings(),
                 fetchNotificationsServiceBusSettings,
                 fetchMatchingConfigurationSettings,
                 fetchPersistentSqlConnectionString,
                 fetchTransientASqlConnectionString,
                 fetchTransientBSqlConnectionString,
                 fetchDonorSqlConnectionString);
-            
+
             services.RegisterDonorReader(fetchDonorSqlConnectionString);
         }
 
@@ -83,8 +85,8 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
         }
 
         private static void RegisterServices(
-            this IServiceCollection services, 
-            Func<IServiceProvider, string> fetchRepeatSqlConnectionString, 
+            this IServiceCollection services,
+            Func<IServiceProvider, string> fetchRepeatSqlConnectionString,
             Func<IServiceProvider, Settings.Azure.AzureStorageSettings> fetchAzureStorageSettings)
         {
             services.AddScoped<IOriginalSearchResultSetTracker, OriginalSearchResultSetTracker>();

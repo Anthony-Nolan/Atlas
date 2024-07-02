@@ -27,6 +27,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.SearchTracking.Common.Clients;
+using Atlas.SearchTracking.Common.Enums;
+using Atlas.SearchTracking.Common.Models;
+using Atlas.SearchTracking.Settings.ServiceBus;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
@@ -34,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
     internal static class ServiceConfiguration
     {
         internal static IDonorReader MockDonorReader;
-        
+
         private const string PersistentSqlConnectionStringKey = "PersistentSql";
         private const string TransientASqlConnectionStringKey = "SqlA";
         private const string TransientBSqlConnectionStringKey = "SqlB";
@@ -56,6 +60,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 _ => new MacDictionarySettings(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<SearchTrackingServiceBusSettings>(),
                 _ => new NotificationsServiceBusSettings(),
                 _ => new MatchingConfigurationSettings {MatchingBatchSize = 250000},
                 ConnectionStringReader(PersistentSqlConnectionStringKey),
@@ -127,6 +132,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 .PublishToSearchRequestsTopic(Arg.Any<IdentifiedSearchRequest>())
                 .Returns(Task.CompletedTask);
             services.AddScoped(sp => mockSearchServiceBusClient);
+
+            var mockSearchTrackingServiceBusClient = Substitute.For<ISearchTrackingServiceBusClient>();
+            mockSearchTrackingServiceBusClient.PublishSearchTrackingEvent(Arg.Any<SearchRequestedEvent>, SearchTrackingEventType.SearchRequested)
+                .Returns(Task.CompletedTask);
+            services.AddScoped(sp => mockSearchTrackingServiceBusClient);
 
             services.AddScoped(sp => Substitute.For<IMessageReceiverFactory>());
             services.AddScoped(sp => Substitute.For<INotificationSender>());

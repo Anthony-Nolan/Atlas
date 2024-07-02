@@ -54,6 +54,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FeatureManagement;
 using System;
+using Atlas.SearchTracking.Common.Clients;
+using Atlas.SearchTracking.Settings.ServiceBus;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.DependencyInjection
@@ -173,7 +175,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             // Another azure clients can be added here and they will share authentication configuration
             services.AddAzureClients(clientBuilder =>
             {
-                clientBuilder.UseCredential(sp => 
+                clientBuilder.UseCredential(sp =>
                 {
                     var authSetting = fetchAzureAuthenticationSettings(sp);
 
@@ -199,6 +201,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, SearchTrackingServiceBusSettings> fetchSearchTrackingServiceBusSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
@@ -233,6 +236,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, SearchTrackingServiceBusSettings> fetchSearchTrackingServiceBusSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
@@ -246,6 +250,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchHlaMetadataDictionarySettings,
                 fetchMacDictionarySettings,
                 fetchMessagingServiceBusSettings,
+                fetchSearchTrackingServiceBusSettings,
                 fetchNotificationsServiceBusSettings,
                 fetchMatchingConfigurationSettings,
                 fetchPersistentSqlConnectionString,
@@ -270,7 +275,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, string> fetchDonorImportSqlConnectionString)
         {
-            // The last step of the Data Refresh is applying a backlog of donor updates - so it needs to know how to perform queued donor updates as well. 
+            // The last step of the Data Refresh is applying a backlog of donor updates - so it needs to know how to perform queued donor updates as well.
             services.RegisterDonorManagementServices(fetchDonorManagementSettings, fetchMessagingServiceBusSettings, fetchDonorImportSqlConnectionString);
 
             services.RegisterSettingsForDataRefresh(
@@ -301,7 +306,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         }
 
         /// <summary>
-        /// Register services only needed for ongoing donor management 
+        /// Register services only needed for ongoing donor management
         /// </summary>
         private static void RegisterDonorManagementServices(
             this IServiceCollection services,
@@ -412,6 +417,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             // Also used for dispatching searches, registered independently in ProjectInterfaceOrchestrationConfiguration.cs
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>();
+            services.AddScoped<ISearchTrackingServiceBusClient, SearchTrackingServiceBusClient>();
             services.AddScoped<ISearchDispatcher, SearchDispatcher>();
             services.AddScoped<ISearchRunner, SearchRunner>();
 
@@ -466,7 +472,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         }
 
         /// <summary>
-        /// Register services needed in multiple usages of the matching component - across matching, data refresh, and ongoing donor management 
+        /// Register services needed in multiple usages of the matching component - across matching, data refresh, and ongoing donor management
         /// </summary>
         private static void RegisterCommonServices(
             this IServiceCollection services,
