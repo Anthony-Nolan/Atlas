@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Reflection;
+using Atlas.SearchTracking.Settings.ServiceBus;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.Api
@@ -71,6 +72,7 @@ namespace Atlas.MatchingAlgorithm.Api
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<SearchTrackingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<MatchingConfigurationSettings>(),
                 ConnectionStringReader("PersistentSql"),

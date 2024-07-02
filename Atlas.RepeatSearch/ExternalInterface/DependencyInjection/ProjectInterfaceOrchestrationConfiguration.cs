@@ -3,13 +3,14 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.RepeatSearch.Clients;
 using Atlas.RepeatSearch.Services.Search;
 using Atlas.RepeatSearch.Settings.ServiceBus;
+using Atlas.SearchTracking.Common.Clients;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
 {
     /// <summary>
     /// Contains registrations necessary to set up a project-project interface for orchestration of repeat searching.
-    /// e.g. Top level Atlas function will need to be able to queue searches, but does not need to be able to run them. 
+    /// e.g. Top level Atlas function will need to be able to queue searches, but does not need to be able to run them.
     /// </summary>
     public static class ProjectInterfaceOrchestrationConfiguration
     {
@@ -31,6 +32,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
         private static void RegisterServices(this IServiceCollection services)
         {
             services.AddScoped<IRepeatSearchServiceBusClient, RepeatSearchServiceBusClient>();
+            services.AddScoped<ISearchTrackingServiceBusClient, SearchTrackingServiceBusClient>();
             services.AddScoped<IRepeatSearchDispatcher, RepeatSearchDispatcher>();
         }
     }

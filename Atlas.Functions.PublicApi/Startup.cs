@@ -4,6 +4,7 @@ using Atlas.Functions.PublicApi;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.RepeatSearch.ExternalInterface.DependencyInjection;
+using Atlas.SearchTracking.Common.Clients;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
@@ -15,7 +16,9 @@ namespace Atlas.Functions.PublicApi
         {
             RegisterSettings(services);
 
-            services.RegisterMatchingAlgorithmOrchestration(OptionsReaderFor<MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings>());
+            services.RegisterMatchingAlgorithmOrchestration(
+                OptionsReaderFor<MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings>(),
+                OptionsReaderFor<SearchTracking.Settings.ServiceBus.SearchTrackingServiceBusSettings>());
 
             services.RegisterRepeatSearchOrchestration(OptionsReaderFor<RepeatSearch.Settings.ServiceBus.MessagingServiceBusSettings>());
 
@@ -33,6 +36,8 @@ namespace Atlas.Functions.PublicApi
 
             // Repeat Search - initiation services only
             services.RegisterAsOptions<RepeatSearch.Settings.ServiceBus.MessagingServiceBusSettings>("RepeatSearch:MessagingServiceBus");
+
+            services.RegisterAsOptions<SearchTracking.Settings.ServiceBus.SearchTrackingServiceBusSettings>("SearchTracking:SearchTrackingServiceBus");
         }
     }
 }

@@ -44,6 +44,8 @@
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Common\Atlas.MatchingAlgorithm.Common.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Data.Persistent\Atlas.MatchingAlgorithm.Data.Persistent.csproj" />
       <ProjectReference Include="..\Atlas.MultipleAlleleCodeDictionary\Atlas.MultipleAlleleCodeDictionary.csproj" />
+      <ProjectReference Include="..\Atlas.SearchTracking.Common\Atlas.SearchTracking.Common.csproj" />
+      <ProjectReference Include="..\Atlas.SearchTracking\Atlas.SearchTracking.csproj" />
     </ItemGroup>
 
     <ItemGroup>

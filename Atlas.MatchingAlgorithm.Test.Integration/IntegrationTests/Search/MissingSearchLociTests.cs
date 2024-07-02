@@ -6,6 +6,7 @@ using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
+using Atlas.SearchTracking.Common.Clients;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -22,8 +23,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         public void SetUp()
         {
             var searchServiceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<ISearchServiceBusClient>();
+            var searchTrackingServiceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<ISearchTrackingServiceBusClient>();
 
-            searchDispatcher = new SearchDispatcher(searchServiceBusClient);
+            searchDispatcher = new SearchDispatcher(searchServiceBusClient, searchTrackingServiceBusClient);
 
             searchHla = new SampleTestHlas.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
         }
@@ -41,7 +43,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             Assert.ThrowsAsync<ValidationException>(
                 async () => await searchDispatcher.DispatchSearch(searchRequest));
         }
-        
+
         [Test]
         public void DispatchSearch_TenOutOfTen_PatientWithNullHlaAtLocusB_ThrowsValidationError()
         {
@@ -53,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             Assert.ThrowsAsync<ValidationException>(
                 async () => await searchDispatcher.DispatchSearch(searchRequest));
         }
-        
+
         [Test]
         public void DispatchSearch_TenOutOfTen_PatientWithNullHlaAtLocusDrb1_ThrowsValidationError()
         {
@@ -65,7 +67,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             Assert.ThrowsAsync<ValidationException>(
                 async () => await searchDispatcher.DispatchSearch(searchRequest));
         }
-        
+
         [Test]
         public void DispatchSearch_TenOutOfTen_PatientWithNullHlaAtLocusC_ThrowsValidationError()
         {
@@ -77,7 +79,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             Assert.ThrowsAsync<ValidationException>(
                 async () => await searchDispatcher.DispatchSearch(searchRequest));
         }
-        
+
         [Test]
         public void DispatchSearch_TenOutOfTen_PatientWithNullHlaAtLocusDqb1_ThrowsValidationError()
         {
@@ -104,7 +106,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         #endregion
 
         #region SixOutOfSix
-        
+
         [Test]
         public void DispatchSearch_SixOutOfSix_PatientWithNullHlaAtLocusA_ThrowsValidationError()
         {
@@ -116,7 +118,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             Assert.ThrowsAsync<ValidationException>(
                 async () => await searchDispatcher.DispatchSearch(searchRequest));
         }
-        
+
         [Test]
         public void DispatchSearch_SixOutOfSix_PatientWithNullHlaAtLocusB_ThrowsValidationError()
         {
@@ -128,7 +130,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             Assert.ThrowsAsync<ValidationException>(
                 async () => await searchDispatcher.DispatchSearch(searchRequest));
         }
-        
+
         [Test]
         public void DispatchSearch_SixOutOfSix_PatientWithNullHlaAtLocusDrb1_ThrowsValidationError()
         {

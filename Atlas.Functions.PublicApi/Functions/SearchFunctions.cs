@@ -51,6 +51,8 @@ namespace Atlas.Functions.PublicApi.Functions
             }
 
             var id = await searchDispatcher.DispatchSearch(searchRequest);
+            await searchDispatcher.DispatchSearchTrackingEvent(searchRequest, id);
+
             return new JsonResult(new SearchInitiationResponse {SearchIdentifier = id});
         }
 
@@ -76,6 +78,8 @@ namespace Atlas.Functions.PublicApi.Functions
             }
 
             var repeatSearchId = await repeatSearchDispatcher.DispatchSearch(repeatSearchRequest);
+            await repeatSearchDispatcher.DispatchSearchTrackingEvent(repeatSearchRequest, repeatSearchId);
+
             return new JsonResult(new SearchInitiationResponse
             {
                 SearchIdentifier = repeatSearchRequest.OriginalSearchId,
