@@ -10,7 +10,6 @@ using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
 using Newtonsoft.Json;
 using Atlas.MatchingAlgorithm.Helpers;
-using Atlas.SearchTracking.Data.Models;
 
 namespace Atlas.RepeatSearch.Services.Search
 {
@@ -57,7 +56,7 @@ namespace Atlas.RepeatSearch.Services.Search
                 IsRepeatSearch = true,
                 OriginalSearchRequestId = new Guid(repeatSearchRequest.OriginalSearchId),
                 RepeatSearchCutOffDate = repeatSearchRequest.SearchCutoffDate.Value.UtcDateTime,
-                RequestJson = JsonConvert.SerializeObject(repeatSearchRequest.SearchRequest.SearchHlaData),
+                RequestJson = JsonConvert.SerializeObject(repeatSearchRequest),
                 SearchCriteria = SearchTrackingEventHelper.GetSearchCriteria(repeatSearchRequest.SearchRequest),
                 DonorType = repeatSearchRequest.SearchRequest.SearchDonorType.ToString(),
                 RequestTimeUtc = DateTime.UtcNow
