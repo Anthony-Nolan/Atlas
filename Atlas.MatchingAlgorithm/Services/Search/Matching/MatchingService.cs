@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Settings;
 using Dasync.Collections;
@@ -16,7 +17,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
     public interface IMatchingService
     {
-        IAsyncEnumerable<MatchResult> GetMatches(AlleleLevelMatchCriteria criteria, DateTimeOffset? cutOffDate);
+        IAsyncEnumerable<MatchResult> GetMatches(MatchCriteria criteria, DateTimeOffset? cutOffDate);
     }
 
     public class MatchingService : IMatchingService
@@ -43,11 +44,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             this.matchingConfigurationSettings = matchingConfigurationSettings;
         }
 
-        public async IAsyncEnumerable<MatchResult> GetMatches(AlleleLevelMatchCriteria criteria, DateTimeOffset? cutOffDate)
+        public async IAsyncEnumerable<MatchResult> GetMatches(MatchCriteria criteria, DateTimeOffset? cutOffDate)
         {
             using (searchLogger.RunTimed("Matching"))
             {
-                foreach (var (locus, c) in criteria.LocusCriteria.Map((l, c) => (l, c)).ToEnumerable().Where(x => x.Item2 != null))
+                foreach (var (locus, c) in criteria.AlleleLevelMatchCriteria.LocusCriteria.Map((l, c) => (l, c)).ToEnumerable().Where(x => x.Item2 != null))
                 {
                     searchLogger.SendTrace(
                         $"Matching: Locus {locus} has ({c.PGroupsToMatchInPositionOne.Count()}, {c.PGroupsToMatchInPositionTwo.Count()}) P-Groups to match"
@@ -55,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 }
 
                 var initialMatches = PerformMatchingPhaseOne(criteria, cutOffDate);
-                var matches = PerformMatchingPhaseTwo(criteria, initialMatches);
+                var matches = PerformMatchingPhaseTwo(criteria.AlleleLevelMatchCriteria, initialMatches);
                 var matchCount = 0;
                 await foreach (var match in matches)
                 {
@@ -71,7 +72,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         /// The first phase of matching performs the bulk of the work - it returns all donors that meet the matching criteria, at all specified loci.
         /// It must return a superset of the final matching donor set - i.e. no matching donors may exist and not be returned in this phase.
         /// </summary>
-        private async IAsyncEnumerable<MatchResult> PerformMatchingPhaseOne(AlleleLevelMatchCriteria criteria, DateTimeOffset? cutOffDate)
+        private async IAsyncEnumerable<MatchResult> PerformMatchingPhaseOne(MatchCriteria criteria, DateTimeOffset? cutOffDate)
         {
             using (searchLogger.RunTimed("Matching timing: Phase 1 complete"))
             {
