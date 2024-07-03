@@ -17,7 +17,6 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Sql;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {
@@ -143,16 +142,13 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             {
                 using (logger.RunTimed($"Match Timing: Donor repo. Matched at locus: {locus}. For both positions. Connection closed."))
                 {
-                    // Ensure we have a Donor ID even when there is only one match at this locus.
+                    // Ensure we have a Donor ID even when there is only one match at this locus. 
                     const string selectDonorIdStatement = @"CASE WHEN DonorId1 IS NULL THEN DonorId2 ELSE DonorId1 END";
 
                     var matchingHlaTableName = MatchingHla.TableName(locus);
                     var hlaPGroupRelationTableName = HlaNamePGroupRelation.TableName(locus);
 
-                    var donorTypeFilteredJoin = filteringOptions.ShouldFilterOnDonorType
-                        // ReSharper disable once PossibleInvalidOperationException - implicitly checked via ShouldFilterOnDonorType
-                        ? $@"INNER JOIN Donors d ON {selectDonorIdStatement} = d.DonorId AND d.DonorType = {(int) filteringOptions.DonorType}"
-                        : "";
+                    var donorTypeFilteredJoin = $@"INNER JOIN Donors d ON m.DonorId = d.DonorId AND d.DonorType = {(int)filteringOptions.DonorType}";
 
                     var donorUpdatedJoin = cutOffDate != null
                         ? $@"INNER JOIN DonorManagementLogs dml ON m.DonorId = dml.DonorId AND dml.LastUpdateDateTime >= @{nameof(cutOffDate)}"
@@ -187,7 +183,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                     var donorIdTempTableJoin = filteringOptions.ShouldFilterOnDonorIds ? donorIdTempTableJoinConfig.FilteredJoinQueryString : "";
 
                     var donorRegistryCodeTempTableJoin = filteringOptions.ShouldFilterOnRegistryCodeIds 
-                        ? $" JOIN Donors d on m.DonorId = d.DonorId {donorRegistryCodeTempTableJoinConfig.FilteredJoinQueryString}" 
+                        ? $" {donorRegistryCodeTempTableJoinConfig.FilteredJoinQueryString}" 
                         : "";
 
                     var joinType = mustBeDoubleMatch ? "INNER" : "FULL OUTER";
@@ -201,6 +197,7 @@ FROM {hlaPGroupRelationTableName} hlaPGroupRelations
 JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
 {donorIdTempTableJoin}
 {donorUpdatedJoin}
+{donorTypeFilteredJoin}
 {donorRegistryCodeTempTableJoin}
 ) as m_1; 
 
@@ -214,6 +211,7 @@ FROM {hlaPGroupRelationTableName} hlaPGroupRelations
 JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
 {donorIdTempTableJoin}
 {donorUpdatedJoin}
+{donorTypeFilteredJoin}
 {donorRegistryCodeTempTableJoin}
 ) as m_2;
 
@@ -222,7 +220,6 @@ CREATE INDEX IX_Temp_Position2 ON #Pos2(DonorId2);
 SELECT DISTINCT {selectDonorIdStatement} as DonorId, TypePosition1, TypePosition2
 FROM #Pos1 as m_1
 {joinType} JOIN #Pos2 as m_2 ON DonorId1 = DonorId2
-{donorTypeFilteredJoin}
 ORDER BY DonorId
 ";
                     await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
