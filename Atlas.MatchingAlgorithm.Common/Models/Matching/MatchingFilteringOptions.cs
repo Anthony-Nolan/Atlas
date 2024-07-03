@@ -13,9 +13,8 @@ namespace Atlas.MatchingAlgorithm.Common.Models.Matching
         /// When set, will filter the SQL query allowing only the specified donor type.
         /// Otherwise, allows all donor types.
         /// </summary>
-        public DonorType? DonorType { get; set; }
+        public DonorType DonorType { get; set; }
 
-        public bool ShouldFilterOnDonorType => DonorType != null;
         
         /// <summary>
         /// When set, will filter the SQL query allowing only provided donor Ids.
@@ -23,10 +22,10 @@ namespace Atlas.MatchingAlgorithm.Common.Models.Matching
         /// </summary>
         public ICollection<int>? DonorIds { get; set; }
 
-        public bool ShouldFilterOnDonorIds => DonorIds != null && DonorIds.Count > 0;
+        public bool ShouldFilterOnDonorIds => DonorIds != null;
 
         public ICollection<string>? RegistryCodes { get; set; }
 
-        public bool ShouldFilterOnRegistryCodeIds => RegistryCodes != null && RegistryCodes.Count > 0;
+        public bool ShouldFilterOnRegistryCodeIds => RegistryCodes != null;
     }
 }

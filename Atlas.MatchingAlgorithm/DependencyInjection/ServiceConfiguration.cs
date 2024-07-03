@@ -389,7 +389,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IPerLocusDonorMatchingService, PerLocusDonorMatchingService>();
             services.AddScoped<IMatchFilteringService, MatchFilteringService>();
             services.AddScoped<IMatchCriteriaAnalyser, MatchCriteriaAnalyser>();
-            services.AddScoped<IDatabaseFilteringAnalyser, DatabaseFilteringAnalyser>();
 
             // Scoring Services
             services.AddScoped<IMatchScoringService, MatchScoringService>();
