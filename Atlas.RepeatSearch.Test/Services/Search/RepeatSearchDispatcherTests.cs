@@ -1,7 +1,5 @@
 ﻿using System;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
-using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 using Atlas.RepeatSearch.Clients;
 using Atlas.RepeatSearch.Services.Search;
@@ -15,9 +13,10 @@ using FluentValidation;
 using Atlas.MatchingAlgorithm.Helpers;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
+using FluentAssertions;
 using Newtonsoft.Json;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.Search
+namespace Atlas.RepeatSearch.Test.Services.Search
 {
     [TestFixture]
     public class RepeatSearchDispatcherTests
@@ -81,6 +80,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                 SearchRequest = searchRequest
             };
 
+            SearchRequestedEvent actualSearchRequestedEvent = null;
+
             var expectedSearchRequestedEvent = new SearchRequestedEvent
             {
                 SearchRequestId = new Guid(id),
@@ -93,18 +94,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                 RequestTimeUtc = new DateTime(2024, 07, 24)
             };
 
+            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+                Arg.Do<SearchRequestedEvent>(x => actualSearchRequestedEvent = x),
+                Arg.Is(SearchTrackingEventType.SearchRequested));
+
             await repeatSearchDispatcher.DispatchSearchTrackingEvent(repeatSearchRequest, id);
 
-            await searchTrackingServiceBusClient.Received()
-                .PublishSearchTrackingEvent(Arg.Is<SearchRequestedEvent>(x =>
-                        x.SearchRequestId == expectedSearchRequestedEvent.SearchRequestId &&
-                        x.IsRepeatSearch == expectedSearchRequestedEvent.IsRepeatSearch &&
-                        x.OriginalSearchRequestId == expectedSearchRequestedEvent.OriginalSearchRequestId &&
-                        x.RepeatSearchCutOffDate == expectedSearchRequestedEvent.RepeatSearchCutOffDate &&
-                        x.RequestJson == expectedSearchRequestedEvent.RequestJson &&
-                        x.SearchCriteria == expectedSearchRequestedEvent.SearchCriteria &&
-                        x.DonorType == expectedSearchRequestedEvent.DonorType),
-                    Arg.Is(SearchTrackingEventType.SearchRequested));
+            actualSearchRequestedEvent.Should().BeEquivalentTo(expectedSearchRequestedEvent,
+                x => x.Excluding(s => s.RequestTimeUtc));
         }
     }
 }
