@@ -10,10 +10,11 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.RepeatSearch.Models;
 using FluentValidation;
-using Atlas.MatchingAlgorithm.Helpers;
+using Atlas.RepeatSearch.Test.TestHelpers.Builders;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using Newtonsoft.Json;
 
 namespace Atlas.RepeatSearch.Test.Services.Search
@@ -68,6 +69,8 @@ namespace Atlas.RepeatSearch.Test.Services.Search
         public async Task DispatchSearchTrackingEvent_WhenRepeatSearchRequested_DispatchesEventWithSearchRequested()
         {
             var id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+            var originalSearchId = "11111111-2222-3333-4444-555555555555";
+
             var searchRequest = new SearchRequestBuilder()
                 .WithSearchHla(new PhenotypeInfo<string>("hla-type"))
                 .WithTotalMismatchCount(0)
@@ -75,24 +78,15 @@ namespace Atlas.RepeatSearch.Test.Services.Search
 
             var repeatSearchRequest = new RepeatSearchRequest()
             {
-                OriginalSearchId = "11111111-2222-3333-4444-555555555555",
-                SearchCutoffDate = new DateTimeOffset(DateTime.Today, new TimeSpan(1, 0, 0)),
+                OriginalSearchId = originalSearchId,
+                SearchCutoffDate = new DateTimeOffset(DateTime.UtcNow),
                 SearchRequest = searchRequest
             };
 
             SearchRequestedEvent actualSearchRequestedEvent = null;
 
-            var expectedSearchRequestedEvent = new SearchRequestedEvent
-            {
-                SearchRequestId = new Guid(id),
-                IsRepeatSearch = true,
-                OriginalSearchRequestId = new Guid(repeatSearchRequest.OriginalSearchId),
-                RepeatSearchCutOffDate = repeatSearchRequest.SearchCutoffDate.Value.UtcDateTime,
-                RequestJson = JsonConvert.SerializeObject(repeatSearchRequest),
-                SearchCriteria = SearchTrackingEventHelper.GetSearchCriteria(repeatSearchRequest.SearchRequest),
-                DonorType = searchRequest.SearchDonorType.ToString(),
-                RequestTimeUtc = new DateTime(2024, 07, 24)
-            };
+            var expectedSearchRequestedEvent = SearchRequestedEventBuilder.New.Build();
+            expectedSearchRequestedEvent.RequestJson = JsonConvert.SerializeObject(repeatSearchRequest);
 
             await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
                 Arg.Do<SearchRequestedEvent>(x => actualSearchRequestedEvent = x),
@@ -100,8 +94,11 @@ namespace Atlas.RepeatSearch.Test.Services.Search
 
             await repeatSearchDispatcher.DispatchSearchTrackingEvent(repeatSearchRequest, id);
 
-            actualSearchRequestedEvent.Should().BeEquivalentTo(expectedSearchRequestedEvent,
-                x => x.Excluding(s => s.RequestTimeUtc));
+            actualSearchRequestedEvent.Should().BeEquivalentTo(expectedSearchRequestedEvent, options =>
+            {
+                options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
+                return options;
+            });
         }
     }
 }

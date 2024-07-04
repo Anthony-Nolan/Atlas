@@ -3,13 +3,14 @@ using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Helpers;
 using Atlas.MatchingAlgorithm.Services.Search;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using FluentValidation;
 using Newtonsoft.Json;
 using NSubstitute;
@@ -66,17 +67,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             SearchRequestedEvent actualSearchRequestedEvent = null;
 
-            var expectedSearchRequestedEvent = new SearchRequestedEvent
-            {
-                SearchRequestId = new Guid(id),
-                IsRepeatSearch = false,
-                OriginalSearchRequestId = null,
-                RepeatSearchCutOffDate = null,
-                RequestJson = JsonConvert.SerializeObject(searchRequest),
-                SearchCriteria = SearchTrackingEventHelper.GetSearchCriteria(searchRequest),
-                DonorType = searchRequest.SearchDonorType.ToString(),
-                RequestTimeUtc = new DateTime(2024, 07, 24)
-            };
+            var expectedSearchRequestedEvent = SearchRequestedEventBuilder.New.Build();
+            expectedSearchRequestedEvent.RequestJson = JsonConvert.SerializeObject(searchRequest);
 
             await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
                 Arg.Do<SearchRequestedEvent>(x => actualSearchRequestedEvent = x),
@@ -84,8 +76,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             await searchDispatcher.DispatchSearchTrackingEvent(searchRequest, id);
 
-            actualSearchRequestedEvent.Should().BeEquivalentTo(expectedSearchRequestedEvent,
-                x => x.Excluding(s => s.RequestTimeUtc));
+            actualSearchRequestedEvent.Should().BeEquivalentTo(expectedSearchRequestedEvent, options =>
+            {
+                options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
+                return options;
+            });
         }
     }
 }
