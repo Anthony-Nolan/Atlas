@@ -56,6 +56,10 @@ jobs:
             Atlas.RepeatSearch.Data
             Atlas.RepeatSearch.Test
             Atlas.RepeatSearch.Functions
+            Atlas.SearchTracking.Data
+            Atlas.SearchTracking.Data.Test
+            Atlas.SearchTracking.Test
+            Atlas.SearchTracking.Functions
           arguments: '--configuration Release --no-restore'
 
       - task: DotNetCoreCLI@2
@@ -79,16 +83,16 @@ jobs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/published-models'
           ArtifactName: published-models
 
-        # Suffix version number with build ID to allow for a prerelease ci (continuous integration) packages to be published  
+        # Suffix version number with build ID to allow for a prerelease ci (continuous integration) packages to be published
       - bash: dotnet pack **/Atlas.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Client Models
-      
+
       - bash: dotnet pack **/Atlas.MatchingAlgorithm.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Matching Algorithm Client Models
-      
+
       - bash: dotnet pack **/Atlas.DonorImport.FileSchema.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Donor Import File Schema Models
-      
+
       - bash: dotnet pack **/Atlas.Common.Public.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Common Public Models
 
@@ -115,7 +119,7 @@ jobs:
         # Suffix version number with build ID to allow for a prerelease ci (continuous integration) packages to be published
       - bash: dotnet pack **/Atlas.Debug.Client.csproj --output $(Build.ArtifactStagingDirectory)/debug-client-ci --no-build /p:Configuration=Release --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Debug Client
-      
+
       - bash: dotnet pack **/Atlas.Debug.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/debug-client-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Debug Client Models
 
@@ -184,6 +188,7 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/MatchingFunctions-$(Build.BuildId).zip'
           ArtifactName: functions
+
       - task: CopyFiles@2
         displayName: 'Copy DonorManagement Functions Build'
         inputs:
@@ -203,6 +208,7 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/MatchingDonorFunctions-$(Build.BuildId).zip'
           ArtifactName: functions
+
       - task: CopyFiles@2
         displayName: 'Copy MatchPrediction Functions Build'
         inputs:
@@ -222,7 +228,7 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/MatchPredictionFunctions-$(Build.BuildId).zip'
           ArtifactName: functions
-          
+
       - task: CopyFiles@2
         displayName: 'Copy DonorImport Functions Build'
         inputs:
@@ -242,7 +248,6 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/DonorImportFunctions-$(Build.BuildId).zip'
           ArtifactName: functions
-          
 
       - task: CopyFiles@2
         displayName: 'Copy RepeatSearch Functions Build'
@@ -263,7 +268,27 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/RepeatSearchFunctions-$(Build.BuildId).zip'
           ArtifactName: functions
-          
+
+      - task: CopyFiles@2
+        displayName: 'Copy SearchTracking Functions Build'
+        inputs:
+          SourceFolder: 'Atlas.SearchTracking.Functions'
+          Contents: |
+            bin/**
+            *.config
+          TargetFolder: 'searchTrackingFunctionsBuild'
+      - task: ArchiveFiles@2
+        displayName: 'Archive SearchTracking Functions Build'
+        inputs:
+          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/searchTrackingFunctionsBuild/bin'
+          includeRootFolder: false
+          archiveFile: '$(Build.ArtifactStagingDirectory)/SearchTrackingFunctions-$(Build.BuildId).zip'
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: SearchTracking Functions'
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/SearchTrackingFunctions-$(Build.BuildId).zip'
+          ArtifactName: functions
+
       - task: DotNetCoreCLI@2
         displayName: 'Generate MatchingAlgorithm Persistent Migration'
         inputs:
@@ -294,13 +319,19 @@ jobs:
           command: custom
           custom: ef
           arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/RepeatSearchMigrationScript.sql --context RepeatSearchContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.RepeatSearch.Data --project $(System.DefaultWorkingDirectory)/Atlas.RepeatSearch.Data'
+      - task: DotNetCoreCLI@2
+        displayName: 'Generate Search Tracking Migration'
+        inputs:
+          command: custom
+          custom: ef
+          arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/SearchTrackingMigrationScript.sql --context SearchTrackingContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.SearchTracking.Data --project $(System.DefaultWorkingDirectory)/Atlas.SearchTracking.Data'
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Artifact: sql'
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/SQL'
           ArtifactName: sql
   - job: Terraform_Core
-    pool: 
+    pool:
       vmImage: 'ubuntu-latest'
     steps:
       - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
