@@ -25,6 +25,7 @@ namespace Atlas.DonorImport.Helpers
                     ExternalDonorCode = updatedDonor.ExternalDonorCode,
                     EthnicityCode = updatedDonor.EthnicityCode,
                     RegistryCode = updatedDonor.RegistryCode,
+                    LastUpdated = updatedDonor.LastUpdated,
                     A_1 = updatedDonor.A_1,
                     A_2 = updatedDonor.A_2,
                     B_1 = updatedDonor.B_1,
