@@ -47,7 +47,7 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             var repeatSearchRequest = new RepeatSearchRequest()
             {
                 OriginalSearchId = "1",
-                SearchCutoffDate = new DateTimeOffset(DateTime.Today, new TimeSpan(1, 0, 0)),
+                SearchCutoffDate = new DateTime(2024, 5, 11, 14, 30, 45, 0, 0, DateTimeKind.Utc),
                 SearchRequest = searchRequest
             };
 
@@ -79,7 +79,7 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             var repeatSearchRequest = new RepeatSearchRequest()
             {
                 OriginalSearchId = originalSearchId,
-                SearchCutoffDate = new DateTimeOffset(DateTime.UtcNow),
+                SearchCutoffDate = new DateTime(2024, 5 ,11, 14, 30, 45, 0, 0, DateTimeKind.Utc),
                 SearchRequest = searchRequest
             };
 
