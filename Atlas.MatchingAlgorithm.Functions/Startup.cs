@@ -2,21 +2,17 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.DependencyInjection;
-using Atlas.MatchingAlgorithm.Functions;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
-using Azure.Identity;
-using Microsoft.Extensions.Azure;
-using Microsoft.Extensions.Configuration;
+using Atlas.SearchTracking.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.Functions
 {
-    internal static class Startup 
+    internal static class Startup
     {
         public static void Configure(IServiceCollection services)
         {
@@ -26,13 +22,14 @@ namespace Atlas.MatchingAlgorithm.Functions
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<SearchTrackingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<MatchingConfigurationSettings>(),
                 ConnectionStringReader("PersistentSql"),
-                ConnectionStringReader("SqlA"), 
+                ConnectionStringReader("SqlA"),
                 ConnectionStringReader("SqlB"),
                 ConnectionStringReader("DonorSql"));
-            
+
             services.RegisterDataRefresh(OptionsReaderFor<AzureAuthenticationSettings>(),
                 OptionsReaderFor<AzureDatabaseManagementSettings>(),
                 OptionsReaderFor<DataRefreshSettings>(),
@@ -45,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Functions
                 OptionsReaderFor<DonorManagementSettings>(),
                 ConnectionStringReader("PersistentSql"),
                 ConnectionStringReader("SqlA"),
-                ConnectionStringReader("SqlB"), 
+                ConnectionStringReader("SqlB"),
                 ConnectionStringReader("DonorSql"));
 
             services.RegisterDebugServices(
