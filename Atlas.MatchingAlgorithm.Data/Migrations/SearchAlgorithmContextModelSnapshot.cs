@@ -79,7 +79,8 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("EthnicityCode")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("ExternalDonorCode")
                         .IsRequired()
@@ -92,7 +93,8 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                         .HasDefaultValue(true);
 
                     b.Property<string>("RegistryCode")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
 
@@ -102,11 +104,9 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
 
                     SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("DonorId"), new[] { "DQB1_1", "DQB1_2" });
 
-                    b.HasIndex("DonorType");
-
-                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("DonorType"), new[] { "DonorId", "RegistryCode" });
-
                     b.HasIndex("ExternalDonorCode");
+
+                    b.HasIndex("DonorType", "RegistryCode");
 
                     b.ToTable("Donors");
                 });

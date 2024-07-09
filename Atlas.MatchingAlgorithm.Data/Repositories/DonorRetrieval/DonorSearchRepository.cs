@@ -148,7 +148,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                     var matchingHlaTableName = MatchingHla.TableName(locus);
                     var hlaPGroupRelationTableName = HlaNamePGroupRelation.TableName(locus);
 
-                    var donorTypeFilteredJoin = $@"INNER JOIN Donors d ON m.DonorId = d.DonorId AND d.DonorType = {(int)filteringOptions.DonorType}";
+
+                    var donorRegistryCodeFilteringPostfix = filteringOptions.ShouldFilterOnRegistryCodes
+                        ? $" AND d.RegistryCode in @{nameof(filteringOptions.RegistryCodes)}"
+                        : string.Empty;
+
+                    var donorTypeFilteredJoin = $@"INNER JOIN Donors d ON m.DonorId = d.DonorId AND d.DonorType = {(int)filteringOptions.DonorType} {donorRegistryCodeFilteringPostfix}";
 
                     var donorUpdatedJoin = cutOffDate != null
                         ? $@"INNER JOIN DonorManagementLogs dml ON m.DonorId = dml.DonorId AND dml.LastUpdateDateTime >= @{nameof(cutOffDate)}"
@@ -174,17 +179,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                         new TempTableFilterConfiguration {TempTableName = "PGroups2", InsertTimeoutInSeconds = 300}
                     );
 
-                    var donorRegistryCodeTempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering(
-                            "d",
-                            "RegistryCode",
-                            filteringOptions.RegistryCodes,
-                            new TempTableFilterConfiguration { TempTableName = "RegistryCodes", InsertTimeoutInSeconds = 300 });
-                        
                     var donorIdTempTableJoin = filteringOptions.ShouldFilterOnDonorIds ? donorIdTempTableJoinConfig.FilteredJoinQueryString : "";
-
-                    var donorRegistryCodeTempTableJoin = filteringOptions.ShouldFilterOnRegistryCodeIds 
-                        ? $" {donorRegistryCodeTempTableJoinConfig.FilteredJoinQueryString}" 
-                        : "";
 
                     var joinType = mustBeDoubleMatch ? "INNER" : "FULL OUTER";
 
@@ -198,7 +193,6 @@ JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
 {donorIdTempTableJoin}
 {donorUpdatedJoin}
 {donorTypeFilteredJoin}
-{donorRegistryCodeTempTableJoin}
 ) as m_1; 
 
 CREATE INDEX IX_Temp_Position1 ON #Pos1(DonorId1);
@@ -212,7 +206,6 @@ JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
 {donorIdTempTableJoin}
 {donorUpdatedJoin}
 {donorTypeFilteredJoin}
-{donorRegistryCodeTempTableJoin}
 ) as m_2;
 
 CREATE INDEX IX_Temp_Position2 ON #Pos2(DonorId2);
@@ -224,11 +217,6 @@ ORDER BY DonorId
 ";
                     await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
                     {
-                        if (filteringOptions.ShouldFilterOnRegistryCodeIds)
-                        {
-                            await donorRegistryCodeTempTableJoinConfig.BuildTempTableFactory(conn);
-                        }
-
                         if (filteringOptions.ShouldFilterOnDonorIds)
                         {
                             await donorIdTempTableJoinConfig.BuildTempTableFactory(conn);
@@ -237,13 +225,18 @@ ORDER BY DonorId
                         await pGroups1TempTableJoinConfig.BuildTempTableFactory(conn);
                         await pGroups2TempTableJoinConfig.BuildTempTableFactory(conn);
 
+
+                        var parameters = filteringOptions.ShouldFilterOnRegistryCodes
+                            ? (object)new { cutOffDate, filteringOptions.RegistryCodes }
+                            : new { cutOffDate };
+
                         // This is streamed from the database via disabling buffering (the default CommandFlags value = `Buffered`).
                         // This allows us to minimise our memory footprint, by not loading all donors into memory at once, and filtering as we go. 
                         var commandDefinition = new CommandDefinition(
                             sql,
                             commandTimeout: 3600,
                             flags: CommandFlags.None,
-                            parameters: new {cutOffDate}
+                            parameters: parameters
                         );
 
                         var matches = await conn.QueryAsync<DonorLocusMatch>(commandDefinition);

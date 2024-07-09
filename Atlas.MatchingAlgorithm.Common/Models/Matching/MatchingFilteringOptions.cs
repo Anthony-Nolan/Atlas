@@ -26,6 +26,6 @@ namespace Atlas.MatchingAlgorithm.Common.Models.Matching
 
         public ICollection<string>? RegistryCodes { get; set; }
 
-        public bool ShouldFilterOnRegistryCodeIds => RegistryCodes != null;
+        public bool ShouldFilterOnRegistryCodes => RegistryCodes != null;
     }
 }

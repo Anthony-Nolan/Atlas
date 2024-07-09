@@ -66,7 +66,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
             var filteringOptions = new MatchingFilteringOptions
             {
-                DonorType = searchType, // databaseFilteringAnalyser.ShouldFilterOnDonorTypeInDatabase(repoCriteria) ? searchType : (DonorType?) null,
+                DonorType = searchType,
                 DonorIds = donorIds,
                 RegistryCodes = donorRegistryCodes,
             };
