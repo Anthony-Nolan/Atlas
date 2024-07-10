@@ -16,7 +16,3 @@ variable "IP_RESTRICTION_SETTINGS" {
   type    = list(string)
   default = []
 }
-
-variable "MAX_CONCURRENT_SERVICEBUS_FUNCTIONS" {
-  type = number
-}

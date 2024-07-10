@@ -395,12 +395,6 @@ variable "SEARCH_TRACKING_DATABASE_USERNAME" {
   default = "search_tracking"
 }
 
-variable "SEARCH_TRACKING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE" {
-  type        = number
-  default     = 1
-  description = "The maximum number of concurrent search tracking event requests that can run on each instance."
-}
-
 variable "SHOULD_BATCH_RESULTS" {
   type        = bool
   default     = false

@@ -272,7 +272,6 @@ module "search_tracking" {
   DATABASE_PASSWORD                              = var.SEARCH_TRACKING_DATABASE_PASSWORD
   DATABASE_USERNAME                              = var.SEARCH_TRACKING_DATABASE_USERNAME
   IP_RESTRICTION_SETTINGS                        = var.IP_RESTRICTION_SETTINGS
-  MAX_CONCURRENT_SERVICEBUS_FUNCTIONS            = var.SEARCH_TRACKING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE
 }
 
 module "support" {
