@@ -386,6 +386,21 @@ variable "SEARCH_RESULTS_READY_SUBSCRIPTION_NAMES" {
   description = "Subscription names for the search-results-ready and repeat-search-results-ready Service Bus topics (in addition to Audit subscriptions). If not provided, no additional subscriptions will be created."
 }
 
+variable "SEARCH_TRACKING_DATABASE_PASSWORD" {
+  type = string
+}
+
+variable "SEARCH_TRACKING_DATABASE_USERNAME" {
+  type    = string
+  default = "search_tracking"
+}
+
+variable "SEARCH_TRACKING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE" {
+  type        = number
+  default     = 1
+  description = "The maximum number of concurrent search tracking event requests that can run on each instance."
+}
+
 variable "SHOULD_BATCH_RESULTS" {
   type        = bool
   default     = false

@@ -41,7 +41,7 @@ module "donor_import" {
 
   default_servicebus_settings = local.service-bus
 
-  // DI Variables 
+  // DI Variables
   app_service_plan        = azurerm_service_plan.atlas-elastic-plan
   application_insights    = azurerm_application_insights.atlas
   azure_storage           = azurerm_storage_account.azure_storage
@@ -241,6 +241,38 @@ module "repeat_search" {
   MAX_SCALE_OUT                                  = var.REPEAT_SEARCH_MATCHING_MAX_SCALE_OUT
   REPEAT_SEARCH_RESULTS_READY_SUBSCRIPTION_NAMES = var.SEARCH_RESULTS_READY_SUBSCRIPTION_NAMES
   RESULTS_BATCH_SIZE                             = var.RESULTS_BATCH_SIZE
+}
+
+module "search_tracking" {
+  source = "./modules/search_tracking"
+
+  general = {
+    environment = local.environment
+    location    = local.location
+    common_tags = local.common_tags
+  }
+  default_servicebus_settings = local.service-bus
+
+  // DI Variables
+  application_insights                            = azurerm_application_insights.atlas
+  app_service_plan                                = azurerm_service_plan.atlas-elastic-plan
+  azure_app_configuration                         = azurerm_app_configuration.atlas_app_configuration
+  servicebus_namespace                            = azurerm_servicebus_namespace.general
+  servicebus_namespace_authorization_rules = {
+    read-write = azurerm_servicebus_namespace_authorization_rule.read-write
+    read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
+    write-only = azurerm_servicebus_namespace_authorization_rule.write-only
+  }
+  shared_function_storage = azurerm_storage_account.function_storage
+  sql_database            = azurerm_mssql_database.atlas-database-shared
+  sql_server              = azurerm_mssql_server.atlas_sql_server
+
+  // Release variables
+  APPLICATION_INSIGHTS_LOG_LEVEL                 = var.APPLICATION_INSIGHTS_LOG_LEVEL
+  DATABASE_PASSWORD                              = var.SEARCH_TRACKING_DATABASE_PASSWORD
+  DATABASE_USERNAME                              = var.SEARCH_TRACKING_DATABASE_USERNAME
+  IP_RESTRICTION_SETTINGS                        = var.IP_RESTRICTION_SETTINGS
+  MAX_CONCURRENT_SERVICEBUS_FUNCTIONS            = var.SEARCH_TRACKING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE
 }
 
 module "support" {
