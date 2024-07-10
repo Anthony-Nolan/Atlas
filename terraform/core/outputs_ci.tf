@@ -73,6 +73,14 @@ output "repeat-search-function-name" {
   value = module.repeat_search.function_app.app_name
 }
 
+output "search-tracking-database-name" {
+  value = azurerm_mssql_database.atlas-database-shared.name
+}
+
+output "search-tracking-function-name" {
+  value = module.search_tracking.function_app.app_name
+}
+
 output "sql-server" {
   value = azurerm_mssql_server.atlas_sql_server.fully_qualified_domain_name
 }
