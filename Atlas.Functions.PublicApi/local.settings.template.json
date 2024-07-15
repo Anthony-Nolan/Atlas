@@ -12,6 +12,9 @@
     "RepeatSearch:MessagingServiceBus:ConnectionString": "override-this",
     "RepeatSearch:MessagingServiceBus:RepeatSearchRequestsTopic": "repeat-search-requests",
 
+    "SearchTracking:SearchTrackingServiceBus:ConnectionString": "override-this",
+    "SearchTracking:SearchTrackingServiceBus:SearchTrackingTopic": "search-tracking-events",
+
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications"

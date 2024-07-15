@@ -161,6 +161,9 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
     "RepeatSearch:MessagingServiceBus:ConnectionString"          = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
     "RepeatSearch:MessagingServiceBus:RepeatSearchRequestsTopic" = module.repeat_search.service_bus.repeat_search_requests_topic
 
+    "SearchTracking:SearchTrackingServiceBus:ConnectionString"    = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "SearchTracking:SearchTrackingServiceBus:SearchTrackingTopic" = module.search_tracking.service_bus.search_tracking_topic
+
     "NotificationsServiceBus:AlertsTopic"        = module.support.general.alerts_servicebus_topic.name
     "NotificationsServiceBus:ConnectionString"   = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
     "NotificationsServiceBus:NotificationsTopic" = module.support.general.notifications_servicebus_topic.name
