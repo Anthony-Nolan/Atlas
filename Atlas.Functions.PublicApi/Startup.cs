@@ -20,7 +20,8 @@ namespace Atlas.Functions.PublicApi
                 OptionsReaderFor<MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings>(),
                 OptionsReaderFor<SearchTracking.Settings.ServiceBus.SearchTrackingServiceBusSettings>());
 
-            services.RegisterRepeatSearchOrchestration(OptionsReaderFor<RepeatSearch.Settings.ServiceBus.MessagingServiceBusSettings>());
+            services.RegisterRepeatSearchOrchestration(OptionsReaderFor<RepeatSearch.Settings.ServiceBus.MessagingServiceBusSettings>(),
+                OptionsReaderFor<SearchTracking.Settings.ServiceBus.SearchTrackingServiceBusSettings>());
 
             services.RegisterMatchPredictionValidator();
         }

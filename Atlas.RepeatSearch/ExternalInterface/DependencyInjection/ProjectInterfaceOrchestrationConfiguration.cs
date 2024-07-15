@@ -4,6 +4,7 @@ using Atlas.RepeatSearch.Clients;
 using Atlas.RepeatSearch.Services.Search;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Atlas.SearchTracking.Common.Clients;
+using Atlas.SearchTracking.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
@@ -16,9 +17,11 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
     {
         public static void RegisterRepeatSearchOrchestration(
             this IServiceCollection services,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, SearchTrackingServiceBusSettings> fetchSearchTrackingServiceBusSettings)
         {
             services.RegisterSettings(fetchMessagingServiceBusSettings);
+            services.RegisterSearchTrackingSettings(fetchSearchTrackingServiceBusSettings);
             services.RegisterServices();
         }
 
@@ -27,6 +30,13 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
+        }
+
+        private static void RegisterSearchTrackingSettings(
+            this IServiceCollection services,
+            Func<IServiceProvider, SearchTrackingServiceBusSettings> fetchSearchTrackingServiceBusSettings)
+        {
+            services.MakeSettingsAvailableForUse(fetchSearchTrackingServiceBusSettings);
         }
 
         private static void RegisterServices(this IServiceCollection services)
