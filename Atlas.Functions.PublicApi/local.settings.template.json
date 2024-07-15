@@ -12,7 +12,7 @@
     "RepeatSearch:MessagingServiceBus:ConnectionString": "override-this",
     "RepeatSearch:MessagingServiceBus:RepeatSearchRequestsTopic": "repeat-search-requests",
 
-    "SearchTracking:SearchTrackingServiceBus:ConnectionString": "Endpoint=sb://dev-atlas.servicebus.windows.net/;SharedAccessKeyName=read-write;SharedAccessKey=sD/IKaih0V03DcdX3zyN7zVjOVCR+6Hu3plbCNbh6Hc=",
+    "SearchTracking:SearchTrackingServiceBus:ConnectionString": "override-this",
     "SearchTracking:SearchTrackingServiceBus:SearchTrackingTopic": "search-tracking-events",
 
     "NotificationsServiceBus:AlertsTopic": "alerts",
