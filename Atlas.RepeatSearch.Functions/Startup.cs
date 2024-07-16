@@ -9,6 +9,7 @@ using Atlas.RepeatSearch.Settings.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Atlas.SearchTracking.Settings.ServiceBus;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 
@@ -26,10 +27,11 @@ namespace Atlas.RepeatSearch.Functions
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MatchingConfigurationSettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<SearchTrackingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 ConnectionStringReader("RepeatSearchSql"),
                 ConnectionStringReader("MatchingPersistentSql"),
-                ConnectionStringReader("MatchingSqlA"), 
+                ConnectionStringReader("MatchingSqlA"),
                 ConnectionStringReader("MatchingSqlB"),
                 ConnectionStringReader("DonorSql")
                 );
@@ -48,6 +50,7 @@ namespace Atlas.RepeatSearch.Functions
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
             services.RegisterAsOptions<MatchingConfigurationSettings>("MatchingConfiguration");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+            services.RegisterAsOptions<SearchTrackingServiceBusSettings>("SearchTrackingServiceBus");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
     }

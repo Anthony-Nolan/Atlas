@@ -36,6 +36,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, SearchTrackingServiceBusSettings> fetchSearchTrackingServiceBusSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, string> fetchRepeatSqlConnectionString,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
@@ -47,6 +48,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
                 fetchApplicationInsightsSettings,
                 fetchAzureStorageSettings,
                 fetchMessagingServiceBusSettings,
+                fetchSearchTrackingServiceBusSettings,
                 fetchRepeatSqlConnectionString);
 
             services.RegisterServices(fetchRepeatSqlConnectionString, fetchAzureStorageSettings);
@@ -59,7 +61,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
                 fetchMacDictionarySettings,
                 // Matching algorithm doesn't require a service bus setting as results notifications are handled by repeat search.
                 _ => new MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings(),
-                _ => new SearchTrackingServiceBusSettings(),
+                fetchSearchTrackingServiceBusSettings,
                 fetchNotificationsServiceBusSettings,
                 fetchMatchingConfigurationSettings,
                 fetchPersistentSqlConnectionString,
@@ -75,11 +77,13 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, RepeatSearch.Settings.Azure.AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, SearchTrackingServiceBusSettings> fetchSearchTrackingServiceBusSettings,
             Func<IServiceProvider, string> fetchRepeatSqlConnectionString)
         {
             services.MakeSettingsAvailableForUse(fetchApplicationInsightsSettings);
             services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
+            services.MakeSettingsAvailableForUse(fetchSearchTrackingServiceBusSettings);
 
             services.AddSingleton(sp => new ConnectionStrings {RepeatSearchSqlConnectionString = fetchRepeatSqlConnectionString(sp)});
         }

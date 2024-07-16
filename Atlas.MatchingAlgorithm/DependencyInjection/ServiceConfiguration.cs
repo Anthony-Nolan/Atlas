@@ -224,6 +224,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
 
             services.RegisterSearchServices(fetchMatchingConfigurationSettings);
+
+            services.MakeSettingsAvailableForUse(fetchSearchTrackingServiceBusSettings);
         }
 
         /// <summary>
