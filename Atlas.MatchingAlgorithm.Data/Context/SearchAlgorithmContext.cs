@@ -22,7 +22,8 @@ namespace Atlas.MatchingAlgorithm.Data.Context
 
             modelBuilder.Entity<Donor>()
                 .Property(d => d.IsAvailableForSearch)
-                .HasDefaultValue(true);
+                .HasDefaultValue(true)
+                .HasSentinel(false);
 
             modelBuilder.Entity<DonorManagementLog>()
                 .HasIndex(d => d.DonorId)
