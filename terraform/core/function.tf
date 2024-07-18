@@ -60,9 +60,6 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsSubscription" = module.repeat_search.service_bus.repeat_search_matching_results_subscription
     "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic"        = module.repeat_search.service_bus.repeat_search_matching_results_topic
     "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic"                = module.repeat_search.service_bus.repeat_search_results_topic
-    "AtlasFunction:MessagingServiceBus:SearchTrackingSubscription"              = module.search_tracking.service_bus.search_tracking_subscription
-    "AtlasFunction:MessagingServiceBus:SearchTrackingTopic"                     = module.search_tracking.service_bus.search_tracking_topic
-    "AtlasFunction:MessagingServiceBus:SearchResultsTopic"                      = azurerm_servicebus_topic.search-results-ready.name
     "AtlasFunction:MessagingServiceBus:SearchResultsDebugSubscription"          = azurerm_servicebus_subscription.debug-search-results-ready.name
     "AtlasFunction:MessagingServiceBus:RepeatSearchResultsDebugSubscription"    = module.repeat_search.service_bus.repeat_search_results_debug_subscription
     "AtlasFunction:Orchestration:MatchPredictionBatchSize"                      = var.ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE
@@ -162,7 +159,7 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
     "RepeatSearch:MessagingServiceBus:RepeatSearchRequestsTopic" = module.repeat_search.service_bus.repeat_search_requests_topic
 
     "SearchTracking:SearchTrackingServiceBus:ConnectionString"    = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
-    "SearchTracking:SearchTrackingServiceBus:SearchTrackingTopic" = module.search_tracking.service_bus.search_tracking_topic
+    "SearchTracking:SearchTrackingServiceBus:SearchTrackingTopic" = module.search_tracking.service_bus.search_tracking_topic.name
 
     "NotificationsServiceBus:AlertsTopic"        = module.support.general.alerts_servicebus_topic.name
     "NotificationsServiceBus:ConnectionString"   = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string

@@ -23,7 +23,9 @@
     "MessagingServiceBus:RepeatSearchRequestsMaxDeliveryCount": 10,
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
-    "NotificationsServiceBus:NotificationsTopic": "notifications"
+    "NotificationsServiceBus:NotificationsTopic": "notifications",
+    "SearchTrackingServiceBus:ConnectionString": "override-this",
+    "SearchTrackingServiceBus:SearchTrackingTopic": "search-tracking-events"
   },
 
   "ConnectionStrings": {

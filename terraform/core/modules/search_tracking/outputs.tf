@@ -8,8 +8,7 @@ output "function_app" {
 
 output "service_bus" {
   value = {
-    search_tracking_subscription    = azurerm_servicebus_subscription.search-tracking.name
-    search_tracking_topic           = azurerm_servicebus_topic.search-tracking-events.name
+    search_tracking_topic = azurerm_servicebus_topic.search-tracking-events
   }
 }
 

@@ -65,6 +65,7 @@ namespace Atlas.MatchingAlgorithm.Functions
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
             services.RegisterAsOptions<MatchingConfigurationSettings>("MatchingConfiguration");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+            services.RegisterAsOptions<SearchTrackingServiceBusSettings>("SearchTrackingServiceBus");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
     }

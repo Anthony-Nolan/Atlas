@@ -25,6 +25,8 @@ resource "azurerm_windows_function_app" "atlas_search_tracking_function" {
     "MessagingServiceBus:ConnectionString"               = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
     "MessagingServiceBus:SearchTrackingSubscription"     = azurerm_servicebus_subscription.search-tracking.name
     "MessagingServiceBus:SearchTrackingTopic"            = azurerm_servicebus_topic.search-tracking-events.name
+
+    "WEBSITE_RUN_FROM_PACKAGE" = "1"
   }
 
   site_config {

@@ -93,6 +93,9 @@ variable "servicebus_topics" {
     notifications = object({
       name = string
     })
+    search_tracking = object({
+      name = string
+    })
   })
 }
 
