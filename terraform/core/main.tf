@@ -223,8 +223,9 @@ module "repeat_search" {
     write-only = azurerm_servicebus_namespace_authorization_rule.write-only
   }
   servicebus_topics = {
-    alerts        = module.support.general.alerts_servicebus_topic
-    notifications = module.support.general.notifications_servicebus_topic
+    alerts          = module.support.general.alerts_servicebus_topic
+    notifications   = module.support.general.notifications_servicebus_topic
+    search_tracking = module.search_tracking.service_bus.search_tracking_topic
   }
   shared_function_storage = azurerm_storage_account.function_storage
   sql_database            = azurerm_mssql_database.atlas-database-shared
