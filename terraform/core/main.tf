@@ -113,6 +113,7 @@ module "matching_algorithm" {
     updated-searchable-donors = module.donor_import.service_bus.updated_searchable_donors_topic
     alerts                    = module.support.general.alerts_servicebus_topic
     notifications             = module.support.general.notifications_servicebus_topic
+    search_tracking           = module.search_tracking.service_bus.search_tracking_topic
   }
 
   // Release variables

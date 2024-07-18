@@ -48,7 +48,6 @@
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications",
     "SearchTrackingServiceBus:ConnectionString": "override-this",
-    "SearchTrackingServiceBus:SearchTrackingSubscription": "search-tracking",
     "SearchTrackingServiceBus:SearchTrackingTopic": "search-tracking-events",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated"
   },

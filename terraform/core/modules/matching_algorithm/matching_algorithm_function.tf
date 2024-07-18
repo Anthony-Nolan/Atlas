@@ -57,9 +57,12 @@ locals {
     "MessagingServiceBus:SearchResultsTopic"             = azurerm_servicebus_topic.matching-results-ready.name
     "MessagingServiceBus:SearchResultsDebugSubscription" = azurerm_servicebus_subscription.debug-matching-results-ready.name
 
-    "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
-    "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
-    "NotificationsServiceBus:NotificationsTopic" = var.servicebus_topics.notifications.name
+    "NotificationsServiceBus:ConnectionString"           = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:AlertsTopic"                = var.servicebus_topics.alerts.name
+    "NotificationsServiceBus:NotificationsTopic"         = var.servicebus_topics.notifications.name
+
+    "SearchTrackingServiceBus:ConnectionString"          = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "SearchTrackingServiceBus:SearchTrackingTopic"       = var.servicebus_topics.search_tracking.name
 
     "Wmda:WmdaFileUri" = var.WMDA_FILE_URL
 
