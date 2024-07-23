@@ -6,5 +6,8 @@
     "MessagingServiceBus:ConnectionString": "override-this",
     "MessagingServiceBus:SearchTrackingSubscription": "search-tracking",
     "MessagingServiceBus:SearchTrackingTopic": "search-tracking-events"
+  },
+  "ConnectionStrings": {
+    "SearchTrackingSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;trustServerCertificate=true"
   }
 }
