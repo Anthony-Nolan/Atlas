@@ -1,20 +1,23 @@
 # Schema names are hardcoded in the EF context of each database - if changed, they will need to be changed in both places
 
-$variablesArray = 
+$variablesArray =
 "matchingUsername=$env:matchingUser",
-"matchingPassword=$env:matchingPassword", 
+"matchingPassword=$env:matchingPassword",
 "matchingPersistentSchema=MatchingAlgorithmPersistent",
 "matchPredictionUsername=$env:matchPredictionUser",
-"matchPredictionPassword=$env:matchPredictionPassword", 
+"matchPredictionPassword=$env:matchPredictionPassword",
 "matchPredictionSchema=MatchPrediction",
 "donorImportUsername=$env:donorImportUser",
-"donorImportPassword=$env:donorImportPassword", 
+"donorImportPassword=$env:donorImportPassword",
 "donorImportSchema=Donors",
 "matchingUsernameForDonorDB=$env:matchingUsernameForDonorDB",
 "matchingPasswordForDonorDB=$env:matchingPasswordForDonorDB",
 "repeatSearchUsername=$env:repeatSearchUsername",
 "repeatSearchPassword=$env:repeatSearchPassword",
 "repeatSearchSchema=RepeatSearch"
+"searchTrackingUsername=$env:searchTrackingUsername",
+"searchTrackingPassword=$env:searchTrackingPassword",
+"searchTrackingSchema=SearchTracking"
 
 Write-Host $variablesArray
 
@@ -27,3 +30,5 @@ Invoke-Sqlcmd -InputFile "sql/createUsers/matchingPersistent.sql" -ServerInstanc
 Invoke-Sqlcmd -InputFile "sql/createUsers/donorImport.sql" -ServerInstance $env:sqlServer -Database $env:donorImportDatabase -Username $env:sqlServerLogin -Password $env:sqlServerLoginPassword -Variable $variablesArray
 
 Invoke-Sqlcmd -InputFile "sql/createUsers/repeatSearch.sql" -ServerInstance $env:sqlServer -Database $env:repeatSearchDatabase -Username $env:sqlServerLogin -Password $env:sqlServerLoginPassword -Variable $variablesArray
+
+Invoke-Sqlcmd -InputFile "sql/createUsers/searchTracking.sql" -ServerInstance $env:sqlServer -Database $env:repeatSearchDatabase -Username $env:sqlServerLogin -Password $env:sqlServerLoginPassword -Variable $variablesArray
