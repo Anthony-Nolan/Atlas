@@ -77,6 +77,10 @@ output "search-tracking-database-name" {
   value = azurerm_mssql_database.atlas-database-shared.name
 }
 
+output "search-tracking-username" {
+  value = var.SEARCH_TRACKING_DATABASE_USERNAME
+}
+
 output "search-tracking-function-name" {
   value = module.search_tracking.function_app.app_name
 }
