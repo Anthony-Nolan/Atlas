@@ -31,4 +31,4 @@ Invoke-Sqlcmd -InputFile "sql/createUsers/donorImport.sql" -ServerInstance $env:
 
 Invoke-Sqlcmd -InputFile "sql/createUsers/repeatSearch.sql" -ServerInstance $env:sqlServer -Database $env:repeatSearchDatabase -Username $env:sqlServerLogin -Password $env:sqlServerLoginPassword -Variable $variablesArray
 
-Invoke-Sqlcmd -InputFile "sql/createUsers/searchTracking.sql" -ServerInstance $env:sqlServer -Database $env:repeatSearchDatabase -Username $env:sqlServerLogin -Password $env:sqlServerLoginPassword -Variable $variablesArray
+Invoke-Sqlcmd -InputFile "sql/createUsers/searchTracking.sql" -ServerInstance $env:sqlServer -Database $env:searchTrackingDatabase -Username $env:sqlServerLogin -Password $env:sqlServerLoginPassword -Variable $variablesArray
