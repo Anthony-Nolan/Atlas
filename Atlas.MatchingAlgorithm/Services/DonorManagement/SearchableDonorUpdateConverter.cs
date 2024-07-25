@@ -13,11 +13,11 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
     public interface ISearchableDonorUpdateConverter
     {
         Task<DonorBatchProcessingResult<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
-            IEnumerable<ServiceBusMessage<SearchableDonorUpdate>> updates);
+            IEnumerable<DeserializedMessage<SearchableDonorUpdate>> updates);
     }
 
     public class SearchableDonorUpdateConverter :
-        DonorBatchProcessor<ServiceBusMessage<SearchableDonorUpdate>, DonorAvailabilityUpdate>,
+        DonorBatchProcessor<DeserializedMessage<SearchableDonorUpdate>, DonorAvailabilityUpdate>,
         ISearchableDonorUpdateConverter
     {
         private const string UpdateFailureEventName = "Searchable Donor Update parsing Failure(s) in the Matching Algorithm's Continuous Donor Update sytem";
@@ -27,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         }
 
         public async Task<DonorBatchProcessingResult<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
-            IEnumerable<ServiceBusMessage<SearchableDonorUpdate>> updates)
+            IEnumerable<DeserializedMessage<SearchableDonorUpdate>> updates)
         {
             return await ProcessBatchAsyncWithAnticipatedExceptions<ValidationException>(
                 updates,
@@ -39,7 +39,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
                 UpdateFailureEventName);
         }
 
-        private static async Task<DonorAvailabilityUpdate> GetDonorAvailabilityUpdate(ServiceBusMessage<SearchableDonorUpdate> update)
+        private static async Task<DonorAvailabilityUpdate> GetDonorAvailabilityUpdate(DeserializedMessage<SearchableDonorUpdate> update)
         {
             await new DonorUpdateMessageValidator().ValidateAndThrowAsync(update);
 

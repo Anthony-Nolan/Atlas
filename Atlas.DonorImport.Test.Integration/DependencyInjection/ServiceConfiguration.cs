@@ -12,7 +12,7 @@ using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
-using Microsoft.Azure.ServiceBus;
+using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -88,11 +88,11 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
             // We emulate that on all service bus clients here to enable testing for such cases.
             var mockTopicClient = Substitute.For<ITopicClient>();
             mockTopicClient
-                .WhenForAnyArgs(x => x.SendAsync((Message)default))
+                .WhenForAnyArgs(x => x.SendAsync((ServiceBusMessage)default))
                 .Do(_ => ThrowIfInTransaction());
 
             var mockTopicClientFactory = Substitute.For<ITopicClientFactory>();
-            mockTopicClientFactory.BuildTopicClient(default, default).ReturnsForAnyArgs(mockTopicClient);
+            mockTopicClientFactory.BuildTopicClient(default).ReturnsForAnyArgs(mockTopicClient);
             services.AddScoped(sp => mockTopicClientFactory);
             #endregion
 

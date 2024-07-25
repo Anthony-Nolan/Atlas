@@ -4,6 +4,7 @@ using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Debugging;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus;
+using Atlas.Common.ServiceBus.DependencyInjection;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
@@ -121,14 +122,16 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             Func<IServiceProvider, Settings.Azure.AzureStorageSettings> fetchAzureStorageSettings
             )
         {
-            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>();
+            var serviceKey = typeof(MessagingServiceBusSettings);
+            services.RegisterServiceBusAsKeyedServices(
+                serviceKey,
+                sp => fetchMessagingServiceBusSettings(sp).ConnectionString);
 
             services.AddScoped<IServiceBusPeeker<MatchingResultsNotification>, MatchingResultNotificationsPeeker>(sp =>
             {
                 var settings = fetchMessagingServiceBusSettings(sp);
                 return new MatchingResultNotificationsPeeker(
-                    sp.GetService<IMessageReceiverFactory>(),
-                    settings.ConnectionString,
+                    sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey),
                     settings.RepeatSearchMatchingResultsTopic,
                     settings.RepeatSearchResultsDebugSubscription);
             });

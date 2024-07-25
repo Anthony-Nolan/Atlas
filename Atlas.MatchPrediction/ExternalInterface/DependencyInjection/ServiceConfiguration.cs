@@ -18,6 +18,7 @@ using Atlas.MatchPrediction.Services.HlaConversion;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -77,7 +78,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> messagingServiceBusSettings,
             Func<IServiceProvider, MatchPredictionRequestsSettings> matchPredictionRequestSettings)
         {
-            services.AddScoped(typeof(IMessageBatchPublisher<>), typeof(MessageBatchPublisher<>));
+            //services.AddScoped(typeof(IMessageBatchPublisher<>), typeof(MessageBatchPublisher<>));
 
             // services for requesting a match prediction
             services.AddScoped<IMatchPredictionValidator, MatchPredictionValidator>();
@@ -86,7 +87,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             {
                 var serviceBusSettings = messagingServiceBusSettings(sp);
                 var matchPredictionRequestsSettings = matchPredictionRequestSettings(sp);
-                return new MessageBatchPublisher<IdentifiedMatchPredictionRequest>(serviceBusSettings.ConnectionString, matchPredictionRequestsSettings.RequestsTopic);
+                var client = sp.GetRequiredKeyedService<ServiceBusClient>(typeof(MessagingServiceBusSettings));
+                return new MessageBatchPublisher<IdentifiedMatchPredictionRequest>(client, matchPredictionRequestsSettings.RequestsTopic);
             });
 
             // services for running a match prediction request
@@ -105,7 +107,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             {
                 var serviceBusSettings = messagingServiceBusSettings(sp);
                 var matchPredictionRequestsSettings = matchPredictionRequestSettings(sp);
-                return new MessageBatchPublisher<MatchPredictionResultLocation>(serviceBusSettings.ConnectionString, matchPredictionRequestsSettings.ResultsTopic);
+                var client = sp.GetRequiredKeyedService<ServiceBusClient>(typeof(MessagingServiceBusSettings));
+                return new MessageBatchPublisher<MatchPredictionResultLocation>(client, matchPredictionRequestsSettings.ResultsTopic);
             });
         }
 

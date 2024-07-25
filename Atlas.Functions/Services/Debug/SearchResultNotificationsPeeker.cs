@@ -11,8 +11,8 @@ namespace Atlas.Functions.Services.Debug
     internal class SearchResultNotificationsPeeker : ServiceBusPeeker<SearchResultsNotification>, ISearchResultNotificationsPeeker
     {
         public SearchResultNotificationsPeeker(
-            IMessageReceiverFactory factory, string connectionString, string topicName, string subscriptionName)
-            : base(factory, connectionString, topicName, subscriptionName)
+            IMessageReceiverFactory factory, string topicName, string subscriptionName)
+            : base(factory, topicName, subscriptionName)
         {
         }
     }

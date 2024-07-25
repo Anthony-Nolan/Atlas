@@ -12,19 +12,18 @@ namespace Atlas.Common.ServiceBus
 
     public class MessageBatchPublisher<T> : IMessageBatchPublisher<T>
     {
-        private readonly string connectionString;
+        private readonly ServiceBusClient client;
         private readonly string topicName;
 
-        public MessageBatchPublisher(string connectionString, string topicName)
+        public MessageBatchPublisher(ServiceBusClient client, string topicName)
         {
-            this.connectionString = connectionString;
+            this.client = client;   
             this.topicName = topicName;
         }
 
         public async Task BatchPublish(IEnumerable<T> contentToPublish)
         {
-            await using var client = new ServiceBusClient(connectionString);
-            var sender = client.CreateSender(topicName);
+            await using var sender = client.CreateSender(topicName);
 
             var localQueue = new Queue<ServiceBusMessage>();
             foreach (var content in contentToPublish)

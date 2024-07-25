@@ -3,6 +3,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus;
+using Atlas.Common.ServiceBus.DependencyInjection;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data;
 using Atlas.DonorImport.Data.Repositories;
@@ -15,7 +16,9 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Services.Debug;
 using Atlas.DonorImport.Services.DonorChecker;
 using Atlas.DonorImport.Services.DonorUpdates;
+using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OData.UriParser;
 
 namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
 {
@@ -113,7 +116,8 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IMessageBatchPublisher<SearchableDonorUpdate>, MessageBatchPublisher<SearchableDonorUpdate>>(sp =>
             {
                 var serviceBusSettings = fetchMessagingServiceBusSettings(sp);
-                return new MessageBatchPublisher<SearchableDonorUpdate>(serviceBusSettings.ConnectionString, serviceBusSettings.UpdatedSearchableDonorsTopic);
+                var client = sp.GetRequiredKeyedService<ServiceBusClient>(typeof(MessagingServiceBusSettings));
+                return new MessageBatchPublisher<SearchableDonorUpdate>(client, serviceBusSettings.UpdatedSearchableDonorsTopic);
             });
             services.AddScoped<IDonorUpdatesCleaner, DonorUpdatesCleaner>();
 
@@ -123,17 +127,15 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             {
                 var messagingServiceBusSettings = fetchMessagingServiceBusSettings(sp);
                 var logger = sp.GetService<ILogger>();
-                var topicClientFactory = sp.GetService<ITopicClientFactory>();
-                return new DonorCheckerMessageSender(logger, topicClientFactory, messagingServiceBusSettings.ConnectionString,
-                    messagingServiceBusSettings.DonorInfoCheckerResultsTopic);
+                var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
+                return new DonorCheckerMessageSender(logger, topicClientFactory, messagingServiceBusSettings.DonorInfoCheckerResultsTopic);
             });
             services.AddScoped<IDonorIdCheckerMessageSender, DonorCheckerMessageSender>(sp =>
             {
                 var messagingServiceBusSettings = fetchMessagingServiceBusSettings(sp);
                 var logger = sp.GetService<ILogger>();
-                var topicClientFactory = sp.GetService<ITopicClientFactory>();
-                return new DonorCheckerMessageSender(logger, topicClientFactory, messagingServiceBusSettings.ConnectionString,
-                    messagingServiceBusSettings.DonorIdCheckerResultsTopic);
+                var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
+                return new DonorCheckerMessageSender(logger, topicClientFactory, messagingServiceBusSettings.DonorIdCheckerResultsTopic);
             });
 
             services.AddScoped<IDonorIdCheckerBlobStorageClient, DonorCheckerBlobStorageClient>(sp =>
@@ -163,14 +165,17 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings
             )
         {
-            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>();
+            var serviceKey = typeof(MessagingServiceBusSettings);
+            services.RegisterServiceBusAsKeyedServices(
+                serviceKey,
+                sp => fetchMessagingServiceBusSettings(sp).ConnectionString
+                );
 
             services.AddScoped<IDonorImportResultsPeeker, DonorImportResultsPeeker>(sp =>
             {
                 var settings = fetchMessagingServiceBusSettings(sp);
                 return new DonorImportResultsPeeker(
-                    sp.GetService<IMessageReceiverFactory>(),
-                    settings.ConnectionString,
+                    sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey),
                     settings.DonorImportResultsTopic,
                     settings.DonorImportResultsDebugSubscription);
             });

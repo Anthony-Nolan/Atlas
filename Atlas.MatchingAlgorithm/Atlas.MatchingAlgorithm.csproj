@@ -15,6 +15,7 @@
     <ItemGroup>
       <PackageReference Include="AsyncEnumerator" Version="4.0.2" />
       <PackageReference Include="AutoMapper" Version="8.1.1" />
+      <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.17.5" />
       <PackageReference Include="Azure.Monitor.Query" Version="1.2.0" />
       <PackageReference Include="EnumStringValues" Version="4.0.2" />
       <PackageReference Include="FluentValidation" Version="8.4.0" />

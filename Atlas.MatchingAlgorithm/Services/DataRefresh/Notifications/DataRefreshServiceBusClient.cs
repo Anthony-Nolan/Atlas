@@ -1,9 +1,12 @@
+using System;
 using System.Text;
 using System.Threading.Tasks;
+using Atlas.Common.ServiceBus;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
-using Microsoft.Azure.ServiceBus;
+using Azure.Messaging.ServiceBus;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications
@@ -14,20 +17,20 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications
         Task PublishToCompletionTopic(CompletedDataRefresh completedDataRefresh);
     }
 
-    internal class DataRefreshServiceBusClient : IDataRefreshServiceBusClient
+    internal sealed class DataRefreshServiceBusClient : IDataRefreshServiceBusClient, IAsyncDisposable
     {
-        private readonly TopicClient requestTopicClient;
-        private readonly TopicClient completionTopicClient;
+        private readonly ITopicClient requestTopicClient;
+        private readonly ITopicClient completionTopicClient;
 
         public DataRefreshServiceBusClient(
-            MessagingServiceBusSettings messagingServiceBusSettings, 
+            [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory,
             DataRefreshSettings dataRefreshSettings)
         {
-            requestTopicClient = new TopicClient(
-                messagingServiceBusSettings.ConnectionString, dataRefreshSettings.RequestsTopic);
+            requestTopicClient = topicClientFactory.BuildTopicClient(
+                dataRefreshSettings.RequestsTopic);
 
-            completionTopicClient = new TopicClient(
-                messagingServiceBusSettings.ConnectionString, dataRefreshSettings.CompletionTopic);
+            completionTopicClient = topicClientFactory.BuildTopicClient(
+                dataRefreshSettings.CompletionTopic);
         }
 
         public async Task PublishToRequestTopic(ValidatedDataRefreshRequest dataRefreshRequest)
@@ -42,10 +45,16 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications
             await completionTopicClient.SendAsync(message);
         }
 
-        private static Message BuildMessage(object objectToSerialise)
+        public async ValueTask DisposeAsync()
+        {
+            await requestTopicClient.DisposeAsync();
+            await completionTopicClient.DisposeAsync();
+        }
+
+        private static ServiceBusMessage BuildMessage(object objectToSerialise)
         {
             var json = JsonConvert.SerializeObject(objectToSerialise);
-            return new Message(Encoding.UTF8.GetBytes(json));
+            return new ServiceBusMessage(Encoding.UTF8.GetBytes(json));
         }
     }
 }

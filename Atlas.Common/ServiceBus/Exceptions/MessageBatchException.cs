@@ -12,7 +12,7 @@ namespace Atlas.Common.ServiceBus.Exceptions
         /// </summary>
         public IEnumerable<long> SequenceNumbers { get; set; }
 
-        public MessageBatchException(string processName, IEnumerable<ServiceBusMessage<T>> serviceBusMessages, Exception inner) :
+        public MessageBatchException(string processName, IEnumerable<DeserializedMessage<T>> serviceBusMessages, Exception inner) :
             base(GetErrorMessage(processName), inner)
         {
             SequenceNumbers = serviceBusMessages

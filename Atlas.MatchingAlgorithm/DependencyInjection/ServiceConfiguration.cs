@@ -9,6 +9,7 @@ using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus;
 using Atlas.Common.ServiceBus.BatchReceiving;
+using Atlas.Common.ServiceBus.DependencyInjection;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.DonorImport.ExternalInterface.Models;
@@ -149,14 +150,17 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings
             )
         {
-            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>();
+            var serviceKey = typeof(MessagingServiceBusSettings);
+            services.RegisterServiceBusAsKeyedServices(
+                key: serviceKey,
+                sp => fetchMessagingServiceBusSettings(sp).ConnectionString
+                );
 
             services.AddScoped<IServiceBusPeeker<MatchingResultsNotification>, MatchingResultNotificationsPeeker>(sp =>
             {
                 var settings = fetchMessagingServiceBusSettings(sp);
                 return new MatchingResultNotificationsPeeker(
-                    sp.GetService<IMessageReceiverFactory>(),
-                    settings.ConnectionString,
+                    sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey),
                     settings.SearchResultsTopic,
                     settings.SearchResultsDebugSubscription);
             });
@@ -309,20 +313,24 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, string> fetchDonorImportSqlConnectionString)
         {
+            var serviceKey = typeof(MessagingServiceBusSettings);
             services.RegisterDonorImportServices(fetchDonorImportSqlConnectionString);
 
             services.AddScoped<IDonorManagementService, DonorManagementService>();
             services.AddScoped<ISearchableDonorUpdateConverter, SearchableDonorUpdateConverter>();
 
-            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>();
+            services.RegisterServiceBusAsKeyedServices(
+                serviceKey,
+                connectionStringAccessor: sp => fetchMessagingServiceBusSettings(sp).ConnectionString
+                );
 
             services.AddScoped<IMessageProcessorForDbADonorUpdates, DonorUpdateMessageProcessor>(sp =>
             {
                 var messagingSettings = fetchMessagingServiceBusSettings(sp);
                 var donorManagementSettings = fetchDonorManagementSettings(sp);
-                var factory = sp.GetService<IMessageReceiverFactory>();
+                var factory = sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey);
                 var messageReceiver = new ServiceBusMessageReceiver<SearchableDonorUpdate>(
-                    factory, messagingSettings.ConnectionString, donorManagementSettings.Topic, donorManagementSettings.SubscriptionForDbA);
+                    factory, donorManagementSettings.Topic, donorManagementSettings.SubscriptionForDbA, donorManagementSettings.BatchSize * 2);
                 return new DonorUpdateMessageProcessor(messageReceiver);
             });
 
@@ -330,9 +338,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             {
                 var messagingSettings = fetchMessagingServiceBusSettings(sp);
                 var donorManagementSettings = fetchDonorManagementSettings(sp);
-                var factory = sp.GetService<IMessageReceiverFactory>();
+                var factory = sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey);
                 var messageReceiver = new ServiceBusMessageReceiver<SearchableDonorUpdate>(
-                    factory, messagingSettings.ConnectionString, donorManagementSettings.Topic, donorManagementSettings.SubscriptionForDbB);
+                    factory, donorManagementSettings.Topic, donorManagementSettings.SubscriptionForDbB, donorManagementSettings.BatchSize * 2);
                 return new DonorUpdateMessageProcessor(messageReceiver);
             });
 

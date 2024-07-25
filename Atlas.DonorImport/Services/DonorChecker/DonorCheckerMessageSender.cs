@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using Atlas.Common.ServiceBus;
-using Microsoft.Azure.ServiceBus;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Newtonsoft.Json;
@@ -19,16 +18,18 @@ namespace Atlas.DonorImport.Services.DonorChecker
     public interface IDonorInfoCheckerMessageSender : IDonorCheckerMessageSender { }
     public interface IDonorIdCheckerMessageSender : IDonorCheckerMessageSender { }
 
-    internal class DonorCheckerMessageSender : IDonorInfoCheckerMessageSender, IDonorIdCheckerMessageSender
+    internal sealed class DonorCheckerMessageSender : IDonorInfoCheckerMessageSender, IDonorIdCheckerMessageSender, IAsyncDisposable
     {
         private readonly ITopicClient topicClient;
         private readonly ILogger logger;
 
-        public DonorCheckerMessageSender(ILogger logger, ITopicClientFactory topicClientFactory, string connectionString, string topicName)
+        public DonorCheckerMessageSender(ILogger logger, ITopicClientFactory topicClientFactory, string topicName)
         {
             this.logger = logger;
-            topicClient = topicClientFactory.BuildTopicClient(connectionString, topicName);
+            topicClient = topicClientFactory.BuildTopicClient(topicName);
         }
+
+        public ValueTask DisposeAsync() => topicClient.DisposeAsync();
 
         public async Task SendSuccessDonorCheckMessage(string requestFileLocation, int resultsCount, string resultsFilename)
         {
@@ -44,7 +45,7 @@ namespace Atlas.DonorImport.Services.DonorChecker
                     { nameof(DonorCheckerMessage.ResultsFilename), donorCheckerMessage.ResultsFilename },
 
                 });
-                var message = new Message(Encoding.UTF8.GetBytes(stringMessage));
+                var message = new Azure.Messaging.ServiceBus.ServiceBusMessage(Encoding.UTF8.GetBytes(stringMessage));
 
                 await topicClient.SendAsync(message);
             }

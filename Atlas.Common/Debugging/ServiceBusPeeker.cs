@@ -4,8 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Atlas.Common.ServiceBus;
 using Atlas.Debug.Client.Models.ServiceBus;
-using Microsoft.Azure.ServiceBus;
-using Microsoft.Azure.ServiceBus.Core;
+using Azure.Messaging.ServiceBus;
 using Newtonsoft.Json;
 
 namespace Atlas.Common.Debugging
@@ -16,8 +15,8 @@ namespace Atlas.Common.Debugging
 
     public class MessagesPeeker<T> : ServiceBusPeeker<T>, IMessagesPeeker<T>
     {
-        public MessagesPeeker(IMessageReceiverFactory factory, string connectionString, string topicName, string subscriptionName)
-            : base(factory, connectionString, topicName, subscriptionName)
+        public MessagesPeeker(IMessageReceiverFactory factory, string topicName, string subscriptionName)
+            : base(factory, topicName, subscriptionName)
         {
         }
     }
@@ -33,11 +32,10 @@ namespace Atlas.Common.Debugging
 
         protected ServiceBusPeeker(
             IMessageReceiverFactory factory,
-            string connectionString,
             string topicName,
             string subscriptionName)
         {
-            messageReceiver = factory.GetMessageReceiver(connectionString, topicName, subscriptionName);
+            messageReceiver = factory.GetMessageReceiver(topicName, subscriptionName);
         }
 
         public async Task<PeekServiceBusMessagesResponse<T>> Peek(PeekServiceBusMessagesRequest peekRequest)
@@ -50,7 +48,8 @@ namespace Atlas.Common.Debugging
             while (messages.Count < peekRequest.MessageCount)
             {
                 var messageCount = peekRequest.MessageCount - messages.Count;
-                var batch = await messageReceiver.PeekBySequenceNumberAsync(fromSequenceNumber, messageCount);
+
+                var batch = await messageReceiver.PeekMessagesAsync(maxMessages: messageCount, fromSequenceNumber: fromSequenceNumber);
 
                 if (!batch.Any())
                 {
@@ -58,7 +57,7 @@ namespace Atlas.Common.Debugging
                 }
 
                 messages.AddRange(batch.Select(GetServiceBusMessage));
-                fromSequenceNumber = batch.Select(m => m.SystemProperties.SequenceNumber).MaxBy(i => i) + 1;
+                fromSequenceNumber = batch.Select(m => m.SequenceNumber).MaxBy(i => i) + 1;
             }
 
             return new PeekServiceBusMessagesResponse<T>
@@ -68,7 +67,7 @@ namespace Atlas.Common.Debugging
             };
         }
 
-        private static T GetServiceBusMessage(Message message)
+        private static T GetServiceBusMessage(ServiceBusReceivedMessage message)
         {
             return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(message.Body));
         }
