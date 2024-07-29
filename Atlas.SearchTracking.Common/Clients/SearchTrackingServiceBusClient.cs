@@ -1,5 +1,6 @@
 ﻿using Atlas.SearchTracking.Settings.ServiceBus;
 using System.Text;
+using Atlas.SearchTracking.Common.Config;
 using Atlas.SearchTracking.Common.Enums;
 using Microsoft.Azure.ServiceBus;
 using Newtonsoft.Json;
@@ -15,7 +16,7 @@ namespace Atlas.SearchTracking.Common.Clients
     {
         private readonly string connectionString;
         private readonly string searchTrackingTopicName;
-        private readonly string EventTypePropertyName = "EventType";
+        private readonly string EventTypePropertyName = SearchTrackingConstants.EventType;
 
         public SearchTrackingServiceBusClient(SearchTrackingServiceBusSettings searchTrackingServiceBusSettings)
         {
