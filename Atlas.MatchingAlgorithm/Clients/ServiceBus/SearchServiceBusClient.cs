@@ -65,7 +65,7 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
             // the fact that messages have the same message id will prove that it happens because client auto retry functionality
             message.MessageId = Guid.NewGuid().ToString();
 
-            await using var client = topicClientFactory.BuildTopicClient(resultsNotificationTopicName);// new TopicClient(connectionString, resultsNotificationTopicName);
+            await using var client = topicClientFactory.BuildTopicClient(resultsNotificationTopicName);
             await client.SendAsync(message);
         }
     }

@@ -83,6 +83,9 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
 
         private static void SetUpMockServices(IServiceCollection services)
         {
+            services.AddKeyedSingleton<ServiceBusClient>(typeof(MessagingServiceBusSettings), (sp, _) => Substitute.For<ServiceBusClient>());
+            services.AddKeyedSingleton<ServiceBusClient>(typeof(NotificationsServiceBusSettings), (sp, _) => Substitute.For<ServiceBusClient>());
+
             #region Mock up topic client for Notifications sender
             // Service bus client package will throw if it detects an ongoing transaction, as it doesn't support distributed transactions.
             // We emulate that on all service bus clients here to enable testing for such cases.
