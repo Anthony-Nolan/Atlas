@@ -60,6 +60,7 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsSubscription" = module.repeat_search.service_bus.repeat_search_matching_results_subscription
     "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic"        = module.repeat_search.service_bus.repeat_search_matching_results_topic
     "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic"                = module.repeat_search.service_bus.repeat_search_results_topic
+    "AtlasFunction:MessagingServiceBus:SearchResultsTopic"                      = azurerm_servicebus_topic.search-results-ready.name
     "AtlasFunction:MessagingServiceBus:SearchResultsDebugSubscription"          = azurerm_servicebus_subscription.debug-search-results-ready.name
     "AtlasFunction:MessagingServiceBus:RepeatSearchResultsDebugSubscription"    = module.repeat_search.service_bus.repeat_search_results_debug_subscription
     "AtlasFunction:Orchestration:MatchPredictionBatchSize"                      = var.ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE
