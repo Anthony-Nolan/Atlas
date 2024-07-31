@@ -28,9 +28,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         {
             const int donorId = 123;
 
-            var result = await converter.ConvertSearchableDonorUpdatesAsync(new List<ServiceBusMessage<SearchableDonorUpdate>>()
+            var result = await converter.ConvertSearchableDonorUpdatesAsync(new List<DeserializedMessage<SearchableDonorUpdate>>()
             {
-                new ServiceBusMessage<SearchableDonorUpdate>
+                new DeserializedMessage<SearchableDonorUpdate>
                 {
                     LockToken = "token",
                     DeserializedBody = new SearchableDonorUpdate
@@ -50,9 +50,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
             Assert.DoesNotThrowAsync(async () =>
             {
                 await converter.ConvertSearchableDonorUpdatesAsync(
-                    new List<ServiceBusMessage<SearchableDonorUpdate>>
+                    new List<DeserializedMessage<SearchableDonorUpdate>>
                     {
-                        new ServiceBusMessage<SearchableDonorUpdate>()
+                        new DeserializedMessage<SearchableDonorUpdate>()
                     });
             });
         }
@@ -62,9 +62,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         {
             const int donorId = -1;
 
-            var result = await converter.ConvertSearchableDonorUpdatesAsync(new List<ServiceBusMessage<SearchableDonorUpdate>>()
+            var result = await converter.ConvertSearchableDonorUpdatesAsync(new List<DeserializedMessage<SearchableDonorUpdate>>()
             {
-                new ServiceBusMessage<SearchableDonorUpdate>
+                new DeserializedMessage<SearchableDonorUpdate>
                 {
                     LockToken = "token",
                     DeserializedBody = new SearchableDonorUpdate

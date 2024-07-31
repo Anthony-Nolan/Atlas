@@ -1,6 +1,5 @@
 ﻿using Atlas.Common.ServiceBus;
-using Microsoft.Azure.ServiceBus;
-using Microsoft.Azure.ServiceBus.Core;
+using Azure.Messaging.ServiceBus;
 
 namespace Atlas.ManualTesting.Services.ServiceBus
 {
@@ -10,15 +9,23 @@ namespace Atlas.ManualTesting.Services.ServiceBus
 
     internal class DeadLetterReceiverFactory : IDeadLetterReceiverFactory
     {
-        public IMessageReceiver GetMessageReceiver(string connectionString, string topicName, string subscriptionName)
+        private readonly ServiceBusClient client;
+
+        public DeadLetterReceiverFactory(ServiceBusClient client)
         {
-            return new MessageReceiver(connectionString, DeadLetterPath(topicName, subscriptionName));
+            this.client = client;
         }
 
-        private static string DeadLetterPath(string topic, string subscription)
+        public IMessageReceiver GetMessageReceiver(string topicName, string subscriptionName, int? prefetchCount = null)
         {
-            return EntityNameHelper.FormatDeadLetterPath(
-                EntityNameHelper.FormatSubscriptionPath(topic, subscription));
+            var options = new ServiceBusReceiverOptions { SubQueue = SubQueue.DeadLetter };
+
+            if (prefetchCount is not null)
+                options.PrefetchCount = prefetchCount.Value;
+
+            var receiver = new MessageReceiver(client.CreateReceiver(topicName, subscriptionName, options));
+
+            return receiver;
         }
     }
 }

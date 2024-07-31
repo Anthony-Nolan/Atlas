@@ -84,8 +84,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         {
             var message = SearchableDonorUpdateMessageBuilder.New.Build();
             messageReceiver
-                .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> {message});
+                .ReceiveMessageBatchAsync(Arg.Any<int>())
+                .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
 
@@ -111,8 +111,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 .With(x => x.DeserializedBody, update)
                 .Build();
             messageReceiver
-                .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> {message});
+                .ReceiveMessageBatchAsync(Arg.Any<int>())
+                .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
 
@@ -134,8 +134,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 .With(x => x.DeserializedBody, update)
                 .Build();
             messageReceiver
-                .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> {message});
+                .ReceiveMessageBatchAsync(Arg.Any<int>())
+                .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
 
             Assert.DoesNotThrowAsync(async () => await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget));
         }
@@ -161,8 +161,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 .With(x => x.DeserializedBody, update)
                 .Build();
             messageReceiver
-                .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> {message});
+                .ReceiveMessageBatchAsync(Arg.Any<int>())
+                .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
 
@@ -190,8 +190,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 .With(x => x.DeserializedBody, update)
                 .Build();
             messageReceiver
-                .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> {message});
+                .ReceiveMessageBatchAsync(Arg.Any<int>())
+                .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
 
             Assert.DoesNotThrowAsync(async () => await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget));
         }
@@ -217,8 +217,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 .With(x => x.DeserializedBody, update)
                 .Build();
             messageReceiver
-                .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> {message});
+                .ReceiveMessageBatchAsync(Arg.Any<int>())
+                .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
 
@@ -235,7 +235,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             const int updateCount = 3;
             var messages = SearchableDonorUpdateMessageBuilder.New.Build(updateCount);
             messageReceiver
-                .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
+                .ReceiveMessageBatchAsync(Arg.Any<int>())
                 .Returns(messages);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
@@ -265,8 +265,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 .Build();
 
             messageReceiver
-                .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>>
+                .ReceiveMessageBatchAsync(Arg.Any<int>())
+                .Returns(new List<DeserializedMessage<SearchableDonorUpdate>>
                 {
                     validMessage, invalidMessage
                 });

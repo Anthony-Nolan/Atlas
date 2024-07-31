@@ -1,4 +1,5 @@
 using System;
+using Atlas.Common.ServiceBus.DependencyInjection;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Services.Search;
@@ -30,6 +31,11 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
         private static void RegisterServices(this IServiceCollection services)
         {
+            var serviceKey = typeof(MessagingServiceBusSettings);
+            services.RegisterServiceBusAsKeyedServices(
+                serviceKey,
+                sp => sp.GetRequiredService<MessagingServiceBusSettings>().ConnectionString);
+
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>();
             services.AddScoped<ISearchDispatcher, SearchDispatcher>();
         }

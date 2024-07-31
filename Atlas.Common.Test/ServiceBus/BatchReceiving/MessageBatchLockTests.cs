@@ -19,16 +19,16 @@ namespace Atlas.Common.Test.ServiceBus.BatchReceiving
         private const int LockRenewalTime = 100;
 
         private IServiceBusMessageReceiver<string> messageReceiver;
-        private IEnumerable<ServiceBusMessage<string>> messages;
+        private IEnumerable<DeserializedMessage<string>> messages;
         private MessageBatchLock<string> messageBatchLock;
 
         [SetUp]
         public void SetUp()
         {
             messageReceiver = Substitute.For<IServiceBusMessageReceiver<string>>();
-            messages = new List<ServiceBusMessage<string>>
+            messages = new List<DeserializedMessage<string>>
             {
-                new ServiceBusMessage<string>
+                new DeserializedMessage<string>
                 {
                     LockToken = LockToken,
                     LockedUntilUtc = DateTime.UtcNow.AddMilliseconds(LockRenewalTime),
@@ -119,9 +119,9 @@ namespace Atlas.Common.Test.ServiceBus.BatchReceiving
         [Test]
         public void MessageBatchLockExpired_ThrowSException()
         {
-            messages = new List<ServiceBusMessage<string>>
+            messages = new List<DeserializedMessage<string>>
             {
-                new ServiceBusMessage<string>
+                new DeserializedMessage<string>
                 {
                     LockToken = LockToken,
                     LockedUntilUtc = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(1)),

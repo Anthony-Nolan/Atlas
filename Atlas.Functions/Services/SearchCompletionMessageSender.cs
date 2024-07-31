@@ -6,10 +6,12 @@ using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.Common.ServiceBus;
 using Atlas.Functions.Models;
 using Atlas.Functions.Settings;
 using AutoMapper;
-using Microsoft.Azure.ServiceBus;
+using Azure.Messaging.ServiceBus;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
@@ -25,18 +27,21 @@ namespace Atlas.Functions.Services
     {
         private readonly ILogger logger;
         private readonly IMapper mapper;
-        private readonly string connectionString;
         private readonly string resultsNotificationTopicName;
         private readonly string repeatResultsNotificationTopicName;
+        private readonly ITopicClientFactory topicClientFactory;
+
 
         public SearchCompletionMessageSender(
             IOptions<MessagingServiceBusSettings> messagingServiceBusSettings,
             ISearchLogger<SearchLoggingContext> logger,
-            IMapper mapper)
+            IMapper mapper,
+            [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory)
         {
             this.logger = logger;
             this.mapper = mapper;
-            connectionString = messagingServiceBusSettings.Value.ConnectionString;
+            this.topicClientFactory = topicClientFactory;
+
             resultsNotificationTopicName = messagingServiceBusSettings.Value.SearchResultsTopic;
             repeatResultsNotificationTopicName = messagingServiceBusSettings.Value.RepeatSearchResultsTopic;
         }
@@ -101,9 +106,9 @@ namespace Atlas.Functions.Services
         private async Task SendNotificationMessage(SearchResultsNotification searchResultsNotification)
         {
             var json = JsonConvert.SerializeObject(searchResultsNotification);
-            var message = new Message(Encoding.UTF8.GetBytes(json))
+            var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(json))
             {
-                UserProperties =
+                ApplicationProperties =
                 {
                     {nameof(SearchResultsNotification.SearchRequestId), searchResultsNotification.SearchRequestId},
                     {nameof(SearchResultsNotification.RepeatSearchRequestId), searchResultsNotification.RepeatSearchRequestId},
@@ -118,8 +123,8 @@ namespace Atlas.Functions.Services
             var notificationTopicName = searchResultsNotification.RepeatSearchRequestId != null
                 ? repeatResultsNotificationTopicName
                 : resultsNotificationTopicName;
-            
-            var client = new TopicClient(connectionString, notificationTopicName);
+
+            await using var client = topicClientFactory.BuildTopicClient(notificationTopicName);
             await client.SendAsync(message);
         }
     }

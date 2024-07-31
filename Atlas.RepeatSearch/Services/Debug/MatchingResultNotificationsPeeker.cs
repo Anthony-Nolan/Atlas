@@ -8,9 +8,8 @@ namespace Atlas.RepeatSearch.Services.Debug
     {
         public MatchingResultNotificationsPeeker(
             IMessageReceiverFactory factory,
-            string connectionString,
             string topicName,
-            string subscriptionName) : base(factory, connectionString, topicName, subscriptionName)
+            string subscriptionName) : base(factory, topicName, subscriptionName)
         {
         }
     }

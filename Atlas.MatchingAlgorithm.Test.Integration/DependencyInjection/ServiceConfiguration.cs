@@ -19,6 +19,7 @@ using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -131,6 +132,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.AddScoped(sp => Substitute.For<IMessageReceiverFactory>());
             services.AddScoped(sp => Substitute.For<INotificationSender>());
             services.AddScoped(sp => Substitute.For<IAzureDatabaseManager>());
+
+            services.AddKeyedSingleton<ServiceBusClient>(typeof(MessagingServiceBusSettings), (sp, _) => Substitute.For<ServiceBusClient>());
 
             MockDonorReader = Substitute.For<IDonorReader>();
             MockDonorReader.GetDonors(default).ReturnsForAnyArgs(callInfo =>

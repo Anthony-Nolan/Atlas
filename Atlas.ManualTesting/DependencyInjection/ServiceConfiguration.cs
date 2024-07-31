@@ -4,6 +4,7 @@ using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Caching;
 using Atlas.Common.Debugging;
 using Atlas.Common.ServiceBus;
+using Atlas.Common.ServiceBus.DependencyInjection;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Utils.Extensions;
 using Atlas.Debug.Client;
@@ -74,7 +75,7 @@ namespace Atlas.ManualTesting.DependencyInjection
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings
         )
         {
-            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>();
+            services.RegisterServiceBusServices(sp => fetchMessagingServiceBusSettings(sp).ConnectionString);
             services.AddSingleton<IDeadLetterReceiverFactory, DeadLetterReceiverFactory>();
 
             services.AddScoped(typeof(IMessagesPeeker<>), typeof(MessagesPeeker<>));
@@ -86,7 +87,7 @@ namespace Atlas.ManualTesting.DependencyInjection
                 var messagingSettings = fetchMessagingServiceBusSettings(sp);
                 var searchSettings = fetchMatchingSettings(sp);
                 return new DeadLettersPeeker<IdentifiedSearchRequest>(
-                    factory, messagingSettings.ConnectionString, searchSettings.RequestsTopic, searchSettings.RequestsSubscription);
+                    factory, searchSettings.RequestsTopic, searchSettings.RequestsSubscription);
             });
             services.AddScoped<IMatchingRequestsPeeker, MatchingRequestsPeeker>();
 
@@ -96,7 +97,7 @@ namespace Atlas.ManualTesting.DependencyInjection
                 var messagingSettings = fetchMessagingServiceBusSettings(sp);
                 var searchSettings = fetchSearchSettings(sp);
                 return new MessagesPeeker<SearchResultsNotification>(
-                    factory, messagingSettings.ConnectionString, searchSettings.ResultsTopic, searchSettings.ResultsSubscription);
+                    factory, searchSettings.ResultsTopic, searchSettings.ResultsSubscription);
             });
             services.AddScoped<ISearchResultNotificationsPeeker, SearchResultNotificationsPeeker>();
 
@@ -106,7 +107,7 @@ namespace Atlas.ManualTesting.DependencyInjection
                 var settings = fetchDonorManagementSettings(sp);
                 var messagingSettings = fetchMessagingServiceBusSettings(sp);
                 return new MessagesPeeker<SearchableDonorUpdate>(
-                    factory, messagingSettings.ConnectionString, settings.Topic, settings.Subscription);
+                    factory, settings.Topic, settings.Subscription);
             });
             services.AddScoped<ISearchableDonorUpdatesPeeker, SearchableDonorUpdatesPeeker>();
 

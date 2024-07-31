@@ -1,10 +1,12 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ServiceBus;
 using Atlas.Common.Utils;
-using Microsoft.Azure.ServiceBus;
+using Azure.Messaging.ServiceBus;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
 namespace Atlas.Common.Notifications
@@ -15,15 +17,15 @@ namespace Atlas.Common.Notifications
         Task SendNotification(Notification notification);
     }
 
-    internal class NotificationsClient : INotificationsClient
+    internal sealed class NotificationsClient : INotificationsClient, IAsyncDisposable
     {
         private readonly ITopicClient notificationTopicClient;
         private readonly ITopicClient alertTopicClient;
 
-        public NotificationsClient(NotificationsServiceBusSettings settings, ITopicClientFactory topicClientFactory)
+        public NotificationsClient(NotificationsServiceBusSettings settings, [FromKeyedServices(typeof(NotificationsServiceBusSettings))]ITopicClientFactory topicClientFactory)
         {
-            notificationTopicClient = topicClientFactory.BuildTopicClient(settings.ConnectionString, settings.NotificationsTopic);
-            alertTopicClient = topicClientFactory.BuildTopicClient(settings.ConnectionString, settings.AlertsTopic);
+            notificationTopicClient = topicClientFactory.BuildTopicClient(settings.NotificationsTopic);
+            alertTopicClient = topicClientFactory.BuildTopicClient(settings.AlertsTopic);
         }
 
         public async Task SendAlert(Alert alert)
@@ -44,11 +46,17 @@ namespace Atlas.Common.Notifications
             }
         }
 
-        private static Message BuildMessage(BaseNotificationsMessage message)
+        private static ServiceBusMessage BuildMessage(BaseNotificationsMessage message)
         {
             var messageJson = JsonConvert.SerializeObject(message);
-            var brokeredMessage = new Message(Encoding.UTF8.GetBytes(messageJson));
+            var brokeredMessage = new ServiceBusMessage(Encoding.UTF8.GetBytes(messageJson));
             return brokeredMessage;
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await notificationTopicClient.DisposeAsync();
+            await alertTopicClient.DisposeAsync();
         }
     }
 }

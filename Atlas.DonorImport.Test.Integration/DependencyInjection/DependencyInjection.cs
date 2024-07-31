@@ -7,7 +7,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
     {
         private static IServiceProvider backingProvider;
 
-        private static IServiceScope scope;
+        private static AsyncServiceScope? scope;
 
         internal static IServiceProvider BackingProvider
         {
@@ -35,10 +35,10 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
         /// </summary>
         internal static void NewScope()
         {
-            scope?.Dispose();
-            scope = BackingProvider.CreateScope();
+            scope?.DisposeAsync().AsTask().Wait();
+            scope = BackingProvider.CreateAsyncScope();
         }
 
-        internal static IServiceProvider Provider => scope.ServiceProvider;
+        internal static IServiceProvider Provider => scope?.ServiceProvider;
     }
 }

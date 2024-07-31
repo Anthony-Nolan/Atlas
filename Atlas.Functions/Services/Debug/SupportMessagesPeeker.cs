@@ -6,16 +6,16 @@ namespace Atlas.Functions.Services.Debug
 {
     internal class AlertsPeeker : ServiceBusPeeker<Alert>
     {
-        public AlertsPeeker(IMessageReceiverFactory factory, string connectionString, string topicName, string subscriptionName)
-            : base(factory, connectionString, topicName, subscriptionName)
+        public AlertsPeeker(IMessageReceiverFactory factory, string topicName, string subscriptionName)
+            : base(factory, topicName, subscriptionName)
         {
         }
     }
 
     internal class NotificationsPeeker : ServiceBusPeeker<Notification>
     {
-        public NotificationsPeeker(IMessageReceiverFactory factory, string connectionString, string topicName, string subscriptionName)
-            : base(factory, connectionString, topicName, subscriptionName)
+        public NotificationsPeeker(IMessageReceiverFactory factory, string topicName, string subscriptionName)
+            : base(factory, topicName, subscriptionName)
         {
         }
     }

@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Common.ServiceBus;
 using Atlas.RepeatSearch.Models;
 using Atlas.RepeatSearch.Settings.ServiceBus;
-using Microsoft.Azure.ServiceBus;
+using Azure.Messaging.ServiceBus;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
 namespace Atlas.RepeatSearch.Clients
@@ -18,32 +20,32 @@ namespace Atlas.RepeatSearch.Clients
 
     public class RepeatSearchServiceBusClient : IRepeatSearchServiceBusClient
     {
-        private readonly string connectionString;
         private readonly string repeatSearchRequestsTopicName;
         private readonly string resultsNotificationTopicName;
+        private readonly ITopicClientFactory topicClientFactory;
 
-        public RepeatSearchServiceBusClient(MessagingServiceBusSettings messagingServiceBusSettings)
+        public RepeatSearchServiceBusClient(MessagingServiceBusSettings messagingServiceBusSettings, [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory)
         {
-            connectionString = messagingServiceBusSettings.ConnectionString;
             repeatSearchRequestsTopicName = messagingServiceBusSettings.RepeatSearchRequestsTopic;
             resultsNotificationTopicName = messagingServiceBusSettings.RepeatSearchMatchingResultsTopic;
+            this.topicClientFactory = topicClientFactory;
         }
 
         public async Task PublishToRepeatSearchRequestsTopic(IdentifiedRepeatSearchRequest searchRequest)
         {
             var json = JsonConvert.SerializeObject(searchRequest);
-            var message = new Message(Encoding.UTF8.GetBytes(json));
+            var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(json));
 
-            var client = new TopicClient(connectionString, repeatSearchRequestsTopicName);
+            await using var client = topicClientFactory.BuildTopicClient(repeatSearchRequestsTopicName);
             await client.SendAsync(message);
         }
 
         public async Task PublishToResultsNotificationTopic(MatchingResultsNotification matchingResultsNotification)
         {
             var json = JsonConvert.SerializeObject(matchingResultsNotification);
-            var message = new Message(Encoding.UTF8.GetBytes(json))
+            var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(json))
             {
-                UserProperties =
+                ApplicationProperties =
                 {
                     {nameof(MatchingResultsNotification.SearchRequestId), matchingResultsNotification.SearchRequestId},
                     {nameof(MatchingResultsNotification.RepeatSearchRequestId), matchingResultsNotification.RepeatSearchRequestId},
@@ -54,7 +56,7 @@ namespace Atlas.RepeatSearch.Clients
                 }
             };
 
-            var client = new TopicClient(connectionString, resultsNotificationTopicName);
+            await using var client = topicClientFactory.BuildTopicClient(resultsNotificationTopicName);
             await client.SendAsync(message);
         }
     }

@@ -5,6 +5,7 @@ using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Debugging;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus;
+using Atlas.Common.ServiceBus.DependencyInjection;
 using Atlas.Functions;
 using Atlas.Functions.Config;
 using Atlas.Functions.Services;
@@ -129,15 +130,18 @@ namespace Atlas.Functions
 
         private static void RegisterDebugServices(IServiceCollection services)
         {
-            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>();
+            var serviceKey = typeof(NotificationsServiceBusSettings);
+            services.RegisterServiceBusAsKeyedServices(
+                serviceKey,
+                sp => sp.GetRequiredService<IOptions<NotificationsServiceBusSettings>>().Value.ConnectionString
+                );
 
             services.AddScoped<IServiceBusPeeker<Alert>, AlertsPeeker>(sp =>
             {
                 var notificationsOptions = sp.GetService<IOptions<NotificationsServiceBusSettings>>();
                 var debugOptions = sp.GetService<IOptions<NotificationsDebugSettings>>();
                 return new AlertsPeeker(
-                    sp.GetService<IMessageReceiverFactory>(),
-                    notificationsOptions.Value.ConnectionString,
+                    sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey),
                     notificationsOptions.Value.AlertsTopic,
                     debugOptions.Value.AlertsSubscription);
             });
@@ -147,8 +151,7 @@ namespace Atlas.Functions
                 var notificationsOptions = sp.GetService<IOptions<NotificationsServiceBusSettings>>();
                 var debugOptions = sp.GetService<IOptions<NotificationsDebugSettings>>();
                 return new NotificationsPeeker(
-                    sp.GetService<IMessageReceiverFactory>(),
-                    notificationsOptions.Value.ConnectionString,
+                    sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey),
                     notificationsOptions.Value.NotificationsTopic,
                     debugOptions.Value.NotificationsSubscription);
             });
@@ -157,8 +160,7 @@ namespace Atlas.Functions
             {
                 var messagingOptions = sp.GetService<IOptions<Settings.MessagingServiceBusSettings>>();
                 return new SearchResultNotificationsPeeker(
-                    sp.GetService<IMessageReceiverFactory>(),
-                    messagingOptions.Value.ConnectionString,
+                    sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey),
                     messagingOptions.Value.SearchResultsTopic,
                     messagingOptions.Value.SearchResultsDebugSubscription);
             });
@@ -167,8 +169,7 @@ namespace Atlas.Functions
             {
                 var messagingOptions = sp.GetService<IOptions<Settings.MessagingServiceBusSettings>>();
                 return new RepeatSearchResultNotificationsPeeker(
-                    sp.GetService<IMessageReceiverFactory>(),
-                    messagingOptions.Value.ConnectionString,
+                    sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey),
                     messagingOptions.Value.RepeatSearchResultsTopic,
                     messagingOptions.Value.RepeatSearchResultsDebugSubscription);
             });
