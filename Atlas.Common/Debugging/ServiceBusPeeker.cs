@@ -64,7 +64,8 @@ namespace Atlas.Common.Debugging
             return new PeekServiceBusMessagesResponse<T>
             {
                 MessageCount = messages.Count,
-                PeekedMessages = messages
+                PeekedMessages = messages,
+                LastSequenceNumber = fromSequenceNumber - 1
             };
         }
 

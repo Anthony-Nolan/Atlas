@@ -16,5 +16,10 @@ namespace Atlas.Debug.Client.Models.ServiceBus
         /// Messages that were peeked from the target service bus subscription.
         /// </summary>
         public IEnumerable<T> PeekedMessages { get; set; }
+
+        /// <summary>
+        /// The sequence number of the last message returned.
+        /// </summary>
+        public long? LastSequenceNumber { get; set; }
     }
 }
