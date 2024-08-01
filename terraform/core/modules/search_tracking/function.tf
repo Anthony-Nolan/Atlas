@@ -22,9 +22,11 @@ resource "azurerm_windows_function_app" "atlas_search_tracking_function" {
 
     "AzureAppConfiguration:ConnectionString" = var.azure_app_configuration.primary_read_key[0].connection_string
 
-    "MessagingServiceBus:ConnectionString"               = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
-    "MessagingServiceBus:SearchTrackingSubscription"     = azurerm_servicebus_subscription.search-tracking.name
-    "MessagingServiceBus:SearchTrackingTopic"            = azurerm_servicebus_topic.search-tracking-events.name
+    "ConnectionStrings:PersistentSql" = local.search_tracking_database_connection_string
+
+    "MessagingServiceBus:ConnectionString"           = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
+    "MessagingServiceBus:SearchTrackingSubscription" = azurerm_servicebus_subscription.search-tracking.name
+    "MessagingServiceBus:SearchTrackingTopic"        = azurerm_servicebus_topic.search-tracking-events.name
 
     "WEBSITE_RUN_FROM_PACKAGE" = "1"
   }
@@ -47,11 +49,5 @@ resource "azurerm_windows_function_app" "atlas_search_tracking_function" {
 
     ftps_state              = "AllAllowed"
     scm_minimum_tls_version = "1.0"
-  }
-
-  connection_string {
-    name  = "SearchTrackingSql"
-    type  = "SQLAzure"
-    value = local.search_tracking_database_connection_string
   }
 }
