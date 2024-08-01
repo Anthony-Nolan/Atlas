@@ -43,6 +43,7 @@ namespace Atlas.Common.Debugging
         public async Task<PeekServiceBusMessagesResponse<T>> Peek(PeekServiceBusMessagesRequest peekRequest)
         {
             var messages = new List<T>();
+            long? lastSequenceNumber = null;
             var fromSequenceNumber = peekRequest.FromSequenceNumber;
 
             // The message receiver Peek method has an undocumented upper message count limit
@@ -58,14 +59,15 @@ namespace Atlas.Common.Debugging
                 }
 
                 messages.AddRange(batch.Select(GetServiceBusMessage));
-                fromSequenceNumber = batch.Select(m => m.SystemProperties.SequenceNumber).MaxBy(i => i) + 1;
+                lastSequenceNumber = batch.Select(m => m.SystemProperties.SequenceNumber).MaxBy(i => i);
+                fromSequenceNumber = (long)(lastSequenceNumber + 1);
             }
 
             return new PeekServiceBusMessagesResponse<T>
             {
                 MessageCount = messages.Count,
                 PeekedMessages = messages,
-                LastSequenceNumber = fromSequenceNumber - 1
+                LastSequenceNumber = lastSequenceNumber
             };
         }
 
