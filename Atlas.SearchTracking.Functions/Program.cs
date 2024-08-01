@@ -30,7 +30,7 @@ var host = new HostBuilder()
         services.ConfigureFunctionsApplicationInsights();
         services.AddDbContext<ISearchTrackingContext, SearchTrackingContext>(options =>
         {
-            options.UseSqlServer(Environment.GetEnvironmentVariable("ConnectionStrings:SearchTrackingSql"));
+            options.UseSqlServer(Environment.GetEnvironmentVariable("ConnectionStrings:PersistentSql"));
         });
 
         services.AddScoped<ISearchTrackingEventProcessor, SearchTrackingEventProcessor>();
