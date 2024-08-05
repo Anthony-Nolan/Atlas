@@ -8,7 +8,7 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
     {
         private const string createIndexSql = @"
             if not exists (SELECT 1 FROM sys.indexes WHERE name = 'IX_Donors_DonorType_RegistryCode' AND object_id = OBJECT_ID('dbo.Donors')) 
-	            CREATE INDEX [IX_Donors_DonorType_RegistryCode] ON [Donors] ([DonorType], [RegistryCode]);
+	            CREATE INDEX [IX_Donors_DonorType_RegistryCode] ON [Donors] ([DonorType], [RegistryCode]) WITH (ONLINE = ON);
             ";
 
         private const string changeColumnsTypeSql = @"
