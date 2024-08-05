@@ -26,11 +26,12 @@ namespace Atlas.DonorImport.Services.Debug
         {
             var response = await Peek(peekRequest);
             var messages = response.PeekedMessages.Select(SetImportInfoPropsIfEmpty);
-            
+
             return new PeekServiceBusMessagesResponse<DonorImportMessage>
             {
                 PeekedMessages = messages,
-                MessageCount = response.MessageCount
+                MessageCount = response.MessageCount,
+                LastSequenceNumber = response.LastSequenceNumber
             };
         }
 
