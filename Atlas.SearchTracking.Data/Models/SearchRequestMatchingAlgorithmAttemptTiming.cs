@@ -44,8 +44,7 @@ namespace Atlas.SearchTracking.Data.Models
         public static void SetUpModel(this EntityTypeBuilder<SearchRequestMatchingAlgorithmAttemptTiming> modelBuilder)
         {
             modelBuilder.HasIndex(d => new { d.SearchRequestId, d.AttemptNumber })
-                .HasDatabaseName("IX_SearchRequestId_And_AttemptNumber")
-                .IsUnique();
+                .HasDatabaseName("IX_SearchRequestId_And_AttemptNumber");
         }
     }
 }
