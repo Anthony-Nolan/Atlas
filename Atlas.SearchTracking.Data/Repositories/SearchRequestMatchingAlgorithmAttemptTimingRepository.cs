@@ -78,6 +78,7 @@ namespace Atlas.SearchTracking.Data.Repositories
         private async Task<SearchRequestMatchingAlgorithmAttemptTiming> GetRequiredMatchingAlgorithmAttemptTiming(int searchRequestId, int attemptNumber)
         {
             var matchingAlgorithmAttempt = await MatchingAlgorithmAttemptTimings
+                .OrderByDescending(x => x.Id)
                 .FirstOrDefaultAsync(x => x.SearchRequestId == searchRequestId && x.AttemptNumber == attemptNumber);
 
             if (matchingAlgorithmAttempt == null)
