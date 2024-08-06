@@ -87,7 +87,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     SELECT * FROM Donors 
                     WHERE DonorId IN ({string.Join(",", donorsToUpdate.Select(d => d.DonorId))})
                     ", commandTimeout: 300)
-                        ).ToDictionary(d => d.DonorId); 
+                        ).ToDictionary(d => d.DonorId);
 
                     await SetAvailabilityOfDonorBatch(donorsToUpdate.Select(d => d.DonorId), true, conn);
 
@@ -173,9 +173,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             var availabilityAsString = isAvailableForSearch ? "1" : "0";
 
             var donorIdsAsString = string.Join(",", donorIds);
-            await conn.ExecuteAsync(
-                $"UPDATE Donors SET IsAvailableForSearch = {availabilityAsString} WHERE DonorId IN ({donorIdsAsString})",
-                commandTimeout: 600);
+            if (!donorIdsAsString.IsNullOrEmpty())
+            {
+                await conn.ExecuteAsync(
+                    $"UPDATE Donors SET IsAvailableForSearch = {availabilityAsString} WHERE DonorId IN ({donorIdsAsString})",
+                    commandTimeout: 600);
+            }
         }
 
         private static Task UpdateDonorInfo(DonorInfo donorInfo, IDbConnection connection)
