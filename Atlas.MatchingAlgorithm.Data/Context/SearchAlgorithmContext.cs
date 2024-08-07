@@ -52,6 +52,9 @@ namespace Atlas.MatchingAlgorithm.Data.Context
 
             modelBuilder.Entity<Donor>().HasIndex(d => d.ExternalDonorCode);
 
+            modelBuilder.Entity<Donor>()
+                .HasIndex(x => new { x.DonorType, x.RegistryCode });
+
             base.OnModelCreating(modelBuilder);
         }
 
