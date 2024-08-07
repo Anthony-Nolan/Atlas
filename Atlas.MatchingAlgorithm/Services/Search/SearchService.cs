@@ -13,7 +13,6 @@ using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
-using Atlas.MatchingAlgorithm.Services.Search.NonHlaFiltering;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using System;
 using System.Collections.Generic;
@@ -35,20 +34,17 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly IMatchScoringService scoringService;
         private readonly IMatchingService matchingService;
         private readonly ILogger searchLogger;
-        private readonly IDonorDetailsResultFilterer donorDetailsResultFilterer;
 
         public SearchService(
             IMatchCriteriaMapper matchCriteriaMapper,
             IMatchScoringService scoringService,
             IMatchingService matchingService,
             // ReSharper disable once SuggestBaseTypeForParameter
-            IMatchingAlgorithmSearchLogger searchLogger,
-            IDonorDetailsResultFilterer donorDetailsResultFilterer)
+            IMatchingAlgorithmSearchLogger searchLogger)
         {
             this.scoringService = scoringService;
             this.matchingService = matchingService;
             this.searchLogger = searchLogger;
-            this.donorDetailsResultFilterer = donorDetailsResultFilterer;
             this.matchCriteriaMapper = matchCriteriaMapper;
         }
 
@@ -62,7 +58,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             searchLogger.SendTrace(
                 $"Split into {splitSearch.Count} sub-searches: {splitSearch.Select(s => $"{s.LocusCriteria.A?.MismatchCount}{s.LocusCriteria.B?.MismatchCount}{s.LocusCriteria.Drb1?.MismatchCount}{s.LocusCriteria.C?.MismatchCount}{s.LocusCriteria.Dqb1?.MismatchCount}").StringJoin("|")}");
 
-            var matches = RunSubSearches(splitSearch, cutOffDate);
+            var matches = RunSubSearches(splitSearch, cutOffDate, new NonHlaFilteringCriteria { RegistryCodes = matchingRequest.DonorRegistryCodes});
 
 
             var request = new StreamingMatchResultsScoringRequest
@@ -81,20 +77,15 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             searchLogger.SendTrace($"Via {splitSearch.Count} sub-searches, matched {reifiedScoredMatches.Count} donors total.");
 
             var donorLookup = GetDonorLookup(reifiedScoredMatches);
-            var resultsFilteredByDonorDetails = donorDetailsResultFilterer.FilterResultsByDonorData(
-                new DonorFilteringCriteria { RegistryCodes = matchingRequest.DonorRegistryCodes },
-                reifiedScoredMatches,
-                donorLookup
-            ).ToList();
-
-            return resultsFilteredByDonorDetails.Select(scoredMatch => MapSearchResultToApiSearchResult(scoredMatch, donorLookup));
+            return reifiedScoredMatches.Select(scoredMatch => MapSearchResultToApiSearchResult(scoredMatch, donorLookup));
         }
 
-        private async IAsyncEnumerable<MatchResult> RunSubSearches(List<AlleleLevelMatchCriteria> splitSearch, DateTimeOffset? cutOffDate)
+        private async IAsyncEnumerable<MatchResult> RunSubSearches(List<AlleleLevelMatchCriteria> splitSearch, DateTimeOffset? cutOffDate, NonHlaFilteringCriteria nonHlaFilteringCriteria)
         {
             foreach (var subSearch in splitSearch)
             {
-                var subSearchResults = matchingService.GetMatches(subSearch, cutOffDate);
+                var criteria = new MatchCriteria { AlleleLevelMatchCriteria = subSearch, NonHlaFilteringCriteria = nonHlaFilteringCriteria };
+                var subSearchResults = matchingService.GetMatches(criteria, cutOffDate);
                 await foreach (var result in subSearchResults)
                 {
                     yield return result;

@@ -73,6 +73,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
+        internal DonorInfoWithTestHlaBuilder WithRegistryCode(string registryCode)
+        {
+            donor.RegistryCode = registryCode;
+            return this;
+        }
+
         internal DonorInfoWithExpandedHla Build() => donor;
     }
 }
