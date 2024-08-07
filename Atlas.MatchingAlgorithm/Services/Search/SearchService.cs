@@ -11,7 +11,6 @@ using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Models;
-using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Services.Search.NonHlaFiltering;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
@@ -64,11 +63,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             var matches = RunSubSearches(splitSearch, cutOffDate);
 
+            var matchesList = await matches.ToListAsync();
 
             var request = new StreamingMatchResultsScoringRequest
             {
                 PatientHla = matchingRequest.SearchHlaData,
-                MatchResults = matches,
+                MatchResults = GetAsyncEnumerableMatchResults(matchesList),
                 ScoringCriteria = matchingRequest.ScoringCriteria
             };
 
@@ -88,6 +88,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             ).ToList();
 
             return resultsFilteredByDonorDetails.Select(scoredMatch => MapSearchResultToApiSearchResult(scoredMatch, donorLookup));
+        }
+
+        private async IAsyncEnumerable<MatchResult> GetAsyncEnumerableMatchResults(List<MatchResult> matchResults)
+        {
+            foreach (var result in matchResults)
+            {
+                yield return result;
+            }
         }
 
         private async IAsyncEnumerable<MatchResult> RunSubSearches(List<AlleleLevelMatchCriteria> splitSearch, DateTimeOffset? cutOffDate)

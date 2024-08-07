@@ -1,22 +1,24 @@
 ﻿using Atlas.Common.Caching;
-using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using LazyCache;
 using System;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 using Atlas.Common.Public.Models.GeneticData;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
     internal abstract class MetadataServiceBase<T>
     {
+        private readonly int? cacheSlidingExpirationSeconds;
         private readonly string perTypeCacheKey;
         private readonly IAppCache cache;
 
-        protected MetadataServiceBase(string perTypeCacheKey, IPersistentCacheProvider cacheProvider)
+        protected MetadataServiceBase(string perTypeCacheKey, int? cacheSlidingExpirationSeconds, IPersistentCacheProvider cacheProvider)
         {
             this.perTypeCacheKey = perTypeCacheKey;
+            this.cacheSlidingExpirationSeconds = cacheSlidingExpirationSeconds;
             cache = cacheProvider.Cache;
         }
 
@@ -57,8 +59,14 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             {
                 throw new ArgumentException($"{formattedLookupName} at locus {locus} is not a valid lookup name.");
             }
-            
-            return await cache.GetOrAddAsync(key, () => PerformLookup(locus, formattedLookupName, hlaNomenclatureVersion));
+
+            return await cache.GetOrAddAsync(key,
+                () => PerformLookup(locus, formattedLookupName, hlaNomenclatureVersion),
+                new MemoryCacheEntryOptions()
+                {
+                    AbsoluteExpiration = DateTimeOffset.UtcNow.AddSeconds(cache.DefaultCachePolicy.DefaultCacheDurationSeconds),
+                    SlidingExpiration = cacheSlidingExpirationSeconds != null ? TimeSpan.FromSeconds(cacheSlidingExpirationSeconds.Value) : null
+                });
         }
 
         private string BuildCacheKey(Locus locus, string lookupName, string hlaNomenclatureVersion)

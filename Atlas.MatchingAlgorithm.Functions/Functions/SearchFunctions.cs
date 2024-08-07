@@ -29,23 +29,23 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             this.matchingFailureNotificationSender = matchingFailureNotificationSender;
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [Function(nameof(InitiateSearch))]
-        public async Task<IActionResult> InitiateSearch(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            HttpRequest request)
-        {
-            var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
-            try
-            {
-                var id = await searchDispatcher.DispatchSearch(searchRequest);
-                return new JsonResult(new SearchInitiationResponse {SearchIdentifier = id});
-            }
-            catch (ValidationException e)
-            {
-                return new BadRequestObjectResult(e.ToValidationErrorsModel());
-            }
-        }
+        //[SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
+        //[Function(nameof(InitiateSearch))]
+        //public async Task<IActionResult> InitiateSearch(
+        //    [HttpTrigger(AuthorizationLevel.Function, "post")]
+        //    HttpRequest request)
+        //{
+        //    var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+        //    try
+        //    {
+        //        var id = await searchDispatcher.DispatchSearch(searchRequest);
+        //        return new JsonResult(new SearchInitiationResponse {SearchIdentifier = id});
+        //    }
+        //    catch (ValidationException e)
+        //    {
+        //        return new BadRequestObjectResult(e.ToValidationErrorsModel());
+        //    }
+        //}
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(RunSearch))]
@@ -61,16 +61,16 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             await searchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc);
         }
 
-        [Function(nameof(MatchingRequestsDeadLetterQueueListener))]
-        public async Task MatchingRequestsDeadLetterQueueListener(
-            [ServiceBusTrigger(
-                "%MessagingServiceBus:SearchRequestsTopic%/Subscriptions/%MessagingServiceBus:SearchRequestsSubscription%/$DeadLetterQueue",
-                "%MessagingServiceBus:SearchRequestsSubscription%",
-                Connection = "MessagingServiceBus:ConnectionString")]
-            IdentifiedSearchRequest request,
-            int deliveryCount)
-        {
-            await matchingFailureNotificationSender.SendFailureNotification(request, deliveryCount, 0);
-        }
+        //[Function(nameof(MatchingRequestsDeadLetterQueueListener))]
+        //public async Task MatchingRequestsDeadLetterQueueListener(
+        //    [ServiceBusTrigger(
+        //        "%MessagingServiceBus:SearchRequestsTopic%/Subscriptions/%MessagingServiceBus:SearchRequestsSubscription%/$DeadLetterQueue",
+        //        "%MessagingServiceBus:SearchRequestsSubscription%",
+        //        Connection = "MessagingServiceBus:ConnectionString")]
+        //    IdentifiedSearchRequest request,
+        //    int deliveryCount)
+        //{
+        //    await matchingFailureNotificationSender.SendFailureNotification(request, deliveryCount, 0);
+        //}
     }
 }

@@ -26,7 +26,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         public GGroupToPGroupMetadataService(
             IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository,
             IPersistentCacheProvider cacheProvider) 
-            : base(CacheKey, cacheProvider)
+            : base(CacheKey, null, cacheProvider)
         {
             this.gGroupToPGroupMetadataRepository = gGroupToPGroupMetadataRepository;
         }

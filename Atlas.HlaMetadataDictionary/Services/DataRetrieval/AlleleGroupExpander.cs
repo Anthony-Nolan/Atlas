@@ -28,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository,
             IHlaCategorisationService hlaCategorisationService,
             IPersistentCacheProvider cacheProvider)
-        : base(CacheKey, cacheProvider)
+        : base(CacheKey, null, cacheProvider)
         {
             this.alleleGroupsMetadataRepository = alleleGroupsMetadataRepository;
             this.hlaCategorisationService = hlaCategorisationService;

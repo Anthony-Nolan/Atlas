@@ -83,7 +83,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                     yield return match;
                 }
 
-                searchLogger.SendTrace($"Matching Phase 1: Found {count} donors.");
+                 searchLogger.SendTrace($"Matching Phase 1: Found {count} donors.");
             }
         }
 

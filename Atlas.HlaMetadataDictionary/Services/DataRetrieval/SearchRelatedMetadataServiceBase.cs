@@ -29,6 +29,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     {
         protected readonly IHlaCategorisationService HlaCategorisationService;
 
+        private const int CacheSlidingExpirationSeconds = 60 * 5;
+
         private readonly IHlaMetadataRepository hlaMetadataRepository;
         private readonly IAlleleNamesMetadataService alleleNamesMetadataService;
         private readonly IAlleleNamesExtractor alleleNamesExtractor;
@@ -44,7 +46,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IAlleleGroupExpander alleleGroupExpander,
             string perTypeCacheKey,
             IPersistentCacheProvider cacheProvider)
-            : base(perTypeCacheKey, cacheProvider)
+            : base(perTypeCacheKey, CacheSlidingExpirationSeconds, cacheProvider)
         {
             this.hlaMetadataRepository = hlaMetadataRepository;
             this.alleleNamesMetadataService = alleleNamesMetadataService;

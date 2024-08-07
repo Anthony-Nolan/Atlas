@@ -14,6 +14,7 @@ using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Helpers;
 using Atlas.MatchingAlgorithm.Settings;
 using Dasync.Collections;
+using LazyCache;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {

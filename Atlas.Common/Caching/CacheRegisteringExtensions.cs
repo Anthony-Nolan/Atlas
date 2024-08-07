@@ -40,7 +40,7 @@ namespace Atlas.Common.Caching
             {
                 DefaultCachePolicy = new CacheDefaults
                 {
-                    DefaultCacheDurationSeconds = lifeTimeSeconds
+                    DefaultCacheDurationSeconds = lifeTimeSeconds,
                 }
             };
         }
