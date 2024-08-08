@@ -115,14 +115,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_WithIncludedRegistry_AndDonorExistsWithMatchingRegistryInWrongCase_DonorIsNotReturned()
+        public async Task Search_WithIncludedRegistry_AndDonorExistsWithMatchingRegistryInDifferentCase_DonorIsReturned()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas).WithDonorRegistryCodes(new List<string> { RegistryCodeA.ToUpper() })
                 .Build();
 
             var results = (await searchService.Search(searchRequest)).ToList();
 
-            results.Should().NotContain(d => d.AtlasDonorId == donorAtRegistryA.DonorId);
+            results.Should().Contain(d => d.AtlasDonorId == donorAtRegistryA.DonorId);
         }
 
         [Test]
