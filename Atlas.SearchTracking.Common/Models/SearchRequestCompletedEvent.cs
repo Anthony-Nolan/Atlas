@@ -2,7 +2,7 @@
 {
     public class SearchRequestCompletedEvent
     {
-        public int SearchRequestId { get; set; }
+        public Guid SearchRequestId { get; set; }
         public bool ResultsSent { get; set; }
         public DateTime ResultsSentTimeUtc { get; set; }
     }

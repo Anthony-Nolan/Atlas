@@ -2,7 +2,7 @@
 {
     public class MatchPredictionCompletedEvent
     {
-        public int SearchRequestId { get; set; }
+        public Guid SearchRequestId { get; set; }
         public DateTime CompletionTimeUtc { get; set; }
         public MatchPredictionCompletionDetails CompletionDetails { get; set; }
     }

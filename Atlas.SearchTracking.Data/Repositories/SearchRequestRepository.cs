@@ -15,7 +15,9 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         Task TrackSearchRequestCompletedEvent(SearchRequestCompletedEvent completedEvent);
 
-        Task<SearchRequest> GetSearchRequestById(int id);
+        Task<SearchRequest> GetSearchRequestByGuid(Guid searchRequestId);
+
+        Task<int> GetSearchRequestIdByGuid(Guid searchRequestId);
     }
 
     public class SearchRequestRepository : ISearchRequestRepository
@@ -49,7 +51,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackMatchPredictionCompletedEvent(MatchPredictionCompletedEvent matchPredictionCompletedEvent)
         {
-            var searchRequest = await GetSearchRequestById(matchPredictionCompletedEvent.SearchRequestId);
+            var searchRequest = await GetSearchRequestByGuid(matchPredictionCompletedEvent.SearchRequestId);
 
             searchRequest.MatchPrediction_IsSuccessful = matchPredictionCompletedEvent.CompletionDetails.IsSuccessful;
             searchRequest.MatchPrediction_FailureInfo_Json = matchPredictionCompletedEvent.CompletionDetails.FailureInfoJson;
@@ -61,7 +63,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackMatchingAlgorithmCompletedEvent(MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent)
         {
-            var searchRequest = await GetSearchRequestById(matchingAlgorithmCompletedEvent.SearchRequestId);
+            var searchRequest = await GetSearchRequestByGuid(matchingAlgorithmCompletedEvent.SearchRequestId);
 
             searchRequest.MatchingAlgorithm_IsSuccessful = matchingAlgorithmCompletedEvent.CompletionDetails.IsSuccessful;
             searchRequest.MatchingAlgorithm_FailureInfo_Json = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfoJson;
@@ -88,7 +90,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackSearchRequestCompletedEvent(SearchRequestCompletedEvent completedEvent)
         {
-            var searchRequest = await GetSearchRequestById(completedEvent.SearchRequestId);
+            var searchRequest = await GetSearchRequestByGuid(completedEvent.SearchRequestId);
 
             searchRequest.ResultsSent = completedEvent.ResultsSent;
             searchRequest.ResultsSentTimeUTC = completedEvent.ResultsSentTimeUtc;
@@ -96,16 +98,28 @@ namespace Atlas.SearchTracking.Data.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task<SearchRequest> GetSearchRequestById(int id)
+        public async Task<SearchRequest> GetSearchRequestByGuid(Guid searchRequestId)
         {
-            var searchRequest = await searchRequests.FirstOrDefaultAsync(x => x.Id == id);
+            var searchRequest = await searchRequests.FirstOrDefaultAsync(x => x.SearchRequestId == searchRequestId);
 
             if (searchRequest == null)
             {
-                throw new Exception($"Search request with id {id} not found");
+                throw new Exception($"Search request with Guid {searchRequestId} not found");
             }
 
             return searchRequest;
+        }
+
+        public async Task<int> GetSearchRequestIdByGuid(Guid searchRequestId)
+        {
+            var searchRequest = await searchRequests.FirstOrDefaultAsync(x => x.SearchRequestId == searchRequestId);
+
+            if (searchRequest == null)
+            {
+                throw new Exception($"Search request with Guid {searchRequestId} not found");
+            }
+
+            return searchRequest.Id;
         }
     }
 }

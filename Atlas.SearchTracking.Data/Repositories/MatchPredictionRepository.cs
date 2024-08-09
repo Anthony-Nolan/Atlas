@@ -22,6 +22,7 @@ namespace Atlas.SearchTracking.Data.Repositories
         private readonly ISearchTrackingContext context;
 
         private DbSet<SearchRequestMatchPredictionTiming> MatchPredictionTimings => context.SearchRequestMatchPredictionTimings;
+        private DbSet<SearchRequest> SearchRequests => context.SearchRequests;
 
         public MatchPredictionRepository(ISearchTrackingContext context)
         {
@@ -30,9 +31,11 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackStartedEvent(MatchPredictionStartedEvent matchPredictionStartedEvent)
         {
+            var id = await GetSearchRequestIdByGuid(matchPredictionStartedEvent.SearchRequestId);
+
             var matchPrediction = new SearchRequestMatchPredictionTiming
             {
-                SearchRequestId = matchPredictionStartedEvent.SearchRequestId,
+                SearchRequestId = id,
                 InitiationTimeUtc = matchPredictionStartedEvent.InitiationTimeUtc,
                 StartTimeUtc = matchPredictionStartedEvent.StartTimeUtc
             };
@@ -43,7 +46,9 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackCompletedEvent(MatchPredictionCompletedEvent matchPredictionCompletedEvent)
         {
-            var matchPrediction = await GetRequiredMatchPredictionTiming(matchPredictionCompletedEvent.SearchRequestId);
+            var id = await GetSearchRequestIdByGuid(matchPredictionCompletedEvent.SearchRequestId);
+
+            var matchPrediction = await GetRequiredMatchPredictionTiming(id);
 
             matchPrediction.CompletionTimeUtc = matchPredictionCompletedEvent.CompletionTimeUtc;
             await context.SaveChangesAsync();
@@ -51,7 +56,9 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackTimingEvent(MatchPredictionTimingEvent matchPredictionTimingEvent, SearchTrackingEventType eventType)
         {
-            var matchPrediction = await GetRequiredMatchPredictionTiming(matchPredictionTimingEvent.SearchRequestId);
+            var id = await GetSearchRequestIdByGuid(matchPredictionTimingEvent.SearchRequestId);
+
+            var matchPrediction = await GetRequiredMatchPredictionTiming(id);
             var timingProperty = SearchTrackingConstants.MatchPredictionColumnMappings[eventType];
 
             matchPrediction.GetType().GetProperty(timingProperty)?.SetValue(matchPrediction, matchPredictionTimingEvent.TimeUtc);
@@ -82,6 +89,18 @@ namespace Atlas.SearchTracking.Data.Repositories
             }
 
             return matchPrediction;
+        }
+
+        private async Task<int> GetSearchRequestIdByGuid(Guid searchRequestId)
+        {
+            var searchRequest = await SearchRequests.FirstOrDefaultAsync(x => x.SearchRequestId == searchRequestId);
+
+            if (searchRequest == null)
+            {
+                throw new Exception($"Search request with Guid {searchRequestId} not found");
+            }
+
+            return searchRequest.Id;
         }
     }
 }

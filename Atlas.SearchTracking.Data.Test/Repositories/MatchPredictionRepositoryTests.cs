@@ -44,11 +44,12 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
         public async Task TrackMatchPredictionStartedEvent_WithValidData_IsAddedToDb()
         {
             const int expectedSearchRequestId = 1;
+            var expectedSearchRequestGuId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000");
             var expectedMatchPredictionEntity = defaultMatchPrediction;
 
             var matchPredictionStartedEvent = new MatchPredictionStartedEvent
             {
-                SearchRequestId = expectedMatchPredictionEntity.SearchRequestId,
+                SearchRequestId = expectedSearchRequestGuId,
                 InitiationTimeUtc = expectedMatchPredictionEntity.InitiationTimeUtc,
                 StartTimeUtc = expectedMatchPredictionEntity.StartTimeUtc,
             };
@@ -74,11 +75,13 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
             await CreateDefaultMatchPrediction();
 
             const int expectedSearchRequestId = 1;
+            var expectedSearchRequestGuid = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000");
+
             var expectedMatchPredictionEntity = MatchPredictionEntityBuilder.UpdateTimings.Build();
 
             var matchPredictionTimingEvent = new MatchPredictionTimingEvent
             {
-                SearchRequestId = expectedMatchPredictionEntity.SearchRequestId,
+                SearchRequestId = expectedSearchRequestGuid,
                 TimeUtc = new DateTime(2022, 12, 31)
             };
 
@@ -96,9 +99,11 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
             await CreateDefaultMatchPrediction();
             var expectedMatchPredictionEntity = MatchPredictionEntityBuilder.Completed.Build();
 
+            var expectedSearchRequestGuid = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000");
+
             var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
             {
-                SearchRequestId = expectedMatchPredictionEntity.SearchRequestId,
+                SearchRequestId = expectedSearchRequestGuid,
                 CompletionTimeUtc = expectedMatchPredictionEntity.CompletionTimeUtc.Value
             };
 

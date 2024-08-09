@@ -45,12 +45,13 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
         public async Task TrackMatchingAlgorithmAttemptStartedEvent_WithValidData_IsAddedToDb()
         {
             const int expectedSearchRequestId = 1;
+            var expectedSearchRequestGuid = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000");
 
             var expectedSearchRequestMatchingAlgorithmAttemptTimingEntity = defaultSearchRequestMatchingAlgorithmAttemptTiming;
 
             var matchingAlgorithmStartedEvent = new MatchingAlgorithmAttemptStartedEvent
             {
-                SearchRequestId = expectedSearchRequestMatchingAlgorithmAttemptTimingEntity.SearchRequestId,
+                SearchRequestId = expectedSearchRequestGuid,
                 AttemptNumber = expectedSearchRequestMatchingAlgorithmAttemptTimingEntity.AttemptNumber,
                 InitiationTimeUtc = expectedSearchRequestMatchingAlgorithmAttemptTimingEntity.InitiationTimeUtc,
                 StartTimeUtc = expectedSearchRequestMatchingAlgorithmAttemptTimingEntity.StartTimeUtc,
@@ -76,13 +77,15 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
             SearchTrackingEventType searchTrackingEventType, string dbColumnName)
         {
             const int expectedSearchRequestId = 1;
+            var expectedSearchRequestGuid = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000");
+
             await CreateDefaultMatchingAlgorithmAttempt();
 
             var expectedSearchRequestMatchingAlgorithmAttemptTimingEntity = MatchingAlgorithmAttemptBuilder.UpdateTimings.Build();
 
             var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
             {
-                SearchRequestId = expectedSearchRequestMatchingAlgorithmAttemptTimingEntity.SearchRequestId,
+                SearchRequestId = expectedSearchRequestGuid,
                 AttemptNumber = expectedSearchRequestMatchingAlgorithmAttemptTimingEntity.AttemptNumber,
                 TimeUtc = new DateTime(2022, 12, 31)
             };
@@ -102,13 +105,14 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
         public async Task TrackMatchingAlgorithmAttemptCompletedEvent_WhenCompleted_IsSavedToDb()
         {
             const int expectedSearchRequestId = 1;
+            var expectedSearchRequestGuid = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000");
             await CreateDefaultMatchingAlgorithmAttempt();
 
             var expectedSearchRequestMatchingAlgorithmAttemptTimingEntity = MatchingAlgorithmAttemptBuilder.Completed.Build();
 
             var matchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent
             {
-                SearchRequestId = expectedSearchRequestMatchingAlgorithmAttemptTimingEntity.SearchRequestId,
+                SearchRequestId = expectedSearchRequestGuid,
                 AttemptNumber = expectedSearchRequestMatchingAlgorithmAttemptTimingEntity.AttemptNumber,
                 CompletionTimeUtc = expectedSearchRequestMatchingAlgorithmAttemptTimingEntity.CompletionTimeUtc.Value
             };
