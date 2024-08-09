@@ -2,7 +2,7 @@
 {
     public class MatchingAlgorithmCompletedEvent
     {
-        public int SearchRequestId { get; set; }
+        public Guid SearchRequestId { get; set; }
         public byte AttemptNumber { get; set; }
         public DateTime CompletionTimeUtc { get; set; }
         public MatchingAlgorithmCompletionDetails? CompletionDetails { get; set; }
