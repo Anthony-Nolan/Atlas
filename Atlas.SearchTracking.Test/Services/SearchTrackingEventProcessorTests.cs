@@ -65,7 +65,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             var expectedSearchRequestCompletedEvent = new SearchRequestCompletedEvent
             {
-                SearchRequestId = 1,
+                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 ResultsSent = true,
                 ResultsSentTimeUtc = new DateTime(2024, 10, 1, 15, 30, 00)
             };
@@ -88,7 +88,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             var expectedMatchingAlgorithmAttemptStartedEvent = new MatchingAlgorithmAttemptStartedEvent()
             {
-                SearchRequestId = 1,
+                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 AttemptNumber = 0,
                 InitiationTimeUtc = new DateTime(2024, 10, 24, 15, 0, 0),
                 StartTimeUtc = new DateTime(2024, 10, 24, 15, 0, 2)
@@ -119,7 +119,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
             {
-                SearchRequestId = 1,
+                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 AttemptNumber = 0,
                 TimeUtc = new DateTime(2024, 10, 24, 15, 0, 10)
             };
@@ -142,7 +142,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             var expectedMatchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent()
             {
-                SearchRequestId = 1,
+                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 AttemptNumber = 0,
                 CompletionDetails = new MatchingAlgorithmCompletionDetails
                 {
@@ -173,7 +173,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             var expectedMatchPredictionStartedEvent = new MatchPredictionStartedEvent()
             {
-                SearchRequestId = 1,
+                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 InitiationTimeUtc = new DateTime(2024, 10, 24, 15, 0, 30),
                 StartTimeUtc = new DateTime(2024, 10, 24, 15, 0, 31)
             };
@@ -203,7 +203,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             var expectedMatchPredictionTimingEvent = new MatchPredictionTimingEvent
             {
-                SearchRequestId = 1,
+                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 TimeUtc = new DateTime(2024, 10, 24, 15, 0, 0)
             };
 
@@ -224,7 +224,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             var expectedMatchPredictionCompletedEvent = new MatchPredictionCompletedEvent()
             {
-                SearchRequestId = 1,
+                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 CompletionTimeUtc = new DateTime(2024, 10, 24, 16, 0, 0),
                 CompletionDetails = new MatchPredictionCompletionDetails()
                 {
