@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Azure.ServiceBus;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus;
@@ -10,6 +9,8 @@ using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.FileSchema.Models;
 using Newtonsoft.Json;
 using Atlas.DonorImport.ApplicationInsights;
+using Azure.Messaging.ServiceBus;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.DonorImport.Services
 {
@@ -18,15 +19,15 @@ namespace Atlas.DonorImport.Services
         Task SendSuccessMessage(string fileName, int importedDonorCount, IReadOnlyCollection<SearchableDonorValidationResult> failedDonors);
         Task SendFailureMessage(string fileName, ImportFailureReason failureReason, string failureReasonDescription);
     }
-    internal class DonorImportMessageSender : IDonorImportMessageSender
+    internal sealed class DonorImportMessageSender : IDonorImportMessageSender, IAsyncDisposable
     {
         private readonly ITopicClient topicClient;
         private readonly ILogger logger;
 
-        public DonorImportMessageSender(ILogger logger, ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings)
+        public DonorImportMessageSender(ILogger logger, [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings)
         {
             this.logger = logger;
-            topicClient = topicClientFactory.BuildTopicClient(messagingServiceBusSettings.ConnectionString, messagingServiceBusSettings.DonorImportResultsTopic);
+            topicClient = topicClientFactory.BuildTopicClient(messagingServiceBusSettings.DonorImportResultsTopic);
         }
 
 
@@ -87,9 +88,9 @@ namespace Atlas.DonorImport.Services
             {
                 logMessage(donorImportMessage);
 
-                var message = new Message(Encoding.UTF8.GetBytes(stringMessage))
+                var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(stringMessage))
                 {
-                    UserProperties =
+                    ApplicationProperties =
                     {
                         { nameof(DonorImportMessage.WasSuccessful), donorImportMessage.WasSuccessful },
                         { nameof(DonorImportMessage.FileName), donorImportMessage.FileName }
@@ -115,5 +116,6 @@ namespace Atlas.DonorImport.Services
                 { nameof(donorImportMessage.FailedImportInfo.FileFailureDescription), donorImportMessage.FailedImportInfo?.FileFailureDescription }
             });
 
+        public ValueTask DisposeAsync() => topicClient.DisposeAsync();
     }
 }

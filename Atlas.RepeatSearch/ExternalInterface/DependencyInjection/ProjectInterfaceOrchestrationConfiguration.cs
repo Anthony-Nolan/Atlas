@@ -1,4 +1,5 @@
 ﻿using System;
+using Atlas.Common.ServiceBus.DependencyInjection;
 using Atlas.Common.Utils.Extensions;
 using Atlas.RepeatSearch.Clients;
 using Atlas.RepeatSearch.Services.Search;
@@ -41,6 +42,11 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
 
         private static void RegisterServices(this IServiceCollection services)
         {
+            var serviceKey = typeof(MessagingServiceBusSettings);
+            services.RegisterServiceBusAsKeyedServices(
+                serviceKey,
+                sp => sp.GetRequiredService<MessagingServiceBusSettings>().ConnectionString);
+
             services.AddScoped<IRepeatSearchServiceBusClient, RepeatSearchServiceBusClient>();
             services.AddScoped<ISearchTrackingServiceBusClient, SearchTrackingServiceBusClient>();
             services.AddScoped<IRepeatSearchDispatcher, RepeatSearchDispatcher>();

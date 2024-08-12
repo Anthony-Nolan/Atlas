@@ -95,8 +95,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 .AndDoes(args =>
                 {
                     var processingAction =
-                        args.Arg<Func<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>, Task>>();
-                    var blankInput = Enumerable.Empty<ServiceBusMessage<SearchableDonorUpdate>>();
+                        args.Arg<Func<IEnumerable<DeserializedMessage<SearchableDonorUpdate>>, Task>>();
+                    var blankInput = Enumerable.Empty<DeserializedMessage<SearchableDonorUpdate>>();
                     processingAction(blankInput);
                 });
         }
@@ -225,9 +225,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
             await messageProcessorServiceForA.Received(1).ProcessAllMessagesInBatches_Async(
-                Arg.Any<Func<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>, Task>>(),
-                BatchSize,
-                Arg.Any<int>());
+                Arg.Any<Func<IEnumerable<DeserializedMessage<SearchableDonorUpdate>>, Task>>(),
+                BatchSize);
         }
 
         [Test]
@@ -238,9 +237,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
             await messageProcessorServiceForA.Received(1).ProcessAllMessagesInBatches_Async(
-                Arg.Any<Func<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>, Task>>(),
-                BatchSize,
-                Arg.Is<int>(b => b > BatchSize));
+                Arg.Any<Func<IEnumerable<DeserializedMessage<SearchableDonorUpdate>>, Task>>(),
+                BatchSize);
         }
 
         [Test]

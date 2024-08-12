@@ -24,6 +24,7 @@ using System;
 using Atlas.MatchPrediction.Test.Validation.Data.Models.Homework;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
 using Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework;
+using Azure.Messaging.ServiceBus;
 
 namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
 {
@@ -141,7 +142,8 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
             {
                 var messageSettings = fetchMessageServiceBusSettings(sp);
                 var searchSettings = fetchValidationSearchSettings(sp);
-                return new MessageBatchPublisher<SearchResultsNotification>(messageSettings.ConnectionString, searchSettings.ResultsTopic);
+                var client = sp.GetRequiredKeyedService<ServiceBusClient>(typeof(MessagingServiceBusSettings));
+                return new MessageBatchPublisher<SearchResultsNotification>(client, searchSettings.ResultsTopic);
             });
 
             services.AddScoped<ISearchResultNotificationSender, SearchResultNotificationSender>(sp =>

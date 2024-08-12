@@ -16,7 +16,7 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
     public class MessageBatchLock<T> : IDisposable
     {
         private readonly IServiceBusMessageReceiver<T> messageReceiver;
-        private readonly IEnumerable<ServiceBusMessage<T>> messageBatch;
+        private readonly IEnumerable<DeserializedMessage<T>> messageBatch;
         private readonly double lockTimeFraction;
         private readonly AsyncLock asyncLock = new AsyncLock();
 
@@ -28,7 +28,7 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
         /// <param name="messageReceiver">The object responsible for communicating with Azure regarding the messages in this batch.</param>
         public MessageBatchLock(
             IServiceBusMessageReceiver<T> messageReceiver,
-            IEnumerable<ServiceBusMessage<T>> messageBatch,
+            IEnumerable<DeserializedMessage<T>> messageBatch,
             double lockTimeFraction = 0.7)
         {
             this.messageReceiver = messageReceiver;
@@ -127,7 +127,7 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
             await ActOnMessagesViaLockToken(messageReceiver.AbandonMessageAsync);
         }
 
-        private async Task ActOnMessagesViaLockToken(Func<string, Task> messageFunc)
+        private async Task ActOnMessagesViaLockToken(Func<object, Task> messageFunc)
         {
             await Task.WhenAll(messageBatch.Select(m => messageFunc(m.LockToken)));
         }

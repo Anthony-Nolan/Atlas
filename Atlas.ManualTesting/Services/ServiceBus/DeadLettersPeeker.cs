@@ -9,8 +9,8 @@ namespace Atlas.ManualTesting.Services.ServiceBus
     internal class DeadLettersPeeker<T> : ServiceBusPeeker<T>, IDeadLettersPeeker<T>
     {
         // ReSharper disable once SuggestBaseTypeForParameter
-        public DeadLettersPeeker(IDeadLetterReceiverFactory factory, string connectionString, string topicName, string subscriptionName)
-            : base(factory, connectionString, topicName, subscriptionName)
+        public DeadLettersPeeker(IDeadLetterReceiverFactory factory, string topicName, string subscriptionName)
+            : base(factory, topicName, subscriptionName)
         {
         }
     }

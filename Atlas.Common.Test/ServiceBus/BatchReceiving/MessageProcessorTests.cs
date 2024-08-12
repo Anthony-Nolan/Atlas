@@ -22,11 +22,10 @@ namespace Atlas.Common.Test.ServiceBus.BatchReceiving
         public async Task ProcessAllMessagesInBatches_ReceivesBatchOfMessages()
         {
             const int batchSize = 123;
-            const int prefetchCount = 456;
 
-            await messageProcessor.ProcessAllMessagesInBatches_Async(messages => Task.CompletedTask, batchSize, prefetchCount);
+            await messageProcessor.ProcessAllMessagesInBatches_Async(messages => Task.CompletedTask, batchSize);
 
-            await messageReceiver.Received(1).ReceiveMessageBatchAsync(batchSize, prefetchCount);
+            await messageReceiver.Received(1).ReceiveMessageBatchAsync(batchSize);
         }
     }
 }

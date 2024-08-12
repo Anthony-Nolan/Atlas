@@ -12,7 +12,7 @@ using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
-using Microsoft.Azure.ServiceBus;
+using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -83,16 +83,19 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
 
         private static void SetUpMockServices(IServiceCollection services)
         {
+            services.AddKeyedSingleton<ServiceBusClient>(typeof(MessagingServiceBusSettings), (sp, _) => Substitute.For<ServiceBusClient>());
+            services.AddKeyedSingleton<ServiceBusClient>(typeof(NotificationsServiceBusSettings), (sp, _) => Substitute.For<ServiceBusClient>());
+
             #region Mock up topic client for Notifications sender
             // Service bus client package will throw if it detects an ongoing transaction, as it doesn't support distributed transactions.
             // We emulate that on all service bus clients here to enable testing for such cases.
             var mockTopicClient = Substitute.For<ITopicClient>();
             mockTopicClient
-                .WhenForAnyArgs(x => x.SendAsync((Message)default))
+                .WhenForAnyArgs(x => x.SendAsync((ServiceBusMessage)default))
                 .Do(_ => ThrowIfInTransaction());
 
             var mockTopicClientFactory = Substitute.For<ITopicClientFactory>();
-            mockTopicClientFactory.BuildTopicClient(default, default).ReturnsForAnyArgs(mockTopicClient);
+            mockTopicClientFactory.BuildTopicClient(default).ReturnsForAnyArgs(mockTopicClient);
             services.AddScoped(sp => mockTopicClientFactory);
             #endregion
 

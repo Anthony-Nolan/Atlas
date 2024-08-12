@@ -17,8 +17,10 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
         [MaxLength(64)]
         public string ExternalDonorCode { get; set; }
 
+        [MaxLength(256)]
         public string EthnicityCode { get; set; }
 
+        [MaxLength(256)]
         public string RegistryCode { get; set; }
 
         [Required]

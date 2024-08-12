@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Validators.DonorInfo
 {
-    public class DonorUpdateMessageValidator : AbstractValidator<ServiceBusMessage<SearchableDonorUpdate>>
+    public class DonorUpdateMessageValidator : AbstractValidator<DeserializedMessage<SearchableDonorUpdate>>
     {
         public DonorUpdateMessageValidator()
         {

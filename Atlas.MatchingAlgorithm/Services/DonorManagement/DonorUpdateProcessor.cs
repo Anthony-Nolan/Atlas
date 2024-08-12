@@ -107,8 +107,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 
             await messageProcessorService.ProcessAllMessagesInBatches_Async(
                 async batch => await ProcessMessages(batch, targetDatabase, hlaNomenclatureVersionFromRefresh),
-                batchSize,
-                batchSize * 2);
+                batchSize);
         }
 
         /// <remarks>
@@ -125,15 +124,13 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
                     var activeHlaVersion = activeHlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
                     await messageProcessorService.ProcessAllMessagesInBatches_Async(
                         async batch => await ProcessMessages(batch, targetDatabase, activeHlaVersion),
-                        batchSize,
-                        batchSize * 2);
+                        batchSize);
                     return;
 
                 case DatabaseStateWithRespectToDonorUpdates.Dormant:
                     await messageProcessorService.ProcessAllMessagesInBatches_Async(
                         async batch => await DiscardMessages(batch),
-                        batchSize * 10,
-                        batchSize * 20);
+                        batchSize * 10);
                     return;
 
                 case DatabaseStateWithRespectToDonorUpdates.Refreshing:
@@ -231,7 +228,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             };
         }
 
-        private async Task ProcessMessages(IEnumerable<ServiceBusMessage<SearchableDonorUpdate>> messageBatch, TransientDatabase targetDatabase, string targetHlaNomenclatureVersion)
+        private async Task ProcessMessages(IEnumerable<DeserializedMessage<SearchableDonorUpdate>> messageBatch, TransientDatabase targetDatabase, string targetHlaNomenclatureVersion)
         {
             var converterResults = await searchableDonorUpdateConverter.ConvertSearchableDonorUpdatesAsync(messageBatch);
 
@@ -248,7 +245,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             }
         }
 
-        private Task DiscardMessages(IEnumerable<ServiceBusMessage<SearchableDonorUpdate>> messageBatch)
+        private Task DiscardMessages(IEnumerable<DeserializedMessage<SearchableDonorUpdate>> messageBatch)
         {
             logger.SendTrace($"{TraceMessagePrefix}: Read and discarded {messageBatch.Count()} messages since the target Database is currently dormant.", LogLevel.Verbose);
             return Task.CompletedTask;
