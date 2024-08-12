@@ -11,6 +11,7 @@ using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
@@ -511,7 +512,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         /// </summary>
         private async Task<IEnumerable<int>> GetMatchingDonorIds(AlleleLevelMatchCriteria alleleLevelMatchCriteria)
         {
-            var results = await matchingService.GetMatches(alleleLevelMatchCriteria, null).ToListAsync();
+            var criteria = new MatchCriteria
+            {
+                AlleleLevelMatchCriteria = alleleLevelMatchCriteria,
+                NonHlaFilteringCriteria = new NonHlaFilteringCriteria()
+            };
+
+            var results = await matchingService.GetMatches(criteria, null).ToListAsync();
             return results.Select(d => d.DonorId);
         }
 

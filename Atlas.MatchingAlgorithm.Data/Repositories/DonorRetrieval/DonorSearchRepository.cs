@@ -76,7 +76,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 
             if (donorIds != null && !TypingIsRequiredAtLocus(locus))
             {
-                var untypedResults = await GetResultsForDonorsUntypedAtLocus(locus, donorIds.ToList());
+                var untypedResults = await GetResultsForDonorsUntypedAtLocus(locus, donorIds);
                 foreach (var untypedResult in untypedResults)
                 {
                     yield return untypedResult;
@@ -142,16 +142,18 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             {
                 using (logger.RunTimed($"Match Timing: Donor repo. Matched at locus: {locus}. For both positions. Connection closed."))
                 {
-                    // Ensure we have a Donor ID even when there is only one match at this locus.
+                    // Ensure we have a Donor ID even when there is only one match at this locus. 
                     const string selectDonorIdStatement = @"CASE WHEN DonorId1 IS NULL THEN DonorId2 ELSE DonorId1 END";
 
                     var matchingHlaTableName = MatchingHla.TableName(locus);
                     var hlaPGroupRelationTableName = HlaNamePGroupRelation.TableName(locus);
 
-                    var donorTypeFilteredJoin = filteringOptions.ShouldFilterOnDonorType
-                        // ReSharper disable once PossibleInvalidOperationException - implicitly checked via ShouldFilterOnDonorType
-                        ? $@"INNER JOIN Donors d ON {selectDonorIdStatement} = d.DonorId AND d.DonorType = {(int) filteringOptions.DonorType}"
-                        : "";
+
+                    var donorRegistryCodeFilteringPostfix = filteringOptions.ShouldFilterOnRegistryCodes
+                        ? $" AND d.RegistryCode in @{nameof(filteringOptions.RegistryCodes)}"
+                        : string.Empty;
+
+                    var donorTypeFilteredJoin = $@"INNER JOIN Donors d ON m.DonorId = d.DonorId AND d.DonorType = {(int)filteringOptions.DonorType} {donorRegistryCodeFilteringPostfix}";
 
                     var donorUpdatedJoin = cutOffDate != null
                         ? $@"INNER JOIN DonorManagementLogs dml ON m.DonorId = dml.DonorId AND dml.LastUpdateDateTime >= @{nameof(cutOffDate)}"
@@ -163,6 +165,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                         filteringOptions.DonorIds,
                         new TempTableFilterConfiguration {TempTableName = "Donors", InsertTimeoutInSeconds = 300}
                     );
+
                     var pGroups1TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering(
                         "hlaPGroupRelations",
                         "PGroupId",
@@ -189,6 +192,7 @@ FROM {hlaPGroupRelationTableName} hlaPGroupRelations
 JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
 {donorIdTempTableJoin}
 {donorUpdatedJoin}
+{donorTypeFilteredJoin}
 ) as m_1; 
 
 CREATE INDEX IX_Temp_Position1 ON #Pos1(DonorId1);
@@ -201,6 +205,7 @@ FROM {hlaPGroupRelationTableName} hlaPGroupRelations
 JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
 {donorIdTempTableJoin}
 {donorUpdatedJoin}
+{donorTypeFilteredJoin}
 ) as m_2;
 
 CREATE INDEX IX_Temp_Position2 ON #Pos2(DonorId2);
@@ -208,12 +213,11 @@ CREATE INDEX IX_Temp_Position2 ON #Pos2(DonorId2);
 SELECT DISTINCT {selectDonorIdStatement} as DonorId, TypePosition1, TypePosition2
 FROM #Pos1 as m_1
 {joinType} JOIN #Pos2 as m_2 ON DonorId1 = DonorId2
-{donorTypeFilteredJoin}
 ORDER BY DonorId
 ";
                     await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
                     {
-                        if (filteringOptions.DonorIds != null)
+                        if (filteringOptions.ShouldFilterOnDonorIds)
                         {
                             await donorIdTempTableJoinConfig.BuildTempTableFactory(conn);
                         }
@@ -221,13 +225,18 @@ ORDER BY DonorId
                         await pGroups1TempTableJoinConfig.BuildTempTableFactory(conn);
                         await pGroups2TempTableJoinConfig.BuildTempTableFactory(conn);
 
+
+                        var parameters = filteringOptions.ShouldFilterOnRegistryCodes
+                            ? (object)new { cutOffDate, filteringOptions.RegistryCodes }
+                            : new { cutOffDate };
+
                         // This is streamed from the database via disabling buffering (the default CommandFlags value = `Buffered`).
                         // This allows us to minimise our memory footprint, by not loading all donors into memory at once, and filtering as we go. 
                         var commandDefinition = new CommandDefinition(
                             sql,
                             commandTimeout: 3600,
                             flags: CommandFlags.None,
-                            parameters: new {cutOffDate}
+                            parameters: parameters
                         );
 
                         var matches = await conn.QueryAsync<DonorLocusMatch>(commandDefinition);
@@ -240,7 +249,7 @@ ORDER BY DonorId
             }
         }
 
-        private async Task<IEnumerable<PotentialHlaMatchRelation>> GetResultsForDonorsUntypedAtLocus(Locus locus, IList<int> donorIds)
+        private async Task<IEnumerable<PotentialHlaMatchRelation>> GetResultsForDonorsUntypedAtLocus(Locus locus, ICollection<int> donorIds)
         {
             using (logger.RunTimed($"Fetched untyped Donor IDs at Locus: {locus}"))
             {
@@ -271,7 +280,7 @@ ORDER BY DonorId
             return Attribute.IsDefined(locusProperty, typeof(RequiredAttribute));
         }
 
-        private async Task<IEnumerable<int>> GetIdsOfDonorsUntypedAtLocus(Locus locus, IList<int> donorIds)
+        private async Task<IEnumerable<int>> GetIdsOfDonorsUntypedAtLocus(Locus locus, ICollection<int> donorIds)
         {
             if (!donorIds.Any())
             {

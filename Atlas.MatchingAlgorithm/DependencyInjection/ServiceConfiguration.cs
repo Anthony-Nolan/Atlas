@@ -36,7 +36,6 @@ using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
-using Atlas.MatchingAlgorithm.Services.Search.NonHlaFiltering;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching;
@@ -385,7 +384,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             );
 
             services.AddScoped<ISearchService, SearchService>();
-            services.AddScoped<IDonorDetailsResultFilterer, DonorDetailsResultFilterer>();
             services.AddScoped<IMatchCriteriaMapper, MatchCriteriaMapper>();
             services.AddScoped<IMatchingFailureNotificationSender, MatchingFailureNotificationSender>();
 
@@ -401,7 +399,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IPerLocusDonorMatchingService, PerLocusDonorMatchingService>();
             services.AddScoped<IMatchFilteringService, MatchFilteringService>();
             services.AddScoped<IMatchCriteriaAnalyser, MatchCriteriaAnalyser>();
-            services.AddScoped<IDatabaseFilteringAnalyser, DatabaseFilteringAnalyser>();
 
             // Scoring Services
             services.AddScoped<IMatchScoringService, MatchScoringService>();
