@@ -12,6 +12,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
@@ -38,6 +39,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly IMatchingFailureNotificationSender matchingFailureNotificationSender;
         private readonly int searchRequestMaxRetryCount;
         private readonly AzureStorageSettings azureStorageSettings;
+        private readonly IMatchingAlgorithmSearchTrackingContextManager matchingAlgorithmSearchTrackingContextManager;
+        private readonly IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher;
 
         public SearchRunner(
             ISearchServiceBusClient searchServiceBusClient,
@@ -49,7 +52,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             MessagingServiceBusSettings messagingServiceBusSettings,
             IMatchingFailureNotificationSender matchingFailureNotificationSender,
-            AzureStorageSettings azureStorageSettings)
+            AzureStorageSettings azureStorageSettings,
+            IMatchingAlgorithmSearchTrackingContextManager matchingAlgorithmSearchTrackingContextManager,
+            IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher)
         {
             this.searchServiceBusClient = searchServiceBusClient;
             this.searchService = searchService;
@@ -60,6 +65,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.matchingFailureNotificationSender = matchingFailureNotificationSender;
             searchRequestMaxRetryCount = messagingServiceBusSettings.SearchRequestsMaxDeliveryCount;
             this.azureStorageSettings = azureStorageSettings;
+            this.matchingAlgorithmSearchTrackingContextManager = matchingAlgorithmSearchTrackingContextManager;
+            this.matchingAlgorithmSearchTrackingDispatcher = matchingAlgorithmSearchTrackingDispatcher;
         }
 
         public async Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest, int attemptNumber, DateTimeOffset enqueuedTimeUtc)
@@ -75,6 +82,15 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             try
             {
                 await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.SearchRequest);
+
+                var context = new MatchingAlgorithmSearchTrackingContext
+                {
+                    SearchRequestId = searchRequestId,
+                    AttemptNumber = (byte)attemptNumber
+                };
+
+                matchingAlgorithmSearchTrackingContextManager.Set(context);
+                await matchingAlgorithmSearchTrackingDispatcher.DispatchInitiationEvent(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
 
                 searchStopWatch.Start();
                 var results = (await searchService.Search(identifiedSearchRequest.SearchRequest, null)).ToList();

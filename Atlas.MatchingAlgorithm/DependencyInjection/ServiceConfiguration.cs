@@ -54,6 +54,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FeatureManagement;
 using System;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Settings.ServiceBus;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -393,6 +394,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IMatchingAlgorithmSearchLogger, MatchingAlgorithmSearchLogger>();
             services.AddScoped<MatchingAlgorithmImportLoggingContext>();
             services.AddScoped<IMatchingAlgorithmImportLogger, MatchingAlgorithmImportLogger>();
+            services.AddScoped<MatchingAlgorithmSearchTrackingContext>();
+            services.AddScoped<IMatchingAlgorithmSearchTrackingContextManager, MatchingAlgorithmSearchTrackingContextManager>();
+            services.AddScoped<IMatchingAlgorithmSearchTrackingDispatcher, MatchingAlgorithmSearchTrackingDispatcher>();
 
             // Matching Services
             services.AddScoped<IMatchingService, MatchingService>();

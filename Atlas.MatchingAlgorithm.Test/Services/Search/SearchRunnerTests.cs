@@ -13,6 +13,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
@@ -36,6 +37,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         private ISearchResultsBlobStorageClient resultsBlobStorageClient;
         private IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
         private IMatchingFailureNotificationSender matchingFailureNotificationSender;
+        private IMatchingAlgorithmSearchTrackingContextManager matchingAlgorithmSearchTrackingContextManager;
+        private IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher;
 
         private ISearchRunner searchRunner;
         private ISearchRunner batchedResultsSearchRunner;
@@ -49,6 +52,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             hlaNomenclatureVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
             var logger = Substitute.For<IMatchingAlgorithmSearchLogger>();
             matchingFailureNotificationSender = Substitute.For<IMatchingFailureNotificationSender>();
+            matchingAlgorithmSearchTrackingContextManager = Substitute.For<IMatchingAlgorithmSearchTrackingContextManager>();
+            matchingAlgorithmSearchTrackingDispatcher = Substitute.For<IMatchingAlgorithmSearchTrackingDispatcher>();
 
             batchedResultsSearchService = Substitute.For<ISearchService>();
             batchedResultsSearchService.Search(Arg.Any<SearchRequest>(), Arg.Any<DateTimeOffset?>())
@@ -63,7 +68,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                 hlaNomenclatureVersionAccessor,
                 new MessagingServiceBusSettings { SearchRequestsMaxDeliveryCount = MaxRetryCount },
                 matchingFailureNotificationSender,
-                new Settings.Azure.AzureStorageSettings());
+                new Settings.Azure.AzureStorageSettings(),
+                matchingAlgorithmSearchTrackingContextManager,
+                matchingAlgorithmSearchTrackingDispatcher);
 
             batchedResultsSearchRunner = new SearchRunner(
                 searchServiceBusClient,
@@ -74,7 +81,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                 hlaNomenclatureVersionAccessor,
                 new MessagingServiceBusSettings { SearchRequestsMaxDeliveryCount = MaxRetryCount },
                 matchingFailureNotificationSender,
-                new Settings.Azure.AzureStorageSettings { SearchResultsBatchSize = 1 });
+                new Settings.Azure.AzureStorageSettings { SearchResultsBatchSize = 1 },
+                matchingAlgorithmSearchTrackingContextManager,
+                matchingAlgorithmSearchTrackingDispatcher);
         }
 
         [Test]
@@ -170,9 +179,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             finally
             {
                 await matchingFailureNotificationSender.Received().SendFailureNotification(
-                    Arg.Is<IdentifiedSearchRequest>(x => x.Id == id), 
-                    attemptNumber, 
-                    0, 
+                    Arg.Is<IdentifiedSearchRequest>(x => x.Id == id),
+                    attemptNumber,
+                    0,
                     validationError);
             }
         }
