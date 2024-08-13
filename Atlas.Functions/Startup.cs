@@ -33,6 +33,10 @@ namespace Atlas.Functions
             RegisterSettings(services);
             RegisterTopLevelFunctionServices(services);
 
+            services.RegisterServiceBusAsKeyedServices(
+                typeof(Settings.MessagingServiceBusSettings),
+                sp => sp.GetRequiredService<IOptions<Settings.MessagingServiceBusSettings>>().Value.ConnectionString);
+
             services.RegisterNotificationSender(
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>()
