@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             searchTrackingServiceBusClient = Substitute.For<ISearchTrackingServiceBusClient>();
             searchTrackingContextManager = Substitute.For<IMatchingAlgorithmSearchTrackingContextManager>();
             searchTrackingContextManager.Retrieve().ReturnsForAnyArgs(new MatchingAlgorithmSearchTrackingContext
-                { SearchRequestId = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", AttemptNumber = 1 });
+                { SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"), AttemptNumber = 1 });
 
             searchTrackingDispatcher = new MatchingAlgorithmSearchTrackingDispatcher(searchTrackingContextManager, searchTrackingServiceBusClient);
         }
@@ -34,8 +34,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         public async Task DispatchSearchTrackingEvent_WhenMatchingAlgorithmStarted_DispatchesEventWithId()
         {
             const byte attemptNumber = 1;
-            DateTime initiationTime = new DateTime(2024, 8, 12);
-            DateTime startTime = new DateTime(2024, 8, 13);
+            var initiationTime = new DateTime(2024, 8, 12);
+            var startTime = new DateTime(2024, 8, 13);
 
             var expectedMatchingAlgorithmAttemptStartedEvent = new MatchingAlgorithmAttemptStartedEvent
             {

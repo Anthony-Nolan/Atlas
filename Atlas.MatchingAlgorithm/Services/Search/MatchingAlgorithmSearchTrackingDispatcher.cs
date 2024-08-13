@@ -22,7 +22,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             var matchingAlgorithmAttemptStartedEvent = new MatchingAlgorithmAttemptStartedEvent
             {
-                SearchRequestId = new Guid(currentContext.SearchRequestId),
+                SearchRequestId = currentContext.SearchRequestId,
                 AttemptNumber = currentContext.AttemptNumber,
                 InitiationTimeUtc = initiationTime,
                 StartTimeUtc = startTime

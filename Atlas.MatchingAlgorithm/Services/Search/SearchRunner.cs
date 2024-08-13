@@ -85,7 +85,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 var context = new MatchingAlgorithmSearchTrackingContext
                 {
-                    SearchRequestId = searchRequestId,
+                    SearchRequestId = new Guid(searchRequestId),
                     AttemptNumber = (byte)attemptNumber
                 };
 
