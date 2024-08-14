@@ -13,7 +13,6 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
@@ -89,9 +88,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_RunsSearch()
         {
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
             var searchRequest = new SearchRequestBuilder().Build();
 
-            await searchRunner.RunSearch(new IdentifiedSearchRequest { SearchRequest = searchRequest }, default, default);
+            await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = id, SearchRequest = searchRequest}, default, default);
 
             await searchService.Received().Search(searchRequest);
         }
@@ -99,7 +99,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_WhenResultsAreNotBatched_StoresResultsInBlobStorage()
         {
-            const string id = "id";
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default, default);
 
@@ -109,7 +109,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_WhenResultsAreBatched_StoresResultsInBlobStorage()
         {
-            const string id = "id";
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
 
             await batchedResultsSearchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default, default);
 
@@ -119,7 +119,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_WhenResultsAreNotBatched_PublishesSuccessNotification()
         {
-            const string id = "id";
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default, default);
 
@@ -131,10 +131,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_PublishesWmdaVersionInNotification()
         {
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
             const string hlaNomenclatureVersion = "hla-nomenclature-version";
             hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion().Returns(hlaNomenclatureVersion);
 
-            await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = "id", SearchRequest = DefaultMatchingRequest }, default, default);
+            await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default, default);
 
             await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
                 r.MatchingAlgorithmHlaNomenclatureVersion == hlaNomenclatureVersion
@@ -144,9 +145,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_WhenResultsAreBatched_PublishesSuccessNotificationWithBatchInfo()
         {
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
             var identifiedSearchRequest = new IdentifiedSearchRequest
             {
-                Id = "id",
+                Id = id,
                 SearchRequest = DefaultMatchingRequest
             };
 
@@ -160,7 +162,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_WhenSearchFailsDueToInvalidHla_PublishesFailureNotificationWithCorrectFailureInfo()
         {
-            const string id = "id";
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
             const int attemptNumber = 1;
             const string validationError = "bad hla";
 
@@ -189,16 +191,17 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_WhenSearchFailsDueToInvalidHla_DoesNotRethrowException()
         {
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
             searchService.Search(default).ThrowsForAnyArgs(new AtlasHttpException(HttpStatusCode.InternalServerError, "dummy error message"));
 
-            await searchRunner.Invoking(r => r.RunSearch(new IdentifiedSearchRequest { Id = "id", SearchRequest = DefaultMatchingRequest }, default, default))
+            await searchRunner.Invoking(r => r.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default, default))
                 .Should().NotThrowAsync<HlaMetadataDictionaryException>();
         }
 
         [Test]
         public async Task RunSearch_WhenSearchFailsForOtherException_PublishesFailureNotificationWithCorrectFailureInfo()
         {
-            const string id = "id";
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
             const int attemptNumber = 3;
 
             searchService.Search(default).ThrowsForAnyArgs(new Exception());
@@ -225,16 +228,17 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_WhenSearchFailsForOtherException_RethrowsException()
         {
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
             searchService.Search(default).ThrowsForAnyArgs(new Exception());
 
-            await searchRunner.Invoking(r => r.RunSearch(new IdentifiedSearchRequest { Id = "id", SearchRequest = DefaultMatchingRequest }, default, default))
+            await searchRunner.Invoking(r => r.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default, default))
                 .Should().ThrowAsync<Exception>();
         }
 
         [Test]
         public async Task RunSearch_StorePerformanceLogsInBlobStorage()
         {
-            const string searchRequestId = "search-request-id";
+            const string searchRequestId = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
             await searchRunner.RunSearch(new IdentifiedSearchRequest { SearchRequest = DefaultMatchingRequest, Id = searchRequestId }, default, default);
 
             await resultsBlobStorageClient.Received().UploadResults(
@@ -246,7 +250,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_WhenSearchFailsForException_StorePerformanceLogsInBlobStorage()
         {
-            const string searchRequestId = "search-request-id";
+            const string searchRequestId = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
             searchService.Search(default).ThrowsForAnyArgs(new Exception());
 
             try
@@ -271,9 +275,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_WhenLogsUploadFails_DoesNotThrowException()
         {
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
             resultsBlobStorageClient.UploadResults(Arg.Any<SearchLog>(), default, default).ThrowsForAnyArgs(new Exception());
 
-            await searchRunner.Invoking(r => r.RunSearch(new IdentifiedSearchRequest { SearchRequest = DefaultMatchingRequest }, default, default))
+            await searchRunner.Invoking(r => r.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default, default))
                 .Should().NotThrowAsync<Exception>();
         }
     }
