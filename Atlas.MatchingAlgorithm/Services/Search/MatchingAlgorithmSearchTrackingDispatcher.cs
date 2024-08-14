@@ -9,6 +9,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
     public interface IMatchingAlgorithmSearchTrackingDispatcher
     {
         Task DispatchInitiationEvent(DateTime initiationTime, DateTime startTime);
+
+        Task DispatchMatchingAlgorithmAttemptTimingEvent(SearchTrackingEventType eventType, DateTime timing);
     }
 
     public class MatchingAlgorithmSearchTrackingDispatcher(
@@ -30,6 +32,20 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
                 matchingAlgorithmAttemptStartedEvent, SearchTrackingEventType.MatchingAlgorithmAttemptStarted);
+        }
+
+        public async Task DispatchMatchingAlgorithmAttemptTimingEvent(SearchTrackingEventType eventType, DateTime timing)
+        {
+            var currentContext = matchingAlgorithmSearchTrackingContextManager.Retrieve();
+
+            var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
+            {
+                SearchRequestId = currentContext.SearchRequestId,
+                AttemptNumber = currentContext.AttemptNumber,
+                TimeUtc = timing
+            };
+
+            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(matchingAlgorithmAttemptTimingEvent, eventType);
         }
     }
 }
