@@ -55,5 +55,35 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             actualAttemptStartedEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptStartedEvent);
         }
+
+        [TestCase(SearchTrackingEventType.MatchingAlgorithmPersistingResultsEnded)]
+        [TestCase(SearchTrackingEventType.MatchingAlgorithmPersistingResultsStarted)]
+        [TestCase(SearchTrackingEventType.MatchingAlgorithmCoreScoringEnded)]
+        [TestCase(SearchTrackingEventType.MatchingAlgorithmCoreScoringStarted)]
+        [TestCase(SearchTrackingEventType.MatchingAlgorithmCoreMatchingEnded)]
+        [TestCase(SearchTrackingEventType.MatchingAlgorithmCoreMatchingStarted)]
+        [Test]
+        public async Task DispatchMatchingAlgorithmAttemptTimingEvent_WhenTimingEventReceived_DispatchesEvent(SearchTrackingEventType eventType)
+        {
+            const byte attemptNumber = 1;
+            var eventTime = new DateTime(2024, 8, 13);
+
+            var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
+            {
+                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+                AttemptNumber = attemptNumber,
+                TimeUtc = eventTime
+            };
+
+            MatchingAlgorithmAttemptTimingEvent actualAttemptTimingEvent = null;
+
+            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+                Arg.Do<MatchingAlgorithmAttemptTimingEvent>(x => actualAttemptTimingEvent = x),
+                Arg.Is(eventType));
+
+            await searchTrackingDispatcher.DispatchMatchingAlgorithmAttemptTimingEvent(eventType, eventTime);
+
+            actualAttemptTimingEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptTimingEvent);
+        }
     }
 }

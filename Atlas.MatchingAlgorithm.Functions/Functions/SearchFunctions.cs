@@ -58,6 +58,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             int deliveryCount,
             DateTime enqueuedTimeUtc)
         {
+            enqueuedTimeUtc = DateTime.SpecifyKind(enqueuedTimeUtc, DateTimeKind.Utc);
             await searchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc);
         }
 

@@ -17,6 +17,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
+using Atlas.SearchTracking.Common.Enums;
 using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
