@@ -91,9 +91,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 };
 
                 matchingAlgorithmSearchTrackingContextManager.Set(context);
-                await matchingAlgorithmSearchTrackingDispatcher.DispatchInitiationEvent(enqueuedTimeUtc.LocalDateTime, searchStartTime.UtcDateTime);
-                await matchingAlgorithmSearchTrackingDispatcher.DispatchMatchingAlgorithmAttemptTimingEvent(
-                    SearchTrackingEventType.MatchingAlgorithmCoreMatchingStarted, DateTime.UtcNow);
+                await matchingAlgorithmSearchTrackingDispatcher.DispatchInitiationEvent(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
 
                 searchStopWatch.Start();
                 var results = (await searchService.Search(identifiedSearchRequest.SearchRequest, null)).ToList();

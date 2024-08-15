@@ -11,6 +11,7 @@ using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Settings;
+using Atlas.SearchTracking.Common.Enums;
 using Dasync.Collections;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
@@ -27,6 +28,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         private readonly IMatchFilteringService matchFilteringService;
         private readonly ILogger searchLogger;
         private readonly MatchingConfigurationSettings matchingConfigurationSettings;
+        private readonly IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher;
 
         public MatchingService(
             IDonorMatchingService donorMatchingService,
@@ -35,13 +37,15 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             IMatchFilteringService matchFilteringService,
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchingAlgorithmSearchLogger searchLogger,
-            MatchingConfigurationSettings matchingConfigurationSettings)
+            MatchingConfigurationSettings matchingConfigurationSettings,
+            IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher)
         {
             this.donorMatchingService = donorMatchingService;
             donorInspectionRepository = transientRepositoryFactory.GetDonorInspectionRepository();
             this.matchFilteringService = matchFilteringService;
             this.searchLogger = searchLogger;
             this.matchingConfigurationSettings = matchingConfigurationSettings;
+            this.matchingAlgorithmSearchTrackingDispatcher = matchingAlgorithmSearchTrackingDispatcher;
         }
 
         public async IAsyncEnumerable<MatchResult> GetMatches(MatchCriteria criteria, DateTimeOffset? cutOffDate)
@@ -54,6 +58,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                         $"Matching: Locus {locus} has ({c.PGroupsToMatchInPositionOne.Count()}, {c.PGroupsToMatchInPositionTwo.Count()}) P-Groups to match"
                     );
                 }
+
+                await matchingAlgorithmSearchTrackingDispatcher.DispatchMatchingAlgorithmAttemptTimingEvent(
+                    SearchTrackingEventType.MatchingAlgorithmCoreMatchingStarted, DateTime.UtcNow);
 
                 var initialMatches = PerformMatchingPhaseOne(criteria, cutOffDate);
                 var matches = PerformMatchingPhaseTwo(criteria.AlleleLevelMatchCriteria, initialMatches);
@@ -92,7 +99,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         /// The second phase of matching does not need to query the p-group matching tables.
         /// It will assess the matches from all individual loci against the remaining search criteria.
         ///
-        /// Any filtering performed on non-hla donor info is performed here, as well as any search-type specific criteria.  
+        /// Any filtering performed on non-hla donor info is performed here, as well as any search-type specific criteria.
         /// </summary>
         private async IAsyncEnumerable<MatchResult> PerformMatchingPhaseTwo(AlleleLevelMatchCriteria criteria, IAsyncEnumerable<MatchResult> matches)
         {
