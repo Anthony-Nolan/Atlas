@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
@@ -55,9 +56,11 @@ namespace Atlas.RepeatSearch.Functions.Functions
                 "%MessagingServiceBus:RepeatSearchRequestsSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString")]
             IdentifiedRepeatSearchRequest request,
-            int deliveryCount)
+            int deliveryCount,
+            DateTime enqueuedTimeUtc)
         {
-            await repeatSearchRunner.RunSearch(request, deliveryCount);
+            enqueuedTimeUtc = DateTime.SpecifyKind(enqueuedTimeUtc, DateTimeKind.Utc);
+            await repeatSearchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc);
         }
 
         [Function(nameof(RepeatSearchMatchingRequestsDeadLetterQueueListener))]
