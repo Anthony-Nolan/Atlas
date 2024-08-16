@@ -11,6 +11,7 @@ using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.RepeatSearch.Clients;
@@ -25,7 +26,7 @@ namespace Atlas.RepeatSearch.Services.Search
 {
     public interface IRepeatSearchRunner
     {
-        Task RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber);
+        Task RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber, DateTimeOffset enqueuedTimeUtc);
     }
 
     public class RepeatSearchRunner : IRepeatSearchRunner
@@ -43,6 +44,8 @@ namespace Atlas.RepeatSearch.Services.Search
         private readonly AzureStorageSettings azureStorageSettings;
         private readonly int searchRequestMaxRetryCount;
         private readonly IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender;
+        private readonly IMatchingAlgorithmSearchTrackingContextManager matchingAlgorithmSearchTrackingContextManager;
+        private readonly IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher;
 
         public RepeatSearchRunner(
             IRepeatSearchServiceBusClient repeatSearchServiceBusClient,
@@ -58,7 +61,9 @@ namespace Atlas.RepeatSearch.Services.Search
             IOriginalSearchResultSetTracker originalSearchResultSetTracker,
             AzureStorageSettings azureStorageSettings,
             MessagingServiceBusSettings messagingServiceBusSettings,
-            IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender)
+            IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender,
+            IMatchingAlgorithmSearchTrackingContextManager matchingAlgorithmSearchTrackingContextManager,
+            IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher)
         {
             this.repeatSearchServiceBusClient = repeatSearchServiceBusClient;
             this.searchService = searchService;
@@ -73,9 +78,11 @@ namespace Atlas.RepeatSearch.Services.Search
             this.azureStorageSettings = azureStorageSettings;
             searchRequestMaxRetryCount = messagingServiceBusSettings.RepeatSearchRequestsMaxDeliveryCount;
             this.repeatSearchMatchingFailureNotificationSender = repeatSearchMatchingFailureNotificationSender;
+            this.matchingAlgorithmSearchTrackingContextManager = matchingAlgorithmSearchTrackingContextManager;
+            this.matchingAlgorithmSearchTrackingDispatcher = matchingAlgorithmSearchTrackingDispatcher;
         }
 
-        public async Task RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber)
+        public async Task RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber, DateTimeOffset enqueuedTimeUtc)
         {
             var searchStartTime = DateTimeOffset.UtcNow;
             var searchRequestId = identifiedRepeatSearchRequest.OriginalSearchId;
@@ -89,6 +96,15 @@ namespace Atlas.RepeatSearch.Services.Search
             try
             {
                 await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
+
+                var context = new MatchingAlgorithmSearchTrackingContext
+                {
+                    SearchRequestId = new Guid(searchRequestId),
+                    AttemptNumber = (byte)attemptNumber
+                };
+
+                matchingAlgorithmSearchTrackingContextManager.Set(context);
+                await matchingAlgorithmSearchTrackingDispatcher.DispatchInitiationEvent(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
 
                 // ReSharper disable once PossibleInvalidOperationException - validation has ensured this is not null.
                 var searchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value;
@@ -160,7 +176,7 @@ namespace Atlas.RepeatSearch.Services.Search
             catch (Exception e)
             {
                 repeatSearchLogger.SendTrace(
-                    $"Failed to run search with repeat search id: {repeatSearchId} (search id: {searchRequestId}). Exception: {e}", 
+                    $"Failed to run search with repeat search id: {repeatSearchId} (search id: {searchRequestId}). Exception: {e}",
                     LogLevel.Error);
                 await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(identifiedRepeatSearchRequest, attemptNumber, searchRequestMaxRetryCount - attemptNumber);
                 throw;
