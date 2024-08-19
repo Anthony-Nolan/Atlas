@@ -18,7 +18,6 @@ using Atlas.DonorImport.Services.DonorChecker;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OData.UriParser;
 
 namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
 {

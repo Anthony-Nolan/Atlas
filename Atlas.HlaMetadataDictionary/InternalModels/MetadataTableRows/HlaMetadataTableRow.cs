@@ -8,8 +8,9 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.Services.AzureStorage;
+using Azure;
+using Azure.Data.Tables;
 using EnumStringValues;
-using Microsoft.Azure.Cosmos.Table;
 using MoreLinq;
 using Newtonsoft.Json;
 
@@ -19,7 +20,7 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows
     /// Any new properties added to this table entity class will need to be manually added to the <see cref="WriteEntity"/> and <see cref="ReadEntity"/>
     /// methods used for writing and reading to/from Azure tables. 
     /// </summary>
-    internal class HlaMetadataTableRow : TableEntity
+    internal class HlaMetadataTableRow
     {
         private const int MaximumRowSize = 32_000;
         // Used to track whether serialised data has to be split across multiple columns.
@@ -32,14 +33,20 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows
         public string SerialisedHlaInfoType { get; set; }
         public string SerialisedHlaInfo { get; set; }
 
+        public string PartitionKey { get; set; }
+        public string RowKey { get; set; }
+        public DateTimeOffset?Timestamp { get; set; }
+        public ETag ETag { get; set; }
+
         public HlaMetadataTableRow()
         {
         }
 
         public HlaMetadataTableRow(ISerialisableHlaMetadata metadata)
-            : base(HlaMetadataTableKeyManager.GetPartitionKey(metadata.Locus),
-                HlaMetadataTableKeyManager.GetRowKey(metadata.LookupName, metadata.TypingMethod))
         {
+            PartitionKey = HlaMetadataTableKeyManager.GetPartitionKey(metadata.Locus);
+            RowKey = HlaMetadataTableKeyManager.GetRowKey(metadata.LookupName, metadata.TypingMethod);
+
             LocusAsString = metadata.Locus.ToString();
             TypingMethodAsString = metadata.TypingMethod.ToString();
             LookupName = metadata.LookupName;
@@ -69,43 +76,44 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows
             return JsonConvert.DeserializeObject<T>(SerialisedHlaInfo);
         }
         
-        public override void ReadEntity(IDictionary<string, EntityProperty> properties, OperationContext operationContext)
+        public virtual void ReadEntity(TableEntity source)
         {
-            LocusAsString = properties[nameof(LocusAsString)].StringValue;
-            TypingMethodAsString = properties[nameof(TypingMethodAsString)].StringValue;
-            LookupName = properties[nameof(LookupName)].StringValue;
-            SerialisedHlaInfoType = properties[nameof(SerialisedHlaInfoType)].StringValue;
+            LocusAsString = source.GetString(nameof(LocusAsString));
+            TypingMethodAsString = source.GetString(nameof(TypingMethodAsString));
+            LookupName = source.GetString(nameof(LookupName));
+            SerialisedHlaInfoType = source.GetString(nameof(SerialisedHlaInfoType));
 
             // If we know that a row has not had its serialised data split, do not waste time with string comparisons of properties 
-            if (properties.ContainsKey(IsSerialisedDataSplitProperty) && (properties[IsSerialisedDataSplitProperty].BooleanValue ?? false))
+            if (source.GetBoolean(IsSerialisedDataSplitProperty) ?? false)
             {
                 var sb = new StringBuilder();
-                foreach (var splitSerialisedPropertyKey in properties
+                foreach (var splitSerialisedPropertyKey in source
                     .Keys
                     .Where(p => p.StartsWith($"{nameof(SerialisedHlaInfo)}"))
                     .Where(p => p != nameof(SerialisedHlaInfoType))
                     .OrderBy(p => p.Split(nameof(SerialisedHlaInfo))[1]))
                 {
-                    sb.Append(properties[splitSerialisedPropertyKey].StringValue);
+                    sb.Append(source.GetString(splitSerialisedPropertyKey));
                 }
 
                 SerialisedHlaInfo = sb.ToString();
             }
             else
             {
-                SerialisedHlaInfo = properties[nameof(SerialisedHlaInfo)].StringValue;
+                SerialisedHlaInfo = source.GetString(nameof(SerialisedHlaInfo));
             }
         }
 
-        public override IDictionary<string, EntityProperty> WriteEntity(OperationContext operationContext)
+        public virtual void WriteEntity(TableEntity destination)
         {
-            var properties = new Dictionary<string, EntityProperty>
-            {
-                {nameof(LocusAsString), new EntityProperty(LocusAsString)},
-                {nameof(TypingMethodAsString), new EntityProperty(this.TypingMethodAsString)},
-                {nameof(LookupName), new EntityProperty(LookupName)},
-                {nameof(SerialisedHlaInfoType), new EntityProperty(SerialisedHlaInfoType)}
-            };
+            destination.RowKey = RowKey;
+            destination.PartitionKey = PartitionKey;
+            
+            destination[nameof(LocusAsString)] = LocusAsString;
+            destination[nameof(TypingMethodAsString)] = this.TypingMethodAsString;
+            destination[nameof(LookupName)] = LookupName;
+            destination[nameof(SerialisedHlaInfoType)] = SerialisedHlaInfoType;
+
 
             var splitSerialisedInfo = SerialisedHlaInfo
                 .Batch(MaximumRowSize)
@@ -115,7 +123,7 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows
             
             if (numberOfSubstrings > 1)
             {
-                properties[IsSerialisedDataSplitProperty] = new EntityProperty(true);
+                destination[IsSerialisedDataSplitProperty] = true;
             }
             
             // This code exists to work around the 32K character limit per string stored in Azure Table Storage:
@@ -125,10 +133,15 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows
             {
                 var subString = splitSerialisedInfo[i];
                 var subStringPropertyName = i == 0 ? nameof(SerialisedHlaInfo) : nameof(SerialisedHlaInfo) + i;
-                properties.Add(subStringPropertyName, new EntityProperty(subString));
+                destination[subStringPropertyName] = subString;
             }
-            
-            return properties;
+        }
+
+        public TableEntity ToTableEntity()
+        {
+            var entity = new TableEntity();
+            WriteEntity(entity);
+            return entity;
         }
     }
 }

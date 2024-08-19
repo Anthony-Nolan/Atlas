@@ -8,7 +8,8 @@ using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.Services;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
-using Microsoft.Azure.Cosmos.Table;
+using Azure;
+using Azure.Data.Tables;
 using Polly;
 
 namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
@@ -30,22 +31,17 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
     internal class MacRepository : IMacRepository
     {
         private readonly ILogger logger;
-        protected readonly CloudTable Table;
+        protected readonly TableClient Table;
 
-        private readonly string NonMetaDataFilter = TableQuery.GenerateFilterCondition(
-            "PartitionKey",
-            QueryComparisons.NotEqual,
-            LastStoredMacMetadataEntity.MetadataPartitionKey
-        );
+        private readonly string NonMetaDataFilter = TableClient.CreateQueryFilter($"PartitionKey ne {LastStoredMacMetadataEntity.MetadataPartitionKey}");
 
         public MacRepository(MacDictionarySettings macDictionarySettings, ILogger logger)
         {
             this.logger = logger;
             var connectionString = macDictionarySettings.AzureStorageConnectionString;
             var tableName = macDictionarySettings.TableName;
-            var storageAccount = CloudStorageAccount.Parse(connectionString); //TODO: ATLAS-485. Combine this with the CloudTableFactory in HMD.
-            var tableClient = storageAccount.CreateCloudTableClient();
-            Table = tableClient.GetTableReference(tableName);
+             
+            Table = new TableClient(connectionString, tableName); //TODO: ATLAS-485. Combine this with the CloudTableFactory in HMD.
             Table.CreateIfNotExists(); //TODO: ATLAS-512. Is there any mileage in using the "Lazy" Indexing Policy? (Apparently requires "Gateway" mode on the table?)
         }
 
@@ -86,8 +82,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
         public async Task<IReadOnlyCollection<Mac>> GetAllMacs()
         {
-            var query = new TableQuery<MacEntity>().Where(NonMetaDataFilter);
-            var result = await Table.ExecuteQueryAsync(query);
+            var result = await Table.ExecuteQueryAsync<MacEntity>(NonMetaDataFilter);
             return result.Select(x => new Mac(x)).ToList().AsReadOnly();
         }
 
@@ -97,8 +92,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             {
                 Code = latestMac
             };
-            var operation = TableOperation.InsertOrReplace(metadataEntity);
-            await Table.ExecuteAsync(operation);
+
+            await Table.UpsertEntityAsync(metadataEntity, TableUpdateMode.Replace);
         }
 
         /// <summary>
@@ -109,8 +104,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         private async Task<string> CalculateLastMacEntry()
         {
             logger.SendTrace("Calculating last seen MAC from all MAC data. If this is called, last seen metadata has probably been deleted.");
-            var query = new TableQuery<MacEntity>().Where(NonMetaDataFilter);
-            var result = await Table.ExecuteQueryAsync(query);
+            var result = await Table.ExecuteQueryAsync<MacEntity>(NonMetaDataFilter);
             var latestMac = result.InOrderOfDefinition().LastOrDefault()?.Code;
             await StoreLatestMacRecord(latestMac);
             return latestMac;
@@ -138,14 +132,15 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
         private async Task DeleteAndRecreateTable()
         {
-            await Table.DeleteIfExistsAsync();
+            await Table.DeleteAsync();
 
-            // Weirdly that Async delete doesn't wait until the deletion is finalised before continuing.
+
+            // According documentation, delete doesn't wait until the deletion is finalised before continuing.
             // So we have to wait for it ourselves.
             var twoMinuteRetryPolicy = Policy
-                .Handle<StorageException>(ex =>
-                    (ex?.RequestInformation?.HttpStatusMessage ?? "") == "Conflict" &&
-                    (ex?.RequestInformation?.ExtendedErrorInformation?.ErrorCode ?? "") == "TableBeingDeleted"
+                .Handle<RequestFailedException>(ex =>
+                    ex.Status == 409 && 
+                    ex.ErrorCode  == "TableBeingDeleted"
                 )
                 .WaitAndRetryAsync(120, _ => TimeSpan.FromSeconds(1));
 
@@ -158,16 +153,15 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         // ReSharper disable once UnusedMember.Local
         private async Task ExplicitlyDeleteAllMacRecords()
         {
-            var query = new TableQuery<MacEntity>();
             var existingMacs =
-                await Table.ExecuteQueryAsync(query); // GetAllMacs would A) do unnecessary conversions and B) skip the LastUpdated record
+                await Table.ExecuteQueryAsync<MacEntity>(""); // GetAllMacs would A) do unnecessary conversions and B) skip the LastUpdated record
 
             foreach (var macToDelete in existingMacs)
             {
                 // A TableEntities ETag property must be set to "*" to allow overwrites.
-                macToDelete.ETag = "*";
-                var delete = TableOperation.Delete(macToDelete);
-                Table.Execute(delete);
+                macToDelete.ETag = new ETag("*");
+
+                await Table.DeleteEntityAsync(macToDelete);
             }
         }
     }

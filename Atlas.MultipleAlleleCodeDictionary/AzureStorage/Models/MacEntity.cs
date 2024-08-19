@@ -1,6 +1,9 @@
-﻿using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
+﻿using Atlas.Common.AzureStorage;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.Services;
-using Microsoft.Azure.Cosmos.Table;
+using Azure;
+using Azure.Data.Tables;
+using System;
 
 namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models
 {
@@ -9,7 +12,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models
     /// If you change this, you'll need to work out how to regenerate the file, so that it can be interpretted.
     /// See notes in <see cref="FileBackedMacDictionaryRepository"/>
     /// </remarks>
-    internal class MacEntity : TableEntity, IHasMacCode
+    internal class MacEntity : AtlasTableEntityBase, IHasMacCode
     {
         // ReSharper disable once UnusedMember.Global Needed for some Cosmos API methods
         public MacEntity() {}

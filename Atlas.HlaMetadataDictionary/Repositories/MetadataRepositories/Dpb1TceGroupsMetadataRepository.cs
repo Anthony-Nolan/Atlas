@@ -14,7 +14,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         private const string CacheKey = nameof(Dpb1TceGroupsMetadataRepository);
 
         public Dpb1TceGroupsMetadataRepository(
-            ICloudTableFactory factory,
+            ITableClientFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             IPersistentCacheProvider cacheProvider,
             ILogger logger)

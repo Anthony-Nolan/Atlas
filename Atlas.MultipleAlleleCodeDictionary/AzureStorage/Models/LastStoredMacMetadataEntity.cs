@@ -1,6 +1,6 @@
+using Atlas.Common.AzureStorage;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.Services;
-using Microsoft.Azure.Cosmos.Table;
 
 namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models
 {
@@ -12,7 +12,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models
     /// The ordering logic is encoded in <see cref="SortingExtension"/>
     /// This entity the latest MAC imported (which could be calculated from existing MAC data using that ordering logic), cached for efficient lookup.
     /// </summary>
-    internal class LastStoredMacMetadataEntity : TableEntity, IHasMacCode
+    internal class LastStoredMacMetadataEntity : AtlasTableEntityBase, IHasMacCode
     {
         public const string MetadataPartitionKey = "Metadata"; 
         public const string LatestMacRowKey = "LastImported"; 
