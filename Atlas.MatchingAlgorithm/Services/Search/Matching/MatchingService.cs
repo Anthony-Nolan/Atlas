@@ -71,6 +71,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                     yield return match;
                 }
 
+                await matchingAlgorithmSearchTrackingDispatcher.DispatchMatchingAlgorithmAttemptTimingEvent(
+                    SearchTrackingEventType.MatchingAlgorithmCoreMatchingEnded, DateTime.UtcNow);
+
                 searchLogger.SendTrace($"Matched {matchCount} donors");
             }
         }
