@@ -8,9 +8,21 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 {
     public interface IMatchingAlgorithmSearchTrackingDispatcher
     {
-        Task DispatchInitiationEvent(DateTime initiationTime, DateTime startTime);
+        Task ProcessInitiation(DateTime initiationTime, DateTime startTime);
 
-        Task DispatchMatchingAlgorithmAttemptTimingEvent(SearchTrackingEventType eventType, DateTime timing);
+        Task ProcessCoreMatchingStarted();
+
+        Task ProcessCoreMatchingEnded();
+
+        Task ProcessCoreScoringOneDonorStarted();
+
+        Task ProcessCoreScoringAllDonorsEnded();
+
+        Task ProcessPersistingResultsStarted();
+
+        Task ProcessPersistingResultsEnded();
+
+        Task ProcessCompleted(MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent);
     }
 
     public class MatchingAlgorithmSearchTrackingDispatcher(
@@ -18,7 +30,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         ISearchTrackingServiceBusClient searchTrackingServiceBusClient)
         : IMatchingAlgorithmSearchTrackingDispatcher
     {
-        public async Task DispatchInitiationEvent(DateTime initiationTime, DateTime startTime)
+
+        private bool scoringOneDonorStartedTriggered = false;
+
+        public async Task ProcessInitiation(DateTime initiationTime, DateTime startTime)
         {
             var currentContext = matchingAlgorithmSearchTrackingContextManager.Retrieve();
 
@@ -34,7 +49,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 matchingAlgorithmAttemptStartedEvent, SearchTrackingEventType.MatchingAlgorithmAttemptStarted);
         }
 
-        public async Task DispatchMatchingAlgorithmAttemptTimingEvent(SearchTrackingEventType eventType, DateTime timing)
+        public async Task ProcessCoreMatchingStarted()
         {
             var currentContext = matchingAlgorithmSearchTrackingContextManager.Retrieve();
 
@@ -42,10 +57,95 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 SearchRequestId = currentContext.SearchRequestId,
                 AttemptNumber = currentContext.AttemptNumber,
-                TimeUtc = timing
+                TimeUtc = DateTime.UtcNow
             };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(matchingAlgorithmAttemptTimingEvent, eventType);
+            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+                matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType.MatchingAlgorithmCoreMatchingStarted);
+        }
+
+        public async Task ProcessCoreMatchingEnded()
+        {
+            var currentContext = matchingAlgorithmSearchTrackingContextManager.Retrieve();
+
+            var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
+            {
+                SearchRequestId = currentContext.SearchRequestId,
+                AttemptNumber = currentContext.AttemptNumber,
+                TimeUtc = DateTime.UtcNow
+            };
+
+            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+                matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType.MatchingAlgorithmCoreMatchingEnded);
+        }
+
+        public async Task ProcessCoreScoringOneDonorStarted()
+        {
+            if (!scoringOneDonorStartedTriggered)
+            {
+                var currentContext = matchingAlgorithmSearchTrackingContextManager.Retrieve();
+
+                var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
+                {
+                    SearchRequestId = currentContext.SearchRequestId,
+                    AttemptNumber = currentContext.AttemptNumber,
+                    TimeUtc = DateTime.UtcNow
+                };
+
+                scoringOneDonorStartedTriggered = true;
+                await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+                    matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType.MatchingAlgorithmCoreScoringStarted);
+            }
+        }
+
+        public async Task ProcessCoreScoringAllDonorsEnded()
+        {
+            var currentContext = matchingAlgorithmSearchTrackingContextManager.Retrieve();
+
+            var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
+            {
+                SearchRequestId = currentContext.SearchRequestId,
+                AttemptNumber = currentContext.AttemptNumber,
+                TimeUtc = DateTime.UtcNow
+            };
+
+            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+                matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType.MatchingAlgorithmCoreScoringEnded);
+        }
+
+        public async Task ProcessPersistingResultsStarted()
+        {
+            var currentContext = matchingAlgorithmSearchTrackingContextManager.Retrieve();
+
+            var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
+            {
+                SearchRequestId = currentContext.SearchRequestId,
+                AttemptNumber = currentContext.AttemptNumber,
+                TimeUtc = DateTime.UtcNow
+            };
+
+            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+                matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType.MatchingAlgorithmPersistingResultsStarted);
+        }
+
+        public async Task ProcessPersistingResultsEnded()
+        {
+            var currentContext = matchingAlgorithmSearchTrackingContextManager.Retrieve();
+
+            var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
+            {
+                SearchRequestId = currentContext.SearchRequestId,
+                AttemptNumber = currentContext.AttemptNumber,
+                TimeUtc = DateTime.UtcNow
+            };
+
+            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+                matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType.MatchingAlgorithmPersistingResultsEnded);
+        }
+
+        public async Task ProcessCompleted(MatchingAlgorithmCompletedEvent completedEvent)
+        {
+            throw new NotImplementedException();
         }
     }
 }

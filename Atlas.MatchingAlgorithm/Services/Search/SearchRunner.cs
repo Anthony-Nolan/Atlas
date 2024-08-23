@@ -17,7 +17,6 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
-using Atlas.SearchTracking.Common.Enums;
 using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
@@ -91,7 +90,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 };
 
                 matchingAlgorithmSearchTrackingContextManager.Set(context);
-                await matchingAlgorithmSearchTrackingDispatcher.DispatchInitiationEvent(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
+                await matchingAlgorithmSearchTrackingDispatcher.ProcessInitiation(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
 
                 searchStopWatch.Start();
                 var results = (await searchService.Search(identifiedSearchRequest.SearchRequest, null)).ToList();

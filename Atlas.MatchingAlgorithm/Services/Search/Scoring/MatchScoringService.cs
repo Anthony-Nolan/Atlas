@@ -29,6 +29,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
     {
         private readonly IRankingService rankingService;
         private readonly IMatchingAlgorithmSearchLogger searchLogger;
+        private readonly IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher;
 
         public MatchScoringService(
             IHlaMetadataDictionaryFactory factory,
@@ -40,8 +41,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             IMatchScoreCalculator matchScoreCalculator,
             IScoreResultAggregator scoreResultAggregator,
             IMatchingAlgorithmSearchLogger searchLogger,
-            IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator, 
-            ILogger logger)
+            IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator,
+            ILogger logger,
+            IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher)
             : base(
                 factory,
                 hlaNomenclatureVersionAccessor,
@@ -50,11 +52,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                 antigenMatchingService,
                 matchScoreCalculator,
                 scoreResultAggregator,
-                dpb1TceGroupMatchCalculator, 
+                dpb1TceGroupMatchCalculator,
                 logger)
         {
             this.rankingService = rankingService;
             this.searchLogger = searchLogger;
+            this.matchingAlgorithmSearchTrackingDispatcher = matchingAlgorithmSearchTrackingDispatcher;
         }
 
         /// <inheritdoc />
@@ -104,12 +107,16 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                 var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla.ToPhenotypeInfo(), request.ScoringCriteria.LociToScore);
                 await foreach (var matchResult in request.MatchResults)
                 {
+                    await matchingAlgorithmSearchTrackingDispatcher.ProcessCoreScoringOneDonorStarted();
+
                     yield return new MatchAndScoreResult
                     {
                         MatchResult = matchResult,
                         ScoreResult = await ScoreDonorHlaAgainstPatientMetadata(matchResult.DonorInfo.HlaNames, request.ScoringCriteria, patientScoringMetadata)
                     };
                 }
+
+                await matchingAlgorithmSearchTrackingDispatcher.ProcessCoreScoringAllDonorsEnded();
             }
         }
     }
