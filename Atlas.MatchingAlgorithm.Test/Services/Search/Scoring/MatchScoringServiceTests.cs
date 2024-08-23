@@ -24,6 +24,7 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
+using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
@@ -38,6 +39,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
         private IRankingService rankingService;
         private IMatchScoreCalculator matchScoreCalculator;
         private IScoreResultAggregator scoreResultAggregator;
+        private IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher;
 
         private IMatchScoringService scoringService;
 
@@ -53,16 +55,17 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
             matchScoreCalculator = Substitute.For<IMatchScoreCalculator>();
             scoreResultAggregator = Substitute.For<IScoreResultAggregator>();
             var hlaVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
+            matchingAlgorithmSearchTrackingDispatcher = Substitute.For<IMatchingAlgorithmSearchTrackingDispatcher>();
 
             rankingService.RankSearchResults(Arg.Any<IEnumerable<MatchAndScoreResult>>())
                 .Returns(callInfo => (IEnumerable<MatchAndScoreResult>) callInfo.Args().First());
-            
+
             gradingService.Score(default, default, default)
                 .ReturnsForAnyArgs(new LociInfo<LocusScoreResult<MatchGrade>>(new LocusScoreResult<MatchGrade>(MatchGrade.Mismatch)));
-            
+
             confidenceService.Score(default, default, default)
                 .ReturnsForAnyArgs(new LociInfo<LocusScoreResult<MatchConfidence>>(new LocusScoreResult<MatchConfidence>(MatchConfidence.Mismatch)));
-            
+
             antigenMatchingService.Score(default, default, default)
                 .ReturnsForAnyArgs(new LociInfo<LocusScoreResult<bool?>>(new LocusScoreResult<bool?>(false)));
 
@@ -79,7 +82,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
                 scoreResultAggregator,
                 Substitute.For<IMatchingAlgorithmSearchLogger>(),
                 Substitute.For<IDpb1TceGroupMatchCalculator>(),
-                Substitute.For<ILogger>()
+                Substitute.For<ILogger>(),
+                matchingAlgorithmSearchTrackingDispatcher
             );
         }
 

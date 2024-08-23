@@ -79,7 +79,7 @@ namespace Atlas.MatchingAlgorithm.Api
                 ConnectionStringReader("SqlA"),
                 ConnectionStringReader("SqlB"),
                 ConnectionStringReader("DonorSql"));
-            
+
             services.RegisterDataRefresh(
                 OptionsReaderFor<AzureAuthenticationSettings>(),
                 OptionsReaderFor<AzureDatabaseManagementSettings>(),
@@ -95,7 +95,7 @@ namespace Atlas.MatchingAlgorithm.Api
                 ConnectionStringReader("SqlA"),
                 ConnectionStringReader("SqlB"),
                 ConnectionStringReader("DonorSql"));
-            
+
             services.RegisterDonorManagement(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
@@ -150,6 +150,7 @@ namespace Atlas.MatchingAlgorithm.Api
             services.RegisterAsOptions<MatchingConfigurationSettings>("MatchingConfiguration");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
+            services.RegisterAsOptions<SearchTrackingServiceBusSettings>("SearchTrackingServiceBus");
         }
     }
 }

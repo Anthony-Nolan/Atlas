@@ -34,18 +34,21 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly IMatchScoringService scoringService;
         private readonly IMatchingService matchingService;
         private readonly ILogger searchLogger;
+        private readonly IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher;
 
         public SearchService(
             IMatchCriteriaMapper matchCriteriaMapper,
             IMatchScoringService scoringService,
             IMatchingService matchingService,
             // ReSharper disable once SuggestBaseTypeForParameter
-            IMatchingAlgorithmSearchLogger searchLogger)
+            IMatchingAlgorithmSearchLogger searchLogger,
+            IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher)
         {
             this.scoringService = scoringService;
             this.matchingService = matchingService;
             this.searchLogger = searchLogger;
             this.matchCriteriaMapper = matchCriteriaMapper;
+            this.matchingAlgorithmSearchTrackingDispatcher = matchingAlgorithmSearchTrackingDispatcher;
         }
 
         public async Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest matchingRequest, DateTimeOffset? cutOffDate)
@@ -60,7 +63,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             var matches = RunSubSearches(splitSearch, cutOffDate, new NonHlaFilteringCriteria { RegistryCodes = matchingRequest.DonorRegistryCodes});
 
-
             var request = new StreamingMatchResultsScoringRequest
             {
                 PatientHla = matchingRequest.SearchHlaData,
@@ -70,7 +72,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             // As matching phase 2 uses the same batch size as phase 1, which is expected to be very large - the result set is never expected to be large enough that scoring actually begins
             // before matching is complete. However, it wouldn't take much tweaking of batch sizes to enable scoring streaming to begin early.
-            // If memory continues to be a concern on large datasets, it wouldn't be much work from here to stream results to file so we don't even need to store all results in memory! Though 
+            // If memory continues to be a concern on large datasets, it wouldn't be much work from here to stream results to file so we don't even need to store all results in memory! Though
             // to do so would be to remove ranking of results, and may cause issues down the line where all results *do* need to be loaded into memory.
             var scoredMatches = await scoringService.StreamScoring(request);
             var reifiedScoredMatches = scoredMatches.DistinctBy(m => m.MatchResult.DonorId).ToList();
@@ -82,6 +84,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
         private async IAsyncEnumerable<MatchResult> RunSubSearches(List<AlleleLevelMatchCriteria> splitSearch, DateTimeOffset? cutOffDate, NonHlaFilteringCriteria nonHlaFilteringCriteria)
         {
+            await matchingAlgorithmSearchTrackingDispatcher.ProcessCoreMatchingStarted();
+
             foreach (var subSearch in splitSearch)
             {
                 var criteria = new MatchCriteria { AlleleLevelMatchCriteria = subSearch, NonHlaFilteringCriteria = nonHlaFilteringCriteria };
@@ -91,6 +95,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     yield return result;
                 }
             }
+
+            await matchingAlgorithmSearchTrackingDispatcher.ProcessCoreMatchingEnded();
         }
 
         private MatchingAlgorithmResult MapSearchResultToApiSearchResult(

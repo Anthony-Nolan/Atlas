@@ -104,7 +104,7 @@ namespace Atlas.RepeatSearch.Services.Search
                 };
 
                 matchingAlgorithmSearchTrackingContextManager.Set(context);
-                await matchingAlgorithmSearchTrackingDispatcher.DispatchInitiationEvent(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
+                await matchingAlgorithmSearchTrackingDispatcher.ProcessInitiation(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
 
                 // ReSharper disable once PossibleInvalidOperationException - validation has ensured this is not null.
                 var searchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value;

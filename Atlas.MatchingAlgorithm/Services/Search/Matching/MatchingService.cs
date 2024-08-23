@@ -11,7 +11,6 @@ using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Settings;
-using Atlas.SearchTracking.Common.Enums;
 using Dasync.Collections;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
@@ -28,7 +27,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         private readonly IMatchFilteringService matchFilteringService;
         private readonly ILogger searchLogger;
         private readonly MatchingConfigurationSettings matchingConfigurationSettings;
-        private readonly IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher;
 
         public MatchingService(
             IDonorMatchingService donorMatchingService,
@@ -45,7 +43,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             this.matchFilteringService = matchFilteringService;
             this.searchLogger = searchLogger;
             this.matchingConfigurationSettings = matchingConfigurationSettings;
-            this.matchingAlgorithmSearchTrackingDispatcher = matchingAlgorithmSearchTrackingDispatcher;
         }
 
         public async IAsyncEnumerable<MatchResult> GetMatches(MatchCriteria criteria, DateTimeOffset? cutOffDate)
@@ -59,9 +56,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                     );
                 }
 
-                await matchingAlgorithmSearchTrackingDispatcher.DispatchMatchingAlgorithmAttemptTimingEvent(
-                    SearchTrackingEventType.MatchingAlgorithmCoreMatchingStarted, DateTime.UtcNow);
-
                 var initialMatches = PerformMatchingPhaseOne(criteria, cutOffDate);
                 var matches = PerformMatchingPhaseTwo(criteria.AlleleLevelMatchCriteria, initialMatches);
                 var matchCount = 0;
@@ -70,9 +64,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                     matchCount++;
                     yield return match;
                 }
-
-                await matchingAlgorithmSearchTrackingDispatcher.DispatchMatchingAlgorithmAttemptTimingEvent(
-                    SearchTrackingEventType.MatchingAlgorithmCoreMatchingEnded, DateTime.UtcNow);
 
                 searchLogger.SendTrace($"Matched {matchCount} donors");
             }
