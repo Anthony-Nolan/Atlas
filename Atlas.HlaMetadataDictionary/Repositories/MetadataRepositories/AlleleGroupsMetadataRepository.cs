@@ -21,7 +21,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         private const string CacheKey = nameof(AlleleGroupsMetadataRepository);
 
         public AlleleGroupsMetadataRepository(
-            ICloudTableFactory factory,
+            ITableClientFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             IPersistentCacheProvider cacheProvider,
             ILogger logger)

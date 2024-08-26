@@ -24,11 +24,11 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
     }
 
     internal abstract class HlaMetadataRepositoryBase :
-        CloudTableRepositoryBase<ISerialisableHlaMetadata, HlaMetadataTableRow>,
+        TableClientRepositoryBase<ISerialisableHlaMetadata, HlaMetadataTableRow>,
         IHlaMetadataRepository
     {
         protected HlaMetadataRepositoryBase(
-            ICloudTableFactory factory,
+            ITableClientFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             string dataFunctionalTableReferencePrefix,
             IPersistentCacheProvider cacheProvider,

@@ -46,7 +46,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
 
         private static void RegisterStorageTypes(this IServiceCollection services)
         {
-            services.AddSingleton<ICloudTableFactory, CloudTableFactory>();
+            services.AddSingleton<ITableClientFactory, TableClientFactory>();
             services.AddSingleton<ITableReferenceRepository, TableReferenceRepository>();
 
             services.AddScoped<IGGroupToPGroupMetadataRepository, GGroupToPGroupMetadataRepository>();

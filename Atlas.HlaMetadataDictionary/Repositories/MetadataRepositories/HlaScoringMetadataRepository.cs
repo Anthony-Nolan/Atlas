@@ -22,7 +22,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         private const string CacheKey = nameof(HlaScoringMetadataRepository);
 
         public HlaScoringMetadataRepository(
-            ICloudTableFactory factory,
+            ITableClientFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             IPersistentCacheProvider cacheProvider,
             ILogger logger)

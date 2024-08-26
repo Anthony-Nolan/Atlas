@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Atlas.Common.AzureStorage.TableStorage;
 using Atlas.HlaMetadataDictionary.InternalModels;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
-using Microsoft.Azure.Cosmos.Table;
+using Azure.Data.Tables;
 
 namespace Atlas.HlaMetadataDictionary.Repositories
 {
@@ -23,11 +22,11 @@ namespace Atlas.HlaMetadataDictionary.Repositories
 
     internal class TableReferenceRepository : ITableReferenceRepository
     {
-        private readonly ICloudTableFactory factory;
+        private readonly ITableClientFactory factory;
         private const string CloudTableReference = "TableReferences";
-        private CloudTable table;
+        private TableClient tableClient;
 
-        public TableReferenceRepository(ICloudTableFactory factory)
+        public TableReferenceRepository(ITableClientFactory factory)
         {
             this.factory = factory;
         }
@@ -49,21 +48,23 @@ namespace Atlas.HlaMetadataDictionary.Repositories
 
         public async Task UpdateTableReference(string tablePrefix, string tableReference)
         {
-            var insertOrReplaceOperation = TableOperation.InsertOrReplace(new TableReferenceRow(tablePrefix, tableReference));
-            await (await GetTable()).ExecuteAsync(insertOrReplaceOperation);
+            var tableClient = await GetTableClient();
+            await tableClient.UpsertEntityAsync<TableReferenceRow>(new TableReferenceRow(tablePrefix, tableReference), TableUpdateMode.Replace);
         }
 
-        private async Task<CloudTable> GetTable()
+        private async Task<TableClient> GetTableClient()
         {
-            return table ??= await factory.GetTable(CloudTableReference);
+            return tableClient ??= await factory.GetTable(CloudTableReference);
         }
 
         private async Task<TableReferenceRow> GetExistingTableReferenceRow(string tablePrefix)
         {
+            var client = await GetTableClient();
             var partition = TableReferenceRow.GetPartition();
             var rowKey = tablePrefix;
-            var row = await (await GetTable()).GetByPartitionAndRowKey<TableReferenceRow>(partition, rowKey);
-            return row;
+
+            var response = await client.GetEntityIfExistsAsync<TableReferenceRow>(partition, rowKey); 
+            return response.HasValue ? response.Value : default;
         }
 
         private async Task<string> InsertAndReturnNewTableReference(string tablePrefix)

@@ -14,7 +14,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         private const string CacheKey = nameof(SerologyToAllelesMetadataRepository);
 
         public SerologyToAllelesMetadataRepository(
-            ICloudTableFactory factory,
+            ITableClientFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             IPersistentCacheProvider cacheProvider,
             ILogger logger)
