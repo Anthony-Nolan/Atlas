@@ -10,6 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
+using Microsoft.Extensions.Caching.Memory;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
+using System;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
@@ -35,6 +38,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         private readonly IMacDictionary macDictionary;
         private readonly IAlleleGroupExpander alleleGroupExpander;
 
+        private readonly SearchRelatedMetadataServiceSettings options; 
+
         protected SearchRelatedMetadataServiceBase(
             IHlaMetadataRepository hlaMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
@@ -43,7 +48,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IMacDictionary macDictionary,
             IAlleleGroupExpander alleleGroupExpander,
             string perTypeCacheKey,
-            IPersistentCacheProvider cacheProvider)
+            IPersistentCacheProvider cacheProvider,
+            SearchRelatedMetadataServiceSettings options
+            )
             : base(perTypeCacheKey, cacheProvider)
         {
             this.hlaMetadataRepository = hlaMetadataRepository;
@@ -52,6 +59,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             this.alleleNamesExtractor = alleleNamesExtractor;
             this.macDictionary = macDictionary;
             this.alleleGroupExpander = alleleGroupExpander;
+            this.options = options;
         }
 
         public async Task<THlaMetadata> GetHlaMetadata(Locus locus, string hlaName, string hlaNomenclatureVersion)
@@ -86,6 +94,10 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                     macDictionary,
                     alleleGroupExpander);
         }
+
+        protected override MemoryCacheEntryOptions GetMemoryCacheOptions() => options.CacheSlidingExpirationInSeconds == null
+            ? base.GetMemoryCacheOptions()
+            : base.GetMemoryCacheOptions().SetSlidingExpiration(TimeSpan.FromSeconds(options.CacheSlidingExpirationInSeconds.Value));
 
         protected abstract IEnumerable<THlaMetadata> ConvertMetadataRowsToMetadata(IEnumerable<HlaMetadataTableRow> rows);
 

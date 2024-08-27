@@ -28,6 +28,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
+                OptionsReaderFor<SearchRelatedMetadataServiceSettings>(),
                 ConnectionStringReader("PersistentSql"),
                 ConnectionStringReader("SqlA"),
                 ConnectionStringReader("SqlB"),
@@ -44,6 +45,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
+            services.RegisterAsOptions<SearchRelatedMetadataServiceSettings>("SearchRelatedMetadataServices");
         }
     }
 }

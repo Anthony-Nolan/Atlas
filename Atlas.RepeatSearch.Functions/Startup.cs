@@ -29,6 +29,7 @@ namespace Atlas.RepeatSearch.Functions
                 OptionsReaderFor<MatchingConfigurationSettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
+                OptionsReaderFor<SearchRelatedMetadataServiceSettings>(),
                 ConnectionStringReader("RepeatSearchSql"),
                 ConnectionStringReader("MatchingPersistentSql"),
                 ConnectionStringReader("MatchingSqlA"), 
@@ -68,6 +69,8 @@ namespace Atlas.RepeatSearch.Functions
             services.RegisterAsOptions<MatchingConfigurationSettings>("MatchingConfiguration");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
+            services.RegisterAsOptions<SearchRelatedMetadataServiceSettings>("SearchRelatedMetadataServices");
+
         }
     }
 }
