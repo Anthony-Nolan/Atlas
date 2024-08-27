@@ -18,7 +18,8 @@
     "MatchPredictionRequests:ResultsTopic": "match-prediction-results",
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
-    "NotificationsServiceBus:NotificationsTopic": "notifications"
+    "NotificationsServiceBus:NotificationsTopic": "notifications",
+    "SearchRelatedMetadataServices:CacheSlidingExpirationInSeconds": 300
   },
   "ConnectionStrings": {
     "MatchPredictionSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"

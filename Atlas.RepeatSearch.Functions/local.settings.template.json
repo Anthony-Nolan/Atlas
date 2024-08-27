@@ -23,7 +23,8 @@
     "MessagingServiceBus:RepeatSearchRequestsMaxDeliveryCount": 10,
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
-    "NotificationsServiceBus:NotificationsTopic": "notifications"
+    "NotificationsServiceBus:NotificationsTopic": "notifications",
+    "SearchRelatedMetadataServices:CacheSlidingExpirationInSeconds": 300
   },
 
   "ConnectionStrings": {

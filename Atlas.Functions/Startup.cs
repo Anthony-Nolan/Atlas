@@ -56,6 +56,7 @@ namespace Atlas.Functions
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<MatchPrediction.ExternalInterface.Settings.AzureStorageSettings>(),
+                OptionsReaderFor<SearchRelatedMetadataServiceSettings>(),
                 ConnectionStringReader("MatchPrediction:Sql")
             );
         }
@@ -76,6 +77,7 @@ namespace Atlas.Functions
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
             services.RegisterAsOptions<MacDownloadSettings>("MacDictionary:Download");
+            services.RegisterAsOptions<SearchRelatedMetadataServiceSettings>("SearchRelatedMetadataServices");
 
             // Matching Algorithm
             services.RegisterAsOptions<AzureStorageSettings>("Matching:AzureStorage");

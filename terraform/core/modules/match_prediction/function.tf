@@ -38,6 +38,8 @@ resource "azurerm_windows_function_app" "atlas_match_prediction_function" {
     "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:NotificationsTopic" = var.servicebus_topics.notifications.name
 
+    "SearchRelatedMetadataServices:CacheSlidingExpirationInSeconds" = var.HLA_CACHE_SLIDING_EXPIRATION_SEC
+
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "1"
     "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
   }

@@ -81,6 +81,8 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "MatchPrediction:AzureStorage:ConnectionString"                    = azurerm_storage_account.azure_storage.primary_connection_string
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer" = module.match_prediction.storage.match_prediction_results_container_name
 
+    "SearchRelatedMetadataServices:CacheSlidingExpirationInSeconds" = var.ATLAS_FUNCTION_HLA_CACHE_SLIDING_EXPIRATION_SEC,
+
     "NotificationsServiceBus:AlertsTopic"                     = module.support.general.alerts_servicebus_topic.name
     "NotificationsServiceBus:ConnectionString"                = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
     "NotificationsServiceBus:Debug:AlertsSubscription"        = module.support.general.alerts_servicebus_debug_subscription

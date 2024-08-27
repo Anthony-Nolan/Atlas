@@ -417,3 +417,27 @@ variable "WEBSITE_RUN_FROM_PACKAGE" {
   type    = string
   default = "1"
 }
+
+variable "ATLAS_FUNCTION_HLA_CACHE_SLIDING_EXPIRATION_SEC" {
+  type     = number
+  nullable = true
+  default  = null
+}
+
+variable "MATCHING_ALGORITHM_HLA_CACHE_SLIDING_EXPIRATION_SEC" {
+  type     = number
+  nullable = true
+  default  = 300
+}
+
+variable "MATCH_PREDICTION_HLA_CACHE_SLIDING_EXPIRATION_SEC" {
+  type     = number
+  nullable = true
+  default  = null
+}
+
+variable "REPEAT_SEARCH_HLA_CACHE_SLIDING_EXPIRATION_SEC" {
+  type     = number
+  nullable = true
+  default  = 300
+}

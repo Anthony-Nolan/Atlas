@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Atlas.Common.Caching;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.MetadataServices
 {
@@ -57,7 +58,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
                 alleleNamesExtractor,
                 macDictionary,
                 alleleGroupExpander,
-                cacheProvider);
+                cacheProvider,
+                new SearchRelatedMetadataServiceSettings());
 
             #region Set up to prevent exceptions that would incorrectly fail tests
             hlaMetadataRepository

@@ -55,7 +55,9 @@
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:Debug:AlertsSubscription": "debug",
     "NotificationsServiceBus:Debug:NotificationsSubscription": "debug",
-    "NotificationsServiceBus:NotificationsTopic": "notifications"
+    "NotificationsServiceBus:NotificationsTopic": "notifications",
+
+    "SearchRelatedMetadataServices:CacheSlidingExpirationInSeconds": 300
   },
   "ConnectionStrings": {
     "Matching:Sql:Persistent": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",

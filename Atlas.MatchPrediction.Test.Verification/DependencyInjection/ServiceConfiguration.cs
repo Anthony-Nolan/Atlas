@@ -45,7 +45,8 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
-            Func<IServiceProvider, MacDownloadSettings> fetchMacDownloadSettings
+            Func<IServiceProvider, MacDownloadSettings> fetchMacDownloadSettings,
+            Func<IServiceProvider, SearchRelatedMetadataServiceSettings> fetchSearchRelatedMetadataServiceSettings
         )
         {
             services.RegisterSettings();
@@ -58,7 +59,8 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             services.RegisterHlaMetadataDictionary(
                 fetchHlaMetadataDictionarySettings,
                 fetchApplicationInsightsSettings,
-                fetchMacDictionarySettings
+                fetchMacDictionarySettings,
+                fetchSearchRelatedMetadataServiceSettings
             );
 
             services.RegisterMacFetcher(fetchApplicationInsightsSettings, fetchMacDownloadSettings);

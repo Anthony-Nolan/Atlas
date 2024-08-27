@@ -63,6 +63,8 @@ locals {
 
     "Wmda:WmdaFileUri" = var.WMDA_FILE_URL
 
+    "SearchRelatedMetadataServices:CacheSlidingExpirationInSeconds" = var.HLA_CACHE_SLIDING_EXPIRATION_SEC
+
     // maximum running instances of the algorithm = maximum_worker_count * maxConcurrentCalls (in host.json).
     // together these must ensure that the number of allowed concurrent SQL connections to the matching SQL DB is not exceeded.
     // See README_Integration.md for more details on concurrency configuration.

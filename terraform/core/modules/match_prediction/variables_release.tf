@@ -24,3 +24,8 @@ variable "MAC_SOURCE" {
 variable "WEBSITE_RUN_FROM_PACKAGE" {
   type = string
 }
+
+variable "HLA_CACHE_SLIDING_EXPIRATION_SEC" {
+  type     = number
+  nullable = true
+}
