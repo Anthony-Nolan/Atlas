@@ -134,8 +134,10 @@ namespace Atlas.RepeatSearch.Services.Search
                     MatchingStartTime = searchStartTime
                 };
 
+                await matchingAlgorithmSearchTrackingDispatcher.ProcessPersistingResultsStarted();
                 await repeatResultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,
                     $"{searchRequestId}/{repeatSearchId}");
+                await matchingAlgorithmSearchTrackingDispatcher.ProcessPersistingResultsEnded();
 
                 var notification = new MatchingResultsNotification
                 {

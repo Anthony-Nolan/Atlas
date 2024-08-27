@@ -108,8 +108,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     MatchingStartTime = searchStartTime
                 };
 
+                await matchingAlgorithmSearchTrackingDispatcher.ProcessPersistingResultsStarted();
                 await resultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,
                     searchResultSet.SearchRequestId);
+                await matchingAlgorithmSearchTrackingDispatcher.ProcessPersistingResultsEnded();
 
                 var notification = new MatchingResultsNotification
                 {

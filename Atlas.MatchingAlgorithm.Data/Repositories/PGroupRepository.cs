@@ -53,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             }
 
             using (var sqlBulk = new SqlBulkCopy(
-                ConnectionStringProvider.GetConnectionString(), 
+                ConnectionStringProvider.GetConnectionString(),
                 SqlBulkCopyOptions.TableLock | SqlBulkCopyOptions.UseInternalTransaction))
             {
                 sqlBulk.BulkCopyTimeout = 600;
@@ -74,9 +74,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             }
 
             var sql = $@"
-SELECT p.Id FROM PGroupNames p
-WHERE p.Name IN {pGroupNames.ToInClause()} 
-";
+                SELECT p.Id FROM PGroupNames p
+                WHERE p.Name IN {pGroupNames.ToInClause()}
+                ";
 
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
