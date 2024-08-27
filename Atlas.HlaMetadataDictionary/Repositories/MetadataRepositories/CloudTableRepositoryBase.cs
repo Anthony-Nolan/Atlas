@@ -10,13 +10,13 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
+using Azure.Data.Tables;
 using LazyCache;
-using Microsoft.Azure.Cosmos.Table;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 {
     /// <summary>
-    /// Generic repository that persists data to a CloudTable
+    /// Generic repository that persists data to a TableClient
     /// & also caches it in memory for optimal read-access.
     /// </summary>
     internal interface IWarmableRepository
@@ -24,22 +24,22 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         Task LoadDataIntoMemory(string hlaNomenclatureVersion);
     }
 
-    internal abstract class CloudTableRepositoryBase<TStorable, TTableRow> :
+    internal abstract class TableClientRepositoryBase<TStorable, TTableRow> :
         IWarmableRepository
-        where TTableRow : TableEntity, new()
+        where TTableRow : HlaMetadataTableRow, new()
         where TStorable : ISerialisableHlaMetadata
     {
         protected readonly IAppCache Cache;
         protected readonly ILogger Logger;
 
-        private readonly ICloudTableFactory tableFactory;
+        private readonly ITableClientFactory tableFactory;
         private readonly ITableReferenceRepository tableReferenceRepository;
         private readonly string functionalTableReferencePrefix;
         private readonly string cacheKey;
-        private readonly IDictionary<string, CloudTable> cloudTables = new Dictionary<string, CloudTable>();
+        private readonly IDictionary<string, TableClient> tableClients = new Dictionary<string, TableClient>();
 
-        protected CloudTableRepositoryBase(
-            ICloudTableFactory factory,
+        protected TableClientRepositoryBase(
+            ITableClientFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             string functionalTableReferencePrefix,
             // ReSharper disable once SuggestBaseTypeForParameter
@@ -69,9 +69,11 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         {
             var tablePrefix = VersionedTableReferencePrefix(hlaNomenclatureVersion);
             var newDataTable = await CreateNewDataTable(tablePrefix);
-            await newDataTable.BatchInsert(tableContents.Select(rowData => new HlaMetadataTableRow(rowData)));
+
+
+            await newDataTable.BatchInsert(tableContents.Select(rowData => new HlaMetadataTableRow(rowData).ToTableEntity()));
             await tableReferenceRepository.UpdateTableReference(tablePrefix, newDataTable.Name);
-            cloudTables.Remove(tablePrefix);
+            tableClients.Remove(tablePrefix);
         }
 
         protected async Task<TTableRow> GetDataRowIfExists(string partition, string rowKey, string hlaNomenclatureVersion)
@@ -98,15 +100,18 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             using (Logger.RunTimed(operationDescription))
             {
                 var currentDataTable = await GetVersionedDataTable(hlaNomenclatureVersion);
-                var tableResults = new CloudTableBatchQueryAsync<TTableRow>(currentDataTable);
+                //var tableResults = new CloudTableBatchQueryAsync<TTableRow>(currentDataTable);
                 var dataToLoad = new Dictionary<string, TTableRow>();
+                var pages = currentDataTable.QueryAsync<TableEntity>(x => true).AsPages();
 
-                while (tableResults.HasMoreResults)
+                await foreach (var page in pages)
                 {
-                    var results = await tableResults.RequestNextAsync();
-                    foreach (var result in results)
+                    foreach (var result in page.Values)
                     {
-                        dataToLoad.Add(RowPrimaryKey(result.PartitionKey, result.RowKey), result);
+                        var row = new TTableRow();
+                        row.ReadEntity(result);
+
+                        dataToLoad.Add(RowPrimaryKey(result.PartitionKey, result.RowKey), row);
                     }
                 }
 
@@ -126,7 +131,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         /// <summary>
         /// The connection to the current data table is cached so we don't open unnecessary connections
         /// </summary>
-        private async Task<CloudTable> GetVersionedDataTable(string hlaNomenclatureVersion)
+        private async Task<TableClient> GetVersionedDataTable(string hlaNomenclatureVersion)
         {
             await tableConnectionCreationLock.WaitAsync();
 
@@ -134,15 +139,15 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 
             try
             {
-                if (cloudTables.TryGetValue(tablePrefix, out var cachedCloudTable))
+                if (tableClients.TryGetValue(tablePrefix, out var cachedTableClient))
                 {
-                    return cachedCloudTable;
+                    return cachedTableClient;
                 }
 
                 var dataTableReference = await tableReferenceRepository.GetCurrentTableReference(tablePrefix);
-                var cloudTable = await tableFactory.GetTable(dataTableReference);
-                cloudTables.Add(tablePrefix, cloudTable);
-                return cloudTable;
+                var TableClient = await tableFactory.GetTable(dataTableReference);
+                tableClients.Add(tablePrefix, TableClient);
+                return TableClient;
             }
             finally
             {
@@ -159,10 +164,17 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         private async Task<TTableRow> FetchRowFromSourceTable(string partition, string rowKey, string hlaNomenclatureVersion)
         {
             var table = await GetVersionedDataTable(hlaNomenclatureVersion);
-            return await table.GetByPartitionAndRowKey<TTableRow>(partition, rowKey);
+            var tableEntity = await table.GetByPartitionAndRowKey<TableEntity>(partition, rowKey);
+
+            if (tableEntity == null)
+                return null;
+
+            var item = new TTableRow();
+            item.ReadEntity(tableEntity);
+            return item;
         }
 
-        private async Task<CloudTable> CreateNewDataTable(string tablePrefix)
+        private async Task<TableClient> CreateNewDataTable(string tablePrefix)
         {
             var dataTableReference = tableReferenceRepository.GetNewTableReference(tablePrefix);
             return await tableFactory.GetTable(dataTableReference);

@@ -1,8 +1,9 @@
-using Microsoft.Azure.Cosmos.Table;
+using Atlas.Common.AzureStorage;
+using System;
 
 namespace Atlas.HlaMetadataDictionary.InternalModels
 {
-    internal class TableReferenceRow : TableEntity
+    internal class TableReferenceRow : AtlasTableEntityBase
     {
         public string TableReference { get; set; }
 
@@ -10,9 +11,11 @@ namespace Atlas.HlaMetadataDictionary.InternalModels
 
         public TableReferenceRow() { }
 
-        public TableReferenceRow(string tablePrefix, string tableReference): base(GetPartition(), tablePrefix)
+        public TableReferenceRow(string tablePrefix, string tableReference)
         {
             TableReference = tableReference;
+            RowKey = tablePrefix;
+            PartitionKey = GetPartition();
         }
 
         public static string GetPartition()

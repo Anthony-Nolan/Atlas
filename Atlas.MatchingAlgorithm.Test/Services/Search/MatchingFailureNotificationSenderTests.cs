@@ -7,7 +7,6 @@ using NUnit.Framework;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
-using Microsoft.Azure.Documents.SystemFunctions;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search
 {
