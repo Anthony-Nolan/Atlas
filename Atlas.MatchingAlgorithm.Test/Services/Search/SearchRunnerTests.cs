@@ -189,6 +189,16 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         }
 
         [Test]
+        public async Task RunSearch_WhenSearchFailsDueToValidationError_DoesNotRethrowException()
+        {
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+            searchService.Search(default).ThrowsForAnyArgs(new AtlasHttpException(HttpStatusCode.InternalServerError, "dummy error message"));
+
+            await searchRunner.Invoking(r => r.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default, default))
+                .Should().NotThrowAsync<FluentValidation.ValidationException>();
+        }
+
+        [Test]
         public async Task RunSearch_WhenSearchFailsDueToInvalidHla_DoesNotRethrowException()
         {
             const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
