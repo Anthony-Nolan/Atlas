@@ -21,6 +21,8 @@ using Atlas.RepeatSearch.Models;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
 using Atlas.RepeatSearch.Settings.Azure;
 using Atlas.RepeatSearch.Settings.ServiceBus;
+using Atlas.SearchTracking.Common.Models;
+using Newtonsoft.Json;
 
 namespace Atlas.RepeatSearch.Services.Search
 {
@@ -89,6 +91,7 @@ namespace Atlas.RepeatSearch.Services.Search
             var repeatSearchId = identifiedRepeatSearchRequest.RepeatSearchId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
+            var resultsSentTime = new DateTime();
 
             repeatSearchLoggingContext.SearchRequestId = searchRequestId;
             repeatSearchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
@@ -138,6 +141,7 @@ namespace Atlas.RepeatSearch.Services.Search
                 await repeatResultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,
                     $"{searchRequestId}/{repeatSearchId}");
                 await matchingAlgorithmSearchTrackingDispatcher.ProcessPersistingResultsEnded();
+                resultsSentTime = DateTime.UtcNow;
 
                 var notification = new MatchingResultsNotification
                 {
@@ -155,6 +159,31 @@ namespace Atlas.RepeatSearch.Services.Search
                     BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? $"{searchRequestId}/{repeatSearchId}" : null
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
+
+                var matchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent
+                {
+                    SearchRequestId = new Guid(searchRequestId),
+                    AttemptNumber = (byte)attemptNumber,
+                    CompletionTimeUtc = DateTime.UtcNow,
+                    HlaNomenclatureVersion = hlaNomenclatureVersion,
+                    ResultsSent = true,
+                    ResultsSentTimeUtc = resultsSentTime,
+                    CompletionDetails = new MatchingAlgorithmCompletionDetails
+                    {
+                        IsSuccessful = true,
+                        TotalAttemptsNumber = (byte)attemptNumber,
+                        NumberOfResults = results.Count,
+                        NumberOfMatching = diff.NewResults.Count,
+                        RepeatSearchResultsDetails = new MatchingAlgorithmRepeatSearchResultsDetails
+                        {
+                            AddedResultCount = diff.NewResults.Count,
+                            RemovedResultCount = diff.RemovedResults.Count,
+                            UpdatedResultCount = diff.UpdatedResults.Count
+                        }
+                    }
+                };
+
+                await matchingAlgorithmSearchTrackingDispatcher.ProcessCompleted(matchingAlgorithmCompletedEvent);
             }
 
             #region Expected Exceptions
@@ -181,6 +210,24 @@ namespace Atlas.RepeatSearch.Services.Search
                     $"Failed to run search with repeat search id: {repeatSearchId} (search id: {searchRequestId}). Exception: {e}",
                     LogLevel.Error);
                 await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(identifiedRepeatSearchRequest, attemptNumber, searchRequestMaxRetryCount - attemptNumber);
+
+                var matchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent
+                {
+                    SearchRequestId = new Guid(searchRequestId),
+                    AttemptNumber = (byte)attemptNumber,
+                    CompletionTimeUtc = DateTime.UtcNow,
+                    HlaNomenclatureVersion = hlaNomenclatureVersion,
+                    ResultsSent = false,
+                    CompletionDetails = new MatchingAlgorithmCompletionDetails
+                    {
+                        IsSuccessful = false,
+                        TotalAttemptsNumber = (byte)attemptNumber,
+                        FailureInfoJson = JsonConvert.SerializeObject(e.Message)
+                    }
+                };
+
+                await matchingAlgorithmSearchTrackingDispatcher.ProcessCompleted(matchingAlgorithmCompletedEvent);
+
                 throw;
             }
 
