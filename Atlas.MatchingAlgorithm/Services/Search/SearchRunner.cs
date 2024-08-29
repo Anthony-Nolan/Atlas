@@ -17,7 +17,9 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
+using Atlas.SearchTracking.Common.Models;
 using FluentValidation;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
 {
@@ -78,6 +80,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             searchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
             var requestCompletedSuccessfully = false;
             var searchStopWatch = new Stopwatch();
+            var resultsSentTime = new DateTime();
 
             try
             {
@@ -112,6 +115,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 await resultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,
                     searchResultSet.SearchRequestId);
                 await matchingAlgorithmSearchTrackingDispatcher.ProcessPersistingResultsEnded();
+                resultsSentTime = DateTime.UtcNow;
 
                 var notification = new MatchingResultsNotification
                 {
@@ -128,6 +132,23 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? searchRequestId : null
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
+
+                var matchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent
+                {
+                    SearchRequestId = new Guid(searchRequestId),
+                    AttemptNumber = (byte)attemptNumber,
+                    CompletionTimeUtc = DateTime.UtcNow,
+                    HlaNomenclatureVersion = hlaNomenclatureVersion,
+                    ResultsSent = true,
+                    ResultsSentTimeUtc = resultsSentTime,
+                    CompletionDetails = new MatchingAlgorithmCompletionDetails
+                    {
+                        IsSuccessful = true,
+                        TotalAttemptsNumber = (byte)attemptNumber,
+                        NumberOfResults = results.Count
+                    }
+                };
+                await matchingAlgorithmSearchTrackingDispatcher.ProcessCompleted(matchingAlgorithmCompletedEvent);
 
                 requestCompletedSuccessfully = true;
             }
@@ -149,7 +170,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             catch (HlaMetadataDictionaryException hmdException)
             {
                 searchLogger.SendTrace($"Failed to lookup HLA for search with id {searchRequestId}. Exception: {hmdException}", LogLevel.Error);
-
                 await matchingFailureNotificationSender.SendFailureNotification(identifiedSearchRequest, attemptNumber, 0, hmdException.Message);
 
                 // Do not re-throw the HMD exception to prevent the search being retried or dead-lettered.
@@ -161,6 +181,22 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 await matchingFailureNotificationSender.SendFailureNotification(identifiedSearchRequest, attemptNumber,
                     searchRequestMaxRetryCount - attemptNumber);
+
+                var matchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent
+                {
+                    SearchRequestId = new Guid(searchRequestId),
+                    AttemptNumber = (byte)attemptNumber,
+                    CompletionTimeUtc = DateTime.UtcNow,
+                    HlaNomenclatureVersion = hlaNomenclatureVersion,
+                    ResultsSent = false,
+                    CompletionDetails = new MatchingAlgorithmCompletionDetails
+                    {
+                        IsSuccessful = false,
+                        FailureInfoJson = JsonConvert.SerializeObject(e.Message),
+                        TotalAttemptsNumber = (byte)attemptNumber,
+                    }
+                };
+                await matchingAlgorithmSearchTrackingDispatcher.ProcessCompleted(matchingAlgorithmCompletedEvent);
 
                 throw;
             }
