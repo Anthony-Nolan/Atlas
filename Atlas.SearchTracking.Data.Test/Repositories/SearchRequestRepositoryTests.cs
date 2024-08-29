@@ -51,7 +51,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
                 RequestJson = expectedSearchRequestEntity.RequestJson,
                 SearchCriteria = expectedSearchRequestEntity.SearchCriteria,
                 DonorType = expectedSearchRequestEntity.DonorType,
-                RequestTimeUtc = expectedSearchRequestEntity.RequestTimeUTC
+                RequestTimeUtc = expectedSearchRequestEntity.RequestTimeUtc
             };
 
             await searchRequestRepository.TrackSearchRequestedEvent(searchRequestedEvent);
@@ -95,11 +95,13 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
                 SearchRequestId = expectedSearchRequestEntity.SearchRequestId,
                 HlaNomenclatureVersion = expectedSearchRequestEntity.MatchingAlgorithm_HlaNomenclatureVersion,
                 ResultsSent = expectedSearchRequestEntity.MatchingAlgorithm_ResultsSent.Value,
-                ResultsSentTimeUtc = expectedSearchRequestEntity.MatchingAlgorithm_ResultsSentTimeUTC,
+                ResultsSentTimeUtc = expectedSearchRequestEntity.MatchingAlgorithm_ResultsSentTimeUtc,
                 CompletionDetails = new MatchingAlgorithmCompletionDetails
                 {
                     IsSuccessful = expectedSearchRequestEntity.MatchingAlgorithm_IsSuccessful.Value,
-                    FailureInfoJson = expectedSearchRequestEntity.MatchingAlgorithm_FailureInfo_Json,
+                    FailureInfoMessage = expectedSearchRequestEntity.MatchingAlgorithm_FailureInfo_Message,
+                    FailureInfoExceptionStacktrace = expectedSearchRequestEntity.MatchingAlgorithm_FailureInfo_ExceptionStacktrace,
+                    FailureInfoType = expectedSearchRequestEntity.MatchingAlgorithm_FailureInfo_Type,
                     TotalAttemptsNumber = expectedSearchRequestEntity.MatchingAlgorithm_TotalAttemptsNumber.Value,
                     NumberOfMatching = expectedSearchRequestEntity.MatchingAlgorithm_NumberOfMatching.Value,
                     NumberOfResults = expectedSearchRequestEntity.MatchingAlgorithm_NumberOfResults.Value,
@@ -128,7 +130,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
             {
                 SearchRequestId = expectedSearchRequestEntity.SearchRequestId,
                 ResultsSent = expectedSearchRequestEntity.ResultsSent.Value,
-                ResultsSentTimeUtc = expectedSearchRequestEntity.ResultsSentTimeUTC.Value
+                ResultsSentTimeUtc = expectedSearchRequestEntity.ResultsSentTimeUtc.Value
             };
 
             await searchRequestRepository.TrackSearchRequestCompletedEvent(searchRequestCompletedEvent);

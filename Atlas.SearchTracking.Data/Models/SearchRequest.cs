@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Atlas.SearchTracking.Common.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -29,11 +30,15 @@ namespace Atlas.SearchTracking.Data.Models
         public string DonorType { get; set; }
 
         [Required]
-        public DateTime RequestTimeUTC { get; set; }
+        public DateTime RequestTimeUtc { get; set; }
 
         public bool? MatchingAlgorithm_IsSuccessful { get; set; }
 
-        public string? MatchingAlgorithm_FailureInfo_Json { get; set; }
+        public string? MatchingAlgorithm_FailureInfo_Message { get; set; }
+
+        public string? MatchingAlgorithm_FailureInfo_ExceptionStacktrace { get; set; }
+
+        public SearchTrackingFailureInfoType? MatchingAlgorithm_FailureInfo_Type { get; set; }
 
         public byte? MatchingAlgorithm_TotalAttemptsNumber { get; set; }
 
@@ -52,7 +57,7 @@ namespace Atlas.SearchTracking.Data.Models
 
         public bool? MatchingAlgorithm_ResultsSent { get; set; }
 
-        public DateTime? MatchingAlgorithm_ResultsSentTimeUTC { get; set; }
+        public DateTime? MatchingAlgorithm_ResultsSentTimeUtc { get; set; }
 
         public bool? MatchPrediction_IsSuccessful { get; set; }
 
@@ -64,7 +69,7 @@ namespace Atlas.SearchTracking.Data.Models
 
         public bool? ResultsSent { get; set; }
 
-        public DateTime? ResultsSentTimeUTC { get; set; }
+        public DateTime? ResultsSentTimeUtc { get; set; }
 
         public SearchRequestMatchPredictionTiming? SearchRequestMatchPredictionTiming { get; set; }
 

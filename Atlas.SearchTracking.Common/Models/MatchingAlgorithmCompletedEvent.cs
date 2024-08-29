@@ -1,4 +1,6 @@
-﻿namespace Atlas.SearchTracking.Common.Models
+﻿using Atlas.SearchTracking.Common.Enums;
+
+namespace Atlas.SearchTracking.Common.Models
 {
     public class MatchingAlgorithmCompletedEvent
     {
@@ -14,7 +16,9 @@
     public class MatchingAlgorithmCompletionDetails
     {
         public bool IsSuccessful { get; set; }
-        public string? FailureInfoJson { get; set; }
+        public string? FailureInfoMessage { get; set; }
+        public string? FailureInfoExceptionStacktrace { get; set; }
+        public SearchTrackingFailureInfoType? FailureInfoType { get; set; }
         public byte TotalAttemptsNumber { get; set; }
         public int? NumberOfResults { get; set; }
         public int? NumberOfMatching { get; set; }

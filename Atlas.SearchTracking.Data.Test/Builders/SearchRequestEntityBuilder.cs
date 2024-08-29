@@ -1,4 +1,5 @@
-﻿using Atlas.SearchTracking.Data.Models;
+﻿using Atlas.SearchTracking.Common.Enums;
+using Atlas.SearchTracking.Data.Models;
 using LochNessBuilder;
 
 namespace Atlas.SearchTracking.Data.Test.Builders
@@ -16,7 +17,7 @@ namespace Atlas.SearchTracking.Data.Test.Builders
             .With(m => m.RequestJson, "RequestJson")
             .With(m => m.SearchCriteria, "SearchCriteria")
             .With(m => m.DonorType, "DonorType")
-            .With(m => m.RequestTimeUTC, new DateTime(2021, 1, 1));
+            .With(m => m.RequestTimeUtc, new DateTime(2021, 1, 1));
 
         public static Builder<SearchRequest> NewRecord => Builder<SearchRequest>.New
             .With(m => m.Id, 2)
@@ -27,7 +28,7 @@ namespace Atlas.SearchTracking.Data.Test.Builders
             .With(m => m.RequestJson, "RequestJson")
             .With(m => m.SearchCriteria, "SearchCriteria")
             .With(m => m.DonorType, "DonorType")
-            .With(m => m.RequestTimeUTC, new DateTime(2021, 1, 1));
+            .With(m => m.RequestTimeUtc, new DateTime(2021, 1, 1));
 
         public static Builder<SearchRequest> WithMatchingPredictionCompleted => Default
             .With(m => m.MatchPrediction_IsSuccessful, true)
@@ -37,7 +38,9 @@ namespace Atlas.SearchTracking.Data.Test.Builders
 
         public static Builder<SearchRequest> WithMatchingAlgorithmCompleted => Default
             .With(m => m.MatchingAlgorithm_IsSuccessful, true)
-            .With(m => m.MatchingAlgorithm_FailureInfo_Json, "FailureInfoJson")
+            .With(m => m.MatchingAlgorithm_FailureInfo_Message, "FailureInfoMessage")
+            .With(m => m.MatchingAlgorithm_FailureInfo_ExceptionStacktrace, "StackTrace")
+            .With(m => m.MatchingAlgorithm_FailureInfo_Type, SearchTrackingFailureInfoType.ValidationError)
             .With(m => m.MatchingAlgorithm_TotalAttemptsNumber, 3)
             .With(m => m.MatchingAlgorithm_NumberOfMatching, 1000)
             .With(m => m.MatchingAlgorithm_HlaNomenclatureVersion, "3.6.0")
@@ -46,10 +49,10 @@ namespace Atlas.SearchTracking.Data.Test.Builders
             .With(m => m.MatchingAlgorithm_RepeatSearch_RemovedResultCount, 10)
             .With(m => m.MatchingAlgorithm_RepeatSearch_UpdatedResultCount, 5)
             .With(m => m.MatchingAlgorithm_ResultsSent, true)
-            .With(m => m.MatchingAlgorithm_ResultsSentTimeUTC, new DateTime(2023, 1, 1));
+            .With(m => m.MatchingAlgorithm_ResultsSentTimeUtc, new DateTime(2023, 1, 1));
 
         public static Builder<SearchRequest> WithSearchRequestCompleted => Default
             .With(m => m.ResultsSent, true)
-            .With(m => m.ResultsSentTimeUTC, new DateTime(2023, 1, 1));
+            .With(m => m.ResultsSentTimeUtc, new DateTime(2023, 1, 1));
     }
 }
