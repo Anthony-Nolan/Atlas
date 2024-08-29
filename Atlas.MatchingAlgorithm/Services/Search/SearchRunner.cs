@@ -131,6 +131,15 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 requestCompletedSuccessfully = true;
             }
+
+            catch (ValidationException validationException)
+            {
+                searchLogger.SendTrace(
+                    $"Validation failed for search id: {searchRequestId}). Exception: {validationException}", LogLevel.Error);
+
+                await matchingFailureNotificationSender.SendFailureNotification(identifiedSearchRequest, attemptNumber, 0,
+                    validationException.Message);
+            }
             // Invalid HLA is treated as an "Expected error" pathway and will not be retried.
             // This means only a single failure notification will be sent out, and the request message will be completed and not dead-lettered.
             catch (HlaMetadataDictionaryException hmdException)
