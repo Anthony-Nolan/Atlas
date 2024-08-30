@@ -42,7 +42,7 @@ namespace Atlas.SearchTracking.Data.Repositories
                 RequestJson = requestedEvent.RequestJson,
                 SearchCriteria = requestedEvent.SearchCriteria,
                 DonorType = requestedEvent.DonorType,
-                RequestTimeUTC = requestedEvent.RequestTimeUtc
+                RequestTimeUtc = requestedEvent.RequestTimeUtc
             };
 
             searchRequests.Add(searchRequest);
@@ -66,7 +66,9 @@ namespace Atlas.SearchTracking.Data.Repositories
             var searchRequest = await GetSearchRequestByGuid(matchingAlgorithmCompletedEvent.SearchRequestId);
 
             searchRequest.MatchingAlgorithm_IsSuccessful = matchingAlgorithmCompletedEvent.CompletionDetails.IsSuccessful;
-            searchRequest.MatchingAlgorithm_FailureInfo_Json = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfoJson;
+            searchRequest.MatchingAlgorithm_FailureInfo_Message = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo.Message;
+            searchRequest.MatchingAlgorithm_FailureInfo_ExceptionStacktrace = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo.ExceptionStacktrace;
+            searchRequest.MatchingAlgorithm_FailureInfo_Type = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo.Type;
             searchRequest.MatchingAlgorithm_TotalAttemptsNumber = matchingAlgorithmCompletedEvent.CompletionDetails.TotalAttemptsNumber;
             searchRequest.MatchingAlgorithm_NumberOfMatching = matchingAlgorithmCompletedEvent.CompletionDetails.NumberOfMatching;
             searchRequest.MatchingAlgorithm_NumberOfResults = matchingAlgorithmCompletedEvent.CompletionDetails.NumberOfResults;
@@ -83,7 +85,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
             searchRequest.MatchingAlgorithm_HlaNomenclatureVersion = matchingAlgorithmCompletedEvent.HlaNomenclatureVersion;
             searchRequest.MatchingAlgorithm_ResultsSent = matchingAlgorithmCompletedEvent.ResultsSent;
-            searchRequest.MatchingAlgorithm_ResultsSentTimeUTC = matchingAlgorithmCompletedEvent.ResultsSentTimeUtc;
+            searchRequest.MatchingAlgorithm_ResultsSentTimeUtc = matchingAlgorithmCompletedEvent.ResultsSentTimeUtc;
 
             await context.SaveChangesAsync();
         }
@@ -93,7 +95,7 @@ namespace Atlas.SearchTracking.Data.Repositories
             var searchRequest = await GetSearchRequestByGuid(completedEvent.SearchRequestId);
 
             searchRequest.ResultsSent = completedEvent.ResultsSent;
-            searchRequest.ResultsSentTimeUTC = completedEvent.ResultsSentTimeUtc;
+            searchRequest.ResultsSentTimeUtc = completedEvent.ResultsSentTimeUtc;
 
             await context.SaveChangesAsync();
         }
