@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.SearchTracking.Data.Migrations
 {
     [DbContext(typeof(SearchTrackingContext))]
-    [Migration("20240829140402_AmendSearchTrackingSearchRequestsTable")]
+    [Migration("20240830111645_AmendSearchTrackingSearchRequestsTable")]
     partial class AmendSearchTrackingSearchRequestsTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

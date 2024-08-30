@@ -99,9 +99,12 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
                 CompletionDetails = new MatchingAlgorithmCompletionDetails
                 {
                     IsSuccessful = expectedSearchRequestEntity.MatchingAlgorithm_IsSuccessful.Value,
-                    FailureInfoMessage = expectedSearchRequestEntity.MatchingAlgorithm_FailureInfo_Message,
-                    FailureInfoExceptionStacktrace = expectedSearchRequestEntity.MatchingAlgorithm_FailureInfo_ExceptionStacktrace,
-                    FailureInfoType = expectedSearchRequestEntity.MatchingAlgorithm_FailureInfo_Type,
+                    FailureInfo = new MatchingAlgorithmFailureInfo
+                    {
+                        Message = expectedSearchRequestEntity.MatchingAlgorithm_FailureInfo_Message,
+                        ExceptionStacktrace = expectedSearchRequestEntity.MatchingAlgorithm_FailureInfo_ExceptionStacktrace,
+                        Type = expectedSearchRequestEntity.MatchingAlgorithm_FailureInfo_Type
+                    },
                     TotalAttemptsNumber = expectedSearchRequestEntity.MatchingAlgorithm_TotalAttemptsNumber.Value,
                     NumberOfMatching = expectedSearchRequestEntity.MatchingAlgorithm_NumberOfMatching.Value,
                     NumberOfResults = expectedSearchRequestEntity.MatchingAlgorithm_NumberOfResults.Value,

@@ -40,7 +40,7 @@ namespace Atlas.SearchTracking.Data.Test.Builders
             .With(m => m.MatchingAlgorithm_IsSuccessful, true)
             .With(m => m.MatchingAlgorithm_FailureInfo_Message, "FailureInfoMessage")
             .With(m => m.MatchingAlgorithm_FailureInfo_ExceptionStacktrace, "StackTrace")
-            .With(m => m.MatchingAlgorithm_FailureInfo_Type, SearchTrackingFailureInfoType.ValidationError)
+            .With(m => m.MatchingAlgorithm_FailureInfo_Type, MatchingAlgorithmFailureType.ValidationError)
             .With(m => m.MatchingAlgorithm_TotalAttemptsNumber, 3)
             .With(m => m.MatchingAlgorithm_NumberOfMatching, 1000)
             .With(m => m.MatchingAlgorithm_HlaNomenclatureVersion, "3.6.0")

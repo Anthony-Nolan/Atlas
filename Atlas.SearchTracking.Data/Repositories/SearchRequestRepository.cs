@@ -66,9 +66,9 @@ namespace Atlas.SearchTracking.Data.Repositories
             var searchRequest = await GetSearchRequestByGuid(matchingAlgorithmCompletedEvent.SearchRequestId);
 
             searchRequest.MatchingAlgorithm_IsSuccessful = matchingAlgorithmCompletedEvent.CompletionDetails.IsSuccessful;
-            searchRequest.MatchingAlgorithm_FailureInfo_Message = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfoMessage;
-            searchRequest.MatchingAlgorithm_FailureInfo_ExceptionStacktrace = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfoExceptionStacktrace;
-            searchRequest.MatchingAlgorithm_FailureInfo_Type = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfoType;
+            searchRequest.MatchingAlgorithm_FailureInfo_Message = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo.Message;
+            searchRequest.MatchingAlgorithm_FailureInfo_ExceptionStacktrace = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo.ExceptionStacktrace;
+            searchRequest.MatchingAlgorithm_FailureInfo_Type = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo.Type;
             searchRequest.MatchingAlgorithm_TotalAttemptsNumber = matchingAlgorithmCompletedEvent.CompletionDetails.TotalAttemptsNumber;
             searchRequest.MatchingAlgorithm_NumberOfMatching = matchingAlgorithmCompletedEvent.CompletionDetails.NumberOfMatching;
             searchRequest.MatchingAlgorithm_NumberOfResults = matchingAlgorithmCompletedEvent.CompletionDetails.NumberOfResults;

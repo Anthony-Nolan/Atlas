@@ -1,6 +1,6 @@
 ﻿namespace Atlas.SearchTracking.Common.Enums
 {
-    public enum SearchTrackingFailureInfoType
+    public enum MatchingAlgorithmFailureType
     {
         ValidationError,
         HlaMetadataDictionaryError,

@@ -146,7 +146,10 @@ namespace Atlas.SearchTracking.Test.Services
                 AttemptNumber = 0,
                 CompletionDetails = new MatchingAlgorithmCompletionDetails
                 {
-                    FailureInfoMessage = "",
+                    FailureInfo = new MatchingAlgorithmFailureInfo
+                    {
+                        Message = ""
+                    },
                     IsSuccessful = true,
                     NumberOfMatching = 100,
                     NumberOfResults = 150

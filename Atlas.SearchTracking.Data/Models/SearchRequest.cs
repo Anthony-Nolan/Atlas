@@ -38,7 +38,7 @@ namespace Atlas.SearchTracking.Data.Models
 
         public string? MatchingAlgorithm_FailureInfo_ExceptionStacktrace { get; set; }
 
-        public SearchTrackingFailureInfoType? MatchingAlgorithm_FailureInfo_Type { get; set; }
+        public MatchingAlgorithmFailureType? MatchingAlgorithm_FailureInfo_Type { get; set; }
 
         public byte? MatchingAlgorithm_TotalAttemptsNumber { get; set; }
 
