@@ -14,15 +14,15 @@ namespace Atlas.SearchTracking.Services
     {
         private readonly ISearchRequestRepository searchRequestRepository;
         private readonly IMatchPredictionRepository matchPredictionRepository;
-        private readonly ISearchRequestMatchingAlgorithmAttemptTimingRepository searchRequestMatchingAlgorithmAttemptRepository;
+        private readonly ISearchRequestMatchingAlgorithmAttemptsRepository searchRequestMatchingAlgorithmAttemptsRepository;
 
         public SearchTrackingEventProcessor(ISearchRequestRepository searchRequestRepository,
             IMatchPredictionRepository matchPredictionRepository,
-            ISearchRequestMatchingAlgorithmAttemptTimingRepository searchRequestMatchingAlgorithmAttemptRepository)
+            ISearchRequestMatchingAlgorithmAttemptsRepository searchRequestMatchingAlgorithmAttemptsRepository)
         {
             this.searchRequestRepository = searchRequestRepository;
             this.matchPredictionRepository = matchPredictionRepository;
-            this.searchRequestMatchingAlgorithmAttemptRepository = searchRequestMatchingAlgorithmAttemptRepository;
+            this.searchRequestMatchingAlgorithmAttemptsRepository = searchRequestMatchingAlgorithmAttemptsRepository;
         }
 
         public async Task HandleEvent(string body, SearchTrackingEventType eventType)
@@ -39,7 +39,7 @@ namespace Atlas.SearchTracking.Services
                     break;
                 case SearchTrackingEventType.MatchingAlgorithmAttemptStarted:
                     var matchingAlgorithmAttemptStartedEvent = JsonConvert.DeserializeObject<MatchingAlgorithmAttemptStartedEvent>(body);
-                    await searchRequestMatchingAlgorithmAttemptRepository.TrackStartedEvent(matchingAlgorithmAttemptStartedEvent);
+                    await searchRequestMatchingAlgorithmAttemptsRepository.TrackStartedEvent(matchingAlgorithmAttemptStartedEvent);
                     break;
                 case SearchTrackingEventType.MatchingAlgorithmCoreMatchingEnded or
                     SearchTrackingEventType.MatchingAlgorithmCoreMatchingStarted or
@@ -48,13 +48,13 @@ namespace Atlas.SearchTracking.Services
                     SearchTrackingEventType.MatchingAlgorithmPersistingResultsEnded or
                     SearchTrackingEventType.MatchingAlgorithmPersistingResultsStarted:
                     var matchingAlgorithmTimingEvent = JsonConvert.DeserializeObject<MatchingAlgorithmAttemptTimingEvent>(body);
-                    await searchRequestMatchingAlgorithmAttemptRepository.TrackTimingEvent(matchingAlgorithmTimingEvent, eventType);
+                    await searchRequestMatchingAlgorithmAttemptsRepository.TrackTimingEvent(matchingAlgorithmTimingEvent, eventType);
                     break;
                 case
                     SearchTrackingEventType.MatchingAlgorithmCompleted:
                     var matchingAlgorithmCompletedEvent = JsonConvert.DeserializeObject<MatchingAlgorithmCompletedEvent>(body);
                     await searchRequestRepository.TrackMatchingAlgorithmCompletedEvent(matchingAlgorithmCompletedEvent);
-                    await searchRequestMatchingAlgorithmAttemptRepository.TrackCompletedEvent(matchingAlgorithmCompletedEvent);
+                    await searchRequestMatchingAlgorithmAttemptsRepository.TrackCompletedEvent(matchingAlgorithmCompletedEvent);
                     break;
                 case SearchTrackingEventType.MatchPredictionStarted:
                     var matchPredictionStartedEvent = JsonConvert.DeserializeObject<MatchPredictionStartedEvent>(body);

@@ -36,7 +36,7 @@ var host = new HostBuilder()
         services.AddScoped<ISearchTrackingEventProcessor, SearchTrackingEventProcessor>();
         services.AddScoped<ISearchRequestRepository, SearchRequestRepository>();
         services.AddScoped<IMatchPredictionRepository, MatchPredictionRepository>();
-        services.AddScoped<ISearchRequestMatchingAlgorithmAttemptTimingRepository, SearchRequestMatchingAlgorithmAttemptTimingRepository>();
+        services.AddScoped<ISearchRequestMatchingAlgorithmAttemptsRepository, SearchRequestMatchingAlgorithmAttemptsRepository>();
         services.RegisterAsOptions<SearchTrackingServiceBusSettings>("MessagingServiceBus");
     })
     .Build();
