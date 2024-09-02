@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.SearchTracking.Data.Repositories
 {
-    public interface ISearchRequestMatchingAlgorithmAttemptTimingRepository
+    public interface ISearchRequestMatchingAlgorithmAttemptsRepository
     {
        Task TrackStartedEvent(MatchingAlgorithmAttemptStartedEvent matchingAlgorithmStartedEvent);
 
@@ -14,17 +14,17 @@ namespace Atlas.SearchTracking.Data.Repositories
 
        Task TrackTimingEvent(MatchingAlgorithmAttemptTimingEvent matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType eventType);
 
-       Task<SearchRequestMatchingAlgorithmAttemptTiming?> GetSearchRequestMatchingAlgorithmAttemptTimingById(int id);
+       Task<SearchRequestMatchingAlgorithmAttempts?> GetSearchRequestMatchingAlgorithmAttemptsById(int id);
     }
 
-    public class SearchRequestMatchingAlgorithmAttemptTimingRepository : ISearchRequestMatchingAlgorithmAttemptTimingRepository
+    public class SearchRequestMatchingAlgorithmAttemptsRepository : ISearchRequestMatchingAlgorithmAttemptsRepository
     {
         private readonly ISearchTrackingContext context;
 
-        private DbSet<SearchRequestMatchingAlgorithmAttemptTiming> MatchingAlgorithmAttemptTimings => context.SearchRequestMatchingAlgorithmAttemptTimings;
+        private DbSet<SearchRequestMatchingAlgorithmAttempts> MatchingAlgorithmAttempts => context.SearchRequestMatchingAlgorithmAttempts;
         private DbSet<SearchRequest> SearchRequests => context.SearchRequests;
 
-        public SearchRequestMatchingAlgorithmAttemptTimingRepository(ISearchTrackingContext context)
+        public SearchRequestMatchingAlgorithmAttemptsRepository(ISearchTrackingContext context)
         {
             this.context = context;
         }
@@ -33,7 +33,7 @@ namespace Atlas.SearchTracking.Data.Repositories
         {
             var id = await GetSearchRequestIdByGuid(matchingAlgorithmStartedEvent.SearchRequestId);
 
-            var matchingAlgorithmAttempt = new SearchRequestMatchingAlgorithmAttemptTiming
+            var matchingAlgorithmAttempt = new SearchRequestMatchingAlgorithmAttempts
             {
                 SearchRequestId = id,
                 AttemptNumber = matchingAlgorithmStartedEvent.AttemptNumber,
@@ -41,7 +41,7 @@ namespace Atlas.SearchTracking.Data.Repositories
                 StartTimeUtc = matchingAlgorithmStartedEvent.StartTimeUtc
             };
 
-            MatchingAlgorithmAttemptTimings.Add(matchingAlgorithmAttempt);
+            MatchingAlgorithmAttempts.Add(matchingAlgorithmAttempt);
             await context.SaveChangesAsync();
         }
 
@@ -67,9 +67,9 @@ namespace Atlas.SearchTracking.Data.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task<SearchRequestMatchingAlgorithmAttemptTiming> GetSearchRequestMatchingAlgorithmAttemptTimingById(int id)
+        public async Task<SearchRequestMatchingAlgorithmAttempts> GetSearchRequestMatchingAlgorithmAttemptsById(int id)
         {
-            var matchingAlgorithmAttempt = await MatchingAlgorithmAttemptTimings
+            var matchingAlgorithmAttempt = await MatchingAlgorithmAttempts
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             if (matchingAlgorithmAttempt == null)
@@ -80,9 +80,9 @@ namespace Atlas.SearchTracking.Data.Repositories
             return matchingAlgorithmAttempt;
         }
 
-        private async Task<SearchRequestMatchingAlgorithmAttemptTiming> GetRequiredMatchingAlgorithmAttemptTiming(int searchRequestId, int attemptNumber)
+        private async Task<SearchRequestMatchingAlgorithmAttempts> GetRequiredMatchingAlgorithmAttemptTiming(int searchRequestId, int attemptNumber)
         {
-            var matchingAlgorithmAttempt = await MatchingAlgorithmAttemptTimings
+            var matchingAlgorithmAttempt = await MatchingAlgorithmAttempts
                 .OrderByDescending(x => x.Id)
                 .FirstOrDefaultAsync(x => x.SearchRequestId == searchRequestId && x.AttemptNumber == attemptNumber);
 

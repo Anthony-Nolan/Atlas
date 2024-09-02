@@ -13,7 +13,7 @@ namespace Atlas.SearchTracking.Test.Services
     public class SearchTrackingEventProcessorTests
     {
         private ISearchRequestRepository searchRequestRepository;
-        private ISearchRequestMatchingAlgorithmAttemptTimingRepository searchRequestMatchingAlgorithmAttemptTimingRepository;
+        private ISearchRequestMatchingAlgorithmAttemptsRepository searchRequestMatchingAlgorithmAttemptsRepository;
         private IMatchPredictionRepository matchPredictionRepository;
 
         private ISearchTrackingEventProcessor searchTrackingEventProcessor;
@@ -22,13 +22,13 @@ namespace Atlas.SearchTracking.Test.Services
         public void Setup()
         {
             searchRequestRepository = Substitute.For<ISearchRequestRepository>();
-            searchRequestMatchingAlgorithmAttemptTimingRepository = Substitute.For<ISearchRequestMatchingAlgorithmAttemptTimingRepository>();
+            searchRequestMatchingAlgorithmAttemptsRepository = Substitute.For<ISearchRequestMatchingAlgorithmAttemptsRepository>();
             matchPredictionRepository = Substitute.For<IMatchPredictionRepository>();
 
             searchTrackingEventProcessor = new SearchTrackingEventProcessor(
                 searchRequestRepository,
                 matchPredictionRepository,
-                searchRequestMatchingAlgorithmAttemptTimingRepository);
+                searchRequestMatchingAlgorithmAttemptsRepository);
         }
 
         [Test]
@@ -97,12 +97,12 @@ namespace Atlas.SearchTracking.Test.Services
             var body = JsonConvert.SerializeObject(expectedMatchingAlgorithmAttemptStartedEvent);
             var eventType = SearchTrackingEventType.MatchingAlgorithmAttemptStarted;
 
-            await searchRequestMatchingAlgorithmAttemptTimingRepository.TrackStartedEvent(
+            await searchRequestMatchingAlgorithmAttemptsRepository.TrackStartedEvent(
                 Arg.Do<MatchingAlgorithmAttemptStartedEvent>(x => actualMatchingAlgorithmAttemptStartedEvent = x));
             await searchTrackingEventProcessor.HandleEvent(body, eventType);
 
             actualMatchingAlgorithmAttemptStartedEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptStartedEvent);
-            await searchRequestMatchingAlgorithmAttemptTimingRepository.Received(1)
+            await searchRequestMatchingAlgorithmAttemptsRepository.Received(1)
                 .TrackStartedEvent(Arg.Any<MatchingAlgorithmAttemptStartedEvent>());
         }
 
@@ -126,12 +126,12 @@ namespace Atlas.SearchTracking.Test.Services
 
             var body = JsonConvert.SerializeObject(expectedMatchingAlgorithmAttemptTimingEvent);
 
-            await searchRequestMatchingAlgorithmAttemptTimingRepository.TrackTimingEvent(
+            await searchRequestMatchingAlgorithmAttemptsRepository.TrackTimingEvent(
                 Arg.Do<MatchingAlgorithmAttemptTimingEvent>(x => actualMatchingAlgorithmAttemptTimingEvent = x), eventType);
             await searchTrackingEventProcessor.HandleEvent(body, eventType);
 
             actualMatchingAlgorithmAttemptTimingEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptTimingEvent);
-            await searchRequestMatchingAlgorithmAttemptTimingRepository.Received(1).TrackTimingEvent(
+            await searchRequestMatchingAlgorithmAttemptsRepository.Received(1).TrackTimingEvent(
                 Arg.Any<MatchingAlgorithmAttemptTimingEvent>(), eventType);
         }
 
@@ -159,12 +159,12 @@ namespace Atlas.SearchTracking.Test.Services
             var body = JsonConvert.SerializeObject(expectedMatchingAlgorithmCompletedEvent);
             var eventType = SearchTrackingEventType.MatchingAlgorithmCompleted;
 
-            await searchRequestMatchingAlgorithmAttemptTimingRepository.TrackCompletedEvent(
+            await searchRequestMatchingAlgorithmAttemptsRepository.TrackCompletedEvent(
                 Arg.Do<MatchingAlgorithmCompletedEvent>(x => actualMatchingAlgorithmCompletedEvent = x));
             await searchTrackingEventProcessor.HandleEvent(body, eventType);
 
             actualMatchingAlgorithmCompletedEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmCompletedEvent);
-            await searchRequestMatchingAlgorithmAttemptTimingRepository.Received(1).TrackCompletedEvent(Arg.Any<MatchingAlgorithmCompletedEvent>());
+            await searchRequestMatchingAlgorithmAttemptsRepository.Received(1).TrackCompletedEvent(Arg.Any<MatchingAlgorithmCompletedEvent>());
 
             await searchRequestRepository.Received(1).TrackMatchingAlgorithmCompletedEvent(Arg.Any<MatchingAlgorithmCompletedEvent>());
         }

@@ -21,12 +21,12 @@ namespace Atlas.SearchTracking.Data.Models
 
             MatchingAlgorithmColumnMappings = new Dictionary<SearchTrackingEventType, string>
             {
-                { SearchTrackingEventType.MatchingAlgorithmPersistingResultsEnded, nameof(SearchRequestMatchingAlgorithmAttemptTiming.PersistingResults_EndTimeUtc) },
-                { SearchTrackingEventType.MatchingAlgorithmPersistingResultsStarted, nameof(SearchRequestMatchingAlgorithmAttemptTiming.PersistingResults_StartTimeUtc) },
-                { SearchTrackingEventType.MatchingAlgorithmCoreScoringEnded, nameof(SearchRequestMatchingAlgorithmAttemptTiming.AlgorithmCore_Scoring_EndTimeUtc) },
-                { SearchTrackingEventType.MatchingAlgorithmCoreScoringStarted, nameof(SearchRequestMatchingAlgorithmAttemptTiming.AlgorithmCore_Scoring_StartTimeUtc) },
-                { SearchTrackingEventType.MatchingAlgorithmCoreMatchingEnded, nameof(SearchRequestMatchingAlgorithmAttemptTiming.AlgorithmCore_Matching_EndTimeUtc) },
-                { SearchTrackingEventType.MatchingAlgorithmCoreMatchingStarted, nameof(SearchRequestMatchingAlgorithmAttemptTiming.AlgorithmCore_Matching_StartTimeUtc) }
+                { SearchTrackingEventType.MatchingAlgorithmPersistingResultsEnded, nameof(SearchRequestMatchingAlgorithmAttempts.PersistingResults_EndTimeUtc) },
+                { SearchTrackingEventType.MatchingAlgorithmPersistingResultsStarted, nameof(SearchRequestMatchingAlgorithmAttempts.PersistingResults_StartTimeUtc) },
+                { SearchTrackingEventType.MatchingAlgorithmCoreScoringEnded, nameof(SearchRequestMatchingAlgorithmAttempts.AlgorithmCore_Scoring_EndTimeUtc) },
+                { SearchTrackingEventType.MatchingAlgorithmCoreScoringStarted, nameof(SearchRequestMatchingAlgorithmAttempts.AlgorithmCore_Scoring_StartTimeUtc) },
+                { SearchTrackingEventType.MatchingAlgorithmCoreMatchingEnded, nameof(SearchRequestMatchingAlgorithmAttempts.AlgorithmCore_Matching_EndTimeUtc) },
+                { SearchTrackingEventType.MatchingAlgorithmCoreMatchingStarted, nameof(SearchRequestMatchingAlgorithmAttempts.AlgorithmCore_Matching_StartTimeUtc) }
             };
         }
     }
