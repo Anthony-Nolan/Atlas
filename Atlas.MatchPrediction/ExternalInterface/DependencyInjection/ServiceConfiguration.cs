@@ -33,7 +33,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, SearchRelatedMetadataServiceSettings> fetchSearchRelatedMetadataServiceSettings,
             Func<IServiceProvider, string> fetchSqlConnectionString
         )
         {
@@ -46,8 +45,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.RegisterHlaMetadataDictionary(
                 fetchHlaMetadataDictionarySettings,
                 fetchApplicationInsightsSettings,
-                fetchMacDictionarySettings,
-                fetchSearchRelatedMetadataServiceSettings
+                fetchMacDictionarySettings
             );
         }
 

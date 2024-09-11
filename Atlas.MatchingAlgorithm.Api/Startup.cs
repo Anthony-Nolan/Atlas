@@ -73,7 +73,6 @@ namespace Atlas.MatchingAlgorithm.Api
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<MatchingConfigurationSettings>(),
-                OptionsReaderFor<SearchRelatedMetadataServiceSettings>(),
                 ConnectionStringReader("PersistentSql"),
                 ConnectionStringReader("SqlA"),
                 ConnectionStringReader("SqlB"),
@@ -90,7 +89,6 @@ namespace Atlas.MatchingAlgorithm.Api
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<DonorManagementSettings>(),
-                OptionsReaderFor<SearchRelatedMetadataServiceSettings>(),
                 ConnectionStringReader("PersistentSql"),
                 ConnectionStringReader("SqlA"),
                 ConnectionStringReader("SqlB"),
@@ -104,7 +102,6 @@ namespace Atlas.MatchingAlgorithm.Api
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
-                OptionsReaderFor<SearchRelatedMetadataServiceSettings>(),
                 ConnectionStringReader("PersistentSql"),
                 ConnectionStringReader("SqlA"),
                 ConnectionStringReader("SqlB"),
@@ -140,7 +137,6 @@ namespace Atlas.MatchingAlgorithm.Api
             // so all these properties that are being looked for need to be defined over there, as well as in this
             // project's appSettings file.
             // (Comment duplicated in Validation.ServiceConfiguration, Validation.appSettings, Api.Startup (twice), Api.appSettings)
-            services.RegisterAsOptions<SearchRelatedMetadataServiceSettings>("SearchRelatedMetadataServices");
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<AzureAuthenticationSettings>("AzureManagement:Authentication");
             services.RegisterAsOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");

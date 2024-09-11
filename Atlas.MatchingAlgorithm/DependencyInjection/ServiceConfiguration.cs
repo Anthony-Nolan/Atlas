@@ -71,7 +71,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
-            Func<IServiceProvider, SearchRelatedMetadataServiceSettings> fetchSearchRelatedMetadataServiceSettings,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
             Func<IServiceProvider, string> fetchTransientBSqlConnectionString,
@@ -90,7 +89,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.RegisterCommonImportServices();
 
-            services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings, fetchSearchRelatedMetadataServiceSettings);
+            services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
 
             services.RegisterDonorManagementServices(fetchDonorManagementSettings, fetchMessagingServiceBusSettings, fetchDonorImportSqlConnectionString);
         }
@@ -110,7 +109,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
-            Func<IServiceProvider, SearchRelatedMetadataServiceSettings> fetchSearchRelatedMetadataServiceSettings,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
             Func<IServiceProvider, string> fetchTransientBSqlConnectionString,
@@ -128,7 +126,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.RegisterCommonImportServices();
 
-            services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings, fetchSearchRelatedMetadataServiceSettings);
+            services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
 
             services.RegisterDonorReader(fetchDonorImportSqlConnectionString);
 
@@ -202,7 +200,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings,
-            Func<IServiceProvider, SearchRelatedMetadataServiceSettings> fetchSearchRelatedMetadataServiceSettings,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
             Func<IServiceProvider, string> fetchTransientBSqlConnectionString,
@@ -220,7 +217,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.RegisterDonorReader(fetchDonorImportSqlConnectionString);
 
-            services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings, fetchSearchRelatedMetadataServiceSettings);
+            services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
 
             services.RegisterSearchServices(fetchMatchingConfigurationSettings);
         }
@@ -237,7 +234,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings,
-            Func<IServiceProvider, SearchRelatedMetadataServiceSettings> fetchSearchRelatedMetadataServiceSettings,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
             Func<IServiceProvider, string> fetchTransientBSqlConnectionString,
@@ -251,7 +247,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchMessagingServiceBusSettings,
                 fetchNotificationsServiceBusSettings,
                 fetchMatchingConfigurationSettings,
-                fetchSearchRelatedMetadataServiceSettings,
                 fetchPersistentSqlConnectionString,
                 fetchTransientASqlConnectionString,
                 fetchTransientBSqlConnectionString,

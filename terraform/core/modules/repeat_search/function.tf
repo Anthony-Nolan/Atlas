@@ -26,7 +26,8 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
     "AzureStorage:MatchingResultsBlobContainer" = azurerm_storage_container.repeat_search_matching_results_container.name
     "AzureStorage:SearchResultsBatchSize"       = var.RESULTS_BATCH_SIZE
 
-    "HlaMetadataDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
+    "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.azure_storage.primary_connection_string
+    "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds" = var.SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
 
     "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
     "MacDictionary:TableName"                    = var.mac_import_table.name
@@ -44,8 +45,6 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
     "NotificationsServiceBus:AlertsTopic"                      = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:ConnectionString"                 = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:NotificationsTopic"               = var.servicebus_topics.notifications.name
-
-    "SearchRelatedMetadataServices:CacheSlidingExpirationInSeconds" = var.HLA_CACHE_SLIDING_EXPIRATION_SEC
 
     // maximum running instances of the algorithm = maximum_worker_count * maxConcurrentCalls (in host.json).
     // together, alongside the non-repeat matching processes, these must ensure that the number of allowed concurrent SQL connections to the matching SQL DB is not exceeded.

@@ -31,7 +31,6 @@ namespace Atlas.MatchingAlgorithm.Functions
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<MatchingConfigurationSettings>(),
-                OptionsReaderFor<SearchRelatedMetadataServiceSettings>(),
                 ConnectionStringReader("PersistentSql"),
                 ConnectionStringReader("SqlA"), 
                 ConnectionStringReader("SqlB"),
@@ -47,7 +46,6 @@ namespace Atlas.MatchingAlgorithm.Functions
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<DonorManagementSettings>(),
-                OptionsReaderFor<SearchRelatedMetadataServiceSettings>(),
                 ConnectionStringReader("PersistentSql"),
                 ConnectionStringReader("SqlA"),
                 ConnectionStringReader("SqlB"), 
@@ -91,7 +89,6 @@ namespace Atlas.MatchingAlgorithm.Functions
             services.RegisterAsOptions<MatchingConfigurationSettings>("MatchingConfiguration");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
-            services.RegisterAsOptions<SearchRelatedMetadataServiceSettings>("SearchRelatedMetadataServices");
         }
     }
 }

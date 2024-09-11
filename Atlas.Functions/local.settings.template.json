@@ -36,6 +36,7 @@
 
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",
+    "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds": 300,
 
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:Download:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
@@ -55,9 +56,7 @@
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:Debug:AlertsSubscription": "debug",
     "NotificationsServiceBus:Debug:NotificationsSubscription": "debug",
-    "NotificationsServiceBus:NotificationsTopic": "notifications",
-
-    "SearchRelatedMetadataServices:CacheSlidingExpirationInSeconds": 300
+    "NotificationsServiceBus:NotificationsTopic": "notifications"
   },
   "ConnectionStrings": {
     "Matching:Sql:Persistent": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",

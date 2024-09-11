@@ -21,7 +21,8 @@ resource "azurerm_windows_function_app" "atlas_match_prediction_function" {
     "AzureStorage:ConnectionString"                    = var.azure_storage.primary_connection_string
     "AzureStorage:MatchPredictionResultsBlobContainer" = azurerm_storage_container.match_prediction_results_container.name
 
-    "HlaMetadataDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
+    "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.azure_storage.primary_connection_string
+    "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds" = var.SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
 
     "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
     "MacDictionary:TableName"                    = var.mac_import_table.name,
@@ -37,8 +38,6 @@ resource "azurerm_windows_function_app" "atlas_match_prediction_function" {
     "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:NotificationsTopic" = var.servicebus_topics.notifications.name
-
-    "SearchRelatedMetadataServices:CacheSlidingExpirationInSeconds" = var.HLA_CACHE_SLIDING_EXPIRATION_SEC
 
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "1"
     "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE

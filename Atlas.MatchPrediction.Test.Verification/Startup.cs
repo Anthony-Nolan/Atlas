@@ -33,14 +33,12 @@ namespace Atlas.MatchPrediction.Test.Verification
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
-                OptionsReaderFor<MacDownloadSettings>(),
-                OptionsReaderFor<SearchRelatedMetadataServiceSettings>());
+                OptionsReaderFor<MacDownloadSettings>());
 
             builder.Services.RegisterMatchingAlgorithmScoring(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
-                OptionsReaderFor<SearchRelatedMetadataServiceSettings>(),
                 ConnectionStringReader("Matching:PersistentSql")
             );
         }
@@ -53,7 +51,6 @@ namespace Atlas.MatchPrediction.Test.Verification
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
             services.RegisterAsOptions<MacDownloadSettings>("MacDictionary:Download");
-            services.RegisterAsOptions<SearchRelatedMetadataServiceSettings>("SearchRelatedMetadataServices");
         }
     }
 }

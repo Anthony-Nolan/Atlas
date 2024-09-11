@@ -59,7 +59,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
                 macDictionary,
                 alleleGroupExpander,
                 cacheProvider,
-                new SearchRelatedMetadataServiceSettings());
+                new HlaMetadataDictionarySettings());
 
             #region Set up to prevent exceptions that would incorrectly fail tests
             hlaMetadataRepository

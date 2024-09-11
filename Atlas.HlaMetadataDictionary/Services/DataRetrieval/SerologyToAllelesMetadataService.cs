@@ -33,8 +33,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IAlleleNamesExtractor alleleNamesExtractor,
             IMacDictionary macDictionary,
             IAlleleGroupExpander alleleGroupExpander,
-            IPersistentCacheProvider cacheProvider, 
-            SearchRelatedMetadataServiceSettings options)
+            IPersistentCacheProvider cacheProvider,
+            HlaMetadataDictionarySettings options)
             : base(
                 serologyToAllelesMetadataRepository,
                 alleleNamesMetadataService,

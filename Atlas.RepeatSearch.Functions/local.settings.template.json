@@ -10,6 +10,7 @@
     "AzureStorage:SearchResultsBatchSize": 0,
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
+    "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds": 300,
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
     "MatchingConfiguration:MatchingBatchSize": 250000,
@@ -23,8 +24,7 @@
     "MessagingServiceBus:RepeatSearchRequestsMaxDeliveryCount": 10,
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
-    "NotificationsServiceBus:NotificationsTopic": "notifications",
-    "SearchRelatedMetadataServices:CacheSlidingExpirationInSeconds": 300
+    "NotificationsServiceBus:NotificationsTopic": "notifications"
   },
 
   "ConnectionStrings": {

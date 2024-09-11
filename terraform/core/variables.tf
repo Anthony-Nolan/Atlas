@@ -418,25 +418,25 @@ variable "WEBSITE_RUN_FROM_PACKAGE" {
   default = "1"
 }
 
-variable "ATLAS_FUNCTION_HLA_CACHE_SLIDING_EXPIRATION_SEC" {
+variable "ATLAS_FUNCTION_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
   type     = number
   nullable = true
   default  = null
 }
 
-variable "MATCHING_ALGORITHM_HLA_CACHE_SLIDING_EXPIRATION_SEC" {
+variable "MATCHING_ALGORITHM_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
   type     = number
   nullable = true
   default  = 300
 }
 
-variable "MATCH_PREDICTION_HLA_CACHE_SLIDING_EXPIRATION_SEC" {
+variable "MATCH_PREDICTION_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
   type     = number
   nullable = true
   default  = null
 }
 
-variable "REPEAT_SEARCH_HLA_CACHE_SLIDING_EXPIRATION_SEC" {
+variable "REPEAT_SEARCH_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
   type     = number
   nullable = true
   default  = 300

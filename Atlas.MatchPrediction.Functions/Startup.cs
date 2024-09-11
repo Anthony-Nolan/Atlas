@@ -24,7 +24,6 @@ namespace Atlas.MatchPrediction.Functions
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
-                OptionsReaderFor<SearchRelatedMetadataServiceSettings>(),
                 ConnectionStringReader("MatchPredictionSql")
             );
 
@@ -35,7 +34,6 @@ namespace Atlas.MatchPrediction.Functions
 
         private static void RegisterSettings(IServiceCollection services)
         {
-            services.RegisterAsOptions<SearchRelatedMetadataServiceSettings>("SearchRelatedMetadataServices");
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");

@@ -33,7 +33,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
-            Func<IServiceProvider, SearchRelatedMetadataServiceSettings> fetchSearchRelatedMetadataServiceSettings,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString)
         {
             services.RegisterSettings(
@@ -47,7 +46,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchHlaMetadataDictionarySettings,
                 fetchApplicationInsightsSettings,
                 fetchMacDictionarySettings,
-                fetchSearchRelatedMetadataServiceSettings,
                 fetchPersistentSqlConnectionString);
         }
 
@@ -74,7 +72,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
-            Func<IServiceProvider, SearchRelatedMetadataServiceSettings> fetchSearchRelatedMetadataServiceSettings,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString
             )
         {
@@ -101,7 +98,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterCommonGeneticServices();
             services.AddScoped<IActiveHlaNomenclatureVersionAccessor, ActiveHlaNomenclatureVersionAccessor>();
             services.RegisterHlaMetadataDictionary(
-                fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings, fetchSearchRelatedMetadataServiceSettings);
+                fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
         }
     }
 }

@@ -49,7 +49,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IAlleleGroupExpander alleleGroupExpander,
             string perTypeCacheKey,
             IPersistentCacheProvider cacheProvider,
-            SearchRelatedMetadataServiceSettings options
+            HlaMetadataDictionarySettings options
             )
             : base(perTypeCacheKey, cacheProvider)
         {
@@ -59,7 +59,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             this.alleleNamesExtractor = alleleNamesExtractor;
             this.macDictionary = macDictionary;
             this.alleleGroupExpander = alleleGroupExpander;
-            this.options = options;
+            this.options = options.SearchRelatedMetadata ?? new SearchRelatedMetadataServiceSettings();
         }
 
         public async Task<THlaMetadata> GetHlaMetadata(Locus locus, string hlaName, string hlaNomenclatureVersion)

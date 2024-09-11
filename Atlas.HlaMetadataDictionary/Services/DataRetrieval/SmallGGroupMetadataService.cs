@@ -39,7 +39,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IMacDictionary macDictionary,
             IAlleleGroupExpander alleleGroupExpander,
             IPersistentCacheProvider cacheProvider,
-            SearchRelatedMetadataServiceSettings options)
+            HlaMetadataDictionarySettings options)
             : base(
                 hlaNameToSmallGGroupLookupRepository,
                 alleleNamesMetadataService,

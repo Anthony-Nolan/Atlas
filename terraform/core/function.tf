@@ -64,8 +64,9 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "AtlasFunction:MessagingServiceBus:RepeatSearchResultsDebugSubscription"    = module.repeat_search.service_bus.repeat_search_results_debug_subscription
     "AtlasFunction:Orchestration:MatchPredictionBatchSize"                      = var.ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE
 
-    "HlaMetadataDictionary:AzureStorageConnectionString" = azurerm_storage_account.azure_storage.primary_connection_string
-    "HlaMetadataDictionary:HlaNomenclatureSourceUrl"     = var.WMDA_FILE_URL
+    "HlaMetadataDictionary:AzureStorageConnectionString"                          = azurerm_storage_account.azure_storage.primary_connection_string
+    "HlaMetadataDictionary:HlaNomenclatureSourceUrl"                              = var.WMDA_FILE_URL
+    "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds" = var.ATLAS_FUNCTION_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
 
     "MacDictionary:AzureStorageConnectionString" = azurerm_storage_account.azure_storage.primary_connection_string
     "MacDictionary:Import:CronSchedule"          = var.MAC_IMPORT_CRON_SCHEDULE
@@ -80,8 +81,6 @@ resource "azurerm_windows_function_app" "atlas_function" {
 
     "MatchPrediction:AzureStorage:ConnectionString"                    = azurerm_storage_account.azure_storage.primary_connection_string
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer" = module.match_prediction.storage.match_prediction_results_container_name
-
-    "SearchRelatedMetadataServices:CacheSlidingExpirationInSeconds" = var.ATLAS_FUNCTION_HLA_CACHE_SLIDING_EXPIRATION_SEC,
 
     "NotificationsServiceBus:AlertsTopic"                     = module.support.general.alerts_servicebus_topic.name
     "NotificationsServiceBus:ConnectionString"                = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string

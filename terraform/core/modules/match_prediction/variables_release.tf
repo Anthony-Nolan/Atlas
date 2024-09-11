@@ -25,7 +25,7 @@ variable "WEBSITE_RUN_FROM_PACKAGE" {
   type = string
 }
 
-variable "HLA_CACHE_SLIDING_EXPIRATION_SEC" {
+variable "SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
   type     = number
   nullable = true
 }
