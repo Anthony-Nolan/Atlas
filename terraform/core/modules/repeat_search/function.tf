@@ -26,7 +26,8 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
     "AzureStorage:MatchingResultsBlobContainer" = azurerm_storage_container.repeat_search_matching_results_container.name
     "AzureStorage:SearchResultsBatchSize"       = var.RESULTS_BATCH_SIZE
 
-    "HlaMetadataDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
+    "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.azure_storage.primary_connection_string
+    "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds" = var.SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
 
     "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
     "MacDictionary:TableName"                    = var.mac_import_table.name

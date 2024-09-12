@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 using Atlas.Common.Public.Models.GeneticData;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
@@ -58,8 +59,13 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 throw new ArgumentException($"{formattedLookupName} at locus {locus} is not a valid lookup name.");
             }
             
-            return await cache.GetOrAddAsync(key, () => PerformLookup(locus, formattedLookupName, hlaNomenclatureVersion));
+            return await cache.GetOrAddAsync(key, () => PerformLookup(locus, formattedLookupName, hlaNomenclatureVersion), GetMemoryCacheOptions());
         }
+
+        protected virtual MemoryCacheEntryOptions GetMemoryCacheOptions() => new MemoryCacheEntryOptions {
+            
+            AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(cache.DefaultCachePolicy.DefaultCacheDurationSeconds) 
+        };
 
         private string BuildCacheKey(Locus locus, string lookupName, string hlaNomenclatureVersion)
             => $"{perTypeCacheKey}-{hlaNomenclatureVersion}-{locus}-{lookupName}";

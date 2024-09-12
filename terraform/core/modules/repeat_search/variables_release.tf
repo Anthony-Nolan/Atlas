@@ -37,3 +37,8 @@ variable "REPEAT_SEARCH_RESULTS_READY_SUBSCRIPTION_NAMES" {
 variable "RESULTS_BATCH_SIZE" {
   type = number
 }
+
+variable "SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
+  type     = number
+  nullable = true
+}
