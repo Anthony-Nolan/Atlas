@@ -42,8 +42,9 @@ locals {
     "DataRefresh:DormantDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_DORMANT
     "DataRefresh:RefreshDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_REFRESH
 
-    "HlaMetadataDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string,
-    "HlaMetadataDictionary:HlaNomenclatureSourceUrl"     = var.WMDA_FILE_URL,
+    "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.azure_storage.primary_connection_string,
+    "HlaMetadataDictionary:HlaNomenclatureSourceUrl"                              = var.WMDA_FILE_URL,
+    "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds" = var.SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
 
     "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
     "MacDictionary:TableName"                    = var.mac_import_table.name,
@@ -65,6 +66,7 @@ locals {
     "SearchTrackingServiceBus:SearchTrackingTopic"       = var.servicebus_topics.search_tracking.name
 
     "Wmda:WmdaFileUri" = var.WMDA_FILE_URL
+
 
     // maximum running instances of the algorithm = maximum_worker_count * maxConcurrentCalls (in host.json).
     // together these must ensure that the number of allowed concurrent SQL connections to the matching SQL DB is not exceeded.
