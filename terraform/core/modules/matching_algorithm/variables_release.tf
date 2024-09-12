@@ -124,3 +124,8 @@ variable "WMDA_FILE_URL" {
 variable "RESULTS_BATCH_SIZE" {
   type = number
 }
+
+variable "SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
+  type     = number
+  nullable = true
+}

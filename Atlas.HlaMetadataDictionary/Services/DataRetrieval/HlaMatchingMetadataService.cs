@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
@@ -34,7 +35,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IAlleleNamesExtractor alleleNamesExtractor,
             IMacDictionary macDictionary,
             IAlleleGroupExpander alleleGroupExpander,
-            IPersistentCacheProvider cacheProvider)
+            IPersistentCacheProvider cacheProvider,
+            HlaMetadataDictionarySettings options)
             : base(
                 hlaMatchingMetadataRepository,
                 alleleNamesMetadataService,
@@ -43,7 +45,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 macDictionary,
                 alleleGroupExpander,
                 CacheKey,
-                cacheProvider)
+                cacheProvider,
+                options
+                )
         {
             typedMatchingRepository = hlaMatchingMetadataRepository;
         }

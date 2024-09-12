@@ -10,6 +10,7 @@
     "AzureStorage:SearchResultsBatchSize": 0,
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
+    "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds": 300,
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
     "MatchingConfiguration:MatchingBatchSize": 250000,

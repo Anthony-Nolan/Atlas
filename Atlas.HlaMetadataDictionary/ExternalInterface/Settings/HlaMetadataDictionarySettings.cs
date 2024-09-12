@@ -4,5 +4,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Settings
     {
         public string AzureStorageConnectionString { get; set; }
         public string HlaNomenclatureSourceUrl { get; set; }
+
+        public SearchRelatedMetadataServiceSettings SearchRelatedMetadata { get; set; }
     }
 }
