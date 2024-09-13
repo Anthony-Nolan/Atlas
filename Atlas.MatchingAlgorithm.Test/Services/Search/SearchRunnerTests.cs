@@ -17,6 +17,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
+using Atlas.SearchTracking.Common.Models;
 using FluentAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -290,6 +291,57 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             await searchRunner.Invoking(r => r.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default, default))
                 .Should().NotThrowAsync<Exception>();
+        }
+
+        [Test]
+        public async Task RunSearch_WhenSearchFailsDueToInvalidHla_DispatchesSearchTrackingEvent()
+        {
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+            const int attemptNumber = 1;
+            const string validationError = "bad hla";
+
+            searchService.Search(default).ThrowsForAnyArgs(new HlaMetadataDictionaryException(Locus.A, "hla-name", validationError));
+
+            var request = new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest };
+
+            try
+            {
+                await searchRunner.RunSearch(request, attemptNumber, default);
+            }
+            catch (HlaMetadataDictionaryException)
+            {
+                // ignored
+            }
+            finally
+            {
+                await matchingAlgorithmSearchTrackingDispatcher.Received().ProcessCompleted(
+                    Arg.Any<MatchingAlgorithmCompletedEvent>());
+            }
+        }
+
+        [Test]
+        public async Task RunSearch_WhenSearchFailsForOtherException_DispatchesSearchTrackingEvent()
+        {
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+            const int attemptNumber = 3;
+
+            searchService.Search(default).ThrowsForAnyArgs(new Exception());
+
+            var request = new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest };
+
+            try
+            {
+                await searchRunner.RunSearch(request, attemptNumber, default);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+            finally
+            {
+                await matchingAlgorithmSearchTrackingDispatcher.Received().ProcessCompleted(
+                    Arg.Any<MatchingAlgorithmCompletedEvent>());
+            }
         }
     }
 }
