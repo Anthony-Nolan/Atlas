@@ -56,12 +56,12 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "AtlasFunction:MessagingServiceBus:ConnectionString"                        = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
     "AtlasFunction:MessagingServiceBus:MatchingResultsSubscription"             = azurerm_servicebus_subscription.match-prediction-orchestration-search-results-ready.name
     "AtlasFunction:MessagingServiceBus:MatchingResultsTopic"                    = module.matching_algorithm.service_bus.matching_results_topic.name
-    "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsSubscription" = module.repeat_search.service_bus.repeat_search_matching_results_subscription
-    "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic"        = module.repeat_search.service_bus.repeat_search_matching_results_topic
-    "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic"                = module.repeat_search.service_bus.repeat_search_results_topic
+    "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsSubscription" = module.repeat_search.service_bus.repeat_search_matching_results_subscription.name
+    "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic"        = module.repeat_search.service_bus.repeat_search_matching_results_topic.name
+    "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic"                = module.repeat_search.service_bus.repeat_search_results_topic.name
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic"                      = azurerm_servicebus_topic.search-results-ready.name
     "AtlasFunction:MessagingServiceBus:SearchResultsDebugSubscription"          = azurerm_servicebus_subscription.debug-search-results-ready.name
-    "AtlasFunction:MessagingServiceBus:RepeatSearchResultsDebugSubscription"    = module.repeat_search.service_bus.repeat_search_results_debug_subscription
+    "AtlasFunction:MessagingServiceBus:RepeatSearchResultsDebugSubscription"    = module.repeat_search.service_bus.repeat_search_results_debug_subscription.name
     "AtlasFunction:Orchestration:MatchPredictionBatchSize"                      = var.ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE
 
     "HlaMetadataDictionary:AzureStorageConnectionString"                          = azurerm_storage_account.azure_storage.primary_connection_string
@@ -156,7 +156,7 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
     "Matching:MessagingServiceBus:SearchResultsTopic"  = module.matching_algorithm.service_bus.matching_results_topic.name
 
     "RepeatSearch:MessagingServiceBus:ConnectionString"          = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
-    "RepeatSearch:MessagingServiceBus:RepeatSearchRequestsTopic" = module.repeat_search.service_bus.repeat_search_requests_topic
+    "RepeatSearch:MessagingServiceBus:RepeatSearchRequestsTopic" = module.repeat_search.service_bus.repeat_search_requests_topic.name
 
     "NotificationsServiceBus:AlertsTopic"        = module.support.general.alerts_servicebus_topic.name
     "NotificationsServiceBus:ConnectionString"   = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string

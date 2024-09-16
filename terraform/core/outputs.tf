@@ -14,6 +14,11 @@ output "matching_algorithm" {
   sensitive = true
 }
 
+output "repeat_search" {
+  value     = module.repeat_search
+  sensitive = true
+}
+
 output "multiple_allele_code_lookup" {
   value = module.multiple_allele_code_lookup
 }
