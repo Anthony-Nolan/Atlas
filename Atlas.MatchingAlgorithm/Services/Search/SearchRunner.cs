@@ -82,8 +82,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var requestCompletedSuccessfully = false;
             var searchStopWatch = new Stopwatch();
             var resultsSentTime = new DateTime();
-            var numberOfResults = 0;
-            var matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo();
+            int? numberOfResults = null;
+            MatchingAlgorithmFailureInfo? matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo();
 
             try
             {
@@ -163,7 +163,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 searchLogger.SendTrace($"Failed to lookup HLA for search with id {searchRequestId}. Exception: {hmdException}", LogLevel.Error);
                 await matchingFailureNotificationSender.SendFailureNotification(identifiedSearchRequest, attemptNumber, 0, hmdException.Message);
 
-                matchingAlgorithmFailureInfo.Type = MatchingAlgorithmFailureType.ValidationError;
+                matchingAlgorithmFailureInfo.Type = MatchingAlgorithmFailureType.HlaMetadataDictionaryError;
                 matchingAlgorithmFailureInfo.Message = hmdException.Message;
                 matchingAlgorithmFailureInfo.ExceptionStacktrace = hmdException.StackTrace;
 
@@ -177,7 +177,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 await matchingFailureNotificationSender.SendFailureNotification(identifiedSearchRequest, attemptNumber,
                     searchRequestMaxRetryCount - attemptNumber);
 
-                matchingAlgorithmFailureInfo.Type = MatchingAlgorithmFailureType.ValidationError;
+                matchingAlgorithmFailureInfo.Type = MatchingAlgorithmFailureType.UnexpectedError;
                 matchingAlgorithmFailureInfo.Message = e.Message;
                 matchingAlgorithmFailureInfo.ExceptionStacktrace = e.StackTrace;
 
