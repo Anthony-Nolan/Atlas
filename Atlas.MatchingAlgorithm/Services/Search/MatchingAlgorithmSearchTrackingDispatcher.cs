@@ -145,7 +145,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
         public async Task ProcessCompleted(MatchingAlgorithmCompletedEvent completedEvent)
         {
-            throw new NotImplementedException();
+            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(completedEvent, SearchTrackingEventType.MatchingAlgorithmCompleted);
         }
     }
 }
