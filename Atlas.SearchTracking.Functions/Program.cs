@@ -1,5 +1,4 @@
 using Atlas.Common.Utils.Extensions;
-using Atlas.SearchTracking.Settings.ServiceBus;
 using Azure.Core.Serialization;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +9,7 @@ using Atlas.SearchTracking.Data.Context;
 using Atlas.SearchTracking.Data.Repositories;
 using Atlas.SearchTracking.Services;
 using Microsoft.EntityFrameworkCore;
+using Atlas.SearchTracking.Common.Settings.ServiceBus;
 
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication(builder =>

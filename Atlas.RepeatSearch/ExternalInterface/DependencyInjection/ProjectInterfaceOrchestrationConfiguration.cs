@@ -5,7 +5,7 @@ using Atlas.RepeatSearch.Clients;
 using Atlas.RepeatSearch.Services.Search;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Atlas.SearchTracking.Common.Clients;
-using Atlas.SearchTracking.Settings.ServiceBus;
+using Atlas.SearchTracking.Common.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
