@@ -12,8 +12,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Reflection;
-using Atlas.SearchTracking.Settings.ServiceBus;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
+using Atlas.SearchTracking.Common.Settings.ServiceBus;
 
 namespace Atlas.MatchingAlgorithm.Api
 {

@@ -22,8 +22,8 @@ using Atlas.RepeatSearch.Services.Search;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Atlas.SearchTracking.Settings.ServiceBus;
 using ConnectionStrings = Atlas.RepeatSearch.Data.Settings.ConnectionStrings;
+using Atlas.SearchTracking.Common.Settings.ServiceBus;
 
 namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
 {

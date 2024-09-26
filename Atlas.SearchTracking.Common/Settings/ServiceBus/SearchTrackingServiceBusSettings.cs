@@ -1,5 +1,4 @@
-﻿
-namespace Atlas.SearchTracking.Settings.ServiceBus
+﻿namespace Atlas.SearchTracking.Common.Settings.ServiceBus
 {
     public class SearchTrackingServiceBusSettings
     {

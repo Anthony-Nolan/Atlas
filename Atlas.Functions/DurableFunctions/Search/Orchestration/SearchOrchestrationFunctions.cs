@@ -9,6 +9,7 @@ using Atlas.Functions.DurableFunctions.Search.Activity;
 using Atlas.Functions.Exceptions;
 using Atlas.Functions.Models;
 using Atlas.Functions.Settings;
+using Atlas.SearchTracking.Common.Models;
 using AutoMapper;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
@@ -27,14 +28,18 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
     // ReSharper disable once ClassNeverInstantiated.Global
     public class SearchOrchestrationFunctions
     {
-        private static readonly TaskOptions RetryOptions = new (new TaskRetryOptions(new RetryPolicy(5, TimeSpan.FromSeconds(5), backoffCoefficient: 2)));
+        private static readonly TaskOptions RetryOptions =
+            new(new TaskRetryOptions(new RetryPolicy(5, TimeSpan.FromSeconds(5), backoffCoefficient: 2)));
 
         private readonly ILogger logger;
         private readonly IMapper mapper;
         private readonly SearchLoggingContext loggingContext;
         private readonly int matchPredictionProcessingBatchSize;
 
-        public SearchOrchestrationFunctions(ISearchLogger<SearchLoggingContext> logger, IMapper mapper, IOptions<AzureStorageSettings> azureStorageSettings, SearchLoggingContext loggingContext)
+        public SearchOrchestrationFunctions(ISearchLogger<SearchLoggingContext> logger,
+            IMapper mapper,
+            IOptions<AzureStorageSettings> azureStorageSettings,
+            SearchLoggingContext loggingContext)
         {
             this.logger = logger;
             this.mapper = mapper;
@@ -51,6 +56,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             var orchestrationStartTime = context.CurrentUtcDateTime;
             var requestCompletedSuccessfully = false;
             TimedResultSet<IReadOnlyDictionary<int, string>> matchPredictionResultLocations = null;
+            var failureInfo = string.Empty;
 
             loggingContext.SearchRequestId = requestInfo.SearchRequestId;
 
@@ -64,8 +70,19 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     return null;
                 }
 
+                var matchPredictionStartedEvent = new MatchPredictionStartedEvent
+                {
+                    SearchRequestId = new Guid(requestInfo.SearchRequestId),
+                    InitiationTimeUtc = orchestrationStartTime
+                };
+
+                await SendMatchPredictionProcessInitiated(context, matchPredictionStartedEvent);
+
                 var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification, requestInfo);
+                await SendMatchPredictionBatchProcessingStarted(context, notification);
                 matchPredictionResultLocations = await RunMatchPredictionAlgorithm(context, requestInfo, matchPredictionRequestLocations);
+                await SendMatchPredictionBatchProcessingEnded(context, notification);
+
                 await PersistSearchResults(
                     context,
                     new PersistSearchResultsFunctionParameters
@@ -85,10 +102,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     MatchingDonorCount = notification.NumberOfResults ?? -1,
                 };
             }
-            catch (HandledOrchestrationException)
+            catch (HandledOrchestrationException ex)
             {
                 // Exceptions wrapper in "HandleOrchestrationException" have already been handled, and failure notifications sent.
                 // In this case we should just re-throw so the function is tracked as a failure.
+                failureInfo = ex.Message;
                 throw;
             }
             catch (Exception e)
@@ -98,6 +116,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 // An unexpected exception occurred in the *orchestration* code. Ensure we send a failure notification
                 requestInfo.StageReached = "Orchestrator";
                 await SendFailureNotification(context, requestInfo);
+                failureInfo = e.Message;
                 throw;
             }
             finally
@@ -117,6 +136,23 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     SearchRequest = notification.SearchRequest,
                     RequestPerformanceMetrics = performanceMetrics
                 });
+
+                var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
+                {
+                    SearchRequestId = new Guid(notification.SearchRequestId),
+                    CompletionTimeUtc = context.CurrentUtcDateTime,
+                    CompletionDetails = new MatchPredictionCompletionDetails
+                    {
+                        IsSuccessful = requestCompletedSuccessfully,
+                        FailureInfoJson = failureInfo,
+                        DonorsPerBatch = matchPredictionProcessingBatchSize,
+                        TotalNumberOfBatches = matchPredictionResultLocations != null ?
+                            (int)Math.Ceiling((decimal)matchPredictionResultLocations.ResultSet.Count / matchPredictionProcessingBatchSize)
+                            : null
+                    }
+                };
+
+                await SendMatchPredictionProcessCompleted(context, matchPredictionCompletedEvent);
             }
         }
 
@@ -125,6 +161,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         {
             var notification = context.GetInput<MatchingResultsNotification>();
             var requestInfo = mapper.Map<FailureNotificationRequestInfo>(notification);
+            TimedResultSet<IReadOnlyDictionary<int, string>> matchPredictionResultLocations = null;
+            var requestCompletedSuccessfully = false;
+            var orchestrationStartTime = context.CurrentUtcDateTime;
+            var failureInfo = string.Empty;
 
             try
             {
@@ -137,8 +177,19 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     return null;
                 }
 
+                var matchPredictionStartedEvent = new MatchPredictionStartedEvent
+                {
+                    SearchRequestId = new Guid(requestInfo.SearchRequestId),
+                    InitiationTimeUtc = orchestrationStartTime
+                };
+
+                await SendMatchPredictionProcessInitiated(context, matchPredictionStartedEvent);
+
                 var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification, requestInfo);
-                var matchPredictionResultLocations = await RunMatchPredictionAlgorithm(context, requestInfo, matchPredictionRequestLocations);
+                await SendMatchPredictionBatchProcessingStarted(context, notification);
+                matchPredictionResultLocations = await RunMatchPredictionAlgorithm(context, requestInfo, matchPredictionRequestLocations);
+                await SendMatchPredictionBatchProcessingEnded(context, notification);
+
                 await PersistSearchResults(
                     context,
                     new PersistSearchResultsFunctionParameters
@@ -149,6 +200,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     },
                     requestInfo);
 
+                requestCompletedSuccessfully = true;
+
                 // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
                 return new SearchOrchestrationOutput
                 {
@@ -156,10 +209,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     MatchingDonorCount = notification.NumberOfResults ?? -1,
                 };
             }
-            catch (HandledOrchestrationException)
+            catch (HandledOrchestrationException e)
             {
                 // Exceptions wrapper in "HandleOrchestrationException" have already been handled, and failure notifications sent.
                 // In this case we should just re-throw so the function is tracked as a failure.
+                failureInfo = e.Message;
                 throw;
             }
             catch (Exception e)
@@ -169,7 +223,27 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 // An unexpected exception occurred in the *orchestration* code. Ensure we send a failure notification
                 requestInfo.StageReached = "Orchestrator";
                 await SendFailureNotification(context, requestInfo);
+                failureInfo = e.Message;
                 throw;
+            }
+            finally
+            {
+                var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
+                {
+                    SearchRequestId = new Guid(notification.SearchRequestId),
+                    CompletionTimeUtc = context.CurrentUtcDateTime,
+                    CompletionDetails = new MatchPredictionCompletionDetails
+                    {
+                        IsSuccessful = requestCompletedSuccessfully,
+                        FailureInfoJson = failureInfo,
+                        DonorsPerBatch = matchPredictionProcessingBatchSize,
+                        TotalNumberOfBatches = matchPredictionResultLocations != null ?
+                            (int)Math.Ceiling((decimal)matchPredictionResultLocations.ResultSet.Count / matchPredictionProcessingBatchSize)
+                            : null
+                    }
+                };
+
+                await SendMatchPredictionProcessCompleted(context, matchPredictionCompletedEvent);
             }
         }
 
@@ -207,10 +281,13 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         {
             requestInfo.StageReached = nameof(RunMatchPredictionAlgorithm);
 
-            var matchPredictionTasksList = matchPredictionRequestLocations.ResultSet.Select(r => RunMatchPredictionForDonorBatch(context, r)).ToList();
+            var matchPredictionTasksList =
+                matchPredictionRequestLocations.ResultSet.Select(r => RunMatchPredictionForDonorBatch(context, r)).ToList();
             var matchPredictionResultLocations = new List<KeyValuePair<int, string>>();
 
-            foreach (var matchPredictionTasks in matchPredictionTasksList.Batch(matchPredictionProcessingBatchSize > 0 ? matchPredictionProcessingBatchSize : matchPredictionRequestLocations.ResultSet.Count))
+            foreach (var matchPredictionTasks in matchPredictionTasksList.Batch(matchPredictionProcessingBatchSize > 0
+                         ? matchPredictionProcessingBatchSize
+                         : matchPredictionRequestLocations.ResultSet.Count))
             {
                 matchPredictionResultLocations.AddRange(
                     (await RunStageAndHandleFailures(
@@ -222,7 +299,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
 
             // We cannot use a stopwatch, as orchestration functions must be deterministic, and may be called multiple times.
-            // Results of activity functions are constant across multiple invocations, so we can trust that finished time of the previous stage will remain constant 
+            // Results of activity functions are constant across multiple invocations, so we can trust that finished time of the previous stage will remain constant
             TimeSpan? totalElapsedTime = default;
             if (matchPredictionRequestLocations.FinishedTimeUtc.HasValue)
             {
@@ -327,6 +404,42 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             await context.CallActivityAsync(
                 nameof(SearchActivityFunctions.UploadSearchLog),
                 searchLog,
+                RetryOptions
+            );
+
+        private static async Task SendMatchPredictionProcessInitiated(
+            TaskOrchestrationContext context,
+            MatchPredictionStartedEvent matchPredictionStartedEvent) =>
+            await context.CallActivityAsync(
+                nameof(SearchActivityFunctions.SendMatchPredictionProcessInitiated),
+                matchPredictionStartedEvent,
+                RetryOptions
+            );
+
+        private static async Task SendMatchPredictionBatchProcessingStarted(
+            TaskOrchestrationContext context,
+            MatchingResultsNotification notification) =>
+            await context.CallActivityAsync(
+                nameof(SearchActivityFunctions.SendMatchPredictionBatchProcessingStarted),
+                notification,
+                RetryOptions
+            );
+
+        private static async Task SendMatchPredictionBatchProcessingEnded(
+            TaskOrchestrationContext context,
+            MatchingResultsNotification notification) =>
+            await context.CallActivityAsync(
+                nameof(SearchActivityFunctions.SendMatchPredictionBatchProcessingEnded),
+                notification,
+                RetryOptions
+            );
+
+        private static async Task SendMatchPredictionProcessCompleted(
+            TaskOrchestrationContext context,
+            MatchPredictionCompletedEvent matchPredictionCompletedEvent) =>
+            await context.CallActivityAsync(
+                nameof(SearchActivityFunctions.SendMatchPredictionProcessCompleted),
+                matchPredictionCompletedEvent,
                 RetryOptions
             );
     }
