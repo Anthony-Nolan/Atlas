@@ -128,9 +128,9 @@ WHERE {HaplotypeFrequency.SetIdColumnName} = @setId";
                 await using (var conn = new SqlConnection(connectionString))
                 {
                     var frequencyModels = await conn.QueryAsync<HaplotypeFrequency>(sql, new {setId}, commandTimeout: 600);
-                    return frequencyModels.ToDictionary(
-                        f => f.Haplotype(),
-                        f => f
+                    return frequencyModels.ToDictionary( // This makes dictionary with 5 props key and item containing the same props + some extra props. This cases ~70% extra memory usage 
+                        f => f.Haplotype(),              // for frequency set data. Amount of frequency sets and their size are big enought to make the difference. Though, cache sliding 
+                        f => f                           // expiration would make this not as sensitive.
                     );
                 }
             });

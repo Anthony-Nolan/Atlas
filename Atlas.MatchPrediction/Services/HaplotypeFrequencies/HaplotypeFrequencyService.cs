@@ -170,15 +170,65 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         /// <inheritdoc />
         public async Task<ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId)
         {
+            //var cacheKey = $"hf-set-{setId}";
+            //return await cache.GetOrAddAsync(cacheKey, async () =>
+            //{
+            //    System.Diagnostics.Debug.WriteLine(setId);
+            //    using (logger.RunTimed("Get All Frequencies from HF set - from SQL database", LogLevel.Verbose))
+            //    {
+            //        var allFrequencies = await frequencyRepository.GetAllHaplotypeFrequencies(setId);
+            //        return new ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>(allFrequencies);
+            //    }
+            //},
+            // new Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions
+            // {
+            //     AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24),
+            //     SlidingExpiration = TimeSpan.FromSeconds(200)
+            // });
+
+
+            // Note: commented out code above is simplier implementation of sliding expiration. The downside is that due to LazyCache implementation, the moment
+            // of accessing to cache is the moment when cache.GetOrAddAsync is called. But is not the moment when frequecy set is loaded and returned.
+            // Therefore, if SlidingExpiration is less than time of loading biggest frequency set, it will paralyze match prediction. Because the cache entry
+            // will be evicted before frequency set is even loaded. And subsequent call to GetAllHaplotypeFrequencies will cause new 30/40/90 sec loading.
+            //
+            // The implementation below is avoiding this issue.
+
             var cacheKey = $"hf-set-{setId}";
-            return await cache.GetOrAddAsync(cacheKey, async () =>
+            var updateCacheItem = false;
+            // This call will either return existing entry or initiate frequency set loading and put cache entry with ongoing loading task to the cache WITHOUT
+            // sliding expiration. So it won't expire during loading. And possible parallel calls will get the same task. 
+            var item = await cache.GetOrAddAsync(cacheKey, async () =>
             {
+                updateCacheItem = true;
+                System.Diagnostics.Debug.WriteLine($"Loading item for set {setId}");
                 using (logger.RunTimed("Get All Frequencies from HF set - from SQL database", LogLevel.Verbose))
                 {
                     var allFrequencies = await frequencyRepository.GetAllHaplotypeFrequencies(setId);
                     return new ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>(allFrequencies);
                 }
             });
+
+            // When we gOt item from cache, updateCacheItem will indicate whether loading was initiated by current (this) call or not. If Yes, overwrite cache with same
+            // item, but with sliding expiration option.
+            //
+            // This allows to set much smaller expiration time and free memory with unused frequency set quicker.
+            if (updateCacheItem)
+            {
+                System.Diagnostics.Debug.WriteLine($"Updated item for set {setId}");
+                cache.Add(cacheKey, item, new Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24),
+                    SlidingExpiration = TimeSpan.FromSeconds(20)
+                });
+            }
+
+            return item;
+
+            // Note: Following things should be addressed before production:
+            // 1. There's couple more methods which put data to the cache, they should be ammened as well
+            // 2. Sliding expiration time should be in config file
+            // 3. Call for getting patient's frequency set should be somehow detected in order to put this frequency set to the cache for longer period of time.
         }
 
         /// <inheritdoc />

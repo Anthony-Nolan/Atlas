@@ -17,7 +17,13 @@
   "extensions": {
     "durableTask": {
       "hubName": "AtlasFunctionsHub",
-      "maxConcurrentActivityFunctions": 10
+      "maxConcurrentActivityFunctions": 1 // Changed it to 1 to not fight with multiple threads during debugging.
+      // But consider lowering this value for production: the most part of work 
+      // is CPU based and won't be done faster if we ran more parallel jobs than CPU cores we have.
+      // Also it will create additional pressure on the memory. Note that settings
+      // limit number of concurrent actities per instance.
+      //
+      // I recomment to set it between [CPU Cores] * 1.25 and [CPU Cores] * 1.5
     }
   },
   "functionTimeout": "23:00:00"

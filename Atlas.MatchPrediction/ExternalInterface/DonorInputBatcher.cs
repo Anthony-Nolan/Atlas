@@ -23,19 +23,20 @@ namespace Atlas.MatchPrediction.ExternalInterface
             IEnumerable<DonorInput> donorInputs,
             int batchSize = 10)
         {
+            // It is not exactly sorting, but it puts donors with same frequence set next to each other.
             var consolidatedDonorInputs = donorInputs
-                .GroupBy(d => new
-                {
-                    // Convert to non-transfer PhenotypeInfo to ensure we use custom equality operators when grouping
-                    Hla = d.DonorHla.ToPhenotypeInfo(),
-                    d.DonorFrequencySetMetadata
-                })
-                .Select(group => new DonorInput
-                {
-                    DonorHla = group.Key.Hla.ToPhenotypeInfoTransfer(),
-                    DonorFrequencySetMetadata = group.Key.DonorFrequencySetMetadata,
-                    DonorIds = group.SelectMany(d => d.DonorIds).ToList()
-                });
+                .GroupBy(x => x.DonorFrequencySetMetadata)
+                .SelectMany(x => x
+                    .GroupBy(y => y.DonorHla.ToPhenotypeInfo())
+                    .Select(group => new DonorInput
+                    {
+                        DonorHla = group.Key.ToPhenotypeInfoTransfer(),
+                        DonorFrequencySetMetadata = x.Key,
+                        DonorIds = group.SelectMany(d => d.DonorIds).ToList()
+                    })
+                );
+
+
 
             return consolidatedDonorInputs.Batch(batchSize).Select(donorBatch => new MultipleDonorMatchProbabilityInput(request)
             {
