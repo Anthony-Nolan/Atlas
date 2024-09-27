@@ -72,7 +72,12 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
                 CompletionDetails = new MatchPredictionCompletionDetails
                 {
                     IsSuccessful = expectedSearchRequestEntity.MatchPrediction_IsSuccessful.Value,
-                    FailureInfoJson = expectedSearchRequestEntity.MatchPrediction_FailureInfo_Json,
+                    FailureInfo = new MatchPredictionFailureInfo
+                    {
+                        Message = expectedSearchRequestEntity.MatchPrediction_FailureInfo_Message,
+                        ExceptionStacktrace = expectedSearchRequestEntity.MatchPrediction_FailureInfo_ExceptionStacktrace,
+                        Type = expectedSearchRequestEntity.MatchPrediction_FailureInfo_Type.Value
+                    },
                     DonorsPerBatch = expectedSearchRequestEntity.MatchPrediction_DonorsPerBatch.Value,
                     TotalNumberOfBatches = expectedSearchRequestEntity.MatchPrediction_TotalNumberOfBatches.Value
                 }

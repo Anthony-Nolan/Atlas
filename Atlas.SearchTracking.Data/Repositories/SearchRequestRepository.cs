@@ -54,7 +54,9 @@ namespace Atlas.SearchTracking.Data.Repositories
             var searchRequest = await GetSearchRequestByGuid(matchPredictionCompletedEvent.SearchRequestId);
 
             searchRequest.MatchPrediction_IsSuccessful = matchPredictionCompletedEvent.CompletionDetails.IsSuccessful;
-            searchRequest.MatchPrediction_FailureInfo_Json = matchPredictionCompletedEvent.CompletionDetails.FailureInfoJson;
+            searchRequest.MatchPrediction_FailureInfo_Message = matchPredictionCompletedEvent.CompletionDetails.FailureInfo.Message;
+            searchRequest.MatchPrediction_FailureInfo_ExceptionStacktrace = matchPredictionCompletedEvent.CompletionDetails.FailureInfo.ExceptionStacktrace;
+            searchRequest.MatchPrediction_FailureInfo_Type = matchPredictionCompletedEvent.CompletionDetails.FailureInfo.Type;
             searchRequest.MatchPrediction_DonorsPerBatch = matchPredictionCompletedEvent.CompletionDetails.DonorsPerBatch;
             searchRequest.MatchPrediction_TotalNumberOfBatches = matchPredictionCompletedEvent.CompletionDetails.TotalNumberOfBatches;
 

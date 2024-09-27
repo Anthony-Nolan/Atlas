@@ -229,12 +229,15 @@ namespace Atlas.SearchTracking.Test.Services
             {
                 SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 CompletionTimeUtc = new DateTime(2024, 10, 24, 16, 0, 0),
-                CompletionDetails = new MatchPredictionCompletionDetails()
+                CompletionDetails = new MatchPredictionCompletionDetails
                 {
-                    FailureInfoJson = "",
+                    FailureInfo = new MatchPredictionFailureInfo
+                    {
+                        Message = ""
+                    },
                     IsSuccessful = true,
                     DonorsPerBatch = 100,
-                    TotalNumberOfBatches = 6
+                    TotalNumberOfBatches = 6,
                 }
             };
 

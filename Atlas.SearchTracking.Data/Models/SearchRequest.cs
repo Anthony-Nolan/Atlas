@@ -61,7 +61,11 @@ namespace Atlas.SearchTracking.Data.Models
 
         public bool? MatchPrediction_IsSuccessful { get; set; }
 
-        public string? MatchPrediction_FailureInfo_Json { get; set; }
+        public string? MatchPrediction_FailureInfo_Message { get; set; }
+
+        public string? MatchPrediction_FailureInfo_ExceptionStacktrace { get; set; }
+
+        public MatchPredictionFailureType? MatchPrediction_FailureInfo_Type { get; set; }
 
         public int? MatchPrediction_DonorsPerBatch { get; set; }
 

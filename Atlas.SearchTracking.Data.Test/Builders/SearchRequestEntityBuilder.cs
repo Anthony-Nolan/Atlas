@@ -33,7 +33,9 @@ namespace Atlas.SearchTracking.Data.Test.Builders
         public static Builder<SearchRequest> WithMatchingPredictionCompleted => Default
             .With(m => m.MatchPrediction_IsSuccessful, true)
             .With(m => m.MatchPrediction_DonorsPerBatch, 10)
-            .With(m => m.MatchPrediction_FailureInfo_Json, "FailureInfoJson")
+            .With(m => m.MatchPrediction_FailureInfo_Message, "FailureInfoMessage")
+            .With(m => m.MatchPrediction_FailureInfo_ExceptionStacktrace, "StackTrace")
+            .With(m => m.MatchPrediction_FailureInfo_Type, MatchPredictionFailureType.UnexpectedError)
             .With(m => m.MatchPrediction_TotalNumberOfBatches, 1);
 
         public static Builder<SearchRequest> WithMatchingAlgorithmCompleted => Default
