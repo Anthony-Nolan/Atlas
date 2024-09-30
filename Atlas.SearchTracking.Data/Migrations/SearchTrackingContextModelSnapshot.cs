@@ -48,8 +48,8 @@ namespace Atlas.SearchTracking.Data.Migrations
                     b.Property<string>("MatchPrediction_FailureInfo_Message")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("MatchPrediction_FailureInfo_Type")
-                        .HasColumnType("int");
+                    b.Property<string>("MatchPrediction_FailureInfo_Type")
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<bool?>("MatchPrediction_IsSuccessful")
                         .HasColumnType("bit");

@@ -21,11 +21,11 @@ namespace Atlas.SearchTracking.Data.Migrations
                 type: "nvarchar(max)",
                 nullable: true);
 
-            migrationBuilder.AddColumn<int>(
+            migrationBuilder.AddColumn<string>(
                 name: "MatchPrediction_FailureInfo_Type",
                 schema: "SearchTracking",
                 table: "SearchRequests",
-                type: "int",
+                type: "nvarchar(50)",
                 nullable: true);
         }
 

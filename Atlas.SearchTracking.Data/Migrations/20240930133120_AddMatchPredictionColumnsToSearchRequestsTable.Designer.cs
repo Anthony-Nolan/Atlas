@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.SearchTracking.Data.Migrations
 {
     [DbContext(typeof(SearchTrackingContext))]
-    [Migration("20240927151556_AddMatchPredictionColumnsToSearchRequestsTable")]
+    [Migration("20240930133120_AddMatchPredictionColumnsToSearchRequestsTable")]
     partial class AddMatchPredictionColumnsToSearchRequestsTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,8 +50,8 @@ namespace Atlas.SearchTracking.Data.Migrations
                     b.Property<string>("MatchPrediction_FailureInfo_Message")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("MatchPrediction_FailureInfo_Type")
-                        .HasColumnType("int");
+                    b.Property<string>("MatchPrediction_FailureInfo_Type")
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<bool?>("MatchPrediction_IsSuccessful")
                         .HasColumnType("bit");
