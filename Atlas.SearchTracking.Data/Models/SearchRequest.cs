@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Atlas.SearchTracking.Common.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -61,7 +62,12 @@ namespace Atlas.SearchTracking.Data.Models
 
         public bool? MatchPrediction_IsSuccessful { get; set; }
 
-        public string? MatchPrediction_FailureInfo_Json { get; set; }
+        public string? MatchPrediction_FailureInfo_Message { get; set; }
+
+        public string? MatchPrediction_FailureInfo_ExceptionStacktrace { get; set; }
+
+        [Column(TypeName = "nvarchar(50)")]
+        public MatchPredictionFailureType? MatchPrediction_FailureInfo_Type { get; set; }
 
         public int? MatchPrediction_DonorsPerBatch { get; set; }
 
