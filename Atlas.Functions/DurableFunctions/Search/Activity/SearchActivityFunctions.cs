@@ -73,6 +73,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 
             await matchPredictionSearchTrackingDispatcher.ProcessPrepareBatchesStarted(new Guid(matchingResultsNotification.SearchRequestId));
 
+            var timedResultSet = new TimedResultSet<IList<string>>();
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -87,23 +88,24 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 matchPredictionInputBuilder.BuildMatchPredictionInputs(matchingResults)
             );
 
-            await matchPredictionSearchTrackingDispatcher.ProcessPrepareBatchesEnded(new Guid(matchingResultsNotification.SearchRequestId));
-
             using (logger.RunTimed("Uploading match prediction requests"))
             {
                 var matchPredictionRequestFileNames = await matchPredictionRequestBlobClient.UploadMatchProbabilityRequests(matchingResultsNotification.SearchRequestId, matchPredictionInputs);
 
-                return new TimedResultSet<IList<string>>
+                timedResultSet = new TimedResultSet<IList<string>>
                 {
                     ElapsedTime = stopwatch.Elapsed,
                     ResultSet = matchPredictionRequestFileNames.ToList(),
                     FinishedTimeUtc = DateTime.UtcNow
                 };
             }
+
+            await matchPredictionSearchTrackingDispatcher.ProcessPrepareBatchesEnded(new Guid(matchingResultsNotification.SearchRequestId));
+            return timedResultSet;
         }
 
         [Function(nameof(RunMatchPredictionBatch))]
-        public async Task<IReadOnlyDictionary<int, string>> RunMatchPredictionBatch([ActivityTrigger] string requestLocation, TaskOptions retryOptions)
+        public async Task<IReadOnlyDictionary<int, string>> RunMatchPredictionBatch([ActivityTrigger] string requestLocation)
         {
             var matchProbabilityInput = await matchPredictionRequestBlobClient.DownloadBatchRequest(requestLocation);
             return await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(matchProbabilityInput);

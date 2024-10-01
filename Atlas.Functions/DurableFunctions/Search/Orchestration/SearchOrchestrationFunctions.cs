@@ -9,6 +9,7 @@ using Atlas.Functions.DurableFunctions.Search.Activity;
 using Atlas.Functions.Exceptions;
 using Atlas.Functions.Models;
 using Atlas.Functions.Settings;
+using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
 using AutoMapper;
 using Microsoft.Azure.Functions.Worker;
@@ -35,6 +36,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         private readonly IMapper mapper;
         private readonly SearchLoggingContext loggingContext;
         private readonly int matchPredictionProcessingBatchSize;
+        private int matchPredictionNumberOfBatches;
 
         public SearchOrchestrationFunctions(ISearchLogger<SearchLoggingContext> logger,
             IMapper mapper,
@@ -56,7 +58,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             var orchestrationStartTime = context.CurrentUtcDateTime;
             var requestCompletedSuccessfully = false;
             TimedResultSet<IReadOnlyDictionary<int, string>> matchPredictionResultLocations = null;
-            var failureInfo = string.Empty;
+            MatchPredictionFailureInfo matchPredictionFailureInfo = null;
 
             loggingContext.SearchRequestId = requestInfo.SearchRequestId;
 
@@ -102,11 +104,18 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     MatchingDonorCount = notification.NumberOfResults ?? -1,
                 };
             }
-            catch (HandledOrchestrationException ex)
+            catch (HandledOrchestrationException e)
             {
                 // Exceptions wrapper in "HandleOrchestrationException" have already been handled, and failure notifications sent.
                 // In this case we should just re-throw so the function is tracked as a failure.
-                failureInfo = ex.Message;
+
+                matchPredictionFailureInfo = new MatchPredictionFailureInfo
+                {
+                    Type = MatchPredictionFailureType.OrchestrationError,
+                    ExceptionStacktrace = e.StackTrace,
+                    Message = e.Message
+                };
+
                 throw;
             }
             catch (Exception e)
@@ -116,7 +125,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 // An unexpected exception occurred in the *orchestration* code. Ensure we send a failure notification
                 requestInfo.StageReached = "Orchestrator";
                 await SendFailureNotification(context, requestInfo);
-                failureInfo = e.Message;
+
+                matchPredictionFailureInfo = new MatchPredictionFailureInfo
+                {
+                    Type = MatchPredictionFailureType.UnexpectedError,
+                    ExceptionStacktrace = e.StackTrace,
+                    Message = e.Message
+                };
+
                 throw;
             }
             finally
@@ -144,11 +160,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     CompletionDetails = new MatchPredictionCompletionDetails
                     {
                         IsSuccessful = requestCompletedSuccessfully,
-                        FailureInfoJson = failureInfo,
+                        FailureInfo = matchPredictionFailureInfo,
                         DonorsPerBatch = matchPredictionProcessingBatchSize,
-                        TotalNumberOfBatches = matchPredictionResultLocations != null ?
-                            (int)Math.Ceiling((decimal)matchPredictionResultLocations.ResultSet.Count / matchPredictionProcessingBatchSize)
-                            : null
+                        TotalNumberOfBatches = matchPredictionNumberOfBatches
                     }
                 };
 
@@ -164,7 +178,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             TimedResultSet<IReadOnlyDictionary<int, string>> matchPredictionResultLocations = null;
             var requestCompletedSuccessfully = false;
             var orchestrationStartTime = context.CurrentUtcDateTime;
-            var failureInfo = string.Empty;
+            MatchPredictionFailureInfo matchPredictionFailureInfo = null;
 
             try
             {
@@ -213,7 +227,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             {
                 // Exceptions wrapper in "HandleOrchestrationException" have already been handled, and failure notifications sent.
                 // In this case we should just re-throw so the function is tracked as a failure.
-                failureInfo = e.Message;
+
+                matchPredictionFailureInfo = new MatchPredictionFailureInfo
+                {
+                    Type = MatchPredictionFailureType.OrchestrationError,
+                    ExceptionStacktrace = e.StackTrace,
+                    Message = e.Message
+                };
+
                 throw;
             }
             catch (Exception e)
@@ -223,7 +244,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 // An unexpected exception occurred in the *orchestration* code. Ensure we send a failure notification
                 requestInfo.StageReached = "Orchestrator";
                 await SendFailureNotification(context, requestInfo);
-                failureInfo = e.Message;
+
+                matchPredictionFailureInfo = new MatchPredictionFailureInfo
+                {
+                    Type = MatchPredictionFailureType.UnexpectedError,
+                    ExceptionStacktrace = e.StackTrace,
+                    Message = e.Message
+                };
+
                 throw;
             }
             finally
@@ -235,11 +263,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     CompletionDetails = new MatchPredictionCompletionDetails
                     {
                         IsSuccessful = requestCompletedSuccessfully,
-                        FailureInfoJson = failureInfo,
+                        FailureInfo = matchPredictionFailureInfo,
                         DonorsPerBatch = matchPredictionProcessingBatchSize,
-                        TotalNumberOfBatches = matchPredictionResultLocations != null ?
-                            (int)Math.Ceiling((decimal)matchPredictionResultLocations.ResultSet.Count / matchPredictionProcessingBatchSize)
-                            : null
+                        TotalNumberOfBatches = matchPredictionNumberOfBatches
                     }
                 };
 
@@ -284,6 +310,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             var matchPredictionTasksList =
                 matchPredictionRequestLocations.ResultSet.Select(r => RunMatchPredictionForDonorBatch(context, r)).ToList();
             var matchPredictionResultLocations = new List<KeyValuePair<int, string>>();
+            matchPredictionNumberOfBatches = matchPredictionRequestLocations.ResultSet.Count;
 
             foreach (var matchPredictionTasks in matchPredictionTasksList.Batch(matchPredictionProcessingBatchSize > 0
                          ? matchPredictionProcessingBatchSize
