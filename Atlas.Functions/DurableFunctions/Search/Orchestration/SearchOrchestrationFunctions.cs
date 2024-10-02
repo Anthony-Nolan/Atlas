@@ -36,7 +36,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         private readonly IMapper mapper;
         private readonly SearchLoggingContext loggingContext;
         private readonly int matchPredictionProcessingBatchSize;
-        private int matchPredictionNumberOfBatches;
 
         public SearchOrchestrationFunctions(ISearchLogger<SearchLoggingContext> logger,
             IMapper mapper,
@@ -57,7 +56,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             var requestInfo = mapper.Map<FailureNotificationRequestInfo>(notification);
             var orchestrationStartTime = context.CurrentUtcDateTime;
             var requestCompletedSuccessfully = false;
-            TimedResultSet<IReadOnlyDictionary<int, string>> matchPredictionResultLocations = null;
+            var matchPredictionResultLocations = (timedResultSet: default(TimedResultSet<IReadOnlyDictionary<int, string>>), matchPredictionNumberOfBatches: 0);
             MatchPredictionFailureInfo matchPredictionFailureInfo = null;
 
             loggingContext.SearchRequestId = requestInfo.SearchRequestId;
@@ -91,7 +90,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     {
                         SearchInitiated = orchestrationStartTime,
                         MatchingResultsNotification = notification,
-                        MatchPredictionResultLocations = matchPredictionResultLocations
+                        MatchPredictionResultLocations = matchPredictionResultLocations.Item1
                     },
                     requestInfo);
 
@@ -142,7 +141,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     InitiationTime = parameters.InitiationTime,
                     StartTime = orchestrationStartTime,
                     CompletionTime = context.CurrentUtcDateTime,
-                    AlgorithmCoreStepDuration = matchPredictionResultLocations?.ElapsedTime
+                    AlgorithmCoreStepDuration = matchPredictionResultLocations.timedResultSet.ElapsedTime,
                 };
 
                 await UploadSearchLogs(context, new SearchLog
@@ -162,7 +161,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                         IsSuccessful = requestCompletedSuccessfully,
                         FailureInfo = matchPredictionFailureInfo,
                         DonorsPerBatch = matchPredictionProcessingBatchSize,
-                        TotalNumberOfBatches = matchPredictionNumberOfBatches
+                        TotalNumberOfBatches = matchPredictionResultLocations.matchPredictionNumberOfBatches
                     }
                 };
 
@@ -175,9 +174,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         {
             var notification = context.GetInput<MatchingResultsNotification>();
             var requestInfo = mapper.Map<FailureNotificationRequestInfo>(notification);
-            TimedResultSet<IReadOnlyDictionary<int, string>> matchPredictionResultLocations = null;
             var requestCompletedSuccessfully = false;
             var orchestrationStartTime = context.CurrentUtcDateTime;
+            var matchPredictionResultLocations = (timedResultSet: default(TimedResultSet<IReadOnlyDictionary<int, string>>), matchPredictionNumberOfBatches: 0);
+
             MatchPredictionFailureInfo matchPredictionFailureInfo = null;
 
             try
@@ -210,7 +210,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     {
                         SearchInitiated = orchestrationInitiated,
                         MatchingResultsNotification = notification,
-                        MatchPredictionResultLocations = matchPredictionResultLocations
+                        MatchPredictionResultLocations = matchPredictionResultLocations.timedResultSet
                     },
                     requestInfo);
 
@@ -265,7 +265,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                         IsSuccessful = requestCompletedSuccessfully,
                         FailureInfo = matchPredictionFailureInfo,
                         DonorsPerBatch = matchPredictionProcessingBatchSize,
-                        TotalNumberOfBatches = matchPredictionNumberOfBatches
+                        TotalNumberOfBatches = matchPredictionResultLocations.matchPredictionNumberOfBatches
                     }
                 };
 
@@ -299,7 +299,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             return batchIds;
         }
 
-        private async Task<TimedResultSet<IReadOnlyDictionary<int, string>>> RunMatchPredictionAlgorithm(
+        private async Task<(TimedResultSet<IReadOnlyDictionary<int, string>> TimedResultSets, int MatchPredictionNumberOfBatches)> RunMatchPredictionAlgorithm(
             TaskOrchestrationContext context,
             FailureNotificationRequestInfo requestInfo,
             TimedResultSet<IList<string>> matchPredictionRequestLocations
@@ -310,7 +310,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             var matchPredictionTasksList =
                 matchPredictionRequestLocations.ResultSet.Select(r => RunMatchPredictionForDonorBatch(context, r)).ToList();
             var matchPredictionResultLocations = new List<KeyValuePair<int, string>>();
-            matchPredictionNumberOfBatches = matchPredictionRequestLocations.ResultSet.Count;
+            var matchPredictionTaskBatches = matchPredictionTasksList.Batch(matchPredictionProcessingBatchSize > 0
+                ? matchPredictionProcessingBatchSize
+                : matchPredictionRequestLocations.ResultSet.Count);
+            var matchPredictionNumberOfBatches = matchPredictionTaskBatches.Count();
 
             foreach (var matchPredictionTasks in matchPredictionTasksList.Batch(matchPredictionProcessingBatchSize > 0
                          ? matchPredictionProcessingBatchSize
@@ -340,12 +343,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 ElapsedTimeOfStage = totalElapsedTime,
             });
 
-            return new TimedResultSet<IReadOnlyDictionary<int, string>>
+            return new ValueTuple<TimedResultSet<IReadOnlyDictionary<int, string>>, int>
             {
-                ResultSet = MoreLinq.Extensions.ToDictionaryExtension.ToDictionary(matchPredictionResultLocations),
-                // If the previous stage did not successfully report a timespan, we do not want to report an error - so we allow it to be null.
-                // TimedResultSet promises a non-null timestamp, so return MaxValue to be clear that this timing was not successful
-                ElapsedTime = totalElapsedTime ?? TimeSpan.MaxValue
+                Item1 = new TimedResultSet<IReadOnlyDictionary<int, string>>
+                {
+                    ResultSet = MoreLinq.Extensions.ToDictionaryExtension.ToDictionary(matchPredictionResultLocations),
+                    ElapsedTime = totalElapsedTime ?? TimeSpan.MaxValue
+                },
+                Item2 = matchPredictionNumberOfBatches
             };
         }
 
