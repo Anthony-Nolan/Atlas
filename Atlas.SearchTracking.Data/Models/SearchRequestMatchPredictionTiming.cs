@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Atlas.SearchTracking.Common.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Atlas.SearchTracking.Data.Models
@@ -32,5 +33,12 @@ namespace Atlas.SearchTracking.Data.Models
         public DateTime? PersistingResults_EndTimeUtc { get; set; }
 
         public DateTime? CompletionTimeUtc { get; set; }
+
+        [Column(TypeName = "nvarchar(50)")]
+        public MatchPredictionFailureType? MatchPrediction_FailureInfo_Type { get; set; }
+
+        public string? FailureInfo_Message { get; set; }
+
+        public string? FailureInfo_ExceptionStacktrace { get; set; }
     }
 }

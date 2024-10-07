@@ -38,6 +38,7 @@ namespace Atlas.SearchTracking.Data.Models
 
         public bool? IsSuccessful { get; set; }
 
+        [Column(TypeName = "nvarchar(50)")]
         public MatchingAlgorithmFailureType? FailureInfo_Type { get; set; }
 
         public string? FailureInfo_Message { get; set; }
