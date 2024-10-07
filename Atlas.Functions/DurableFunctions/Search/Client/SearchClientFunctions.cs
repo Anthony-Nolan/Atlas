@@ -1,5 +1,4 @@
 using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
@@ -8,7 +7,6 @@ using Atlas.Functions.Models;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.DurableTask.Client;
-using Newtonsoft.Json;
 
 namespace Atlas.Functions.DurableFunctions.Search.Client
 {
@@ -24,7 +22,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
         private readonly ILogger logger;
 
         public SearchClientFunctions(ILogger logger)
-        { 
+        {
             this.logger = logger;
         }
 
@@ -43,7 +41,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             if (!resultsNotification.SearchRequest?.RunMatchPrediction ?? false)
             {
                 logger.SendTrace($"Match prediction for search request '{searchId}' was not requested, so will not be run.");
-                // TODO: ATLAS-493: Make the matching only results usable. 
+                // TODO: ATLAS-493: Make the matching only results usable.
                 return;
             }
 
@@ -76,7 +74,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             if (!resultsNotification.SearchRequest?.RunMatchPrediction ?? false)
             {
                 logger.SendTrace($"Match prediction for repeat search request '{repeatSearchId}' was not requested, so will not be run.");
-                // TODO: ATLAS-493: Make the matching only results usable. 
+                // TODO: ATLAS-493: Make the matching only results usable.
                 return;
             }
 

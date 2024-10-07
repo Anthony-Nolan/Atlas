@@ -1,9 +1,9 @@
-﻿using Atlas.SearchTracking.Settings.ServiceBus;
-using System.Text;
+﻿using System.Text;
 using Atlas.SearchTracking.Common.Config;
 using Atlas.SearchTracking.Common.Enums;
 using Microsoft.Azure.ServiceBus;
 using Newtonsoft.Json;
+using Atlas.SearchTracking.Common.Settings.ServiceBus;
 
 namespace Atlas.SearchTracking.Common.Clients
 {

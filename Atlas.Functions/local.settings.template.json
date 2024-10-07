@@ -27,6 +27,8 @@
     "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic": "search-results-ready",
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic": "search-results-ready",
     "AtlasFunction:MessagingServiceBus:SearchResultsDebugSubscription": "debug",
+    "AtlasFunction:SearchTrackingServiceBus:ConnectionString": "override-this",
+    "AtlasFunction:SearchTrackingServiceBus:SearchTrackingTopic": "search-tracking-events",
 
     "AtlasFunction:Orchestration:MatchPredictionBatchSize": 100,
 

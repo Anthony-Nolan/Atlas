@@ -31,8 +31,8 @@ using System.Threading.Tasks;
 using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
-using Atlas.SearchTracking.Settings.ServiceBus;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
+using Atlas.SearchTracking.Common.Settings.ServiceBus;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 {
