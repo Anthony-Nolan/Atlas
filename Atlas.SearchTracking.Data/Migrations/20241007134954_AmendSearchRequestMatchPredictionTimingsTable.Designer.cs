@@ -4,6 +4,7 @@ using Atlas.SearchTracking.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.SearchTracking.Data.Migrations
 {
     [DbContext(typeof(SearchTrackingContext))]
-    partial class SearchTrackingContextModelSnapshot : ModelSnapshot
+    [Migration("20241007134954_AmendSearchRequestMatchPredictionTimingsTable")]
+    partial class AmendSearchRequestMatchPredictionTimingsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
