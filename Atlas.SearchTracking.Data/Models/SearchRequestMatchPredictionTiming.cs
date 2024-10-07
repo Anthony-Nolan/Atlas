@@ -35,7 +35,7 @@ namespace Atlas.SearchTracking.Data.Models
         public DateTime? CompletionTimeUtc { get; set; }
 
         [Column(TypeName = "nvarchar(50)")]
-        public MatchPredictionFailureType? MatchPrediction_FailureInfo_Type { get; set; }
+        public MatchPredictionFailureType? FailureInfo_Type { get; set; }
 
         public string? FailureInfo_Message { get; set; }
 

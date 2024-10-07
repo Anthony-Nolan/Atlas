@@ -217,11 +217,11 @@ namespace Atlas.SearchTracking.Data.Migrations
                     b.Property<string>("FailureInfo_Message")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("FailureInfo_Type")
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<DateTime>("InitiationTimeUtc")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("MatchPrediction_FailureInfo_Type")
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime?>("PersistingResults_EndTimeUtc")
                         .HasColumnType("datetime2");

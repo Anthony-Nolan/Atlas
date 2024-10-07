@@ -23,7 +23,7 @@ namespace Atlas.SearchTracking.Data.Migrations
                 nullable: true);
 
             migrationBuilder.AddColumn<string>(
-                name: "MatchPrediction_FailureInfo_Type",
+                name: "FailureInfo_Type",
                 schema: "SearchTracking",
                 table: "SearchRequestMatchPredictionTimings",
                 type: "nvarchar(50)",
@@ -53,7 +53,7 @@ namespace Atlas.SearchTracking.Data.Migrations
                 table: "SearchRequestMatchPredictionTimings");
 
             migrationBuilder.DropColumn(
-                name: "MatchPrediction_FailureInfo_Type",
+                name: "FailureInfo_Type",
                 schema: "SearchTracking",
                 table: "SearchRequestMatchPredictionTimings");
 
