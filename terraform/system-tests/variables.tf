@@ -38,6 +38,3 @@ variable "NAME_PREFIX" {
   description = "Prepended to resources that require globally unique names (storage accounts, etc)."
   default     = "Atlas"
 }
-
-
-
