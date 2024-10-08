@@ -1,4 +1,5 @@
-﻿using Atlas.SearchTracking.Data.Models;
+﻿using System.Text.Json;
+using Atlas.SearchTracking.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.SearchTracking.Data.Context
@@ -40,6 +41,10 @@ namespace Atlas.SearchTracking.Data.Context
                 .WithOne(x => x.SearchRequest)
                 .HasForeignKey(x => x.SearchRequestId);
 
+            modelBuilder.Entity<SearchRequest>().Property(e => e.DonorRegistryCodes)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null));
 
             base.OnModelCreating(modelBuilder);
         }

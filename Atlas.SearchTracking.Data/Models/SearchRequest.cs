@@ -81,6 +81,12 @@ namespace Atlas.SearchTracking.Data.Models
         public SearchRequestMatchPredictionTiming? SearchRequestMatchPredictionTiming { get; set; }
 
         public ICollection<SearchRequestMatchingAlgorithmAttempts>? SearchRequestMatchingAlgorithmAttempts { get; set; }
+
+        public bool IsMatchPredictionRun { get; set; }
+
+        public bool AreBetterMatchesIncluded { get; set; }
+
+        public ICollection<string>? DonorRegistryCodes { get; set; }
     }
 
     internal static class SearchRequestModelBuilder

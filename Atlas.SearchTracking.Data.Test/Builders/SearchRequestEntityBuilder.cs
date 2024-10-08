@@ -28,7 +28,10 @@ namespace Atlas.SearchTracking.Data.Test.Builders
             .With(m => m.RequestJson, "RequestJson")
             .With(m => m.SearchCriteria, "SearchCriteria")
             .With(m => m.DonorType, "DonorType")
-            .With(m => m.RequestTimeUtc, new DateTime(2021, 1, 1));
+            .With(m => m.RequestTimeUtc, new DateTime(2021, 1, 1))
+            .With(m => m.AreBetterMatchesIncluded, true)
+            .With(m => m.IsMatchPredictionRun, true)
+            .WithSharedRef(m => m.DonorRegistryCodes, ["A, B"]);
 
         public static Builder<SearchRequest> WithMatchingPredictionCompleted => Default
             .With(m => m.MatchPrediction_IsSuccessful, true)
