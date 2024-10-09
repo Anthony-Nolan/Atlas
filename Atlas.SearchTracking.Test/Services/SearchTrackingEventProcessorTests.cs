@@ -45,7 +45,10 @@ namespace Atlas.SearchTracking.Test.Services
                 RequestJson = "RequestJson",
                 SearchCriteria = "10/10",
                 DonorType = "Adult",
-                RequestTimeUtc = new DateTime(2024, 10, 1, 14, 30, 00)
+                RequestTimeUtc = new DateTime(2024, 10, 1, 14, 30, 00),
+                IsMatchPredictionRun = false,
+                AreBetterMatchesIncluded = true,
+                DonorRegistryCodes = ["ANDonor", "BNDonor"]
             };
 
             var body = JsonConvert.SerializeObject(expectedSearchRequestedEvent);

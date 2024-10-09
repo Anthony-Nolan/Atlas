@@ -18,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests
 
         public SearchRequestBuilder()
         {
-            searchRequest = new SearchRequest()
+            searchRequest = new SearchRequest
             {
                 SearchDonorType = Atlas.Client.Models.Search.DonorType.Adult,
                 MatchCriteria = new MismatchCriteria
@@ -99,18 +99,18 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests
         }
 
         /// <summary>
-        /// Sets the HLA at given locus/position, ignoring any nulls. To explicitly set nulls within a non-empty LocusInfo, use <see cref="WithNullLocusSearchHla"/> 
+        /// Sets the HLA at given locus/position, ignoring any nulls. To explicitly set nulls within a non-empty LocusInfo, use <see cref="WithNullLocusSearchHla"/>
         /// </summary>
         public SearchRequestBuilder WithLocusSearchHla(Locus locus, LocusPosition position, string hlaString)
         {
-            // API level validation will fail if individual hla are null, but not if the locus is omitted altogether. 
+            // API level validation will fail if individual hla are null, but not if the locus is omitted altogether.
             // If tests need to be added which set individual values to null (i.e. to test that validation), another builder method should be used
             if (hlaString == null)
             {
                 return this;
             }
 
-            // If locus is specified, but currently null, initialise that locus. 
+            // If locus is specified, but currently null, initialise that locus.
             searchHla = new PhenotypeInfo<string>(searchHla.Map((l, hla) =>
                 {
                     if (l == locus)
@@ -148,6 +148,12 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests
         public SearchRequestBuilder WithDonorRegistryCodes(List<string> registryCodes)
         {
             searchRequest.DonorRegistryCodes = registryCodes;
+            return this;
+        }
+
+        public SearchRequestBuilder WithMatchPredictionConfig(bool shouldMatchPredictionBeRun)
+        {
+            searchRequest.RunMatchPrediction = shouldMatchPredictionBeRun;
             return this;
         }
 

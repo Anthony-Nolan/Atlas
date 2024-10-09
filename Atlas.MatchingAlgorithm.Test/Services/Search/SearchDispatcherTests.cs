@@ -63,6 +63,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             var searchRequest = new SearchRequestBuilder()
                 .WithSearchHla(new PhenotypeInfo<string>("hla-type"))
                 .WithTotalMismatchCount(0)
+                .WithBetterMatchesConfig(true)
+                .WithMatchPredictionConfig(true)
+                .WithDonorRegistryCodes(["A", "B"])
                 .Build();
 
             SearchRequestedEvent actualSearchRequestedEvent = null;

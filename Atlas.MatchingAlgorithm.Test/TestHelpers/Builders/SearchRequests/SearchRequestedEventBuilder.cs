@@ -13,6 +13,9 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 .With(x => x.IsRepeatSearch, false)
                 .With(x => x.SearchCriteria, "6/6")
                 .With(x => x.DonorType, "Adult")
-                .With(x => x.RequestTimeUtc, DateTime.UtcNow);
+                .With(x => x.RequestTimeUtc, DateTime.UtcNow)
+                .With(x => x.IsMatchPredictionRun, true)
+                .With(x => x.AreBetterMatchesIncluded, true)
+                .With(x => x.DonorRegistryCodes, ["A", "B"]);
     }
 }

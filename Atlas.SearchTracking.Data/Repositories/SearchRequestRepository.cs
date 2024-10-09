@@ -42,7 +42,10 @@ namespace Atlas.SearchTracking.Data.Repositories
                 RequestJson = requestedEvent.RequestJson,
                 SearchCriteria = requestedEvent.SearchCriteria,
                 DonorType = requestedEvent.DonorType,
-                RequestTimeUtc = requestedEvent.RequestTimeUtc
+                RequestTimeUtc = requestedEvent.RequestTimeUtc,
+                IsMatchPredictionRun = requestedEvent.IsMatchPredictionRun,
+                AreBetterMatchesIncluded = requestedEvent.AreBetterMatchesIncluded,
+                DonorRegistryCodes = requestedEvent.DonorRegistryCodes
             };
 
             searchRequests.Add(searchRequest);

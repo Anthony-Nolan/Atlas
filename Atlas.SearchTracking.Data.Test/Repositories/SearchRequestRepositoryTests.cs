@@ -51,7 +51,10 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
                 RequestJson = expectedSearchRequestEntity.RequestJson,
                 SearchCriteria = expectedSearchRequestEntity.SearchCriteria,
                 DonorType = expectedSearchRequestEntity.DonorType,
-                RequestTimeUtc = expectedSearchRequestEntity.RequestTimeUtc
+                RequestTimeUtc = expectedSearchRequestEntity.RequestTimeUtc,
+                AreBetterMatchesIncluded = expectedSearchRequestEntity.AreBetterMatchesIncluded,
+                IsMatchPredictionRun = expectedSearchRequestEntity.IsMatchPredictionRun,
+                DonorRegistryCodes = expectedSearchRequestEntity.DonorRegistryCodes
             };
 
             await searchRequestRepository.TrackSearchRequestedEvent(searchRequestedEvent);

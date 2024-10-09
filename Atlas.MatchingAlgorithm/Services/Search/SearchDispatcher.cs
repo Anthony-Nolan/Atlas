@@ -58,7 +58,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 RequestJson = JsonConvert.SerializeObject(searchRequest),
                 SearchCriteria = SearchTrackingEventHelper.GetSearchCriteria(searchRequest),
                 DonorType = searchRequest.SearchDonorType.ToString(),
-                RequestTimeUtc = DateTime.UtcNow
+                RequestTimeUtc = DateTime.UtcNow,
+                IsMatchPredictionRun = searchRequest.RunMatchPrediction,
+                AreBetterMatchesIncluded = searchRequest.MatchCriteria.IncludeBetterMatches,
+                DonorRegistryCodes = searchRequest.DonorRegistryCodes
             };
 
             await searchTrackingServiceBusClient.PublishSearchTrackingEvent(searchRequestedEvent, SearchTrackingEventType.SearchRequested);
