@@ -41,7 +41,7 @@
     "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds": 300,
 
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
-    "MacDictionary:Download:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
+    "MacDictionary:Download:MacSourceUrl": "https://hml.nmdp.org/mac/files/alpha.v3.zip",
     "MacDictionary:Import:CronSchedule": "0 0 2 * * *",
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
 
