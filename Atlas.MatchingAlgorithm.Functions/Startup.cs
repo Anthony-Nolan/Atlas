@@ -49,8 +49,7 @@ namespace Atlas.MatchingAlgorithm.Functions
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
-                OptionsReaderFor<AzureAuthenticationSettings>(),
-                OptionsReaderFor<SearchTrackingServiceBusSettings>());
+                OptionsReaderFor<AzureAuthenticationSettings>());
         }
 
         private static void RegisterSettings(IServiceCollection services)
