@@ -38,7 +38,7 @@ Atlas should be ready to receive search requests and/or differential mode donor 
 
 ### Multiple Allele Codes
 
-These will be automatically imported nightly, from source data [hosted by NMDP](https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip)
+These will be automatically imported nightly, from source data [hosted by NMDP](https://hml.nmdp.org/mac/files/alpha.v3.zip)
 
 An import can also be manually triggered, if e.g. you don't want to wait until the next day to start using an ATLAS installation.
 
