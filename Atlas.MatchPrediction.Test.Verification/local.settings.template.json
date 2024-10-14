@@ -17,7 +17,7 @@
 
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
-    "MacDictionary:Download:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
+    "MacDictionary:Download:MacSourceUrl": "https://hml.nmdp.org/mac/files/alpha.v3.zip",
 
     "Matching:ResultsTopic": "matching-results-ready",
     "Matching:ResultsTopicSubscription": "override-this",
