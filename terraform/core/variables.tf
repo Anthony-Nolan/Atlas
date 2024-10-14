@@ -196,7 +196,7 @@ variable "MAC_IMPORT_CRON_SCHEDULE" {
 
 variable "MAC_SOURCE" {
   type        = string
-  default     = "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip"
+  default     = "https://hml.nmdp.org/mac/files/alpha.v3.zip"
   description = "The source of our Multiple Allele Codes"
 }
 
