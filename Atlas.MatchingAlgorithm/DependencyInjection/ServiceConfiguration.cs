@@ -149,14 +149,20 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings
-            )
+            Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings,
+            Func<IServiceProvider, SearchTrackingServiceBusSettings> fetchSearchTrackingServiceBusSettings)
         {
             var serviceKey = typeof(MessagingServiceBusSettings);
             services.RegisterServiceBusAsKeyedServices(
                 key: serviceKey,
                 sp => fetchMessagingServiceBusSettings(sp).ConnectionString
                 );
+
+            var trackingServiceKey = typeof(SearchTrackingServiceBusSettings);
+            services.RegisterServiceBusAsKeyedServices(
+                key: trackingServiceKey,
+                sp => fetchSearchTrackingServiceBusSettings(sp).ConnectionString
+            );
 
             services.AddScoped<IServiceBusPeeker<MatchingResultsNotification>, MatchingResultNotificationsPeeker>(sp =>
             {
