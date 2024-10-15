@@ -149,8 +149,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings
-            )
+            Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings)
         {
             var serviceKey = typeof(MessagingServiceBusSettings);
             services.RegisterServiceBusAsKeyedServices(

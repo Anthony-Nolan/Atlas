@@ -27,8 +27,6 @@
     "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic": "search-results-ready",
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic": "search-results-ready",
     "AtlasFunction:MessagingServiceBus:SearchResultsDebugSubscription": "debug",
-    "AtlasFunction:SearchTrackingServiceBus:ConnectionString": "override-this",
-    "AtlasFunction:SearchTrackingServiceBus:SearchTrackingTopic": "search-tracking-events",
 
     "AtlasFunction:Orchestration:MatchPredictionBatchSize": 100,
 
@@ -58,7 +56,10 @@
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:Debug:AlertsSubscription": "debug",
     "NotificationsServiceBus:Debug:NotificationsSubscription": "debug",
-    "NotificationsServiceBus:NotificationsTopic": "notifications"
+    "NotificationsServiceBus:NotificationsTopic": "notifications",
+
+    "SearchTrackingServiceBus:ConnectionString": "override-this",
+    "SearchTrackingServiceBus:SearchTrackingTopic": "search-tracking-events"
   },
   "ConnectionStrings": {
     "Matching:Sql:Persistent": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
