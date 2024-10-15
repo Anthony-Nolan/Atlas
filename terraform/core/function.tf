@@ -88,6 +88,8 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "NotificationsServiceBus:Debug:AlertsSubscription"        = module.support.general.alerts_servicebus_debug_subscription
     "NotificationsServiceBus:Debug:NotificationsSubscription" = module.support.general.notifications_servicebus_debug_subscription
     "NotificationsServiceBus:NotificationsTopic"              = module.support.general.notifications_servicebus_topic.name
+    "SearchTrackingServiceBus:ConnectionString"               = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "SearchTrackingServiceBus:SearchTrackingTopic"            = module.search_tracking.service_bus.search_tracking_topic.name
     "WEBSITE_RUN_FROM_PACKAGE"                                = var.WEBSITE_RUN_FROM_PACKAGE
   }
 

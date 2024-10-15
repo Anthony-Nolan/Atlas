@@ -152,12 +152,6 @@ namespace Atlas.Functions
                 sp => sp.GetRequiredService<IOptions<NotificationsServiceBusSettings>>().Value.ConnectionString
                 );
 
-            var trackingServiceKey = typeof(SearchTrackingServiceBusSettings);
-            services.RegisterServiceBusAsKeyedServices(
-                key: trackingServiceKey,
-                sp => sp.GetRequiredService<IOptions<SearchTrackingServiceBusSettings>>().Value.ConnectionString
-            );
-
             services.AddScoped<IServiceBusPeeker<Alert>, AlertsPeeker>(sp =>
             {
                 var notificationsOptions = sp.GetService<IOptions<NotificationsServiceBusSettings>>();
