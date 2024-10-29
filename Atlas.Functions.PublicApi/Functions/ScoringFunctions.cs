@@ -1,25 +1,28 @@
-using System.Collections.Generic;
+﻿using Atlas.Common.Utils;
+using AzureFunctions.Extensions.Swashbuckle.Attribute;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.WebJobs;
+using Newtonsoft.Json;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
-using Atlas.Common.Utils;
-using Atlas.MatchingAlgorithm.Client.Models.Scoring;
-using Atlas.MatchingAlgorithm.Services.Search.Scoring;
-using AzureFunctions.Extensions.Swashbuckle.Attribute;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Newtonsoft.Json;
+using Atlas.Client.Models.Scoring;
+using AutoMapper;
+using System.Collections.Generic;
+using Atlas.MatchingAlgorithm.Clients.Scoring;
 
-namespace Atlas.MatchingAlgorithm.Functions.Functions
+namespace Atlas.Functions.PublicApi.Functions
 {
     public class ScoringFunctions
     {
-        private readonly IScoringRequestService scoringRequestService;
+        private readonly IMatchingAlgorithmScoringFunctionsClient scoringClient;
+        private readonly IMapper mapper;
 
-        public ScoringFunctions(IScoringRequestService scoringRequestService)
+        public ScoringFunctions(IMatchingAlgorithmScoringFunctionsClient scoringClient, IMapper mapper)
         {
-            this.scoringRequestService = scoringRequestService;
+            this.scoringClient = scoringClient;
+            this.mapper = mapper;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -30,7 +33,10 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             HttpRequest httpRequest)
         {
             var scoringRequest = JsonConvert.DeserializeObject<DonorHlaScoringRequest>(await new StreamReader(httpRequest.Body).ReadToEndAsync());
-            return await scoringRequestService.Score(scoringRequest);
+            var request = mapper.Map<MatchingAlgorithm.Client.Models.Scoring.DonorHlaScoringRequest>(scoringRequest);
+            var response = await scoringClient.Score(request);
+
+            return mapper.Map<ScoringResult>(response);
         }
 
         [FunctionName(nameof(ScoreBatch))]
@@ -40,7 +46,10 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             HttpRequest httpRequest)
         {
             var batchScoringRequest = JsonConvert.DeserializeObject<BatchScoringRequest>(await new StreamReader(httpRequest.Body).ReadToEndAsync());
-            return await scoringRequestService.ScoreBatch(batchScoringRequest);
+            var request = mapper.Map<MatchingAlgorithm.Client.Models.Scoring.BatchScoringRequest>(batchScoringRequest);
+            var response = await scoringClient.ScoreBatch(request);
+
+            return mapper.Map<List<DonorScoringResult>>(response);
         }
     }
 }
