@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search.Requests;
+﻿using Atlas.Client.Models.Common.Requests;
 
 namespace Atlas.Client.Models.Search.Results.LogFile
 {

@@ -10,7 +10,7 @@ using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
 {
-    public class SearchRequestValidator : AbstractValidator<Atlas.Client.Models.Search.Requests.SearchRequest>
+    public class SearchRequestValidator : AbstractValidator<Atlas.Client.Models.Common.Requests.SearchRequest>
     {
         private string Message_LocusCannotBeNullWhenCriteriaPresent(Locus locus) =>
             $"HLA Data at {locus} must be specified when matching criteria provided";

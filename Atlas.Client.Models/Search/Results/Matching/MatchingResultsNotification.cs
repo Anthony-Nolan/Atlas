@@ -1,5 +1,6 @@
 using System;
-using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Common.Requests;
+
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 

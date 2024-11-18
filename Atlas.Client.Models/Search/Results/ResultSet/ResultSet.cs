@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Common.Requests;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Newtonsoft.Json;
 

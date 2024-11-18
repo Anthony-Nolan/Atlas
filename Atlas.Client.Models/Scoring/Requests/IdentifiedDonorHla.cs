@@ -1,6 +1,6 @@
 ﻿using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 
-namespace Atlas.Client.Models.Scoring
+namespace Atlas.Client.Models.Scoring.Requests
 {
     public class IdentifiedDonorHla : PhenotypeInfoTransfer<string>
     {

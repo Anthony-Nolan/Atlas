@@ -1,4 +1,5 @@
 ﻿using System;
+using Atlas.Client.Models.Common.Requests;
 
 namespace Atlas.Client.Models.Search.Requests
 {

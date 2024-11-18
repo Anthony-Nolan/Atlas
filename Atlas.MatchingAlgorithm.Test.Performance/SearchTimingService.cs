@@ -5,7 +5,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Common.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.MatchingAlgorithm.Test.Performance.Models;
