@@ -80,6 +80,18 @@ variable "DONOR_DATABASE_USERNAME" {
   default = "donors"
 }
 
+variable "DONOR_ID_CHECKER_RESULTS_SUBSCRIPTION_NAMES" {
+  type        = list(string)
+  default     = []
+  description = "Subscription names for the donor-id-checker-results Service Bus topic (in addition to Audit subscription). If not provided, no additional subscriptions will be created."
+}
+
+variable "DONOR_INFO_CHECKER_RESULTS_SUBSCRIPTION_NAMES" {
+  type        = list(string)
+  default     = []
+  description = "Subscription names for the donor-info-checker-results Service Bus topic (in addition to Audit subscription). If not provided, no additional subscriptions will be created."
+}
+
 variable "DONOR_IMPORT_DELETE_PUBLISHED_DONOR_UPDATES_CRONTAB" {
   type        = string
   default     = "0 0 0 * * *"
@@ -427,7 +439,7 @@ variable "ATLAS_FUNCTION_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SE
 variable "MATCHING_ALGORITHM_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
   type     = number
   nullable = true
-  default  = 300
+  default  = null
 }
 
 variable "MATCH_PREDICTION_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
@@ -439,5 +451,5 @@ variable "MATCH_PREDICTION_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_
 variable "REPEAT_SEARCH_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
   type     = number
   nullable = true
-  default  = 300
+  default  = null
 }

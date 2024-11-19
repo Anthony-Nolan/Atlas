@@ -21,7 +21,7 @@ resource "azurerm_windows_function_app" "atlas_function" {
     pre_warmed_instance_count = 1
     use_32_bit_worker         = false
     ftps_state                = "AllAllowed"
-    scm_minimum_tls_version   = "1.0"
+    scm_minimum_tls_version   = "1.2"
     cors {
       support_credentials = false
     }
@@ -132,7 +132,7 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
     application_insights_key  = azurerm_application_insights.atlas.instrumentation_key
     pre_warmed_instance_count = 1
     ftps_state                = "AllAllowed"
-    scm_minimum_tls_version   = "1.0"
+    scm_minimum_tls_version   = "1.2"
     cors {
       support_credentials = false
     }
