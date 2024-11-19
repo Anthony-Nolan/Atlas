@@ -54,7 +54,7 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_donor_manageme
     }
 
     ftps_state              = "AllAllowed"
-    scm_minimum_tls_version = "1.0"
+    scm_minimum_tls_version = "1.2"
   }
 
   tags = var.general.common_tags

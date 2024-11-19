@@ -10,7 +10,7 @@ resource "azurerm_storage_account" "function_storage" {
   account_tier                    = "Standard"
   account_replication_type        = "LRS"
   enable_https_traffic_only       = true
-  min_tls_version                 = "TLS1_0"
+  min_tls_version                 = "TLS1_2"
   tags                            = local.common_tags
 }
 
@@ -24,7 +24,7 @@ resource "azurerm_storage_account" "atlas_durable_function_storage" {
   account_tier                    = "Standard"
   account_replication_type        = "LRS"
   enable_https_traffic_only       = true
-  min_tls_version                 = "TLS1_0"
+  min_tls_version                 = "TLS1_2"
   tags                            = local.common_tags
 }
 
@@ -38,7 +38,7 @@ resource "azurerm_storage_account" "azure_storage" {
   account_kind                    = "StorageV2"
   account_replication_type        = "LRS"
   enable_https_traffic_only       = true
-  min_tls_version                 = "TLS1_0"
+  min_tls_version                 = "TLS1_2"
   tags                            = local.common_tags
 }
 

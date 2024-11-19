@@ -80,6 +80,18 @@ variable "DONOR_DATABASE_USERNAME" {
   default = "donors"
 }
 
+variable "DONOR_ID_CHECKER_RESULTS_SUBSCRIPTION_NAMES" {
+  type        = list(string)
+  default     = []
+  description = "Subscription names for the donor-id-checker-results Service Bus topic (in addition to Audit subscription). If not provided, no additional subscriptions will be created."
+}
+
+variable "DONOR_INFO_CHECKER_RESULTS_SUBSCRIPTION_NAMES" {
+  type        = list(string)
+  default     = []
+  description = "Subscription names for the donor-info-checker-results Service Bus topic (in addition to Audit subscription). If not provided, no additional subscriptions will be created."
+}
+
 variable "DONOR_IMPORT_DELETE_PUBLISHED_DONOR_UPDATES_CRONTAB" {
   type        = string
   default     = "0 0 0 * * *"
