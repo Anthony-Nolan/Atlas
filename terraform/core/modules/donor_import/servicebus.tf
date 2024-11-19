@@ -94,6 +94,17 @@ resource "azurerm_servicebus_subscription" "audit-donor-id-checker-results" {
   dead_lettering_on_message_expiration = false
 }
 
+resource "azurerm_servicebus_subscription" "readers-donor-id-checker-results" {
+  for_each                             = toset(var.DONOR_ID_CHECKER_RESULTS_SUBSCRIPTION_NAMES)
+  name                                 = each.value
+  topic_id                             = azurerm_servicebus_topic.donor-id-checker-results.id
+  auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
+  default_message_ttl                  = var.default_servicebus_settings.audit-subscription-ttl-expiry
+  lock_duration                        = var.default_servicebus_settings.default-read-lock
+  max_delivery_count                   = var.default_servicebus_settings.default-message-retries
+  dead_lettering_on_message_expiration = false
+}
+
 resource "azurerm_servicebus_topic" "donor-info-checker-requests" {
   name                  = "donor-info-checker-requests"
   namespace_id          = var.servicebus_namespace.id
@@ -134,6 +145,17 @@ resource "azurerm_servicebus_topic" "donor-info-checker-results" {
 
 resource "azurerm_servicebus_subscription" "audit-donor-info-checker-results" {
   name                                 = "audit"
+  topic_id                             = azurerm_servicebus_topic.donor-info-checker-results.id
+  auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
+  default_message_ttl                  = var.default_servicebus_settings.audit-subscription-ttl-expiry
+  lock_duration                        = var.default_servicebus_settings.default-read-lock
+  max_delivery_count                   = var.default_servicebus_settings.default-message-retries
+  dead_lettering_on_message_expiration = false
+}
+
+resource "azurerm_servicebus_subscription" "readers-donor-info-checker-results" {
+  for_each                             = toset(var.DONOR_INFO_CHECKER_RESULTS_SUBSCRIPTION_NAMES)
+  name                                 = each.value
   topic_id                             = azurerm_servicebus_topic.donor-info-checker-results.id
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
   default_message_ttl                  = var.default_servicebus_settings.audit-subscription-ttl-expiry

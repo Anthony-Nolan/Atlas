@@ -16,6 +16,16 @@ variable "DELETE_PUBLISHED_DONOR_UPDATES_CRONTAB" {
   type = string
 }
 
+variable "DONOR_ID_CHECKER_RESULTS_SUBSCRIPTION_NAMES" {
+  type    = list(string)
+  default = []
+}
+
+variable "DONOR_INFO_CHECKER_RESULTS_SUBSCRIPTION_NAMES" {
+  type    = list(string)
+  default = []
+}
+
 variable "IP_RESTRICTION_SETTINGS" {
   type    = list(string)
   default = []
