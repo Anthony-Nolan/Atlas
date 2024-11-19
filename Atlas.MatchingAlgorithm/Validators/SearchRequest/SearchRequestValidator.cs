@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Validation;
@@ -10,7 +9,7 @@ using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
 {
-    public class SearchRequestValidator : AbstractValidator<Atlas.Client.Models.Common.Requests.SearchRequest>
+    public class SearchRequestValidator : AbstractValidator<Atlas.Client.Models.Search.Requests.SearchRequest>
     {
         private string Message_LocusCannotBeNullWhenCriteriaPresent(Locus locus) =>
             $"HLA Data at {locus} must be specified when matching criteria provided";

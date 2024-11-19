@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
+namespace Atlas.Client.Models.Common.Results
 {
     /// <summary>
     ///     Values for the confidence of a given match. Ordered to allow for selecting the best confidence from a list

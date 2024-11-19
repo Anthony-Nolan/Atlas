@@ -1,4 +1,5 @@
-﻿using Atlas.Client.Models.Search.Results.Matching;
+﻿using Atlas.Client.Models.Common.Results;
+using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 

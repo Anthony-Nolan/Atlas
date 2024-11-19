@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Atlas.Client.Models.Common.Requests;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;

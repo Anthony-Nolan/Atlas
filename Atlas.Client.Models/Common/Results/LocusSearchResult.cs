@@ -1,4 +1,6 @@
-﻿namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
+﻿using Atlas.Client.Models.Search.Results.Matching.PerLocus;
+
+namespace Atlas.Client.Models.Common.Results
 {
     /// <summary>
     /// Scoring results for a given locus.
@@ -14,12 +16,12 @@
         ///     and these match grades will not be included in the total Match Count in the api response
         /// </summary>
         public bool IsLocusMatchCountIncludedInTotal { get; set; }
-        
+
         /// <summary>
         /// The overall, aggregated, match category for this locus.
         /// </summary>
         public LocusMatchCategory? MatchCategory { get; set; }
-        
+
         /// <summary>
         ///     The number of matches within this locus.
         ///     Either 0, 1 or 2 if the locus is typed.
@@ -55,7 +57,7 @@
         ///     If scoring has not been requested on the locus, then the value will be null.
         /// </summary>
         public LocusPositionScoreDetails ScoreDetailsAtPositionTwo { get; set; }
-        
+
         /// <summary>
         /// Indicates the direction of the mismatch, when there is a mismatch.
         /// When the mismatch is permissive or there is no mismatch, NotApplicable will be returned.

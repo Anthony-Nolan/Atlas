@@ -20,6 +20,7 @@ using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
+using Atlas.Client.Models.Common.Results;
 
 // ReSharper disable InconsistentNaming
 

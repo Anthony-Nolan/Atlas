@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
-using Atlas.Client.Models.Search;
-using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Client.Models.Common.Requests;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 
 // ReSharper disable ClassNeverInstantiated.Global
@@ -8,7 +7,7 @@ using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 // ReSharper disable MemberCanBeInternal
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace Atlas.Client.Models.Common.Requests
+namespace Atlas.Client.Models.Search.Requests
 {
     public class SearchRequest
     {
@@ -85,20 +84,5 @@ namespace Atlas.Client.Models.Common.Requests
         /// Defaults to true.
         /// </summary>
         public bool IncludeBetterMatches { get; set; } = true;
-    }
-
-    public class ScoringCriteria
-    {
-        /// <summary>
-        /// By default, scoring is not performed on matched donor HLA, except on the loci specified here.
-        /// </summary>
-        public IReadOnlyCollection<Locus> LociToScore { get; set; }
-
-        /// <summary>
-        /// By default, the algorithm will use scoring information available at loci defined in <see cref="LociToScore"/>
-        /// to aggregate into some overall values to use for ranking. e.g. MatchCategory, GradeScore, ConfidenceScore
-        /// Any loci specified here can be excluded from these aggregates.
-        /// </summary>
-        public IReadOnlyCollection<Locus> LociToExcludeFromAggregateScore { get; set; }
     }
 }

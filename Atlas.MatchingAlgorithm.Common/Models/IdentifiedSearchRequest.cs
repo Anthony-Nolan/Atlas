@@ -1,4 +1,4 @@
-using Atlas.Client.Models.Common.Requests;
+using Atlas.Client.Models.Search.Requests;
 
 namespace Atlas.MatchingAlgorithm.Common.Models
 {

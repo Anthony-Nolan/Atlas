@@ -1,6 +1,5 @@
 using System.IO;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Common.Requests;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;

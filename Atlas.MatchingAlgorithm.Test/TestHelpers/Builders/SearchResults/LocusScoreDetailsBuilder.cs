@@ -1,6 +1,6 @@
 ﻿using System;
+using Atlas.Client.Models.Common.Results;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 
@@ -58,7 +58,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
 
             return this;
         }
-        
+
         internal LocusScoreDetailsBuilder WithMatchGradeAtPosition(LocusPosition position, MatchGrade matchGrade)
         {
             var scoreDetails = GetScoreDetailsAtPosition(position);

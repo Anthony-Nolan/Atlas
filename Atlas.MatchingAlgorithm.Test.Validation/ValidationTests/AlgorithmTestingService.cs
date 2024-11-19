@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Common.Requests;
+﻿using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.MatchingAlgorithm.Api;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;

@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Common.Requests;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Utils;
 using Atlas.Common.Validation;
 using Atlas.MatchingAlgorithm.Common.Models;

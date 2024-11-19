@@ -1,6 +1,6 @@
 ﻿using System;
+using Atlas.Client.Models.Common.Results;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
@@ -214,7 +214,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
 
         /// <summary>
         /// As match count is a product of the confidences, this method implicitly sets the
-        /// match count by setting an appropriate number of confidences to "Mismatch". 
+        /// match count by setting an appropriate number of confidences to "Mismatch".
         /// </summary>
         public ScoreResultBuilder WithMatchCountAtLocus(Locus locus, int matchCount)
         {

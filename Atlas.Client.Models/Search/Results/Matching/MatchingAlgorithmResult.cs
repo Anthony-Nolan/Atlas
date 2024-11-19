@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search.Results.Matching.PerLocus;
+﻿using Atlas.Client.Models.Common.Results;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using System;
 
