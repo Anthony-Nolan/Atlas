@@ -245,6 +245,18 @@ variable "MATCHING_DATA_REFRESH_AUTO_RUN" {
   description = "When set, the data refresh job to update processed donor data will automatically run when a new nomenclature version is detected. Otherwise, it will be manual only."
 }
 
+variable "MATCHING_MAINTENANCE_GCCOLLECT_DISABLED" {
+  type        = bool
+  default     = true
+  description = "Specifies whether forced garbage collection is enabled (required for sliding cache to take effect faster)"
+}
+
+variable "MATCHING_MAINTENANCE_GCCOLLECT_CRON_SCHEDULE" {
+  type        = string
+  default     = "*/30 * * * * *"
+  description = "Specifies the schedule of the forced garbage collection (required for sliding cache to take effect faster)"
+}
+
 variable "MATCHING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE" {
   type        = number
   default     = 3
