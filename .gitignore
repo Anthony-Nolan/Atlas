@@ -59,3 +59,6 @@ _ReSharper*/
 
 # .tfvars files
 *.tfvars
+
+local.settings.dev.json
+local.settings.uat.json
