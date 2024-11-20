@@ -93,6 +93,14 @@ variable "IP_RESTRICTION_SETTINGS" {
   default = []
 }
 
+variable "MAINTENANCE_GCCOLLECT_DISABLED" {
+  type = bool
+}
+
+variable "MAINTENANCE_GCCOLLECT_CRON_SCHEDULE" {
+  type = string
+}
+
 variable "MATCHING_BATCH_SIZE" {
   type = number
 }
