@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Common.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.Public.Models.GeneticData;
@@ -20,6 +20,7 @@ using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
+using Atlas.Client.Models.Common.Results;
 
 // ReSharper disable InconsistentNaming
 
@@ -203,7 +204,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             });
 
             var dpb1Score = scoringResult.SearchResultAtLocusDpb1;
-                
+
             dpb1Score.MatchCategory.Should().Be(expectedMatchCategory);
             dpb1Score.MismatchDirection.Should().Be(expectedMismatchDirection);
         }

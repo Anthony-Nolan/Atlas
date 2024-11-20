@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Client.Models.Common.Requests;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 
 // ReSharper disable ClassNeverInstantiated.Global
@@ -38,10 +38,10 @@ namespace Atlas.Client.Models.Search.Requests
         /// Must match ethnicity code format uploaded with haplotype frequency sets.
         /// </summary>
         public string PatientEthnicityCode { get; set; }
-        
+
         /// <summary>
         /// Determines which haplotype frequency data to use for match prediction.
-        /// Must match registry code format uploaded with haplotype frequency sets.  
+        /// Must match registry code format uploaded with haplotype frequency sets.
         /// </summary>
         public string PatientRegistryCode { get; set; }
 
@@ -51,7 +51,7 @@ namespace Atlas.Client.Models.Search.Requests
         /// expensive and time consuming portion of a search, so if results are not needed, results can be returned much faster without it.
         /// </summary>
         public bool RunMatchPrediction { get; set; } = true;
-        
+
         /// <summary>
         /// Optional.
         /// When non-null, only donors from the corresponding registry codes will be returned from the search.
@@ -59,7 +59,7 @@ namespace Atlas.Client.Models.Search.Requests
         /// </summary>
         public List<string> DonorRegistryCodes { get; set; }
     }
-    
+
     public class MismatchCriteria
     {
         /// <summary>
@@ -70,7 +70,7 @@ namespace Atlas.Client.Models.Search.Requests
 
         /// <summary>
         /// Mismatch preferences for input HLA, in the form of a number of allowed mismatches - can be 0, 1, or 2.
-        /// Loci A, B, DRB1 are required. 
+        /// Loci A, B, DRB1 are required.
         /// </summary>
         public LociInfoTransfer<int?> LocusMismatchCriteria { get; set; }
 
@@ -81,23 +81,8 @@ namespace Atlas.Client.Models.Search.Requests
         /// Otherwise, <see cref="DonorMismatchCount"/> will be treated as an *exact* requirement.
         /// e.g. When running a 9/10 search, allowing a single mismatch: any donors with no mismatches (10/10) will *not* be returned.
         ///
-        /// Defaults to true. 
+        /// Defaults to true.
         /// </summary>
         public bool IncludeBetterMatches { get; set; } = true;
-    }
-    
-    public class ScoringCriteria
-    {
-        /// <summary>
-        /// By default, scoring is not performed on matched donor HLA, except on the loci specified here.
-        /// </summary>
-        public IReadOnlyCollection<Locus> LociToScore { get; set; }
-
-        /// <summary>
-        /// By default, the algorithm will use scoring information available at loci defined in <see cref="LociToScore"/>
-        /// to aggregate into some overall values to use for ranking. e.g. MatchCategory, GradeScore, ConfidenceScore
-        /// Any loci specified here can be excluded from these aggregates.
-        /// </summary>
-        public IReadOnlyCollection<Locus> LociToExcludeFromAggregateScore { get; set; }
     }
 }

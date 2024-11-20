@@ -4,7 +4,6 @@ using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using AutoMapper;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
@@ -34,8 +33,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
             return mapper.Map<ScoringResult>(scoringResult);
         }
-        
-        
+
         public async Task<List<DonorScoringResult>> ScoreBatch(BatchScoringRequest batchScoringRequest)
         {
             logger.SendTrace("Received ScoreBatch request");
@@ -49,7 +47,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             var distinctDonorPhenotypes = donorPhenotypeMapping.Select(m => m.DonorPhenotype).Distinct().ToList();
             var scoringResults = await donorScoringService.ScoreDonorsHlaAgainstPatientHla(
                 distinctDonorPhenotypes,
-                patientPhenotypeInfo, 
+                patientPhenotypeInfo,
                 batchScoringRequest.ScoringCriteria);
             var donorScoringResults = donorPhenotypeMapping
                 .Select(

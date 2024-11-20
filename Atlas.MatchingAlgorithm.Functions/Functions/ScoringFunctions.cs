@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(Score))]
         public async Task<ScoringResult> Score(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] 
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(DonorHlaScoringRequest), nameof(DonorHlaScoringRequest))]
             HttpRequest httpRequest)
         {
@@ -35,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
 
         [FunctionName(nameof(ScoreBatch))]
         public async Task<List<DonorScoringResult>> ScoreBatch(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] 
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(BatchScoringRequest), nameof(BatchScoringRequest))]
             HttpRequest httpRequest)
         {

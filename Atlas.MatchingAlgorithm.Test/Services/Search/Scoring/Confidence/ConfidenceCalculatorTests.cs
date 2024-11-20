@@ -9,7 +9,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.Client.Models.Search.Results.Matching.PerLocus;
+using Atlas.Client.Models.Common.Results;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
 {

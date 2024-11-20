@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search.Requests;
+﻿using Atlas.Client.Models.Common.Requests;
 using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Validators.SearchRequest

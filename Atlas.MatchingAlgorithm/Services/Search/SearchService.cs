@@ -1,6 +1,4 @@
-﻿using Atlas.Client.Models.Search.Requests;
-using Atlas.Client.Models.Search.Results.Matching;
-using Atlas.Client.Models.Search.Results.Matching.PerLocus;
+﻿using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Public.Models.GeneticData;
@@ -11,13 +9,14 @@ using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Models;
-using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Common.Results;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
 {
@@ -70,7 +69,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             // As matching phase 2 uses the same batch size as phase 1, which is expected to be very large - the result set is never expected to be large enough that scoring actually begins
             // before matching is complete. However, it wouldn't take much tweaking of batch sizes to enable scoring streaming to begin early.
-            // If memory continues to be a concern on large datasets, it wouldn't be much work from here to stream results to file so we don't even need to store all results in memory! Though 
+            // If memory continues to be a concern on large datasets, it wouldn't be much work from here to stream results to file so we don't even need to store all results in memory! Though
             // to do so would be to remove ranking of results, and may cause issues down the line where all results *do* need to be loaded into memory.
             var scoredMatches = await scoringService.StreamScoring(request);
             var reifiedScoredMatches = scoredMatches.DistinctBy(m => m.MatchResult.DonorId).ToList();

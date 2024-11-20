@@ -1,6 +1,7 @@
 using System;
 using Atlas.Client.Models.Search.Requests;
 
+
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Atlas.Client.Models.Search.Results.Matching

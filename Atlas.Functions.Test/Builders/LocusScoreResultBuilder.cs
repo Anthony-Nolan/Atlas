@@ -1,6 +1,6 @@
 ﻿using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using LochNessBuilder;
-using ResultBuilder = LochNessBuilder.Builder<Atlas.Client.Models.Search.Results.Matching.PerLocus.LocusSearchResult>;
+using ResultBuilder = LochNessBuilder.Builder<Atlas.Client.Models.Common.Results.LocusSearchResult>;
 
 namespace Atlas.Functions.Test.Builders
 {
