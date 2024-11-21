@@ -18,6 +18,9 @@ namespace Atlas.MatchPrediction.Functions
         public override void Configure(IFunctionsHostBuilder builder)
         {
             RegisterSettings(builder.Services);
+
+            builder.Services.AddHealthChecks();
+
             builder.Services.RegisterMatchPredictionAlgorithm(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),

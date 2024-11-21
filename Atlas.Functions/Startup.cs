@@ -34,6 +34,8 @@ namespace Atlas.Functions
             RegisterSettings(builder.Services);
             RegisterTopLevelFunctionServices(builder.Services);
 
+            builder.Services.AddHealthChecks();
+
             builder.Services.RegisterNotificationSender(
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>()
@@ -164,7 +166,7 @@ namespace Atlas.Functions
                     messagingOptions.Value.SearchResultsTopic,
                     messagingOptions.Value.SearchResultsDebugSubscription);
             });
-            
+
             services.AddScoped<IRepeatSearchResultNotificationsPeeker, RepeatSearchResultNotificationsPeeker>(sp =>
             {
                 var messagingOptions = sp.GetService<IOptions<Settings.MessagingServiceBusSettings>>();

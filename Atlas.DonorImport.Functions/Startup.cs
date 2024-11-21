@@ -17,6 +17,9 @@ namespace Atlas.DonorImport.Functions
         public override void Configure(IFunctionsHostBuilder builder)
         {
             RegisterSettings(builder.Services);
+
+            builder.Services.AddHealthChecks();
+
             builder.Services.RegisterDonorImport(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),

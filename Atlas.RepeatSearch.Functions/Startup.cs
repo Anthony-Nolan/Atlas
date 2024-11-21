@@ -21,6 +21,9 @@ namespace Atlas.RepeatSearch.Functions
         public override void Configure(IFunctionsHostBuilder builder)
         {
             RegisterSettings(builder.Services);
+
+            builder.Services.AddHealthChecks();
+
             builder.Services.RegisterRepeatSearch(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<RepeatSearch.Settings.Azure.AzureStorageSettings>(),
@@ -31,7 +34,7 @@ namespace Atlas.RepeatSearch.Functions
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 ConnectionStringReader("RepeatSearchSql"),
                 ConnectionStringReader("MatchingPersistentSql"),
-                ConnectionStringReader("MatchingSqlA"), 
+                ConnectionStringReader("MatchingSqlA"),
                 ConnectionStringReader("MatchingSqlB"),
                 ConnectionStringReader("DonorSql")
                 );
