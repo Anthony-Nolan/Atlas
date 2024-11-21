@@ -12,7 +12,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
     {
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(ServiceStatus))]
-        public ServiceStatusModel ServiceStatus([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest request)
+        public ServiceStatusModel ServiceStatus([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest request)
         {
             var assembly = Assembly.GetExecutingAssembly();
             var name = assembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title;

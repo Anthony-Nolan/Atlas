@@ -38,6 +38,7 @@
     "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds": 300,
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
+    "Maintenance:GCCollect:CronSchedule": "*/30 * * * * *",
     "MatchingConfiguration:MatchingBatchSize": 250000,
     "MessagingServiceBus:ConnectionString": "override-this",
     "MessagingServiceBus:SearchRequestsMaxDeliveryCount": 10,
