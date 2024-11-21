@@ -21,6 +21,9 @@ namespace Atlas.MatchingAlgorithm.Functions
         public static void Configure(IServiceCollection services)
         {
             RegisterSettings(services);
+
+            services.AddHealthChecks();
+
             services.RegisterSearchForMatchingAlgorithm(OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),

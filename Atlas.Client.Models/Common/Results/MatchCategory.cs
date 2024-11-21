@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Atlas.Client.Models.Search.Results.Matching
+namespace Atlas.Client.Models.Common.Results
 {
     /// <summary>
     ///     Values used to categorise an overall match.

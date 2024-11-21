@@ -75,7 +75,7 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
 
 
     ftps_state              = "AllAllowed"
-    scm_minimum_tls_version = "1.0"
+    scm_minimum_tls_version = "1.2"
   }
 
   connection_string {

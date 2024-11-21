@@ -2,7 +2,7 @@ resource "azurerm_mssql_server" "atlas_sql_server" {
   name                         = lower("${local.environment}-ATLAS-SQL-SERVER")
   resource_group_name          = azurerm_resource_group.atlas_resource_group.name
   location                     = local.location
-  minimum_tls_version          = "Disabled"
+  minimum_tls_version          = "1.2"
   tags                         = local.common_tags
   version                      = "12.0"
   administrator_login          = var.DATABASE_SERVER_ADMIN_LOGIN
@@ -18,12 +18,8 @@ resource "azurerm_mssql_server" "atlas_sql_server" {
   lifecycle {
     prevent_destroy = true
     ignore_changes = [
-      administrator_login_password,
-
-      // Ignoring changes for this property, as terraform has inexplicably started to complain that
-      // "`minimum_tls_version` cannot be removed once set, please set a valid value for this property"
-      // even though the value of "Disabled" has never been changed.
-    minimum_tls_version]
+      administrator_login_password
+    ]
   }
 }
 

@@ -1,6 +1,11 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
+using Atlas.Debug.Client.Models.Settings;
 using Atlas.Functions.PublicApi;
+using Atlas.Functions.PublicApi.ClientConfig;
+using Atlas.Functions.PublicApi.Config;
+using Atlas.Functions.PublicApi.Settings;
+using Atlas.MatchingAlgorithm.Clients.Scoring;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.RepeatSearch.ExternalInterface.DependencyInjection;
@@ -20,6 +25,8 @@ namespace Atlas.Functions.PublicApi
             services.RegisterRepeatSearchOrchestration(OptionsReaderFor<RepeatSearch.Settings.ServiceBus.MessagingServiceBusSettings>());
 
             services.RegisterMatchPredictionValidator();
+
+            services.RegisterClients(OptionsReaderFor<MatchingAlgorithmFunctionSettings>());
         }
 
         private static void RegisterSettings(IServiceCollection services)
@@ -33,6 +40,11 @@ namespace Atlas.Functions.PublicApi
 
             // Repeat Search - initiation services only
             services.RegisterAsOptions<RepeatSearch.Settings.ServiceBus.MessagingServiceBusSettings>("RepeatSearch:MessagingServiceBus");
+
+            // Matching Algorithm Scoring
+            services.RegisterAsOptions<MatchingAlgorithmFunctionSettings>("MatchingAlgorithmFunction");
+
+            services.AddSingleton(sp => AutoMapperConfig.CreateMapper());
         }
     }
 }

@@ -80,6 +80,18 @@ variable "DONOR_DATABASE_USERNAME" {
   default = "donors"
 }
 
+variable "DONOR_ID_CHECKER_RESULTS_SUBSCRIPTION_NAMES" {
+  type        = list(string)
+  default     = []
+  description = "Subscription names for the donor-id-checker-results Service Bus topic (in addition to Audit subscription). If not provided, no additional subscriptions will be created."
+}
+
+variable "DONOR_INFO_CHECKER_RESULTS_SUBSCRIPTION_NAMES" {
+  type        = list(string)
+  default     = []
+  description = "Subscription names for the donor-info-checker-results Service Bus topic (in addition to Audit subscription). If not provided, no additional subscriptions will be created."
+}
+
 variable "DONOR_IMPORT_DELETE_PUBLISHED_DONOR_UPDATES_CRONTAB" {
   type        = string
   default     = "0 0 0 * * *"
@@ -231,6 +243,18 @@ variable "MATCHING_DATA_REFRESH_AUTO_RUN" {
   type        = bool
   default     = true
   description = "When set, the data refresh job to update processed donor data will automatically run when a new nomenclature version is detected. Otherwise, it will be manual only."
+}
+
+variable "MATCHING_MAINTENANCE_GCCOLLECT_DISABLED" {
+  type        = bool
+  default     = true
+  description = "Specifies whether forced garbage collection is enabled (required for sliding cache to take effect faster)"
+}
+
+variable "MATCHING_MAINTENANCE_GCCOLLECT_CRON_SCHEDULE" {
+  type        = string
+  default     = "*/30 * * * * *"
+  description = "Specifies the schedule of the forced garbage collection (required for sliding cache to take effect faster)"
 }
 
 variable "MATCHING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE" {
@@ -427,7 +451,7 @@ variable "ATLAS_FUNCTION_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SE
 variable "MATCHING_ALGORITHM_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
   type     = number
   nullable = true
-  default  = 300
+  default  = null
 }
 
 variable "MATCH_PREDICTION_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
@@ -439,5 +463,5 @@ variable "MATCH_PREDICTION_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_
 variable "REPEAT_SEARCH_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
   type     = number
   nullable = true
-  default  = 300
+  default  = null
 }

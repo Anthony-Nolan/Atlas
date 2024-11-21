@@ -5,6 +5,9 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
 
+    "MatchingAlgorithmFunction:BaseUrl": "override-this",
+    "MatchingAlgorithmFunction:ApiKey": "override-this",
+
     "Matching:MessagingServiceBus:ConnectionString": "override-this",
     "Matching:MessagingServiceBus:SearchRequestsTopic": "matching-requests",
     "Matching:MessagingServiceBus:SearchResultsTopic": "matching-results-ready",

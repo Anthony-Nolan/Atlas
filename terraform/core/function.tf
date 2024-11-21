@@ -21,7 +21,7 @@ resource "azurerm_windows_function_app" "atlas_function" {
     pre_warmed_instance_count = 1
     use_32_bit_worker         = false
     ftps_state                = "AllAllowed"
-    scm_minimum_tls_version   = "1.0"
+    scm_minimum_tls_version   = "1.2"
     cors {
       support_credentials = false
     }
@@ -133,7 +133,7 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
     application_insights_key  = azurerm_application_insights.atlas.instrumentation_key
     pre_warmed_instance_count = 1
     ftps_state                = "AllAllowed"
-    scm_minimum_tls_version   = "1.0"
+    scm_minimum_tls_version   = "1.2"
     cors {
       support_credentials = false
     }
@@ -152,6 +152,9 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
 
   app_settings = {
     "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
+
+    "MatchingAlgorithmFunction:BaseUrl"                = module.matching_algorithm.function_app.base_url
+    "MatchingAlgorithmFunction:ApiKey"                 = module.matching_algorithm.function_app.api_key
 
     "Matching:MessagingServiceBus:ConnectionString"    = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
     "Matching:MessagingServiceBus:SearchRequestsTopic" = module.matching_algorithm.service_bus.matching_requests_topic.name

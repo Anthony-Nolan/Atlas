@@ -10,7 +10,7 @@ resource "azurerm_storage_account" "matching_function_storage" {
   account_replication_type        = "LRS"
   allow_nested_items_to_be_public = false
   enable_https_traffic_only       = true
-  min_tls_version                 = "TLS1_0"
+  min_tls_version                 = "TLS1_2"
   tags                            = var.general.common_tags
 }
 
