@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Atlas.Client.Models.Common.Results;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 
 namespace Atlas.MatchingAlgorithm.Common.Models.SearchResults

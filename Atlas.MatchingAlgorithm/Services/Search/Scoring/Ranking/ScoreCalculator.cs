@@ -1,4 +1,5 @@
-﻿using Atlas.Client.Models.Search.Results.Matching.PerLocus;
+﻿using Atlas.Client.Models.Common.Results;
+using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking

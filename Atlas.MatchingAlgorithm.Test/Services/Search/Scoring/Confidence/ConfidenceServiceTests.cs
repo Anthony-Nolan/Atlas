@@ -15,10 +15,10 @@ using Microsoft.Extensions.Caching.Memory;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
-using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+using Atlas.Client.Models.Common.Results;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
 {

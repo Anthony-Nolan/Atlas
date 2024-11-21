@@ -4,7 +4,6 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
@@ -28,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         [Function(nameof(Score))]
         [ProducesResponseType(typeof(ScoringResult), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> Score(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] 
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(DonorHlaScoringRequest), nameof(DonorHlaScoringRequest))]
             HttpRequest httpRequest)
         {
@@ -39,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         [Function(nameof(ScoreBatch))]
         [ProducesResponseType(typeof(List<DonorScoringResult>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> ScoreBatch(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] 
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(BatchScoringRequest), nameof(BatchScoringRequest))]
             HttpRequest httpRequest)
         {

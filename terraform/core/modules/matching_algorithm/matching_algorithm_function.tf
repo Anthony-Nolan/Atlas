@@ -22,6 +22,8 @@ locals {
     "AzureStorage:SearchResultsBlobContainer" = azurerm_storage_container.search_matching_results_blob_container.name
     "AzureStorage:SearchResultsBatchSize"     = var.RESULTS_BATCH_SIZE
 
+    "AzureWebJobs.GCCollect.Disabled" = var.MAINTENANCE_GCCOLLECT_DISABLED
+
     "DataRefresh:ActiveDatabaseAutoPauseTimeout"                                            = var.DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE
     "DataRefresh:ActiveDatabaseSize"                                                        = var.DATA_REFRESH_DB_SIZE_ACTIVE
     "DataRefresh:AutoRunDataRefresh"                                                        = var.DATA_REFRESH_AUTO_RUN
@@ -49,6 +51,8 @@ locals {
     "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
     "MacDictionary:TableName"                    = var.mac_import_table.name,
 
+    "Maintenance:GCCollect:CronSchedule" = var.MAINTENANCE_GCCOLLECT_CRON_SCHEDULE
+
     "MatchingConfiguration:MatchingBatchSize" = var.MATCHING_BATCH_SIZE,
 
     "MessagingServiceBus:ConnectionString"               = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
@@ -67,11 +71,6 @@ locals {
 
     "Wmda:WmdaFileUri" = var.WMDA_FILE_URL
 
-
-    // maximum running instances of the algorithm = maximum_worker_count * maxConcurrentCalls (in host.json).
-    // together these must ensure that the number of allowed concurrent SQL connections to the matching SQL DB is not exceeded.
-    // See README_Integration.md for more details on concurrency configuration.
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = var.MAX_SCALE_OUT
     "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
 
     "WEBSITE_PROACTIVE_AUTOHEAL_ENABLED" = false
@@ -106,10 +105,15 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_function" {
       }
     }
 
+    health_check_path                 = "/api/HealthCheck"
+    health_check_eviction_time_in_min = 10
+
     pre_warmed_instance_count = 1
-    use_32_bit_worker         = false
-    ftps_state                = "AllAllowed"
-    scm_minimum_tls_version   = "1.0"
+    app_scale_limit           = var.MAX_SCALE_OUT
+
+    use_32_bit_worker       = false
+    ftps_state              = "AllAllowed"
+    scm_minimum_tls_version = "1.2"
   }
 
   tags = var.general.common_tags

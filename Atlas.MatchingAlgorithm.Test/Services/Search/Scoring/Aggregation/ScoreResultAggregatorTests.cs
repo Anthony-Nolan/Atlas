@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Common.Results;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
