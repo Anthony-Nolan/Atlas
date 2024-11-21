@@ -1,17 +1,27 @@
-﻿using Atlas.Common.Utils.Http;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System;
+using System.Threading.Tasks;
 
 namespace Atlas.DonorImport.Functions.Functions
 {
     public class HealthCheckFunctions
     {
-        [FunctionName(nameof(HealthCheck))]
-        public static OkObjectResult HealthCheck([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
+        private readonly HealthCheckService healthCheckService;
+
+        public HealthCheckFunctions(HealthCheckService healthCheckService)
         {
-            return new OkObjectResult(HttpFunctionsConstants.HealthCheckResponse);
+            this.healthCheckService = healthCheckService;
+        }
+
+        [FunctionName(nameof(HealthCheck))]
+        public async Task<IActionResult> HealthCheck([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest request)
+        {
+            var healthStatus = await healthCheckService.CheckHealthAsync();
+            return new OkObjectResult(Enum.GetName(typeof(HealthStatus), healthStatus.Status));
         }
     }
 }
