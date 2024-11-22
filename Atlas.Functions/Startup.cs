@@ -31,6 +31,9 @@ namespace Atlas.Functions
         public static void Configure(IServiceCollection services)
         {
             RegisterSettings(services);
+
+            services.AddHealthChecks();
+
             RegisterTopLevelFunctionServices(services);
 
             services.RegisterServiceBusAsKeyedServices(
@@ -168,7 +171,7 @@ namespace Atlas.Functions
                     messagingOptions.Value.SearchResultsTopic,
                     messagingOptions.Value.SearchResultsDebugSubscription);
             });
-            
+
             services.AddScoped<IRepeatSearchResultNotificationsPeeker, RepeatSearchResultNotificationsPeeker>(sp =>
             {
                 var messagingOptions = sp.GetService<IOptions<Settings.MessagingServiceBusSettings>>();

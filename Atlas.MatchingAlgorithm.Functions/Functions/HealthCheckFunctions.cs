@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.IdentityModel.Protocols;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
@@ -20,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         public async Task<IActionResult> HealthCheck([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest request)
         {
             var healthStatus = await healthCheckService.CheckHealthAsync();
-            return new OkObjectResult(Enum.GetName(typeof(HealthStatus), healthStatus.Status));
+            return new JsonResult(Enum.GetName(typeof(HealthStatus), healthStatus.Status));
         }
     }
 }
