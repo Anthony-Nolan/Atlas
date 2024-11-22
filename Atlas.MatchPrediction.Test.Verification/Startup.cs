@@ -24,6 +24,8 @@ namespace Atlas.MatchPrediction.Test.Verification
 
             RegisterSettings(builder.Services);
 
+            builder.Services.AddHealthChecks();
+
             builder.Services.RegisterVerificationServices(
                 ConnectionStringReader("MatchPredictionVerification:Sql"),
                 ConnectionStringReader("MatchPrediction:Sql"),

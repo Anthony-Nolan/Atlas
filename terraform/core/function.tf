@@ -34,6 +34,8 @@ resource "azurerm_windows_function_app" "atlas_function" {
         ip_address = ip_restriction
       }
     }
+    health_check_path                 = "/api/HealthCheck"
+    health_check_eviction_time_in_min = 10
   }
 
   app_settings = {
@@ -145,7 +147,8 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
         ip_address = ip_restriction
       }
     }
-
+    health_check_path                 = "/api/HealthCheck"
+    health_check_eviction_time_in_min = 10
   }
 
   app_settings = {
