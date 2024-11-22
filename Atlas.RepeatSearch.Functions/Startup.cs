@@ -20,6 +20,9 @@ namespace Atlas.RepeatSearch.Functions
         public static void Configure(IServiceCollection services)
         {
             RegisterSettings(services);
+
+            services.AddHealthChecks();
+
             services.RegisterRepeatSearch(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<RepeatSearch.Settings.Azure.AzureStorageSettings>(),

@@ -19,6 +19,8 @@ namespace Atlas.Functions.PublicApi
         {
             RegisterSettings(services);
 
+            services.AddHealthChecks();
+
             services.RegisterMatchingAlgorithmOrchestration(
                 OptionsReaderFor<MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings>(),
                 OptionsReaderFor<SearchTrackingServiceBusSettings>());

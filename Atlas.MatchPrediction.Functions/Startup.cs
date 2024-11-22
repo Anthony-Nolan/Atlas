@@ -14,6 +14,9 @@ namespace Atlas.MatchPrediction.Functions
         public static void Configure(IServiceCollection services)
         {
             RegisterSettings(services);
+
+            services.AddHealthChecks();
+
             services.RegisterMatchPredictionAlgorithm(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),

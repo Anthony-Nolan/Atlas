@@ -15,6 +15,9 @@ namespace Atlas.DonorImport.Functions
         public static void Configure(IServiceCollection services)
         {
             RegisterSettings(services);
+
+            services.AddHealthChecks();
+
             services.RegisterDonorImport(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
