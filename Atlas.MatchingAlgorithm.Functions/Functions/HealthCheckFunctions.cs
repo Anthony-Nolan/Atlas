@@ -16,6 +16,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             this.healthCheckService = healthCheckService;
         }
 
+        [Function(nameof(HealthCheck))]
         public async Task<IActionResult> HealthCheck([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest request)
         {
             var healthStatus = await healthCheckService.CheckHealthAsync();
