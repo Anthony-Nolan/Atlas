@@ -5,7 +5,7 @@ using Microsoft.Azure.Functions.Worker;
 using System.Text;
 using Atlas.SearchTracking.Common.Config;
 
-namespace Atlas.SearchTracking.Functions
+namespace Atlas.SearchTracking.Functions.Functions
 {
     public class SearchTrackingFunctions
     {

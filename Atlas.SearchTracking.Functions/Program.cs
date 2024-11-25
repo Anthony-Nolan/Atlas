@@ -28,6 +28,7 @@ var host = new HostBuilder()
     {
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
+        services.AddHealthChecks();
         services.AddDbContext<ISearchTrackingContext, SearchTrackingContext>(options =>
         {
             options.UseSqlServer(Environment.GetEnvironmentVariable("ConnectionStrings:PersistentSql"));
