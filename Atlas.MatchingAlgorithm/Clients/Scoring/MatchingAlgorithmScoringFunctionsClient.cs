@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Clients.Scoring
 
         public async Task<ScoringResult> Score(DonorHlaScoringRequest request)
         {
-            return await PostRequest<DonorHlaScoringRequest, ScoringResult>("Score", request);
+            return await PostRequest<DonorHlaScoringRequest, ScoringResult>("api/Score", request);
         }
 
         public async Task<IEnumerable<DonorScoringResult>> ScoreBatch(BatchScoringRequest request)
