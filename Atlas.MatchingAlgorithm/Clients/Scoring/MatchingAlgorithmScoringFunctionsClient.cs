@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Clients.Scoring
 
         public async Task<IEnumerable<DonorScoringResult>> ScoreBatch(BatchScoringRequest request)
         {
-            return await PostRequest<BatchScoringRequest, IEnumerable<DonorScoringResult>>("ScoreBatch", request);
+            return await PostRequest<BatchScoringRequest, IEnumerable<DonorScoringResult>>("api/ScoreBatch", request);
         }
     }
 }
