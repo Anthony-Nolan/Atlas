@@ -9,6 +9,9 @@ locals {
     // Value should be long enough to allow time to permit support investigations but short enough to prevent messages piling up
     audit-subscription-ttl-expiry = "P14D"
 
+    // Value should be short enough to prevent messages piling up
+    audit-subscription-short-ttl-expiry = "P1D"
+
     // Debug subscriptions are primarily used by quick-running automated tests, so a short message expiry is required to keep message count to a minimum.
     debug-subscription-ttl-expiry = "PT1H"
 
