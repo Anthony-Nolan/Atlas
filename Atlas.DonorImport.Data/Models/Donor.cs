@@ -126,7 +126,7 @@ namespace Atlas.DonorImport.Data.Models
 
         /// <summary>
         /// Calculates a hash of donor data.
-        /// Used to efficiently determine whether an inbound donor's details matches one already stored in the system. 
+        /// Used to efficiently determine whether an inbound donor's details matches one already stored in the system.
         /// </summary>
         public string CalculateHash()
         {
@@ -149,6 +149,7 @@ namespace Atlas.DonorImport.Data.Models
             donorModel.HasIndex(d => d.ExternalDonorCode).IsUnique();
             donorModel.HasIndex(d => d.Hash);
             donorModel.HasIndex(d => d.LastUpdated).IncludeProperties(d => d.ExternalDonorCode);
+            donorModel.HasIndex(d => new{d.RegistryCode, d.DonorType, d.LastUpdated});
         }
     }
 }
