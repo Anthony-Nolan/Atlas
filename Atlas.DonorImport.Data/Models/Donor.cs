@@ -149,7 +149,7 @@ namespace Atlas.DonorImport.Data.Models
             donorModel.HasIndex(d => d.ExternalDonorCode).IsUnique();
             donorModel.HasIndex(d => d.Hash);
             donorModel.HasIndex(d => d.LastUpdated).IncludeProperties(d => d.ExternalDonorCode);
-            donorModel.HasIndex(d => new{d.RegistryCode, d.DonorType, d.LastUpdated});
+            donorModel.HasIndex(d => new{d.RegistryCode, d.DonorType, d.LastUpdated}).IncludeProperties(d => d.ExternalDonorCode);
         }
     }
 }

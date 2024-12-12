@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.DonorImport.Data.Migrations
 {
     [DbContext(typeof(DonorContext))]
-    [Migration("20241212112028_IndexDonorsOnRegistryCodeDonorTypeLastUpdated")]
+    [Migration("20241212145111_IndexDonorsOnRegistryCodeDonorTypeLastUpdated")]
     partial class IndexDonorsOnRegistryCodeDonorTypeLastUpdated
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -107,6 +107,8 @@ namespace Atlas.DonorImport.Data.Migrations
                     SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("LastUpdated"), new[] { "ExternalDonorCode" });
 
                     b.HasIndex("RegistryCode", "DonorType", "LastUpdated");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("RegistryCode", "DonorType", "LastUpdated"), new[] { "ExternalDonorCode" });
 
                     b.ToTable("Donors", "Donors");
                 });
