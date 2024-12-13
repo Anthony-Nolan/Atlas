@@ -7,9 +7,11 @@ namespace Atlas.DonorImport.Data.Migrations
     public partial class IndexDonorsOnRegistryCodeDonorTypeLastUpdated : Migration
     {
         private const string createIndexSql = @"
-            if not exists (SELECT 1 FROM sys.indexes WHERE name = 'IX_Donors_RegistryCode_DonorType_LastUpdated' AND object_id = OBJECT_ID('Donors.Donors'))
+            IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Donors_RegistryCode_DonorType_LastUpdated' AND object_id = OBJECT_ID('Donors.Donors'))
+            BEGIN
 	            CREATE INDEX [IX_Donors_RegistryCode_DonorType_LastUpdated] ON Donors.Donors([RegistryCode], [DonorType], [LastUpdated])
                 INCLUDE ([ExternalDonorCode]) WITH (ONLINE = ON);
+            END
             ";
 
         protected override void Up(MigrationBuilder migrationBuilder)
