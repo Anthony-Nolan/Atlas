@@ -52,7 +52,7 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
         }
 
         /// <summary>
-        /// <paramref name="updatedBeforeDate"/> is optional, and if provided, must be encoded as "yyyyMMdd".
+        /// <paramref name="updatedBeforeDate"/> must be encoded as "yyyyMMdd".
         /// It is a non-inclusive filter - only donors updated before the given date will be returned.
         /// </summary>
         [FunctionName(nameof(GetDonorCodesByRegistry))]
@@ -61,21 +61,16 @@ namespace Atlas.DonorImport.Functions.Functions.Debug
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = RoutePrefix + "{registryCode}/externalDonorCodes/{updatedBeforeDate?}")]
             HttpRequest request,
             string registryCode,
-            string updatedBeforeDate = null)
+            string updatedBeforeDate)
         {
-            var donors = await donorReadRepository.GetExternalDonorCodes(registryCode, DatabaseDonorType.Adult);
-            var cords = await donorReadRepository.GetExternalDonorCodes(registryCode, DatabaseDonorType.Cord);
+            var lastUpdatedBeforeDate = DateTime.ParseExact(updatedBeforeDate, "yyyyMMdd", CultureInfo.InvariantCulture);
+            var donors = await donorReadRepository.GetExternalDonorCodesLastUpdatedBefore(registryCode,
+                DatabaseDonorType.Adult, lastUpdatedBeforeDate);
+            var cords = await donorReadRepository.GetExternalDonorCodesLastUpdatedBefore(registryCode,
+                DatabaseDonorType.Cord, lastUpdatedBeforeDate);
             var allDonors = donors.Concat(cords);
 
-            if (updatedBeforeDate == null)
-            {
-                return new JsonResult(allDonors);
-            }
-
-            var dateTime = DateTime.ParseExact(updatedBeforeDate, "yyyyMMdd", CultureInfo.InvariantCulture);
-            var donorsUpdatedSince = await donorReadRepository.GetDonorIdsUpdatedSince(dateTime);
-            var donorsUpdatedBefore = allDonors.Where(d => !donorsUpdatedSince.ContainsKey(d));
-            return new JsonResult(donorsUpdatedBefore);
+            return new JsonResult(allDonors);
         }
 
         [FunctionName(nameof(DeleteDonors))]

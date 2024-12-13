@@ -14,6 +14,9 @@ The following table documents backwards compatibility.
 ## Changelog
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### 2.4.0
+*	Made updatedBeforeDate non nullable in DonorImportFunctionsClient.GetExternalDonorCodesByRegistry
+
 ### 2.1.0
 * Creation of new library, `Atlas.Debug.Client`.
 * Clients added for debug endpoints on the Public API, Donor Import, Matching Algorithm, and Top-level Function apps.

@@ -25,7 +25,6 @@ namespace Atlas.DonorImport.ExternalInterface
         /// <param name="externalDonorCodes">External Donor Codes to fetch</param>
         /// <returns>A dictionary of External Donor Code to full donor information.</returns>
         Task<IReadOnlyDictionary<string, Donor>> GetDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes);
-        
         /// <summary>
         /// Fetch donors added/updated since a certain date
         /// </summary>
