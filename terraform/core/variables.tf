@@ -157,6 +157,12 @@ variable "ELASTIC_SERVICE_PLAN_MAX_SCALE_OUT" {
   description = "The maximum number of workers that can be scaled out on the service plan. Affects all functions apps - which can be further restricted, but can never exceed this limit."
 }
 
+variable "ELASTIC_SERVICE_PLAN_MAX_SCALE_OUT_PUBLIC_API" {
+  type        = number
+  default     = 10
+  description = "The maximum number of workers that can be scaled out on the service plan for public functions api."
+}
+
 variable "ELASTIC_SERVICE_PLAN_SKU_SIZE" {
   type        = string
   default     = "EP1"
