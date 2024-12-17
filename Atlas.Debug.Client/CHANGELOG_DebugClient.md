@@ -18,7 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 * Updated .NET version from 6.0 to 8.0
 
 ### 2.5.0
-*	Made updatedBeforeDate non nullable in DonorImportFunctionsClient.GetExternalDonorCodesByRegistry
+* Made updatedBeforeDate non nullable in DonorImportFunctionsClient.GetExternalDonorCodesByRegistry
+* Added Score and ScoreBatch endpoints to the Public API client.
 
 ### 2.1.0
 * Creation of new library, `Atlas.Debug.Client`.

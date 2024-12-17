@@ -1,5 +1,8 @@
-﻿using System.Net.Http;
+﻿using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Scoring.Requests;
+using Atlas.Client.Models.Scoring.Results;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Debug.Client.Models.Validation;
 
@@ -22,6 +25,16 @@ namespace Atlas.Debug.Client.Clients
         /// Initiates a new repeat search request.
         /// </summary>
         Task<ResponseFromValidatedRequest<SearchInitiationResponse>> PostRepeatSearchRequest(RepeatSearchRequest request);
+
+        /// <summary>
+        /// Initiates a new scoring request.
+        /// </summary>
+        Task<ScoringResult> PostScore(DonorHlaScoringRequest request);
+
+        /// <summary>
+        /// Initiates a new batch scoring request.
+        /// </summary>
+        Task<List<DonorScoringResult>> PostScoreBatch(DonorHlaBatchScoringRequest request);
     }
 
     /// <inheritdoc cref="IPublicApiFunctionsClient" />
@@ -42,6 +55,18 @@ namespace Atlas.Debug.Client.Clients
         public async Task<ResponseFromValidatedRequest<SearchInitiationResponse>> PostRepeatSearchRequest(RepeatSearchRequest request)
         {
             return await PostValidatedRequest<RepeatSearchRequest, SearchInitiationResponse>("RepeatSearch", request);
+        }
+
+        /// <inheritdoc/>
+        public async Task<ScoringResult> PostScore(DonorHlaScoringRequest request)
+        {
+            return await PostRequest<DonorHlaScoringRequest, ScoringResult>("Score", request);
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<DonorScoringResult>> PostScoreBatch(DonorHlaBatchScoringRequest request)
+        {
+            return await PostRequest<DonorHlaBatchScoringRequest, List<DonorScoringResult>>("ScoreBatch", request);
         }
     }
 }
