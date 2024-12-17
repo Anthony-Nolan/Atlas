@@ -15,7 +15,7 @@ resource "azurerm_service_plan" "atlas-public-api-elastic-plan" {
   name                         = "${local.environment}-ATLAS-PUBLIC-API-ELASTIC-PLAN"
   location                     = local.location
   resource_group_name          = azurerm_resource_group.atlas_resource_group.name
-  maximum_elastic_worker_count = 5
+  maximum_elastic_worker_count = var.ELASTIC_SERVICE_PLAN_MAX_SCALE_OUT_PUBLIC_API
 
   sku_name = "EP1"
   os_type  = "Windows"
