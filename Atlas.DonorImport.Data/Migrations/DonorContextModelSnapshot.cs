@@ -104,6 +104,10 @@ namespace Atlas.DonorImport.Data.Migrations
 
                     SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("LastUpdated"), new[] { "ExternalDonorCode" });
 
+                    b.HasIndex("RegistryCode", "DonorType", "LastUpdated");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("RegistryCode", "DonorType", "LastUpdated"), new[] { "ExternalDonorCode" });
+
                     b.ToTable("Donors", "Donors");
                 });
 
