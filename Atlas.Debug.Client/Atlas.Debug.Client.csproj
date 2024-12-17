@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <VersionPrefix>2.4.0</VersionPrefix>
+    <VersionPrefix>2.5.0</VersionPrefix>
     <PackageReadmeFile>CHANGELOG_DebugClient.md</PackageReadmeFile>
     <Authors>Anthony Nolan</Authors>
     <Company>Anthony Nolan</Company>
