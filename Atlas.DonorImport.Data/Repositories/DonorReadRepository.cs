@@ -26,6 +26,9 @@ namespace Atlas.DonorImport.Data.Repositories
 
         Task<IReadOnlyCollection<string>> GetExternalDonorCodes(string registryCode, DatabaseDonorType donorType);
 
+        Task<IReadOnlyCollection<string>> GetExternalDonorCodesLastUpdatedBefore(string registryCode, DatabaseDonorType donorType,
+            DateTimeOffset lastUpdatedBefore);
+
         /// <summary>
         /// Primary use case for <see cref="Get1000RandomDonors"/> is in the generation of test donor data.
         /// </summary>
@@ -56,7 +59,7 @@ namespace Atlas.DonorImport.Data.Repositories
                 var donorStream = connection.Query<Donor>(sql, buffered: false, commandTimeout: 7200);
 
                 // Unfortunately, if you don't do this, then the connection gets closed as soon as
-                // you return the lazy enumerable, which then kills the query. So you have to do this, 
+                // you return the lazy enumerable, which then kills the query. So you have to do this,
                 // which will ensure that the connection isn't closed until the end of the stream.
                 foreach (var donor in donorStream)
                 {
@@ -68,9 +71,9 @@ namespace Atlas.DonorImport.Data.Repositories
         public async Task<IReadOnlyDictionary<string, Donor>> GetDonorsByExternalDonorCodes(ICollection<string> externalDonorCodes)
         {
             var sql = @$"
-SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM {Donor.QualifiedTableName}
-WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
-";
+                        SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM {Donor.QualifiedTableName}
+                        WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
+                        ";
 
             await using (var connection = NewConnection())
             {
@@ -86,9 +89,9 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
         public async Task<IReadOnlyDictionary<int, Donor>> GetDonorsByIds(IEnumerable<int> donorIds)
         {
             var sql = @$"
-SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM {Donor.QualifiedTableName}
-WHERE {nameof(Donor.AtlasId)} IN @ids
-";
+                        SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM {Donor.QualifiedTableName}
+                        WHERE {nameof(Donor.AtlasId)} IN @ids
+                        ";
 
             await using (var connection = NewConnection())
             {
@@ -103,9 +106,9 @@ WHERE {nameof(Donor.AtlasId)} IN @ids
         public async Task<IReadOnlyDictionary<string, int>> GetDonorIdsByExternalDonorCodes(ICollection<string> externalDonorCodes)
         {
             var sql = @$"
-SELECT {nameof(Donor.AtlasId)}, {nameof(Donor.ExternalDonorCode)} FROM {Donor.QualifiedTableName}
-WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
-";
+                        SELECT {nameof(Donor.AtlasId)}, {nameof(Donor.ExternalDonorCode)} FROM {Donor.QualifiedTableName}
+                        WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
+                        ";
             await using (var connection = NewConnection())
             {
                 var donors = (await externalDonorCodes.ProcessInBatchesAsync(
@@ -124,13 +127,13 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
         public async Task<IReadOnlyDictionary<string, int>> GetDonorIdsUpdatedSince(DateTimeOffset cutoffDate)
         {
             var sql = $@"
-SELECT {nameof(Donor.AtlasId)}, {nameof(Donor.ExternalDonorCode)} FROM {Donor.QualifiedTableName}
-WHERE LastUpdated >= @{nameof(cutoffDate)}
-";
+                        SELECT {nameof(Donor.AtlasId)}, {nameof(Donor.ExternalDonorCode)} FROM {Donor.QualifiedTableName}
+                        WHERE LastUpdated >= @{nameof(cutoffDate)}
+                        ";
 
             await using (var connection = NewConnection())
             {
-                var donors = await connection.QueryAsync<Donor>(sql, new {cutoffDate});
+                var donors = await connection.QueryAsync<Donor>(sql, new { cutoffDate });
                 return donors.ToDictionary(d => d.ExternalDonorCode, d => d.AtlasId);
             }
         }
@@ -138,9 +141,9 @@ WHERE LastUpdated >= @{nameof(cutoffDate)}
         public async Task<IReadOnlyCollection<string>> GetExistingExternalDonorCodes(IEnumerable<string> externalDonorCodes)
         {
             var sql = @$"
-SELECT {nameof(Donor.ExternalDonorCode)} FROM {Donor.QualifiedTableName}
-WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
-";
+                        SELECT {nameof(Donor.ExternalDonorCode)} FROM {Donor.QualifiedTableName}
+                        WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
+                        ";
             await using (var connection = NewConnection())
             {
                 return (await externalDonorCodes.ProcessInBatchesAsync(
@@ -154,9 +157,9 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
         public async Task<IReadOnlyDictionary<string, string>> GetDonorsHashes(IEnumerable<string> externalDonorCodes)
         {
             var sql = @$"
-SELECT {nameof(Donor.ExternalDonorCode)}, {nameof(Donor.Hash)} FROM {Donor.QualifiedTableName}
-WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
-";
+                        SELECT {nameof(Donor.ExternalDonorCode)}, {nameof(Donor.Hash)} FROM {Donor.QualifiedTableName}
+                        WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
+                        ";
             await using (var connection = NewConnection())
             {
                 return (await externalDonorCodes.ProcessInBatchesAsync(
@@ -170,11 +173,25 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
         public async Task<IReadOnlyCollection<string>> GetExternalDonorCodes(string registryCode, DatabaseDonorType donorType)
         {
             var sql = @$"
-SELECT {nameof(Donor.ExternalDonorCode)} FROM {Donor.QualifiedTableName}
-WHERE {nameof(Donor.RegistryCode)} = @{nameof(registryCode)} AND {nameof(Donor.DonorType)} = @{nameof(donorType)}
-";
+                        SELECT {nameof(Donor.ExternalDonorCode)} FROM {Donor.QualifiedTableName}
+                        WHERE {nameof(Donor.RegistryCode)} = @{nameof(registryCode)} AND {nameof(Donor.DonorType)} = @{nameof(donorType)}
+                        ";
             await using var connection = NewConnection();
             var externalDonorCodes = await connection.QueryAsync<string>(sql, new { registryCode, donorType });
+            return externalDonorCodes.ToList();
+        }
+
+        public async Task<IReadOnlyCollection<string>> GetExternalDonorCodesLastUpdatedBefore(string registryCode, DatabaseDonorType donorType,
+            DateTimeOffset lastUpdatedBefore)
+        {
+            var sql = @$"
+                        SELECT {nameof(Donor.ExternalDonorCode)} FROM {Donor.QualifiedTableName}
+                        WHERE {nameof(Donor.RegistryCode)} = @{nameof(registryCode)}
+                        AND {nameof(Donor.DonorType)} = @{nameof(donorType)}
+                        AND {nameof(Donor.LastUpdated)} < @{nameof(lastUpdatedBefore)}
+                        ";
+            await using var connection = NewConnection();
+            var externalDonorCodes = await connection.QueryAsync<string>(sql, new { registryCode, donorType, lastUpdatedBefore });
             return externalDonorCodes.ToList();
         }
 
@@ -183,9 +200,9 @@ WHERE {nameof(Donor.RegistryCode)} = @{nameof(registryCode)} AND {nameof(Donor.D
         {
             // SQL to select TOP x random donors
             var sql = @$"SELECT TOP 1000 * FROM {Donor.QualifiedTableName}
-            WHERE {nameof(Donor.AtlasId)} >= (SELECT FLOOR(
+                    WHERE {nameof(Donor.AtlasId)} >= (SELECT FLOOR(
 			        RAND()*((SELECT MAX({nameof(Donor.AtlasId)}) FROM {Donor.QualifiedTableName})-(SELECT MIN({nameof(Donor.AtlasId)}) FROM {Donor.QualifiedTableName})))
-				+(SELECT MIN({nameof(Donor.AtlasId)}) FROM {Donor.QualifiedTableName}))";
+				    +(SELECT MIN({nameof(Donor.AtlasId)}) FROM {Donor.QualifiedTableName}))";
 
             if (donorType != null)
             {

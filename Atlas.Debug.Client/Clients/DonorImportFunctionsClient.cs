@@ -42,9 +42,9 @@ namespace Atlas.Debug.Client.Clients
 
         /// <summary>
         /// Get external donor codes by registry.
-        /// <paramref name="updatedBeforeDate"/> is optional, and if provided, must be encoded as "yyyyMMdd".
+        /// <paramref name="updatedBeforeDate"/> must be encoded as "yyyyMMdd".
         /// </summary>
-        Task<IEnumerable<string>> GetExternalDonorCodesByRegistry(string registryCode, string updatedBeforeDate = null);
+        Task<IEnumerable<string>> GetExternalDonorCodesByRegistry(string registryCode, string updatedBeforeDate);
 
         /// <summary>
         /// Delete donors from donor store by external donor codes.
@@ -93,9 +93,9 @@ namespace Atlas.Debug.Client.Clients
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<string>> GetExternalDonorCodesByRegistry(string registryCode, string updatedBeforeDate = null)
+        public async Task<IEnumerable<string>> GetExternalDonorCodesByRegistry(string registryCode, string updatedBeforeDate)
         {
-            return await GetRequest<IEnumerable<string>>($"debug/donors/{registryCode}/externalDonorCodes/{updatedBeforeDate ?? string.Empty}");
+            return await GetRequest<IEnumerable<string>>($"debug/donors/{registryCode}/externalDonorCodes/{updatedBeforeDate}");
         }
 
         /// <inheritdoc />
