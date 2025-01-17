@@ -12,3 +12,9 @@ variable "servicebus_namespace" {
     name = string
   })
 }
+
+variable "service_bus_topics_with_alerts" {
+  type = map(object({
+    name = string
+  }))
+}
