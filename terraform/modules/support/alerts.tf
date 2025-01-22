@@ -8,7 +8,7 @@ resource "azurerm_monitor_metric_alert" "service_bus_dead_letter_alert" {
   severity            = 1
   window_size         = "PT1M"
   action {
-    action_group_id = azurerm_resource_group.atlas_resource_group.id
+    action_group_id = var.SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID
   }
   criteria {
     aggregation      = "Maximum"

@@ -137,3 +137,7 @@ variable "SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
   type     = number
   nullable = true
 }
+
+variable "SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID" {
+  type = string
+}

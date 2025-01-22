@@ -62,13 +62,15 @@ locals {
     "MessagingServiceBus:SearchResultsTopic"             = azurerm_servicebus_topic.matching-results-ready.name
     "MessagingServiceBus:SearchResultsDebugSubscription" = azurerm_servicebus_subscription.debug-matching-results-ready.name
 
-    "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
-    "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
-    "NotificationsServiceBus:NotificationsTopic" = var.servicebus_topics.notifications.name
+    "NotificationsServiceBus:ConnectionString"           = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:AlertsTopic"                = var.servicebus_topics.alerts.name
+    "NotificationsServiceBus:NotificationsTopic"         = var.servicebus_topics.notifications.name
+
+    "Support:DeadLetterAlerts:ActionGroupId"             = var.SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID
 
     "Wmda:WmdaFileUri" = var.WMDA_FILE_URL
 
-    "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
+    "WEBSITE_RUN_FROM_PACKAGE"                           = var.WEBSITE_RUN_FROM_PACKAGE
 
     "WEBSITE_PROACTIVE_AUTOHEAL_ENABLED" = false
   }
