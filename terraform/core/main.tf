@@ -151,7 +151,6 @@ module "matching_algorithm" {
   WEBSITE_RUN_FROM_PACKAGE                                 = var.WEBSITE_RUN_FROM_PACKAGE
   WMDA_FILE_URL                                            = var.WMDA_FILE_URL
   SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC = var.MATCHING_ALGORITHM_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
-  SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID                = var.SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID
 }
 
 module "match_prediction" {
@@ -264,4 +263,7 @@ module "support" {
       name = module.matching_algorithm.service_bus.matching_results_topic.name
     }
   }
+
+  // Release variables
+  SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID                = var.SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID
 }

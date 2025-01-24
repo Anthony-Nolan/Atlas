@@ -66,8 +66,6 @@ locals {
     "NotificationsServiceBus:AlertsTopic"                = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:NotificationsTopic"         = var.servicebus_topics.notifications.name
 
-    "Support:DeadLetterAlerts:ActionGroupId"             = var.SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID
-
     "Wmda:WmdaFileUri" = var.WMDA_FILE_URL
 
     "WEBSITE_RUN_FROM_PACKAGE"                           = var.WEBSITE_RUN_FROM_PACKAGE

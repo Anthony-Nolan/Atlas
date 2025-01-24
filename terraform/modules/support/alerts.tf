@@ -22,4 +22,5 @@ resource "azurerm_monitor_metric_alert" "service_bus_dead_letter_alert" {
       values   = ["${each.value.name}"]
     }
   }
+  count = var.SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID != null ? 1 : 0
 }
