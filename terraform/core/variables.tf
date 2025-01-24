@@ -480,3 +480,9 @@ variable "REPEAT_SEARCH_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
   nullable = true
   default  = null
 }
+
+variable "SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID" {
+  type        = string
+  default     = null
+  description = "The ID of the action group to be used for deadletter alerts."
+}

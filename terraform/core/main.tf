@@ -290,4 +290,13 @@ module "support" {
 
   resource_group       = azurerm_resource_group.atlas_resource_group
   servicebus_namespace = azurerm_servicebus_namespace.general
+
+  service_bus_topics_with_alerts = {
+    matching-results-ready = {
+      name = module.matching_algorithm.service_bus.matching_results_topic.name
+    }
+  }
+
+  // Release variables
+  SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID                = var.SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID
 }

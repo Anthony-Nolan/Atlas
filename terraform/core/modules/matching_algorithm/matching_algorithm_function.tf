@@ -71,7 +71,7 @@ locals {
 
     "Wmda:WmdaFileUri" = var.WMDA_FILE_URL
 
-    "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
+    "WEBSITE_RUN_FROM_PACKAGE"                           = var.WEBSITE_RUN_FROM_PACKAGE
 
     "WEBSITE_PROACTIVE_AUTOHEAL_ENABLED" = false
   }
