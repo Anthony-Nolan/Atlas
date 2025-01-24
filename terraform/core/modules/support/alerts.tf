@@ -1,5 +1,5 @@
 resource "azurerm_monitor_metric_alert" "service_bus_dead_letter_alert" {
-  for_each = var.service_bus_topics_with_alerts
+  for_each = var.SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID != null ? var.service_bus_topics_with_alerts : {}
 
   name                = "Atlas - Service Bus - Dead letter messages in ${each.value.name} topic"
   description         = "There are deadletters in Service Bus: ${var.servicebus_namespace.name}, Topic: ${each.value.name}"
@@ -22,5 +22,4 @@ resource "azurerm_monitor_metric_alert" "service_bus_dead_letter_alert" {
       values   = ["${each.value.name}"]
     }
   }
-  count = var.SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID != null ? 1 : 0
 }
