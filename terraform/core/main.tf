@@ -41,7 +41,7 @@ module "donor_import" {
 
   default_servicebus_settings = local.service-bus
 
-  // DI Variables 
+  // DI Variables
   app_service_plan        = azurerm_service_plan.atlas-elastic-plan
   application_insights    = azurerm_application_insights.atlas
   azure_storage           = azurerm_storage_account.azure_storage
@@ -257,4 +257,13 @@ module "support" {
 
   resource_group       = azurerm_resource_group.atlas_resource_group
   servicebus_namespace = azurerm_servicebus_namespace.general
+
+  service_bus_topics_with_alerts = {
+    matching-results-ready = {
+      name = module.matching_algorithm.service_bus.matching_results_topic.name
+    }
+  }
+
+  // Release variables
+  SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID                = var.SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID
 }
