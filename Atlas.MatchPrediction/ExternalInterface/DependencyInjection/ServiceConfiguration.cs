@@ -2,6 +2,7 @@
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus;
+using Atlas.Common.ServiceBus.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ApplicationInsights;
@@ -78,7 +79,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> messagingServiceBusSettings,
             Func<IServiceProvider, MatchPredictionRequestsSettings> matchPredictionRequestSettings)
         {
-            //services.AddScoped(typeof(IMessageBatchPublisher<>), typeof(MessageBatchPublisher<>));
+            var serviceKey = typeof(MessagingServiceBusSettings);
+            services.RegisterServiceBusAsKeyedServices(serviceKey,sp => messagingServiceBusSettings(sp).ConnectionString);
 
             // services for requesting a match prediction
             services.AddScoped<IMatchPredictionValidator, MatchPredictionValidator>();
