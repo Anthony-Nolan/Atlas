@@ -71,7 +71,8 @@ namespace Atlas.MatchPrediction.Functions.Functions
             [ServiceBusTrigger(
                 "%MatchPredictionRequests:RequestsTopic%",
                 "%MatchPredictionRequests:RequestsSubscription%",
-                Connection = "MessagingServiceBus:ConnectionString")]
+                Connection = "MessagingServiceBus:ConnectionString",
+                IsBatched = true)]
             IdentifiedMatchPredictionRequest[] requestBatch)
         {
             await requestRunner.RunMatchPredictionRequestBatch(requestBatch);
