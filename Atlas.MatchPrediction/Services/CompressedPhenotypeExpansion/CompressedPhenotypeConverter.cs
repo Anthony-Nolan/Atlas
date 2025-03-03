@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
@@ -23,6 +25,8 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
     {
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly IHlaToTargetCategoryConverter converter;
+        private const char asterisk = '*';
+        private const string allelePattern = "^\\*?\\d+(:\\d+){1,3}[ACLNQS]?$";
 
         public CompressedPhenotypeConverter(
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory, IHlaToTargetCategoryConverter converter)
@@ -38,6 +42,31 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
 
             var matchingHlaVersion = input.MatchPredictionParameters.MatchingAlgorithmHlaNomenclatureVersion;
             var matchingHmd = matchingHlaVersion == null ? null : hlaMetadataDictionaryFactory.BuildDictionary(matchingHlaVersion);
+
+            if (matchingHmd != null)
+            {
+                input.Phenotype = await input.Phenotype.MapAsync<string>(async (locus, _, hla) =>
+                {    
+                    if (hla == null)
+                    {
+                        return hla;
+                    }
+
+                    if (!Regex.IsMatch(hla, allelePattern))
+                    {
+                        return hla;
+                    }
+                    
+                    var renamedHla = await matchingHmd.GetCurrentAlleleNames(locus, hla);
+
+                    if (renamedHla.Count() == 1 && !renamedHla.Any(x => x.Contains(hla.TrimStart(asterisk))))
+                    {
+                        return renamedHla.FirstOrDefault();
+                    }
+
+                    return hla;
+                });
+            }
 
             return await new DataByResolution<bool>().MapAsync(async (category, _) =>
                 await ConvertPhenotypeToTargetCategory(input, hfSetHmd, matchingHmd, category));
@@ -66,7 +95,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
                     return null;
                 }
 
-                return (ISet<string>)(await converter.ConvertHlaWithLoggingAndRetryOnFailure(converterInput, locus, hla)).ToHashSet();
+                return (ISet<string>)ToHashSetExtension.ToHashSet((await converter.ConvertHlaWithLoggingAndRetryOnFailure(converterInput, locus, hla)));
             });
         }
     }
