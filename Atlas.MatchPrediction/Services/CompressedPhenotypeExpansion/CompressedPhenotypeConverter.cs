@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
@@ -25,14 +26,15 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
     {
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly IHlaToTargetCategoryConverter converter;
+        private readonly IHlaCategorisationService categoriser;
         private const char asterisk = '*';
-        private const string allelePattern = "^\\*?\\d+(:\\d+){1,3}[ACLNQS]?$";
 
         public CompressedPhenotypeConverter(
-            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory, IHlaToTargetCategoryConverter converter)
+            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory, IHlaToTargetCategoryConverter converter, IHlaCategorisationService categoriser)
         {
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
             this.converter = converter;
+            this.categoriser = categoriser;
         }
 
         /// <inheritdoc />
@@ -46,25 +48,28 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
             if (matchingHmd != null)
             {
                 input.Phenotype = await input.Phenotype.MapAsync<string>(async (locus, _, hla) =>
-                {    
+                {
                     if (hla == null)
                     {
                         return hla;
                     }
 
-                    if (!Regex.IsMatch(hla, allelePattern))
+                    categoriser.TryGetHlaTypingCategory(hla, out HlaTypingCategory? category);
+
+                    if (category != HlaTypingCategory.Allele)
                     {
                         return hla;
                     }
                     
-                    var renamedHla = await matchingHmd.GetCurrentAlleleNames(locus, hla);
+                    var currentAlleleNames = await matchingHmd.GetCurrentAlleleNames(locus, hla);
 
-                    if (renamedHla.Count() == 1 && !renamedHla.Any(x => x.Contains(hla.TrimStart(asterisk))))
+                    //Only require instances that return a single renamed allele, not records that return a string of names like *01:01:01:01, *01:01:01:02
+                    if (currentAlleleNames.Count() != 1)
                     {
-                        return renamedHla.FirstOrDefault();
+                        return hla;
                     }
 
-                    return hla;
+                    return currentAlleleNames.Single();
                 });
             }
 
@@ -95,7 +100,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
                     return null;
                 }
 
-                return (ISet<string>)ToHashSetExtension.ToHashSet((await converter.ConvertHlaWithLoggingAndRetryOnFailure(converterInput, locus, hla)));
+                return (ISet<string>)ToHashSetExtension.ToHashSet(await converter.ConvertHlaWithLoggingAndRetryOnFailure(converterInput, locus, hla));
             });
         }
     }
