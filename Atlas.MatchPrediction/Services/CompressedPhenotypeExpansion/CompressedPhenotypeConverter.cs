@@ -8,7 +8,6 @@ using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Services.HlaConversion;
-using MoreLinq.Extensions;
 using ConvertedPhenotype = Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion.DataByResolution<Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<System.Collections.Generic.ISet<string>>>;
 
 namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
@@ -100,7 +99,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
                     return null;
                 }
 
-                return (ISet<string>)ToHashSetExtension.ToHashSet(await converter.ConvertHlaWithLoggingAndRetryOnFailure(converterInput, locus, hla));
+                return (ISet<string>)(await converter.ConvertHlaWithLoggingAndRetryOnFailure(converterInput, locus, hla)).ToHashSet();
             });
         }
     }
