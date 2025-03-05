@@ -27,6 +27,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         private IGGroupToPGroupMetadataService gGroupToPGroupMetadataService;
         private ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService;
         private ISerologyToAllelesMetadataService serologyToAllelesMetadataService;
+        private IAlleleNamesMetadataService alleleNamesMetadataService;
         private IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private ILogger logger;
@@ -46,6 +47,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
             gGroupToPGroupMetadataService = Substitute.For<IGGroupToPGroupMetadataService>();
             smallGGroupToPGroupMetadataService = Substitute.For<ISmallGGroupToPGroupMetadataService>();
             serologyToAllelesMetadataService = Substitute.For<ISerologyToAllelesMetadataService>();
+            alleleNamesMetadataService = Substitute.For<IAlleleNamesMetadataService>();
             hlaMetadataGenerationOrchestrator = Substitute.For<IHlaMetadataGenerationOrchestrator>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
             logger = Substitute.For<ILogger>();
@@ -62,6 +64,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
                 gGroupToPGroupMetadataService,
                 smallGGroupToPGroupMetadataService,
                 serologyToAllelesMetadataService,
+                alleleNamesMetadataService,
                 hlaMetadataGenerationOrchestrator,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger);
