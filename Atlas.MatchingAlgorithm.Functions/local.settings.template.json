@@ -46,6 +46,8 @@
     "MessagingServiceBus:SearchRequestsTopic": "matching-requests",
     "MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
     "MessagingServiceBus:SearchResultsDebugSubscription": "debug",
+    "MessagingServiceBus:SendRetryCount": "5",
+    "MessagingServiceBus:SendRetryCooldownSeconds": "20",
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications",

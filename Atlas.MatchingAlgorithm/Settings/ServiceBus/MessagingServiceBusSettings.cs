@@ -9,6 +9,9 @@ namespace Atlas.MatchingAlgorithm.Settings.ServiceBus
         public string SearchRequestsTopic { get; set; }
         public string SearchRequestsSubscription { get; set; }
         public string SearchResultsTopic { get; set; }
+        public int SendRetryCount { get; set; }
+
+        public int SendRetryCooldownSeconds { get; set; }
 
         /// <summary>
         /// Required by debug endpoint that peeks result notifications.

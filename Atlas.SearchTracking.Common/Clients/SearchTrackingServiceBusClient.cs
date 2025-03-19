@@ -4,6 +4,7 @@ using Atlas.SearchTracking.Common.Enums;
 using Microsoft.Azure.ServiceBus;
 using Newtonsoft.Json;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
+using Polly;
 
 namespace Atlas.SearchTracking.Common.Clients
 {
@@ -16,11 +17,15 @@ namespace Atlas.SearchTracking.Common.Clients
     {
         private readonly string connectionString;
         private readonly string searchTrackingTopicName;
+        private readonly int sendRetryCount;
+        private readonly int sendRetryCooldownSeconds;
 
         public SearchTrackingServiceBusClient(SearchTrackingServiceBusSettings searchTrackingServiceBusSettings)
         {
             connectionString = searchTrackingServiceBusSettings.ConnectionString;
             searchTrackingTopicName = searchTrackingServiceBusSettings.SearchTrackingTopic;
+            sendRetryCount = searchTrackingServiceBusSettings.SendRetryCount;
+            sendRetryCooldownSeconds = searchTrackingServiceBusSettings.SendRetryCooldownSeconds;
         }
 
         public async Task PublishSearchTrackingEvent<TEvent>(TEvent searchTrackingEvent, SearchTrackingEventType eventType)
@@ -30,8 +35,12 @@ namespace Atlas.SearchTracking.Common.Clients
 
             message.UserProperties[SearchTrackingConstants.EventType] = eventType.ToString();
 
+            var retryPolicy = Policy
+                .Handle<ServiceBusException>()
+                .WaitAndRetryAsync(sendRetryCount, _ => TimeSpan.FromSeconds(sendRetryCooldownSeconds));
+
             var client = new TopicClient(connectionString, searchTrackingTopicName);
-            await client.SendAsync(message);
+            await retryPolicy.ExecuteAsync(async () => await client.SendAsync(message));
         }
     }
 }

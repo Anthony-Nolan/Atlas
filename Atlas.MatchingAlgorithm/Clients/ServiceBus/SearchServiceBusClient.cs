@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Polly;
 
 namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
 {
@@ -22,6 +23,8 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
         private readonly ITopicClientFactory topicClientFactory;
         private readonly string searchRequestsTopicName;
         private readonly string resultsNotificationTopicName;
+        private readonly int sendRetryCount;
+        private readonly int sendRetryCooldownSeconds;
 
         public SearchServiceBusClient([FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings)
         {
@@ -29,6 +32,8 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
 
             searchRequestsTopicName = messagingServiceBusSettings.SearchRequestsTopic;
             resultsNotificationTopicName = messagingServiceBusSettings.SearchResultsTopic;
+            sendRetryCount = messagingServiceBusSettings.SendRetryCount;
+            sendRetryCooldownSeconds = messagingServiceBusSettings.SendRetryCooldownSeconds;
         }
 
         public async Task PublishToSearchRequestsTopic(IdentifiedSearchRequest searchRequest)
@@ -42,8 +47,12 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
                 }
             };
 
+            var retryPolicy = Policy
+                .Handle<ServiceBusException>()
+                .WaitAndRetryAsync(sendRetryCount, _ => TimeSpan.FromSeconds(sendRetryCooldownSeconds));
+
             await using var client = topicClientFactory.BuildTopicClient(searchRequestsTopicName);
-            await client.SendAsync(message);
+            await retryPolicy.ExecuteAsync(async () => await client.SendAsync(message));
         }
 
         public async Task PublishToResultsNotificationTopic(MatchingResultsNotification matchingResultsNotification)

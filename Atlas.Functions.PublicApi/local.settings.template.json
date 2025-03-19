@@ -17,6 +17,8 @@
 
     "SearchTracking:SearchTrackingServiceBus:ConnectionString": "override-this",
     "SearchTracking:SearchTrackingServiceBus:SearchTrackingTopic": "search-tracking-events",
+    "SearchTracking:SearchTrackingServiceBus:SendRetryCount": "5",
+    "SearchTracking:SearchTrackingServiceBus:SendRetryCooldownSeconds": "20",
 
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
