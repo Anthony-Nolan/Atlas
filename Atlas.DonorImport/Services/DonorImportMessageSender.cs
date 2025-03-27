@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Atlas.DonorImport.ApplicationInsights;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
+using Polly;
 
 namespace Atlas.DonorImport.Services
 {
@@ -23,11 +24,15 @@ namespace Atlas.DonorImport.Services
     {
         private readonly ITopicClient topicClient;
         private readonly ILogger logger;
+        private readonly int sendRetryCount;
+        private readonly int sendRetryCooldownSeconds;
 
         public DonorImportMessageSender(ILogger logger, [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings)
         {
             this.logger = logger;
             topicClient = topicClientFactory.BuildTopicClient(messagingServiceBusSettings.DonorImportResultsTopic);
+            sendRetryCount = messagingServiceBusSettings.SendRetryCount;
+            sendRetryCooldownSeconds = messagingServiceBusSettings.SendRetryCooldownSeconds;
         }
 
 
@@ -97,7 +102,11 @@ namespace Atlas.DonorImport.Services
                     }
                 };
 
-                await topicClient.SendAsync(message);
+                var retryPolicy = Policy
+                    .Handle<ServiceBusException>()
+                    .WaitAndRetryAsync(sendRetryCount, _ => TimeSpan.FromSeconds(sendRetryCooldownSeconds));
+
+                await retryPolicy.ExecuteAsync(async () => await topicClient.SendAsync(message));
             }
             catch (Exception e)
             {

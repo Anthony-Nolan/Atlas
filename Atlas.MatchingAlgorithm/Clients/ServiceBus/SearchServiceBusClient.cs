@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
@@ -25,8 +26,9 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
         private readonly string resultsNotificationTopicName;
         private readonly int sendRetryCount;
         private readonly int sendRetryCooldownSeconds;
+        private readonly ILogger logger;
 
-        public SearchServiceBusClient([FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings)
+        public SearchServiceBusClient([FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings, ILogger logger)
         {
             this.topicClientFactory = topicClientFactory;
 
@@ -34,6 +36,7 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
             resultsNotificationTopicName = messagingServiceBusSettings.SearchResultsTopic;
             sendRetryCount = messagingServiceBusSettings.SendRetryCount;
             sendRetryCooldownSeconds = messagingServiceBusSettings.SendRetryCooldownSeconds;
+            this.logger = logger;
         }
 
         public async Task PublishToSearchRequestsTopic(IdentifiedSearchRequest searchRequest)
@@ -47,12 +50,19 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
                 }
             };
 
+            int attempt = 1;
             var retryPolicy = Policy
                 .Handle<ServiceBusException>()
                 .WaitAndRetryAsync(sendRetryCount, _ => TimeSpan.FromSeconds(sendRetryCooldownSeconds));
 
             await using var client = topicClientFactory.BuildTopicClient(searchRequestsTopicName);
-            await retryPolicy.ExecuteAsync(async () => await client.SendAsync(message));
+
+            await retryPolicy.ExecuteAsync(async () =>
+            {
+                logger.SendTrace("SearchRequest " + searchRequest.Id + "Attempt " + attempt, attempt == 1 ? LogLevel.Verbose : LogLevel.Warn);
+                attempt++;
+                await client.SendAsync(message);
+            });
         }
 
         public async Task PublishToResultsNotificationTopic(MatchingResultsNotification matchingResultsNotification)
@@ -74,8 +84,20 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
             // the fact that messages have the same message id will prove that it happens because client auto retry functionality
             message.MessageId = Guid.NewGuid().ToString();
 
+            int attempt = 1;
+            var retryPolicy = Policy
+                .Handle<ServiceBusException>()
+                .WaitAndRetryAsync(sendRetryCount, _ => TimeSpan.FromSeconds(sendRetryCooldownSeconds));
+
             await using var client = topicClientFactory.BuildTopicClient(resultsNotificationTopicName);
-            await client.SendAsync(message);
+
+            await retryPolicy.ExecuteAsync(async () =>
+            {
+                logger.SendTrace("ResultsNotification " + matchingResultsNotification.SearchRequestId + "Attempt " + attempt,
+                    attempt == 1 ? LogLevel.Verbose : LogLevel.Warn);
+                attempt++;
+                await client.SendAsync(message);
+            });
         }
     }
 }

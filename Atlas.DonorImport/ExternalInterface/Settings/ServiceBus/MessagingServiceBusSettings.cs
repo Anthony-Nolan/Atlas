@@ -25,6 +25,10 @@ namespace Atlas.DonorImport.ExternalInterface.Settings.ServiceBus
         
         public string DonorImportResultsTopic { get; set; }
 
+        public int SendRetryCount { get; set; }
+
+        public int SendRetryCooldownSeconds { get; set; }
+
         /// <summary>
         /// Required by debug endpoint that peeks donor import results messages.
         /// </summary>

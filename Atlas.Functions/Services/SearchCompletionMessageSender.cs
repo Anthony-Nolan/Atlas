@@ -14,6 +14,7 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Polly;
 
 namespace Atlas.Functions.Services
 {
@@ -30,6 +31,8 @@ namespace Atlas.Functions.Services
         private readonly string resultsNotificationTopicName;
         private readonly string repeatResultsNotificationTopicName;
         private readonly ITopicClientFactory topicClientFactory;
+        private readonly int sendRetryCount;
+        private readonly int sendRetryCooldownSeconds;
 
 
         public SearchCompletionMessageSender(
@@ -44,6 +47,8 @@ namespace Atlas.Functions.Services
 
             resultsNotificationTopicName = messagingServiceBusSettings.Value.SearchResultsTopic;
             repeatResultsNotificationTopicName = messagingServiceBusSettings.Value.RepeatSearchResultsTopic;
+            sendRetryCount = messagingServiceBusSettings.Value.SendRetryCount;
+            sendRetryCooldownSeconds = messagingServiceBusSettings.Value.SendRetryCooldownSeconds;
         }
 
         public async Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime, string resultsBatchFolder) where T : SearchResultSet
@@ -124,8 +129,12 @@ namespace Atlas.Functions.Services
                 ? repeatResultsNotificationTopicName
                 : resultsNotificationTopicName;
 
+            var retryPolicy = Policy
+                .Handle<ServiceBusException>()
+                .WaitAndRetryAsync(sendRetryCount, _ => TimeSpan.FromSeconds(sendRetryCooldownSeconds));
+
             await using var client = topicClientFactory.BuildTopicClient(notificationTopicName);
-            await client.SendAsync(message);
+            await retryPolicy.ExecuteAsync(async () => await client.SendAsync(message));
         }
     }
 }

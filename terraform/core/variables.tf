@@ -425,6 +425,16 @@ variable "SEARCH_TRACKING_DATABASE_USERNAME" {
   default = "search_tracking"
 }
 
+variable "SEND_RETRY_COOLDOWN_SECONDS" {
+	type      = number
+	default   = 20
+}
+
+variable "SEND_RETRY_COUNT" {
+	type      = number
+	default   = 5
+}
+
 variable "SHOULD_BATCH_RESULTS" {
   type        = bool
   default     = false

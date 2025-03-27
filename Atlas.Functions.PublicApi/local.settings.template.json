@@ -11,9 +11,13 @@
     "Matching:MessagingServiceBus:ConnectionString": "override-this",
     "Matching:MessagingServiceBus:SearchRequestsTopic": "matching-requests",
     "Matching:MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
+    "Matching:MessagingServiceBus:SendRetryCount": "5",
+    "Matching:MessagingServiceBus:SendRetryCooldownSeconds": "20",
 
     "RepeatSearch:MessagingServiceBus:ConnectionString": "override-this",
     "RepeatSearch:MessagingServiceBus:RepeatSearchRequestsTopic": "repeat-search-requests",
+    "RepeatSearch:MessagingServiceBus:SendRetryCount": "5",
+    "RepeatSearch:MessagingServiceBus:SendRetryCooldownSeconds": "20",
 
     "SearchTracking:SearchTrackingServiceBus:ConnectionString": "override-this",
     "SearchTracking:SearchTrackingServiceBus:SearchTrackingTopic": "search-tracking-events",

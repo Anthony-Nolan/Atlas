@@ -39,5 +39,7 @@ namespace Atlas.MatchingAlgorithm.Settings
         /// read by end-users in the support team.
         /// </summary>
         public string CompletionTopic { get; set; }
+        public int SendRetryCount { get; set; }
+        public int SendRetryCooldownSeconds { get; set; }
     }
 }

@@ -161,15 +161,21 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
     "MatchingAlgorithmFunction:BaseUrl"                = module.matching_algorithm.function_app.base_url
     "MatchingAlgorithmFunction:ApiKey"                 = module.matching_algorithm.function_app.api_key
 
-    "Matching:MessagingServiceBus:ConnectionString"    = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
-    "Matching:MessagingServiceBus:SearchRequestsTopic" = module.matching_algorithm.service_bus.matching_requests_topic.name
-    "Matching:MessagingServiceBus:SearchResultsTopic"  = module.matching_algorithm.service_bus.matching_results_topic.name
+    "Matching:MessagingServiceBus:ConnectionString"         = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "Matching:MessagingServiceBus:SearchRequestsTopic"      = module.matching_algorithm.service_bus.matching_requests_topic.name
+    "Matching:MessagingServiceBus:SearchResultsTopic"       = module.matching_algorithm.service_bus.matching_results_topic.name
+    "Matching:MessagingServiceBus:SendRetryCount"           = var.SEND_RETRY_COUNT
+    "Matching:MessagingServiceBus:SendRetryCooldownSeconds" = var.SEND_RETRY_COOLDOWN_SECONDS
 
-    "RepeatSearch:MessagingServiceBus:ConnectionString"          = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
-    "RepeatSearch:MessagingServiceBus:RepeatSearchRequestsTopic" = module.repeat_search.service_bus.repeat_search_requests_topic.name
+    "RepeatSearch:MessagingServiceBus:ConnectionString"           = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "RepeatSearch:MessagingServiceBus:RepeatSearchRequestsTopic"  = module.repeat_search.service_bus.repeat_search_requests_topic.name
+    "RepeatSearch:MessagingServiceBus:SendRetryCount"             = var.SEND_RETRY_COUNT
+    "RepeatSearch:MessagingServiceBus:SendRetryCooldownSeconds"   = var.SEND_RETRY_COOLDOWN_SECONDS
 
-    "SearchTracking:SearchTrackingServiceBus:ConnectionString"    = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
-    "SearchTracking:SearchTrackingServiceBus:SearchTrackingTopic" = module.search_tracking.service_bus.search_tracking_topic.name
+    "SearchTracking:SearchTrackingServiceBus:ConnectionString"         = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "SearchTracking:SearchTrackingServiceBus:SearchTrackingTopic"      = module.search_tracking.service_bus.search_tracking_topic.name
+    "SearchTracking:SearchTrackingServiceBus:SendRetryCount"           = var.SEND_RETRY_COUNT
+    "SearchTracking:SearchTrackingServiceBus:SendRetryCooldownSeconds" = var.SEND_RETRY_COOLDOWN_SECONDS
 
     "NotificationsServiceBus:AlertsTopic"        = module.support.general.alerts_servicebus_topic.name
     "NotificationsServiceBus:ConnectionString"   = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string

@@ -42,3 +42,13 @@ variable "SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
   type     = number
   nullable = true
 }
+
+variable "SEND_RETRY_COOLDOWN_SECONDS" {
+	type      = number
+	default   = 20
+}
+
+variable "SEND_RETRY_COUNT" {
+	type      = number
+	default   = 5
+}

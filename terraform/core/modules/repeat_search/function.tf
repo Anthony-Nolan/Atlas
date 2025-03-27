@@ -42,6 +42,8 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
     "MessagingServiceBus:RepeatSearchRequestsTopic"            = azurerm_servicebus_topic.repeat-search-requests.name
     "MessagingServiceBus:RepeatSearchMatchingResultsTopic"     = azurerm_servicebus_topic.repeat-search-matching-results-ready.name
     "MessagingServiceBus:RepeatSearchResultsDebugSubscription" = azurerm_servicebus_subscription.debug-repeat-search-matching-results.name
+    "MessagingServiceBus:SendRetryCount"                       = var.SEND_RETRY_COUNT
+    "MessagingServiceBus:SendRetryCooldownSeconds"             = var.SEND_RETRY_COOLDOWN_SECONDS
     "NotificationsServiceBus:AlertsTopic"                      = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:ConnectionString"                 = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:NotificationsTopic"               = var.servicebus_topics.notifications.name

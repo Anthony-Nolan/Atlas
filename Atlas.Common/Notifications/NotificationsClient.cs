@@ -8,6 +8,7 @@ using Atlas.Common.Utils;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Polly;
 
 namespace Atlas.Common.Notifications
 {
@@ -21,28 +22,42 @@ namespace Atlas.Common.Notifications
     {
         private readonly ITopicClient notificationTopicClient;
         private readonly ITopicClient alertTopicClient;
+        private readonly int sendRetryCount;
+        private readonly int sendRetryCooldownSeconds;
 
         public NotificationsClient(NotificationsServiceBusSettings settings, [FromKeyedServices(typeof(NotificationsServiceBusSettings))]ITopicClientFactory topicClientFactory)
         {
             notificationTopicClient = topicClientFactory.BuildTopicClient(settings.NotificationsTopic);
             alertTopicClient = topicClientFactory.BuildTopicClient(settings.AlertsTopic);
+            sendRetryCount = settings.SendRetryCount;
+            sendRetryCooldownSeconds = settings.SendRetryCooldownSeconds;
         }
 
         public async Task SendAlert(Alert alert)
         {
             var message = BuildMessage(alert);
+
+            var retryPolicy = Policy
+                .Handle<ServiceBusException>()
+                .WaitAndRetryAsync(sendRetryCount, _ => TimeSpan.FromSeconds(sendRetryCooldownSeconds));
+
             using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
             {
-                await alertTopicClient.SendAsync(message);
+                await retryPolicy.ExecuteAsync(async () => await alertTopicClient.SendAsync(message));
             }
         }
 
         public async Task SendNotification(Notification notification)
         {
             var message = BuildMessage(notification);
+
+            var retryPolicy = Policy
+                .Handle<ServiceBusException>()
+                .WaitAndRetryAsync(sendRetryCount, _ => TimeSpan.FromSeconds(sendRetryCooldownSeconds));
+
             using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
             {
-                await notificationTopicClient.SendAsync(message);
+                await retryPolicy.ExecuteAsync(async () => await notificationTopicClient.SendAsync(message));
             }
         }
 
