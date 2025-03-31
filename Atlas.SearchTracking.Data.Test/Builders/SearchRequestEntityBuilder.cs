@@ -36,16 +36,16 @@ namespace Atlas.SearchTracking.Data.Test.Builders
         public static Builder<SearchRequest> WithMatchingPredictionCompleted => Default
             .With(m => m.MatchPrediction_IsSuccessful, true)
             .With(m => m.MatchPrediction_DonorsPerBatch, 10)
+            .With(m => m.MatchPrediction_TotalNumberOfBatches, 1);
+
+        public static Builder<SearchRequest> WithMatchingPredictionNotCompleted => Default
+            .With(m => m.MatchPrediction_IsSuccessful, false)
             .With(m => m.MatchPrediction_FailureInfo_Message, "FailureInfoMessage")
             .With(m => m.MatchPrediction_FailureInfo_ExceptionStacktrace, "StackTrace")
-            .With(m => m.MatchPrediction_FailureInfo_Type, MatchPredictionFailureType.UnexpectedError)
-            .With(m => m.MatchPrediction_TotalNumberOfBatches, 1);
+            .With(m => m.MatchPrediction_FailureInfo_Type, MatchPredictionFailureType.UnexpectedError);
 
         public static Builder<SearchRequest> WithMatchingAlgorithmCompleted => Default
             .With(m => m.MatchingAlgorithm_IsSuccessful, true)
-            .With(m => m.MatchingAlgorithm_FailureInfo_Message, "FailureInfoMessage")
-            .With(m => m.MatchingAlgorithm_FailureInfo_ExceptionStacktrace, "StackTrace")
-            .With(m => m.MatchingAlgorithm_FailureInfo_Type, MatchingAlgorithmFailureType.ValidationError)
             .With(m => m.MatchingAlgorithm_TotalAttemptsNumber, 3)
             .With(m => m.MatchingAlgorithm_NumberOfMatching, 1000)
             .With(m => m.MatchingAlgorithm_HlaNomenclatureVersion, "3.6.0")
@@ -55,6 +55,14 @@ namespace Atlas.SearchTracking.Data.Test.Builders
             .With(m => m.MatchingAlgorithm_RepeatSearch_UpdatedResultCount, 5)
             .With(m => m.MatchingAlgorithm_ResultsSent, true)
             .With(m => m.MatchingAlgorithm_ResultsSentTimeUtc, new DateTime(2023, 1, 1));
+
+        public static Builder<SearchRequest> WithMatchingAlgorithmNotCompleted => Default
+            .With(m => m.MatchingAlgorithm_IsSuccessful, false)
+            .With(m => m.MatchingAlgorithm_ResultsSent, false)
+            .With(m => m.MatchingAlgorithm_TotalAttemptsNumber, 0)
+            .With(m => m.MatchingAlgorithm_FailureInfo_Message, "FailureInfoMessage")
+            .With(m => m.MatchingAlgorithm_FailureInfo_ExceptionStacktrace, "StackTrace")
+            .With(m => m.MatchingAlgorithm_FailureInfo_Type, MatchingAlgorithmFailureType.ValidationError);
 
         public static Builder<SearchRequest> WithSearchRequestCompleted => Default
             .With(m => m.ResultsSent, true)

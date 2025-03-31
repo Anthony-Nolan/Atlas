@@ -6,7 +6,7 @@ namespace Atlas.SearchTracking.Common.Models
     {
         public Guid SearchRequestId { get; set; }
         public DateTime CompletionTimeUtc { get; set; }
-        public MatchPredictionCompletionDetails CompletionDetails { get; set; }
+        public MatchPredictionCompletionDetails CompletionDetails { get; set; } = null!;
     }
 
     public class MatchPredictionCompletionDetails

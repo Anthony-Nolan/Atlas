@@ -143,28 +143,41 @@ namespace Atlas.SearchTracking.Test.Services
         {
             MatchingAlgorithmCompletedEvent actualMatchingAlgorithmCompletedEvent = null;
 
+            var body = JsonConvert.SerializeObject(new
+            {
+                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
+                AttemptNumber = 0,
+                CompletionDetails = new
+                {
+                    IsSuccessful = true,
+                    NumberOfMatching = 100,
+                    NumberOfResults = 150
+                },
+                HlaNomenclatureVersion = "3.44.0",
+                ResultsSent = true,
+                ResultsSentTimeUtc = new DateTime(2024, 10, 24, 16, 0, 0)
+            });
+
+            var eventType = SearchTrackingEventType.MatchingAlgorithmCompleted;
+
+            await searchRequestMatchingAlgorithmAttemptsRepository.TrackCompletedEvent(
+                Arg.Do<MatchingAlgorithmCompletedEvent>(x => actualMatchingAlgorithmCompletedEvent = x));
+            await searchTrackingEventProcessor.HandleEvent(body, eventType);
+
             var expectedMatchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent()
             {
                 SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 AttemptNumber = 0,
                 CompletionDetails = new MatchingAlgorithmCompletionDetails
                 {
-                    FailureInfo = new MatchingAlgorithmFailureInfo
-                    {
-                        Message = ""
-                    },
                     IsSuccessful = true,
                     NumberOfMatching = 100,
                     NumberOfResults = 150
-                }
+                },
+                HlaNomenclatureVersion = "3.44.0",
+                ResultsSent = true,
+                ResultsSentTimeUtc = new DateTime(2024, 10, 24, 16, 0, 0)
             };
-
-            var body = JsonConvert.SerializeObject(expectedMatchingAlgorithmCompletedEvent);
-            var eventType = SearchTrackingEventType.MatchingAlgorithmCompleted;
-
-            await searchRequestMatchingAlgorithmAttemptsRepository.TrackCompletedEvent(
-                Arg.Do<MatchingAlgorithmCompletedEvent>(x => actualMatchingAlgorithmCompletedEvent = x));
-            await searchTrackingEventProcessor.HandleEvent(body, eventType);
 
             actualMatchingAlgorithmCompletedEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmCompletedEvent);
             await searchRequestMatchingAlgorithmAttemptsRepository.Received(1).TrackCompletedEvent(Arg.Any<MatchingAlgorithmCompletedEvent>());

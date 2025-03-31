@@ -96,7 +96,7 @@ namespace Atlas.RepeatSearch.Services.Search
             var resultsSentTime = new DateTime();
             var requestCompletedSuccessfully = false;
             var numberOfResults = 0;
-            var matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo();
+            MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = null;
 
             repeatSearchLoggingContext.SearchRequestId = searchRequestId;
             repeatSearchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
@@ -178,16 +178,24 @@ namespace Atlas.RepeatSearch.Services.Search
             catch (FluentValidation.ValidationException validationException)
             {
                 await HandleValidationExceptionWithoutRethrow(validationException);
-                matchingAlgorithmFailureInfo.Type = MatchingAlgorithmFailureType.ValidationError;
-                matchingAlgorithmFailureInfo.Message = validationException.Message;
-                matchingAlgorithmFailureInfo.ExceptionStacktrace = validationException.StackTrace;
+
+                matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
+                {
+                    Type = MatchingAlgorithmFailureType.ValidationError,
+                    Message = validationException.Message,
+                    ExceptionStacktrace = validationException.StackTrace
+                };
             }
             catch (HlaMetadataDictionaryException hmdException)
             {
                 await HandleValidationExceptionWithoutRethrow(hmdException);
-                matchingAlgorithmFailureInfo.Type = MatchingAlgorithmFailureType.HlaMetadataDictionaryError;
-                matchingAlgorithmFailureInfo.Message = hmdException.Message;
-                matchingAlgorithmFailureInfo.ExceptionStacktrace = hmdException.StackTrace;
+
+                matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
+                {
+                    Type = MatchingAlgorithmFailureType.HlaMetadataDictionaryError,
+                    Message = hmdException.Message,
+                    ExceptionStacktrace = hmdException.StackTrace
+                };
             }
 
             #endregion
@@ -201,9 +209,12 @@ namespace Atlas.RepeatSearch.Services.Search
                 await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(identifiedRepeatSearchRequest, attemptNumber,
                     searchRequestMaxRetryCount - attemptNumber);
 
-                matchingAlgorithmFailureInfo.Type = MatchingAlgorithmFailureType.UnexpectedError;
-                matchingAlgorithmFailureInfo.Message = e.Message;
-                matchingAlgorithmFailureInfo.ExceptionStacktrace = e.StackTrace;
+                matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
+                {
+                    Type = MatchingAlgorithmFailureType.UnexpectedError,
+                    Message = e.Message,
+                    ExceptionStacktrace = e.StackTrace
+                };
 
                 throw;
             }

@@ -83,7 +83,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var searchStopWatch = new Stopwatch();
             DateTime? resultsSentTime = null;
             int? numberOfResults = null;
-            MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = null;
+            MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo();
 
             try
             {

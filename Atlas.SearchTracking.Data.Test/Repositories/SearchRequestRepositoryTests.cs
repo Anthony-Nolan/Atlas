@@ -1,4 +1,5 @@
-﻿using Atlas.SearchTracking.Common.Models;
+﻿using Atlas.SearchTracking.Common.Enums;
+using Atlas.SearchTracking.Common.Models;
 using Atlas.SearchTracking.Data.Repositories;
 using Atlas.SearchTracking.Data.Test.Builders;
 using Atlas.SearchTracking.Data.Test.TestHelpers;
@@ -11,6 +12,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
     public class SearchRequestRepositoryTests : SearchTrackingContextTestBase
     {
         private ISearchRequestRepository searchRequestRepository;
+        private readonly Guid searchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000");
 
         [SetUp]
         public async Task SetUp()
@@ -39,7 +41,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
         [Test]
         public async Task TrackSearchRequestedEvent_WithValidData_IsAddedToDb()
         {
-            var expectedSearchRequestId = new Guid("eeeeeeee-bbbb-cccc-dddd-000000000000");
+            var newSearchRequestId = new Guid("eeeeeeee-bbbb-cccc-dddd-000000000000");
             var expectedSearchRequestEntity = SearchRequestEntityBuilder.NewRecord.Build();
 
             var searchRequestedEvent = new SearchRequestedEvent
@@ -59,9 +61,9 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             await searchRequestRepository.TrackSearchRequestedEvent(searchRequestedEvent);
 
-            var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByGuid(expectedSearchRequestId);
+            var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByGuid(newSearchRequestId);
 
-            expectedSearchRequestEntity.Should().BeEquivalentTo(actualSearchRequestEntity);
+            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
         }
 
         [Test]
@@ -71,18 +73,39 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
             {
-                SearchRequestId = expectedSearchRequestEntity.SearchRequestId,
+                SearchRequestId = searchRequestId,
                 CompletionDetails = new MatchPredictionCompletionDetails
                 {
-                    IsSuccessful = expectedSearchRequestEntity.MatchPrediction_IsSuccessful.Value,
+                    IsSuccessful = true,
+                    DonorsPerBatch = 10,
+                    TotalNumberOfBatches = 1
+                }
+            };
+
+            await searchRequestRepository.TrackMatchPredictionCompletedEvent(matchPredictionCompletedEvent);
+
+            var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByGuid(searchRequestId);
+
+            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
+        }
+
+        [Test]
+        public async Task TrackMatchPredictionCompletedEvent_WhenNotCompleted_UpdatesSearchRequestInDb()
+        {
+            var expectedSearchRequestEntity = SearchRequestEntityBuilder.WithMatchingPredictionNotCompleted.Build();
+
+            var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
+            {
+                SearchRequestId = searchRequestId,
+                CompletionDetails = new MatchPredictionCompletionDetails
+                {
+                    IsSuccessful = false,
                     FailureInfo = new MatchPredictionFailureInfo
                     {
-                        Message = expectedSearchRequestEntity.MatchPrediction_FailureInfo_Message,
-                        ExceptionStacktrace = expectedSearchRequestEntity.MatchPrediction_FailureInfo_ExceptionStacktrace,
-                        Type = expectedSearchRequestEntity.MatchPrediction_FailureInfo_Type.Value
-                    },
-                    DonorsPerBatch = expectedSearchRequestEntity.MatchPrediction_DonorsPerBatch.Value,
-                    TotalNumberOfBatches = expectedSearchRequestEntity.MatchPrediction_TotalNumberOfBatches.Value
+                        Message = "FailureInfoMessage",
+                        ExceptionStacktrace = "StackTrace",
+                        Type = MatchPredictionFailureType.UnexpectedError
+                    }
                 }
             };
 
@@ -90,8 +113,9 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByGuid(expectedSearchRequestEntity.SearchRequestId);
 
-            expectedSearchRequestEntity.Should().BeEquivalentTo(actualSearchRequestEntity);
+            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
         }
+
 
         [Test]
         public async Task TrackMatchingAlgorithmCompletedEvent_WhenCompleted_UpdatesSearchRequestInDb()
@@ -100,27 +124,48 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var matchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent
             {
-                SearchRequestId = expectedSearchRequestEntity.SearchRequestId,
-                HlaNomenclatureVersion = expectedSearchRequestEntity.MatchingAlgorithm_HlaNomenclatureVersion,
-                ResultsSent = expectedSearchRequestEntity.MatchingAlgorithm_ResultsSent.Value,
-                ResultsSentTimeUtc = expectedSearchRequestEntity.MatchingAlgorithm_ResultsSentTimeUtc,
+                SearchRequestId = searchRequestId,
+                HlaNomenclatureVersion = "3.6.0",
+                ResultsSent = true,
+                ResultsSentTimeUtc = new DateTime(2023, 1, 1),
                 CompletionDetails = new MatchingAlgorithmCompletionDetails
                 {
-                    IsSuccessful = expectedSearchRequestEntity.MatchingAlgorithm_IsSuccessful.Value,
-                    FailureInfo = new MatchingAlgorithmFailureInfo
-                    {
-                        Message = expectedSearchRequestEntity.MatchingAlgorithm_FailureInfo_Message,
-                        ExceptionStacktrace = expectedSearchRequestEntity.MatchingAlgorithm_FailureInfo_ExceptionStacktrace,
-                        Type = expectedSearchRequestEntity.MatchingAlgorithm_FailureInfo_Type
-                    },
-                    TotalAttemptsNumber = expectedSearchRequestEntity.MatchingAlgorithm_TotalAttemptsNumber.Value,
-                    NumberOfMatching = expectedSearchRequestEntity.MatchingAlgorithm_NumberOfMatching.Value,
-                    NumberOfResults = expectedSearchRequestEntity.MatchingAlgorithm_NumberOfResults.Value,
+                    IsSuccessful = true,
+                    TotalAttemptsNumber = 3,
+                    NumberOfMatching = 1000,
+                    NumberOfResults = 2000,
                     RepeatSearchResultsDetails = new MatchingAlgorithmRepeatSearchResultsDetails
                     {
-                        AddedResultCount = expectedSearchRequestEntity.MatchingAlgorithm_RepeatSearch_AddedResultCount.Value,
-                        RemovedResultCount = expectedSearchRequestEntity.MatchingAlgorithm_RepeatSearch_RemovedResultCount.Value,
-                        UpdatedResultCount = expectedSearchRequestEntity.MatchingAlgorithm_RepeatSearch_UpdatedResultCount.Value
+                        AddedResultCount = 50,
+                        RemovedResultCount = 10,
+                        UpdatedResultCount = 5
+                    }
+                }
+            };
+
+            await searchRequestRepository.TrackMatchingAlgorithmCompletedEvent(matchingAlgorithmCompletedEvent);
+
+            var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByGuid(searchRequestId);
+
+            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
+        }
+
+        [Test]
+        public async Task TrackMatchingAlgorithmCompletedEvent_WhenNotCompleted_UpdatesSearchRequestInDb()
+        {
+            var expectedSearchRequestEntity = SearchRequestEntityBuilder.WithMatchingAlgorithmNotCompleted.Build();
+
+            var matchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent
+            {
+                SearchRequestId = searchRequestId,
+                CompletionDetails = new MatchingAlgorithmCompletionDetails
+                {
+                    TotalAttemptsNumber = 0,
+                    FailureInfo = new MatchingAlgorithmFailureInfo
+                    {
+                        Message = "FailureInfoMessage",
+                        ExceptionStacktrace = "StackTrace",
+                        Type = MatchingAlgorithmFailureType.ValidationError
                     }
                 }
             };
@@ -129,7 +174,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByGuid(expectedSearchRequestEntity.SearchRequestId);
 
-            expectedSearchRequestEntity.Should().BeEquivalentTo(actualSearchRequestEntity);
+            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
         }
 
         [Test]
@@ -139,16 +184,16 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var searchRequestCompletedEvent = new SearchRequestCompletedEvent
             {
-                SearchRequestId = expectedSearchRequestEntity.SearchRequestId,
-                ResultsSent = expectedSearchRequestEntity.ResultsSent.Value,
-                ResultsSentTimeUtc = expectedSearchRequestEntity.ResultsSentTimeUtc.Value
+                SearchRequestId = searchRequestId,
+                ResultsSent = true,
+                ResultsSentTimeUtc = new DateTime(2023, 1, 1)
             };
 
             await searchRequestRepository.TrackSearchRequestCompletedEvent(searchRequestCompletedEvent);
 
             var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByGuid(expectedSearchRequestEntity.SearchRequestId);
 
-            expectedSearchRequestEntity.Should().BeEquivalentTo(actualSearchRequestEntity);
+            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
         }
     }
 }
