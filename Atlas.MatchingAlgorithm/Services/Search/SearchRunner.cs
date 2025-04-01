@@ -81,10 +81,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             searchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
             var requestCompletedSuccessfully = false;
             var searchStopWatch = new Stopwatch();
+            bool isResultsSent = false;
             DateTime? resultsSentTime = null;
             int? numberOfResults = null;
             MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = null;
-            bool isResultsSent = false;
             try
             {
                 await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.SearchRequest);
