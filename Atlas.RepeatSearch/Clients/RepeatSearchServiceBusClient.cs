@@ -1,15 +1,15 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus;
+using Atlas.Common.Utils;
 using Atlas.RepeatSearch.Models;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
-using Polly;
 
 namespace Atlas.RepeatSearch.Clients
 {
@@ -43,19 +43,14 @@ namespace Atlas.RepeatSearch.Clients
             var json = JsonConvert.SerializeObject(searchRequest);
             var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(json));
 
-            int attempt = 1;
-            var retryPolicy = Policy
-                .Handle<ServiceBusException>()
-                .WaitAndRetryAsync(sendRetryCount, _ => TimeSpan.FromSeconds(sendRetryCooldownSeconds));
-
             await using var client = topicClientFactory.BuildTopicClient(repeatSearchRequestsTopicName);
 
-            await retryPolicy.ExecuteAsync(async () =>
+            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
             {
-                logger.SendTrace("SearchRequest " + searchRequest.RepeatSearchId + "Attempt " + attempt, attempt == 1 ? LogLevel.Verbose : LogLevel.Warn);
-                attempt++;
-                await client.SendAsync(message);
-            });
+                await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                    (exception, retryNumber) => logger.SendTrace("SearchRequest " + searchRequest.RepeatSearchId + " Exception " + exception.Message
+                                                                 + " Attempt " + retryNumber, retryNumber == 1 ? LogLevel.Verbose : LogLevel.Warn));
+            }
         }
 
         public async Task PublishToResultsNotificationTopic(MatchingResultsNotification matchingResultsNotification)
@@ -74,19 +69,14 @@ namespace Atlas.RepeatSearch.Clients
                 }
             };
 
-            int attempt = 1;
-            var retryPolicy = Policy
-                .Handle<ServiceBusException>()
-                .WaitAndRetryAsync(sendRetryCount, _ => TimeSpan.FromSeconds(sendRetryCooldownSeconds));
-
             await using var client = topicClientFactory.BuildTopicClient(resultsNotificationTopicName);
-            await retryPolicy.ExecuteAsync(async () =>
+
+            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
             {
-                logger.SendTrace("ResultsNotification " + matchingResultsNotification.SearchRequestId + "Attempt " + attempt,
-                    attempt == 1 ? LogLevel.Verbose : LogLevel.Warn);
-                attempt++;
-                await client.SendAsync(message);
-            });
+                await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                    (exception, retryNumber) => logger.SendTrace("ResultsNotification " + matchingResultsNotification.SearchRequestId + " Exception " + exception.Message
+                                                                 + " Attempt " + retryNumber, retryNumber == 1 ? LogLevel.Verbose : LogLevel.Warn));
+            }
         }
     }
 }

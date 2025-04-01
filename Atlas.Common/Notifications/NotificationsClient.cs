@@ -3,12 +3,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
 using Atlas.Client.Models.SupportMessages;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus;
 using Atlas.Common.Utils;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
-using Polly;
 
 namespace Atlas.Common.Notifications
 {
@@ -24,26 +24,26 @@ namespace Atlas.Common.Notifications
         private readonly ITopicClient alertTopicClient;
         private readonly int sendRetryCount;
         private readonly int sendRetryCooldownSeconds;
+        private readonly ILogger logger;
 
-        public NotificationsClient(NotificationsServiceBusSettings settings, [FromKeyedServices(typeof(NotificationsServiceBusSettings))]ITopicClientFactory topicClientFactory)
+        public NotificationsClient(NotificationsServiceBusSettings settings, [FromKeyedServices(typeof(NotificationsServiceBusSettings))]ITopicClientFactory topicClientFactory, ILogger logger)
         {
             notificationTopicClient = topicClientFactory.BuildTopicClient(settings.NotificationsTopic);
             alertTopicClient = topicClientFactory.BuildTopicClient(settings.AlertsTopic);
             sendRetryCount = settings.SendRetryCount;
             sendRetryCooldownSeconds = settings.SendRetryCooldownSeconds;
+            this.logger = logger;
         }
 
         public async Task SendAlert(Alert alert)
         {
             var message = BuildMessage(alert);
 
-            var retryPolicy = Policy
-                .Handle<ServiceBusException>()
-                .WaitAndRetryAsync(sendRetryCount, _ => TimeSpan.FromSeconds(sendRetryCooldownSeconds));
-
             using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
             {
-                await retryPolicy.ExecuteAsync(async () => await alertTopicClient.SendAsync(message));
+                await alertTopicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                    (exception, retryNumber) => logger.SendTrace("Alert Exception " + exception.Message
+                                                                + " Attempt " + retryNumber, retryNumber == 1 ? LogLevel.Verbose : LogLevel.Warn));
             }
         }
 
@@ -51,13 +51,11 @@ namespace Atlas.Common.Notifications
         {
             var message = BuildMessage(notification);
 
-            var retryPolicy = Policy
-                .Handle<ServiceBusException>()
-                .WaitAndRetryAsync(sendRetryCount, _ => TimeSpan.FromSeconds(sendRetryCooldownSeconds));
-
             using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
             {
-                await retryPolicy.ExecuteAsync(async () => await notificationTopicClient.SendAsync(message));
+                await notificationTopicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                    (exception, retryNumber) => logger.SendTrace("Notification Exception " + exception.Message
+                                                                                           + " Attempt " + retryNumber, retryNumber == 1 ? LogLevel.Verbose : LogLevel.Warn));
             }
         }
 

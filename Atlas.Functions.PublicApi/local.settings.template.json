@@ -26,6 +26,8 @@
 
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
-    "NotificationsServiceBus:NotificationsTopic": "notifications"
+    "NotificationsServiceBus:NotificationsTopic": "notifications",
+    "NotificationsServiceBus:SendRetryCount": "5",
+    "NotificationsServiceBus:SendRetryCooldownSeconds": "20"
   }
 }
