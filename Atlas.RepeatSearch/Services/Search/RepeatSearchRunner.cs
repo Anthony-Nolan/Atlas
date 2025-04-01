@@ -183,7 +183,7 @@ namespace Atlas.RepeatSearch.Services.Search
                 {
                     Type = MatchingAlgorithmFailureType.ValidationError,
                     Message = validationException.Message,
-                    ExceptionStacktrace = validationException.StackTrace
+                    ExceptionStacktrace = validationException.ToString()
                 };
             }
             catch (HlaMetadataDictionaryException hmdException)
@@ -194,7 +194,7 @@ namespace Atlas.RepeatSearch.Services.Search
                 {
                     Type = MatchingAlgorithmFailureType.HlaMetadataDictionaryError,
                     Message = hmdException.Message,
-                    ExceptionStacktrace = hmdException.StackTrace
+                    ExceptionStacktrace = hmdException.ToString()
                 };
             }
 
@@ -213,7 +213,7 @@ namespace Atlas.RepeatSearch.Services.Search
                 {
                     Type = MatchingAlgorithmFailureType.UnexpectedError,
                     Message = e.Message,
-                    ExceptionStacktrace = e.StackTrace
+                    ExceptionStacktrace = e.ToString()
                 };
 
                 throw;

@@ -52,6 +52,12 @@ namespace Atlas.SearchTracking.Data.Repositories
             var matchingAlgorithmAttempt = await GetRequiredMatchingAlgorithmAttemptTiming(id, matchingAlgorithmCompletedEvent.AttemptNumber);
 
             matchingAlgorithmAttempt.CompletionTimeUtc = matchingAlgorithmCompletedEvent.CompletionTimeUtc;
+            matchingAlgorithmAttempt.IsSuccessful = matchingAlgorithmCompletedEvent.CompletionDetails.IsSuccessful;
+            matchingAlgorithmAttempt.FailureInfo_Type = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo?.Type;
+            matchingAlgorithmAttempt.FailureInfo_Message = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo?.Message;
+            matchingAlgorithmAttempt.FailureInfo_ExceptionStacktrace =
+                matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo?.ExceptionStacktrace;
+
             await context.SaveChangesAsync();
         }
 
