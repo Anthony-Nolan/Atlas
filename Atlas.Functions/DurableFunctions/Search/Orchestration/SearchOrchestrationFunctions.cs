@@ -196,7 +196,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
                 var matchPredictionStartedEvent = new MatchPredictionStartedEvent
                 {
-                    SearchRequestId = new Guid(requestInfo.SearchRequestId),
+                    SearchRequestId = new Guid(requestInfo.RepeatSearchRequestId),
                     InitiationTimeUtc = orchestrationStartTime
                 };
 
@@ -236,7 +236,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 matchPredictionFailureInfo = new MatchPredictionFailureInfo
                 {
                     Type = MatchPredictionFailureType.OrchestrationError,
-                    ExceptionStacktrace = e.StackTrace,
+                    ExceptionStacktrace = e.ToString(),
                     Message = e.Message
                 };
 
@@ -253,7 +253,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 matchPredictionFailureInfo = new MatchPredictionFailureInfo
                 {
                     Type = MatchPredictionFailureType.UnexpectedError,
-                    ExceptionStacktrace = e.StackTrace,
+                    ExceptionStacktrace = e.ToString(),
                     Message = e.Message
                 };
 
@@ -263,7 +263,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             {
                 var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
                 {
-                    SearchRequestId = new Guid(notification.SearchRequestId),
+                    SearchRequestId = new Guid(notification.RepeatSearchRequestId),
                     CompletionTimeUtc = context.CurrentUtcDateTime,
                     CompletionDetails = new MatchPredictionCompletionDetails
                     {
