@@ -43,7 +43,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         Task<LocusInfo<INullHandledHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
         Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
-        Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
         Task<IEnumerable<SerologyToAlleleMappingSummary>> GetSerologyToAlleleMappings(Locus locus, string serologyName);
         Task<IEnumerable<string>> GetAllPGroups();
@@ -82,7 +81,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IGGroupToPGroupMetadataService gGroupToPGroupMetadataService;
         private readonly ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService;
         private readonly ISerologyToAllelesMetadataService serologyToAllelesMetadataService;
-        private readonly IAlleleNamesMetadataService alleleNamesMetadataService;
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
@@ -99,7 +97,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IGGroupToPGroupMetadataService gGroupToPGroupMetadataService,
             ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService,
             ISerologyToAllelesMetadataService serologyToAllelesMetadataService,
-            IAlleleNamesMetadataService alleleNamesMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger)
@@ -115,7 +112,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.gGroupToPGroupMetadataService = gGroupToPGroupMetadataService;
             this.smallGGroupToPGroupMetadataService = smallGGroupToPGroupMetadataService;
             this.serologyToAllelesMetadataService = serologyToAllelesMetadataService;
-            this.alleleNamesMetadataService = alleleNamesMetadataService;
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
@@ -200,11 +196,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         public async Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName)
         {
             return await hlaScoringMetadataService.GetHlaMetadata(locus, hlaName, HlaNomenclatureVersion);
-        }
-
-        public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)
-        {
-            return await alleleNamesMetadataService.GetCurrentAlleleNames(locus, alleleLookupName, HlaNomenclatureVersion);
         }
 
         public async Task<string> GetDpb1TceGroup(string dpb1HlaName)

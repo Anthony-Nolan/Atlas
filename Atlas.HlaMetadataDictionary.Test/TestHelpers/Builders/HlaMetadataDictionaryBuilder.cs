@@ -22,7 +22,6 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
         private IGGroupToPGroupMetadataService gGroupToPGroup;
         private ISmallGGroupToPGroupMetadataService smallGGroupToPGroup;
         private ISerologyToAllelesMetadataService serologyToAlleles;
-        private IAlleleNamesMetadataService alleleNames;
         private IHlaMetadataGenerationOrchestrator metadata;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private ILogger logger;
@@ -45,7 +44,6 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
             gGroupToPGroup = Substitute.For<IGGroupToPGroupMetadataService>();
             smallGGroupToPGroup = Substitute.For<ISmallGGroupToPGroupMetadataService>();
             serologyToAlleles = Substitute.For<ISerologyToAllelesMetadataService>();
-            alleleNames = Substitute.For<IAlleleNamesMetadataService>();
             metadata = Substitute.For<IHlaMetadataGenerationOrchestrator>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
             logger = Substitute.For<ILogger>();
@@ -91,9 +89,6 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                 case ISerologyToAllelesMetadataService typedDependency:
                     serologyToAlleles = typedDependency;
                     break;
-                case IAlleleNamesMetadataService typedDependency:
-                    alleleNames = typedDependency;
-                    break;
                 case IHlaMetadataGenerationOrchestrator typedDependency:
                     metadata = typedDependency;
                     break;
@@ -126,7 +121,6 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                 gGroupToPGroup,
                 smallGGroupToPGroup,
                 serologyToAlleles,
-                alleleNames,
                 metadata,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger

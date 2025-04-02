@@ -2,7 +2,6 @@
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
@@ -51,7 +50,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        public async Task ExpandCompressedPhenotype_ContainsAlleleFromLaterHlaVersion_AlleleIsNotFoundInMatchingHlaVersion_ThrowsException()
+        public async Task ExpandCompressedPhenotype_ContainsAlleleFromLaterHlaVersion_AlleleIsNotFoundInMatchingHlaVersion_ReturnsEmptySet()
         {
             var setId = await ImportHaplotypeFrequencies(new[] { HaplotypeBuilder1.Build(), HaplotypeBuilder2.Build() });
 
@@ -71,8 +70,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 HfSetId = setId
             };
 
-            var exception = Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () => await Expander.ExpandCompressedPhenotype(input));
-            exception.Message.Should().Contain(alleleFromLaterHlaVersion);
+            // Act
+            var genotypes = await Expander.ExpandCompressedPhenotype(input);
+
+            // Expect the HLA lookup to fail, but HMD exceptions should be suppressed and instead no genotypes should be returned
+            genotypes.Should().BeEmpty();
         }
     }
 }

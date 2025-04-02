@@ -48,7 +48,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IGGroupToPGroupMetadataService gGroupToPGroupMetadataService;
         private readonly ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService;
         private readonly ISerologyToAllelesMetadataService serologyToAllelesMetadataService;
-        private readonly IAlleleNamesMetadataService alleleNamesMetadataService;
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
@@ -77,7 +76,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IGGroupToPGroupMetadataService gGroupToPGroupMetadataService,
             ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService,
             ISerologyToAllelesMetadataService serologyToAllelesMetadataService,
-            IAlleleNamesMetadataService alleleNamesMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger,
@@ -105,7 +103,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.gGroupToPGroupMetadataService = gGroupToPGroupMetadataService;
             this.smallGGroupToPGroupMetadataService = smallGGroupToPGroupMetadataService;
             this.serologyToAllelesMetadataService = serologyToAllelesMetadataService;
-            this.alleleNamesMetadataService = alleleNamesMetadataService;
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
@@ -174,7 +171,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 gGroupToPGroupMetadataService,
                 smallGGroupToPGroupMetadataService,
                 serologyToAllelesMetadataService,
-                alleleNamesMetadataService,
                 hlaMetadataGenerationOrchestrator,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger);

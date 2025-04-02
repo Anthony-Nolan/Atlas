@@ -81,8 +81,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             await ImportDefaultHfSet();
 
-            // name that is valid according allele naming conventions but has been deleted/renamed so shouldn't be found in any nomenclature release
-            const string hlaName = "02:01:82";
+            // name that is valid according allele naming conventions but is completely made up so shouldn't be found in any nomenclature release
+            const string hlaName = "9999:9999";
             var phenotype = phenotypeBuilder.WithDataAt(LocusUnderTest, PositionUnderTest, hlaName).Build();
 
             var matchProbabilityInput = DefaultInputBuilder
