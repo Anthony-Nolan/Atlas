@@ -114,7 +114,11 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
             {
                 SearchRequestId = expectedSearchRequestGuid,
                 AttemptNumber = expectedSearchRequestMatchingAlgorithmAttemptsEntity.AttemptNumber,
-                CompletionTimeUtc = expectedSearchRequestMatchingAlgorithmAttemptsEntity.CompletionTimeUtc.Value
+                CompletionTimeUtc = expectedSearchRequestMatchingAlgorithmAttemptsEntity.CompletionTimeUtc.Value,
+                CompletionDetails = new MatchingAlgorithmCompletionDetails()
+                {
+                    IsSuccessful = true
+                }
             };
 
             await searchRequestMatchingAlgorithmAttemptsRepository.TrackCompletedEvent(matchingAlgorithmCompletedEvent);

@@ -114,7 +114,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 matchPredictionFailureInfo = new MatchPredictionFailureInfo
                 {
                     Type = MatchPredictionFailureType.OrchestrationError,
-                    ExceptionStacktrace = e.StackTrace,
+                    ExceptionStacktrace = e.ToString(),
                     Message = e.Message
                 };
 
@@ -131,7 +131,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 matchPredictionFailureInfo = new MatchPredictionFailureInfo
                 {
                     Type = MatchPredictionFailureType.UnexpectedError,
-                    ExceptionStacktrace = e.StackTrace,
+                    ExceptionStacktrace = e.ToString(),
                     Message = e.Message
                 };
 

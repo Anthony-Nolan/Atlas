@@ -7,8 +7,8 @@ namespace Atlas.SearchTracking.Common.Models
         public Guid SearchRequestId { get; set; }
         public byte AttemptNumber { get; set; }
         public DateTime CompletionTimeUtc { get; set; }
-        public MatchingAlgorithmCompletionDetails? CompletionDetails { get; set; }
-        public string HlaNomenclatureVersion { get; set; }
+        public MatchingAlgorithmCompletionDetails CompletionDetails { get; set; } = null!;
+        public string HlaNomenclatureVersion { get; set; } = null!;
         public bool ResultsSent { get; set; }
         public DateTime? ResultsSentTimeUtc { get; set; }
     }

@@ -81,10 +81,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             searchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
             var requestCompletedSuccessfully = false;
             var searchStopWatch = new Stopwatch();
+            bool isResultsSent = false;
             DateTime? resultsSentTime = null;
             int? numberOfResults = null;
             MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = null;
-
             try
             {
                 await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.SearchRequest);
@@ -118,7 +118,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 await resultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,
                     searchResultSet.SearchRequestId);
                 await matchingAlgorithmSearchTrackingDispatcher.ProcessPersistingResultsEnded();
-                resultsSentTime = DateTime.UtcNow;
                 numberOfResults = results.Count;
 
                 var notification = new MatchingResultsNotification
@@ -136,6 +135,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? searchRequestId : null
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
+                isResultsSent = true;
+                resultsSentTime = DateTime.UtcNow;
 
                 requestCompletedSuccessfully = true;
             }
@@ -149,12 +150,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 await matchingFailureNotificationSender.SendFailureNotification(identifiedSearchRequest, attemptNumber, 0,
                     validationException.Message);
+                isResultsSent = true;
+                resultsSentTime = DateTime.UtcNow;
 
                 matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
                 {
                     Type = MatchingAlgorithmFailureType.ValidationError,
                     Message = validationException.Message,
-                    ExceptionStacktrace = validationException.StackTrace
+                    ExceptionStacktrace = validationException.ToString()
                 };
 
                 // Do not re-throw the validation exception to prevent the search being retried or dead-lettered
@@ -165,12 +168,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 searchLogger.SendTrace($"Failed to lookup HLA for search with id {searchRequestId}. Exception: {hmdException}", LogLevel.Error);
                 await matchingFailureNotificationSender.SendFailureNotification(identifiedSearchRequest, attemptNumber, 0, hmdException.Message);
+                isResultsSent = true;
+                resultsSentTime = DateTime.UtcNow;
 
                 matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
                 {
                     Type = MatchingAlgorithmFailureType.HlaMetadataDictionaryError,
                     Message = hmdException.Message,
-                    ExceptionStacktrace = hmdException.StackTrace
+                    ExceptionStacktrace = hmdException.ToString()
                 };
 
                 // Do not re-throw the HMD exception to prevent the search being retried or dead-lettered.
@@ -182,12 +187,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 await matchingFailureNotificationSender.SendFailureNotification(identifiedSearchRequest, attemptNumber,
                     searchRequestMaxRetryCount - attemptNumber);
+                isResultsSent = true;
+                resultsSentTime = DateTime.UtcNow;
 
                 matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
                 {
                     Type = MatchingAlgorithmFailureType.UnexpectedError,
                     Message = e.Message,
-                    ExceptionStacktrace = e.StackTrace
+                    ExceptionStacktrace = e.ToString()
                 };
 
                 throw;
@@ -215,7 +222,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     AttemptNumber = (byte)attemptNumber,
                     CompletionTimeUtc = DateTime.UtcNow,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
-                    ResultsSent = requestCompletedSuccessfully,
+                    ResultsSent = isResultsSent,
                     ResultsSentTimeUtc = resultsSentTime,
                     CompletionDetails = new MatchingAlgorithmCompletionDetails
                     {
