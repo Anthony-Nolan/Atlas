@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
+using MatchingAlgorithmFailureInfo = Atlas.SearchTracking.Common.Models.MatchingAlgorithmFailureInfo;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
 {
@@ -22,7 +24,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
         Task ProcessPersistingResultsEnded();
 
-        Task ProcessCompleted(MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent);
+        Task ProcessCompleted((Guid SearchIdentifier, byte AttemptNumber, string HlaNomenclatureVersion,
+            DateTime? ResultsSentTimeUtc, int? NumberOfResults, MatchingAlgorithmFailureInfo FailureInfo,
+            MatchingAlgorithmRepeatSearchResultsDetails RepeatSearchResultsDetails, int? NumberOfMatching) completedEventData);
     }
 
     public class MatchingAlgorithmSearchTrackingDispatcher(
@@ -39,7 +43,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             var matchingAlgorithmAttemptStartedEvent = new MatchingAlgorithmAttemptStartedEvent
             {
-                SearchRequestId = currentContext.SearchRequestId,
+                SearchRequestId = currentContext.SearchIdentifier,
                 AttemptNumber = currentContext.AttemptNumber,
                 InitiationTimeUtc = initiationTime,
                 StartTimeUtc = startTime
@@ -55,7 +59,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
             {
-                SearchRequestId = currentContext.SearchRequestId,
+                SearchRequestId = currentContext.SearchIdentifier,
                 AttemptNumber = currentContext.AttemptNumber,
                 TimeUtc = DateTime.UtcNow
             };
@@ -70,7 +74,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
             {
-                SearchRequestId = currentContext.SearchRequestId,
+                SearchRequestId = currentContext.SearchIdentifier,
                 AttemptNumber = currentContext.AttemptNumber,
                 TimeUtc = DateTime.UtcNow
             };
@@ -87,7 +91,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
                 {
-                    SearchRequestId = currentContext.SearchRequestId,
+                    SearchRequestId = currentContext.SearchIdentifier,
                     AttemptNumber = currentContext.AttemptNumber,
                     TimeUtc = DateTime.UtcNow
                 };
@@ -104,7 +108,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
             {
-                SearchRequestId = currentContext.SearchRequestId,
+                SearchRequestId = currentContext.SearchIdentifier,
                 AttemptNumber = currentContext.AttemptNumber,
                 TimeUtc = DateTime.UtcNow
             };
@@ -119,7 +123,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
             {
-                SearchRequestId = currentContext.SearchRequestId,
+                SearchRequestId = currentContext.SearchIdentifier,
                 AttemptNumber = currentContext.AttemptNumber,
                 TimeUtc = DateTime.UtcNow
             };
@@ -134,7 +138,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
             {
-                SearchRequestId = currentContext.SearchRequestId,
+                SearchRequestId = currentContext.SearchIdentifier,
                 AttemptNumber = currentContext.AttemptNumber,
                 TimeUtc = DateTime.UtcNow
             };
@@ -143,8 +147,28 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType.MatchingAlgorithmPersistingResultsEnded);
         }
 
-        public async Task ProcessCompleted(MatchingAlgorithmCompletedEvent completedEvent)
+        public async Task ProcessCompleted((Guid SearchIdentifier, byte AttemptNumber, string HlaNomenclatureVersion,
+            DateTime? ResultsSentTimeUtc, int? NumberOfResults, MatchingAlgorithmFailureInfo FailureInfo,
+            MatchingAlgorithmRepeatSearchResultsDetails RepeatSearchResultsDetails, int? NumberOfMatching) completedEventData)
         {
+            var completedEvent = new MatchingAlgorithmCompletedEvent
+            {
+                SearchIdentifier = completedEventData.SearchIdentifier,
+                AttemptNumber = completedEventData.AttemptNumber,
+                CompletionTimeUtc = DateTime.UtcNow,
+                HlaNomenclatureVersion = completedEventData.HlaNomenclatureVersion,
+                ResultsSent = completedEventData.ResultsSentTimeUtc.HasValue,
+                ResultsSentTimeUtc = completedEventData.ResultsSentTimeUtc,
+                CompletionDetails = new MatchingAlgorithmCompletionDetails
+                {
+                    IsSuccessful = completedEventData.FailureInfo == null,
+                    TotalAttemptsNumber = completedEventData.AttemptNumber,
+                    NumberOfResults = completedEventData.NumberOfResults,
+                    NumberOfMatching = completedEventData.NumberOfMatching,
+                    RepeatSearchResultsDetails = completedEventData.RepeatSearchResultsDetails,
+                    FailureInfo = completedEventData.FailureInfo
+                }
+            };
             await searchTrackingServiceBusClient.PublishSearchTrackingEvent(completedEvent, SearchTrackingEventType.MatchingAlgorithmCompleted);
         }
     }

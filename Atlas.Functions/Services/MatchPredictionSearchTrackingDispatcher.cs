@@ -3,6 +3,7 @@ using System;
 using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
+using Polly;
 
 namespace Atlas.Functions.Services
 {
@@ -22,7 +23,7 @@ namespace Atlas.Functions.Services
 
         Task ProcessPersistingResultsEnded(Guid searchRequestId);
 
-        Task ProcessCompleted(MatchPredictionCompletedEvent matchPredictionCompletedEvent);
+        Task ProcessCompleted((Guid SearchIdentifier, DateTime CompletionTimeUtc, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) matchPredictionCompletedData);
     }
 
     public class MatchPredictionSearchTrackingDispatcher(ISearchTrackingServiceBusClient searchTrackingServiceBusClient)
@@ -113,8 +114,21 @@ namespace Atlas.Functions.Services
                 matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionRunningBatchesEnded);
         }
 
-        public async Task ProcessCompleted(MatchPredictionCompletedEvent matchPredictionCompletedEvent)
+        public async Task ProcessCompleted((Guid SearchIdentifier, DateTime CompletionTimeUtc, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) matchPredictionCompletedData)
         {
+            var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
+            {
+                SearchRequestId = matchPredictionCompletedData.SearchIdentifier,
+                CompletionTimeUtc = matchPredictionCompletedData.CompletionTimeUtc,
+                CompletionDetails = new MatchPredictionCompletionDetails
+                {
+                    IsSuccessful = matchPredictionCompletedData.FailureInfo == null,
+                    FailureInfo = matchPredictionCompletedData.FailureInfo,
+                    DonorsPerBatch = matchPredictionCompletedData.DonorsPerBatch,
+                    TotalNumberOfBatches = matchPredictionCompletedData.TotalNumberOfBatches,
+                }
+            };
+
             await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
                 matchPredictionCompletedEvent, SearchTrackingEventType.MatchPredictionCompleted);
         }

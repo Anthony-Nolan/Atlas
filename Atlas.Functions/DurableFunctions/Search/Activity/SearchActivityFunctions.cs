@@ -71,7 +71,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         {
             InitializeLoggingContext(matchingResultsNotification.SearchRequestId);
 
-            await matchPredictionSearchTrackingDispatcher.ProcessPrepareBatchesStarted(new Guid(matchingResultsNotification.SearchRequestId));
+            var searchIdentifier = matchingResultsNotification.IsRepeatSearch
+                ? matchingResultsNotification.RepeatSearchRequestId
+                : matchingResultsNotification.SearchRequestId;
+            await matchPredictionSearchTrackingDispatcher.ProcessPrepareBatchesStarted(new Guid(searchIdentifier));
 
             var timedResultSet = new TimedResultSet<IList<string>>();
             var stopwatch = new Stopwatch();
@@ -90,7 +93,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 
             using (logger.RunTimed("Uploading match prediction requests"))
             {
-                var matchPredictionRequestFileNames = await matchPredictionRequestBlobClient.UploadMatchProbabilityRequests(matchingResultsNotification.SearchRequestId, matchPredictionInputs);
+                var matchPredictionRequestFileNames = await matchPredictionRequestBlobClient.UploadMatchProbabilityRequests(searchIdentifier, matchPredictionInputs);
 
                 timedResultSet = new TimedResultSet<IList<string>>
                 {
@@ -100,7 +103,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 };
             }
 
-            await matchPredictionSearchTrackingDispatcher.ProcessPrepareBatchesEnded(new Guid(matchingResultsNotification.SearchRequestId));
+            await matchPredictionSearchTrackingDispatcher.ProcessPrepareBatchesEnded(new Guid(searchIdentifier));
             return timedResultSet;
         }
 
@@ -116,7 +119,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         {
             InitializeLoggingContext(parameters.MatchingResultsNotification.SearchRequestId);
             var matchingResultsNotification = parameters.MatchingResultsNotification;
-
             await matchPredictionSearchTrackingDispatcher.ProcessPersistingResultsStarted(new Guid(matchingResultsNotification.SearchRequestId));
 
             var matchingResultsSummary = await logger.RunTimedAsync("Download matching results summary", async () =>
@@ -168,28 +170,28 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [Function(nameof(SendMatchPredictionProcessInitiated))]
-        public async Task SendMatchPredictionProcessInitiated([ActivityTrigger] MatchPredictionStartedEvent matchPredictionStartedEvent)
+        public async Task SendMatchPredictionProcessInitiated([ActivityTrigger] (Guid SearchIdentifier, DateTime InitiationTimeUtc) matchPredictionStarted)
         {
             await matchPredictionSearchTrackingDispatcher.ProcessInitiation(
-                matchPredictionStartedEvent.SearchRequestId, matchPredictionStartedEvent.InitiationTimeUtc);
+                matchPredictionStarted.SearchIdentifier, matchPredictionStarted.InitiationTimeUtc);
         }
 
         [Function(nameof(SendMatchPredictionBatchProcessingStarted))]
-        public async Task SendMatchPredictionBatchProcessingStarted([ActivityTrigger] MatchingResultsNotification notification)
+        public async Task SendMatchPredictionBatchProcessingStarted([ActivityTrigger] Guid searchIdentifier)
         {
-            await matchPredictionSearchTrackingDispatcher.ProcessRunningBatchesStarted(new Guid(notification.SearchRequestId));
+            await matchPredictionSearchTrackingDispatcher.ProcessRunningBatchesStarted(searchIdentifier);
         }
 
         [Function(nameof(SendMatchPredictionBatchProcessingEnded))]
-        public async Task SendMatchPredictionBatchProcessingEnded([ActivityTrigger] MatchingResultsNotification notification)
+        public async Task SendMatchPredictionBatchProcessingEnded([ActivityTrigger] Guid searchIdentifier)
         {
-            await matchPredictionSearchTrackingDispatcher.ProcessRunningBatchesEnded(new Guid(notification.SearchRequestId));
+            await matchPredictionSearchTrackingDispatcher.ProcessRunningBatchesEnded(searchIdentifier);
         }
 
         [Function(nameof(SendMatchPredictionProcessCompleted))]
-        public async Task SendMatchPredictionProcessCompleted([ActivityTrigger] MatchPredictionCompletedEvent matchPredictionCompletedEvent)
+        public async Task SendMatchPredictionProcessCompleted([ActivityTrigger] (Guid SearchIdentifier, DateTime CompletionTimeUtc, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) matchPredictionCompletedData)
         {
-            await matchPredictionSearchTrackingDispatcher.ProcessCompleted(matchPredictionCompletedEvent);
+            await matchPredictionSearchTrackingDispatcher.ProcessCompleted(matchPredictionCompletedData);
         }
 
         private async Task<IEnumerable<SearchResult>> ProcessBatchedSearchResults(

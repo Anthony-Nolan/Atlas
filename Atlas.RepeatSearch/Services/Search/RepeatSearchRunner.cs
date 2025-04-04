@@ -98,7 +98,7 @@ namespace Atlas.RepeatSearch.Services.Search
             var numberOfResults = 0;
             MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = null;
 
-            repeatSearchLoggingContext.SearchRequestId = repeatSearchId;
+            repeatSearchLoggingContext.SearchRequestId = originalSearchRequestId;
             repeatSearchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
 
             try
@@ -107,7 +107,7 @@ namespace Atlas.RepeatSearch.Services.Search
 
                 var context = new MatchingAlgorithmSearchTrackingContext
                 {
-                    SearchRequestId = new Guid(repeatSearchId),
+                    SearchIdentifier = new Guid(repeatSearchId),
                     AttemptNumber = (byte)attemptNumber
                 };
 
@@ -220,31 +220,21 @@ namespace Atlas.RepeatSearch.Services.Search
             }
             finally
             {
-                var matchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent
-                {
-                    SearchRequestId = new Guid(repeatSearchId),
-                    AttemptNumber = (byte)attemptNumber,
-                    CompletionTimeUtc = DateTime.UtcNow,
-                    HlaNomenclatureVersion = hlaNomenclatureVersion,
-                    ResultsSent = requestCompletedSuccessfully,
-                    ResultsSentTimeUtc = resultsSentTime,
-                    CompletionDetails = new MatchingAlgorithmCompletionDetails
+                await matchingAlgorithmSearchTrackingDispatcher.ProcessCompleted((
+                    SearchIdentifier: new Guid(repeatSearchId),
+                    AttemptNumber: (byte)attemptNumber,
+                    HlaNomenclatureVersion: hlaNomenclatureVersion,
+                    ResultsSentTimeUtc: resultsSentTime,
+                    NumberOfResults: numberOfResults,
+                    FailureInfo: matchingAlgorithmFailureInfo,
+                    RepeatSearchResultsDetails: new MatchingAlgorithmRepeatSearchResultsDetails
                     {
-                        IsSuccessful = requestCompletedSuccessfully,
-                        TotalAttemptsNumber = (byte)attemptNumber,
-                        NumberOfResults = numberOfResults,
-                        NumberOfMatching = diff.NewResults.Count,
-                        RepeatSearchResultsDetails = new MatchingAlgorithmRepeatSearchResultsDetails
-                        {
-                            AddedResultCount = diff.NewResults.Count,
-                            RemovedResultCount = diff.RemovedResults.Count,
-                            UpdatedResultCount = diff.UpdatedResults.Count
-                        },
-                        FailureInfo = matchingAlgorithmFailureInfo
-                    }
-                };
-
-                await matchingAlgorithmSearchTrackingDispatcher.ProcessCompleted(matchingAlgorithmCompletedEvent);
+                        AddedResultCount = diff.NewResults.Count,
+                        RemovedResultCount = diff.RemovedResults.Count,
+                        UpdatedResultCount = diff.UpdatedResults.Count
+                    },
+                    NumberOfMatching: diff.NewResults.Count
+                ));
             }
 
             async Task HandleValidationExceptionWithoutRethrow(Exception ex)

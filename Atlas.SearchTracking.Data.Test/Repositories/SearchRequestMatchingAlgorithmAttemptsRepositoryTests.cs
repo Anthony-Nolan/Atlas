@@ -112,7 +112,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var matchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent
             {
-                SearchRequestId = expectedSearchRequestGuid,
+                SearchIdentifier = expectedSearchRequestGuid,
                 AttemptNumber = expectedSearchRequestMatchingAlgorithmAttemptsEntity.AttemptNumber,
                 CompletionTimeUtc = expectedSearchRequestMatchingAlgorithmAttemptsEntity.CompletionTimeUtc.Value,
                 CompletionDetails = new MatchingAlgorithmCompletionDetails()

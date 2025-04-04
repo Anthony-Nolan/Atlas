@@ -47,7 +47,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackCompletedEvent(MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent)
         {
-            var id = await GetSearchRequestIdByGuid(matchingAlgorithmCompletedEvent.SearchRequestId);
+            var id = await GetSearchRequestIdByGuid(matchingAlgorithmCompletedEvent.SearchIdentifier);
 
             var matchingAlgorithmAttempt = await GetRequiredMatchingAlgorithmAttemptTiming(id, matchingAlgorithmCompletedEvent.AttemptNumber);
 

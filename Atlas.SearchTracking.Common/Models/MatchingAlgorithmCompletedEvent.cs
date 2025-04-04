@@ -4,7 +4,7 @@ namespace Atlas.SearchTracking.Common.Models
 {
     public class MatchingAlgorithmCompletedEvent
     {
-        public Guid SearchRequestId { get; set; }
+        public Guid SearchIdentifier { get; set; }
         public byte AttemptNumber { get; set; }
         public DateTime CompletionTimeUtc { get; set; }
         public MatchingAlgorithmCompletionDetails CompletionDetails { get; set; } = null!;

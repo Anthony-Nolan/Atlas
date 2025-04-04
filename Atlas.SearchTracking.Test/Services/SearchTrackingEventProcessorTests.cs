@@ -145,7 +145,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             var body = JsonConvert.SerializeObject(new
             {
-                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 AttemptNumber = 0,
                 CompletionDetails = new
                 {
@@ -166,7 +166,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             var expectedMatchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent()
             {
-                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 AttemptNumber = 0,
                 CompletionDetails = new MatchingAlgorithmCompletionDetails
                 {
