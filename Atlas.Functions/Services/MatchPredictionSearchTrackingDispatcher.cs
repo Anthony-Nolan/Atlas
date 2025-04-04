@@ -23,7 +23,7 @@ namespace Atlas.Functions.Services
         Task ProcessPersistingResultsEnded(Guid searchRequestId);
 
         Task ProcessCompleted((Guid SearchIdentifier, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)
-                matchPredictionCompletedData);
+            eventDetails);
     }
 
     public class MatchPredictionSearchTrackingDispatcher(ISearchTrackingServiceBusClient searchTrackingServiceBusClient)
