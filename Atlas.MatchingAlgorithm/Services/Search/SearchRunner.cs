@@ -91,7 +91,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 var context = new MatchingAlgorithmSearchTrackingContext
                 {
-                    SearchRequestId = new Guid(searchRequestId),
+                    SearchIdentifier = new Guid(searchRequestId),
                     AttemptNumber = (byte)attemptNumber
                 };
 
@@ -218,7 +218,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 var matchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent
                 {
-                    SearchRequestId = new Guid(searchRequestId),
+                    SearchIdentifier = new Guid(searchRequestId),
                     AttemptNumber = (byte)attemptNumber,
                     CompletionTimeUtc = DateTime.UtcNow,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
@@ -233,7 +233,16 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     }
                 };
 
-                await matchingAlgorithmSearchTrackingDispatcher.ProcessCompleted(matchingAlgorithmCompletedEvent);
+                await matchingAlgorithmSearchTrackingDispatcher.ProcessCompleted(
+                    (
+                        HlaNomenclatureVersion: hlaNomenclatureVersion,
+                        ResultsSentTimeUtc: resultsSentTime,
+                        NumberOfResults: numberOfResults,
+                        FailureInfo: matchingAlgorithmFailureInfo,
+                        RepeatSearchResultsDetails: null,
+                        NumberOfMatching: null
+                    )
+                );
             }
         }
 

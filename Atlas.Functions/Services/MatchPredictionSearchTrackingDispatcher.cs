@@ -22,7 +22,8 @@ namespace Atlas.Functions.Services
 
         Task ProcessPersistingResultsEnded(Guid searchRequestId);
 
-        Task ProcessCompleted(MatchPredictionCompletedEvent matchPredictionCompletedEvent);
+        Task ProcessCompleted((Guid SearchIdentifier, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)
+            eventDetails);
     }
 
     public class MatchPredictionSearchTrackingDispatcher(ISearchTrackingServiceBusClient searchTrackingServiceBusClient)
@@ -113,8 +114,21 @@ namespace Atlas.Functions.Services
                 matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionRunningBatchesEnded);
         }
 
-        public async Task ProcessCompleted(MatchPredictionCompletedEvent matchPredictionCompletedEvent)
+        public async Task ProcessCompleted((Guid SearchIdentifier, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) eventDetails)
         {
+            var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
+            {
+                SearchRequestId = eventDetails.SearchIdentifier,
+                CompletionTimeUtc = DateTime.UtcNow,
+                CompletionDetails = new MatchPredictionCompletionDetails
+                {
+                    IsSuccessful = eventDetails.FailureInfo == null,
+                    FailureInfo = eventDetails.FailureInfo,
+                    DonorsPerBatch = eventDetails.DonorsPerBatch,
+                    TotalNumberOfBatches = eventDetails.TotalNumberOfBatches,
+                }
+            };
+
             await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
                 matchPredictionCompletedEvent, SearchTrackingEventType.MatchPredictionCompleted);
         }

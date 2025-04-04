@@ -88,7 +88,7 @@ namespace Atlas.RepeatSearch.Services.Search
         public async Task RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber, DateTimeOffset enqueuedTimeUtc)
         {
             var searchStartTime = DateTimeOffset.UtcNow;
-            var searchRequestId = identifiedRepeatSearchRequest.OriginalSearchId;
+            var originalSearchRequestId = identifiedRepeatSearchRequest.OriginalSearchId;
             var repeatSearchId = identifiedRepeatSearchRequest.RepeatSearchId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
@@ -98,7 +98,7 @@ namespace Atlas.RepeatSearch.Services.Search
             var numberOfResults = 0;
             MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = null;
 
-            repeatSearchLoggingContext.SearchRequestId = searchRequestId;
+            repeatSearchLoggingContext.SearchRequestId = originalSearchRequestId;
             repeatSearchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
 
             try
@@ -107,7 +107,7 @@ namespace Atlas.RepeatSearch.Services.Search
 
                 var context = new MatchingAlgorithmSearchTrackingContext
                 {
-                    SearchRequestId = new Guid(searchRequestId),
+                    SearchIdentifier = new Guid(repeatSearchId),
                     AttemptNumber = (byte)attemptNumber
                 };
 
@@ -123,7 +123,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     .ToList();
                 numberOfResults = results.Count;
 
-                diff = await CalculateAndStoreResultsDiff(searchRequestId, results, searchCutoffDate);
+                diff = await CalculateAndStoreResultsDiff(originalSearchRequestId, results, searchCutoffDate);
 
                 await RecordRepeatSearch(identifiedRepeatSearchRequest, diff);
 
@@ -132,7 +132,7 @@ namespace Atlas.RepeatSearch.Services.Search
                 var searchResultSet = new RepeatMatchingAlgorithmResultSet
                 {
                     SearchRequest = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest,
-                    SearchRequestId = searchRequestId,
+                    SearchRequestId = originalSearchRequestId,
                     RepeatSearchId = repeatSearchId,
                     Results = results,
                     TotalResults = results.Count,
@@ -145,7 +145,7 @@ namespace Atlas.RepeatSearch.Services.Search
 
                 await matchingAlgorithmSearchTrackingDispatcher.ProcessPersistingResultsStarted();
                 await repeatResultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,
-                    $"{searchRequestId}/{repeatSearchId}");
+                    $"{originalSearchRequestId}/{repeatSearchId}");
                 await matchingAlgorithmSearchTrackingDispatcher.ProcessPersistingResultsEnded();
                 resultsSentTime = DateTime.UtcNow;
 
@@ -153,7 +153,7 @@ namespace Atlas.RepeatSearch.Services.Search
                 {
                     SearchRequest = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest,
                     RepeatSearchRequestId = identifiedRepeatSearchRequest.RepeatSearchId,
-                    SearchRequestId = searchRequestId,
+                    SearchRequestId = originalSearchRequestId,
                     MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
                     MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
                     WasSuccessful = true,
@@ -162,7 +162,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     ResultsFileName = searchResultSet.ResultsFileName,
                     ElapsedTime = stopwatch.Elapsed,
                     ResultsBatched = azureStorageSettings.ShouldBatchResults,
-                    BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? $"{searchRequestId}/{repeatSearchId}" : null
+                    BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? $"{originalSearchRequestId}/{repeatSearchId}" : null
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
 
@@ -204,7 +204,7 @@ namespace Atlas.RepeatSearch.Services.Search
             catch (Exception e)
             {
                 repeatSearchLogger.SendTrace(
-                    $"Failed to run search with repeat search id: {repeatSearchId} (search id: {searchRequestId}). Exception: {e}",
+                    $"Failed to run search with repeat search id: {repeatSearchId} (search id: {originalSearchRequestId}). Exception: {e}",
                     LogLevel.Error);
                 await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(identifiedRepeatSearchRequest, attemptNumber,
                     searchRequestMaxRetryCount - attemptNumber);
@@ -220,37 +220,25 @@ namespace Atlas.RepeatSearch.Services.Search
             }
             finally
             {
-                var matchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent
-                {
-                    SearchRequestId = new Guid(searchRequestId),
-                    AttemptNumber = (byte)attemptNumber,
-                    CompletionTimeUtc = DateTime.UtcNow,
-                    HlaNomenclatureVersion = hlaNomenclatureVersion,
-                    ResultsSent = requestCompletedSuccessfully,
-                    ResultsSentTimeUtc = resultsSentTime,
-                    CompletionDetails = new MatchingAlgorithmCompletionDetails
+                await matchingAlgorithmSearchTrackingDispatcher.ProcessCompleted((
+                    HlaNomenclatureVersion: hlaNomenclatureVersion,
+                    ResultsSentTimeUtc: resultsSentTime,
+                    NumberOfResults: numberOfResults,
+                    FailureInfo: matchingAlgorithmFailureInfo,
+                    RepeatSearchResultsDetails: new MatchingAlgorithmRepeatSearchResultsDetails
                     {
-                        IsSuccessful = requestCompletedSuccessfully,
-                        TotalAttemptsNumber = (byte)attemptNumber,
-                        NumberOfResults = numberOfResults,
-                        NumberOfMatching = diff.NewResults.Count,
-                        RepeatSearchResultsDetails = new MatchingAlgorithmRepeatSearchResultsDetails
-                        {
-                            AddedResultCount = diff.NewResults.Count,
-                            RemovedResultCount = diff.RemovedResults.Count,
-                            UpdatedResultCount = diff.UpdatedResults.Count
-                        },
-                        FailureInfo = matchingAlgorithmFailureInfo
-                    }
-                };
-
-                await matchingAlgorithmSearchTrackingDispatcher.ProcessCompleted(matchingAlgorithmCompletedEvent);
+                        AddedResultCount = diff.NewResults.Count,
+                        RemovedResultCount = diff.RemovedResults.Count,
+                        UpdatedResultCount = diff.UpdatedResults.Count
+                    },
+                    NumberOfMatching: diff.NewResults.Count
+                ));
             }
 
             async Task HandleValidationExceptionWithoutRethrow(Exception ex)
             {
                 repeatSearchLogger.SendTrace(
-                    $"Validation failed for repeat search id: {repeatSearchId} (search id: {searchRequestId}). Exception: {ex}",
+                    $"Validation failed for repeat search id: {repeatSearchId} (search id: {originalSearchRequestId}). Exception: {ex}",
                     LogLevel.Error);
 
                 await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(

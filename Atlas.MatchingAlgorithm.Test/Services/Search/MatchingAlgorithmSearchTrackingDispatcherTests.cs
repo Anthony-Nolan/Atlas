@@ -26,7 +26,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             searchTrackingServiceBusClient = Substitute.For<ISearchTrackingServiceBusClient>();
             searchTrackingContextManager = Substitute.For<IMatchingAlgorithmSearchTrackingContextManager>();
             searchTrackingContextManager.Retrieve().ReturnsForAnyArgs(new MatchingAlgorithmSearchTrackingContext
-                { SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"), AttemptNumber = 1 });
+                { SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"), AttemptNumber = 1 });
 
             searchTrackingDispatcher = new MatchingAlgorithmSearchTrackingDispatcher(searchTrackingContextManager, searchTrackingServiceBusClient);
         }

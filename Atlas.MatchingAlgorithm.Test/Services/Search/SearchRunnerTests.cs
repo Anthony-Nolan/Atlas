@@ -22,6 +22,7 @@ using FluentAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
+using MatchingAlgorithmFailureInfo = Atlas.SearchTracking.Common.Models.MatchingAlgorithmFailureInfo;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search
 {
@@ -315,7 +316,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             finally
             {
                 await matchingAlgorithmSearchTrackingDispatcher.Received().ProcessCompleted(
-                    Arg.Any<MatchingAlgorithmCompletedEvent>());
+                    Arg.Any<(string, DateTime?, int?, MatchingAlgorithmFailureInfo, MatchingAlgorithmRepeatSearchResultsDetails, int?)>());
             }
         }
 
@@ -340,7 +341,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             finally
             {
                 await matchingAlgorithmSearchTrackingDispatcher.Received().ProcessCompleted(
-                    Arg.Any<MatchingAlgorithmCompletedEvent>());
+                    Arg.Any<(string, DateTime?, int?, MatchingAlgorithmFailureInfo, MatchingAlgorithmRepeatSearchResultsDetails, int?)>());
             }
         }
     }

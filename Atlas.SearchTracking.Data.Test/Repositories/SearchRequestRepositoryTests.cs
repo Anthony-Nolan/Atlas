@@ -124,7 +124,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var matchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchRequestId,
                 HlaNomenclatureVersion = "3.6.0",
                 ResultsSent = true,
                 ResultsSentTimeUtc = new DateTime(2023, 1, 1),
@@ -157,7 +157,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var matchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchRequestId,
                 CompletionDetails = new MatchingAlgorithmCompletionDetails
                 {
                     TotalAttemptsNumber = 0,
