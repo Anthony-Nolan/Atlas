@@ -61,6 +61,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             MatchPredictionFailureInfo matchPredictionFailureInfo = null;
 
             loggingContext.SearchRequestId = requestInfo.SearchRequestId;
+            var trackingSearchIdentifier = new Guid(notification.SearchRequestId);
 
             try
             {
@@ -71,16 +72,15 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     // returning early to prevent unnecessary retries of the search request
                     return null;
                 }
-                var searchIdentifier = new Guid(notification.SearchRequestId);
 
-                await SendMatchPredictionProcessInitiated(context, (SearchIdentifier: searchIdentifier, InitiationTimeUtc: orchestrationStartTime));
+                await SendMatchPredictionProcessInitiated(context, (SearchIdentifier: trackingSearchIdentifier, InitiationTimeUtc: orchestrationStartTime));
 
                 var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification, requestInfo);
-                await SendMatchPredictionBatchProcessingStarted(context, searchIdentifier);
+                await SendMatchPredictionBatchProcessingStarted(context, trackingSearchIdentifier);
                 (matchPredictionResultLocations, matchPredictionNumberOfBatches)
                     = await RunMatchPredictionAlgorithm(context, requestInfo, matchPredictionRequestLocations);
 
-                await SendMatchPredictionBatchProcessingEnded(context, searchIdentifier);
+                await SendMatchPredictionBatchProcessingEnded(context, trackingSearchIdentifier);
 
                 await PersistSearchResults(
                     context,
@@ -150,7 +150,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     RequestPerformanceMetrics = performanceMetrics
                 });
 
-                await SendMatchPredictionProcessCompleted(context, (SearchIdentifier: new Guid(notification.SearchRequestId), CompletionTimeUtc: context.CurrentUtcDateTime,
+                await SendMatchPredictionProcessCompleted(context, (SearchIdentifier: trackingSearchIdentifier, 
                     FailureInfo: matchPredictionFailureInfo, DonorsPerBatch: matchPredictionProcessingBatchSize, TotalNumberOfBatches: matchPredictionNumberOfBatches));
             }
         }
@@ -166,6 +166,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             int? matchPredictionNumberOfBatches = null;
             MatchPredictionFailureInfo matchPredictionFailureInfo = null;
 
+            var trackingSearchIdentifier = new Guid(notification.RepeatSearchRequestId);
             try
             {
                 var orchestrationInitiated = context.CurrentUtcDateTime;
@@ -176,16 +177,15 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     // returning early to avoid unnecessary retries of the search request
                     return null;
                 }
-                var searchIdentifier = new Guid(notification.RepeatSearchRequestId);
 
-                await SendMatchPredictionProcessInitiated(context, (SearchIdentifier: searchIdentifier, InitiationTimeUtc: orchestrationStartTime));
+                await SendMatchPredictionProcessInitiated(context, (SearchIdentifier: trackingSearchIdentifier, InitiationTimeUtc: orchestrationStartTime));
 
                 var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification, requestInfo);
-                await SendMatchPredictionBatchProcessingStarted(context, searchIdentifier);
+                await SendMatchPredictionBatchProcessingStarted(context, trackingSearchIdentifier);
                 (matchPredictionResultLocations, matchPredictionNumberOfBatches)
                     = await RunMatchPredictionAlgorithm(context, requestInfo, matchPredictionRequestLocations);
 
-                await SendMatchPredictionBatchProcessingEnded(context, searchIdentifier);
+                await SendMatchPredictionBatchProcessingEnded(context, trackingSearchIdentifier);
 
                 await PersistSearchResults(
                     context,
@@ -239,7 +239,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
             finally
             {
-                await SendMatchPredictionProcessCompleted(context, (SearchIdentifier: new Guid(notification.RepeatSearchRequestId), CompletionTimeUtc: context.CurrentUtcDateTime,
+                await SendMatchPredictionProcessCompleted(context, (SearchIdentifier: trackingSearchIdentifier,
                     FailureInfo: matchPredictionFailureInfo, DonorsPerBatch: matchPredictionProcessingBatchSize, TotalNumberOfBatches: matchPredictionNumberOfBatches));
             }
         }
@@ -409,10 +409,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
         private static async Task SendMatchPredictionProcessInitiated(
             TaskOrchestrationContext context,
-            (Guid SearchIdentifier, DateTime InitiationTimeUtc) matchPredictionStarted) =>
+            (Guid SearchIdentifier, DateTime InitiationTimeUtc) eventDetails) =>
             await context.CallActivityAsync(
                 nameof(SearchActivityFunctions.SendMatchPredictionProcessInitiated),
-                matchPredictionStarted,
+                eventDetails,
                 RetryOptions
             );
 
@@ -436,10 +436,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
         private static async Task SendMatchPredictionProcessCompleted(
             TaskOrchestrationContext context,
-            (Guid SearchIdentifier, DateTime CompletionTimeUtc, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) matchPredictionCompletedData) =>
+            (Guid SearchIdentifier, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) eventDetails) =>
             await context.CallActivityAsync(
                 nameof(SearchActivityFunctions.SendMatchPredictionProcessCompleted),
-                matchPredictionCompletedData,
+                eventDetails,
                 RetryOptions
             );
     }

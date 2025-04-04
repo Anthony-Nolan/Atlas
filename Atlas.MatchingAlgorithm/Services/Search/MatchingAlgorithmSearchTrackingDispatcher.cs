@@ -24,9 +24,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
         Task ProcessPersistingResultsEnded();
 
-        Task ProcessCompleted((Guid SearchIdentifier, byte AttemptNumber, string HlaNomenclatureVersion,
+        Task ProcessCompleted((string HlaNomenclatureVersion,
             DateTime? ResultsSentTimeUtc, int? NumberOfResults, MatchingAlgorithmFailureInfo FailureInfo,
-            MatchingAlgorithmRepeatSearchResultsDetails RepeatSearchResultsDetails, int? NumberOfMatching) completedEventData);
+            MatchingAlgorithmRepeatSearchResultsDetails RepeatSearchResultsDetails, int? NumberOfMatching) eventDetails);
     }
 
     public class MatchingAlgorithmSearchTrackingDispatcher(
@@ -147,26 +147,28 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType.MatchingAlgorithmPersistingResultsEnded);
         }
 
-        public async Task ProcessCompleted((Guid SearchIdentifier, byte AttemptNumber, string HlaNomenclatureVersion,
+        public async Task ProcessCompleted((string HlaNomenclatureVersion,
             DateTime? ResultsSentTimeUtc, int? NumberOfResults, MatchingAlgorithmFailureInfo FailureInfo,
-            MatchingAlgorithmRepeatSearchResultsDetails RepeatSearchResultsDetails, int? NumberOfMatching) completedEventData)
+            MatchingAlgorithmRepeatSearchResultsDetails RepeatSearchResultsDetails, int? NumberOfMatching) eventDetails)
         {
+            var currentContext = matchingAlgorithmSearchTrackingContextManager.Retrieve();
+
             var completedEvent = new MatchingAlgorithmCompletedEvent
             {
-                SearchIdentifier = completedEventData.SearchIdentifier,
-                AttemptNumber = completedEventData.AttemptNumber,
+                SearchIdentifier = currentContext.SearchIdentifier,
+                AttemptNumber = currentContext.AttemptNumber,
                 CompletionTimeUtc = DateTime.UtcNow,
-                HlaNomenclatureVersion = completedEventData.HlaNomenclatureVersion,
-                ResultsSent = completedEventData.ResultsSentTimeUtc.HasValue,
-                ResultsSentTimeUtc = completedEventData.ResultsSentTimeUtc,
+                HlaNomenclatureVersion = eventDetails.HlaNomenclatureVersion,
+                ResultsSent = eventDetails.ResultsSentTimeUtc.HasValue,
+                ResultsSentTimeUtc = eventDetails.ResultsSentTimeUtc,
                 CompletionDetails = new MatchingAlgorithmCompletionDetails
                 {
-                    IsSuccessful = completedEventData.FailureInfo == null,
-                    TotalAttemptsNumber = completedEventData.AttemptNumber,
-                    NumberOfResults = completedEventData.NumberOfResults,
-                    NumberOfMatching = completedEventData.NumberOfMatching,
-                    RepeatSearchResultsDetails = completedEventData.RepeatSearchResultsDetails,
-                    FailureInfo = completedEventData.FailureInfo
+                    IsSuccessful = eventDetails.FailureInfo == null,
+                    TotalAttemptsNumber = currentContext.AttemptNumber,
+                    NumberOfResults = eventDetails.NumberOfResults,
+                    NumberOfMatching = eventDetails.NumberOfMatching,
+                    RepeatSearchResultsDetails = eventDetails.RepeatSearchResultsDetails,
+                    FailureInfo = eventDetails.FailureInfo
                 }
             };
             await searchTrackingServiceBusClient.PublishSearchTrackingEvent(completedEvent, SearchTrackingEventType.MatchingAlgorithmCompleted);

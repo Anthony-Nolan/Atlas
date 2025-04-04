@@ -3,7 +3,6 @@ using System;
 using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
-using Polly;
 
 namespace Atlas.Functions.Services
 {
@@ -23,7 +22,8 @@ namespace Atlas.Functions.Services
 
         Task ProcessPersistingResultsEnded(Guid searchRequestId);
 
-        Task ProcessCompleted((Guid SearchIdentifier, DateTime CompletionTimeUtc, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) matchPredictionCompletedData);
+        Task ProcessCompleted((Guid SearchIdentifier, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)
+                matchPredictionCompletedData);
     }
 
     public class MatchPredictionSearchTrackingDispatcher(ISearchTrackingServiceBusClient searchTrackingServiceBusClient)
@@ -114,18 +114,18 @@ namespace Atlas.Functions.Services
                 matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionRunningBatchesEnded);
         }
 
-        public async Task ProcessCompleted((Guid SearchIdentifier, DateTime CompletionTimeUtc, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) matchPredictionCompletedData)
+        public async Task ProcessCompleted((Guid SearchIdentifier, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) eventDetails)
         {
             var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
             {
-                SearchRequestId = matchPredictionCompletedData.SearchIdentifier,
-                CompletionTimeUtc = matchPredictionCompletedData.CompletionTimeUtc,
+                SearchRequestId = eventDetails.SearchIdentifier,
+                CompletionTimeUtc = DateTime.UtcNow,
                 CompletionDetails = new MatchPredictionCompletionDetails
                 {
-                    IsSuccessful = matchPredictionCompletedData.FailureInfo == null,
-                    FailureInfo = matchPredictionCompletedData.FailureInfo,
-                    DonorsPerBatch = matchPredictionCompletedData.DonorsPerBatch,
-                    TotalNumberOfBatches = matchPredictionCompletedData.TotalNumberOfBatches,
+                    IsSuccessful = eventDetails.FailureInfo == null,
+                    FailureInfo = eventDetails.FailureInfo,
+                    DonorsPerBatch = eventDetails.DonorsPerBatch,
+                    TotalNumberOfBatches = eventDetails.TotalNumberOfBatches,
                 }
             };
 

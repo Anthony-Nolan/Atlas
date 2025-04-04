@@ -316,7 +316,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             finally
             {
                 await matchingAlgorithmSearchTrackingDispatcher.Received().ProcessCompleted(
-                    Arg.Any<(Guid, byte, string, DateTime?, int?, MatchingAlgorithmFailureInfo, MatchingAlgorithmRepeatSearchResultsDetails, int?)>());
+                    Arg.Any<(string, DateTime?, int?, MatchingAlgorithmFailureInfo, MatchingAlgorithmRepeatSearchResultsDetails, int?)>());
             }
         }
 
@@ -341,7 +341,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             finally
             {
                 await matchingAlgorithmSearchTrackingDispatcher.Received().ProcessCompleted(
-                    Arg.Any<(Guid, byte, string, DateTime?, int?, MatchingAlgorithmFailureInfo, MatchingAlgorithmRepeatSearchResultsDetails, int?)>());
+                    Arg.Any<(string, DateTime?, int?, MatchingAlgorithmFailureInfo, MatchingAlgorithmRepeatSearchResultsDetails, int?)>());
             }
         }
     }

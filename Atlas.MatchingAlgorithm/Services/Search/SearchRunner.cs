@@ -235,8 +235,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 await matchingAlgorithmSearchTrackingDispatcher.ProcessCompleted(
                     (
-                        SearchIdentifier: new Guid(searchRequestId),
-                        AttemptNumber: (byte)attemptNumber,
                         HlaNomenclatureVersion: hlaNomenclatureVersion,
                         ResultsSentTimeUtc: resultsSentTime,
                         NumberOfResults: numberOfResults,

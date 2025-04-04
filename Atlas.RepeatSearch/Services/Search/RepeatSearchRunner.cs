@@ -221,8 +221,6 @@ namespace Atlas.RepeatSearch.Services.Search
             finally
             {
                 await matchingAlgorithmSearchTrackingDispatcher.ProcessCompleted((
-                    SearchIdentifier: new Guid(repeatSearchId),
-                    AttemptNumber: (byte)attemptNumber,
                     HlaNomenclatureVersion: hlaNomenclatureVersion,
                     ResultsSentTimeUtc: resultsSentTime,
                     NumberOfResults: numberOfResults,
