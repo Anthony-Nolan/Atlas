@@ -103,11 +103,8 @@ namespace Atlas.DonorImport.Services
                     }
                 };
 
-                using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
-                {
-                    await topicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
-                        (exception, retryNumber) => logger.SendTrace($"Could not send donor import message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
-                }
+                await topicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                    (exception, retryNumber) => logger.SendTrace($"Could not send donor import message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
             }
             catch (Exception e)
             {

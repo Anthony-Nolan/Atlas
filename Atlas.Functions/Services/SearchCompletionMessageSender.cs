@@ -132,11 +132,8 @@ namespace Atlas.Functions.Services
 
             await using var client = topicClientFactory.BuildTopicClient(notificationTopicName);
 
-            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
-            {
-                await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
-                    (exception, retryNumber) => logger.SendTrace($"Could not send search results message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
-            }
+            await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                (exception, retryNumber) => logger.SendTrace($"Could not send search results message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
         }
     }
 }

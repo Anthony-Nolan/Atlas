@@ -43,22 +43,16 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications
         {
             var message = BuildMessage(dataRefreshRequest);
 
-            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
-            {
-                await requestTopicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
-                    (exception, retryNumber) => logger.SendTrace($"Could not send data refresh request message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
-            }
+            await requestTopicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                (exception, retryNumber) => logger.SendTrace($"Could not send data refresh request message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
         }
 
         public async Task PublishToCompletionTopic(CompletedDataRefresh completedDataRefresh)
         {
             var message = BuildMessage(completedDataRefresh);
 
-            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
-            {
-                await completionTopicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
-                    (exception, retryNumber) => logger.SendTrace($"Could not send data refresh completion message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
-            }
+            await completionTopicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                (exception, retryNumber) => logger.SendTrace($"Could not send data refresh completion message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
         }
 
         public async ValueTask DisposeAsync()
