@@ -43,6 +43,8 @@ locals {
     "DataRefresh:DormantDatabaseAutoPauseTimeout"                                           = var.DATA_REFRESH_DB_AUTO_PAUSE_DORMANT
     "DataRefresh:DormantDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_DORMANT
     "DataRefresh:RefreshDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_REFRESH
+    "DataRefresh:SendRetryCount"                                                            = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "DataRefresh:SendRetryCooldownSeconds"                                                  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
     "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.azure_storage.primary_connection_string,
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"                              = var.WMDA_FILE_URL,
@@ -61,15 +63,19 @@ locals {
     "MessagingServiceBus:SearchRequestsTopic"            = azurerm_servicebus_topic.matching-requests.name
     "MessagingServiceBus:SearchResultsTopic"             = azurerm_servicebus_topic.matching-results-ready.name
     "MessagingServiceBus:SearchResultsDebugSubscription" = azurerm_servicebus_subscription.debug-matching-results-ready.name
-    "MessagingServiceBus:SendRetryCount"                 = var.SEND_RETRY_COUNT
-    "MessagingServiceBus:SendRetryCooldownSeconds"       = var.SEND_RETRY_COOLDOWN_SECONDS
+    "MessagingServiceBus:SendRetryCount"                 = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "MessagingServiceBus:SendRetryCooldownSeconds"       = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
     "NotificationsServiceBus:ConnectionString"           = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:AlertsTopic"                = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:NotificationsTopic"         = var.servicebus_topics.notifications.name
+    "NotificationsServiceBus:SendRetryCount"             = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "NotificationsServiceBus:SendRetryCooldownSeconds"   = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
     "SearchTrackingServiceBus:ConnectionString"          = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "SearchTrackingServiceBus:SearchTrackingTopic"       = var.servicebus_topics.search_tracking.name
+    "SearchTrackingServiceBus:SendRetryCount"            = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "SearchTrackingServiceBus:SendRetryCooldownSeconds"  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
     "Wmda:WmdaFileUri" = var.WMDA_FILE_URL
 

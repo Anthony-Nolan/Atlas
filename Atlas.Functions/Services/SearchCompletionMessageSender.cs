@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.ServiceBus;
+using Atlas.Common.Utils;
 using Atlas.Functions.Models;
 using Atlas.Functions.Settings;
 using AutoMapper;
@@ -14,7 +16,6 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Polly;
 
 namespace Atlas.Functions.Services
 {
@@ -129,12 +130,13 @@ namespace Atlas.Functions.Services
                 ? repeatResultsNotificationTopicName
                 : resultsNotificationTopicName;
 
-            var retryPolicy = Policy
-                .Handle<ServiceBusException>()
-                .WaitAndRetryAsync(sendRetryCount, _ => TimeSpan.FromSeconds(sendRetryCooldownSeconds));
-
             await using var client = topicClientFactory.BuildTopicClient(notificationTopicName);
-            await retryPolicy.ExecuteAsync(async () => await client.SendAsync(message));
+
+            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
+            {
+                await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                    (exception, retryNumber) => logger.SendTrace($"Could not send search results message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
+            }
         }
     }
 }

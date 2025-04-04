@@ -42,8 +42,7 @@ namespace Atlas.Common.Notifications
             using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
             {
                 await alertTopicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
-                    (exception, retryNumber) => logger.SendTrace("Alert Exception " + exception.Message
-                                                                + " Attempt " + retryNumber, retryNumber == 1 ? LogLevel.Verbose : LogLevel.Warn));
+                    (exception, retryNumber) => logger.SendTrace($"Could not send alert message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
             }
         }
 
@@ -54,8 +53,7 @@ namespace Atlas.Common.Notifications
             using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
             {
                 await notificationTopicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
-                    (exception, retryNumber) => logger.SendTrace("Notification Exception " + exception.Message
-                                                                                           + " Attempt " + retryNumber, retryNumber == 1 ? LogLevel.Verbose : LogLevel.Warn));
+                    (exception, retryNumber) => logger.SendTrace($"Could not send notification message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
             }
         }
 

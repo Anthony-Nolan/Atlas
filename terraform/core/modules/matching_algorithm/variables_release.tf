@@ -121,14 +121,14 @@ variable "MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
   type = string
 }
 
-variable "SEND_RETRY_COOLDOWN_SECONDS" {
-	type      = number
-	default   = 20
+variable "SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS" {
+	type        = number
+	description = "When sending a service bus message, time to wait before retrying a failed message"
 }
 
-variable "SEND_RETRY_COUNT" {
-	type      = number
-	default   = 5
+variable "SERVICE_BUS_SEND_RETRY_COUNT" {
+	type        = number
+	description = "When sending a service bus message, the total number of retries to attempt"
 }
 
 variable "WEBSITE_RUN_FROM_PACKAGE" {

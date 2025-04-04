@@ -56,8 +56,7 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
             using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
             {
                 await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
-                    (exception, retryNumber) => logger.SendTrace("SearchRequest " + searchRequest.Id + " Exception " + exception.Message
-                                                                 + " Attempt " + retryNumber, retryNumber == 1 ? LogLevel.Verbose : LogLevel.Warn));
+                    (exception, retryNumber) => logger.SendTrace($"Could not send search request message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
             }
         }
 
@@ -85,8 +84,7 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
             using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
             {
                 await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
-                    (exception, retryNumber) => logger.SendTrace("ResultsNotification " + matchingResultsNotification.SearchRequestId + " Exception " + exception.Message
-                                                                 + " Attempt " + retryNumber, retryNumber == 1 ? LogLevel.Verbose : LogLevel.Warn));
+                    (exception, retryNumber) => logger.SendTrace($"Could not send search matching results message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
             }
         }
     }

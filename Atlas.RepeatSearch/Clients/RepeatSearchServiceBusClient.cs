@@ -48,8 +48,7 @@ namespace Atlas.RepeatSearch.Clients
             using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
             {
                 await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
-                    (exception, retryNumber) => logger.SendTrace("SearchRequest " + searchRequest.RepeatSearchId + " Exception " + exception.Message
-                                                                 + " Attempt " + retryNumber, retryNumber == 1 ? LogLevel.Verbose : LogLevel.Warn));
+                    (exception, retryNumber) => logger.SendTrace($"Could not send repeat search request message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
             }
         }
 
@@ -74,8 +73,7 @@ namespace Atlas.RepeatSearch.Clients
             using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
             {
                 await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
-                    (exception, retryNumber) => logger.SendTrace("ResultsNotification " + matchingResultsNotification.SearchRequestId + " Exception " + exception.Message
-                                                                 + " Attempt " + retryNumber, retryNumber == 1 ? LogLevel.Verbose : LogLevel.Warn));
+                    (exception, retryNumber) => logger.SendTrace($"Could not send repeat search matching result message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
             }
         }
     }

@@ -164,22 +164,24 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
     "Matching:MessagingServiceBus:ConnectionString"         = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
     "Matching:MessagingServiceBus:SearchRequestsTopic"      = module.matching_algorithm.service_bus.matching_requests_topic.name
     "Matching:MessagingServiceBus:SearchResultsTopic"       = module.matching_algorithm.service_bus.matching_results_topic.name
-    "Matching:MessagingServiceBus:SendRetryCount"           = var.SEND_RETRY_COUNT
-    "Matching:MessagingServiceBus:SendRetryCooldownSeconds" = var.SEND_RETRY_COOLDOWN_SECONDS
+    "Matching:MessagingServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "Matching:MessagingServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
     "RepeatSearch:MessagingServiceBus:ConnectionString"           = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
     "RepeatSearch:MessagingServiceBus:RepeatSearchRequestsTopic"  = module.repeat_search.service_bus.repeat_search_requests_topic.name
-    "RepeatSearch:MessagingServiceBus:SendRetryCount"             = var.SEND_RETRY_COUNT
-    "RepeatSearch:MessagingServiceBus:SendRetryCooldownSeconds"   = var.SEND_RETRY_COOLDOWN_SECONDS
+    "RepeatSearch:MessagingServiceBus:SendRetryCount"             = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "RepeatSearch:MessagingServiceBus:SendRetryCooldownSeconds"   = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
     "SearchTracking:SearchTrackingServiceBus:ConnectionString"         = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
     "SearchTracking:SearchTrackingServiceBus:SearchTrackingTopic"      = module.search_tracking.service_bus.search_tracking_topic.name
-    "SearchTracking:SearchTrackingServiceBus:SendRetryCount"           = var.SEND_RETRY_COUNT
-    "SearchTracking:SearchTrackingServiceBus:SendRetryCooldownSeconds" = var.SEND_RETRY_COOLDOWN_SECONDS
+    "SearchTracking:SearchTrackingServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "SearchTracking:SearchTrackingServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "NotificationsServiceBus:AlertsTopic"        = module.support.general.alerts_servicebus_topic.name
-    "NotificationsServiceBus:ConnectionString"   = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
-    "NotificationsServiceBus:NotificationsTopic" = module.support.general.notifications_servicebus_topic.name
+    "NotificationsServiceBus:AlertsTopic"                = module.support.general.alerts_servicebus_topic.name
+    "NotificationsServiceBus:ConnectionString"           = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
+    "NotificationsServiceBus:NotificationsTopic"         = module.support.general.notifications_servicebus_topic.name
+    "NotificationsServiceBus:SendRetryCount"             = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "NotificationsServiceBus:SendRetryCooldownSeconds"   = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
     "WEBSITE_RUN_FROM_PACKAGE" = var.WEBSITE_RUN_FROM_PACKAGE
   }
