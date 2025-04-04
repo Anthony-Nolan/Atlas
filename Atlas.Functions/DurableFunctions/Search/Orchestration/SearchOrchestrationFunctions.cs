@@ -61,7 +61,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             MatchPredictionFailureInfo matchPredictionFailureInfo = null;
 
             loggingContext.SearchRequestId = requestInfo.SearchRequestId;
-            var trackingSearchIdentifier = new Guid(notification.SearchRequestId);
+            var trackingSearchIdentifier = new Guid(requestInfo.SearchRequestId);
 
             try
             {
@@ -166,7 +166,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             int? matchPredictionNumberOfBatches = null;
             MatchPredictionFailureInfo matchPredictionFailureInfo = null;
 
-            var trackingSearchIdentifier = new Guid(notification.RepeatSearchRequestId);
+            var trackingSearchIdentifier = new Guid(requestInfo.RepeatSearchRequestId);
             try
             {
                 var orchestrationInitiated = context.CurrentUtcDateTime;
