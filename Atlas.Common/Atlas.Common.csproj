@@ -27,7 +27,8 @@
     <PackageReference Include="Microsoft.FeatureManagement" Version="2.6.1" />
     <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="NeoSmart.AsyncLock" Version="0.3.0.2" />
-	<PackageReference Include="AsyncEnumerator" Version="4.0.2" />  </ItemGroup>
+	<PackageReference Include="AsyncEnumerator" Version="4.0.2" />
+	<PackageReference Include="Polly" Version="7.2.1" />  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Atlas.Common.Test" />

@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus;
+using Atlas.Common.Utils;
 using Atlas.RepeatSearch.Models;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Azure.Messaging.ServiceBus;
@@ -23,12 +24,18 @@ namespace Atlas.RepeatSearch.Clients
         private readonly string repeatSearchRequestsTopicName;
         private readonly string resultsNotificationTopicName;
         private readonly ITopicClientFactory topicClientFactory;
+        private readonly int sendRetryCount;
+        private readonly int sendRetryCooldownSeconds;
+        private readonly ILogger logger;
 
-        public RepeatSearchServiceBusClient(MessagingServiceBusSettings messagingServiceBusSettings, [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory)
+        public RepeatSearchServiceBusClient(MessagingServiceBusSettings messagingServiceBusSettings, [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, ILogger logger)
         {
             repeatSearchRequestsTopicName = messagingServiceBusSettings.RepeatSearchRequestsTopic;
             resultsNotificationTopicName = messagingServiceBusSettings.RepeatSearchMatchingResultsTopic;
+            sendRetryCount = messagingServiceBusSettings.SendRetryCount;
+            sendRetryCooldownSeconds = messagingServiceBusSettings.SendRetryCooldownSeconds;
             this.topicClientFactory = topicClientFactory;
+            this.logger = logger;
         }
 
         public async Task PublishToRepeatSearchRequestsTopic(IdentifiedRepeatSearchRequest searchRequest)
@@ -37,7 +44,12 @@ namespace Atlas.RepeatSearch.Clients
             var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(json));
 
             await using var client = topicClientFactory.BuildTopicClient(repeatSearchRequestsTopicName);
-            await client.SendAsync(message);
+
+            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
+            {
+                await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                    (exception, retryNumber) => logger.SendTrace($"Could not send repeat search request message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
+            }
         }
 
         public async Task PublishToResultsNotificationTopic(MatchingResultsNotification matchingResultsNotification)
@@ -57,7 +69,12 @@ namespace Atlas.RepeatSearch.Clients
             };
 
             await using var client = topicClientFactory.BuildTopicClient(resultsNotificationTopicName);
-            await client.SendAsync(message);
+
+            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
+            {
+                await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                    (exception, retryNumber) => logger.SendTrace($"Could not send repeat search matching result message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
+            }
         }
     }
 }

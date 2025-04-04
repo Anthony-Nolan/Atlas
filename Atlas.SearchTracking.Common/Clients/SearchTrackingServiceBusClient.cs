@@ -1,9 +1,13 @@
 ﻿using System.Text;
+using Atlas.Common.ApplicationInsights;
 using Atlas.SearchTracking.Common.Config;
 using Atlas.SearchTracking.Common.Enums;
 using Microsoft.Azure.ServiceBus;
 using Newtonsoft.Json;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
+using Atlas.Common.Utils;
+using System.Transactions;
+using Atlas.Common.ServiceBus.Deprecated;
 
 namespace Atlas.SearchTracking.Common.Clients
 {
@@ -16,11 +20,17 @@ namespace Atlas.SearchTracking.Common.Clients
     {
         private readonly string connectionString;
         private readonly string searchTrackingTopicName;
+        private readonly int sendRetryCount;
+        private readonly int sendRetryCooldownSeconds;
+        private readonly ILogger logger;
 
-        public SearchTrackingServiceBusClient(SearchTrackingServiceBusSettings searchTrackingServiceBusSettings)
+        public SearchTrackingServiceBusClient(SearchTrackingServiceBusSettings searchTrackingServiceBusSettings, ILogger logger)
         {
             connectionString = searchTrackingServiceBusSettings.ConnectionString;
             searchTrackingTopicName = searchTrackingServiceBusSettings.SearchTrackingTopic;
+            sendRetryCount = searchTrackingServiceBusSettings.SendRetryCount;
+            sendRetryCooldownSeconds = searchTrackingServiceBusSettings.SendRetryCooldownSeconds;
+            this.logger = logger;
         }
 
         public async Task PublishSearchTrackingEvent<TEvent>(TEvent searchTrackingEvent, SearchTrackingEventType eventType)
@@ -29,9 +39,13 @@ namespace Atlas.SearchTracking.Common.Clients
             var message = new Message(Encoding.UTF8.GetBytes(json));
 
             message.UserProperties[SearchTrackingConstants.EventType] = eventType.ToString();
-
             var client = new TopicClient(connectionString, searchTrackingTopicName);
-            await client.SendAsync(message);
+
+            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
+            {
+                await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                    (exception, retryNumber) => logger.SendTrace($"Could not send search tracking event message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
+            }
         }
     }
 }

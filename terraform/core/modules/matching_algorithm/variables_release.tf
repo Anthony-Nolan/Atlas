@@ -121,6 +121,14 @@ variable "MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
   type = string
 }
 
+variable "SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS" {
+  type = number
+}
+
+variable "SERVICE_BUS_SEND_RETRY_COUNT" {
+  type = number
+}
+
 variable "WEBSITE_RUN_FROM_PACKAGE" {
   type = string
 }

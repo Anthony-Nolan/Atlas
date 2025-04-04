@@ -11,6 +11,8 @@ using Newtonsoft.Json;
 using Atlas.DonorImport.ApplicationInsights;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
+using Atlas.Common.Utils;
+using System.Transactions;
 
 namespace Atlas.DonorImport.Services
 {
@@ -23,11 +25,15 @@ namespace Atlas.DonorImport.Services
     {
         private readonly ITopicClient topicClient;
         private readonly ILogger logger;
+        private readonly int sendRetryCount;
+        private readonly int sendRetryCooldownSeconds;
 
         public DonorImportMessageSender(ILogger logger, [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings)
         {
             this.logger = logger;
             topicClient = topicClientFactory.BuildTopicClient(messagingServiceBusSettings.DonorImportResultsTopic);
+            sendRetryCount = messagingServiceBusSettings.SendRetryCount;
+            sendRetryCooldownSeconds = messagingServiceBusSettings.SendRetryCooldownSeconds;
         }
 
 
@@ -97,7 +103,8 @@ namespace Atlas.DonorImport.Services
                     }
                 };
 
-                await topicClient.SendAsync(message);
+                await topicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                    (exception, retryNumber) => logger.SendTrace($"Could not send donor import message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
             }
             catch (Exception e)
             {

@@ -1,8 +1,11 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus;
+using Atlas.Common.Utils;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Azure.Messaging.ServiceBus;
@@ -22,13 +25,19 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
         private readonly ITopicClientFactory topicClientFactory;
         private readonly string searchRequestsTopicName;
         private readonly string resultsNotificationTopicName;
+        private readonly int sendRetryCount;
+        private readonly int sendRetryCooldownSeconds;
+        private readonly ILogger logger;
 
-        public SearchServiceBusClient([FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings)
+        public SearchServiceBusClient([FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings, ILogger logger)
         {
             this.topicClientFactory = topicClientFactory;
 
             searchRequestsTopicName = messagingServiceBusSettings.SearchRequestsTopic;
             resultsNotificationTopicName = messagingServiceBusSettings.SearchResultsTopic;
+            sendRetryCount = messagingServiceBusSettings.SendRetryCount;
+            sendRetryCooldownSeconds = messagingServiceBusSettings.SendRetryCooldownSeconds;
+            this.logger = logger;
         }
 
         public async Task PublishToSearchRequestsTopic(IdentifiedSearchRequest searchRequest)
@@ -43,7 +52,12 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
             };
 
             await using var client = topicClientFactory.BuildTopicClient(searchRequestsTopicName);
-            await client.SendAsync(message);
+
+            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
+            {
+                await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                    (exception, retryNumber) => logger.SendTrace($"Could not send search request message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
+            }
         }
 
         public async Task PublishToResultsNotificationTopic(MatchingResultsNotification matchingResultsNotification)
@@ -66,7 +80,12 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
             message.MessageId = Guid.NewGuid().ToString();
 
             await using var client = topicClientFactory.BuildTopicClient(resultsNotificationTopicName);
-            await client.SendAsync(message);
+
+            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
+            {
+                await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                    (exception, retryNumber) => logger.SendTrace($"Could not send search matching results message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
+            }
         }
     }
 }

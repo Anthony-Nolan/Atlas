@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.ServiceBus;
+using Atlas.Common.Utils;
 using Atlas.Functions.Models;
 using Atlas.Functions.Settings;
 using AutoMapper;
@@ -30,6 +32,8 @@ namespace Atlas.Functions.Services
         private readonly string resultsNotificationTopicName;
         private readonly string repeatResultsNotificationTopicName;
         private readonly ITopicClientFactory topicClientFactory;
+        private readonly int sendRetryCount;
+        private readonly int sendRetryCooldownSeconds;
 
 
         public SearchCompletionMessageSender(
@@ -44,6 +48,8 @@ namespace Atlas.Functions.Services
 
             resultsNotificationTopicName = messagingServiceBusSettings.Value.SearchResultsTopic;
             repeatResultsNotificationTopicName = messagingServiceBusSettings.Value.RepeatSearchResultsTopic;
+            sendRetryCount = messagingServiceBusSettings.Value.SendRetryCount;
+            sendRetryCooldownSeconds = messagingServiceBusSettings.Value.SendRetryCooldownSeconds;
         }
 
         public async Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime, string resultsBatchFolder) where T : SearchResultSet
@@ -125,7 +131,9 @@ namespace Atlas.Functions.Services
                 : resultsNotificationTopicName;
 
             await using var client = topicClientFactory.BuildTopicClient(notificationTopicName);
-            await client.SendAsync(message);
+
+            await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                (exception, retryNumber) => logger.SendTrace($"Could not send search results message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
         }
     }
 }

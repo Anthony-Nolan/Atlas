@@ -7,6 +7,8 @@
         public string RepeatSearchRequestsSubscription { get; set; }
         public string RepeatSearchMatchingResultsTopic { get; set; }
         public int RepeatSearchRequestsMaxDeliveryCount { get; set; }
+        public int SendRetryCount { get; set; }
+        public int SendRetryCooldownSeconds { get; set; }
 
         /// <summary>
         /// Subscription for matching notifications used by debug endpoint.
