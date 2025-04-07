@@ -2,7 +2,7 @@
 {
     public class MatchPredictionTimingEvent
     {
-        public Guid SearchRequestId { get; set; }
+        public Guid SearchIdentifier { get; set; }
         public DateTime TimeUtc { get; set; }
     }
 }

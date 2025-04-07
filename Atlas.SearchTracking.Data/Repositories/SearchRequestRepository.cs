@@ -15,9 +15,9 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         Task TrackSearchRequestCompletedEvent(SearchRequestCompletedEvent completedEvent);
 
-        Task<SearchRequest> GetSearchRequestByIdentifier(Guid searchRequestId);
+        Task<SearchRequest> GetSearchRequestByIdentifier(Guid searchIdentifier);
 
-        Task<int> GetSearchRequestIdByIdentifier(Guid searchRequestId);
+        Task<int> GetSearchRequestIdByIdentifier(Guid searchIdentifier);
     }
 
     public class SearchRequestRepository : ISearchRequestRepository
@@ -54,7 +54,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackMatchPredictionCompletedEvent(MatchPredictionCompletedEvent matchPredictionCompletedEvent)
         {
-            var searchRequest = await GetSearchRequestByIdentifier(matchPredictionCompletedEvent.SearchRequestId);
+            var searchRequest = await GetSearchRequestByIdentifier(matchPredictionCompletedEvent.SearchIdentifier);
 
             searchRequest.MatchPrediction_IsSuccessful = matchPredictionCompletedEvent.CompletionDetails.IsSuccessful;
             searchRequest.MatchPrediction_FailureInfo_Message = matchPredictionCompletedEvent.CompletionDetails.FailureInfo?.Message;

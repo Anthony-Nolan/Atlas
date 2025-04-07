@@ -31,7 +31,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackStartedEvent(MatchingAlgorithmAttemptStartedEvent matchingAlgorithmStartedEvent)
         {
-            var id = await GetSearchRequestIdByIdentifier(matchingAlgorithmStartedEvent.SearchRequestId);
+            var id = await GetSearchRequestIdByIdentifier(matchingAlgorithmStartedEvent.SearchIdentifier);
 
             var matchingAlgorithmAttempt = new SearchRequestMatchingAlgorithmAttempts
             {
@@ -63,7 +63,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackTimingEvent(MatchingAlgorithmAttemptTimingEvent matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType eventType)
         {
-            var id = await GetSearchRequestIdByIdentifier(matchingAlgorithmAttemptTimingEvent.SearchRequestId);
+            var id = await GetSearchRequestIdByIdentifier(matchingAlgorithmAttemptTimingEvent.SearchIdentifier);
 
             var matchingAlgorithmAttempt = await GetRequiredMatchingAlgorithmAttemptTiming(id, matchingAlgorithmAttemptTimingEvent.AttemptNumber);
             var timingProperty = SearchTrackingConstants.MatchingAlgorithmColumnMappings[eventType];

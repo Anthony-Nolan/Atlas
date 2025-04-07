@@ -40,7 +40,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             var expectedMatchingAlgorithmAttemptStartedEvent = new MatchingAlgorithmAttemptStartedEvent
             {
-                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
                 AttemptNumber = attemptNumber,
                 InitiationTimeUtc = initiationTime,
                 StartTimeUtc = startTime
@@ -65,7 +65,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
             {
-                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
                 AttemptNumber = attemptNumber,
                 TimeUtc = eventTime
             };
@@ -93,7 +93,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
             {
-                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
                 AttemptNumber = attemptNumber,
                 TimeUtc = eventTime
             };
@@ -121,7 +121,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
             {
-                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
                 AttemptNumber = attemptNumber,
                 TimeUtc = eventTime
             };
@@ -149,7 +149,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
             {
-                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
                 AttemptNumber = attemptNumber,
                 TimeUtc = eventTime
             };
@@ -177,7 +177,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
             {
-                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
                 AttemptNumber = attemptNumber,
                 TimeUtc = eventTime
             };
@@ -205,7 +205,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
             {
-                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
                 AttemptNumber = attemptNumber,
                 TimeUtc = eventTime
             };

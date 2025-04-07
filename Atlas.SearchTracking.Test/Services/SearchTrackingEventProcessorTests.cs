@@ -91,7 +91,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             var expectedMatchingAlgorithmAttemptStartedEvent = new MatchingAlgorithmAttemptStartedEvent()
             {
-                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 AttemptNumber = 0,
                 InitiationTimeUtc = new DateTime(2024, 10, 24, 15, 0, 0),
                 StartTimeUtc = new DateTime(2024, 10, 24, 15, 0, 2)
@@ -122,7 +122,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
             {
-                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 AttemptNumber = 0,
                 TimeUtc = new DateTime(2024, 10, 24, 15, 0, 10)
             };
@@ -191,7 +191,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             var expectedMatchPredictionStartedEvent = new MatchPredictionStartedEvent()
             {
-                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 InitiationTimeUtc = new DateTime(2024, 10, 24, 15, 0, 30),
                 StartTimeUtc = new DateTime(2024, 10, 24, 15, 0, 31)
             };
@@ -221,7 +221,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             var expectedMatchPredictionTimingEvent = new MatchPredictionTimingEvent
             {
-                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 TimeUtc = new DateTime(2024, 10, 24, 15, 0, 0)
             };
 
@@ -242,7 +242,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             var expectedMatchPredictionCompletedEvent = new MatchPredictionCompletedEvent()
             {
-                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 CompletionTimeUtc = new DateTime(2024, 10, 24, 16, 0, 0),
                 CompletionDetails = new MatchPredictionCompletionDetails
                 {

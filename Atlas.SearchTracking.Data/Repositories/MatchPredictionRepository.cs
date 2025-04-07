@@ -31,7 +31,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackStartedEvent(MatchPredictionStartedEvent matchPredictionStartedEvent)
         {
-            var id = await GetSearchRequestIdByIdentifier(matchPredictionStartedEvent.SearchRequestId);
+            var id = await GetSearchRequestIdByIdentifier(matchPredictionStartedEvent.SearchIdentifier);
 
             var matchPrediction = new SearchRequestMatchPredictionTiming
             {
@@ -46,7 +46,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackCompletedEvent(MatchPredictionCompletedEvent matchPredictionCompletedEvent)
         {
-            var id = await GetSearchRequestIdByIdentifier(matchPredictionCompletedEvent.SearchRequestId);
+            var id = await GetSearchRequestIdByIdentifier(matchPredictionCompletedEvent.SearchIdentifier);
 
             var matchPrediction = await GetRequiredMatchPredictionTiming(id);
 
@@ -56,7 +56,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackTimingEvent(MatchPredictionTimingEvent matchPredictionTimingEvent, SearchTrackingEventType eventType)
         {
-            var id = await GetSearchRequestIdByIdentifier(matchPredictionTimingEvent.SearchRequestId);
+            var id = await GetSearchRequestIdByIdentifier(matchPredictionTimingEvent.SearchIdentifier);
 
             var matchPrediction = await GetRequiredMatchPredictionTiming(id);
             var timingProperty = SearchTrackingConstants.MatchPredictionColumnMappings[eventType];

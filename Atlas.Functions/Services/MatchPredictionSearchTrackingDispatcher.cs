@@ -33,7 +33,7 @@ namespace Atlas.Functions.Services
         {
             var matchPredictionStartedEvent = new MatchPredictionStartedEvent
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchRequestId,
                 InitiationTimeUtc = initiationTime,
                 StartTimeUtc = DateTime.UtcNow
             };
@@ -46,7 +46,7 @@ namespace Atlas.Functions.Services
         {
             var matchPredictionTimingEvent = new MatchPredictionTimingEvent()
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchRequestId,
                 TimeUtc = DateTime.UtcNow
             };
 
@@ -58,7 +58,7 @@ namespace Atlas.Functions.Services
         {
             var matchPredictionTimingEvent = new MatchPredictionTimingEvent()
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchRequestId,
                 TimeUtc = DateTime.UtcNow
             };
 
@@ -70,7 +70,7 @@ namespace Atlas.Functions.Services
         {
             var matchPredictionTimingEvent = new MatchPredictionTimingEvent()
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchRequestId,
                 TimeUtc = DateTime.UtcNow
             };
 
@@ -82,7 +82,7 @@ namespace Atlas.Functions.Services
         {
             var matchPredictionTimingEvent = new MatchPredictionTimingEvent()
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchRequestId,
                 TimeUtc = DateTime.UtcNow
             };
 
@@ -94,7 +94,7 @@ namespace Atlas.Functions.Services
         {
             var matchPredictionTimingEvent = new MatchPredictionTimingEvent()
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchRequestId,
                 TimeUtc = DateTime.UtcNow
             };
 
@@ -106,7 +106,7 @@ namespace Atlas.Functions.Services
         {
             var matchPredictionTimingEvent = new MatchPredictionTimingEvent()
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchRequestId,
                 TimeUtc = DateTime.UtcNow
             };
 
@@ -118,7 +118,7 @@ namespace Atlas.Functions.Services
         {
             var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
             {
-                SearchRequestId = eventDetails.SearchIdentifier,
+                SearchIdentifier = eventDetails.SearchIdentifier,
                 CompletionTimeUtc = DateTime.UtcNow,
                 CompletionDetails = new MatchPredictionCompletionDetails
                 {

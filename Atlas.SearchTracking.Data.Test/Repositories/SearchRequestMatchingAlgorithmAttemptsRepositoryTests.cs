@@ -51,7 +51,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var matchingAlgorithmStartedEvent = new MatchingAlgorithmAttemptStartedEvent
             {
-                SearchRequestId = expectedSearchRequestGuid,
+                SearchIdentifier = expectedSearchRequestGuid,
                 AttemptNumber = expectedSearchRequestMatchingAlgorithmAttemptsEntity.AttemptNumber,
                 InitiationTimeUtc = expectedSearchRequestMatchingAlgorithmAttemptsEntity.InitiationTimeUtc,
                 StartTimeUtc = expectedSearchRequestMatchingAlgorithmAttemptsEntity.StartTimeUtc,
@@ -85,7 +85,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
             {
-                SearchRequestId = expectedSearchRequestGuid,
+                SearchIdentifier = expectedSearchRequestGuid,
                 AttemptNumber = expectedSearchRequestMatchingAlgorithmAttemptsEntity.AttemptNumber,
                 TimeUtc = new DateTime(2022, 12, 31)
             };

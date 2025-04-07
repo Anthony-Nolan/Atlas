@@ -35,7 +35,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var act = async () => await searchRequestRepository.GetSearchRequestByIdentifier(expectedSearchRequestId);
 
-            act.Should().Throw<Exception>().WithMessage($"Search request with Guid {expectedSearchRequestId} not found");
+            act.Should().Throw<Exception>().WithMessage($"Search request with identifier {expectedSearchRequestId} not found");
         }
 
         [Test]
@@ -73,7 +73,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchRequestId,
                 CompletionDetails = new MatchPredictionCompletionDetails
                 {
                     IsSuccessful = true,
@@ -96,7 +96,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchRequestId,
                 CompletionDetails = new MatchPredictionCompletionDetails
                 {
                     IsSuccessful = false,
