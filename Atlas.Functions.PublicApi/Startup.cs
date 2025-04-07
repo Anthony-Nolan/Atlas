@@ -3,7 +3,6 @@ using Atlas.Common.Notifications;
 using Atlas.Functions.PublicApi.ClientConfig;
 using Atlas.Functions.PublicApi.Config;
 using Atlas.Functions.PublicApi.Settings;
-using Atlas.MatchingAlgorithm.Clients.Scoring;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.RepeatSearch.ExternalInterface.DependencyInjection;
@@ -23,7 +22,8 @@ namespace Atlas.Functions.PublicApi
 
             services.RegisterMatchingAlgorithmOrchestration(
                 OptionsReaderFor<MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings>(),
-                OptionsReaderFor<SearchTrackingServiceBusSettings>());
+                OptionsReaderFor<SearchTrackingServiceBusSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>());
 
             services.RegisterRepeatSearchOrchestration(OptionsReaderFor<RepeatSearch.Settings.ServiceBus.MessagingServiceBusSettings>(),
                 OptionsReaderFor<SearchTrackingServiceBusSettings>());

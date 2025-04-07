@@ -11,15 +11,23 @@
     "Matching:MessagingServiceBus:ConnectionString": "override-this",
     "Matching:MessagingServiceBus:SearchRequestsTopic": "matching-requests",
     "Matching:MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
+    "Matching:MessagingServiceBus:SendRetryCount": "5",
+    "Matching:MessagingServiceBus:SendRetryCooldownSeconds": "20",
 
     "RepeatSearch:MessagingServiceBus:ConnectionString": "override-this",
     "RepeatSearch:MessagingServiceBus:RepeatSearchRequestsTopic": "repeat-search-requests",
+    "RepeatSearch:MessagingServiceBus:SendRetryCount": "5",
+    "RepeatSearch:MessagingServiceBus:SendRetryCooldownSeconds": "20",
 
     "SearchTracking:SearchTrackingServiceBus:ConnectionString": "override-this",
     "SearchTracking:SearchTrackingServiceBus:SearchTrackingTopic": "search-tracking-events",
+    "SearchTracking:SearchTrackingServiceBus:SendRetryCount": "5",
+    "SearchTracking:SearchTrackingServiceBus:SendRetryCooldownSeconds": "20",
 
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
-    "NotificationsServiceBus:NotificationsTopic": "notifications"
+    "NotificationsServiceBus:NotificationsTopic": "notifications",
+    "NotificationsServiceBus:SendRetryCount": "5",
+    "NotificationsServiceBus:SendRetryCooldownSeconds": "20"
   }
 }

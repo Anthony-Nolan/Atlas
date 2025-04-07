@@ -1,4 +1,5 @@
 ﻿using System;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus.DependencyInjection;
 using Atlas.Common.Utils.Extensions;
 using Atlas.RepeatSearch.Clients;
@@ -19,10 +20,12 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
         public static void RegisterRepeatSearchOrchestration(
             this IServiceCollection services,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
-            Func<IServiceProvider, SearchTrackingServiceBusSettings> fetchSearchTrackingServiceBusSettings)
+            Func<IServiceProvider, SearchTrackingServiceBusSettings> fetchSearchTrackingServiceBusSettings,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
         {
             services.RegisterSettings(fetchMessagingServiceBusSettings);
             services.RegisterSearchTrackingSettings(fetchSearchTrackingServiceBusSettings);
+            services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices();
         }
 

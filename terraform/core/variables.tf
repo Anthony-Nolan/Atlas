@@ -425,6 +425,18 @@ variable "SEARCH_TRACKING_DATABASE_USERNAME" {
   default = "search_tracking"
 }
 
+variable "SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS" {
+	type        = number
+	default     = 20
+	description = "When sending a service bus message, time to wait before retrying a failed message"
+}
+
+variable "SERVICE_BUS_SEND_RETRY_COUNT" {
+	type        = number
+	default     = 5
+	description = "When sending a service bus message, the total number of retries to attempt"
+}
+
 variable "SHOULD_BATCH_RESULTS" {
   type        = bool
   default     = false
