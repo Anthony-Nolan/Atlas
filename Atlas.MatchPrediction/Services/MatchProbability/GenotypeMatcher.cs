@@ -58,6 +58,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         private readonly IGenotypeImputationService genotypeImputer;
         private readonly IGenotypeConverter genotypeConverter;
         private readonly IMatchCalculationService matchCalculationService;
+        private readonly IPreparationMatcher preparationMatcher;
         private readonly ILogger logger;
 
         private record GenotypeSet(bool IsUnrepresented, ICollection<GenotypeAtDesiredResolutions> Genotypes, decimal SumOfLikelihoods);
@@ -66,12 +67,14 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             IGenotypeImputationService genotypeImputer,
             IGenotypeConverter genotypeConverter,
             IMatchCalculationService matchCalculationService,
+            IPreparationMatcher preparation,
             // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger)
         {
             this.genotypeImputer = genotypeImputer;
             this.genotypeConverter = genotypeConverter;
             this.matchCalculationService = matchCalculationService;
+            this.preparationMatcher = preparation;
             this.logger = logger;
         }
 
@@ -121,6 +124,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
         private async Task<GenotypeSet> GetGenotypeSetResultForMatchCounting(SubjectData subjectData, MatchPredictionParameters parameters)
         {
+            subjectData = await preparationMatcher.UpdateRenamedHla(subjectData, parameters);
+
             var imputedGenotypes = await genotypeImputer.Impute(new ImputationInput
             {
                 SubjectData = subjectData,

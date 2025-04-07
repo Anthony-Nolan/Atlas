@@ -71,8 +71,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 HfSetId = setId
             };
 
-            var exception = Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () => await Expander.ExpandCompressedPhenotype(input));
-            exception.Message.Should().Contain(alleleFromLaterHlaVersion);
+            // Act
+            var genotypes = await Expander.ExpandCompressedPhenotype(input);
+
+            // Expect the HLA lookup to fail, but HMD exceptions should be suppressed and instead no genotypes should be returned
+            genotypes.Should().BeEmpty();
         }
     }
 }
