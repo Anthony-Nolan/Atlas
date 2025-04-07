@@ -53,9 +53,9 @@ namespace Atlas.RepeatSearch.Services.Search
         {
             var searchRequestedEvent = new SearchRequestedEvent
             {
-                SearchRequestId = new Guid(id),
+                SearchIdentifier = new Guid(id),
                 IsRepeatSearch = true,
-                OriginalSearchRequestId = new Guid(repeatSearchRequest.OriginalSearchId),
+                OriginalSearchIdentifier = new Guid(repeatSearchRequest.OriginalSearchId),
                 RepeatSearchCutOffDate = repeatSearchRequest.SearchCutoffDate.Value.UtcDateTime,
                 RequestJson = JsonConvert.SerializeObject(repeatSearchRequest),
                 SearchCriteria = SearchTrackingEventHelper.GetSearchCriteria(repeatSearchRequest.SearchRequest),

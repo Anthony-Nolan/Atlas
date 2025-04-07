@@ -9,7 +9,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
     {
         public static Builder<SearchRequestedEvent> New =>
             Builder<SearchRequestedEvent>.New
-                .With(x => x.SearchRequestId, new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"))
+                .With(x => x.SearchIdentifier, new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"))
                 .With(x => x.IsRepeatSearch, false)
                 .With(x => x.SearchCriteria, "6/6")
                 .With(x => x.DonorType, "Adult")

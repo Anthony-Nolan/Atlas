@@ -49,7 +49,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var matchPredictionStartedEvent = new MatchPredictionStartedEvent
             {
-                SearchRequestId = expectedSearchRequestGuId,
+                SearchIdentifier = expectedSearchRequestGuId,
                 InitiationTimeUtc = expectedMatchPredictionEntity.InitiationTimeUtc,
                 StartTimeUtc = expectedMatchPredictionEntity.StartTimeUtc,
             };
@@ -81,7 +81,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var matchPredictionTimingEvent = new MatchPredictionTimingEvent
             {
-                SearchRequestId = expectedSearchRequestGuid,
+                SearchIdentifier = expectedSearchRequestGuid,
                 TimeUtc = new DateTime(2022, 12, 31)
             };
 
@@ -103,7 +103,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
             {
-                SearchRequestId = expectedSearchRequestGuid,
+                SearchIdentifier = expectedSearchRequestGuid,
                 CompletionTimeUtc = expectedMatchPredictionEntity.CompletionTimeUtc.Value
             };
 

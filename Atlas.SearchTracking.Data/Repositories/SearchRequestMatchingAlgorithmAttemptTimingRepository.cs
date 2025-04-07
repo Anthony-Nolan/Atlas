@@ -31,7 +31,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackStartedEvent(MatchingAlgorithmAttemptStartedEvent matchingAlgorithmStartedEvent)
         {
-            var id = await GetSearchRequestIdByGuid(matchingAlgorithmStartedEvent.SearchRequestId);
+            var id = await GetSearchRequestIdByIdentifier(matchingAlgorithmStartedEvent.SearchIdentifier);
 
             var matchingAlgorithmAttempt = new SearchRequestMatchingAlgorithmAttempts
             {
@@ -47,7 +47,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackCompletedEvent(MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent)
         {
-            var id = await GetSearchRequestIdByGuid(matchingAlgorithmCompletedEvent.SearchIdentifier);
+            var id = await GetSearchRequestIdByIdentifier(matchingAlgorithmCompletedEvent.SearchIdentifier);
 
             var matchingAlgorithmAttempt = await GetRequiredMatchingAlgorithmAttemptTiming(id, matchingAlgorithmCompletedEvent.AttemptNumber);
 
@@ -63,7 +63,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackTimingEvent(MatchingAlgorithmAttemptTimingEvent matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType eventType)
         {
-            var id = await GetSearchRequestIdByGuid(matchingAlgorithmAttemptTimingEvent.SearchRequestId);
+            var id = await GetSearchRequestIdByIdentifier(matchingAlgorithmAttemptTimingEvent.SearchIdentifier);
 
             var matchingAlgorithmAttempt = await GetRequiredMatchingAlgorithmAttemptTiming(id, matchingAlgorithmAttemptTimingEvent.AttemptNumber);
             var timingProperty = SearchTrackingConstants.MatchingAlgorithmColumnMappings[eventType];
@@ -100,13 +100,13 @@ namespace Atlas.SearchTracking.Data.Repositories
             return matchingAlgorithmAttempt;
         }
 
-        private async Task<int> GetSearchRequestIdByGuid(Guid searchRequestId)
+        private async Task<int> GetSearchRequestIdByIdentifier(Guid searchIdentifier)
         {
-            var searchRequest = await SearchRequests.FirstOrDefaultAsync(x => x.SearchRequestId == searchRequestId);
+            var searchRequest = await SearchRequests.FirstOrDefaultAsync(x => x.SearchIdentifier == searchIdentifier);
 
             if (searchRequest == null)
             {
-                throw new Exception($"Search request with Guid {searchRequestId} not found");
+                throw new Exception($"Search request with identifier {searchIdentifier} not found");
             }
 
             return searchRequest.Id;

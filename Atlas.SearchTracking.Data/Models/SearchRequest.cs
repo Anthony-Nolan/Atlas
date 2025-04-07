@@ -11,11 +11,11 @@ namespace Atlas.SearchTracking.Data.Models
         public int Id { get; set; }
 
         [Required]
-        public Guid SearchRequestId { get; set; }
+        public Guid SearchIdentifier { get; set; }
 
         public bool IsRepeatSearch { get; set; }
 
-        public Guid? OriginalSearchRequestId { get; set; }
+        public Guid? OriginalSearchIdentifier { get; set; }
 
         public DateTime? RepeatSearchCutOffDate { get; set; }
 
@@ -43,8 +43,6 @@ namespace Atlas.SearchTracking.Data.Models
         public MatchingAlgorithmFailureType? MatchingAlgorithm_FailureInfo_Type { get; set; }
 
         public byte? MatchingAlgorithm_TotalAttemptsNumber { get; set; }
-
-        public int? MatchingAlgorithm_NumberOfMatching { get; set; }
 
         public int? MatchingAlgorithm_NumberOfResults { get; set; }
 
@@ -93,8 +91,8 @@ namespace Atlas.SearchTracking.Data.Models
     {
         public static void SetUpModel(this EntityTypeBuilder<SearchRequest> modelBuilder)
         {
-            modelBuilder.HasIndex(d => d.SearchRequestId)
-                .HasDatabaseName("IX_SearchRequestId")
+            modelBuilder.HasIndex(d => d.SearchIdentifier)
+                .HasDatabaseName("IX_SearchIdentifier")
                 .IsUnique();
         }
     }
