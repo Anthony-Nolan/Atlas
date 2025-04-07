@@ -15,9 +15,9 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         Task TrackSearchRequestCompletedEvent(SearchRequestCompletedEvent completedEvent);
 
-        Task<SearchRequest> GetSearchRequestByGuid(Guid searchRequestId);
+        Task<SearchRequest> GetSearchRequestByIdentifier(Guid searchRequestId);
 
-        Task<int> GetSearchRequestIdByGuid(Guid searchRequestId);
+        Task<int> GetSearchRequestIdByIdentifier(Guid searchRequestId);
     }
 
     public class SearchRequestRepository : ISearchRequestRepository
@@ -35,9 +35,9 @@ namespace Atlas.SearchTracking.Data.Repositories
         {
             var searchRequest = new SearchRequest
             {
-                SearchIdentifier = requestedEvent.SearchRequestId,
+                SearchIdentifier = requestedEvent.SearchIdentifier,
                 IsRepeatSearch = requestedEvent.IsRepeatSearch,
-                OriginalSearchIdentifier = requestedEvent.OriginalSearchRequestId,
+                OriginalSearchIdentifier = requestedEvent.OriginalSearchIdentifier,
                 RepeatSearchCutOffDate = requestedEvent.RepeatSearchCutOffDate,
                 RequestJson = requestedEvent.RequestJson,
                 SearchCriteria = requestedEvent.SearchCriteria,
@@ -54,7 +54,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackMatchPredictionCompletedEvent(MatchPredictionCompletedEvent matchPredictionCompletedEvent)
         {
-            var searchRequest = await GetSearchRequestByGuid(matchPredictionCompletedEvent.SearchRequestId);
+            var searchRequest = await GetSearchRequestByIdentifier(matchPredictionCompletedEvent.SearchRequestId);
 
             searchRequest.MatchPrediction_IsSuccessful = matchPredictionCompletedEvent.CompletionDetails.IsSuccessful;
             searchRequest.MatchPrediction_FailureInfo_Message = matchPredictionCompletedEvent.CompletionDetails.FailureInfo?.Message;
@@ -68,7 +68,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackMatchingAlgorithmCompletedEvent(MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent)
         {
-            var searchRequest = await GetSearchRequestByGuid(matchingAlgorithmCompletedEvent.SearchIdentifier);
+            var searchRequest = await GetSearchRequestByIdentifier(matchingAlgorithmCompletedEvent.SearchIdentifier);
 
             searchRequest.MatchingAlgorithm_IsSuccessful = matchingAlgorithmCompletedEvent.CompletionDetails.IsSuccessful;
             searchRequest.MatchingAlgorithm_FailureInfo_Message = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo?.Message;
@@ -96,7 +96,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackSearchRequestCompletedEvent(SearchRequestCompletedEvent completedEvent)
         {
-            var searchRequest = await GetSearchRequestByGuid(completedEvent.SearchRequestId);
+            var searchRequest = await GetSearchRequestByIdentifier(completedEvent.SearchIdentifier);
 
             searchRequest.ResultsSent = completedEvent.ResultsSent;
             searchRequest.ResultsSentTimeUtc = completedEvent.ResultsSentTimeUtc;
@@ -104,25 +104,25 @@ namespace Atlas.SearchTracking.Data.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task<SearchRequest> GetSearchRequestByGuid(Guid searchRequestId)
+        public async Task<SearchRequest> GetSearchRequestByIdentifier(Guid searchIdentifier)
         {
-            var searchRequest = await searchRequests.FirstOrDefaultAsync(x => x.SearchIdentifier == searchRequestId);
+            var searchRequest = await searchRequests.FirstOrDefaultAsync(x => x.SearchIdentifier == searchIdentifier);
 
             if (searchRequest == null)
             {
-                throw new Exception($"Search request with Guid {searchRequestId} not found");
+                throw new Exception($"Search request with identifier {searchIdentifier} not found");
             }
 
             return searchRequest;
         }
 
-        public async Task<int> GetSearchRequestIdByGuid(Guid searchRequestId)
+        public async Task<int> GetSearchRequestIdByIdentifier(Guid searchIdentifier)
         {
-            var searchRequest = await searchRequests.FirstOrDefaultAsync(x => x.SearchIdentifier == searchRequestId);
+            var searchRequest = await searchRequests.FirstOrDefaultAsync(x => x.SearchIdentifier == searchIdentifier);
 
             if (searchRequest == null)
             {
-                throw new Exception($"Search request with Guid {searchRequestId} not found");
+                throw new Exception($"Search request with identifier {searchIdentifier} not found");
             }
 
             return searchRequest.Id;

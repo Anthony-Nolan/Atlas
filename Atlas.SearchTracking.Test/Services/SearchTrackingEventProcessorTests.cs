@@ -38,9 +38,9 @@ namespace Atlas.SearchTracking.Test.Services
 
             var expectedSearchRequestedEvent = new SearchRequestedEvent
             {
-                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 IsRepeatSearch = false,
-                OriginalSearchRequestId = null,
+                OriginalSearchIdentifier = null,
                 RepeatSearchCutOffDate = null,
                 RequestJson = "RequestJson",
                 SearchCriteria = "10/10",
@@ -68,7 +68,7 @@ namespace Atlas.SearchTracking.Test.Services
 
             var expectedSearchRequestCompletedEvent = new SearchRequestCompletedEvent
             {
-                SearchRequestId = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
                 ResultsSent = true,
                 ResultsSentTimeUtc = new DateTime(2024, 10, 1, 15, 30, 00)
             };

@@ -2,9 +2,9 @@
 {
     public class SearchRequestedEvent
     {
-        public Guid SearchRequestId { get; set; }
+        public Guid SearchIdentifier { get; set; }
         public bool IsRepeatSearch { get; set; }
-        public Guid? OriginalSearchRequestId { get; set; }
+        public Guid? OriginalSearchIdentifier { get; set; }
         public DateTime? RepeatSearchCutOffDate { get; set; }
         public string RequestJson { get; set; }
         public string SearchCriteria { get; set; }

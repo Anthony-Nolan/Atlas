@@ -92,7 +92,7 @@ namespace Atlas.SearchTracking.Data.Models
         public static void SetUpModel(this EntityTypeBuilder<SearchRequest> modelBuilder)
         {
             modelBuilder.HasIndex(d => d.SearchIdentifier)
-                .HasDatabaseName("IX_SearchRequestId")
+                .HasDatabaseName("IX_SearchIdentifier")
                 .IsUnique();
         }
     }

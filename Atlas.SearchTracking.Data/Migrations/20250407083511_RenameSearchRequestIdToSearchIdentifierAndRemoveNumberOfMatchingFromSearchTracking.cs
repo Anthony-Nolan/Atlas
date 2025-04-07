@@ -24,6 +24,12 @@ namespace Atlas.SearchTracking.Data.Migrations
                 schema: "SearchTracking",
                 table: "SearchRequests",
                 newName: "OriginalSearchIdentifier");
+
+            migrationBuilder.RenameIndex(
+                name: "IX_SearchRequestId",
+                schema: "SearchTracking",
+                table: "SearchRequests",
+                newName: "IX_SearchIdentifier");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -46,6 +52,12 @@ namespace Atlas.SearchTracking.Data.Migrations
                 table: "SearchRequests",
                 type: "int",
                 nullable: true);
+
+            migrationBuilder.RenameIndex(
+                name: "IX_SearchIdentifier",
+                schema: "SearchTracking",
+                table: "SearchRequests",
+                newName: "IX_SearchRequestId");
         }
     }
 }

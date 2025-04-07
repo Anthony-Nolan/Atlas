@@ -31,7 +31,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackStartedEvent(MatchPredictionStartedEvent matchPredictionStartedEvent)
         {
-            var id = await GetSearchRequestIdByGuid(matchPredictionStartedEvent.SearchRequestId);
+            var id = await GetSearchRequestIdByIdentifier(matchPredictionStartedEvent.SearchRequestId);
 
             var matchPrediction = new SearchRequestMatchPredictionTiming
             {
@@ -46,7 +46,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackCompletedEvent(MatchPredictionCompletedEvent matchPredictionCompletedEvent)
         {
-            var id = await GetSearchRequestIdByGuid(matchPredictionCompletedEvent.SearchRequestId);
+            var id = await GetSearchRequestIdByIdentifier(matchPredictionCompletedEvent.SearchRequestId);
 
             var matchPrediction = await GetRequiredMatchPredictionTiming(id);
 
@@ -56,7 +56,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task TrackTimingEvent(MatchPredictionTimingEvent matchPredictionTimingEvent, SearchTrackingEventType eventType)
         {
-            var id = await GetSearchRequestIdByGuid(matchPredictionTimingEvent.SearchRequestId);
+            var id = await GetSearchRequestIdByIdentifier(matchPredictionTimingEvent.SearchRequestId);
 
             var matchPrediction = await GetRequiredMatchPredictionTiming(id);
             var timingProperty = SearchTrackingConstants.MatchPredictionColumnMappings[eventType];
@@ -91,13 +91,13 @@ namespace Atlas.SearchTracking.Data.Repositories
             return matchPrediction;
         }
 
-        private async Task<int> GetSearchRequestIdByGuid(Guid searchRequestId)
+        private async Task<int> GetSearchRequestIdByIdentifier(Guid searchIdentifier)
         {
-            var searchRequest = await SearchRequests.FirstOrDefaultAsync(x => x.SearchIdentifier == searchRequestId);
+            var searchRequest = await SearchRequests.FirstOrDefaultAsync(x => x.SearchIdentifier == searchIdentifier);
 
             if (searchRequest == null)
             {
-                throw new Exception($"Search request with Guid {searchRequestId} not found");
+                throw new Exception($"Search request with identifier {searchIdentifier} not found");
             }
 
             return searchRequest.Id;
