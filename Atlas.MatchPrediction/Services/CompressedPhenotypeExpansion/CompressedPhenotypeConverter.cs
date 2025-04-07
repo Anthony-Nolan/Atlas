@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
@@ -26,7 +25,6 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly IHlaToTargetCategoryConverter converter;
         private readonly IHlaCategorisationService categoriser;
-        private const char asterisk = '*';
 
         public CompressedPhenotypeConverter(
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory, IHlaToTargetCategoryConverter converter, IHlaCategorisationService categoriser)
@@ -43,34 +41,6 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
 
             var matchingHlaVersion = input.MatchPredictionParameters.MatchingAlgorithmHlaNomenclatureVersion;
             var matchingHmd = matchingHlaVersion == null ? null : hlaMetadataDictionaryFactory.BuildDictionary(matchingHlaVersion);
-
-            if (matchingHmd != null)
-            {
-                input.Phenotype = await input.Phenotype.MapAsync<string>(async (locus, _, hla) =>
-                {
-                    if (hla == null)
-                    {
-                        return hla;
-                    }
-
-                    categoriser.TryGetHlaTypingCategory(hla, out HlaTypingCategory? category);
-
-                    if (category != HlaTypingCategory.Allele)
-                    {
-                        return hla;
-                    }
-                    
-                    var currentAlleleNames = await matchingHmd.GetCurrentAlleleNames(locus, hla);
-
-                    //Only require instances that return a single renamed allele, not records that return a string of names like *01:01:01:01, *01:01:01:02
-                    if (currentAlleleNames.Count() != 1)
-                    {
-                        return hla;
-                    }
-
-                    return currentAlleleNames.Single();
-                });
-            }
 
             return await new DataByResolution<bool>().MapAsync(async (category, _) =>
                 await ConvertPhenotypeToTargetCategory(input, hfSetHmd, matchingHmd, category));

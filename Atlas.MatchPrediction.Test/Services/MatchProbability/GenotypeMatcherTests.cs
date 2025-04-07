@@ -1,4 +1,5 @@
-﻿using Atlas.Common.Public.Models.GeneticData;
+﻿using System;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.ApplicationInsights;
@@ -23,10 +24,12 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         private IGenotypeImputationService genotypeImputer;
         private IGenotypeConverter genotypeConverter;
         private IMatchCalculationService matchCalculationService;
+        private IPreparationMatcher preparationMatcher;
         private IMatchPredictionLogger<MatchProbabilityLoggingContext> logger;
         private IGenotypeMatcher genotypeMatcher;
 
         private readonly Fixture fixture = new();
+        private GenotypeMatcherInput input; 
 
         [SetUp]
         public void SetUp()
@@ -34,9 +37,10 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             genotypeImputer = Substitute.For<IGenotypeImputationService>();
             genotypeConverter = Substitute.For<IGenotypeConverter>();
             matchCalculationService = Substitute.For<IMatchCalculationService>();
+            preparationMatcher = Substitute.For<IPreparationMatcher>();
             logger = Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
 
-            genotypeMatcher = new GenotypeMatcher(genotypeImputer, genotypeConverter, matchCalculationService, logger);
+            genotypeMatcher = new GenotypeMatcher(genotypeImputer, genotypeConverter, matchCalculationService, preparationMatcher, logger);
 
             genotypeImputer.Impute(default).ReturnsForAnyArgs(new ImputedGenotypesBuilder().Default().Build());
 
@@ -46,12 +50,15 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             matchCalculationService.CalculateMatchCounts_Fast(default, default, default)
                 .ReturnsForAnyArgs(new LociInfo<int?>(0));
+
+            input = BuildDefaultInput();
+            preparationMatcher.UpdateRenamedHla(input.PatientData, input.MatchPredictionParameters).Returns(input.PatientData);
+            preparationMatcher.UpdateRenamedHla(input.DonorData, input.MatchPredictionParameters).Returns(input.DonorData);
         }
 
         [Test]
         public async Task MatchPatientDonorGenotypes_ImputesGenotypes()
         {
-            var input = BuildDefaultInput();
             await genotypeMatcher.MatchPatientDonorGenotypes(input);
 
             await genotypeImputer.Received().Impute(Arg.Is<ImputationInput>(x =>
@@ -70,8 +77,6 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         [Test]
         public async Task MatchPatientDonorGenotypes_PatientHasNoGenotypes_ReturnsPatientIsUnrepresented()
         {
-            var input = BuildDefaultInput();
-
             genotypeImputer
                 .Impute(Arg.Is<ImputationInput>(x => x.SubjectData.SubjectFrequencySet.SubjectLogDescription == input.PatientData.SubjectFrequencySet.SubjectLogDescription))
                 .Returns(new ImputedGenotypesBuilder().Build());
@@ -88,8 +93,6 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         [Test]
         public async Task MatchPatientDonorGenotypes_DonorHasNoGenotypes_ReturnsDonorIsUnrepresented()
         {
-            var input = BuildDefaultInput();
-
             genotypeImputer
                 .Impute(Arg.Is<ImputationInput>(x => x.SubjectData.SubjectFrequencySet.SubjectLogDescription == input.DonorData.SubjectFrequencySet.SubjectLogDescription))
                 .Returns(new ImputedGenotypesBuilder().Build());
@@ -112,7 +115,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             genotypeConverter.ConvertGenotypesForMatchCalculation(default)
                 .ReturnsForAnyArgs(new List<GenotypeAtDesiredResolutions> { genotype1, genotype2 });
 
-            var result = await genotypeMatcher.MatchPatientDonorGenotypes(BuildDefaultInput());
+            var result = await genotypeMatcher.MatchPatientDonorGenotypes(input);
 
             result.GenotypeMatchDetails.Count().Should().Be(4);
         }
@@ -126,7 +129,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             genotypeConverter.ConvertGenotypesForMatchCalculation(default)
                 .ReturnsForAnyArgs(new List<GenotypeAtDesiredResolutions> { genotype1, genotype2 });
 
-            var result = await genotypeMatcher.MatchPatientDonorGenotypes(BuildDefaultInput());
+            var result = await genotypeMatcher.MatchPatientDonorGenotypes(input);
 
             // before enumeration
             matchCalculationService.DidNotReceiveWithAnyArgs().CalculateMatchCounts_Fast(default, default, default);
