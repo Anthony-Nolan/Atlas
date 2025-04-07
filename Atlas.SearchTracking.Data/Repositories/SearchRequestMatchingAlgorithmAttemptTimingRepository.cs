@@ -102,7 +102,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         private async Task<int> GetSearchRequestIdByGuid(Guid searchRequestId)
         {
-            var searchRequest = await SearchRequests.FirstOrDefaultAsync(x => x.SearchRequestId == searchRequestId);
+            var searchRequest = await SearchRequests.FirstOrDefaultAsync(x => x.SearchIdentifier == searchRequestId);
 
             if (searchRequest == null)
             {

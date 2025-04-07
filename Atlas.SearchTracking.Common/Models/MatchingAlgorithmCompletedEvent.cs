@@ -19,7 +19,6 @@ namespace Atlas.SearchTracking.Common.Models
         public MatchingAlgorithmFailureInfo? FailureInfo { get; set; }
         public byte TotalAttemptsNumber { get; set; }
         public int? NumberOfResults { get; set; }
-        public int? NumberOfMatching { get; set; }
         public MatchingAlgorithmRepeatSearchResultsDetails? RepeatSearchResultsDetails { get; set; }
     }
 

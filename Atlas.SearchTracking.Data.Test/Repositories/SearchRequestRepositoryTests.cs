@@ -46,9 +46,9 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var searchRequestedEvent = new SearchRequestedEvent
             {
-                SearchRequestId = expectedSearchRequestEntity.SearchRequestId,
+                SearchRequestId = expectedSearchRequestEntity.SearchIdentifier,
                 IsRepeatSearch = expectedSearchRequestEntity.IsRepeatSearch,
-                OriginalSearchRequestId = expectedSearchRequestEntity.OriginalSearchRequestId,
+                OriginalSearchRequestId = expectedSearchRequestEntity.OriginalSearchIdentifier,
                 RepeatSearchCutOffDate = expectedSearchRequestEntity.RepeatSearchCutOffDate,
                 RequestJson = expectedSearchRequestEntity.RequestJson,
                 SearchCriteria = expectedSearchRequestEntity.SearchCriteria,
@@ -111,7 +111,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             await searchRequestRepository.TrackMatchPredictionCompletedEvent(matchPredictionCompletedEvent);
 
-            var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByGuid(expectedSearchRequestEntity.SearchRequestId);
+            var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByGuid(expectedSearchRequestEntity.SearchIdentifier);
 
             actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
         }
@@ -132,7 +132,6 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
                 {
                     IsSuccessful = true,
                     TotalAttemptsNumber = 3,
-                    NumberOfMatching = 1000,
                     NumberOfResults = 2000,
                     RepeatSearchResultsDetails = new MatchingAlgorithmRepeatSearchResultsDetails
                     {
@@ -172,7 +171,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             await searchRequestRepository.TrackMatchingAlgorithmCompletedEvent(matchingAlgorithmCompletedEvent);
 
-            var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByGuid(expectedSearchRequestEntity.SearchRequestId);
+            var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByGuid(expectedSearchRequestEntity.SearchIdentifier);
 
             actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
         }
@@ -191,7 +190,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             await searchRequestRepository.TrackSearchRequestCompletedEvent(searchRequestCompletedEvent);
 
-            var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByGuid(expectedSearchRequestEntity.SearchRequestId);
+            var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByGuid(expectedSearchRequestEntity.SearchIdentifier);
 
             actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
         }

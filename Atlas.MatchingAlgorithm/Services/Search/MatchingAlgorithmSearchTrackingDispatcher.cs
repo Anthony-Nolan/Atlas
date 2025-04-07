@@ -166,7 +166,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     IsSuccessful = eventDetails.FailureInfo == null,
                     TotalAttemptsNumber = currentContext.AttemptNumber,
                     NumberOfResults = eventDetails.NumberOfResults,
-                    NumberOfMatching = eventDetails.NumberOfMatching,
                     RepeatSearchResultsDetails = eventDetails.RepeatSearchResultsDetails,
                     FailureInfo = eventDetails.FailureInfo
                 }

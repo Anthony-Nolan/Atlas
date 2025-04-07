@@ -35,9 +35,9 @@ namespace Atlas.SearchTracking.Data.Repositories
         {
             var searchRequest = new SearchRequest
             {
-                SearchRequestId = requestedEvent.SearchRequestId,
+                SearchIdentifier = requestedEvent.SearchRequestId,
                 IsRepeatSearch = requestedEvent.IsRepeatSearch,
-                OriginalSearchRequestId = requestedEvent.OriginalSearchRequestId,
+                OriginalSearchIdentifier = requestedEvent.OriginalSearchRequestId,
                 RepeatSearchCutOffDate = requestedEvent.RepeatSearchCutOffDate,
                 RequestJson = requestedEvent.RequestJson,
                 SearchCriteria = requestedEvent.SearchCriteria,
@@ -75,7 +75,6 @@ namespace Atlas.SearchTracking.Data.Repositories
             searchRequest.MatchingAlgorithm_FailureInfo_ExceptionStacktrace = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo?.ExceptionStacktrace;
             searchRequest.MatchingAlgorithm_FailureInfo_Type = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo?.Type;
             searchRequest.MatchingAlgorithm_TotalAttemptsNumber = matchingAlgorithmCompletedEvent.CompletionDetails.TotalAttemptsNumber;
-            searchRequest.MatchingAlgorithm_NumberOfMatching = matchingAlgorithmCompletedEvent.CompletionDetails.NumberOfMatching;
             searchRequest.MatchingAlgorithm_NumberOfResults = matchingAlgorithmCompletedEvent.CompletionDetails.NumberOfResults;
 
             if (matchingAlgorithmCompletedEvent.CompletionDetails.RepeatSearchResultsDetails != null)
@@ -107,7 +106,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task<SearchRequest> GetSearchRequestByGuid(Guid searchRequestId)
         {
-            var searchRequest = await searchRequests.FirstOrDefaultAsync(x => x.SearchRequestId == searchRequestId);
+            var searchRequest = await searchRequests.FirstOrDefaultAsync(x => x.SearchIdentifier == searchRequestId);
 
             if (searchRequest == null)
             {
@@ -119,7 +118,7 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         public async Task<int> GetSearchRequestIdByGuid(Guid searchRequestId)
         {
-            var searchRequest = await searchRequests.FirstOrDefaultAsync(x => x.SearchRequestId == searchRequestId);
+            var searchRequest = await searchRequests.FirstOrDefaultAsync(x => x.SearchIdentifier == searchRequestId);
 
             if (searchRequest == null)
             {

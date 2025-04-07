@@ -171,7 +171,6 @@ namespace Atlas.SearchTracking.Test.Services
                 CompletionDetails = new MatchingAlgorithmCompletionDetails
                 {
                     IsSuccessful = true,
-                    NumberOfMatching = 100,
                     NumberOfResults = 150
                 },
                 HlaNomenclatureVersion = "3.44.0",
