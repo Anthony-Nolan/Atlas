@@ -2,7 +2,7 @@
 {
     public class MatchingAlgorithmAttemptTimingEvent
     {
-        public Guid SearchRequestId { get; set; }
+        public Guid SearchIdentifier { get; set; }
         public byte AttemptNumber { get; set; }
         public DateTime TimeUtc { get; set; }
     }

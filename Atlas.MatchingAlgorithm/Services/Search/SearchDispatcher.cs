@@ -51,9 +51,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         {
             var searchRequestedEvent = new SearchRequestedEvent
             {
-                SearchRequestId = new Guid(id),
+                SearchIdentifier = new Guid(id),
                 IsRepeatSearch = false,
-                OriginalSearchRequestId = null,
+                OriginalSearchIdentifier = null,
                 RepeatSearchCutOffDate = null,
                 RequestJson = JsonConvert.SerializeObject(searchRequest),
                 SearchCriteria = SearchTrackingEventHelper.GetSearchCriteria(searchRequest),

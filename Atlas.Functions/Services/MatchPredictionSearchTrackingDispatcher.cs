@@ -8,19 +8,19 @@ namespace Atlas.Functions.Services
 {
     public interface IMatchPredictionSearchTrackingDispatcher
     {
-        Task ProcessInitiation(Guid searchRequestId, DateTime initiationTime);
+        Task ProcessInitiation(Guid searchIdentifier, DateTime initiationTime);
 
-        Task ProcessPrepareBatchesStarted(Guid searchRequestId);
+        Task ProcessPrepareBatchesStarted(Guid searchIdentifier);
 
-        Task ProcessPrepareBatchesEnded(Guid searchRequestId);
+        Task ProcessPrepareBatchesEnded(Guid searchIdentifier);
 
-        Task ProcessRunningBatchesStarted(Guid searchRequestId);
+        Task ProcessRunningBatchesStarted(Guid searchIdentifier);
 
-        Task ProcessRunningBatchesEnded(Guid searchRequestId);
+        Task ProcessRunningBatchesEnded(Guid searchIdentifier);
 
-        Task ProcessPersistingResultsStarted(Guid searchRequestId);
+        Task ProcessPersistingResultsStarted(Guid searchIdentifier);
 
-        Task ProcessPersistingResultsEnded(Guid searchRequestId);
+        Task ProcessPersistingResultsEnded(Guid searchIdentifier);
 
         Task ProcessCompleted((Guid SearchIdentifier, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)
             eventDetails);
@@ -29,11 +29,11 @@ namespace Atlas.Functions.Services
     public class MatchPredictionSearchTrackingDispatcher(ISearchTrackingServiceBusClient searchTrackingServiceBusClient)
         : IMatchPredictionSearchTrackingDispatcher
     {
-        public async Task ProcessInitiation(Guid searchRequestId, DateTime initiationTime)
+        public async Task ProcessInitiation(Guid searchIdentifier, DateTime initiationTime)
         {
             var matchPredictionStartedEvent = new MatchPredictionStartedEvent
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchIdentifier,
                 InitiationTimeUtc = initiationTime,
                 StartTimeUtc = DateTime.UtcNow
             };
@@ -42,11 +42,11 @@ namespace Atlas.Functions.Services
                 matchPredictionStartedEvent, SearchTrackingEventType.MatchPredictionStarted);
         }
 
-        public async Task ProcessPrepareBatchesStarted(Guid searchRequestId)
+        public async Task ProcessPrepareBatchesStarted(Guid searchIdentifier)
         {
             var matchPredictionTimingEvent = new MatchPredictionTimingEvent()
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchIdentifier,
                 TimeUtc = DateTime.UtcNow
             };
 
@@ -54,11 +54,11 @@ namespace Atlas.Functions.Services
                 matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionBatchPreparationStarted);
         }
 
-        public async Task ProcessPrepareBatchesEnded(Guid searchRequestId)
+        public async Task ProcessPrepareBatchesEnded(Guid searchIdentifier)
         {
             var matchPredictionTimingEvent = new MatchPredictionTimingEvent()
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchIdentifier,
                 TimeUtc = DateTime.UtcNow
             };
 
@@ -66,11 +66,11 @@ namespace Atlas.Functions.Services
                 matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionBatchPreparationEnded);
         }
 
-        public async Task ProcessPersistingResultsStarted(Guid searchRequestId)
+        public async Task ProcessPersistingResultsStarted(Guid searchIdentifier)
         {
             var matchPredictionTimingEvent = new MatchPredictionTimingEvent()
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchIdentifier,
                 TimeUtc = DateTime.UtcNow
             };
 
@@ -78,11 +78,11 @@ namespace Atlas.Functions.Services
                 matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionPersistingResultsStarted);
         }
 
-        public async Task ProcessPersistingResultsEnded(Guid searchRequestId)
+        public async Task ProcessPersistingResultsEnded(Guid searchIdentifier)
         {
             var matchPredictionTimingEvent = new MatchPredictionTimingEvent()
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchIdentifier,
                 TimeUtc = DateTime.UtcNow
             };
 
@@ -90,11 +90,11 @@ namespace Atlas.Functions.Services
                 matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionPersistingResultsEnded);
         }
 
-        public async Task ProcessRunningBatchesStarted(Guid searchRequestId)
+        public async Task ProcessRunningBatchesStarted(Guid searchIdentifier)
         {
             var matchPredictionTimingEvent = new MatchPredictionTimingEvent()
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchIdentifier,
                 TimeUtc = DateTime.UtcNow
             };
 
@@ -102,11 +102,11 @@ namespace Atlas.Functions.Services
                 matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionRunningBatchesStarted);
         }
 
-        public async Task ProcessRunningBatchesEnded(Guid searchRequestId)
+        public async Task ProcessRunningBatchesEnded(Guid searchIdentifier)
         {
             var matchPredictionTimingEvent = new MatchPredictionTimingEvent()
             {
-                SearchRequestId = searchRequestId,
+                SearchIdentifier = searchIdentifier,
                 TimeUtc = DateTime.UtcNow
             };
 
@@ -118,7 +118,7 @@ namespace Atlas.Functions.Services
         {
             var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
             {
-                SearchRequestId = eventDetails.SearchIdentifier,
+                SearchIdentifier = eventDetails.SearchIdentifier,
                 CompletionTimeUtc = DateTime.UtcNow,
                 CompletionDetails = new MatchPredictionCompletionDetails
                 {
