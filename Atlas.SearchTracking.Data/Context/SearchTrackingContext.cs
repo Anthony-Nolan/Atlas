@@ -10,7 +10,7 @@ namespace Atlas.SearchTracking.Data.Context
 
         public DbSet<SearchRequestMatchingAlgorithmAttempts> SearchRequestMatchingAlgorithmAttempts { get; }
 
-        public DbSet<SearchRequestMatchPredictionTiming> SearchRequestMatchPredictionTimings { get; }
+        public DbSet<SearchRequestMatchPrediction> SearchRequestMatchPredictions { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
@@ -32,9 +32,9 @@ namespace Atlas.SearchTracking.Data.Context
             modelBuilder.Entity<SearchRequest>().SetUpModel();
 
             modelBuilder.Entity<SearchRequest>()
-                .HasOne(x => x.SearchRequestMatchPredictionTiming)
+                .HasOne(x => x.SearchRequestMatchPrediction)
                 .WithOne(x => x.SearchRequest)
-                .HasForeignKey<SearchRequestMatchPredictionTiming>(x => x.SearchRequestId);
+                .HasForeignKey<SearchRequestMatchPrediction>(x => x.SearchRequestId);
 
             modelBuilder.Entity<SearchRequest>()
                 .HasMany(x => x.SearchRequestMatchingAlgorithmAttempts)
@@ -53,6 +53,6 @@ namespace Atlas.SearchTracking.Data.Context
 
         public DbSet<SearchRequestMatchingAlgorithmAttempts> SearchRequestMatchingAlgorithmAttempts { get; set; }
 
-        public DbSet<SearchRequestMatchPredictionTiming> SearchRequestMatchPredictionTimings { get; set; }
+        public DbSet<SearchRequestMatchPrediction> SearchRequestMatchPredictions { get; set; }
     }
 }

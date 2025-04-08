@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Atlas.SearchTracking.Data.Models
 {
-    public class SearchRequestMatchPredictionTiming
+    public class SearchRequestMatchPrediction
     {
         public int Id { get; set; }
 

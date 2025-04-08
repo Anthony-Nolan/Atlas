@@ -4,6 +4,7 @@ using Atlas.SearchTracking.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.SearchTracking.Data.Migrations
 {
     [DbContext(typeof(SearchTrackingContext))]
-    partial class SearchTrackingContextModelSnapshot : ModelSnapshot
+    [Migration("20250407095307_RenameSearchRequestMatchPredictionTimingsToSearchRequestMatchPredictionsTable")]
+    partial class RenameSearchRequestMatchPredictionTimingsToSearchRequestMatchPredictionsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -134,7 +136,7 @@ namespace Atlas.SearchTracking.Data.Migrations
 
                     b.HasIndex("SearchIdentifier")
                         .IsUnique()
-                        .HasDatabaseName("IX_SearchIdentifier");
+                        .HasDatabaseName("IX_SearchRequestId");
 
                     b.ToTable("SearchRequests", "SearchTracking");
                 });
@@ -269,7 +271,7 @@ namespace Atlas.SearchTracking.Data.Migrations
             modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequestMatchPrediction", b =>
                 {
                     b.HasOne("Atlas.SearchTracking.Data.Models.SearchRequest", "SearchRequest")
-                        .WithOne("SearchRequestMatchPrediction")
+                        .WithOne("SearchRequestMatchPredictionTiming")
                         .HasForeignKey("Atlas.SearchTracking.Data.Models.SearchRequestMatchPrediction", "SearchRequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -279,7 +281,7 @@ namespace Atlas.SearchTracking.Data.Migrations
 
             modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequest", b =>
                 {
-                    b.Navigation("SearchRequestMatchPrediction");
+                    b.Navigation("SearchRequestMatchPredictionTiming");
 
                     b.Navigation("SearchRequestMatchingAlgorithmAttempts");
                 });

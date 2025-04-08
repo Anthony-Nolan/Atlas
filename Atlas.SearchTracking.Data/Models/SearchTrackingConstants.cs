@@ -11,12 +11,12 @@ namespace Atlas.SearchTracking.Data.Models
         {
             MatchPredictionColumnMappings = new Dictionary<SearchTrackingEventType, string>
             {
-                { SearchTrackingEventType.MatchPredictionPersistingResultsEnded, nameof(SearchRequestMatchPredictionTiming.PersistingResults_EndTimeUtc) },
-                { SearchTrackingEventType.MatchPredictionPersistingResultsStarted, nameof(SearchRequestMatchPredictionTiming.PersistingResults_StartTimeUtc) },
-                { SearchTrackingEventType.MatchPredictionRunningBatchesEnded, nameof(SearchRequestMatchPredictionTiming.AlgorithmCore_RunningBatches_EndTimeUtc) },
-                { SearchTrackingEventType.MatchPredictionRunningBatchesStarted, nameof(SearchRequestMatchPredictionTiming.AlgorithmCore_RunningBatches_StartTimeUtc) },
-                { SearchTrackingEventType.MatchPredictionBatchPreparationEnded, nameof(SearchRequestMatchPredictionTiming.PrepareBatches_EndTimeUtc) },
-                { SearchTrackingEventType.MatchPredictionBatchPreparationStarted, nameof(SearchRequestMatchPredictionTiming.PrepareBatches_StartTimeUtc) }
+                { SearchTrackingEventType.MatchPredictionPersistingResultsEnded, nameof(SearchRequestMatchPrediction.PersistingResults_EndTimeUtc) },
+                { SearchTrackingEventType.MatchPredictionPersistingResultsStarted, nameof(SearchRequestMatchPrediction.PersistingResults_StartTimeUtc) },
+                { SearchTrackingEventType.MatchPredictionRunningBatchesEnded, nameof(SearchRequestMatchPrediction.AlgorithmCore_RunningBatches_EndTimeUtc) },
+                { SearchTrackingEventType.MatchPredictionRunningBatchesStarted, nameof(SearchRequestMatchPrediction.AlgorithmCore_RunningBatches_StartTimeUtc) },
+                { SearchTrackingEventType.MatchPredictionBatchPreparationEnded, nameof(SearchRequestMatchPrediction.PrepareBatches_EndTimeUtc) },
+                { SearchTrackingEventType.MatchPredictionBatchPreparationStarted, nameof(SearchRequestMatchPrediction.PrepareBatches_StartTimeUtc) }
             };
 
             MatchingAlgorithmColumnMappings = new Dictionary<SearchTrackingEventType, string>
