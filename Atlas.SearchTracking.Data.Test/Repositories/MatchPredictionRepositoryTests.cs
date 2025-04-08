@@ -13,7 +13,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
     public class MatchPredictionRepositoryTests : SearchTrackingContextTestBase
     {
         private IMatchPredictionRepository matchPredictionRepository;
-        private SearchRequestMatchPredictionTiming defaultMatchPrediction;
+        private SearchRequestMatchPrediction defaultMatchPrediction;
 
         [SetUp]
         public async Task SetUp()
@@ -62,12 +62,12 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
                 .Excluding(a => a.SearchRequest));
         }
 
-        [TestCase(SearchTrackingEventType.MatchPredictionPersistingResultsEnded, nameof(SearchRequestMatchPredictionTiming.PersistingResults_EndTimeUtc))]
-        [TestCase(SearchTrackingEventType.MatchPredictionPersistingResultsStarted, nameof(SearchRequestMatchPredictionTiming.PersistingResults_StartTimeUtc))]
-        [TestCase(SearchTrackingEventType.MatchPredictionRunningBatchesEnded, nameof(SearchRequestMatchPredictionTiming.AlgorithmCore_RunningBatches_EndTimeUtc))]
-        [TestCase(SearchTrackingEventType.MatchPredictionRunningBatchesStarted, nameof(SearchRequestMatchPredictionTiming.AlgorithmCore_RunningBatches_StartTimeUtc))]
-        [TestCase(SearchTrackingEventType.MatchPredictionBatchPreparationEnded, nameof(SearchRequestMatchPredictionTiming.PrepareBatches_EndTimeUtc))]
-        [TestCase(SearchTrackingEventType.MatchPredictionBatchPreparationStarted, nameof(SearchRequestMatchPredictionTiming.PrepareBatches_StartTimeUtc))]
+        [TestCase(SearchTrackingEventType.MatchPredictionPersistingResultsEnded, nameof(SearchRequestMatchPrediction.PersistingResults_EndTimeUtc))]
+        [TestCase(SearchTrackingEventType.MatchPredictionPersistingResultsStarted, nameof(SearchRequestMatchPrediction.PersistingResults_StartTimeUtc))]
+        [TestCase(SearchTrackingEventType.MatchPredictionRunningBatchesEnded, nameof(SearchRequestMatchPrediction.AlgorithmCore_RunningBatches_EndTimeUtc))]
+        [TestCase(SearchTrackingEventType.MatchPredictionRunningBatchesStarted, nameof(SearchRequestMatchPrediction.AlgorithmCore_RunningBatches_StartTimeUtc))]
+        [TestCase(SearchTrackingEventType.MatchPredictionBatchPreparationEnded, nameof(SearchRequestMatchPrediction.PrepareBatches_EndTimeUtc))]
+        [TestCase(SearchTrackingEventType.MatchPredictionBatchPreparationStarted, nameof(SearchRequestMatchPrediction.PrepareBatches_StartTimeUtc))]
         [Test]
         public async Task TrackMatchPredictionTimingEvent_WhenCompleted_IsSavedToDb(
             SearchTrackingEventType searchTrackingEventType, string dbColumnName)
@@ -118,7 +118,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
         private async Task CreateDefaultMatchPrediction()
         {
             var matchPrediction = MatchPredictionEntityBuilder.Default.Build();
-            await SearchTrackingContext.SearchRequestMatchPredictionTimings.AddAsync(matchPrediction);
+            await SearchTrackingContext.SearchRequestMatchPredictions.AddAsync(matchPrediction);
             await SearchTrackingContext.SaveChangesAsync();
         }
     }

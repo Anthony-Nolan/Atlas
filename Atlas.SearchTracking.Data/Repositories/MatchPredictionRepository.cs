@@ -14,14 +14,14 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         Task TrackTimingEvent(MatchPredictionTimingEvent matchPredictionTimingEvent, SearchTrackingEventType eventType);
 
-        Task<SearchRequestMatchPredictionTiming> GetSearchRequestMatchPredictionById(int id);
+        Task<SearchRequestMatchPrediction> GetSearchRequestMatchPredictionById(int id);
     }
 
     public class MatchPredictionRepository : IMatchPredictionRepository
     {
         private readonly ISearchTrackingContext context;
 
-        private DbSet<SearchRequestMatchPredictionTiming> MatchPredictionTimings => context.SearchRequestMatchPredictionTimings;
+        private DbSet<SearchRequestMatchPrediction> MatchPredictionTimings => context.SearchRequestMatchPredictions;
         private DbSet<SearchRequest> SearchRequests => context.SearchRequests;
 
         public MatchPredictionRepository(ISearchTrackingContext context)
@@ -33,7 +33,7 @@ namespace Atlas.SearchTracking.Data.Repositories
         {
             var id = await GetSearchRequestIdByIdentifier(matchPredictionStartedEvent.SearchIdentifier);
 
-            var matchPrediction = new SearchRequestMatchPredictionTiming
+            var matchPrediction = new SearchRequestMatchPrediction
             {
                 SearchRequestId = id,
                 InitiationTimeUtc = matchPredictionStartedEvent.InitiationTimeUtc,
@@ -65,7 +65,7 @@ namespace Atlas.SearchTracking.Data.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task<SearchRequestMatchPredictionTiming> GetSearchRequestMatchPredictionById(int id)
+        public async Task<SearchRequestMatchPrediction> GetSearchRequestMatchPredictionById(int id)
         {
             var matchPrediction = await MatchPredictionTimings
                 .FirstOrDefaultAsync(x => x.SearchRequestId == id);
@@ -78,7 +78,7 @@ namespace Atlas.SearchTracking.Data.Repositories
             return matchPrediction;
         }
 
-        private async Task<SearchRequestMatchPredictionTiming> GetRequiredMatchPredictionTiming(int searchRequestId)
+        private async Task<SearchRequestMatchPrediction> GetRequiredMatchPredictionTiming(int searchRequestId)
         {
             var matchPrediction = await MatchPredictionTimings
                 .FirstOrDefaultAsync(x => x.SearchRequestId == searchRequestId);
