@@ -34,12 +34,15 @@ namespace Atlas.SearchTracking.Data.Test.Builders
             .WithSharedRef(m => m.DonorRegistryCodes, ["A, B"]);
 
         public static Builder<SearchRequest> WithMatchingPredictionCompleted => Default
+            .With(m => m.ResultsSent, true)
+            .With(m => m.ResultsSentTimeUtc, new DateTime(2023, 1, 1))
             .With(m => m.MatchPrediction_IsSuccessful, true)
             .With(m => m.MatchPrediction_DonorsPerBatch, 10)
             .With(m => m.MatchPrediction_TotalNumberOfBatches, 1);
 
         public static Builder<SearchRequest> WithMatchingPredictionNotCompleted => Default
             .With(m => m.MatchPrediction_IsSuccessful, false)
+            .With(m => m.ResultsSent, false)
             .With(m => m.MatchPrediction_FailureInfo_Message, "FailureInfoMessage")
             .With(m => m.MatchPrediction_FailureInfo_ExceptionStacktrace, "StackTrace")
             .With(m => m.MatchPrediction_FailureInfo_Type, MatchPredictionFailureType.UnexpectedError);

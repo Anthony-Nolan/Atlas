@@ -62,7 +62,8 @@ namespace Atlas.SearchTracking.Data.Repositories
             searchRequest.MatchPrediction_FailureInfo_Type = matchPredictionCompletedEvent.CompletionDetails.FailureInfo?.Type;
             searchRequest.MatchPrediction_DonorsPerBatch = matchPredictionCompletedEvent.CompletionDetails.DonorsPerBatch;
             searchRequest.MatchPrediction_TotalNumberOfBatches = matchPredictionCompletedEvent.CompletionDetails.TotalNumberOfBatches;
-
+            searchRequest.ResultsSent = matchPredictionCompletedEvent.CompletionDetails.IsSuccessful;
+            searchRequest.ResultsSentTimeUtc = matchPredictionCompletedEvent.CompletionDetails.IsSuccessful ? matchPredictionCompletedEvent.CompletionTimeUtc : null;
             await context.SaveChangesAsync();
         }
 

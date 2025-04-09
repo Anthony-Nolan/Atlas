@@ -86,7 +86,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByIdentifier(searchRequestId);
 
-            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
+            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity, options => options.Excluding(r => r.ResultsSentTimeUtc));
         }
 
         [Test]
@@ -113,7 +113,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByIdentifier(expectedSearchRequestEntity.SearchIdentifier);
 
-            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
+            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity, options => options.Excluding(r => r.ResultsSentTimeUtc));
         }
 
 

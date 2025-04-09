@@ -51,6 +51,7 @@ namespace Atlas.SearchTracking.Data.Repositories
             var matchPrediction = await GetRequiredMatchPredictionTiming(id);
 
             matchPrediction.CompletionTimeUtc = matchPredictionCompletedEvent.CompletionTimeUtc;
+            matchPrediction.IsSuccessful = matchPredictionCompletedEvent.CompletionDetails.IsSuccessful;
             await context.SaveChangesAsync();
         }
 

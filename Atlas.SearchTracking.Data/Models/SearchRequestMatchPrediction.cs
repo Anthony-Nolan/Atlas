@@ -40,5 +40,7 @@ namespace Atlas.SearchTracking.Data.Models
         public string? FailureInfo_Message { get; set; }
 
         public string? FailureInfo_ExceptionStacktrace { get; set; }
+
+        public bool? IsSuccessful { get; set; }
     }
 }
