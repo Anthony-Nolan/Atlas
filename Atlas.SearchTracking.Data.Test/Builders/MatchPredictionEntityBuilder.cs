@@ -22,6 +22,7 @@ namespace Atlas.SearchTracking.Data.Test.Builders
             .With(m => m.PersistingResults_EndTimeUtc, new DateTime(2022, 12, 31));
 
         public static Builder<SearchRequestMatchPrediction> Completed => Default
-            .With(m => m.CompletionTimeUtc, new DateTime(2022, 1, 1));
+            .With(m => m.CompletionTimeUtc, new DateTime(2022, 1, 1))
+            .With(m => m.IsSuccessful, true);
     }
 }

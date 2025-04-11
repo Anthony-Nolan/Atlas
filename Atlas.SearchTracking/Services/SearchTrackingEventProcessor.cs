@@ -75,6 +75,10 @@ namespace Atlas.SearchTracking.Services
                     await searchRequestRepository.TrackMatchPredictionCompletedEvent(matchPredictionCompletedEvent);
                     await matchPredictionRepository.TrackCompletedEvent(matchPredictionCompletedEvent);
                     break;
+                case SearchTrackingEventType.MatchPredictionResultsSent:
+                    var matchPredictionResultsSentEvent = JsonConvert.DeserializeObject<MatchPredictionResultsSentEvent>(body);
+                    await searchRequestRepository.TrackMatchPredictionResultsSentEvent(matchPredictionResultsSentEvent);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType));
             }

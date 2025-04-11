@@ -66,5 +66,10 @@ namespace Atlas.SearchTracking.Data.Test.Builders
         public static Builder<SearchRequest> WithSearchRequestCompleted => Default
             .With(m => m.ResultsSent, true)
             .With(m => m.ResultsSentTimeUtc, new DateTime(2023, 1, 1));
+
+        public static Builder<SearchRequest> WithMatchPredictionResultsSent => Default
+            .With(m => m.ResultsSent, true)
+            .With(m => m.ResultsSentTimeUtc, new DateTime(2023, 1, 1));
+
     }
 }

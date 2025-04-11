@@ -119,7 +119,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         {
             InitializeLoggingContext(parameters.MatchingResultsNotification.SearchRequestId);
             var matchingResultsNotification = parameters.MatchingResultsNotification;
-            await matchPredictionSearchTrackingDispatcher.ProcessPersistingResultsStarted(new Guid(matchingResultsNotification.SearchRequestId));
+            await matchPredictionSearchTrackingDispatcher.ProcessPersistingResultsStarted(new Guid(matchingResultsNotification.RepeatSearchRequestId ?? matchingResultsNotification.SearchRequestId));
 
             var matchingResultsSummary = await logger.RunTimedAsync("Download matching results summary", async () =>
                 await matchingResultsDownloader.DownloadSummary(
@@ -145,14 +145,16 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             );
 
             await searchResultsBlobUploader.UploadResults(resultSet, resultSet.BlobStorageContainerName, resultSet.ResultsFileName);
+            await matchPredictionSearchTrackingDispatcher.ProcessPersistingResultsEnded(new Guid(matchingResultsNotification.RepeatSearchRequestId ?? matchingResultsNotification.SearchRequestId));
             await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated, matchingResultsNotification.BatchFolderName);
-            await matchPredictionSearchTrackingDispatcher.ProcessPersistingResultsEnded(new Guid(parameters.MatchingResultsNotification.SearchRequestId));
+            await matchPredictionSearchTrackingDispatcher.ProcessResultsSent(new Guid(matchingResultsNotification.RepeatSearchRequestId ?? matchingResultsNotification.SearchRequestId));
         }
 
         [Function(nameof(SendFailureNotification))]
         public async Task SendFailureNotification([ActivityTrigger] FailureNotificationRequestInfo requestInfo)
         {
             await searchCompletionMessageSender.PublishFailureMessage(requestInfo);
+            await matchPredictionSearchTrackingDispatcher.ProcessResultsSent(new Guid(requestInfo.RepeatSearchRequestId ?? requestInfo.SearchRequestId));
         }
 
         [Function(nameof(UploadSearchLog))]
