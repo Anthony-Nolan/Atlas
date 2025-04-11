@@ -18,6 +18,7 @@
         MatchPredictionRunningBatchesEnded,
         MatchPredictionPersistingResultsStarted,
         MatchPredictionPersistingResultsEnded,
+        MatchPredictionResultsSent,
         MatchPredictionCompleted,
         SearchRequestCompleted
     }

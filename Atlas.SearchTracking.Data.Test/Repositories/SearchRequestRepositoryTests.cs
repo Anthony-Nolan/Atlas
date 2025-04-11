@@ -86,7 +86,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByIdentifier(searchRequestId);
 
-            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
+            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity, options => options.Excluding(r => r.ResultsSentTimeUtc));
         }
 
         [Test]
@@ -113,7 +113,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByIdentifier(expectedSearchRequestEntity.SearchIdentifier);
 
-            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
+            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity, options => options.Excluding(r => r.ResultsSentTimeUtc));
         }
 
 
@@ -192,6 +192,20 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByIdentifier(expectedSearchRequestEntity.SearchIdentifier);
 
+            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
+        }
+
+        [Test]
+        public async Task TrackMatchPredictionResultsSentEvent_UpdatesSearchRequestInDb()
+        {
+            var expectedSearchRequestEntity = SearchRequestEntityBuilder.WithMatchPredictionResultsSent.Build();
+            var matchPredictionResultsSentEvent = new MatchPredictionResultsSentEvent
+            {
+                SearchIdentifier = searchRequestId,
+                TimeUtc = new DateTime(2023, 1, 1)
+            };
+            await searchRequestRepository.TrackMatchPredictionResultsSentEvent(matchPredictionResultsSentEvent);
+            var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByIdentifier(expectedSearchRequestEntity.SearchIdentifier);
             actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
         }
     }

@@ -104,7 +104,11 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
             var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
             {
                 SearchIdentifier = expectedSearchRequestGuid,
-                CompletionTimeUtc = expectedMatchPredictionEntity.CompletionTimeUtc.Value
+                CompletionTimeUtc = expectedMatchPredictionEntity.CompletionTimeUtc.Value,
+                CompletionDetails = new MatchPredictionCompletionDetails()
+                {
+                    IsSuccessful = true
+                }
             };
 
             await matchPredictionRepository.TrackCompletedEvent(matchPredictionCompletedEvent);
