@@ -18,6 +18,8 @@ namespace Atlas.SearchTracking.Data.Repositories
         Task<SearchRequest> GetSearchRequestByIdentifier(Guid searchIdentifier);
 
         Task<int> GetSearchRequestIdByIdentifier(Guid searchIdentifier);
+
+        Task TrackMatchPredictionResultsSentEvent(MatchPredictionResultsSentEvent matchPredictionResultsSentEvent);
     }
 
     public class SearchRequestRepository : ISearchRequestRepository
@@ -62,8 +64,15 @@ namespace Atlas.SearchTracking.Data.Repositories
             searchRequest.MatchPrediction_FailureInfo_Type = matchPredictionCompletedEvent.CompletionDetails.FailureInfo?.Type;
             searchRequest.MatchPrediction_DonorsPerBatch = matchPredictionCompletedEvent.CompletionDetails.DonorsPerBatch;
             searchRequest.MatchPrediction_TotalNumberOfBatches = matchPredictionCompletedEvent.CompletionDetails.TotalNumberOfBatches;
-            searchRequest.ResultsSent = matchPredictionCompletedEvent.CompletionDetails.IsSuccessful;
-            searchRequest.ResultsSentTimeUtc = matchPredictionCompletedEvent.CompletionDetails.IsSuccessful ? matchPredictionCompletedEvent.CompletionTimeUtc : null;
+            await context.SaveChangesAsync();
+        }
+
+        public async Task TrackMatchPredictionResultsSentEvent(MatchPredictionResultsSentEvent matchPredictionResultsSentEvent)
+        {
+            var searchRequest = await GetSearchRequestByIdentifier(matchPredictionResultsSentEvent.SearchIdentifier);
+
+            searchRequest.ResultsSent = true;
+            searchRequest.ResultsSentTimeUtc = matchPredictionResultsSentEvent.TimeUtc;
             await context.SaveChangesAsync();
         }
 

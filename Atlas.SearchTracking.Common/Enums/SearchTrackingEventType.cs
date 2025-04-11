@@ -19,6 +19,7 @@
         MatchPredictionPersistingResultsStarted,
         MatchPredictionPersistingResultsEnded,
         MatchPredictionCompleted,
-        SearchRequestCompleted
+        SearchRequestCompleted,
+        MatchPredictionResultsSent
     }
 }

@@ -145,14 +145,16 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             );
 
             await searchResultsBlobUploader.UploadResults(resultSet, resultSet.BlobStorageContainerName, resultSet.ResultsFileName);
-            await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated, matchingResultsNotification.BatchFolderName);
             await matchPredictionSearchTrackingDispatcher.ProcessPersistingResultsEnded(new Guid(parameters.MatchingResultsNotification.SearchRequestId));
+            await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated, matchingResultsNotification.BatchFolderName);
+            await matchPredictionSearchTrackingDispatcher.ProcessResultsSent(new Guid(parameters.MatchingResultsNotification.SearchRequestId));
         }
 
         [Function(nameof(SendFailureNotification))]
         public async Task SendFailureNotification([ActivityTrigger] FailureNotificationRequestInfo requestInfo)
         {
             await searchCompletionMessageSender.PublishFailureMessage(requestInfo);
+            await matchPredictionSearchTrackingDispatcher.ProcessResultsSent(new Guid(requestInfo.SearchRequestId));
         }
 
         [Function(nameof(UploadSearchLog))]

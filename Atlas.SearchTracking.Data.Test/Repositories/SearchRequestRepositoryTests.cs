@@ -194,5 +194,19 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
         }
+
+        [Test]
+        public async Task TrackMatchPredictionResultsSentEvent_UpdatesSearchRequestInDb()
+        {
+            var expectedSearchRequestEntity = SearchRequestEntityBuilder.WithMatchPredictionResultsSent.Build();
+            var matchPredictionResultsSentEvent = new MatchPredictionResultsSentEvent
+            {
+                SearchIdentifier = searchRequestId,
+                TimeUtc = new DateTime(2023, 1, 1)
+            };
+            await searchRequestRepository.TrackMatchPredictionResultsSentEvent(matchPredictionResultsSentEvent);
+            var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByIdentifier(expectedSearchRequestEntity.SearchIdentifier);
+            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
+        }
     }
 }
