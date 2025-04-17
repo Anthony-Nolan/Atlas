@@ -26,7 +26,8 @@ namespace Atlas.Functions.PublicApi
                 OptionsReaderFor<ApplicationInsightsSettings>());
 
             services.RegisterRepeatSearchOrchestration(OptionsReaderFor<RepeatSearch.Settings.ServiceBus.MessagingServiceBusSettings>(),
-                OptionsReaderFor<SearchTrackingServiceBusSettings>());
+                OptionsReaderFor<SearchTrackingServiceBusSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>());
 
             services.RegisterMatchPredictionValidator();
 
