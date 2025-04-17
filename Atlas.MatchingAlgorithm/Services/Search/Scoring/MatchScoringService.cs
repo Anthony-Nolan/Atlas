@@ -105,6 +105,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             else
             {
                 var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla.ToPhenotypeInfo(), request.ScoringCriteria.LociToScore);
+                var matchResultsCount = await request.MatchResults.CountAsync();
                 await foreach (var matchResult in request.MatchResults)
                 {
                     await matchingAlgorithmSearchTrackingDispatcher.ProcessCoreScoringOneDonorStarted();
@@ -116,7 +117,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                     };
                 }
 
-                await matchingAlgorithmSearchTrackingDispatcher.ProcessCoreScoringAllDonorsEnded();
+                if (matchResultsCount > 0)
+                {
+                    await matchingAlgorithmSearchTrackingDispatcher.ProcessCoreScoringAllDonorsEnded();
+                }
             }
         }
     }
