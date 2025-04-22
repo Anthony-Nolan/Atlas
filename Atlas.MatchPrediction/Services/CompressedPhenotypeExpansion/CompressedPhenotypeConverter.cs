@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Services.HlaConversion;
-using MoreLinq.Extensions;
 using ConvertedPhenotype = Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion.DataByResolution<Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<System.Collections.Generic.ISet<string>>>;
 
 namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
@@ -23,12 +24,14 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
     {
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly IHlaToTargetCategoryConverter converter;
+        private readonly IHlaCategorisationService categoriser;
 
         public CompressedPhenotypeConverter(
-            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory, IHlaToTargetCategoryConverter converter)
+            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory, IHlaToTargetCategoryConverter converter, IHlaCategorisationService categoriser)
         {
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
             this.converter = converter;
+            this.categoriser = categoriser;
         }
 
         /// <inheritdoc />

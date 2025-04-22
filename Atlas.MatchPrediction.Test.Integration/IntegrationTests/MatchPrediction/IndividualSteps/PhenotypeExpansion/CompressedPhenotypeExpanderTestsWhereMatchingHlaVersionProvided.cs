@@ -2,6 +2,7 @@
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
@@ -50,7 +51,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        public async Task ExpandCompressedPhenotype_ContainsAlleleFromLaterHlaVersion_AlleleIsNotFoundInMatchingHlaVersion_ReturnsEmptySet()
+        public async Task ExpandCompressedPhenotype_ContainsAlleleFromLaterHlaVersion_AlleleIsNotFoundInMatchingHlaVersion_ThrowsException()
         {
             var setId = await ImportHaplotypeFrequencies(new[] { HaplotypeBuilder1.Build(), HaplotypeBuilder2.Build() });
 
