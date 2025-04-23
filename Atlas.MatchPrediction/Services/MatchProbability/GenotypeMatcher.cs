@@ -147,7 +147,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             {
                 var matchingReplacementMappingKeys = 
                     LocusValueReplacementMapping.Keys
-                        .Where(k => k >= matchingAlgorithmHlaNomenclatureVersion)
+                        .Where(k => k <= matchingAlgorithmHlaNomenclatureVersion)
                         .ToList();
 
                 preparedSubjectData = new SubjectData(
