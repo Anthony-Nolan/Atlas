@@ -50,7 +50,8 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
             [ServiceBusTrigger(
                 "%MessagingServiceBus:DonorManagement:Topic%/Subscriptions/%MessagingServiceBus:DonorManagement:SubscriptionForDbA%/$DeadLetterQueue",
                 "%MessagingServiceBus:DonorManagement:SubscriptionForDbA%",
-                Connection = "MessagingServiceBus:ConnectionString")]
+                Connection = "MessagingServiceBus:ConnectionString",
+                IsBatched = true)]
             SearchableDonorUpdate[] searchableDonorUpdates)
         {
             await donorUpdateProcessor.ProcessDeadLetterDifferentialDonorUpdates(searchableDonorUpdates);
@@ -61,7 +62,8 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
             [ServiceBusTrigger(
                 "%MessagingServiceBus:DonorManagement:Topic%/Subscriptions/%MessagingServiceBus:DonorManagement:SubscriptionForDbB%/$DeadLetterQueue",
                 "%MessagingServiceBus:DonorManagement:SubscriptionForDbB%",
-                Connection = "MessagingServiceBus:ConnectionString")]
+                Connection = "MessagingServiceBus:ConnectionString",
+                IsBatched = true)]
             SearchableDonorUpdate[] searchableDonorUpdates)
         {
             await donorUpdateProcessor.ProcessDeadLetterDifferentialDonorUpdates(searchableDonorUpdates);
