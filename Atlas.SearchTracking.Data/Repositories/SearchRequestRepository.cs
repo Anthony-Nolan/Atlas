@@ -145,7 +145,7 @@ namespace Atlas.SearchTracking.Data.Repositories
             var searchRequest = await searchRequests
                 .Include(x => x.SearchRequestMatchPrediction)
                 .Include(x => x.SearchRequestMatchingAlgorithmAttempts)
-                .FirstOrDefaultAsync(x => x.SearchIdentifier == searchIdentifier);
+                .SingleOrDefaultAsync(x => x.SearchIdentifier == searchIdentifier);
             if (searchRequest == null)
             {
                 throw new Exception($"Search request with identifier {searchIdentifier} not found");
