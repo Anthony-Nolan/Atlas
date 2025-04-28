@@ -13,10 +13,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="8.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Atlas.Client.Models\Atlas.Client.Models.csproj" />
     <ProjectReference Include="..\Atlas.Common.Public.Models\Atlas.Common.Public.Models.csproj" />
     <ProjectReference Include="..\Atlas.DonorImport.FileSchema.Models\Atlas.DonorImport.FileSchema.Models.csproj" />
     <ProjectReference Include="..\Atlas.SearchTracking.Common\Atlas.SearchTracking.Common.csproj" />
+    <ProjectReference Include="..\Atlas.SearchTracking.Data\Atlas.SearchTracking.Data.csproj" />
   </ItemGroup>
 
   <ItemGroup>
