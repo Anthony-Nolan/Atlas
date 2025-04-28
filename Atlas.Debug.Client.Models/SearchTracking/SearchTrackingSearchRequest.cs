@@ -21,9 +21,15 @@ namespace Atlas.Debug.Client.Models.SearchTracking
 
         public string DonorType { get; set; }
 
+        public bool AreBetterMatchesIncluded { get; set; }
+
+        public List<string>? DonorRegistryCodes { get; set; }
+
         public DateTime RequestTimeUtc { get; set; }
 
         public SearchTrackingMatchingAlgorithmInfo SearchTrackingMatchingAlgorithmInfo { get; set; }
+
+        public bool IsMatchPredictionRun { get; set; }
 
         public SearchTrackingMatchPredictionInfo SearchTrackingMatchPredictionInfo { get; set; }
 
@@ -34,11 +40,5 @@ namespace Atlas.Debug.Client.Models.SearchTracking
         public SearchTrackingMatchPredictionDetails? SearchRequestMatchPredictionDetails { get; set; }
 
         public List<SearchTrackingMatchingAlgorithmAttemptDetails> SearchRequestMatchingAlgorithmAttemptDetails { get; set; }
-
-        public bool IsMatchPredictionRun { get; set; }
-
-        public bool AreBetterMatchesIncluded { get; set; }
-
-        public List<string>? DonorRegistryCodes { get; set; }
     }
 }

@@ -2,9 +2,9 @@
 
 namespace Atlas.Debug.Client.Models.SearchTracking
 {
-    public class SearchTrackingFailureInfo
+    public class SearchTrackingMatchPredictionFailureInfo
     {
-        public MatchingAlgorithmFailureType? Type { get; set; }
+        public MatchPredictionFailureType? Type { get; set; }
 
         public string? Message { get; set; }
 

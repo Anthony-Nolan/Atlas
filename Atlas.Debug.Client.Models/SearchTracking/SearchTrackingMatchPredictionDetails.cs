@@ -1,5 +1,4 @@
 ﻿using System;
-using Atlas.SearchTracking.Common.Enums;
 
 namespace Atlas.Debug.Client.Models.SearchTracking
 {
@@ -8,8 +7,6 @@ namespace Atlas.Debug.Client.Models.SearchTracking
         public int Id { get; set; }
 
         public int SearchRequestId { get; set; }
-
-        public SearchTrackingSearchRequest SearchRequest { get; set; }
 
         public DateTime InitiationTimeUtc { get; set; }
 
@@ -23,7 +20,7 @@ namespace Atlas.Debug.Client.Models.SearchTracking
         
         public DateTime? CompletionTimeUtc { get; set; }
 
-        public SearchTrackingFailureInfo FailureInfo { get; set; }
+        public SearchTrackingMatchPredictionFailureInfo FailureInfo { get; set; }
 
         public bool? IsSuccessful { get; set; }
     }
