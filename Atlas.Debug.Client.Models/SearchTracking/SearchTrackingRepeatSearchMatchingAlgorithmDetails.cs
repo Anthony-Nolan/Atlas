@@ -1,6 +1,6 @@
 ﻿namespace Atlas.Debug.Client.Models.SearchTracking
 {
-    public class RepeatSearchMatchingAlgorithmDetails
+    public class SearchTrackingRepeatSearchMatchingAlgorithmDetails
     {
         public int? AddedResultCount { get; set; }
 

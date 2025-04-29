@@ -47,7 +47,8 @@ namespace Atlas.ManualTesting.DependencyInjection
                 OptionsReaderFor<MatchingAlgorithmHttpFunctionSettings>(),
                 OptionsReaderFor<TopLevelHttpFunctionSettings>(),
                 OptionsReaderFor<PublicApiHttpFunctionSettings>(),
-                OptionsReaderFor<RepeatSearchHttpFunctionSettings>());
+                OptionsReaderFor<RepeatSearchHttpFunctionSettings>(),
+                OptionsReaderFor<SearchTrackingHttpFunctionSettings>());
         }
 
         private static void RegisterSettings(this IServiceCollection services)
@@ -64,6 +65,7 @@ namespace Atlas.ManualTesting.DependencyInjection
             services.RegisterAsOptions<RepeatSearchHttpFunctionSettings>("Debug:RepeatSearch");
             services.RegisterAsOptions<TopLevelHttpFunctionSettings>("Debug:TopLevel");
             services.RegisterAsOptions<PublicApiHttpFunctionSettings>("Debug:PublicApi");
+            services.RegisterAsOptions<SearchTrackingHttpFunctionSettings>("Debug:SearchTracking");
         }
 
         private static void RegisterServices(

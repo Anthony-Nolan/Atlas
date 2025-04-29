@@ -6,7 +6,7 @@ namespace Atlas.SearchTracking.Services
 {
     public interface ISearchTrackingDebugService
     {
-        Task<SearchRequest> GetSearchRequestByIdentifier(Guid searchIdentifier);
+        Task<SearchTrackingSearchRequest> GetSearchRequestByIdentifier(Guid searchIdentifier);
     }
 
     public class SearchTrackingDebugService : ISearchTrackingDebugService
@@ -20,10 +20,10 @@ namespace Atlas.SearchTracking.Services
             this.mapper = mapper;
         }
 
-        public async Task<SearchRequest> GetSearchRequestByIdentifier(Guid searchIdentifier)
+        public async Task<SearchTrackingSearchRequest> GetSearchRequestByIdentifier(Guid searchIdentifier)
         {
             var searchRequest = await searchRequestRepository.GetSearchRequestWithLinkedEntitiesByIdentifier(searchIdentifier);
-            return mapper.Map<SearchRequest>(searchRequest);
+            return mapper.Map<SearchTrackingSearchRequest>(searchRequest);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Atlas.Debug.Client.Models.SearchTracking
 
         public int? NumberOfResults { get; set; }
 
-        public RepeatSearchMatchingAlgorithmDetails RepeatDetails { get; set; }
+        public SearchTrackingRepeatSearchMatchingAlgorithmDetails RepeatDetails { get; set; }
 
         public string? HlaNomenclatureVersion { get; set; }
 

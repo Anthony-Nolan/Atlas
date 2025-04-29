@@ -10,6 +10,8 @@ using Atlas.SearchTracking.Data.Repositories;
 using Atlas.SearchTracking.Services;
 using Microsoft.EntityFrameworkCore;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
+using AutoMapper;
+using Atlas.SearchTracking.Mapping;
 
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication(builder =>
@@ -35,10 +37,19 @@ var host = new HostBuilder()
         });
 
         services.AddScoped<ISearchTrackingEventProcessor, SearchTrackingEventProcessor>();
+        services.AddScoped<ISearchTrackingDebugService, SearchTrackingDebugService>();
         services.AddScoped<ISearchRequestRepository, SearchRequestRepository>();
         services.AddScoped<IMatchPredictionRepository, MatchPredictionRepository>();
         services.AddScoped<ISearchRequestMatchingAlgorithmAttemptsRepository, SearchRequestMatchingAlgorithmAttemptsRepository>();
         services.RegisterAsOptions<SearchTrackingServiceBusSettings>("MessagingServiceBus");
+
+        var mapperConfig = new MapperConfiguration(mc =>
+        {
+            mc.AddProfile(new SearchTrackingSearchRequestProfile());
+        });
+
+        IMapper mapper = mapperConfig.CreateMapper();
+        services.AddSingleton(mapper);
     })
     .Build();
 
