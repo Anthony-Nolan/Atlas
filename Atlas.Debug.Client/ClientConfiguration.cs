@@ -25,8 +25,7 @@ namespace Atlas.Debug.Client
             Func<IServiceProvider, MatchingAlgorithmHttpFunctionSettings> fetchMatchingAlgorithmHttpSettings,
             Func<IServiceProvider, TopLevelHttpFunctionSettings> fetchTopLevelHttpSettings,
             Func<IServiceProvider, PublicApiHttpFunctionSettings> fetchPublicApiHttpSettings,
-            Func<IServiceProvider, RepeatSearchHttpFunctionSettings> fetchRepeatSearchHttpSettings,
-            Func<IServiceProvider, SearchTrackingHttpFunctionSettings> fetchSearchTrackingHttpSettings
+            Func<IServiceProvider, RepeatSearchHttpFunctionSettings> fetchRepeatSearchHttpSettings
             )
         {
             services.RegisterHttpFunctionClient<IDonorImportFunctionsClient, DonorImportFunctionsClient>(fetchDonorImportHttpSettings);
@@ -34,7 +33,6 @@ namespace Atlas.Debug.Client
             services.RegisterHttpFunctionClient<ITopLevelFunctionsClient, TopLevelFunctionsClient>(fetchTopLevelHttpSettings);
             services.RegisterHttpFunctionClient<IPublicApiFunctionsClient, PublicApiFunctionsClient>(fetchPublicApiHttpSettings);
             services.RegisterHttpFunctionClient<IRepeatSearchFunctionsClient, RepeatSearchFunctionsClient>(fetchRepeatSearchHttpSettings);
-            services.RegisterHttpFunctionClient<ISearchTrackingFunctionsClient, SearchTrackingFunctionsClient>(fetchSearchTrackingHttpSettings);
         }
 
         private static void RegisterHttpFunctionClient<TInterface, TClient>(

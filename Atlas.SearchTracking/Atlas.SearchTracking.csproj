@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
     <ProjectReference Include="..\Atlas.Debug.Client.Models\Atlas.Debug.Client.Models.csproj" />
     <ProjectReference Include="..\Atlas.SearchTracking.Common\Atlas.SearchTracking.Common.csproj" />
     <ProjectReference Include="..\Atlas.SearchTracking.Data\Atlas.SearchTracking.Data.csproj" />
