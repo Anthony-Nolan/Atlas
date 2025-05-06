@@ -7,11 +7,11 @@ using Atlas.SearchTracking.Common.Config;
 
 namespace Atlas.SearchTracking.Functions.Functions
 {
-    public class SearchTrackingFunctions
+    public class SearchTrackingEventFunctions
     {
         private readonly ISearchTrackingEventProcessor searchTrackingEventProcessor;
 
-        public SearchTrackingFunctions(ISearchTrackingEventProcessor searchTrackingEventProcessor)
+        public SearchTrackingEventFunctions(ISearchTrackingEventProcessor searchTrackingEventProcessor)
         {
             this.searchTrackingEventProcessor = searchTrackingEventProcessor;
         }
@@ -21,10 +21,11 @@ namespace Atlas.SearchTracking.Functions.Functions
             [ServiceBusTrigger("%MessagingServiceBus:SearchTrackingTopic%",
                 "%MessagingServiceBus:SearchTrackingSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString")]
-                ServiceBusReceivedMessage message)
+            ServiceBusReceivedMessage message)
         {
             var body = Encoding.UTF8.GetString(message.Body);
-            var eventType = Enum.Parse<SearchTrackingEventType>(message.ApplicationProperties.GetValueOrDefault(SearchTrackingConstants.EventType).ToString());
+            var eventType =
+                Enum.Parse<SearchTrackingEventType>(message.ApplicationProperties.GetValueOrDefault(SearchTrackingConstants.EventType).ToString());
 
             await searchTrackingEventProcessor.HandleEvent(body, eventType);
         }

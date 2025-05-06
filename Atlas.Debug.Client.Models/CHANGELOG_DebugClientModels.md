@@ -6,6 +6,9 @@ This package contains client models utilised by the Atlas debug endpoints.
 ## Changelog
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### 3.1.1
+* Created new namespace `Atlas.Debug.Client.Models.SearchTracking`, that contains models used in debug endpoints.
+
 ### 3.1.0
 * Extended existing model, `PeekServiceBusMessagesResponse` with new prop `LastSequenceNumber`
 
