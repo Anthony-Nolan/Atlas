@@ -1,12 +1,21 @@
 {
-    "version": "2.0",
-    "logging": {
-        "applicationInsights": {
-          "samplingSettings": {
-            "isEnabled": true,
-            "excludedTypes": "Request;Exception;Event;Trace"
-          },
-            "enableLiveMetricsFilters": true
-        }
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request;Exception;Event;Trace"
+      },
+      "enableLiveMetricsFilters": true
     }
+  },
+  "extensions": {
+    "serviceBus": {
+      "clientRetryOptions": {
+        "mode": "fixed",
+        "delay": "00:00:20.00",
+        "maxRetries": 5
+      }
+    }
+  }
 }
