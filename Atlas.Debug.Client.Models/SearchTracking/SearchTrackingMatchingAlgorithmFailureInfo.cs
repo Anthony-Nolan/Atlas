@@ -1,4 +1,4 @@
-﻿using Atlas.SearchTracking.Common.Enums;
+﻿using Atlas.Debug.Client.Models.Enums;
 
 namespace Atlas.Debug.Client.Models.SearchTracking
 {
