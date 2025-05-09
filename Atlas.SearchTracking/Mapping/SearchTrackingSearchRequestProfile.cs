@@ -1,4 +1,5 @@
 ﻿using Atlas.Debug.Client.Models.SearchTracking;
+using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Data.Models;
 using AutoMapper;
 
@@ -93,6 +94,10 @@ namespace Atlas.SearchTracking.Mapping
                     opt => opt.MapFrom(s => s.FailureInfo_Message))
                 .ForPath(dest => dest.FailureInfo.Type,
                     opt => opt.MapFrom(s => s.FailureInfo_Type));
+
+            CreateMap<MatchingAlgorithmFailureType, SearchTrackingMatchingAlgorithmFailureType>();
+
+            CreateMap<MatchPredictionFailureType, SearchTrackingMatchPredictionFailureType>();
         }
     }
 }
