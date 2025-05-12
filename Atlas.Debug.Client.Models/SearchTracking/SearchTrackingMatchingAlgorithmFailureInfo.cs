@@ -1,10 +1,8 @@
-﻿using Atlas.SearchTracking.Common.Enums;
-
-namespace Atlas.Debug.Client.Models.SearchTracking
+﻿namespace Atlas.Debug.Client.Models.SearchTracking
 {
     public class SearchTrackingMatchingAlgorithmFailureInfo
     {
-        public MatchingAlgorithmFailureType? Type { get; set; }
+        public SearchTrackingMatchingAlgorithmFailureType? Type { get; set; }
 
         public string? Message { get; set; }
 
