@@ -65,6 +65,8 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic"                      = azurerm_servicebus_topic.search-results-ready.name
     "AtlasFunction:MessagingServiceBus:SearchResultsDebugSubscription"          = azurerm_servicebus_subscription.debug-search-results-ready.name
     "AtlasFunction:MessagingServiceBus:RepeatSearchResultsDebugSubscription"    = module.repeat_search.service_bus.repeat_search_results_debug_subscription.name
+    "AtlasFunction:MessagingServiceBus:SendRetryCount"                          = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "AtlasFunction:MessagingServiceBus:SendRetryCooldownSeconds"                = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
     "AtlasFunction:Orchestration:MatchPredictionBatchSize"                      = var.ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE
 
     "HlaMetadataDictionary:AzureStorageConnectionString"                          = azurerm_storage_account.azure_storage.primary_connection_string

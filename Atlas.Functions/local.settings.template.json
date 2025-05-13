@@ -27,6 +27,8 @@
     "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic": "search-results-ready",
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic": "search-results-ready",
     "AtlasFunction:MessagingServiceBus:SearchResultsDebugSubscription": "debug",
+    "AtlasFunction:MessagingServiceBus:SendRetryCount": 5,
+    "AtlasFunction:MessagingServiceBus:SendRetryCooldownSeconds": 20,
 
     "AtlasFunction:Orchestration:MatchPredictionBatchSize": 100,
 
