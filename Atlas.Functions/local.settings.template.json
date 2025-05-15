@@ -59,9 +59,13 @@
     "NotificationsServiceBus:Debug:AlertsSubscription": "debug",
     "NotificationsServiceBus:Debug:NotificationsSubscription": "debug",
     "NotificationsServiceBus:NotificationsTopic": "notifications",
+    "NotificationsServiceBus:SendRetryCount": 5,
+    "NotificationsServiceBus:SendRetryCooldownSeconds": 20,
 
     "SearchTrackingServiceBus:ConnectionString": "override-this",
-    "SearchTrackingServiceBus:SearchTrackingTopic": "search-tracking-events"
+    "SearchTrackingServiceBus:SearchTrackingTopic": "search-tracking-events",
+    "SearchTrackingServiceBus:SendRetryCount": "5",
+    "SearchTrackingServiceBus:SendRetryCooldownSeconds": "20"
   },
   "ConnectionStrings": {
     "Matching:Sql:Persistent": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
