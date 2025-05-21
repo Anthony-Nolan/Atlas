@@ -62,29 +62,6 @@ namespace Atlas.SearchTracking.Test.Services
         }
 
         [Test]
-        public async Task SearchTrackingEventProcessor_WhenSearchRequestCompleted_UpdatesRepository()
-        {
-            SearchRequestCompletedEvent actualSearchRequestCompletedEvent = null;
-
-            var expectedSearchRequestCompletedEvent = new SearchRequestCompletedEvent
-            {
-                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
-                ResultsSent = true,
-                ResultsSentTimeUtc = new DateTime(2024, 10, 1, 15, 30, 00)
-            };
-
-            var body = JsonConvert.SerializeObject(expectedSearchRequestCompletedEvent);
-            var eventType = SearchTrackingEventType.SearchRequestCompleted;
-
-            await searchRequestRepository.TrackSearchRequestCompletedEvent(
-                Arg.Do<SearchRequestCompletedEvent>(x => actualSearchRequestCompletedEvent = x));
-            await searchTrackingEventProcessor.HandleEvent(body, eventType);
-
-            actualSearchRequestCompletedEvent.Should().BeEquivalentTo(expectedSearchRequestCompletedEvent);
-            await searchRequestRepository.Received(1).TrackSearchRequestCompletedEvent(Arg.Any<SearchRequestCompletedEvent>());
-        }
-
-        [Test]
         public async Task SearchTrackingEventProcessor_WhenMatchingAlgorithmStarted_UpdatesRepository()
         {
             MatchingAlgorithmAttemptStartedEvent actualMatchingAlgorithmAttemptStartedEvent = null;

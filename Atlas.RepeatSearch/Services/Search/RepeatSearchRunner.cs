@@ -92,10 +92,9 @@ namespace Atlas.RepeatSearch.Services.Search
             var repeatSearchId = identifiedRepeatSearchRequest.RepeatSearchId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
-            var diff = new SearchResultDifferential();
+            SearchResultDifferential diff = null;
             var resultsSentTime = new DateTime();
-            var requestCompletedSuccessfully = false;
-            var numberOfResults = 0;
+            int? numberOfResults = null;
             MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = null;
 
             repeatSearchLoggingContext.SearchRequestId = originalSearchRequestId;
@@ -165,8 +164,6 @@ namespace Atlas.RepeatSearch.Services.Search
                     BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? $"{originalSearchRequestId}/{repeatSearchId}" : null
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
-
-                requestCompletedSuccessfully = true;
             }
 
             #region Expected Exceptions
@@ -227,11 +224,11 @@ namespace Atlas.RepeatSearch.Services.Search
                     FailureInfo: matchingAlgorithmFailureInfo,
                     RepeatSearchResultsDetails: new MatchingAlgorithmRepeatSearchResultsDetails
                     {
-                        AddedResultCount = diff.NewResults.Count,
-                        RemovedResultCount = diff.RemovedResults.Count,
-                        UpdatedResultCount = diff.UpdatedResults.Count
+                        AddedResultCount = diff?.NewResults.Count,
+                        RemovedResultCount = diff?.RemovedResults.Count,
+                        UpdatedResultCount = diff?.UpdatedResults.Count
                     },
-                    NumberOfMatching: diff.NewResults.Count
+                    NumberOfMatching: numberOfResults
                 ));
             }
 

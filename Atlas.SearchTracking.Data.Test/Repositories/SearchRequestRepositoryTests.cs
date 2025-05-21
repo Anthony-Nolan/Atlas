@@ -177,25 +177,6 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
         }
 
         [Test]
-        public async Task TrackSearchRequestCompletedEvent_WhenCompleted_UpdatesSearchRequestInDb()
-        {
-            var expectedSearchRequestEntity = SearchRequestEntityBuilder.WithSearchRequestCompleted.Build();
-
-            var searchRequestCompletedEvent = new SearchRequestCompletedEvent
-            {
-                SearchIdentifier = searchRequestId,
-                ResultsSent = true,
-                ResultsSentTimeUtc = new DateTime(2023, 1, 1)
-            };
-
-            await searchRequestRepository.TrackSearchRequestCompletedEvent(searchRequestCompletedEvent);
-
-            var actualSearchRequestEntity = await searchRequestRepository.GetSearchRequestByIdentifier(expectedSearchRequestEntity.SearchIdentifier);
-
-            actualSearchRequestEntity.Should().BeEquivalentTo(expectedSearchRequestEntity);
-        }
-
-        [Test]
         public async Task TrackMatchPredictionResultsSentEvent_UpdatesSearchRequestInDb()
         {
             var expectedSearchRequestEntity = SearchRequestEntityBuilder.WithMatchPredictionResultsSent.Build();
