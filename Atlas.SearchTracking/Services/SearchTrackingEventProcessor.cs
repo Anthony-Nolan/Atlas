@@ -33,10 +33,6 @@ namespace Atlas.SearchTracking.Services
                     var searchRequestedEvent = JsonConvert.DeserializeObject<SearchRequestedEvent>(body);
                     await searchRequestRepository.TrackSearchRequestedEvent(searchRequestedEvent);
                     break;
-                case SearchTrackingEventType.SearchRequestCompleted:
-                    var searchRequestCompletedEvent = JsonConvert.DeserializeObject<SearchRequestCompletedEvent>(body);
-                    await searchRequestRepository.TrackSearchRequestCompletedEvent(searchRequestCompletedEvent);
-                    break;
                 case SearchTrackingEventType.MatchingAlgorithmAttemptStarted:
                     var matchingAlgorithmAttemptStartedEvent = JsonConvert.DeserializeObject<MatchingAlgorithmAttemptStartedEvent>(body);
                     await searchRequestMatchingAlgorithmAttemptsRepository.TrackStartedEvent(matchingAlgorithmAttemptStartedEvent);

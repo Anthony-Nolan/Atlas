@@ -8,14 +8,5 @@
       },
       "enableLiveMetricsFilters": true
     }
-  },
-  "extensions": {
-    "serviceBus": {
-      "clientRetryOptions": {
-        "mode": "fixed",
-        "delay": "00:00:20.00",
-        "maxRetries": 5
-      }
-    }
   }
 }
