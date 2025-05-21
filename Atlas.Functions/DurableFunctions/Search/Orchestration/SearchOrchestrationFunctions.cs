@@ -150,8 +150,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     RequestPerformanceMetrics = performanceMetrics
                 });
 
-                await SendMatchPredictionProcessCompleted(context, (SearchIdentifier: trackingSearchIdentifier, 
-                    FailureInfo: matchPredictionFailureInfo, DonorsPerBatch: matchPredictionProcessingBatchSize, TotalNumberOfBatches: matchPredictionNumberOfBatches));
+                if (notification.WasSuccessful)
+                {
+                    await SendMatchPredictionProcessCompleted(context, (SearchIdentifier: trackingSearchIdentifier,
+                        FailureInfo: matchPredictionFailureInfo, DonorsPerBatch: matchPredictionProcessingBatchSize, TotalNumberOfBatches: matchPredictionNumberOfBatches));
+                }
             }
         }
 

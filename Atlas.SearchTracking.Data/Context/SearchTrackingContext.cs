@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Atlas.SearchTracking.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Atlas.SearchTracking.Data.Context
 {
@@ -45,6 +46,24 @@ namespace Atlas.SearchTracking.Data.Context
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
                     v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null));
+
+            modelBuilder.Entity<SearchRequest>().Property(e => e.SearchIdentifier)
+               .HasConversion(
+                   new ValueConverter<Guid, string>(
+                       v => v.ToString("D").ToLowerInvariant(),
+                       v => Guid.Parse(v))
+               )
+               .HasMaxLength(36)
+               .HasColumnType("nvarchar(36)");
+
+            modelBuilder.Entity<SearchRequest>().Property(e => e.OriginalSearchIdentifier)
+                .HasConversion(
+                    new ValueConverter<Guid, string>(
+                        v => v.ToString("D").ToLowerInvariant(),
+                        v => Guid.Parse(v)) 
+                )
+                .HasMaxLength(36)
+                .HasColumnType("nvarchar(36)");
 
             base.OnModelCreating(modelBuilder);
         }
