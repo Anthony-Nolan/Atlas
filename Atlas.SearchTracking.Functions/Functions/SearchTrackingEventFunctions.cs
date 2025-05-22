@@ -30,7 +30,7 @@ namespace Atlas.SearchTracking.Functions.Functions
 
             if (deliveryCount != 1)
             {
-                await Task.Delay(20000);
+                await Task.Delay(deliveryCount * 1000);
             }
             await searchTrackingEventProcessor.HandleEvent(body, eventType);
         }
