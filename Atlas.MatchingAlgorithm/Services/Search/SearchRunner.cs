@@ -81,10 +81,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             searchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
             var requestCompletedSuccessfully = false;
             var searchStopWatch = new Stopwatch();
-            bool isResultsSent = false;
             DateTime? resultsSentTime = null;
             int? numberOfResults = null;
             MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = null;
+
             try
             {
                 await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.SearchRequest);
@@ -135,8 +135,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? searchRequestId : null
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
-                isResultsSent = true;
-                resultsSentTime = DateTime.UtcNow;
+
+                if (identifiedSearchRequest.SearchRequest.RunMatchPrediction)
+                {
+                    resultsSentTime = DateTime.UtcNow;
+                }
 
                 requestCompletedSuccessfully = true;
             }
@@ -150,7 +153,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 await matchingFailureNotificationSender.SendFailureNotification(identifiedSearchRequest, attemptNumber, 0,
                     validationException.Message);
-                isResultsSent = true;
                 resultsSentTime = DateTime.UtcNow;
 
                 matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
@@ -168,7 +170,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 searchLogger.SendTrace($"Failed to lookup HLA for search with id {searchRequestId}. Exception: {hmdException}", LogLevel.Error);
                 await matchingFailureNotificationSender.SendFailureNotification(identifiedSearchRequest, attemptNumber, 0, hmdException.Message);
-                isResultsSent = true;
                 resultsSentTime = DateTime.UtcNow;
 
                 matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
@@ -187,7 +188,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 await matchingFailureNotificationSender.SendFailureNotification(identifiedSearchRequest, attemptNumber,
                     searchRequestMaxRetryCount - attemptNumber);
-                isResultsSent = true;
                 resultsSentTime = DateTime.UtcNow;
 
                 matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
@@ -215,23 +215,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                         AlgorithmCoreStepDuration = searchStopWatch.Elapsed
                     }
                 });
-
-                var matchingAlgorithmCompletedEvent = new MatchingAlgorithmCompletedEvent
-                {
-                    SearchIdentifier = new Guid(searchRequestId),
-                    AttemptNumber = (byte)attemptNumber,
-                    CompletionTimeUtc = DateTime.UtcNow,
-                    HlaNomenclatureVersion = hlaNomenclatureVersion,
-                    ResultsSent = isResultsSent,
-                    ResultsSentTimeUtc = resultsSentTime,
-                    CompletionDetails = new MatchingAlgorithmCompletionDetails
-                    {
-                        IsSuccessful = requestCompletedSuccessfully,
-                        TotalAttemptsNumber = (byte)attemptNumber,
-                        NumberOfResults = numberOfResults,
-                        FailureInfo = matchingAlgorithmFailureInfo
-                    }
-                };
 
                 await matchingAlgorithmSearchTrackingDispatcher.ProcessCompleted(
                     (

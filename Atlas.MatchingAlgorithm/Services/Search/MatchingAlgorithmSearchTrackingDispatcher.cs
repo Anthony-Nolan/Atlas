@@ -159,7 +159,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 AttemptNumber = currentContext.AttemptNumber,
                 CompletionTimeUtc = DateTime.UtcNow,
                 HlaNomenclatureVersion = eventDetails.HlaNomenclatureVersion,
-                ResultsSent = eventDetails.ResultsSentTimeUtc.HasValue,
+                ResultsSent = eventDetails.ResultsSentTimeUtc.HasValue ? true : null,
                 ResultsSentTimeUtc = eventDetails.ResultsSentTimeUtc,
                 CompletionDetails = new MatchingAlgorithmCompletionDetails
                 {

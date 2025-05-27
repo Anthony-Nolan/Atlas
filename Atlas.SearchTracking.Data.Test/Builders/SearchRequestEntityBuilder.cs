@@ -57,7 +57,7 @@ namespace Atlas.SearchTracking.Data.Test.Builders
 
         public static Builder<SearchRequest> WithMatchingAlgorithmNotCompleted => Default
             .With(m => m.MatchingAlgorithm_IsSuccessful, false)
-            .With(m => m.MatchingAlgorithm_ResultsSent, false)
+            .With(m => m.MatchingAlgorithm_ResultsSent, null)
             .With(m => m.MatchingAlgorithm_TotalAttemptsNumber, 0)
             .With(m => m.MatchingAlgorithm_FailureInfo_Message, "FailureInfoMessage")
             .With(m => m.MatchingAlgorithm_FailureInfo_ExceptionStacktrace, "StackTrace")
