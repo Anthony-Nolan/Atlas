@@ -21,12 +21,17 @@ namespace Atlas.SearchTracking.Functions.Functions
             [ServiceBusTrigger("%MessagingServiceBus:SearchTrackingTopic%",
                 "%MessagingServiceBus:SearchTrackingSubscription%",
                 Connection = "MessagingServiceBus:ConnectionString")]
-            ServiceBusReceivedMessage message)
+            ServiceBusReceivedMessage message,
+            int deliveryCount)
         {
             var body = Encoding.UTF8.GetString(message.Body);
             var eventType =
                 Enum.Parse<SearchTrackingEventType>(message.ApplicationProperties.GetValueOrDefault(SearchTrackingConstants.EventType).ToString());
 
+            if (deliveryCount != 1)
+            {
+                await Task.Delay(deliveryCount * 1000);
+            }
             await searchTrackingEventProcessor.HandleEvent(body, eventType);
         }
     }
