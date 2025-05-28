@@ -2,6 +2,7 @@
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Data.Models;
 using AutoMapper;
+using System.Reflection;
 
 namespace Atlas.SearchTracking.Mapping
 {
@@ -11,9 +12,9 @@ namespace Atlas.SearchTracking.Mapping
         {
             CreateMap<SearchRequest, SearchTrackingSearchRequest>()
                 .ForMember(dest => dest.ResultsSent,
-                    opt => opt.MapFrom(s => s.MatchingAlgorithm_ResultsSent))
+                    opt => opt.MapFrom(s => s.ResultsSent))
                 .ForMember(dest => dest.ResultsSentTimeUtc,
-                    opt => opt.MapFrom(s => s.MatchingAlgorithm_ResultsSentTimeUtc))
+                    opt => opt.MapFrom(s => s.ResultsSentTimeUtc))
                 .ForPath(dest => dest.SearchTrackingMatchPredictionInfo.IsSuccessful,
                     opt => opt.MapFrom(s => s.MatchPrediction_IsSuccessful))
                 .ForPath(dest => dest.SearchTrackingMatchPredictionInfo.FailureInfo.Message,
@@ -48,7 +49,7 @@ namespace Atlas.SearchTracking.Mapping
                     opt => opt.MapFrom(s => s.MatchingAlgorithm_HlaNomenclatureVersion))
                 .ForPath(dest => dest.SearchTrackingMatchingAlgorithmInfo.ResultsSent,
                     opt => opt.MapFrom(s => s.MatchingAlgorithm_ResultsSent))
-                .ForPath(dest => dest.ResultsSentTimeUtc,
+                .ForPath(dest => dest.SearchTrackingMatchingAlgorithmInfo.ResultsSentTimeUtc,
                     opt => opt.MapFrom(s => s.MatchingAlgorithm_ResultsSentTimeUtc))
                 .ForMember(dest => dest.SearchRequestMatchPredictionDetails,
                     opt => opt.MapFrom(s => s.SearchRequestMatchPrediction))

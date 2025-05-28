@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
