@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
@@ -159,7 +158,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 AttemptNumber = currentContext.AttemptNumber,
                 CompletionTimeUtc = DateTime.UtcNow,
                 HlaNomenclatureVersion = eventDetails.HlaNomenclatureVersion,
-                ResultsSent = eventDetails.ResultsSentTimeUtc.HasValue ? true : null,
+                ResultsSent = eventDetails.ResultsSentTimeUtc.HasValue,
                 ResultsSentTimeUtc = eventDetails.ResultsSentTimeUtc,
                 CompletionDetails = new MatchingAlgorithmCompletionDetails
                 {

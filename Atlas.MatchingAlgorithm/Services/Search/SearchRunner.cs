@@ -18,7 +18,6 @@ using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using Atlas.SearchTracking.Common.Enums;
-using Atlas.SearchTracking.Common.Models;
 using FluentValidation;
 using MatchingAlgorithmFailureInfo = Atlas.SearchTracking.Common.Models.MatchingAlgorithmFailureInfo;
 
@@ -136,10 +135,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
 
-                if (identifiedSearchRequest.SearchRequest.RunMatchPrediction)
-                {
-                    resultsSentTime = DateTime.UtcNow;
-                }
+                resultsSentTime = DateTime.UtcNow;
 
                 requestCompletedSuccessfully = true;
             }

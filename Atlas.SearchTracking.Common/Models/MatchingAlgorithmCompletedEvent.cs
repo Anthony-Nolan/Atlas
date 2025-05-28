@@ -9,7 +9,7 @@ namespace Atlas.SearchTracking.Common.Models
         public DateTime CompletionTimeUtc { get; set; }
         public MatchingAlgorithmCompletionDetails CompletionDetails { get; set; } = null!;
         public string HlaNomenclatureVersion { get; set; } = null!;
-        public bool? ResultsSent { get; set; }
+        public bool ResultsSent { get; set; }
         public DateTime? ResultsSentTimeUtc { get; set; }
     }
 
