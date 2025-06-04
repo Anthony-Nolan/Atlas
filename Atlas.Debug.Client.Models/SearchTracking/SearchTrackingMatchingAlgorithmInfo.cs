@@ -4,7 +4,7 @@ namespace Atlas.Debug.Client.Models.SearchTracking
 {
     public class SearchTrackingMatchingAlgorithmInfo
     {
-        public bool? IsSuccessful { get; set; }
+        public bool IsSuccessful { get; set; }
 
         public SearchTrackingMatchingAlgorithmFailureInfo FailureInfo { get; set; }
 

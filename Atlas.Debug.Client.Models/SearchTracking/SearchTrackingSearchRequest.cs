@@ -27,18 +27,18 @@ namespace Atlas.Debug.Client.Models.SearchTracking
 
         public DateTime RequestTimeUtc { get; set; }
 
-        public SearchTrackingMatchingAlgorithmInfo SearchTrackingMatchingAlgorithmInfo { get; set; }
+        public SearchTrackingMatchingAlgorithmInfo MatchingAlgorithmInfo { get; set; }
 
         public bool IsMatchPredictionRun { get; set; }
 
-        public SearchTrackingMatchPredictionInfo SearchTrackingMatchPredictionInfo { get; set; }
+        public SearchTrackingMatchPredictionInfo MatchPredictionInfo { get; set; }
 
         public bool? ResultsSent { get; set; }
 
         public DateTime? ResultsSentTimeUtc { get; set; }
 
-        public SearchTrackingMatchPredictionDetails? SearchRequestMatchPredictionDetails { get; set; }
+        public SearchTrackingMatchPredictionDetails? MatchPredictionDetails { get; set; }
 
-        public List<SearchTrackingMatchingAlgorithmAttemptDetails> SearchRequestMatchingAlgorithmAttemptDetails { get; set; }
+        public List<SearchTrackingMatchingAlgorithmAttemptDetails> MatchingAlgorithmAttemptDetails { get; set; }
     }
 }

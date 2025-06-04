@@ -33,12 +33,12 @@ namespace Atlas.SearchTracking.Data.Context
             modelBuilder.Entity<SearchRequest>().SetUpModel();
 
             modelBuilder.Entity<SearchRequest>()
-                .HasOne(x => x.SearchRequestMatchPrediction)
+                .HasOne(x => x.MatchPrediction)
                 .WithOne(x => x.SearchRequest)
                 .HasForeignKey<SearchRequestMatchPrediction>(x => x.SearchRequestId);
 
             modelBuilder.Entity<SearchRequest>()
-                .HasMany(x => x.SearchRequestMatchingAlgorithmAttempts)
+                .HasMany(x => x.MatchingAlgorithmAttempts)
                 .WithOne(x => x.SearchRequest)
                 .HasForeignKey(x => x.SearchRequestId);
 
