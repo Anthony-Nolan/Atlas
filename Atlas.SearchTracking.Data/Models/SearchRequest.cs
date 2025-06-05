@@ -76,9 +76,9 @@ namespace Atlas.SearchTracking.Data.Models
 
         public DateTime? ResultsSentTimeUtc { get; set; }
 
-        public SearchRequestMatchPrediction? SearchRequestMatchPrediction { get; set; }
+        public SearchRequestMatchPrediction? MatchPrediction { get; set; }
 
-        public ICollection<SearchRequestMatchingAlgorithmAttempts>? SearchRequestMatchingAlgorithmAttempts { get; set; }
+        public ICollection<SearchRequestMatchingAlgorithmAttempts>? MatchingAlgorithmAttempts { get; set; }
 
         public bool IsMatchPredictionRun { get; set; }
 

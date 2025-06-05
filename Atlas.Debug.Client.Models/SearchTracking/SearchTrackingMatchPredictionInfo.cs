@@ -2,7 +2,7 @@
 {
     public class SearchTrackingMatchPredictionInfo
     {
-        public bool? IsSuccessful { get; set; }
+        public bool IsSuccessful { get; set; }
 
         public SearchTrackingMatchPredictionFailureInfo FailureInfo { get; set; }
 
