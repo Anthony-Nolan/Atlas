@@ -39,6 +39,10 @@ namespace Atlas.SearchTracking.Common.Clients
             var message = new Message(Encoding.UTF8.GetBytes(json));
 
             message.UserProperties[SearchTrackingConstants.EventType] = eventType.ToString();
+            message.UserProperties.Add("SearchIdentifier", typeof(TEvent).GetProperty("SearchIdentifier")?.ToString());
+            message.UserProperties.Add("OriginalSearchIdentifier", typeof(TEvent).GetProperty("OriginalSearchIdentifier")?.ToString());
+            message.UserProperties.Add("AttemptNumber", typeof(TEvent).GetProperty("AttemptNumber")?.ToString());
+
             var client = new TopicClient(connectionString, searchTrackingTopicName);
 
             using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
