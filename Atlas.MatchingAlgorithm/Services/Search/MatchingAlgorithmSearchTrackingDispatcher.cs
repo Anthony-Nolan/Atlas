@@ -43,6 +43,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var matchingAlgorithmAttemptStartedEvent = new MatchingAlgorithmAttemptStartedEvent
             {
                 SearchIdentifier = currentContext.SearchIdentifier,
+                OriginalSearchIdentifier = currentContext.OriginalSearchIdentifier,
                 AttemptNumber = currentContext.AttemptNumber,
                 InitiationTimeUtc = initiationTime,
                 StartTimeUtc = startTime
@@ -59,6 +60,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
             {
                 SearchIdentifier = currentContext.SearchIdentifier,
+                OriginalSearchIdentifier = currentContext.OriginalSearchIdentifier,
                 AttemptNumber = currentContext.AttemptNumber,
                 TimeUtc = DateTime.UtcNow
             };
@@ -74,6 +76,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
             {
                 SearchIdentifier = currentContext.SearchIdentifier,
+                OriginalSearchIdentifier = currentContext.OriginalSearchIdentifier,
                 AttemptNumber = currentContext.AttemptNumber,
                 TimeUtc = DateTime.UtcNow
             };
@@ -91,6 +94,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
                 {
                     SearchIdentifier = currentContext.SearchIdentifier,
+                    OriginalSearchIdentifier = currentContext.OriginalSearchIdentifier,
                     AttemptNumber = currentContext.AttemptNumber,
                     TimeUtc = DateTime.UtcNow
                 };
@@ -108,6 +112,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
             {
                 SearchIdentifier = currentContext.SearchIdentifier,
+                OriginalSearchIdentifier = currentContext.OriginalSearchIdentifier,
                 AttemptNumber = currentContext.AttemptNumber,
                 TimeUtc = DateTime.UtcNow
             };
@@ -123,6 +128,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
             {
                 SearchIdentifier = currentContext.SearchIdentifier,
+                OriginalSearchIdentifier = currentContext.OriginalSearchIdentifier,
                 AttemptNumber = currentContext.AttemptNumber,
                 TimeUtc = DateTime.UtcNow
             };
@@ -138,6 +144,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var matchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent
             {
                 SearchIdentifier = currentContext.SearchIdentifier,
+                OriginalSearchIdentifier = currentContext.OriginalSearchIdentifier,
                 AttemptNumber = currentContext.AttemptNumber,
                 TimeUtc = DateTime.UtcNow
             };
@@ -155,6 +162,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var completedEvent = new MatchingAlgorithmCompletedEvent
             {
                 SearchIdentifier = currentContext.SearchIdentifier,
+                OriginalSearchIdentifier = currentContext.OriginalSearchIdentifier,
                 AttemptNumber = currentContext.AttemptNumber,
                 CompletionTimeUtc = DateTime.UtcNow,
                 HlaNomenclatureVersion = eventDetails.HlaNomenclatureVersion,

@@ -135,7 +135,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.AddScoped(sp => mockSearchServiceBusClient);
 
             var mockSearchTrackingServiceBusClient = Substitute.For<ISearchTrackingServiceBusClient>();
-            mockSearchTrackingServiceBusClient.PublishSearchTrackingEvent(Arg.Any<SearchRequestedEvent>, SearchTrackingEventType.SearchRequested)
+            mockSearchTrackingServiceBusClient.PublishSearchTrackingEvent(Arg.Any<SearchRequestedEvent>(), SearchTrackingEventType.SearchRequested)
                 .Returns(Task.CompletedTask);
             services.AddScoped(sp => mockSearchTrackingServiceBusClient);
 

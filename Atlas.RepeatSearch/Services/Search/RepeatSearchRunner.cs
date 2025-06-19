@@ -107,6 +107,7 @@ namespace Atlas.RepeatSearch.Services.Search
                 var context = new MatchingAlgorithmSearchTrackingContext
                 {
                     SearchIdentifier = new Guid(repeatSearchId),
+                    OriginalSearchIdentifier = new Guid(originalSearchRequestId),
                     AttemptNumber = (byte)attemptNumber
                 };
 

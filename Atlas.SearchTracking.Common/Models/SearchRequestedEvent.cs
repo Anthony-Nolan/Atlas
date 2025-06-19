@@ -1,6 +1,6 @@
 ﻿namespace Atlas.SearchTracking.Common.Models
 {
-    public class SearchRequestedEvent
+    public class SearchRequestedEvent : ISearchTrackingEvent
     {
         public Guid SearchIdentifier { get; set; }
         public bool IsRepeatSearch { get; set; }

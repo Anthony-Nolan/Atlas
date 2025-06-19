@@ -15,6 +15,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         public void Set(MatchingAlgorithmSearchTrackingContext context)
         {
             currentContext.SearchIdentifier = context.SearchIdentifier;
+            currentContext.OriginalSearchIdentifier = context.OriginalSearchIdentifier;
             currentContext.AttemptNumber = context.AttemptNumber;
         }
 
