@@ -71,13 +71,13 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             InitializeLoggingContext(matchingResultsNotification.SearchRequestId);
 
             var trackingSearchIdentifier = matchingResultsNotification.IsRepeatSearch
-                ? matchingResultsNotification.RepeatSearchRequestId
-                : matchingResultsNotification.SearchRequestId;
+                ? new Guid(matchingResultsNotification.RepeatSearchRequestId)
+                : new Guid(matchingResultsNotification.SearchRequestId);
             var originalSearchIdentifier = matchingResultsNotification.IsRepeatSearch
                 ? new Guid(matchingResultsNotification.SearchRequestId)
                 : (Guid?)null;
-            
-            await matchPredictionSearchTrackingDispatcher.ProcessPrepareBatchesStarted(new Guid(trackingSearchIdentifier), originalSearchIdentifier);
+
+            await matchPredictionSearchTrackingDispatcher.ProcessPrepareBatchesStarted(trackingSearchIdentifier, originalSearchIdentifier);
 
             var timedResultSet = new TimedResultSet<IList<string>>();
             var stopwatch = new Stopwatch();
@@ -106,7 +106,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 };
             }
 
-            await matchPredictionSearchTrackingDispatcher.ProcessPrepareBatchesEnded(new Guid(trackingSearchIdentifier), originalSearchIdentifier);
+            await matchPredictionSearchTrackingDispatcher.ProcessPrepareBatchesEnded(trackingSearchIdentifier, originalSearchIdentifier);
             return timedResultSet;
         }
 
@@ -123,13 +123,13 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             InitializeLoggingContext(parameters.MatchingResultsNotification.SearchRequestId);
             var matchingResultsNotification = parameters.MatchingResultsNotification;
             var trackingSearchIdentifier = matchingResultsNotification.IsRepeatSearch
-                ? matchingResultsNotification.RepeatSearchRequestId
-                : matchingResultsNotification.SearchRequestId;
+                ? new Guid(matchingResultsNotification.RepeatSearchRequestId)
+                : new Guid(matchingResultsNotification.SearchRequestId);
             var originalSearchIdentifier = matchingResultsNotification.IsRepeatSearch
                 ? new Guid(matchingResultsNotification.SearchRequestId)
                 : (Guid?)null;
 
-            await matchPredictionSearchTrackingDispatcher.ProcessPersistingResultsStarted(new Guid(trackingSearchIdentifier), originalSearchIdentifier);
+            await matchPredictionSearchTrackingDispatcher.ProcessPersistingResultsStarted(trackingSearchIdentifier, originalSearchIdentifier);
 
             var matchingResultsSummary = await logger.RunTimedAsync("Download matching results summary", async () =>
                 await matchingResultsDownloader.DownloadSummary(
@@ -155,9 +155,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             );
 
             await searchResultsBlobUploader.UploadResults(resultSet, resultSet.BlobStorageContainerName, resultSet.ResultsFileName);
-            await matchPredictionSearchTrackingDispatcher.ProcessPersistingResultsEnded(new Guid(trackingSearchIdentifier), originalSearchIdentifier);
+            await matchPredictionSearchTrackingDispatcher.ProcessPersistingResultsEnded(trackingSearchIdentifier, originalSearchIdentifier);
             await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated, matchingResultsNotification.BatchFolderName);
-            await matchPredictionSearchTrackingDispatcher.ProcessResultsSent(new Guid(trackingSearchIdentifier), originalSearchIdentifier);
+            await matchPredictionSearchTrackingDispatcher.ProcessResultsSent(trackingSearchIdentifier, originalSearchIdentifier);
         }
 
         [Function(nameof(SendFailureNotification))]
@@ -165,10 +165,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         {
             var trackingSearchIdentifier = requestInfo.RepeatSearchRequestId ?? requestInfo.SearchRequestId;
             var originalSearchIdentifier = requestInfo.RepeatSearchRequestId != null
-                ? new Guid(requestInfo.SearchRequestId)
-                : (Guid?)null;
+                ? requestInfo.SearchRequestId
+                : null;
             await searchCompletionMessageSender.PublishFailureMessage(requestInfo);
-            await matchPredictionSearchTrackingDispatcher.ProcessResultsSent(new Guid(trackingSearchIdentifier), originalSearchIdentifier);
+            await matchPredictionSearchTrackingDispatcher.ProcessResultsSent(new Guid(trackingSearchIdentifier), originalSearchIdentifier != null ? new Guid(originalSearchIdentifier) : null);
         }
 
         [Function(nameof(UploadSearchLog))]
