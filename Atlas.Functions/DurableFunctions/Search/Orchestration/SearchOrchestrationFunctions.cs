@@ -62,7 +62,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
             loggingContext.SearchRequestId = requestInfo.SearchRequestId;
             var trackingSearchIdentifier = new Guid(requestInfo.SearchRequestId);
-
+            var originalSearchIdentifier = requestInfo.RepeatSearchRequestId != null
+                ? new Guid(requestInfo.RepeatSearchRequestId)
+                : (Guid?)null;
             try
             {
                 if (!notification.WasSuccessful)
@@ -73,14 +75,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     return null;
                 }
 
-                await SendMatchPredictionProcessInitiated(context, (SearchIdentifier: trackingSearchIdentifier, InitiationTimeUtc: orchestrationStartTime));
+                await SendMatchPredictionProcessInitiated(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier, InitiationTimeUtc: orchestrationStartTime));
 
                 var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification, requestInfo);
-                await SendMatchPredictionBatchProcessingStarted(context, trackingSearchIdentifier);
+                await SendMatchPredictionBatchProcessingStarted(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier));
                 (matchPredictionResultLocations, matchPredictionNumberOfBatches)
                     = await RunMatchPredictionAlgorithm(context, requestInfo, matchPredictionRequestLocations);
 
-                await SendMatchPredictionBatchProcessingEnded(context, trackingSearchIdentifier);
+                await SendMatchPredictionBatchProcessingEnded(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier));
 
                 await PersistSearchResults(
                     context,
@@ -152,7 +154,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
                 if (notification.WasSuccessful)
                 {
-                    await SendMatchPredictionProcessCompleted(context, (SearchIdentifier: trackingSearchIdentifier,
+                    await SendMatchPredictionProcessCompleted(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier,
                         FailureInfo: matchPredictionFailureInfo, DonorsPerBatch: matchPredictionProcessingBatchSize, TotalNumberOfBatches: matchPredictionNumberOfBatches));
                 }
             }
@@ -170,6 +172,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             MatchPredictionFailureInfo matchPredictionFailureInfo = null;
 
             var trackingSearchIdentifier = new Guid(requestInfo.RepeatSearchRequestId);
+            var originalSearchIdentifier = new Guid(requestInfo.SearchRequestId);
             try
             {
                 var orchestrationInitiated = context.CurrentUtcDateTime;
@@ -181,14 +184,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     return null;
                 }
 
-                await SendMatchPredictionProcessInitiated(context, (SearchIdentifier: trackingSearchIdentifier, InitiationTimeUtc: orchestrationStartTime));
+                await SendMatchPredictionProcessInitiated(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier,  InitiationTimeUtc: orchestrationStartTime));
 
                 var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification, requestInfo);
-                await SendMatchPredictionBatchProcessingStarted(context, trackingSearchIdentifier);
+                await SendMatchPredictionBatchProcessingStarted(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier));
                 (matchPredictionResultLocations, matchPredictionNumberOfBatches)
                     = await RunMatchPredictionAlgorithm(context, requestInfo, matchPredictionRequestLocations);
 
-                await SendMatchPredictionBatchProcessingEnded(context, trackingSearchIdentifier);
+                await SendMatchPredictionBatchProcessingEnded(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier));
 
                 await PersistSearchResults(
                     context,
@@ -242,7 +245,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
             finally
             {
-                await SendMatchPredictionProcessCompleted(context, (SearchIdentifier: trackingSearchIdentifier,
+                await SendMatchPredictionProcessCompleted(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier,
                     FailureInfo: matchPredictionFailureInfo, DonorsPerBatch: matchPredictionProcessingBatchSize, TotalNumberOfBatches: matchPredictionNumberOfBatches));
             }
         }
@@ -412,7 +415,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
         private static async Task SendMatchPredictionProcessInitiated(
             TaskOrchestrationContext context,
-            (Guid SearchIdentifier, DateTime InitiationTimeUtc) eventDetails) =>
+            (Guid SearchIdentifier, Guid? OriginalSearchIdentifier, DateTime InitiationTimeUtc) eventDetails) =>
             await context.CallActivityAsync(
                 nameof(SearchActivityFunctions.SendMatchPredictionProcessInitiated),
                 eventDetails,
@@ -421,25 +424,25 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
         private static async Task SendMatchPredictionBatchProcessingStarted(
             TaskOrchestrationContext context,
-            Guid searchIdentifier) =>
+            (Guid SearchIdentifier, Guid? OriginalSearchIdentifier) eventDetails) =>
             await context.CallActivityAsync(
                 nameof(SearchActivityFunctions.SendMatchPredictionBatchProcessingStarted),
-                searchIdentifier,
+                eventDetails,
                 RetryOptions
             );
 
         private static async Task SendMatchPredictionBatchProcessingEnded(
             TaskOrchestrationContext context,
-            Guid searchIdentifier) =>
+            (Guid SearchIdentifier, Guid? OriginalSearchIdentifier) eventDetails) =>
             await context.CallActivityAsync(
                 nameof(SearchActivityFunctions.SendMatchPredictionBatchProcessingEnded),
-                searchIdentifier,
+                eventDetails,
                 RetryOptions
             );
 
         private static async Task SendMatchPredictionProcessCompleted(
             TaskOrchestrationContext context,
-            (Guid SearchIdentifier, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) eventDetails) =>
+            (Guid SearchIdentifier, Guid? OriginalSearchIdentifier, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) eventDetails) =>
             await context.CallActivityAsync(
                 nameof(SearchActivityFunctions.SendMatchPredictionProcessCompleted),
                 eventDetails,

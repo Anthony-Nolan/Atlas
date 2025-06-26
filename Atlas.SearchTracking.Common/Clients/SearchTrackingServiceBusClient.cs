@@ -8,12 +8,13 @@ using Atlas.SearchTracking.Common.Settings.ServiceBus;
 using Atlas.Common.Utils;
 using System.Transactions;
 using Atlas.Common.ServiceBus.Deprecated;
+using Atlas.SearchTracking.Common.Models;
 
 namespace Atlas.SearchTracking.Common.Clients
 {
     public interface ISearchTrackingServiceBusClient
     {
-          Task PublishSearchTrackingEvent<TEvent>(TEvent searchTrackingEvent, SearchTrackingEventType eventType);
+          Task PublishSearchTrackingEvent<TEvent>(TEvent searchTrackingEvent, SearchTrackingEventType eventType) where TEvent : ISearchTrackingEvent;
     }
 
     public class SearchTrackingServiceBusClient : ISearchTrackingServiceBusClient
@@ -33,12 +34,19 @@ namespace Atlas.SearchTracking.Common.Clients
             this.logger = logger;
         }
 
-        public async Task PublishSearchTrackingEvent<TEvent>(TEvent searchTrackingEvent, SearchTrackingEventType eventType)
+        public async Task PublishSearchTrackingEvent<TEvent>(TEvent searchTrackingEvent, SearchTrackingEventType eventType) where TEvent : ISearchTrackingEvent
         {
             var json = JsonConvert.SerializeObject(searchTrackingEvent);
             var message = new Message(Encoding.UTF8.GetBytes(json));
 
             message.UserProperties[SearchTrackingConstants.EventType] = eventType.ToString();
+            message.UserProperties.Add("SearchIdentifier", searchTrackingEvent.SearchIdentifier);
+            message.UserProperties.Add("OriginalSearchIdentifier", searchTrackingEvent.OriginalSearchIdentifier);
+            if (searchTrackingEvent is ISearchTrackingMatchingAttemptEvent attemptEvent)
+            {
+                message.UserProperties["AttemptNumber"] = attemptEvent.AttemptNumber;
+            }
+
             var client = new TopicClient(connectionString, searchTrackingTopicName);
 
             using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
