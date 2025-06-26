@@ -163,12 +163,12 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         [Function(nameof(SendFailureNotification))]
         public async Task SendFailureNotification([ActivityTrigger] FailureNotificationRequestInfo requestInfo)
         {
-            var trackingSearchIdentifier = requestInfo.RepeatSearchRequestId ?? requestInfo.SearchRequestId;
+            var trackingSearchIdentifier = new Guid(requestInfo.RepeatSearchRequestId ?? requestInfo.SearchRequestId);
             var originalSearchIdentifier = requestInfo.RepeatSearchRequestId != null
-                ? requestInfo.SearchRequestId
-                : null;
+                ? new Guid(requestInfo.SearchRequestId)
+                : (Guid?)null;
             await searchCompletionMessageSender.PublishFailureMessage(requestInfo);
-            await matchPredictionSearchTrackingDispatcher.ProcessResultsSent(new Guid(trackingSearchIdentifier), originalSearchIdentifier != null ? new Guid(originalSearchIdentifier) : null);
+            await matchPredictionSearchTrackingDispatcher.ProcessResultsSent(trackingSearchIdentifier, originalSearchIdentifier);
         }
 
         [Function(nameof(UploadSearchLog))]
