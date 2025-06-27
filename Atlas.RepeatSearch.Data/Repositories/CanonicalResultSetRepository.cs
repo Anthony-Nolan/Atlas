@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
 using Atlas.RepeatSearch.Data.Models;
@@ -31,10 +30,14 @@ namespace Atlas.RepeatSearch.Data.Repositories
     public class CanonicalResultSetRepository : ICanonicalResultSetRepository
     {
         private readonly string connectionString;
+        private readonly int sqlBulkCopyBatchSize;
+        private readonly int sqlBulkCopyBatchTimeout;
 
-        public CanonicalResultSetRepository(ConnectionStrings connectionStrings)
+        public CanonicalResultSetRepository(ConnectionStrings connectionStrings, StoreOriginalSearchResultsBulkCopySettings settings)
         {
             connectionString = connectionStrings.RepeatSearchSqlConnectionString;
+            sqlBulkCopyBatchSize = settings.BatchSize;
+            sqlBulkCopyBatchTimeout = settings.Timeout;
         }
 
         public async Task CreateCanonicalResultSet(string searchRequestId, IReadOnlyCollection<string> externalDonorCodes)
@@ -53,8 +56,8 @@ namespace Atlas.RepeatSearch.Data.Repositories
         public async Task<CanonicalResultSet> GetCanonicalResultSetSummary(string searchRequestId)
         {
             var sql = @$"
-SELECT * FROM {CanonicalResultSet.QualifiedTableName} 
-WHERE {nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequestId)}";
+                SELECT * FROM {CanonicalResultSet.QualifiedTableName} 
+                WHERE {nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequestId)}";
 
             await using (var conn = new SqlConnection(connectionString))
             {
@@ -65,9 +68,9 @@ WHERE {nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequ
         public async Task<ICollection<SearchResult>> GetCanonicalResults(string searchRequestId)
         {
             var sql = @$"
-SELECT * FROM {SearchResult.QualifiedTableName} sr
-JOIN {CanonicalResultSet.QualifiedTableName} crs on crs.{nameof(CanonicalResultSet.Id)} = sr.{nameof(SearchResult.CanonicalResultSetId)} 
-WHERE crs.{nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequestId)}";
+                SELECT * FROM {SearchResult.QualifiedTableName} sr
+                JOIN {CanonicalResultSet.QualifiedTableName} crs on crs.{nameof(CanonicalResultSet.Id)} = sr.{nameof(SearchResult.CanonicalResultSetId)} 
+                WHERE crs.{nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequestId)}";
 
             await using (var conn = new SqlConnection(connectionString))
             {
@@ -78,10 +81,10 @@ WHERE crs.{nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(search
         public async Task RemoveResultsFromSet(string searchRequestId, IReadOnlyCollection<string> donorCodesToRemove)
         {
             var sql = @$"
-DELETE sr FROM {SearchResult.QualifiedTableName} sr
-JOIN {CanonicalResultSet.QualifiedTableName} crs on crs.{nameof(CanonicalResultSet.Id)} = sr.{nameof(SearchResult.CanonicalResultSetId)} 
-WHERE crs.{nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequestId)} 
-AND sr.{nameof(SearchResult.ExternalDonorCode)} IN @Ids
+                DELETE sr FROM {SearchResult.QualifiedTableName} sr
+                JOIN {CanonicalResultSet.QualifiedTableName} crs on crs.{nameof(CanonicalResultSet.Id)} = sr.{nameof(SearchResult.CanonicalResultSetId)} 
+                WHERE crs.{nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequestId)} 
+                AND sr.{nameof(SearchResult.ExternalDonorCode)} IN @Ids
                 ";
 
             await using (var connection = new SqlConnection(connectionString))
@@ -118,20 +121,20 @@ AND sr.{nameof(SearchResult.ExternalDonorCode)} IN @Ids
             // With all above and the fact that existing record for search request id is rare case, we're tring to insert the record first. 
             // Then in case of exception, we're checking if records exists and return null idicating that new record wasn't created.
             var sql = @$"
-BEGIN TRY
-    INSERT INTO {CanonicalResultSet.QualifiedTableName}
-    ({nameof(CanonicalResultSet.OriginalSearchRequestId)})
-    VALUES(@{nameof(searchRequestId)});
+                BEGIN TRY
+                    INSERT INTO {CanonicalResultSet.QualifiedTableName}
+                    ({nameof(CanonicalResultSet.OriginalSearchRequestId)})
+                    VALUES(@{nameof(searchRequestId)});
 
-    SELECT CAST(SCOPE_IDENTITY() as int);
-END TRY
-BEGIN CATCH 
-    IF EXISTS (SELECT id FROM RepeatSearch.CanonicalResultSets WHERE OriginalSearchRequestId = @searchRequestId)
-        SELECT null
-    ELSE
-    THROW
-END CATCH
-";
+                    SELECT CAST(SCOPE_IDENTITY() as int);
+                END TRY
+                BEGIN CATCH 
+                    IF EXISTS (SELECT id FROM RepeatSearch.CanonicalResultSets WHERE OriginalSearchRequestId = @searchRequestId)
+                        SELECT null
+                    ELSE
+                    THROW
+                END CATCH
+                ";
 
             await using (var conn = new SqlConnection(connectionString))
             {
@@ -141,7 +144,8 @@ END CATCH
 
         private SqlBulkCopy BuildResultsBulkCopy()
         {
-            var sqlBulk = new SqlBulkCopy(connectionString) {BatchSize = 10000, DestinationTableName = SearchResult.QualifiedTableName};
+            var sqlBulk = new SqlBulkCopy(connectionString) {BatchSize = sqlBulkCopyBatchSize, DestinationTableName = SearchResult.QualifiedTableName};
+            sqlBulk.BulkCopyTimeout = sqlBulkCopyBatchTimeout;
             sqlBulk.ColumnMappings.Add(nameof(SearchResult.Id), nameof(SearchResult.Id));
             sqlBulk.ColumnMappings.Add(nameof(SearchResult.ExternalDonorCode), nameof(SearchResult.ExternalDonorCode));
             sqlBulk.ColumnMappings.Add(nameof(SearchResult.CanonicalResultSetId), nameof(SearchResult.CanonicalResultSetId));
