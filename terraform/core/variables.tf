@@ -440,7 +440,19 @@ variable "SERVICE_BUS_SEND_RETRY_COUNT" {
 variable "SHOULD_BATCH_RESULTS" {
   type        = bool
   default     = false
-  description = "Inidicates whether final search/repeat search results should be batched or not"
+  description = "Indicates whether final search/repeat search results should be batched or not"
+}
+
+variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE" {
+  type        = number
+  default     = 10000
+  description = "Batch size for bulk copying repeat search results to the database"
+}
+
+variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT" {
+  type        = number
+  default     = 30
+  description = "Timeout for bulk copying repeat search results to the database, in seconds"
 }
 
 variable "TERRAFORM_RESOURCE_GROUP_NAME" {

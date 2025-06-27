@@ -44,9 +44,17 @@ variable "SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
 }
 
 variable "SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS" {
-	type = number
+  type = number
 }
 
 variable "SERVICE_BUS_SEND_RETRY_COUNT" {
-	type = number
+  type = number
+}
+
+variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE" {
+  type = number
+}
+
+variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT" {
+  type = number
 }

@@ -53,6 +53,8 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
     "SearchTrackingServiceBus:SearchTrackingTopic"             = var.servicebus_topics.search_tracking.name
     "SearchTrackingServiceBus:SendRetryCount"                  = var.SERVICE_BUS_SEND_RETRY_COUNT
     "SearchTrackingServiceBus:SendRetryCooldownSeconds"        = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+    "StoreOriginalSearchResultsBulkCopy:BatchSize"             = var.STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE
+    "StoreOriginalSearchResultsBulkCopy:Timeout"               = var.STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT
 
     // maximum running instances of the algorithm = maximum_worker_count * maxConcurrentCalls (in host.json).
     // together, alongside the non-repeat matching processes, these must ensure that the number of allowed concurrent SQL connections to the matching SQL DB is not exceeded.
