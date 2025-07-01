@@ -1,8 +1,3 @@
-using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.LogFile;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
@@ -19,6 +14,11 @@ using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using Atlas.SearchTracking.Common.Enums;
 using FluentValidation;
+using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using MatchingAlgorithmFailureInfo = Atlas.SearchTracking.Common.Models.MatchingAlgorithmFailureInfo;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
@@ -84,17 +84,17 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             int? numberOfResults = null;
             MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = null;
 
+            var context = new MatchingAlgorithmSearchTrackingContext
+            {
+                SearchIdentifier = new Guid(searchRequestId),
+                AttemptNumber = (byte)attemptNumber
+            };
+            matchingAlgorithmSearchTrackingContextManager.Set(context);
+
             try
             {
                 await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.SearchRequest);
 
-                var context = new MatchingAlgorithmSearchTrackingContext
-                {
-                    SearchIdentifier = new Guid(searchRequestId),
-                    AttemptNumber = (byte)attemptNumber
-                };
-
-                matchingAlgorithmSearchTrackingContextManager.Set(context);
                 await matchingAlgorithmSearchTrackingDispatcher.ProcessInitiation(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
 
                 searchStopWatch.Start();

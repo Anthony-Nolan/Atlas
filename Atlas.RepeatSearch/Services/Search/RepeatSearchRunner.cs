@@ -100,18 +100,19 @@ namespace Atlas.RepeatSearch.Services.Search
             repeatSearchLoggingContext.SearchRequestId = originalSearchRequestId;
             repeatSearchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
 
+            var context = new MatchingAlgorithmSearchTrackingContext
+            {
+                SearchIdentifier = new Guid(repeatSearchId),
+                OriginalSearchIdentifier = new Guid(originalSearchRequestId),
+                AttemptNumber = (byte)attemptNumber
+            };
+
+            matchingAlgorithmSearchTrackingContextManager.Set(context);
+
             try
             {
                 await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
 
-                var context = new MatchingAlgorithmSearchTrackingContext
-                {
-                    SearchIdentifier = new Guid(repeatSearchId),
-                    OriginalSearchIdentifier = new Guid(originalSearchRequestId),
-                    AttemptNumber = (byte)attemptNumber
-                };
-
-                matchingAlgorithmSearchTrackingContextManager.Set(context);
                 await matchingAlgorithmSearchTrackingDispatcher.ProcessInitiation(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
 
                 // ReSharper disable once PossibleInvalidOperationException - validation has ensured this is not null.
