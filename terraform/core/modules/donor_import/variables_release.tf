@@ -47,6 +47,14 @@ variable "PUBLISHED_UPDATE_EXPIRY_IN_DAYS" {
   type = number
 }
 
+variable "SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS" {
+  type = number
+}
+
+variable "SERVICE_BUS_SEND_RETRY_COUNT" {
+  type = number
+}
+
 variable "STALLED_FILE_CHECK_CRONTAB" {
   type = string
 }
