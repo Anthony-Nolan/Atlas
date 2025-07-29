@@ -15,9 +15,13 @@
     "MessagingServiceBus:DonorManagement:SubscriptionForDbA": "matching-transient-a",
     "MessagingServiceBus:DonorManagement:SubscriptionForDbB": "matching-transient-b",
     "MessagingServiceBus:DonorManagement:OngoingDifferentialDonorUpdatesShouldBeFullyTransactional": "true",
+    "MessagingServiceBus:SendRetryCount": 5,
+    "MessagingServiceBus:SendRetryCooldownSeconds": 20,
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
-    "NotificationsServiceBus:NotificationsTopic": "notifications"
+    "NotificationsServiceBus:NotificationsTopic": "notifications",
+    "NotificationsServiceBus:SendRetryCount": 5,
+    "NotificationsServiceBus:SendRetryCooldownSeconds": 20
   },
   "ConnectionStrings": {
     "SqlA": "Data Source=(local);Initial Catalog=AtlasMatchingA;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",

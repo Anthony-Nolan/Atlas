@@ -16,10 +16,14 @@ locals {
     "MessagingServiceBus:DonorManagement:BatchSize"                                                 = var.MESSAGING_BUS_DONOR_BATCH_SIZE
     "MessagingServiceBus:DonorManagement:CronSchedule"                                              = var.MESSAGING_BUS_DONOR_CRON_SCHEDULE
     "MessagingServiceBus:DonorManagement:OngoingDifferentialDonorUpdatesShouldBeFullyTransactional" = var.DONOR_WRITE_TRANSACTIONALITY__DONOR_UPDATES
+    "MessagingServiceBus:SendRetryCount"                                                            = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "MessagingServiceBus:SendRetryCooldownSeconds"                                                  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
-    "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
-    "NotificationsServiceBus:NotificationsTopic" = var.servicebus_topics.notifications.name
+    "NotificationsServiceBus:ConnectionString"           = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:AlertsTopic"                = var.servicebus_topics.alerts.name
+    "NotificationsServiceBus:NotificationsTopic"         = var.servicebus_topics.notifications.name
+    "NotificationsServiceBus:SendRetryCount"             = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "NotificationsServiceBus:SendRetryCooldownSeconds"   = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "1"
     "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
