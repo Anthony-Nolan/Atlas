@@ -43,6 +43,9 @@ namespace Atlas.RepeatSearch.Clients
             var json = JsonConvert.SerializeObject(searchRequest);
             var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(json));
 
+            message.ApplicationProperties.Add("SearchRequestId", searchRequest.OriginalSearchId);
+            message.ApplicationProperties.Add("RepeatSearchRequestId", searchRequest.RepeatSearchId);
+
             await using var client = topicClientFactory.BuildTopicClient(repeatSearchRequestsTopicName);
 
             using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
