@@ -1,7 +1,9 @@
+using Azure.Messaging.ServiceBus;
+using Microsoft.Azure.ServiceBus;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Azure.Messaging.ServiceBus;
-using Newtonsoft.Json;
+using Atlas.Common.ApplicationInsights;
 
 namespace Atlas.Common.ServiceBus
 {
@@ -12,35 +14,41 @@ namespace Atlas.Common.ServiceBus
 
     public class MessageBatchPublisher<T> : IMessageBatchPublisher<T>
     {
-        private readonly ServiceBusClient client;
-        private readonly string topicName;
+        private readonly ITopicClient topicClient;
+        private readonly int sendRetryCount;
+        private readonly int sendRetryCooldownSeconds;
+        private readonly ILogger logger;
 
-        public MessageBatchPublisher(ServiceBusClient client, string topicName)
+        public MessageBatchPublisher(ITopicClientFactory topicClientFactory, string topicName, int sendRetryCount, int sendRetryCooldownSeconds, ILogger logger)
         {
-            this.client = client;   
-            this.topicName = topicName;
+            this.topicClient = topicClientFactory.BuildTopicClient(topicName);
+            this.sendRetryCount = sendRetryCount;
+            this.sendRetryCooldownSeconds = sendRetryCooldownSeconds;
+            this.logger = logger;
         }
 
         public async Task BatchPublish(IEnumerable<T> contentToPublish)
         {
-            await using var sender = client.CreateSender(topicName);
-
             var localQueue = new Queue<ServiceBusMessage>();
+
             foreach (var content in contentToPublish)
             {
-                var message = new ServiceBusMessage(JsonConvert.SerializeObject(content));
-                localQueue.Enqueue(message);
+                var json = JsonConvert.SerializeObject(content);
+                localQueue.Enqueue(new ServiceBusMessage(json));
             }
+
 
             while (localQueue.Count > 0)
             {
-                using var messageBatch = await sender.CreateMessageBatchAsync();
-                while (localQueue.Count > 0 && messageBatch.TryAddMessage(localQueue.Peek()))
+                var batch = await topicClient.CreateMessageBatchAsync();
+
+                while (localQueue.Count > 0 && batch.TryAddMessage(localQueue.Peek()))
                 {
                     localQueue.Dequeue();
                 }
 
-                await sender.SendMessagesAsync(messageBatch);
+                await topicClient.SendBatchWithRetryAndWaitAsync(batch, sendRetryCount, sendRetryCooldownSeconds,
+                    (exception, retryNumber) => logger.SendTrace($"Could not send alert message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
             }
         }
     }

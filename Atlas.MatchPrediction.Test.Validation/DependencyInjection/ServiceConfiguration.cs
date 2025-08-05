@@ -142,8 +142,9 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
             {
                 var messageSettings = fetchMessageServiceBusSettings(sp);
                 var searchSettings = fetchValidationSearchSettings(sp);
-                var client = sp.GetRequiredKeyedService<ServiceBusClient>(typeof(MessagingServiceBusSettings));
-                return new MessageBatchPublisher<SearchResultsNotification>(client, searchSettings.ResultsTopic);
+                var logger = sp.GetService<ILogger>();
+                var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
+                return new MessageBatchPublisher<SearchResultsNotification>(topicClientFactory, searchSettings.ResultsTopic, messageSettings.SendRetryCount, messageSettings.SendRetryCooldownSeconds, logger);
             });
 
             services.AddScoped<ISearchResultNotificationSender, SearchResultNotificationSender>(sp =>
