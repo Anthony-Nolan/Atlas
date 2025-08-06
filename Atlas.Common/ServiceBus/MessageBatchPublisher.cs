@@ -48,7 +48,7 @@ namespace Atlas.Common.ServiceBus
                 }
 
                 await topicClient.SendBatchWithRetryAndWaitAsync(batch, sendRetryCount, sendRetryCooldownSeconds,
-                    (exception, retryNumber) => logger.SendTrace($"Could not send alert message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
+                    (exception, retryNumber) => logger.SendTrace($"Could not send batch message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
             }
         }
     }

@@ -115,7 +115,6 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IMessageBatchPublisher<SearchableDonorUpdate>, MessageBatchPublisher<SearchableDonorUpdate>>(sp =>
             {
                 var serviceBusSettings = fetchMessagingServiceBusSettings(sp);
-                //var client = sp.GetRequiredKeyedService<ServiceBusClient>(typeof(MessagingServiceBusSettings));
                 var logger = sp.GetService<ILogger>();
                 var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
                 return new MessageBatchPublisher<SearchableDonorUpdate>(topicClientFactory, serviceBusSettings.UpdatedSearchableDonorsTopic,
