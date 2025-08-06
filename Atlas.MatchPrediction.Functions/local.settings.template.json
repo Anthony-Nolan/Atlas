@@ -14,12 +14,16 @@
     "MessagingServiceBus:ConnectionString": "override-this",
     "MessagingServiceBus:ImportFileSubscription": "haplotype-frequency-import",
     "MessagingServiceBus:ImportFileTopic": "haplotype-frequency-file-uploads",
+    "MessagingServiceBus:SendRetryCount": 5,
+    "MessagingServiceBus:SendRetryCooldownSeconds": 20,
     "MatchPredictionRequests:RequestsSubscription": "match-prediction",
     "MatchPredictionRequests:RequestsTopic": "match-prediction-requests",
     "MatchPredictionRequests:ResultsTopic": "match-prediction-results",
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
-    "NotificationsServiceBus:NotificationsTopic": "notifications"
+    "NotificationsServiceBus:NotificationsTopic": "notifications",
+    "NotificationsServiceBus:SendRetryCount": 5,
+    "NotificationsServiceBus:SendRetryCooldownSeconds": 20
   },
   "ConnectionStrings": {
     "MatchPredictionSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"

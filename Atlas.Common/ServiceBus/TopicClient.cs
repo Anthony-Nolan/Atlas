@@ -7,6 +7,8 @@ namespace Atlas.Common.ServiceBus
     public interface ITopicClient: IAsyncDisposable
     {
         Task SendAsync(ServiceBusMessage message);
+        Task SendBatchAsync(ServiceBusMessageBatch messages);
+        Task <ServiceBusMessageBatch> CreateMessageBatchAsync();
     }
 
     public sealed class TopicClient : ITopicClient, IAsyncDisposable
@@ -23,6 +25,16 @@ namespace Atlas.Common.ServiceBus
         public async Task SendAsync(ServiceBusMessage message)
         {
             await serviceBusSender.SendMessageAsync(message);
+        }
+
+        public async Task SendBatchAsync(ServiceBusMessageBatch messages)
+        {
+            await serviceBusSender.SendMessagesAsync(messages);
+        }
+
+        public async Task<ServiceBusMessageBatch> CreateMessageBatchAsync()
+        {
+            return await serviceBusSender.CreateMessageBatchAsync();
         }
     }
 }

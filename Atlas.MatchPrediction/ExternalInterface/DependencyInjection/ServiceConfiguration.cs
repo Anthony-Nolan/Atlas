@@ -89,8 +89,10 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             {
                 var serviceBusSettings = messagingServiceBusSettings(sp);
                 var matchPredictionRequestsSettings = matchPredictionRequestSettings(sp);
-                var client = sp.GetRequiredKeyedService<ServiceBusClient>(typeof(MessagingServiceBusSettings));
-                return new MessageBatchPublisher<IdentifiedMatchPredictionRequest>(client, matchPredictionRequestsSettings.RequestsTopic);
+                var logger = sp.GetService<ILogger>();
+                var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
+                return new MessageBatchPublisher<IdentifiedMatchPredictionRequest>(topicClientFactory, matchPredictionRequestsSettings.RequestsTopic,
+                    serviceBusSettings.SendRetryCount, serviceBusSettings.SendRetryCooldownSeconds, logger);
             });
 
             // services for running a match prediction request
@@ -109,8 +111,10 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             {
                 var serviceBusSettings = messagingServiceBusSettings(sp);
                 var matchPredictionRequestsSettings = matchPredictionRequestSettings(sp);
-                var client = sp.GetRequiredKeyedService<ServiceBusClient>(typeof(MessagingServiceBusSettings));
-                return new MessageBatchPublisher<MatchPredictionResultLocation>(client, matchPredictionRequestsSettings.ResultsTopic);
+                var logger = sp.GetService<ILogger>();
+                var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
+                return new MessageBatchPublisher<MatchPredictionResultLocation>(topicClientFactory, matchPredictionRequestsSettings.ResultsTopic,
+                    serviceBusSettings.SendRetryCount, serviceBusSettings.SendRetryCooldownSeconds, logger);
             });
         }
 
