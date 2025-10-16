@@ -27,6 +27,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         private const string TceGroup1 = "1";
         private const string TceGroup2 = "2";
         private const string TceGroup3 = "3";
+        private const string newAllele = "NEW";
 
 
         // Nested lookup of DonorTceGroups:(PatientTceGroups:MatchType)
@@ -132,6 +133,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
 
         public async Task<Dpb1TceGroupMatchType> CalculateDpb1TceGroupMatchType(LocusInfo<string> patientHla, LocusInfo<string> donorHla)
         {
+
+            if (donorHla.Position1 == newAllele || donorHla.Position2 == newAllele)
+            {
+                return Dpb1TceGroupMatchType.Unknown;
+            }
+
             var patientTceGroups = await GetTceGroupsForMatchCalculation(patientHla);
             var donorTceGroups = await GetTceGroupsForMatchCalculation(donorHla);
 

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
@@ -21,7 +20,7 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
         private readonly IHlaNameToTwoFieldAlleleConverter hlaNameToTwoFieldAlleleConverter;
         private readonly IHlaScoringMetadataService scoringMetadataService;
         private readonly ISmallGGroupMetadataService smallGGroupMetadataService;
-
+        
         public HlaConverter(
             IHlaNameToTwoFieldAlleleConverter hlaNameToTwoFieldAlleleConverter,
             IHlaScoringMetadataService scoringMetadataService,

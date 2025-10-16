@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Client.Models.Common.Requests;
+﻿using Atlas.Client.Models.Common.Requests;
 using Atlas.Client.Models.Common.Results;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
@@ -23,6 +20,10 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 {
@@ -76,7 +77,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             }
 
             var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla.ToPhenotypeInfo(), request.ScoringCriteria.LociToScore);
-            return await ScoreDonorHlaAgainstPatientMetadata(request.DonorHla.ToPhenotypeInfo(), request.ScoringCriteria, patientScoringMetadata);
+            return await  ScoreDonorHlaAgainstPatientMetadata(request.DonorHla.ToPhenotypeInfo(), request.ScoringCriteria, patientScoringMetadata);
         }
 
         public async Task<Dictionary<PhenotypeInfo<string>, ScoreResult>> ScoreDonorsHlaAgainstPatientHla(
@@ -168,7 +169,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                     {
                         return default;
                     }
-
+                   
                     return await hlaMetadataDictionary.GetHlaScoringMetadata(locus, hla);
                 });
         }

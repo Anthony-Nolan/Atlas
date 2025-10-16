@@ -30,6 +30,7 @@ namespace Atlas.Common.GeneticData.Hla.Services
         private static readonly string OptionalExpressionSuffixPattern = MolecularTypingNameConstants.ExpressionSuffixesRegexCharacterGroup + "?";
         private static readonly string MolecularFirstFieldPattern = $"\\{MolecularTypingNameConstants.Prefix}?{SingleFieldPattern}";
         private static readonly string AlleleFinalFieldPattern = SingleFieldPattern + OptionalExpressionSuffixPattern;
+        private static readonly string NewAllele = "NEW";
 
         private static readonly string AlleleDesignationPattern =
             $"{MolecularFirstFieldPattern}(:{SingleFieldPattern}){{1,3}}{OptionalExpressionSuffixPattern}";
@@ -71,6 +72,10 @@ namespace Atlas.Common.GeneticData.Hla.Services
             (
                 CompiledRegex($"^{MolecularFirstFieldPattern}:{AlleleFinalFieldPattern}(\\/{AlleleFinalFieldPattern}){{1,}}$"),
                 HlaTypingCategory.AlleleStringOfSubtypes
+            ),
+            (
+                CompiledRegex($"^{NewAllele}$"),
+                HlaTypingCategory.NEW
             )
         };
 

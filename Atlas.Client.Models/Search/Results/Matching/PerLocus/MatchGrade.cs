@@ -87,7 +87,7 @@ namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
         /// The match grade cannot be known.
         /// Note that for most loci, untyped HLA will be graded as potentially <see cref="PGroup"/> - only DPB1 will ever be classed as <see cref="Unknown"/>.
         /// </summary>
-        Unknown,
+        Unknown
     }
 
     [Obsolete($"Class is not referenced within the codebase, is not maintained with changes to {nameof(MatchGrade)}, and will be removed.")]

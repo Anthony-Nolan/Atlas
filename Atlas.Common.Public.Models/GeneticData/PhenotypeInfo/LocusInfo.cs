@@ -23,6 +23,8 @@ namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo
         /// </summary>
         private int? PreComputedHash { get; }
 
+        private const string NewAllele = "NEW";
+
         #region Constructors
 
         public LocusInfo()
@@ -122,6 +124,11 @@ namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo
         public bool SinglePositionNull()
         {
             return Position1 == null ^ Position2 == null;
+        }
+
+        public bool Position1Or2NewAllele()
+        {
+            return Equals(Position1, NewAllele) || Equals(Position2, NewAllele);
         }
 
         /// <summary>

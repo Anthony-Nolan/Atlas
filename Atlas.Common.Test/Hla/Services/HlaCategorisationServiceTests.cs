@@ -131,6 +131,12 @@ namespace Atlas.Common.Test.Hla.Services
             Assert.AreEqual(hlaCategorisationService.GetHlaTypingCategory(hlaName), HlaTypingCategory.AlleleStringOfSubtypes);
         }
 
+        [TestCase("NEW")]
+        public void GetHlaTypingCategory_WhenHlaNameIsNewAllele_ReturnsNEW(string hlaName)
+        {
+            Assert.AreEqual(hlaCategorisationService.GetHlaTypingCategory(hlaName), HlaTypingCategory.NEW);
+        }
+
         [Test, Repeat(100000), IgnoreExceptOnCiPerfTest("Ran in ~2.9s")]
         public void PerformanceTest()
         {
