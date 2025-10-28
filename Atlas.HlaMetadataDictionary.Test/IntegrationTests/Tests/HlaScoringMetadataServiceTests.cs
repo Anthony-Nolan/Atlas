@@ -1,5 +1,4 @@
 ﻿using Atlas.Common.Caching;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
@@ -259,6 +258,12 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             var result = await metadataService.GetHlaMetadata(DefaultLocus, alleleString, HlaVersion);
 
             result.HlaScoringInfo.MatchingSerologies.Select(s => s.Name).Should().BeEquivalentTo(expectedSerologies);
+        }
+
+        [TestCase("NEW")]
+        public async Task GetHlaMetadata_WhenNewAllele_DoesNotThrowException(string newAllele)
+        {
+            await Task.Run(() => Assert.DoesNotThrowAsync(async () => await metadataService.GetHlaMetadata(DefaultLocus, newAllele, HlaVersion)));
         }
     }
 }

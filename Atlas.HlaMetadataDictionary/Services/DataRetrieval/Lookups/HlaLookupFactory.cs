@@ -1,5 +1,6 @@
 ﻿using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using System;
@@ -27,6 +28,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
                 HlaTypingCategory.PGroup => new AlleleGroupLookup(hlaMetadataRepository, alleleNamesMetadataService, alleleGroupExpander),
                 HlaTypingCategory.GGroup => new AlleleGroupLookup(hlaMetadataRepository, alleleNamesMetadataService, alleleGroupExpander),
                 HlaTypingCategory.SmallGGroup => new AlleleGroupLookup(hlaMetadataRepository, alleleNamesMetadataService, alleleGroupExpander),
+                HlaTypingCategory.NEW => new NewAlleleLookup(hlaMetadataRepository), 
                 _ => throw new ArgumentException(
                     $"Dictionary lookup cannot be performed for HLA typing category: {category}.")
             };

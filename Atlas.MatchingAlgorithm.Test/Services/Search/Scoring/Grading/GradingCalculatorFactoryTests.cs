@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders.ScoringInfoBuilders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
 using FluentAssertions;
-using NSubstitute;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
@@ -106,6 +104,18 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             calculator.Should().BeOfType<MultipleAlleleGradingCalculator>();
         }
 
+        [TestCase(typeof(NewAlleleScoringInfo))]
+        public void GetGradingCalculator_WhenDonorNewAllele_ReturnsNewAlleleGradingCalculator(
+            Type donorScoringInfoType)
+        {
+            var patientScoringInfo = new SingleAlleleScoringInfoBuilder().Build();
+            var donorScoringInfo = BuildScoringInfoOfType(donorScoringInfoType);
+
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
+
+            calculator.Should().BeOfType<NewAlleleGradingCalculator>();
+        }
+
         [Test]
         public void GetGradingCalculator_WhenBothPatientAndDonorExpressingAllele_ReturnsExpressingAlleleGradingCalculator()
         {
@@ -193,6 +203,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             if (scoringInfoType == typeof(SerologyScoringInfo))
             {
                 return new SerologyScoringInfoBuilder().Build();
+            }
+
+            if (scoringInfoType == typeof(NewAlleleScoringInfo))
+            {
+                return new NewAlleleScoringInfoBuilder().Build();
             }
 
             throw new Exception($"Unsupported type: {scoringInfoType}");

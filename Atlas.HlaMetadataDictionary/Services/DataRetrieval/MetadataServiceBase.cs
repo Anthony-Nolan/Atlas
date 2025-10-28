@@ -1,5 +1,4 @@
 ﻿using Atlas.Common.Caching;
-using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using LazyCache;
 using System;
@@ -14,6 +13,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     {
         private readonly string perTypeCacheKey;
         private readonly IAppCache cache;
+        private const string newAllele = "NEW";
 
         protected MetadataServiceBase(string perTypeCacheKey, IPersistentCacheProvider cacheProvider)
         {
@@ -25,6 +25,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         {
             try
             {
+                if (rawLookupName == newAllele)
+                {
+                    return await Task.FromResult(default(T));
+                }
+
                 var formattedLookupName = FormatLookupName(rawLookupName);
                 return await GetOrAddCachedMetadata(locus, formattedLookupName, hlaNomenclatureVersion);
             }
@@ -53,7 +58,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             {
                 return existingRecord;
             }
-            
+
             if (!LookupNameIsValid(formattedLookupName))
             {
                 throw new ArgumentException($"{formattedLookupName} at locus {locus} is not a valid lookup name.");

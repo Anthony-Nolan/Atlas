@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
@@ -84,7 +85,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         /// </summary>
         private LocusInfo<IHlaScoringMetadata> HandleNonExpressingAlleleIfAny(LocusInfo<IHlaScoringMetadata> metadata)
         {
-            var nonExpressingCheck = metadata.Map(x => hlaCategorisationService.IsNullAllele(x.LookupName));
+            var nonExpressingCheck = metadata.Map(x => x != null && hlaCategorisationService.IsNullAllele(x.LookupName));
 
             return nonExpressingCheck.BothPositions(x => x == false)
                 ? metadata
@@ -121,7 +122,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
             var positionTwoScore = ScorePosition(
                 orientation == MatchOrientation.Cross ? patientLocusData.Position1 : patientLocusData.Position2, donorLocusData.Position2);
-
+            
             return new LocusInfo<T>(positionOneScore, positionTwoScore);
         }
 

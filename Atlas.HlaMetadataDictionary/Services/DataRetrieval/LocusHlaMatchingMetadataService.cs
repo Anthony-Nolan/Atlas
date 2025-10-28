@@ -1,10 +1,15 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData.Hla.Models;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
@@ -24,6 +29,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     internal class LocusHlaMatchingMetadataService : ILocusHlaMatchingMetadataService
     {
         private readonly IHlaMatchingMetadataService singleHlaMetadataService;
+        private const string newAllele = "NEW";
 
         public LocusHlaMatchingMetadataService(IHlaMatchingMetadataService singleHlaMetadataService)
         {
@@ -37,8 +43,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         {
             var locusMetadata = await GetLocusMetadata(locus, locusTyping, hlaNomenclatureVersion);
 
-            var result1 = HandleNullAlleles(locusMetadata[0], locusMetadata[1]);
-            var result2 = HandleNullAlleles(locusMetadata[1], locusMetadata[0]);
+            var result1 = HandleNullAlleles(locusMetadata[0], locusMetadata[1], locusTyping );
+            var result2 = HandleNullAlleles(locusMetadata[1], locusMetadata[0], locusTyping);
 
             return new LocusInfo<INullHandledHlaMatchingMetadata>(result1, result2);
         }
@@ -53,8 +59,14 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 GetLocusMetadataPerPosition(locus, locusHlaTyping.Position2, hlaNomenclatureVersion));
         }
 
-        private static INullHandledHlaMatchingMetadata HandleNullAlleles(IHlaMatchingMetadata metadata, IHlaMatchingMetadata otherMetadata)
+        private static INullHandledHlaMatchingMetadata HandleNullAlleles(IHlaMatchingMetadata metadata,
+            IHlaMatchingMetadata otherMetadata, LocusInfo<string> locusTyping)
         {
+            if (metadata == null && locusTyping.Position1Or2NewAllele())
+            {
+                return new NullHandledHlaMatchingMetadata(new HlaMatchingMetadata(otherMetadata.Locus, newAllele, TypingMethod.Molecular, new List<string>()));
+            }
+
             return metadata.IsNullExpressingTyping
                 ? MergeMatchingHla(metadata, otherMetadata)
                 : new NullHandledHlaMatchingMetadata(metadata);

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
@@ -66,11 +67,13 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
     internal class HlaMetadataDictionary : IHlaMetadataDictionary
     {
+        private const string newAllele = "NEW";
+
         /// <summary>
         /// The HLA Nomenclature version represented by this dictionary, or <see cref="HlaMetadataDictionaryConstants.NoActiveVersionValue"/> in the case when no refresh has been run.
         /// </summary>
         private readonly string hlaNomenclatureVersionOrDefault;
-
+        
         private readonly IRecreateHlaMetadataService recreateMetadataService;
         private readonly IHlaConverter hlaConverter;
         private readonly IHlaValidator hlaValidator;
@@ -195,6 +198,11 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         public async Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName)
         {
+            if (hlaName == newAllele)
+            {
+                return new HlaScoringMetadata(locus, hlaName,  new NewAlleleScoringInfo(), TypingMethod.Molecular);
+            }
+
             return await hlaScoringMetadataService.GetHlaMetadata(locus, hlaName, HlaNomenclatureVersion);
         }
 

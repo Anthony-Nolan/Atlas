@@ -49,7 +49,12 @@ namespace Atlas.Common.GeneticData.Hla.Models
         /// <summary>
         /// Typed as the original serology name
         /// </summary>
-        Serology
+        Serology,
+
+        /// <summary>
+        /// Typed as an allele not yet assigned a name
+        /// </summary>
+        NEW
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
