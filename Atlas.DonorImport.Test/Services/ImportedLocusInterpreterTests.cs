@@ -31,6 +31,7 @@ namespace Atlas.DonorImport.Test.Services
     {
         private const string MolecularHlaValue = "*hla-molecular";
         private const string SerologyHlaValue = "hla-serology";
+        private const string NewAllele = "NEW";
         private IHlaCategorisationService permissiveCategoriser;
         private IHlaCategorisationService dismissiveCategoriser;
 
@@ -75,6 +76,15 @@ namespace Atlas.DonorImport.Test.Services
                 .WithCategoriser(permissiveCategoriser)
                 .WithHomozygousSerology(SerologyHlaValue)
                 .ShouldHaveHomozygousFields(SerologyHlaValue);
+        }
+
+        [Test]
+        public void Interpret_WhenNewAllelePresent_ReturnsNewAllele()
+        {
+            LocusInterpretationTestPerformer.NewTestCase
+                .WithCategoriser(permissiveCategoriser)
+                .WithNewAllele(NewAllele, MolecularHlaValue)
+                .ShouldHaveFields(NewAllele, MolecularHlaValue);
         }
 
         [TestCase(MolecularHlaValue, null, MolecularHlaValue)]
@@ -273,11 +283,17 @@ namespace Atlas.DonorImport.Test.Services
                 return this;
             }
 
+            public LocusInterpretationTestPerformer WithNewAllele(string field1, string field2)
+            {
+                locus.Dna = new TwoFieldStringData { Field1 = field1, Field2 = field2 };
+                return this;
+            }
+
             public void ShouldHaveFields(string expectedField1, string expectedField2)
             {
-                var interprettedLocus = new ImportedLocusInterpreter(categoriser, logger).Interpret(locus, default);
-                interprettedLocus.Position1.Should().Be(expectedField1);
-                interprettedLocus.Position2.Should().Be(expectedField2);
+                var interpretedLocus = new ImportedLocusInterpreter(categoriser, logger).Interpret(locus, default);
+                interpretedLocus.Position1.Should().Be(expectedField1);
+                interpretedLocus.Position2.Should().Be(expectedField2);
             }
 
             public LocusInterpretationTestPerformer WithHomozygousMolecular(string bothFields) => WithMolecular(bothFields, bothFields);

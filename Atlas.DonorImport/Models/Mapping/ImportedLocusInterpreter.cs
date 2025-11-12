@@ -28,6 +28,7 @@ namespace Atlas.DonorImport.Models.Mapping
         private Dictionary<string, string> currentInterpretationContext;
         private const string contextHlaKey = "HLA";
         private const string contextPositionKey = "Position";
+        private const string NewAllele = "NEW";
 
         public ImportedLocusInterpreter(IHlaCategorisationService hlaCategoriser, ILogger logger)
         {
@@ -88,6 +89,7 @@ namespace Atlas.DonorImport.Models.Mapping
         private bool IsBlank(TwoFieldStringData input) => input == null || (IsBlank(input.Field1) && IsBlank(input.Field2));
         private bool IsBlank(string input) => string.IsNullOrEmpty(input);
         private string NullIfBlank(string input) => IsBlank(input) ? null : input;
+        private bool IsNewAllele(string input) => input == NewAllele;
 
         /// <summary>
         /// Currently this only covers ensuring that Molecular HLAs are pre-pended by a '*'
@@ -108,6 +110,11 @@ namespace Atlas.DonorImport.Models.Mapping
             if (IsBlank(dnaField))
             {
                 return null;
+            }
+
+            if (IsNewAllele(dnaField))
+            {
+                return dnaField;
             }
             
             var hasStar = dnaField.StartsWith('*');
