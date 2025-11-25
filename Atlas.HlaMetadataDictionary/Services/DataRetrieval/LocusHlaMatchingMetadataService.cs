@@ -43,8 +43,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         {
             var locusMetadata = await GetLocusMetadata(locus, locusTyping, hlaNomenclatureVersion);
 
-            var result1 = HandleNullAlleles(locusMetadata[0], locusMetadata[1], locusTyping );
-            var result2 = HandleNullAlleles(locusMetadata[1], locusMetadata[0], locusTyping);
+            var result1 = HandleNullAlleles(locusMetadata[0], locusMetadata[1], locus, locusTyping);
+            var result2 = HandleNullAlleles(locusMetadata[1], locusMetadata[0], locus, locusTyping);
 
             return new LocusInfo<INullHandledHlaMatchingMetadata>(result1, result2);
         }
@@ -60,11 +60,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         }
 
         private static INullHandledHlaMatchingMetadata HandleNullAlleles(IHlaMatchingMetadata metadata,
-            IHlaMatchingMetadata otherMetadata, LocusInfo<string> locusTyping)
+            IHlaMatchingMetadata otherMetadata, Locus locus, LocusInfo<string> locusTyping)
         {
             if (metadata == null && locusTyping.Position1Or2NewAllele())
             {
-                return new NullHandledHlaMatchingMetadata(new HlaMatchingMetadata(otherMetadata.Locus, newAllele, TypingMethod.Molecular, new List<string>()));
+                return new NullHandledHlaMatchingMetadata(new HlaMatchingMetadata(locus, newAllele, TypingMethod.Molecular, new List<string>()));
             }
 
             return metadata.IsNullExpressingTyping

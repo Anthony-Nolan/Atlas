@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.PhenotypeInfo;
@@ -120,6 +121,31 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
 
             actualResults.Position1.LookupName.Should().Be(expectedMergedName);
             actualResults.Position1.MatchingPGroups.Should().BeEquivalentTo(pGroup);
+        }
+
+        [Test]
+        public async Task GetHlaMatchingMetadataForLocus_WhenTwoNEWTypings_ReturnsExpectedMetadata()
+        {
+            const string hlaString = "NEW";
+            var pGroup = new List<string>();
+
+            HlaMatchingMetadata metadata1 = null;
+            HlaMatchingMetadata metadata2 = null;
+
+            matchingMetadataService
+                .GetHlaMetadata(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
+                .Returns(metadata1, metadata2);
+
+
+            var actualResults = await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(
+                MatchedLocus,
+                new LocusInfo<string>(hlaString, hlaString), "hla-db-version");
+
+            actualResults.Position1.MatchingPGroups.Should().BeEquivalentTo(pGroup);
+            actualResults.Position1.LookupName.Should().Be(hlaString);
+
+            actualResults.Position2.MatchingPGroups.Should().BeEquivalentTo(pGroup);
+            actualResults.Position2.LookupName.Should().Be(hlaString);
         }
     }
 }
