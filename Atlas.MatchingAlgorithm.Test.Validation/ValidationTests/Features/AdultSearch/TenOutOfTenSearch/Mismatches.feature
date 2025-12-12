@@ -44,3 +44,14 @@ Feature: Ten Out Of Ten Search - mismatches
     And the donor has a single mismatch at locus DPB1
     When I run a 10/10 search
     Then the results should contain the specified donor
+
+  Scenario: 10/10 Search - Donor has a NEW allele at locus DPB1
+    Given a patient and a donor
+    And the matching donor has the following HLA:
+    |A_1    |A_2      |B_1    |B_2    |DRB1_1 |DRB1_2 |C_1    |C_2    |DQB1_1 |DQB1_2 |DPB1_1 |DPB1_2 |
+    |*33:01 |*68:01   |*44:02 |*14:02 |*03:01 |*04:04 |*07:04 |*08:02 |*02:01 |*03:02 |NEW	  |*04:01 |
+    And the patient has the following HLA:
+    |A_1    |A_2      |B_1    |B_2    |DRB1_1 |DRB1_2 |C_1    |C_2    |DQB1_1 |DQB1_2 |DPB1_1 |DPB1_2 |
+    |*33:01 |*68:01   |*44:02 |*14:02 |*03:01 |*04:04 |*07:04 |*08:02 |*02:01 |*03:02 |*02:01 |*04:01 |
+    When I run a 10/10 search
+    Then the results should contain the specified donor

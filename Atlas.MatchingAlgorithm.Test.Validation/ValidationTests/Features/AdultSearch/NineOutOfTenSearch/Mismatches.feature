@@ -122,3 +122,14 @@ Feature: Nine Out Of Ten Search - mismatches
     |*01:01 |*66:01   |*57:01 |*41:01 |*13:01 |*07:01 |*01:02 |*01:02 |*05:02 |*02:01 |
     When I run a 9/10 search at locus A
     Then the results should contain the specified donor
+
+    Scenario: 9/10 Search at A - Donor has a NEW allele at locus A
+    Given a patient and a donor
+    And the matching donor has the following HLA:
+    |A_1    |A_2      |B_1    |B_2    |DRB1_1 |DRB1_2 |C_1    |C_2    |DQB1_1 |DQB1_2 |
+    |NEW    |*68:01   |*44:02 |*14:02 |*03:01 |*04:04 |*07:04 |*08:02 |*02:01 |*03:02 |
+    And the patient has the following HLA:
+    |A_1    |A_2      |B_1    |B_2    |DRB1_1 |DRB1_2 |C_1    |C_2    |DQB1_1 |DQB1_2 |
+    |*33:01 |*68:01   |*44:02 |*14:02 |*03:01 |*04:04 |*07:04 |*08:02 |*02:01 |*03:02 |
+    When I run a 9/10 search at locus A
+    Then the results should contain the specified donor
