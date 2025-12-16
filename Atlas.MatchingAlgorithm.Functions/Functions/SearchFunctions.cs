@@ -89,16 +89,16 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         {
             try
             {
-                log.LogInformation("Function executing");
+                log.LogInformation("Function FunctionTestCancellationToken executing");
 
                 // Simulate time-consuming processes
                 await Task.Delay(TimeSpan.FromHours(1), cancellationToken);
 
-                log.LogInformation("Function executed");
+                log.LogInformation("Function FunctionTestCancellationToken executed");
             }
             catch (OperationCanceledException)
             {
-                log.LogWarning("Function cancelled");
+                log.LogWarning("Function FunctionTestCancellationToken cancelled");
             }
         }
 
@@ -106,23 +106,23 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         public async Task FunctionTestNoCancellationToken(
             [ServiceBusTrigger(
                  "%MessagingServiceBus:SearchRequestsTopic%",
-                 "test-cancellation-token",
+                 "test-no-cancellation-token",
                  Connection = "MessagingServiceBus:ConnectionString")]
              ILogger log)
 
         {
             try
             {
-                log.LogInformation("Function executing");
+                log.LogInformation("Function FunctionTestNoCancellationToken executing");
 
                 // Simulate time-consuming processes
                 await Task.Delay(TimeSpan.FromHours(1));
 
-                log.LogInformation("Function executed");
+                log.LogInformation("Function FunctionTestNoCancellationToken executed");
             }
             catch (OperationCanceledException)
             {
-                log.LogWarning("Function cancelled");
+                log.LogWarning("Function FunctionTestNoCancellationToken cancelled");
             }
         }
     }
