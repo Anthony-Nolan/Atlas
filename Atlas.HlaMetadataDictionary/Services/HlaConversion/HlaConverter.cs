@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.Public.Models.GeneticData;
+﻿using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
 {
@@ -20,6 +20,7 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
         private readonly IHlaNameToTwoFieldAlleleConverter hlaNameToTwoFieldAlleleConverter;
         private readonly IHlaScoringMetadataService scoringMetadataService;
         private readonly ISmallGGroupMetadataService smallGGroupMetadataService;
+        private const string NewAllele = "NEW";
         
         public HlaConverter(
             IHlaNameToTwoFieldAlleleConverter hlaNameToTwoFieldAlleleConverter,
@@ -67,6 +68,10 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
 
         private async Task<IHlaScoringInfo> GetHlaScoringInfo(Locus locus, string hlaName, string hlaNomenclatureVersion)
         {
+            if (hlaName == NewAllele)
+            {
+                return new NewAlleleScoringInfo();
+            }
             return (await scoringMetadataService.GetHlaMetadata(locus, hlaName, hlaNomenclatureVersion)).HlaScoringInfo;
         }
     }
