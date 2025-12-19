@@ -1,5 +1,4 @@
 ﻿using Atlas.Common.Caching;
-using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
@@ -29,6 +28,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     {
         private readonly ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository;
         private const string CacheKey = nameof(SmallGGroupMetadataService);
+        private const string NewAllele = "NEW";
 
         public SmallGGroupMetadataService(
             IHlaNameToSmallGGroupLookupRepository hlaNameToSmallGGroupLookupRepository,
@@ -57,6 +57,10 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
         public async Task<IEnumerable<string>> GetSmallGGroups(Locus locus, string hlaName, string hlaNomenclatureVersion)
         {
+            if (hlaName == NewAllele)
+            {
+                return new List<string>();
+            }
             var metadata = await GetHlaMetadata(locus, hlaName, hlaNomenclatureVersion);
             return metadata.SmallGGroups;
         }

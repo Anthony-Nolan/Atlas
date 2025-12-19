@@ -62,7 +62,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
 
             return await expanderInput.Phenotype.MapAsync(async (locus, _, hla) =>
             {
-                if (!expanderInput.MatchPredictionParameters.AllowedLoci.Contains(locus) || hla == null || hla == newAllele)
+                if (!expanderInput.MatchPredictionParameters.AllowedLoci.Contains(locus) || hla == null )
                 {
                     return null;
                 }
