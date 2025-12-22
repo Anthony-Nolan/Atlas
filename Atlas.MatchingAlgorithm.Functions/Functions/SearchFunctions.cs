@@ -23,13 +23,15 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         private readonly ISearchDispatcher searchDispatcher;
         private readonly ISearchRunner searchRunner;
         private readonly IMatchingFailureNotificationSender matchingFailureNotificationSender;
+        private readonly ILogger<SearchFunctions> logger;
 
         public SearchFunctions(ISearchDispatcher searchDispatcher, ISearchRunner searchRunner,
-            IMatchingFailureNotificationSender matchingFailureNotificationSender)
+            IMatchingFailureNotificationSender matchingFailureNotificationSender, ILogger<SearchFunctions> logger)
         {
             this.searchDispatcher = searchDispatcher;
             this.searchRunner = searchRunner;
             this.matchingFailureNotificationSender = matchingFailureNotificationSender;
+            this.logger = logger;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -85,20 +87,21 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
                 "%MessagingServiceBus:SearchRequestsTopic%",
                 "test-cancellation-token",
                 Connection = "MessagingServiceBus:ConnectionString")]
-            ILogger log, CancellationToken cancellationToken)
+                IdentifiedSearchRequest request,
+                CancellationToken cancellationToken)
         {
             try
             {
-                log.LogInformation("Function FunctionTestCancellationToken executing");
+                logger.LogInformation("Function FunctionTestCancellationToken executing");
 
                 // Simulate time-consuming processes
                 await Task.Delay(TimeSpan.FromHours(1), cancellationToken);
 
-                log.LogInformation("Function FunctionTestCancellationToken executed");
+                logger.LogInformation("Function FunctionTestCancellationToken executed");
             }
             catch (OperationCanceledException)
             {
-                log.LogWarning("Function FunctionTestCancellationToken cancelled");
+                logger.LogWarning("Function FunctionTestCancellationToken cancelled");
             }
         }
 
@@ -108,21 +111,20 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
                  "%MessagingServiceBus:SearchRequestsTopic%",
                  "test-no-cancellation-token",
                  Connection = "MessagingServiceBus:ConnectionString")]
-             ILogger log)
-
+            IdentifiedSearchRequest request)
         {
             try
             {
-                log.LogInformation("Function FunctionTestNoCancellationToken executing");
+                logger.LogInformation("Function FunctionTestNoCancellationToken executing");
 
                 // Simulate time-consuming processes
                 await Task.Delay(TimeSpan.FromHours(1));
 
-                log.LogInformation("Function FunctionTestNoCancellationToken executed");
+                logger.LogInformation("Function FunctionTestNoCancellationToken executed");
             }
             catch (OperationCanceledException)
             {
-                log.LogWarning("Function FunctionTestNoCancellationToken cancelled");
+                logger.LogWarning("Function FunctionTestNoCancellationToken cancelled");
             }
         }
     }
