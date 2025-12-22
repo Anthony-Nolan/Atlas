@@ -1,7 +1,3 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Utils;
 using Atlas.Common.Validation;
@@ -11,7 +7,13 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using SearchInitiationResponse = Atlas.MatchingAlgorithm.Client.Models.SearchRequests.SearchInitiationResponse;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
@@ -21,12 +23,15 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         private readonly ISearchDispatcher searchDispatcher;
         private readonly ISearchRunner searchRunner;
         private readonly IMatchingFailureNotificationSender matchingFailureNotificationSender;
+        private readonly ILogger<SearchFunctions> logger;
 
-        public SearchFunctions(ISearchDispatcher searchDispatcher, ISearchRunner searchRunner, IMatchingFailureNotificationSender matchingFailureNotificationSender)
+        public SearchFunctions(ISearchDispatcher searchDispatcher, ISearchRunner searchRunner,
+            IMatchingFailureNotificationSender matchingFailureNotificationSender, ILogger<SearchFunctions> logger)
         {
             this.searchDispatcher = searchDispatcher;
             this.searchRunner = searchRunner;
             this.matchingFailureNotificationSender = matchingFailureNotificationSender;
+            this.logger = logger;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -39,7 +44,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             try
             {
                 var id = await searchDispatcher.DispatchSearch(searchRequest);
-                return new JsonResult(new SearchInitiationResponse {SearchIdentifier = id});
+                return new JsonResult(new SearchInitiationResponse { SearchIdentifier = id });
             }
             catch (ValidationException e)
             {
@@ -56,10 +61,12 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
                 Connection = "MessagingServiceBus:ConnectionString")]
             IdentifiedSearchRequest request,
             int deliveryCount,
-            DateTime enqueuedTimeUtc)
+            DateTime enqueuedTimeUtc,
+            CancellationToken cancellationToken)
         {
             enqueuedTimeUtc = DateTime.SpecifyKind(enqueuedTimeUtc, DateTimeKind.Utc);
-            await searchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc);
+            await searchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc)
+                .WaitAsync(cancellationToken);
         }
 
         [Function(nameof(MatchingRequestsDeadLetterQueueListener))]
@@ -72,6 +79,53 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             int deliveryCount)
         {
             await matchingFailureNotificationSender.SendFailureNotification(request, deliveryCount, 0);
+        }
+
+        [Function(nameof(FunctionTestCancellationToken))]
+        public async Task FunctionTestCancellationToken(
+            [ServiceBusTrigger(
+                "%MessagingServiceBus:SearchRequestsTopic%",
+                "test-cancellation-token",
+                Connection = "MessagingServiceBus:ConnectionString")]
+                IdentifiedSearchRequest request,
+                CancellationToken cancellationToken)
+        {
+            try
+            {
+                logger.LogInformation("Function FunctionTestCancellationToken executing");
+
+                // Simulate time-consuming processes
+                await Task.Delay(TimeSpan.FromHours(1), cancellationToken);
+
+                logger.LogInformation("Function FunctionTestCancellationToken executed");
+            }
+            catch (OperationCanceledException)
+            {
+                logger.LogWarning("Function FunctionTestCancellationToken cancelled");
+            }
+        }
+
+        [Function(nameof(FunctionTestNoCancellationToken))]
+        public async Task FunctionTestNoCancellationToken(
+            [ServiceBusTrigger(
+                 "%MessagingServiceBus:SearchRequestsTopic%",
+                 "test-no-cancellation-token",
+                 Connection = "MessagingServiceBus:ConnectionString")]
+            IdentifiedSearchRequest request)
+        {
+            try
+            {
+                logger.LogInformation("Function FunctionTestNoCancellationToken executing");
+
+                // Simulate time-consuming processes
+                await Task.Delay(TimeSpan.FromHours(1));
+
+                logger.LogInformation("Function FunctionTestNoCancellationToken executed");
+            }
+            catch (OperationCanceledException)
+            {
+                logger.LogWarning("Function FunctionTestNoCancellationToken cancelled");
+            }
         }
     }
 }
