@@ -65,12 +65,12 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         {
             try
             {
-                logger.LogInformation("Function {FunctionName} executing", nameof(RunSearch));
+                logger.LogInformation("Function {FunctionName} executing; Search Id: {SearchId}", nameof(RunSearch), request.Id);
 
                 enqueuedTimeUtc = DateTime.SpecifyKind(enqueuedTimeUtc, DateTimeKind.Utc);
                 await searchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc).WaitAsync(cancellationToken);
 
-                logger.LogInformation("Function {FunctionName} executed", nameof(RunSearch));
+                logger.LogInformation("Function {FunctionName} executed; Search Id: {SearchId}", nameof(RunSearch), request.Id);
             }
             catch (OperationCanceledException)
             {

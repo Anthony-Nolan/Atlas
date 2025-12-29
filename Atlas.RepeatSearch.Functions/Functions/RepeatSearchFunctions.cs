@@ -67,12 +67,14 @@ namespace Atlas.RepeatSearch.Functions.Functions
         {
             try
             {
-                logger.LogInformation("Function {FunctionName} executing", nameof(RunRepeatSearch));
+                logger.LogInformation("Function {FunctionName} executing; Search Id: {SearchId}; Repeat Search Id: {RepeatSearchId}",
+                    nameof(RunRepeatSearch), request.OriginalSearchId, request.RepeatSearchId);
 
                 enqueuedTimeUtc = DateTime.SpecifyKind(enqueuedTimeUtc, DateTimeKind.Utc);
                 await repeatSearchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc).WaitAsync(cancellationToken);
 
-                logger.LogInformation("Function {FunctionName} executed", nameof(RunRepeatSearch));
+                logger.LogInformation("Function {FunctionName} executed; Search Id: {SearchId}; Repeat Search Id: {RepeatSearchId}",
+                    nameof(RunRepeatSearch), request.OriginalSearchId, request.RepeatSearchId);
             }
             catch (OperationCanceledException)
             {
