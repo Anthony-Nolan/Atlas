@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using SearchInitiationResponse = Atlas.MatchingAlgorithm.Client.Models.SearchRequests.SearchInitiationResponse;
 
@@ -59,14 +60,15 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
                 Connection = "MessagingServiceBus:ConnectionString")]
             IdentifiedSearchRequest request,
             int deliveryCount,
-            DateTime enqueuedTimeUtc)
+            DateTime enqueuedTimeUtc,
+            CancellationToken cancellationToken)
         {
             try
             {
                 logger.LogInformation("Function {FunctionName} executing", nameof(RunSearch));
 
                 enqueuedTimeUtc = DateTime.SpecifyKind(enqueuedTimeUtc, DateTimeKind.Utc);
-                await searchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc);
+                await searchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc).WaitAsync(cancellationToken);
 
                 logger.LogInformation("Function {FunctionName} executed", nameof(RunSearch));
             }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Requests;
+﻿using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Utils;
 using Atlas.Common.Validation;
 using Atlas.RepeatSearch.Models;
@@ -14,6 +10,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Atlas.RepeatSearch.Functions.Functions
 {
@@ -61,14 +62,15 @@ namespace Atlas.RepeatSearch.Functions.Functions
                 Connection = "MessagingServiceBus:ConnectionString")]
             IdentifiedRepeatSearchRequest request,
             int deliveryCount,
-            DateTime enqueuedTimeUtc)
+            DateTime enqueuedTimeUtc,
+            CancellationToken cancellationToken)
         {
             try
             {
                 logger.LogInformation("Function {FunctionName} executing", nameof(RunRepeatSearch));
 
                 enqueuedTimeUtc = DateTime.SpecifyKind(enqueuedTimeUtc, DateTimeKind.Utc);
-                await repeatSearchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc);
+                await repeatSearchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc).WaitAsync(cancellationToken);
 
                 logger.LogInformation("Function {FunctionName} executed", nameof(RunRepeatSearch));
             }
