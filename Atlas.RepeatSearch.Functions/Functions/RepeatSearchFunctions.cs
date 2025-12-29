@@ -1,8 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Requests;
+﻿using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Utils;
 using Atlas.Common.Validation;
 using Atlas.RepeatSearch.Models;
@@ -12,7 +8,13 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Atlas.RepeatSearch.Functions.Functions
 {
@@ -21,12 +23,15 @@ namespace Atlas.RepeatSearch.Functions.Functions
         private readonly IRepeatSearchDispatcher repeatSearchDispatcher;
         private readonly IRepeatSearchRunner repeatSearchRunner;
         private readonly IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender;
+        private readonly ILogger<RepeatSearchFunctions> logger;
 
-        public RepeatSearchFunctions(IRepeatSearchDispatcher repeatSearchDispatcher, IRepeatSearchRunner repeatSearchRunner, IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender)
+        public RepeatSearchFunctions(IRepeatSearchDispatcher repeatSearchDispatcher, IRepeatSearchRunner repeatSearchRunner,
+            IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender, ILogger<RepeatSearchFunctions> logger)
         {
             this.repeatSearchDispatcher = repeatSearchDispatcher;
             this.repeatSearchRunner = repeatSearchRunner;
             this.repeatSearchMatchingFailureNotificationSender = repeatSearchMatchingFailureNotificationSender;
+            this.logger = logger;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -57,10 +62,26 @@ namespace Atlas.RepeatSearch.Functions.Functions
                 Connection = "MessagingServiceBus:ConnectionString")]
             IdentifiedRepeatSearchRequest request,
             int deliveryCount,
-            DateTime enqueuedTimeUtc)
+            DateTime enqueuedTimeUtc,
+            CancellationToken cancellationToken)
         {
-            enqueuedTimeUtc = DateTime.SpecifyKind(enqueuedTimeUtc, DateTimeKind.Utc);
-            await repeatSearchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc);
+            try
+            {
+                logger.LogInformation("Function {FunctionName} executing; Search Id: {SearchId}; Repeat Search Id: {RepeatSearchId}",
+                    nameof(RunRepeatSearch), request.OriginalSearchId, request.RepeatSearchId);
+
+                enqueuedTimeUtc = DateTime.SpecifyKind(enqueuedTimeUtc, DateTimeKind.Utc);
+                await repeatSearchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc).WaitAsync(cancellationToken);
+
+                logger.LogInformation("Function {FunctionName} executed; Search Id: {SearchId}; Repeat Search Id: {RepeatSearchId}",
+                    nameof(RunRepeatSearch), request.OriginalSearchId, request.RepeatSearchId);
+            }
+            catch (OperationCanceledException)
+            {
+                logger.LogWarning("Function {FunctionName} has been cancelled; Search Id: {SearchId}; Repeat Search Id: {RepeatSearchId}",
+                    nameof(RunRepeatSearch), request.OriginalSearchId, request.RepeatSearchId);
+                throw;
+            }
         }
 
         [Function(nameof(RepeatSearchMatchingRequestsDeadLetterQueueListener))]
