@@ -12,6 +12,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Atlas.RepeatSearch.Functions.Functions
@@ -21,12 +22,15 @@ namespace Atlas.RepeatSearch.Functions.Functions
         private readonly IRepeatSearchDispatcher repeatSearchDispatcher;
         private readonly IRepeatSearchRunner repeatSearchRunner;
         private readonly IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender;
+        private readonly ILogger<RepeatSearchFunctions> logger;
 
-        public RepeatSearchFunctions(IRepeatSearchDispatcher repeatSearchDispatcher, IRepeatSearchRunner repeatSearchRunner, IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender)
+        public RepeatSearchFunctions(IRepeatSearchDispatcher repeatSearchDispatcher, IRepeatSearchRunner repeatSearchRunner,
+            IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender, ILogger<RepeatSearchFunctions> logger)
         {
             this.repeatSearchDispatcher = repeatSearchDispatcher;
             this.repeatSearchRunner = repeatSearchRunner;
             this.repeatSearchMatchingFailureNotificationSender = repeatSearchMatchingFailureNotificationSender;
+            this.logger = logger;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -59,8 +63,21 @@ namespace Atlas.RepeatSearch.Functions.Functions
             int deliveryCount,
             DateTime enqueuedTimeUtc)
         {
-            enqueuedTimeUtc = DateTime.SpecifyKind(enqueuedTimeUtc, DateTimeKind.Utc);
-            await repeatSearchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc);
+            try
+            {
+                logger.LogInformation("Function {FunctionName} executing", nameof(RunRepeatSearch));
+
+                enqueuedTimeUtc = DateTime.SpecifyKind(enqueuedTimeUtc, DateTimeKind.Utc);
+                await repeatSearchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc);
+
+                logger.LogInformation("Function {FunctionName} executed", nameof(RunRepeatSearch));
+            }
+            catch (OperationCanceledException)
+            {
+                logger.LogWarning("Function {FunctionName} has been cancelled; Search Id: {SearchId}; Repeat Search Id: {RepeatSearchId}",
+                    nameof(RunRepeatSearch), request.OriginalSearchId, request.RepeatSearchId);
+                throw;
+            }
         }
 
         [Function(nameof(RepeatSearchMatchingRequestsDeadLetterQueueListener))]
