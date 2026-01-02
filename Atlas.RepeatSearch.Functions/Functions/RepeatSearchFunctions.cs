@@ -13,8 +13,10 @@ using Newtonsoft.Json;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Security.Policy;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Atlas.RepeatSearch.Functions.Functions
 {
@@ -76,11 +78,17 @@ namespace Atlas.RepeatSearch.Functions.Functions
                 logger.LogInformation("Function {FunctionName} executed; Search Id: {SearchId}; Repeat Search Id: {RepeatSearchId}",
                     nameof(RunRepeatSearch), request.OriginalSearchId, request.RepeatSearchId);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
-                logger.LogWarning("Function {FunctionName} has been cancelled; Search Id: {SearchId}; Repeat Search Id: {RepeatSearchId}",
-                    nameof(RunRepeatSearch), request.OriginalSearchId, request.RepeatSearchId);
-                throw;
+                var message = $"Function {nameof(RunRepeatSearch)} has been cancelled; " +
+                              $"Search Id: {request.OriginalSearchId}; " +
+                              $"Repeat Search Id: {request.RepeatSearchId}";
+
+                var wrappedException = new OperationCanceledException(message, ex, cancellationToken);
+
+                logger.LogError(wrappedException, message);
+
+                throw wrappedException;
             }
         }
 

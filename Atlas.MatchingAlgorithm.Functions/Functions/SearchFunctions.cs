@@ -72,10 +72,16 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
 
                 logger.LogInformation("Function {FunctionName} executed; Search Id: {SearchId}", nameof(RunSearch), request.Id);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
-                logger.LogWarning("Function {FunctionName} has been cancelled; Search Id: {SearchId}", nameof(RunSearch), request.Id);
-                throw;
+                var message = $"Function {nameof(RunSearch)} has been cancelled; " +
+                              $"Search Id: {request.Id}";
+
+                var wrappedException = new OperationCanceledException(message, ex, cancellationToken);
+
+                logger.LogError(wrappedException, message);
+
+                throw wrappedException;
             }
         }
 
