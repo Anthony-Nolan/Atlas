@@ -23,7 +23,8 @@ namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
                 {
                     Mode = RetryMode.Exponential,
                     MaxRetries = settings.MaxRetries,
-                    MaxDelay = TimeSpan.FromSeconds(settings.MaxDelay)
+                    Delay = TimeSpan.FromMilliseconds(settings.DelayMilliseconds),
+                    MaxDelay = TimeSpan.FromSeconds(settings.MaxDelayMilliseconds)
                 }
             };
             serviceClient = new TableServiceClient(settings.AzureStorageConnectionString, options);
