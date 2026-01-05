@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
+using Azure.Core;
 using Azure.Data.Tables;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
@@ -15,7 +17,16 @@ namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
 
         public TableClientFactory(HlaMetadataDictionarySettings settings)
         {
-            this.serviceClient = new TableServiceClient(settings.AzureStorageConnectionString);
+            var options = new TableClientOptions
+            {
+                Retry =
+                {
+                    Mode = RetryMode.Exponential,
+                    MaxRetries = settings.MaxRetries,
+                    MaxDelay = TimeSpan.FromSeconds(settings.MaxDelay)
+                }
+            };
+            serviceClient = new TableServiceClient(settings.AzureStorageConnectionString, options);
         }
 
         public async Task<TableClient> GetTable(string tableReferenceString)
