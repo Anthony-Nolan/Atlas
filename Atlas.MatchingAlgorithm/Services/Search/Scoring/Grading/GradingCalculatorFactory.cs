@@ -13,7 +13,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         {
             // order of checks is critical to which calculator is returned
 
-            if (donorInfo is NewAlleleScoringInfo)
+            if (patientInfo is NewAlleleScoringInfo || donorInfo is NewAlleleScoringInfo)
             {
                 return new NewAlleleGradingCalculator();
             }

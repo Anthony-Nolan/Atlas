@@ -116,6 +116,18 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             calculator.Should().BeOfType<NewAlleleGradingCalculator>();
         }
 
+        [TestCase(typeof(NewAlleleScoringInfo))]
+        public void GetGradingCalculator_WhenPatientNewAllele_ReturnsNewAlleleGradingCalculator(
+            Type patientScoringInfoType)
+        {
+            var patientScoringInfo = BuildScoringInfoOfType(patientScoringInfoType);
+            var donorScoringInfo = new SingleAlleleScoringInfoBuilder().Build();
+
+            var calculator = GradingCalculatorFactory.GetGradingCalculator(patientScoringInfo, donorScoringInfo);
+
+            calculator.Should().BeOfType<NewAlleleGradingCalculator>();
+        }
+
         [Test]
         public void GetGradingCalculator_WhenBothPatientAndDonorExpressingAllele_ReturnsExpressingAlleleGradingCalculator()
         {
