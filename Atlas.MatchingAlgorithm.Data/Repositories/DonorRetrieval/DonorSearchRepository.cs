@@ -129,7 +129,6 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             // and null expressing alleles (the only way to have a null p group) are handled by copying the expressing allele's P-groups to the null position.
             // If either of these facts changes, this validation may be incorrect.
             if (!pGroups.Position1.Any() && !pGroups.Position2.Any()) 
-                //if (!pGroups.Position1.Any() || !pGroups.Position2.Any())
             {
                 logger.SendTrace($"No P-Groups provided at locus {locus} - SQL was not run, no donors returned.");
             }
