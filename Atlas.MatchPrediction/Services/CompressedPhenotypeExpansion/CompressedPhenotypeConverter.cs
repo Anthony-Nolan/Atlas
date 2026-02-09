@@ -23,7 +23,6 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
     {
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly IHlaToTargetCategoryConverter converter;
-        private const string newAllele = "NEW";
 
         public CompressedPhenotypeConverter(
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory, IHlaToTargetCategoryConverter converter)
