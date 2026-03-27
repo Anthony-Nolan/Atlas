@@ -134,7 +134,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         public async Task<Dpb1TceGroupMatchType> CalculateDpb1TceGroupMatchType(LocusInfo<string> patientHla, LocusInfo<string> donorHla)
         {
 
-            if (donorHla.Position1 == newAllele || donorHla.Position2 == newAllele)
+            if (donorHla.Position1 == newAllele || donorHla.Position2 == newAllele || patientHla.Position1 == newAllele || patientHla.Position2 == newAllele)
             {
                 return Dpb1TceGroupMatchType.Unknown;
             }
