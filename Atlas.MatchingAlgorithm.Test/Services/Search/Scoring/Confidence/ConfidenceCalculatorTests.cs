@@ -17,6 +17,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
     public class ConfidenceCalculatorTests
     {
         private ConfidenceCalculator confidenceCalculator;
+        private const string newAllele = "NEW";
 
         [SetUp]
         public void SetUp()
@@ -542,6 +543,17 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
             var confidence = confidenceCalculator.CalculateConfidence(null, donorLookupResult);
 
             confidence.Should().Be(MatchConfidence.Potential);
+        }
+
+        [Test]
+        public void CalculateConfidence_PatientAndDonorTypedWithNew_ReturnsMismatch()
+        {
+            var patientLookupResult = new HlaScoringMetadataBuilder().WithLookupName(newAllele).Build();
+            var donorLookupResult = new HlaScoringMetadataBuilder().WithLookupName(newAllele).Build();
+
+            var confidence = confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResult);
+
+            confidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         private static HlaScoringMetadata BuildScoringMetadataWithSinglePGroup(Type scoringInfoType, string pGroupName = "single-p-group")

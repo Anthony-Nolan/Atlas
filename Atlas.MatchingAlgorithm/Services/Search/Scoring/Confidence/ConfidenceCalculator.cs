@@ -14,14 +14,21 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
 
     public class ConfidenceCalculator : IConfidenceCalculator
     {
+        private const string newAllele = "NEW";
+
         public MatchConfidence CalculateConfidence(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
         {
+            if (patientMetadata?.LookupName == newAllele && donorMetadata?.LookupName == newAllele)
+            {
+                return MatchConfidence.Mismatch;
+            }
+
             // If either patient or donor is untyped, the match is potential
             if (patientMetadata == null || donorMetadata == null)
             {
                 return MatchConfidence.Potential;
             }
-
+ 
             if (IsMismatched(patientMetadata, donorMetadata))
             {
                 return MatchConfidence.Mismatch;
