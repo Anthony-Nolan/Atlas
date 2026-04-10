@@ -27,6 +27,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorUpdates
         private IPublishableDonorUpdatesInspectionRepository updatesInspectionRepository;
         private IDonorInspectionRepository donorInspectionRepository;
         private IDonorFileImporter fileImporter;
+        private const int DeleteBatchCap = 10000;
+        private const int DeleteBatchSize = 2000;
 
         private static Builder<DonorUpdate> DonorBuilder => DonorUpdateBuilder.New
             .With(upd => upd.ChangeType, ImportDonorChangeType.Upsert);
@@ -149,7 +151,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorUpdates
 
         private void SetUpCleaner(int? expiryInDays)
         {
-            var settings = new PublishDonorUpdatesSettings { PublishedUpdateExpiryInDays = expiryInDays };
+            var settings = new PublishDonorUpdatesSettings { PublishedUpdateExpiryInDays = expiryInDays, PublishedDonorsToDeleteBatchSize = DeleteBatchSize, PublishedDonorsToDeleteCap = DeleteBatchCap };
             updatesCleaner = new DonorUpdatesCleaner(updatesRepository, settings);
         }
     }

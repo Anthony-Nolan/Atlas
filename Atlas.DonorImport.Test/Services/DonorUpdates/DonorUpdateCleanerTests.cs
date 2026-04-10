@@ -28,7 +28,7 @@ namespace Atlas.DonorImport.Test.Services.DonorUpdates
 
             await updatesCleaner.DeleteExpiredPublishedDonorUpdates();
 
-            await updatesRepository.DidNotReceiveWithAnyArgs().DeleteUpdatesPublishedOnOrBefore(default);
+            await updatesRepository.DidNotReceiveWithAnyArgs().DeleteUpdatesPublishedOnOrBefore(default, Arg.Any<int>(), Arg.Any<int>());
         }
 
         [Test]
@@ -41,7 +41,7 @@ namespace Atlas.DonorImport.Test.Services.DonorUpdates
             await updatesCleaner.DeleteExpiredPublishedDonorUpdates();
 
             await updatesRepository.Received().DeleteUpdatesPublishedOnOrBefore(Arg.Is<DateTimeOffset>(cutOffDate => 
-                DateTimeOffset.Now.Subtract(cutOffDate).Days == expiryInDays ));
+                DateTimeOffset.Now.Subtract(cutOffDate).Days == expiryInDays ), Arg.Any<int>(), Arg.Any<int>());
         }
 
         private void SetUpCleaner(int? expiryInDays)
