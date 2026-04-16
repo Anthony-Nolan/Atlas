@@ -34,6 +34,8 @@
     "PublishDonorUpdates:DeletionCronSchedule": "0 0 0 * * *",
     "PublishDonorUpdates:PublishCronSchedule": "0 * * * * *",
     "PublishDonorUpdates:PublishedUpdateExpiryInDays": 30,
+    "PublishDonorUpdates:PublishedUpdatesToDeleteCap": 100000,
+    "PublishDonorUpdates:PublishedUpdatesToDeleteBatchSize": 10000,
     "FailureLogs:DeletionCronSchedule": "0 0 0 * * *",
     "FailureLogs:ExpiryInDays": 60
   },

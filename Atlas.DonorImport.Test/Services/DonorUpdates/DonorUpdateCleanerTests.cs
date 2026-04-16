@@ -24,29 +24,31 @@ namespace Atlas.DonorImport.Test.Services.DonorUpdates
         [Test]
         public async Task DeleteExpiredPublishedDonorUpdates_NoExpirySet_DoesNotDeleteUpdates()
         {
-            SetUpCleaner(null);
+            SetUpCleaner(null, 10, 1);
 
             await updatesCleaner.DeleteExpiredPublishedDonorUpdates();
 
-            await updatesRepository.DidNotReceiveWithAnyArgs().DeleteUpdatesPublishedOnOrBefore(default);
+            await updatesRepository.DidNotReceiveWithAnyArgs().DeleteUpdatesPublishedOnOrBefore(default, Arg.Is(10), Arg.Is(1));
         }
 
         [Test]
         public async Task DeleteExpiredPublishedDonorUpdates_DeletesUpdatesByExpectedCutOffDate()
         {
             const int expiryInDays = 50;
+            const int batchSize = 100;
+            const int batchCap = 1000;
 
-            SetUpCleaner(expiryInDays);
+            SetUpCleaner(expiryInDays, batchSize, batchCap);
 
             await updatesCleaner.DeleteExpiredPublishedDonorUpdates();
 
             await updatesRepository.Received().DeleteUpdatesPublishedOnOrBefore(Arg.Is<DateTimeOffset>(cutOffDate => 
-                DateTimeOffset.Now.Subtract(cutOffDate).Days == expiryInDays ));
+                DateTimeOffset.Now.Subtract(cutOffDate).Days == expiryInDays ), Arg.Is(batchCap), Arg.Is(batchSize));
         }
 
-        private void SetUpCleaner(int? expiryInDays)
+        private void SetUpCleaner(int? expiryInDays, int batchSize, int batchCap)
         {
-            var settings = new PublishDonorUpdatesSettings { PublishedUpdateExpiryInDays = expiryInDays };
+            var settings = new PublishDonorUpdatesSettings { PublishedUpdateExpiryInDays = expiryInDays, PublishedUpdatesToDeleteBatchSize = batchSize, PublishedUpdatesToDeleteCap = batchCap};
             updatesCleaner = new DonorUpdatesCleaner(updatesRepository, settings);
         }
     }

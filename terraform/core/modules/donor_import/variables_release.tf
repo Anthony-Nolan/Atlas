@@ -47,6 +47,14 @@ variable "PUBLISHED_UPDATE_EXPIRY_IN_DAYS" {
   type = number
 }
 
+variable "PUBLISHED_UPDATES_TO_DELETE_BATCH_SIZE" {
+  type = number
+}
+
+variable "PUBLISHED_UPDATES_TO_DELETE_CAP" {
+  type = number
+}
+
 variable "SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS" {
   type = number
 }

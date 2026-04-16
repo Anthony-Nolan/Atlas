@@ -66,16 +66,17 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorUpdates
         public async Task DeleteExpiredPublishedDonorUpdates_NoExpirySet_DoesNotDeleteAnyDonorUpdates()
         {
             // note, if max batch size changes (either hard-coded value or configured), this test would fail
-            const int publishBatchSize = 2000;
+            const int batchCap = 10000;
+            const int batchSize = 2000;
             const int nonPublishedCount = 96;
-            const int totalCount = publishBatchSize + nonPublishedCount;
+            const int totalCount = batchSize + nonPublishedCount;
 
             await BuildAndImportDonors(totalCount);
             await updatesPublisher.PublishSearchableDonorUpdatesBatch();
 
             var updatesCountBeforeDeletion = await updatesInspectionRepository.Count();
 
-            SetUpCleaner(null);
+            SetUpCleaner(null, batchSize, batchCap);
 
             // ACT
             await updatesCleaner.DeleteExpiredPublishedDonorUpdates();
@@ -84,7 +85,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorUpdates
 
             updatesCountBeforeDeletion.Should().Be(totalCount);
             updatesAfterDeletion.Count.Should().Be(totalCount);
-            updatesAfterDeletion.Count(u => u.IsPublished).Should().Be(publishBatchSize);
+            updatesAfterDeletion.Count(u => u.IsPublished).Should().Be(batchSize);
             updatesAfterDeletion.Count(u => !u.IsPublished).Should().Be(nonPublishedCount);
         }
 
@@ -97,7 +98,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorUpdates
             var updatesCountBeforeDeletion = await updatesInspectionRepository.Count();
 
             // 0 days expiry should mean delete all published updates
-            SetUpCleaner(0);
+            SetUpCleaner(0,0,0);
 
             // ACT
             await updatesCleaner.DeleteExpiredPublishedDonorUpdates();
@@ -113,9 +114,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorUpdates
         public async Task DeleteExpiredPublishedDonorUpdates_OnlyDeletesExpiredPublishedDonorUpdates()
         {
             // note, if max batch size changes (either hard-coded value or configured), this test would fail
-            const int publishBatchSize = 2000;
+            const int batchCap = 10000;
+            const int batchSize = 2000;
             const int nonPublishedCount = 82;
-            const int totalCount = publishBatchSize + nonPublishedCount;
+            const int totalCount = batchSize + nonPublishedCount;
 
             await BuildAndImportDonors(totalCount);
             await updatesPublisher.PublishSearchableDonorUpdatesBatch();
@@ -123,7 +125,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorUpdates
             var updatesCountBeforeDeletion = await updatesInspectionRepository.Count();
 
             // 0 days expiry should mean delete all published updates
-            SetUpCleaner(0);
+            SetUpCleaner(0, batchSize, batchCap);
 
             // ACT
             await updatesCleaner.DeleteExpiredPublishedDonorUpdates();
@@ -147,9 +149,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorUpdates
             return (await donorInspectionRepository.GetDonorIdsByExternalDonorCodes(externalCodes)).Values;
         }
 
-        private void SetUpCleaner(int? expiryInDays)
+        private void SetUpCleaner(int? expiryInDays, int batchSize, int batchCap)
         {
-            var settings = new PublishDonorUpdatesSettings { PublishedUpdateExpiryInDays = expiryInDays };
+            var settings = new PublishDonorUpdatesSettings { PublishedUpdateExpiryInDays = expiryInDays, PublishedUpdatesToDeleteBatchSize = batchSize, PublishedUpdatesToDeleteCap = batchCap };
             updatesCleaner = new DonorUpdatesCleaner(updatesRepository, settings);
         }
     }
