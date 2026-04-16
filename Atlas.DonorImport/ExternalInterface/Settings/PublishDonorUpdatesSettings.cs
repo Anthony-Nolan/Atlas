@@ -10,11 +10,11 @@
         /// <summary>
         /// Maximum number of published donor updates to delete at one time.
         /// </summary>  
-        public int PublishedDonorsToDeleteCap { get; set; }
+        public int PublishedUpdatesToDeleteCap { get; set; }
 
         /// <summary>
         /// Number of published donor updates to delete in each batch.
         /// </summary>
-        public int PublishedDonorsToDeleteBatchSize { get; set; }
+        public int PublishedUpdatesToDeleteBatchSize { get; set; }
     }
 }

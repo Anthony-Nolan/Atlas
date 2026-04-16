@@ -1,11 +1,16 @@
-﻿using Atlas.Common.Sql.BulkInsert;
+﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Sql.BulkInsert;
 using Atlas.DonorImport.Data.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Collections.Generic;
+using System.Reflection.PortableExecutable;
 using System.Threading.Tasks;
+using static Microsoft.Azure.Amqp.Serialization.SerializableType;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Atlas.DonorImport.Data.Repositories
 {
@@ -13,14 +18,14 @@ namespace Atlas.DonorImport.Data.Repositories
     {
         Task<IEnumerable<PublishableDonorUpdate>> GetOldestUnpublishedDonorUpdates(int batchSize);
         Task MarkUpdatesAsPublished(IEnumerable<int> updateIds);
-        Task DeleteUpdatesPublishedOnOrBefore(DateTimeOffset dateCutOff, int publishedDonorsToDeleteCap, int publishedDonorsToDeleteBatchSize);
+        Task DeleteUpdatesPublishedOnOrBefore(DateTimeOffset dateCutOff, int publishedUpdatesToDeleteCap, int publishedUpdatesToDeleteBatchSize);
     }
 
     public class PublishableDonorUpdatesRepository : BulkInsertRepository<PublishableDonorUpdate>, IPublishableDonorUpdatesRepository
     {
-        private readonly ILogger<PublishableDonorUpdatesRepository> logger;
+        private readonly ILogger logger;
 
-       public PublishableDonorUpdatesRepository(string connectionString, ILogger<PublishableDonorUpdatesRepository> logger) : base(connectionString, PublishableDonorUpdate.QualifiedTableName)
+       public PublishableDonorUpdatesRepository(string connectionString, ILogger logger) : base(connectionString, PublishableDonorUpdate.QualifiedTableName)
        {
            this.logger = logger;
        }
@@ -51,30 +56,33 @@ namespace Atlas.DonorImport.Data.Repositories
             }
         }
 
-        public async Task DeleteUpdatesPublishedOnOrBefore(DateTimeOffset dateCutOff, int publishedDonorsToDeleteCap, int publishedDonorsToDeleteBatchSize)
+        public async Task DeleteUpdatesPublishedOnOrBefore(DateTimeOffset dateCutOff, int publishedUpdatesToDeleteCap, int publishedUpdatesToDeleteBatchSize)
         {
             int rowsAffected;
             var totalDeleted = 0;
 
             var totalRecordsAwaitingDeletion = await CountPublishedUpdatesToDelete(dateCutOff);
 
-            logger.LogInformation("{MatchingRows} matching rows found in {Table}. Starting batch delete...", totalRecordsAwaitingDeletion, PublishableDonorUpdate.QualifiedTableName);
-
-            const string sql = @$"DELETE TOP (@{nameof(publishedDonorsToDeleteBatchSize)}) FROM {PublishableDonorUpdate.QualifiedTableName} WHERE
-                               {nameof(PublishableDonorUpdate.IsPublished)} = 1 AND
-                               {nameof(PublishableDonorUpdate.PublishedOn)} <= @{nameof(dateCutOff)}";
+            logger.SendTrace($"{totalRecordsAwaitingDeletion} matching rows found in {PublishableDonorUpdate.QualifiedTableName}, cap size {publishedUpdatesToDeleteCap}. Starting batch delete...",
+                LogLevel.Info);
 
             do
             {
+                var remainingToDelete = publishedUpdatesToDeleteCap - totalDeleted;
+                var effectiveBatchSize = Math.Min(publishedUpdatesToDeleteBatchSize, remainingToDelete);
+
+                const string sql = @$"DELETE TOP (@{nameof(effectiveBatchSize)}) FROM {PublishableDonorUpdate.QualifiedTableName} WHERE
+                           {nameof(PublishableDonorUpdate.IsPublished)} = 1 AND
+                           {nameof(PublishableDonorUpdate.PublishedOn)} <= @{nameof(dateCutOff)}";
+
                 await using (var connection = new SqlConnection(ConnectionString))
                 {
-                    rowsAffected = await connection.ExecuteAsync(sql, param: new { dateCutOff, publishedDonorsToDeleteBatchSize }, commandTimeout: 600);
+                    rowsAffected = await connection.ExecuteAsync(sql, param: new { dateCutOff, effectiveBatchSize }, commandTimeout: 600);
                     totalDeleted += rowsAffected;
                 }
-            } while (rowsAffected > 0 && totalDeleted < publishedDonorsToDeleteCap);
+            } while (rowsAffected > 0 && totalDeleted < publishedUpdatesToDeleteCap);
 
-            logger.LogInformation("Batch delete complete on {Table}. Total rows deleted: {TotalDeleted}",
-                PublishableDonorUpdate.QualifiedTableName, totalDeleted);
+            logger.SendTrace($"Batch delete complete on {PublishableDonorUpdate.QualifiedTableName}. Total rows deleted: {totalDeleted}", LogLevel.Info);
         }
 
         private async Task<int> CountPublishedUpdatesToDelete(DateTimeOffset dateCutoff)

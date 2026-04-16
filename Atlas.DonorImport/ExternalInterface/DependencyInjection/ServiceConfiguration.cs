@@ -17,8 +17,6 @@ using Atlas.DonorImport.Services.Debug;
 using Atlas.DonorImport.Services.DonorChecker;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using ILogger = Atlas.Common.ApplicationInsights.ILogger;
 
 namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
 {
@@ -58,7 +56,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IDonorImportHistoryRepository>(sp => new DonorImportHistoryRepository(fetchDonorImportDatabaseConnectionString(sp)));
             services.AddScoped<IDonorImportLogRepository>(sp => new DonorImportLogRepository(fetchDonorImportDatabaseConnectionString(sp)));
             services.AddScoped<IPublishableDonorUpdatesRepository>(sp => new PublishableDonorUpdatesRepository(fetchDonorImportDatabaseConnectionString(sp)
-                ,sp.GetRequiredService<ILogger<PublishableDonorUpdatesRepository>>()));
+                ,sp.GetRequiredService<ILogger>()));
             services.AddScoped<IDonorImportFailureRepository>(sp => new DonorImportFailureRepository(fetchDonorImportDatabaseConnectionString(sp)));
         }
 
@@ -68,7 +66,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
         {
             services.AddScoped<IDonorUpdatesSaver, DonorUpdatesSaver>();
             services.AddScoped<IPublishableDonorUpdatesRepository>(sp => new PublishableDonorUpdatesRepository(fetchDonorImportDatabaseConnectionString(sp)
-                ,sp.GetRequiredService<ILogger<PublishableDonorUpdatesRepository>>()));
+                ,sp.GetRequiredService<ILogger>()));
         }
 
         public static void RegisterDonorReader(

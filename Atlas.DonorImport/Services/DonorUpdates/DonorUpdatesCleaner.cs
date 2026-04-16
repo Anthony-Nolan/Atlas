@@ -17,16 +17,16 @@ namespace Atlas.DonorImport.Services.DonorUpdates
     internal class DonorUpdatesCleaner : IDonorUpdatesCleaner
     {
         private readonly int? publishedUpdateExpiryInDays;
-        private readonly int publishedDonorsToDeleteCap;
-        private readonly int publishedDonorsToDeleteCount;
+        private readonly int publishedUpdatesToDeleteCap;
+        private readonly int publishedUpdatesToDeleteBatchSize;
         private readonly IPublishableDonorUpdatesRepository updatesRepository;
 
         public DonorUpdatesCleaner(IPublishableDonorUpdatesRepository updatesRepository, PublishDonorUpdatesSettings settings)
         {
             this.updatesRepository = updatesRepository;
             publishedUpdateExpiryInDays = settings.PublishedUpdateExpiryInDays;
-            publishedDonorsToDeleteCap = settings.PublishedDonorsToDeleteCap;
-            publishedDonorsToDeleteCount = settings.PublishedDonorsToDeleteBatchSize;
+            publishedUpdatesToDeleteCap = settings.PublishedUpdatesToDeleteCap;
+            publishedUpdatesToDeleteBatchSize = settings.PublishedUpdatesToDeleteBatchSize;
         }
 
         public async Task DeleteExpiredPublishedDonorUpdates()
@@ -37,7 +37,7 @@ namespace Atlas.DonorImport.Services.DonorUpdates
             }
 
             var cutOffDate = DateTimeOffset.Now.AddDays(-1*publishedUpdateExpiryInDays.Value);
-            await updatesRepository.DeleteUpdatesPublishedOnOrBefore(cutOffDate, publishedDonorsToDeleteCap, publishedDonorsToDeleteCount);
+            await updatesRepository.DeleteUpdatesPublishedOnOrBefore(cutOffDate, publishedUpdatesToDeleteCap, publishedUpdatesToDeleteBatchSize);
         }
     }
 }

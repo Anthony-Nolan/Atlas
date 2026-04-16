@@ -122,6 +122,18 @@ variable "DONOR_IMPORT_PUBLISHED_UPDATE_EXPIRY_IN_DAYS" {
   description = "Number of days after publishing that a donor update will expire and be eligible for deletion."
 }
 
+variable "DONOR_IMPORT_PUBLISHED_UPDATES_TO_DELETE_CAP" {
+  type        = number
+  default     = 100000
+  description = "When deleting expired published donor updates, the maximum number of published donors to delete in one run."
+}
+
+variable "DONOR_IMPORT_PUBLISHED_UPDATES_TO_DELETE_BATCH_SIZE" {
+  type        = number
+  default     = 10000
+  description = "When deleting expired published donor updates, the batch size to use for deletions."
+}
+
 variable "DONOR_IMPORT_STALLED_FILE_CHECK_CRONTAB" {
   type    = string
   default = "0 */30 * * * *"

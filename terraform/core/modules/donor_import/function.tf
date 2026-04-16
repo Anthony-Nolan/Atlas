@@ -50,9 +50,11 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
     "NotificationsServiceBus:SendRetryCount"            = var.SERVICE_BUS_SEND_RETRY_COUNT
     "NotificationsServiceBus:SendRetryCooldownSeconds"  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "PublishDonorUpdates:DeletionCronSchedule"        = var.DELETE_PUBLISHED_DONOR_UPDATES_CRONTAB
-    "PublishDonorUpdates:PublishCronSchedule"         = var.PUBLISH_DONOR_UPDATES_CRONTAB
-    "PublishDonorUpdates:PublishedUpdateExpiryInDays" = var.PUBLISHED_UPDATE_EXPIRY_IN_DAYS
+    "PublishDonorUpdates:DeletionCronSchedule"              = var.DELETE_PUBLISHED_DONOR_UPDATES_CRONTAB
+    "PublishDonorUpdates:PublishCronSchedule"               = var.PUBLISH_DONOR_UPDATES_CRONTAB
+    "PublishDonorUpdates:PublishedUpdateExpiryInDays"       = var.PUBLISHED_UPDATE_EXPIRY_IN_DAYS
+    "PublishDonorUpdates:PublishedUpdatesToDeleteCap"       = var.PUBLISHED_UPDATES_TO_DELETE_CAP
+    "PublishDonorUpdates:PublishedUpdatesToDeleteBatchSize" = var.PUBLISHED_UPDATES_TO_DELETE_BATCH_SIZE
 
     "FailureLogs:DeletionCronSchedule" = var.FAILURE_LOGS_CRONTAB
     "FailureLogs:ExpiryInDays"         = var.FAILURE_LOGS_EXPIRY_IN_DAYS
