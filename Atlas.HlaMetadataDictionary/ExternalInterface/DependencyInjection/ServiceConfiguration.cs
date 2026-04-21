@@ -36,7 +36,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.RegisterLifeTimeScopedCacheTypes();
             services.RegisterCommonGeneticServices();
             services.AddScoped<IHlaMetadataDictionaryFactory, HlaMetadataDictionaryFactory>();
-            services.AddScoped<IHlaMetadataCacheControl, HlaMetadataCacheControl>();
             services.RegisterStorageTypes();
             services.RegisterTypesRelatedToDictionaryRecreation();
             services.RegisterServices();
