@@ -10,6 +10,7 @@ variable "app_service_plan" {
 variable "application_insights" {
   type = object({
     instrumentation_key = string
+    connection_string   = string
   })
 }
 
@@ -68,5 +69,18 @@ variable "sql_server" {
     id                          = string
     name                        = string
     fully_qualified_domain_name = string
+  })
+}
+
+variable "container_app_environment" {
+  type = object({
+    id = string
+  })
+}
+
+variable "acr" {
+  type = object({
+    id           = string
+    login_server = string
   })
 }

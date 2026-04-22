@@ -522,3 +522,45 @@ variable "SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID" {
   default     = null
   description = "The ID of the action group to be used for deadletter alerts."
 }
+
+// Container Apps / ACR
+
+variable "ACR_NAME" {
+  type        = string
+  description = "Name of the shared Azure Container Registry."
+}
+
+variable "ACR_RESOURCE_GROUP_NAME" {
+  type        = string
+  description = "Resource group of the shared Azure Container Registry."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_IMAGE_TAG" {
+  type        = string
+  default     = "latest"
+  description = "Docker image tag for the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_CPU" {
+  type        = number
+  default     = 1.0
+  description = "CPU cores allocated to the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_MEMORY" {
+  type        = string
+  default     = "2Gi"
+  description = "Memory allocated to the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_MIN_REPLICAS" {
+  type        = number
+  default     = 0
+  description = "Minimum replica count for the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_MAX_REPLICAS" {
+  type        = number
+  default     = 1
+  description = "Maximum replica count for the match prediction container app."
+}

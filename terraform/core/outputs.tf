@@ -58,3 +58,10 @@ output "storage_account" {
 output "support" {
   value = module.support
 }
+
+output "container_app_environment" {
+  value = {
+    id   = azurerm_container_app_environment.atlas.id
+    name = azurerm_container_app_environment.atlas.name
+  }
+}

@@ -192,6 +192,13 @@ module "match_prediction" {
     notifications = module.support.general.notifications_servicebus_topic
   }
 
+  // Container Apps DI Variables
+  container_app_environment = azurerm_container_app_environment.atlas
+  acr = {
+    id           = data.azurerm_container_registry.shared.id
+    login_server = data.azurerm_container_registry.shared.login_server
+  }
+
   // Release variables
   APPLICATION_INSIGHTS_LOG_LEVEL                           = var.APPLICATION_INSIGHTS_LOG_LEVEL
   DATABASE_PASSWORD                                        = var.MATCH_PREDICTION_DATABASE_PASSWORD
@@ -202,6 +209,11 @@ module "match_prediction" {
   SERVICE_BUS_SEND_RETRY_COUNT                             = var.SERVICE_BUS_SEND_RETRY_COUNT
   WEBSITE_RUN_FROM_PACKAGE                                 = var.WEBSITE_RUN_FROM_PACKAGE
   SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC = var.MATCH_PREDICTION_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
+  CONTAINER_IMAGE_TAG                                      = var.MATCH_PREDICTION_CONTAINER_IMAGE_TAG
+  CONTAINER_CPU                                            = var.MATCH_PREDICTION_CONTAINER_CPU
+  CONTAINER_MEMORY                                         = var.MATCH_PREDICTION_CONTAINER_MEMORY
+  CONTAINER_MIN_REPLICAS                                   = var.MATCH_PREDICTION_CONTAINER_MIN_REPLICAS
+  CONTAINER_MAX_REPLICAS                                   = var.MATCH_PREDICTION_CONTAINER_MAX_REPLICAS
 }
 
 module "multiple_allele_code_lookup" {

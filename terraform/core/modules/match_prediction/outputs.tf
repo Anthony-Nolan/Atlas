@@ -19,3 +19,11 @@ output "sql_database" {
     connection_string = local.match_prediction_database_connection_string
   }
 }
+
+output "container_app" {
+  value = {
+    fqdn              = azurerm_container_app.atlas_match_prediction.ingress[0].fqdn
+    name              = azurerm_container_app.atlas_match_prediction.name
+    latest_revision   = azurerm_container_app.atlas_match_prediction.latest_revision_name
+  }
+}
