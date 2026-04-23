@@ -8,6 +8,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors
     internal abstract class WmdaDataExtractor<TWmdaHlaTyping> where TWmdaHlaTyping : IWmdaHlaTyping
     {
         protected const string WmdaFilePathPrefix = "wmda/";
+        protected const string WmdaFilePathPrefixPre2026 = "wmda/pre2026/";
 
         private readonly string fileName;
 
