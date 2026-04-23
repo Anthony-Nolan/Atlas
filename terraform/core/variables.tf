@@ -527,11 +527,13 @@ variable "SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID" {
 
 variable "ACR_NAME" {
   type        = string
+  default     = "ancontainerregistry"
   description = "Name of the shared Azure Container Registry."
 }
 
 variable "ACR_RESOURCE_GROUP_NAME" {
   type        = string
+  default     = "AN-RESOURCE-GROUP"
   description = "Resource group of the shared Azure Container Registry."
 }
 
