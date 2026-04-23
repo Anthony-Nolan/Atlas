@@ -5,12 +5,13 @@ terraform {
 }
 
 locals {
-  repository_name     = "Atlas"
-  environment         = var.ENVIRONMENT
-  location            = var.LOCATION
-  min_tls_version     = "1.2"
-  resource_group_name = "${local.environment}-ATLAS-RESOURCE-GROUP"
-  subscription_id     = var.AZURE_SUBSCRIPTION_ID
+  repository_name          = "Atlas"
+  environment              = var.ENVIRONMENT
+  location                 = var.LOCATION
+  min_tls_version          = "1.2"
+  resource_group_name      = "${local.environment}-ATLAS-RESOURCE-GROUP"
+  subscription_id          = var.AZURE_SUBSCRIPTION_ID
+  shared_subscription_id   = var.SHARED_SUBSCRIPTION_ID
   common_tags = {
     controlled_by_terraform = true
     repository_name         = local.repository_name
@@ -27,6 +28,13 @@ provider "azurerm" {
   // initial registrations will need to be organised as a one-off.
   // Currently, the only resource provider needed is this AzureRM provider.
   skip_provider_registration = false
+  features {}
+}
+
+provider "azurerm" {
+  alias                      = "shared"
+  subscription_id            = local.shared_subscription_id
+  skip_provider_registration = true
   features {}
 }
 

@@ -537,6 +537,12 @@ variable "ACR_RESOURCE_GROUP_NAME" {
   description = "Resource group of the shared Azure Container Registry."
 }
 
+variable "SHARED_SUBSCRIPTION_ID" {
+  type        = string
+  default     = "f37d6d06-4bc8-4146-add7-fe2911b47e11"
+  description = "Subscription ID where shared organization-level resources reside (e.g., Container Registry)."
+}
+
 variable "MATCH_PREDICTION_CONTAINER_IMAGE_TAG" {
   type        = string
   default     = "latest"
