@@ -7,7 +7,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.Ser
 {
     internal class AlleleToSerologyRelationshipExtractor : WmdaDataExtractor<RelDnaSer>
     {
-        private const string FileName = WmdaFilePathPrefix + "rel_dna_ser.txt";
+        private const string FileName = WmdaFilePathPrefixPre2026 + "rel_dna_ser.txt";
         private readonly Regex regex = new Regex(@"^(\w+\*)\;([\w:]+)\;([\d\/\\?]*);([\d\/\\?]*)\;([\d\/\\?]*)\;([\d\/\\?]*)$", RegexOptions.Compiled);
 
         public AlleleToSerologyRelationshipExtractor() : base(FileName)
