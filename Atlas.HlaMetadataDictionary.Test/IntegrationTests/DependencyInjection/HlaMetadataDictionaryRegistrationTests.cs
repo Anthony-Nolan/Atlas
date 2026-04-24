@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 
-internal class HlaMetadataDictionaryRegistrationTests
+public class HlaMetadataDictionaryRegistrationTests
 {
     [Test]
     public void RegisterFileBasedHlaMetadataDictionaryForTesting_AllowsServiceProviderValidationOnBuild()
