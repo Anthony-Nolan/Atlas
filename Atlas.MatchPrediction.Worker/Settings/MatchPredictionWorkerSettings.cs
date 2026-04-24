@@ -4,5 +4,5 @@ public class MatchPredictionWorkerSettings
 {
     public required string RequestsSubscription { get; set; }
 
-    public int BatchSize { get; set; } = 10;
+    public required int BatchSize { get; set; }
 }
