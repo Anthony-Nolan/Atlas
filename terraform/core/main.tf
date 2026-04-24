@@ -203,6 +203,7 @@ module "match_prediction" {
   // Container Apps DI Variables
   container_app_environment = azurerm_container_app_environment.atlas
   acr                       = data.azurerm_container_registry.shared
+  acr_pull_identity         = azurerm_user_assigned_identity.acr_pull
 
   // Release variables
   APPLICATION_INSIGHTS_LOG_LEVEL                           = var.APPLICATION_INSIGHTS_LOG_LEVEL

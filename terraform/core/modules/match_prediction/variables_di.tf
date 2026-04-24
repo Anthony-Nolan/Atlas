@@ -84,3 +84,10 @@ variable "acr" {
     login_server = string
   })
 }
+
+variable "acr_pull_identity" {
+  type = object({
+    id           = string
+    principal_id = string
+  })
+}

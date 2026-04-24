@@ -10,7 +10,8 @@ resource "azurerm_container_app" "atlas_match_prediction" {
   tags                         = var.general.common_tags
 
   identity {
-    type = "SystemAssigned"
+    type         = "UserAssigned"
+    identity_ids = [var.acr_pull_identity.id]
   }
 
   template {
@@ -150,7 +151,7 @@ resource "azurerm_container_app" "atlas_match_prediction" {
 
   registry {
     server   = var.acr.login_server
-    identity = "System"
+    identity = var.acr_pull_identity.id
   }
 
   secret {
@@ -177,10 +178,4 @@ resource "azurerm_container_app" "atlas_match_prediction" {
     name  = "match-prediction-sql-connection-string"
     value = local.match_prediction_database_connection_string
   }
-}
-
-resource "azurerm_role_assignment" "match_prediction_ca_acr_pull" {
-  scope                = var.acr.id
-  role_definition_name = "AcrPull"
-  principal_id         = azurerm_container_app.atlas_match_prediction.identity[0].principal_id
 }
