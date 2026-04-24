@@ -1,0 +1,26 @@
+trigger: none
+
+pr: none
+
+variables:
+  - name: DOCKER_IMAGE_NAME
+    value: 'atlas-match-prediction'
+  - name: DOCKER_IMAGE_TAG
+    value: '$(Build.BuildNumber)'
+ 
+
+jobs:
+  - job: Docker
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - task: Docker@2
+        displayName: 'Build and push image to ACR'
+        inputs:
+          command: 'buildAndPush'
+          repository: $(DOCKER_IMAGE_NAME)
+          dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile'
+          containerRegistry: 'AN Container Registry-Atlas'
+          tags: |
+            latest
+            $(DOCKER_IMAGE_TAG)
