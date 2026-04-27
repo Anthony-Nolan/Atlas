@@ -82,3 +82,28 @@ A high level overview of the match prediction algorithm's logic is as follows:
     - Note, the file does not contain a patient or donor ID; the consumer should map patient-donor IDs to request ID when initially submitting the request.
   - At this point, if any requests contain invalid properties, such invalid HLA, these will be indiviually caught and logged to Application Insights to allow users to correct them and re-submit.
     - Note: No alerts are sent out in such case; the user should manually monitor the logs, or use Application Insights monitoring.
+
+## Worker Project Configuration
+
+`Atlas.MatchPrediction.Worker` is a .NET Generic Host Worker Service (no Azure Functions dependency).
+Settings follow the same convention as other non-Functions projects: all values live in `appsettings.json`, with secrets marked `"override-this"`.
+
+Override secrets locally using **User Secrets**
+
+The following settings require real values to run locally:
+
+```json 
+{
+  "ApplicationInsights": {
+    "InstrumentationKey": "override-this"
+  },
+  "MessagingServiceBus": {
+    "ConnectionString": "override-this"
+  },
+  "NotificationsServiceBus": {
+    "ConnectionString": "override-this"
+  }
+}
+```
+All other settings have safe defaults for local development (Azurite for storage, local SQL Server for the database).
+
