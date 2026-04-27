@@ -8,6 +8,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Worker.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
@@ -46,6 +47,9 @@ public static class Startup
                 );
             }
         );
+
+        services.AddHealthChecks()
+            .AddCheck("self", () => HealthCheckResult.Healthy(), tags: ["live", "ready"]);
 
         services.AddHostedService<MatchPredictionWorker>();
     }

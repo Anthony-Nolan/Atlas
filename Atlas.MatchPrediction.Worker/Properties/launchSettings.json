@@ -4,6 +4,7 @@
     "Atlas.MatchPrediction.Worker": {
       "commandName": "Project",
       "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:8080",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       }
