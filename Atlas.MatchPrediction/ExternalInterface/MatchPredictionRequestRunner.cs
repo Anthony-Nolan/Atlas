@@ -10,6 +10,7 @@ using Atlas.MatchPrediction.Exceptions;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.MatchPrediction.ExternalInterface;
 
@@ -26,25 +27,15 @@ public interface IMatchPredictionRequestRunner
 
 public class MatchPredictionRequestRunner : IMatchPredictionRequestRunner
 {
-    private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
-    private readonly IMatchPredictionRequestResultUploader resultUploader;
+    private readonly IServiceScopeFactory serviceScopeFactory;
     private readonly IMessageBatchPublisher<MatchPredictionResultLocation> messagePublisher;
-    private readonly ILogger logger;
-    private readonly MatchPredictionRequestLoggingContext loggingContext;
 
     public MatchPredictionRequestRunner(
-        IMatchPredictionAlgorithm matchPredictionAlgorithm, 
-        IMatchPredictionRequestResultUploader resultUploader,
-        IMessageBatchPublisher<MatchPredictionResultLocation> messagePublisher,
-        // ReSharper disable once SuggestBaseTypeForParameterInConstructor
-        IMatchPredictionLogger<MatchPredictionRequestLoggingContext> logger,
-        MatchPredictionRequestLoggingContext loggingContext)
+        IServiceScopeFactory serviceScopeFactory,
+        IMessageBatchPublisher<MatchPredictionResultLocation> messagePublisher)
     {
-        this.matchPredictionAlgorithm = matchPredictionAlgorithm;
-        this.resultUploader = resultUploader;
+        this.serviceScopeFactory = serviceScopeFactory;
         this.messagePublisher = messagePublisher;
-        this.logger = logger;
-        this.loggingContext = loggingContext;
     }
 
     public async Task RunMatchPredictionRequestBatch(IEnumerable<IdentifiedMatchPredictionRequest> requestBatch)
@@ -53,34 +44,15 @@ public class MatchPredictionRequestRunner : IMatchPredictionRequestRunner
 
         foreach (var request in requestBatch)
         {
-            try
+            if (request == null)
             {
-                if (request == null)
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                resultsLocations.Add(await RunMatchPredictionRequest(request));
-            }
-            catch (ValidationException ex)
+            var resultLocation = await RunMatchPredictionRequest(request);
+            if (resultLocation != null)
             {
-                logger.SendTrace("Invalid match prediction request", LogLevel.Error, new Dictionary<string, string>
-                {
-                    {"ValidationErrors", ex.ToErrorMessagesString()}
-                });
-            }
-            catch (HlaMetadataDictionaryException ex)
-            {
-                logger.SendTrace("Invalid HLA in match prediction request", LogLevel.Error, new Dictionary<string, string>
-                {
-                    {"Locus", ex.Locus},
-                    {"HlaName", ex.HlaName},
-                    {"Exception", ex.ToString()}
-                });
-            }
-            catch (Exception ex)
-            {
-                throw new MatchPredictionRequestException(ex);
+                resultsLocations.Add(resultLocation);
             }
         }
 
@@ -89,11 +61,45 @@ public class MatchPredictionRequestRunner : IMatchPredictionRequestRunner
 
     private async Task<MatchPredictionResultLocation> RunMatchPredictionRequest(IdentifiedMatchPredictionRequest request)
     {
+        await using var scope = serviceScopeFactory.CreateAsyncScope();
+        var serviceProvider = scope.ServiceProvider;
+        var loggingContext = serviceProvider.GetRequiredService<MatchPredictionRequestLoggingContext>();
+        var logger = serviceProvider.GetRequiredService<IMatchPredictionLogger<MatchPredictionRequestLoggingContext>>();
+        var matchPredictionAlgorithm = serviceProvider.GetRequiredService<IMatchPredictionAlgorithm>();
+        var resultUploader = serviceProvider.GetRequiredService<IMatchPredictionRequestResultUploader>();
+
         loggingContext.Initialise(request);
 
-        logger.SendTrace("Run match prediction request");
-        var result = await matchPredictionAlgorithm.RunMatchPredictionAlgorithm(request.SingleDonorMatchProbabilityInput);
+        try
+        {
+            logger.SendTrace("Run match prediction request");
+            var result = await matchPredictionAlgorithm.RunMatchPredictionAlgorithm(request.SingleDonorMatchProbabilityInput);
 
-        return await resultUploader.UploadMatchPredictionRequestResult(request.Id, result);
+            return await resultUploader.UploadMatchPredictionRequestResult(request.Id, result);
+        }
+        catch (ValidationException ex)
+        {
+            logger.SendTrace("Invalid match prediction request", LogLevel.Error, new Dictionary<string, string>
+                {
+                    { "ValidationErrors", ex.ToErrorMessagesString() }
+                }
+            );
+            return null;
+        }
+        catch (HlaMetadataDictionaryException ex)
+        {
+            logger.SendTrace("Invalid HLA in match prediction request", LogLevel.Error, new Dictionary<string, string>
+                {
+                    { "Locus", ex.Locus },
+                    { "HlaName", ex.HlaName },
+                    { "Exception", ex.ToString() }
+                }
+            );
+            return null;
+        }
+        catch (Exception ex)
+        {
+            throw new MatchPredictionRequestException(ex);
+        }
     }
 }

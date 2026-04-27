@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.MatchPrediction.Test.Services
 {
@@ -32,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Services
         private IMatchPredictionRequestResultUploader resultUploader;
         private IMessageBatchPublisher<MatchPredictionResultLocation> locationPublisher;
         private IMatchPredictionLogger<MatchPredictionRequestLoggingContext> logger;
-        private MatchPredictionRequestLoggingContext loggingContext;
+        private ServiceProvider serviceProvider;
 
         private IMatchPredictionRequestRunner runner;
 
@@ -43,9 +44,23 @@ namespace Atlas.MatchPrediction.Test.Services
             resultUploader = Substitute.For<IMatchPredictionRequestResultUploader>();
             locationPublisher = Substitute.For<IMessageBatchPublisher<MatchPredictionResultLocation>>();
             logger = Substitute.For<IMatchPredictionLogger<MatchPredictionRequestLoggingContext>>();
-            loggingContext = new MatchPredictionRequestLoggingContext();
 
-            runner = new MatchPredictionRequestRunner(matchPredictionAlgorithm, resultUploader, locationPublisher, logger, loggingContext);
+            serviceProvider = new ServiceCollection()
+                .AddScoped(_ => matchPredictionAlgorithm)
+                .AddScoped(_ => resultUploader)
+                .AddScoped(_ => locationPublisher)
+                .AddScoped(_ => logger)
+                .AddScoped<MatchPredictionRequestLoggingContext>()
+                .AddScoped<IMatchPredictionRequestRunner, MatchPredictionRequestRunner>()
+                .BuildServiceProvider();
+
+            runner = serviceProvider.GetRequiredService<IMatchPredictionRequestRunner>();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            serviceProvider?.Dispose();
         }
 
         [Test]
