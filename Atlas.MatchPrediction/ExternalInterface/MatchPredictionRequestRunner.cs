@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus;
@@ -40,23 +41,14 @@ public class MatchPredictionRequestRunner : IMatchPredictionRequestRunner
 
     public async Task RunMatchPredictionRequestBatch(IEnumerable<IdentifiedMatchPredictionRequest> requestBatch)
     {
-        var resultsLocations = new List<MatchPredictionResultLocation>();
+        var requestTasks = requestBatch
+            .Where(request => request != null)
+            .Select(RunMatchPredictionRequest)
+            .ToList();
 
-        foreach (var request in requestBatch)
-        {
-            if (request == null)
-            {
-                continue;
-            }
+        var resultsLocations = await Task.WhenAll(requestTasks);
 
-            var resultLocation = await RunMatchPredictionRequest(request);
-            if (resultLocation != null)
-            {
-                resultsLocations.Add(resultLocation);
-            }
-        }
-
-        await messagePublisher.BatchPublish(resultsLocations);
+        await messagePublisher.BatchPublish(resultsLocations.Where(location => location != null));
     }
 
     private async Task<MatchPredictionResultLocation> RunMatchPredictionRequest(IdentifiedMatchPredictionRequest request)
