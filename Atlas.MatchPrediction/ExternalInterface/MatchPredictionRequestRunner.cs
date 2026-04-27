@@ -11,90 +11,89 @@ using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using FluentValidation;
 
-namespace Atlas.MatchPrediction.ExternalInterface
+namespace Atlas.MatchPrediction.ExternalInterface;
+
+public interface IMatchPredictionRequestRunner
 {
-    public interface IMatchPredictionRequestRunner
+    /// <summary>
+    /// Note on exception handling:
+    /// - Individual requests that fail validation or contain invalid HLA will not disrupt the processing of the remaining requests in the batch;
+    ///   details of invalid requests will be logged.
+    /// - Any other exception will be allowed to throw, thus disrupting the entire batch.
+    /// </summary>
+    Task RunMatchPredictionRequestBatch(IEnumerable<IdentifiedMatchPredictionRequest> requestBatch);
+}
+
+public class MatchPredictionRequestRunner : IMatchPredictionRequestRunner
+{
+    private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
+    private readonly IMatchPredictionRequestResultUploader resultUploader;
+    private readonly IMessageBatchPublisher<MatchPredictionResultLocation> messagePublisher;
+    private readonly ILogger logger;
+    private readonly MatchPredictionRequestLoggingContext loggingContext;
+
+    public MatchPredictionRequestRunner(
+        IMatchPredictionAlgorithm matchPredictionAlgorithm, 
+        IMatchPredictionRequestResultUploader resultUploader,
+        IMessageBatchPublisher<MatchPredictionResultLocation> messagePublisher,
+        // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+        IMatchPredictionLogger<MatchPredictionRequestLoggingContext> logger,
+        MatchPredictionRequestLoggingContext loggingContext)
     {
-        /// <summary>
-        /// Note on exception handling:
-        /// - Individual requests that fail validation or contain invalid HLA will not disrupt the processing of the remaining requests in the batch;
-        ///   details of invalid requests will be logged.
-        /// - Any other exception will be allowed to throw, thus disrupting the entire batch.
-        /// </summary>
-        Task RunMatchPredictionRequestBatch(IEnumerable<IdentifiedMatchPredictionRequest> requestBatch);
+        this.matchPredictionAlgorithm = matchPredictionAlgorithm;
+        this.resultUploader = resultUploader;
+        this.messagePublisher = messagePublisher;
+        this.logger = logger;
+        this.loggingContext = loggingContext;
     }
 
-    public class MatchPredictionRequestRunner : IMatchPredictionRequestRunner
+    public async Task RunMatchPredictionRequestBatch(IEnumerable<IdentifiedMatchPredictionRequest> requestBatch)
     {
-        private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
-        private readonly IMatchPredictionRequestResultUploader resultUploader;
-        private readonly IMessageBatchPublisher<MatchPredictionResultLocation> messagePublisher;
-        private readonly ILogger logger;
-        private readonly MatchPredictionRequestLoggingContext loggingContext;
+        var resultsLocations = new List<MatchPredictionResultLocation>();
 
-        public MatchPredictionRequestRunner(
-            IMatchPredictionAlgorithm matchPredictionAlgorithm, 
-            IMatchPredictionRequestResultUploader resultUploader,
-            IMessageBatchPublisher<MatchPredictionResultLocation> messagePublisher,
-            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
-            IMatchPredictionLogger<MatchPredictionRequestLoggingContext> logger,
-            MatchPredictionRequestLoggingContext loggingContext)
+        foreach (var request in requestBatch)
         {
-            this.matchPredictionAlgorithm = matchPredictionAlgorithm;
-            this.resultUploader = resultUploader;
-            this.messagePublisher = messagePublisher;
-            this.logger = logger;
-            this.loggingContext = loggingContext;
-        }
-
-        public async Task RunMatchPredictionRequestBatch(IEnumerable<IdentifiedMatchPredictionRequest> requestBatch)
-        {
-            var resultsLocations = new List<MatchPredictionResultLocation>();
-
-            foreach (var request in requestBatch)
+            try
             {
-                try
+                if (request == null)
                 {
-                    if (request == null)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    resultsLocations.Add(await RunMatchPredictionRequest(request));
-                }
-                catch (ValidationException ex)
-                {
-                    logger.SendTrace("Invalid match prediction request", LogLevel.Error, new Dictionary<string, string>
-                    {
-                        {"ValidationErrors", ex.ToErrorMessagesString()}
-                    });
-                }
-                catch (HlaMetadataDictionaryException ex)
-                {
-                    logger.SendTrace("Invalid HLA in match prediction request", LogLevel.Error, new Dictionary<string, string>
-                    {
-                        {"Locus", ex.Locus},
-                        {"HlaName", ex.HlaName},
-                        {"Exception", ex.ToString()}
-                    });
-                }
-                catch (Exception ex)
-                {
-                    throw new MatchPredictionRequestException(ex);
-                }
+                resultsLocations.Add(await RunMatchPredictionRequest(request));
             }
-
-            await messagePublisher.BatchPublish(resultsLocations);
+            catch (ValidationException ex)
+            {
+                logger.SendTrace("Invalid match prediction request", LogLevel.Error, new Dictionary<string, string>
+                {
+                    {"ValidationErrors", ex.ToErrorMessagesString()}
+                });
+            }
+            catch (HlaMetadataDictionaryException ex)
+            {
+                logger.SendTrace("Invalid HLA in match prediction request", LogLevel.Error, new Dictionary<string, string>
+                {
+                    {"Locus", ex.Locus},
+                    {"HlaName", ex.HlaName},
+                    {"Exception", ex.ToString()}
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new MatchPredictionRequestException(ex);
+            }
         }
 
-        private async Task<MatchPredictionResultLocation> RunMatchPredictionRequest(IdentifiedMatchPredictionRequest request)
-        {
-            loggingContext.Initialise(request);
+        await messagePublisher.BatchPublish(resultsLocations);
+    }
 
-            logger.SendTrace("Run match prediction request");
-            var result = await matchPredictionAlgorithm.RunMatchPredictionAlgorithm(request.SingleDonorMatchProbabilityInput);
+    private async Task<MatchPredictionResultLocation> RunMatchPredictionRequest(IdentifiedMatchPredictionRequest request)
+    {
+        loggingContext.Initialise(request);
 
-            return await resultUploader.UploadMatchPredictionRequestResult(request.Id, result);
-        }
+        logger.SendTrace("Run match prediction request");
+        var result = await matchPredictionAlgorithm.RunMatchPredictionAlgorithm(request.SingleDonorMatchProbabilityInput);
+
+        return await resultUploader.UploadMatchPredictionRequestResult(request.Id, result);
     }
 }
