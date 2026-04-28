@@ -4,5 +4,6 @@
     {
         public string RequestsTopic { get; set; }
         public string ResultsTopic { get; set; }
+        public int MaxParallelism { get; set; }
     }
 }

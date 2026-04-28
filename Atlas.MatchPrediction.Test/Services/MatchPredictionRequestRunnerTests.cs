@@ -7,6 +7,7 @@ using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
+using Atlas.MatchPrediction.ExternalInterface.Settings;
 using FluentAssertions;
 using FluentValidation;
 using LochNessBuilder;
@@ -33,6 +34,7 @@ namespace Atlas.MatchPrediction.Test.Services
         private IMatchPredictionRequestResultUploader resultUploader;
         private IMessageBatchPublisher<MatchPredictionResultLocation> locationPublisher;
         private IMatchPredictionLogger<MatchPredictionRequestLoggingContext> logger;
+        private MatchPredictionRequestsSettings settings;
         private ServiceProvider serviceProvider;
 
         private IMatchPredictionRequestRunner runner;
@@ -44,12 +46,14 @@ namespace Atlas.MatchPrediction.Test.Services
             resultUploader = Substitute.For<IMatchPredictionRequestResultUploader>();
             locationPublisher = Substitute.For<IMessageBatchPublisher<MatchPredictionResultLocation>>();
             logger = Substitute.For<IMatchPredictionLogger<MatchPredictionRequestLoggingContext>>();
+            settings = new MatchPredictionRequestsSettings { MaxParallelism = 4 };
 
             serviceProvider = new ServiceCollection()
                 .AddScoped(_ => matchPredictionAlgorithm)
                 .AddScoped(_ => resultUploader)
                 .AddScoped(_ => locationPublisher)
                 .AddScoped(_ => logger)
+                .AddSingleton(_ => settings)
                 .AddScoped<MatchPredictionRequestLoggingContext>()
                 .AddScoped<IMatchPredictionRequestRunner, MatchPredictionRequestRunner>()
                 .BuildServiceProvider();

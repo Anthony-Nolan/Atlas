@@ -21,6 +21,10 @@ variable "MAC_SOURCE" {
   type = string
 }
 
+variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
+  type = number
+}
+
 variable "SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS" {
   type = number
 }
