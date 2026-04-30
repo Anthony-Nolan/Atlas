@@ -16,9 +16,9 @@ namespace Atlas.MatchPrediction.Worker;
 
 public static class Startup
 {
-    public static void Configure(IServiceCollection services)
+    public static void Configure(IServiceCollection services, IConfiguration configuration)
     {
-        RegisterSettings(services);
+        RegisterSettings(services, configuration);
 
         services.RegisterMatchPredictionAlgorithm(
             OptionsReaderFor<ApplicationInsightsSettings>(),
@@ -54,17 +54,8 @@ public static class Startup
         services.AddHostedService<MatchPredictionWorker>();
     }
 
-    private static void RegisterSettings(IServiceCollection services)
+    private static void RegisterSettings(IServiceCollection services, IConfiguration configuration)
     {
-        services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
-        services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
-        services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
-        services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
-
-        services.RegisterAsOptions<MatchPredictionRequestsSettings>("MatchPredictionRequests");
-        services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
-        services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
-
-        services.RegisterAsOptions<MatchPredictionWorkerSettings>("MatchPredictionWorker");
+        services.AddWorkerValidatedOptions(configuration);
     }
 }
