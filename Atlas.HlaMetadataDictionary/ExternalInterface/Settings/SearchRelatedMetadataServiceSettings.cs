@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface.Settings
 {
     public class SearchRelatedMetadataServiceSettings
     {
+        [Range(1, int.MaxValue)]
         public int? CacheSlidingExpirationInSeconds { get; set; }
     }
 }
