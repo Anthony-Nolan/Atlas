@@ -19,7 +19,6 @@ using Atlas.MatchPrediction.Services.HlaConversion;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
-using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -81,6 +80,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
         {
             var serviceKey = typeof(MessagingServiceBusSettings);
             services.RegisterServiceBusAsKeyedServices(serviceKey,sp => messagingServiceBusSettings(sp).ConnectionString);
+            services.MakeSettingsAvailableForUse(matchPredictionRequestSettings);
 
             // services for requesting a match prediction
             services.AddScoped<IMatchPredictionValidator, MatchPredictionValidator>();

@@ -245,6 +245,12 @@ variable "MATCH_PREDICTION_DOWNLOAD_BATCH_SIZE" {
   description = "Batch size for downloading match prediction results"
 }
 
+variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
+  type        = number
+  default     = 8
+  description = "Maximum number of match prediction requests processed in parallel per function instance. Keep this aligned with worker batch sizing."
+}
+
 variable "MATCHING_PREDICTION_PROCESSING_BATCH_SIZE" {
   type        = number
   default     = 1000
@@ -438,15 +444,15 @@ variable "SEARCH_TRACKING_DATABASE_USERNAME" {
 }
 
 variable "SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS" {
-	type        = number
-	default     = 20
-	description = "When sending a service bus message, time to wait before retrying a failed message"
+  type        = number
+  default     = 20
+  description = "When sending a service bus message, time to wait before retrying a failed message"
 }
 
 variable "SERVICE_BUS_SEND_RETRY_COUNT" {
-	type        = number
-	default     = 5
-	description = "When sending a service bus message, the total number of retries to attempt"
+  type        = number
+  default     = 5
+  description = "When sending a service bus message, the total number of retries to attempt"
 }
 
 variable "SHOULD_BATCH_RESULTS" {

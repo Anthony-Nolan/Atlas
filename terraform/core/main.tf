@@ -198,6 +198,7 @@ module "match_prediction" {
   DATABASE_USERNAME                                        = var.MATCH_PREDICTION_DATABASE_USERNAME
   IP_RESTRICTION_SETTINGS                                  = var.IP_RESTRICTION_SETTINGS
   MAC_SOURCE                                               = var.MAC_SOURCE
+  MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM                = var.MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM
   SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS                  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
   SERVICE_BUS_SEND_RETRY_COUNT                             = var.SERVICE_BUS_SEND_RETRY_COUNT
   WEBSITE_RUN_FROM_PACKAGE                                 = var.WEBSITE_RUN_FROM_PACKAGE
@@ -275,10 +276,10 @@ module "search_tracking" {
   default_servicebus_settings = local.service-bus
 
   // DI Variables
-  application_insights                            = azurerm_application_insights.atlas
-  app_service_plan                                = azurerm_service_plan.atlas-elastic-plan
-  azure_app_configuration                         = azurerm_app_configuration.atlas_app_configuration
-  servicebus_namespace                            = azurerm_servicebus_namespace.general
+  application_insights    = azurerm_application_insights.atlas
+  app_service_plan        = azurerm_service_plan.atlas-elastic-plan
+  azure_app_configuration = azurerm_app_configuration.atlas_app_configuration
+  servicebus_namespace    = azurerm_servicebus_namespace.general
   servicebus_namespace_authorization_rules = {
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
     read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
@@ -289,10 +290,10 @@ module "search_tracking" {
   sql_server              = azurerm_mssql_server.atlas_sql_server
 
   // Release variables
-  APPLICATION_INSIGHTS_LOG_LEVEL                 = var.APPLICATION_INSIGHTS_LOG_LEVEL
-  DATABASE_PASSWORD                              = var.SEARCH_TRACKING_DATABASE_PASSWORD
-  DATABASE_USERNAME                              = var.SEARCH_TRACKING_DATABASE_USERNAME
-  IP_RESTRICTION_SETTINGS                        = var.IP_RESTRICTION_SETTINGS
+  APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
+  DATABASE_PASSWORD              = var.SEARCH_TRACKING_DATABASE_PASSWORD
+  DATABASE_USERNAME              = var.SEARCH_TRACKING_DATABASE_USERNAME
+  IP_RESTRICTION_SETTINGS        = var.IP_RESTRICTION_SETTINGS
 }
 
 module "support" {

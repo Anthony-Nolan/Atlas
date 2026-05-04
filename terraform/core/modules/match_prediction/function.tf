@@ -36,6 +36,7 @@ resource "azurerm_windows_function_app" "atlas_match_prediction_function" {
     "MatchPredictionRequests:RequestsSubscription" = azurerm_servicebus_subscription.match-prediction-request-runner.name
     "MatchPredictionRequests:RequestsTopic"        = azurerm_servicebus_topic.match-prediction-requests.name
     "MatchPredictionRequests:ResultsTopic"         = azurerm_servicebus_topic.match-prediction-results.name
+    "MatchPredictionRequests:MaxParallelism"       = var.MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM
 
     "NotificationsServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:AlertsTopic"              = var.servicebus_topics.alerts.name

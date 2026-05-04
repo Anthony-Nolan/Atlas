@@ -7,6 +7,7 @@ using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
+using Atlas.MatchPrediction.ExternalInterface.Settings;
 using FluentAssertions;
 using FluentValidation;
 using LochNessBuilder;
@@ -17,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.MatchPrediction.Test.Services
 {
@@ -31,8 +33,10 @@ namespace Atlas.MatchPrediction.Test.Services
         private IMatchPredictionAlgorithm matchPredictionAlgorithm;
         private IMatchPredictionRequestResultUploader resultUploader;
         private IMessageBatchPublisher<MatchPredictionResultLocation> locationPublisher;
+        private ILogger batchLogger;
         private IMatchPredictionLogger<MatchPredictionRequestLoggingContext> logger;
-        private MatchPredictionRequestLoggingContext loggingContext;
+        private MatchPredictionRequestsSettings settings;
+        private ServiceProvider serviceProvider;
 
         private IMatchPredictionRequestRunner runner;
 
@@ -42,10 +46,28 @@ namespace Atlas.MatchPrediction.Test.Services
             matchPredictionAlgorithm = Substitute.For<IMatchPredictionAlgorithm>();
             resultUploader = Substitute.For<IMatchPredictionRequestResultUploader>();
             locationPublisher = Substitute.For<IMessageBatchPublisher<MatchPredictionResultLocation>>();
+            batchLogger = Substitute.For<ILogger>();
             logger = Substitute.For<IMatchPredictionLogger<MatchPredictionRequestLoggingContext>>();
-            loggingContext = new MatchPredictionRequestLoggingContext();
+            settings = new MatchPredictionRequestsSettings { MaxParallelism = 4 };
 
-            runner = new MatchPredictionRequestRunner(matchPredictionAlgorithm, resultUploader, locationPublisher, logger, loggingContext);
+            serviceProvider = new ServiceCollection()
+                .AddScoped(_ => matchPredictionAlgorithm)
+                .AddScoped(_ => resultUploader)
+                .AddScoped(_ => locationPublisher)
+                .AddScoped<ILogger>(_ => batchLogger)
+                .AddScoped(_ => logger)
+                .AddSingleton(_ => settings)
+                .AddScoped<MatchPredictionRequestLoggingContext>()
+                .AddScoped<IMatchPredictionRequestRunner, MatchPredictionRequestRunner>()
+                .BuildServiceProvider();
+
+            runner = serviceProvider.GetRequiredService<IMatchPredictionRequestRunner>();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            serviceProvider?.Dispose();
         }
 
         [Test]

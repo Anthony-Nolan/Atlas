@@ -19,6 +19,7 @@
     "MatchPredictionRequests:RequestsSubscription": "match-prediction",
     "MatchPredictionRequests:RequestsTopic": "match-prediction-requests",
     "MatchPredictionRequests:ResultsTopic": "match-prediction-results",
+    "MatchPredictionRequests:MaxParallelism": 8,
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications",
