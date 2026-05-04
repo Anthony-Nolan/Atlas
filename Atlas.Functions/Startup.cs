@@ -90,6 +90,7 @@ namespace Atlas.Functions
 
             // Match Prediction Algorithm
             services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.AzureStorageSettings>("MatchPrediction:AzureStorage");
+            services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
         }
 
         private static void RegisterTopLevelFunctionServices(IServiceCollection services)

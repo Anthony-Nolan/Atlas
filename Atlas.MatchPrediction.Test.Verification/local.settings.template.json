@@ -13,6 +13,8 @@
     "DataRefresh:CompletionTopic": "completed-data-refresh-jobs",
     "DataRefresh:CompletionTopicSubscription": "override-this",
 
+    "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 5,
+
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
 
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
