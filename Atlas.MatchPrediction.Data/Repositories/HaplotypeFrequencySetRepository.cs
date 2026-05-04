@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Models;
@@ -9,6 +10,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
     public interface IHaplotypeFrequencySetRepository
     {
         Task<HaplotypeFrequencySet> GetActiveSet(string registry, string ethnicity);
+        Task<IReadOnlyCollection<HaplotypeFrequencySet>> GetAllActiveSets();
         Task<HaplotypeFrequencySet> AddSet(HaplotypeFrequencySet set);
         Task ActivateSet(int setId);
     }
@@ -35,6 +37,17 @@ namespace Atlas.MatchPrediction.Data.Repositories
                 return await context.HaplotypeFrequencySets
                     .Where(set => set.Active && set.RegistryCode == registry && set.EthnicityCode == ethnicity)
                     .SingleOrDefaultAsync();
+            }
+        }
+
+        public async Task<IReadOnlyCollection<HaplotypeFrequencySet>> GetAllActiveSets()
+        {
+            await using (var context = NewContext())
+            {
+                return await context.HaplotypeFrequencySets
+                    .Where(set => set.Active)
+                    .AsNoTracking()
+                    .ToListAsync();
             }
         }
 
