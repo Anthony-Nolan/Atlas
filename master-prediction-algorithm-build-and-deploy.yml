@@ -1,0 +1,55 @@
+trigger: none
+
+pr: none
+
+variables:
+  - name: DOCKER_IMAGE_NAME
+    value: 'atlas-match-prediction'
+  - name: DOCKER_IMAGE_TAG
+    value: '$(Build.BuildNumber)'
+  - name: ACR_LOGIN_SERVER
+    value: 'ancontainerregistry.azurecr.io'
+
+stages:
+  - stage: Build
+    displayName: 'Build'
+    jobs:
+      - job: Docker
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: Docker@2
+            displayName: 'Build and push image to ACR'
+            inputs:
+              command: 'buildAndPush'
+              repository: $(DOCKER_IMAGE_NAME)
+              dockerfile: '$(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Worker/Dockerfile'
+              containerRegistry: 'AN Container Registry-Atlas'
+              tags: |
+                $(DOCKER_IMAGE_TAG)
+
+  - stage: DeployDev
+    displayName: 'Deploy to Dev'
+    dependsOn: Build
+    variables:
+      - name: CONTAINER_APP_NAME
+        value: 'dev-atlas-match-prediction-ca'
+      - name: RESOURCE_GROUP
+        value: 'DEV-ATLAS-RESOURCE-GROUP'
+    jobs:
+      - deployment: DeployDev
+        displayName: 'Deploy to Dev'
+        pool:
+          vmImage: 'ubuntu-latest'
+        environment: 'Dev'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureContainerApps@1
+                  displayName: 'Deploy to Dev Container App'
+                  inputs:
+                    azureSubscription: 'Atlas Dev WIF'
+                    containerAppName: '$(CONTAINER_APP_NAME)'
+                    resourceGroup: '$(RESOURCE_GROUP)'
+                    imageToDeploy: '$(ACR_LOGIN_SERVER)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)'
