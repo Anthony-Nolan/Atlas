@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.Common.Public.Models.MatchPrediction;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 
 namespace Atlas.MatchPrediction.Test.Services.MatchProbability
@@ -30,6 +31,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         private readonly Fixture fixture = new();
 
         private IMatchProbabilityService matchProbabilityService;
+        private SubjectGenotypeSet defaultPatientGenotypeSet;
 
         [SetUp]
         public void SetUp()
@@ -50,6 +52,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 genotypeMatcher,
                 logger,
                 matchProbabilityLoggingContext);
+
+            defaultPatientGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions>(), 0.1m);
 
             haplotypeFrequencyService.GetHaplotypeFrequencySets(default, default).ReturnsForAnyArgs(
                 new HaplotypeFrequencySetResponse
@@ -83,7 +87,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             );
 
             var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
-            await matchProbabilityService.CalculateMatchProbability(input);
+            await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet);
 
             await genotypeMatcher.Received(1).MatchPatientDonorGenotypes(Arg.Is<GenotypeMatcherInput>(x =>
                 x.PatientData.SubjectFrequencySet.SubjectLogDescription == "patient" &&
@@ -93,6 +97,18 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 x.DonorData.SubjectFrequencySet.FrequencySet.Id == donorHfSetId &&
                 x.DonorData.HlaTyping.Equals(input.Donor.DonorHla.ToPhenotypeInfo()) &&
                 x.MatchPredictionParameters.AllowedLoci.SetEquals(new[] { Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1 })));
+        }
+
+        [Test]
+        public async Task CalculateMatchProbability_PassesPatientGenotypeSetToGenotypeMatcher()
+        {
+            var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
+            var patientGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions>(), 0.1m);
+
+            await matchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet);
+
+            await genotypeMatcher.Received(1).MatchPatientDonorGenotypes(Arg.Is<GenotypeMatcherInput>(x =>
+                ReferenceEquals(x.PatientGenotypeSet, patientGenotypeSet)));
         }
 
         [Test]
@@ -106,7 +122,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             });
 
             var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
-            await matchProbabilityService.CalculateMatchProbability(input);
+            await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet);
 
             matchProbabilityCalculator.DidNotReceiveWithAnyArgs().CalculateMatchProbability(default, default, default, default);
         }
@@ -132,7 +148,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             });
 
             var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
-            var result = await matchProbabilityService.CalculateMatchProbability(input);
+            var result = await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet);
 
             result.IsPatientPhenotypeUnrepresented.Should().BeTrue();
             result.IsDonorPhenotypeUnrepresented.Should().BeFalse();
@@ -152,7 +168,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             });
 
             var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
-            await matchProbabilityService.CalculateMatchProbability(input);
+            await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet);
 
             matchProbabilityCalculator.DidNotReceiveWithAnyArgs().CalculateMatchProbability(default, default, default, default);
         }
@@ -178,7 +194,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             });
 
             var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
-            var result = await matchProbabilityService.CalculateMatchProbability(input);
+            var result = await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet);
 
             result.IsPatientPhenotypeUnrepresented.Should().BeFalse();
             result.IsDonorPhenotypeUnrepresented.Should().BeTrue();
@@ -200,7 +216,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             });
 
             var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
-            await matchProbabilityService.CalculateMatchProbability(input);
+            await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet);
 
             matchProbabilityCalculator.Received(1).CalculateMatchProbability(
                 patientLikelihood,
@@ -231,7 +247,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 });
 
             var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
-            var result = await matchProbabilityService.CalculateMatchProbability(input);
+            var result = await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet);
 
             result.IsPatientPhenotypeUnrepresented.Should().BeFalse();
             result.IsDonorPhenotypeUnrepresented.Should().BeFalse();
@@ -253,7 +269,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             );
 
             var input = SingleDonorMatchProbabilityInputBuilder.Default.Build();
-            var result = await matchProbabilityService.CalculateMatchProbability(input);
+            var result = await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet);
 
             result.DonorHaplotypeFrequencySet.Id.Should().Be(donorSet.Id);
             result.DonorHaplotypeFrequencySet.RegistryCode.Should().Be(donorSet.RegistryCode);

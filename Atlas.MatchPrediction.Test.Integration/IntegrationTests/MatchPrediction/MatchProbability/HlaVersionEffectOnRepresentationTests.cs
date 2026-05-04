@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
@@ -69,7 +69,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithPatientHla(phenotype)
                 .Build();
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.IsDonorPhenotypeUnrepresented.Should().BeFalse();
             matchDetails.IsPatientPhenotypeUnrepresented.Should().BeFalse();
@@ -90,7 +90,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithPatientHla(phenotype)
                 .Build();
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.IsDonorPhenotypeUnrepresented.Should().BeTrue();
             matchDetails.IsPatientPhenotypeUnrepresented.Should().BeTrue();
@@ -112,7 +112,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithPatientHla(phenotype)
                 .Build();
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             var expectedRepresentation = phenotypeBuilderWithExpectedRepresentation.isRepresented;
             matchDetails.IsDonorPhenotypeUnrepresented.Should().Be(expectedRepresentation);
@@ -136,7 +136,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithPatientHla(phenotype)
                 .Build();
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             var expectedRepresentation = parameters.isRepresented;
             matchDetails.IsDonorPhenotypeUnrepresented.Should().Be(expectedRepresentation);
@@ -173,7 +173,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithPatientHla(phenotype)
                 .Build();
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.IsDonorPhenotypeUnrepresented.Should().BeFalse();
             matchDetails.IsPatientPhenotypeUnrepresented.Should().BeFalse();

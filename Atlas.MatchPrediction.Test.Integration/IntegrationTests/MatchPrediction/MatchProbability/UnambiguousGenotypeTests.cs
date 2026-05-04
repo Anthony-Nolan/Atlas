@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
@@ -60,7 +60,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDonorMetadata(GlobalHfSetMetadata)
                 .Build();
 
-            var matchProbability = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchProbability = await CalculateMatchProbability(matchProbabilityInput);
 
             matchProbability.IsPatientPhenotypeUnrepresented.Should().BeFalse();
             matchProbability.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(0);
@@ -92,7 +92,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDonorMetadata(GlobalHfSetMetadata)
                 .Build();
 
-            var matchProbability = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchProbability = await CalculateMatchProbability(matchProbabilityInput);
 
             matchProbability.IsDonorPhenotypeUnrepresented.Should().BeFalse();
             matchProbability.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(0);
@@ -111,7 +111,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDonorMetadata(GlobalHfSetMetadata)
                 .Build();
 
-            var matchProbability = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchProbability = await CalculateMatchProbability(matchProbabilityInput);
 
             matchProbability.IsDonorPhenotypeUnrepresented.Should().BeFalse();
             matchProbability.IsPatientPhenotypeUnrepresented.Should().BeFalse();

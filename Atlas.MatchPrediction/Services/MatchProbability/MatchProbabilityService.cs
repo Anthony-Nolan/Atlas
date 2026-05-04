@@ -22,7 +22,9 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 {
     public interface IMatchProbabilityService
     {
-        public Task<MatchProbabilityResponse> CalculateMatchProbability(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput);
+        public Task<MatchProbabilityResponse> CalculateMatchProbability(
+            SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput,
+            SubjectGenotypeSet patientGenotypeSet);
     }
 
     internal class MatchProbabilityService : IMatchProbabilityService
@@ -50,7 +52,9 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             this.matchProbabilityLoggingContext = matchProbabilityLoggingContext;
         }
 
-        public async Task<MatchProbabilityResponse> CalculateMatchProbability(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput)
+        public async Task<MatchProbabilityResponse> CalculateMatchProbability(
+            SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput,
+            SubjectGenotypeSet patientGenotypeSet)
         {
             await new MatchProbabilityInputValidator().ValidateAndThrowAsync(singleDonorMatchProbabilityInput);
 
@@ -63,6 +67,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             {
                 PatientData = new SubjectData(singleDonorMatchProbabilityInput.PatientHla.ToPhenotypeInfo(), frequencySets.Patient),
                 DonorData = new SubjectData(singleDonorMatchProbabilityInput.Donor.DonorHla.ToPhenotypeInfo(), frequencySets.Donor),
+                PatientGenotypeSet = patientGenotypeSet,
                 MatchPredictionParameters = new MatchPredictionParameters(allowedLoci, singleDonorMatchProbabilityInput.MatchingAlgorithmHlaNomenclatureVersion)
             });
 

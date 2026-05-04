@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.MatchPrediction;
-using Atlas.Common.Utils.Extensions;
 using static Atlas.Common.Maths.Combinations;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
@@ -19,6 +18,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     {
         public SubjectData PatientData { get; set; }
         public SubjectData DonorData { get; set; }
+        public SubjectGenotypeSet PatientGenotypeSet { get; set; }
         public MatchPredictionParameters MatchPredictionParameters { get; set; }
     }
 
@@ -55,34 +55,17 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
     internal class GenotypeMatcher : IGenotypeMatcher
     {
-        private readonly IGenotypeImputationService genotypeImputer;
-        private readonly IGenotypeConverter genotypeConverter;
+        private readonly IGenotypeSetService genotypeSetService;
         private readonly IMatchCalculationService matchCalculationService;
         private readonly ILogger logger;
 
-        private record GenotypeSet(bool IsUnrepresented, ICollection<GenotypeAtDesiredResolutions> Genotypes, decimal SumOfLikelihoods);
-
-        private readonly Dictionary<int, Dictionary<(Locus, string), string>> LocusValueReplacementMapping =
-            new()
-            {
-                {
-                    3590, new Dictionary<(Locus, string), string>
-                    {
-                        { (Locus.C, "*04:09N"), "*04:09L" },
-                        { (Locus.C, "04:09N"), "04:09L" },
-                    }
-                }
-            };
-
         public GenotypeMatcher(
-            IGenotypeImputationService genotypeImputer,
-            IGenotypeConverter genotypeConverter,
+            IGenotypeSetService genotypeSetService,
             IMatchCalculationService matchCalculationService,
             // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger)
         {
-            this.genotypeImputer = genotypeImputer;
-            this.genotypeConverter = genotypeConverter;
+            this.genotypeSetService = genotypeSetService;
             this.matchCalculationService = matchCalculationService;
             this.logger = logger;
         }
@@ -90,8 +73,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         /// <inheritdoc />
         public async Task<GenotypeMatcherResult> MatchPatientDonorGenotypes(GenotypeMatcherInput input)
         {
-            var patientGenotypeSet = await GetGenotypeSetResultForMatchCounting(input.PatientData, input.MatchPredictionParameters);
-            var donorGenotypeSet = await GetGenotypeSetResultForMatchCounting(input.DonorData, input.MatchPredictionParameters);
+            var patientGenotypeSet = input.PatientGenotypeSet;
+            var donorGenotypeSet = await genotypeSetService.GetGenotypeSet(input.DonorData, input.MatchPredictionParameters);
 
             if (patientGenotypeSet.IsUnrepresented || donorGenotypeSet.IsUnrepresented)
             {
@@ -129,70 +112,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
                 GenotypeMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, input.MatchPredictionParameters.AllowedLoci, matchCountLogger)
             };
-        }
-
-        private async Task<GenotypeSet> GetGenotypeSetResultForMatchCounting(SubjectData subjectData, MatchPredictionParameters parameters)
-        {
-            int? matchingAlgorithmHlaNomenclatureVersion = parameters.MatchingAlgorithmHlaNomenclatureVersion != null 
-                ? int.Parse(parameters.MatchingAlgorithmHlaNomenclatureVersion)
-                : null;
-
-            SubjectData preparedSubjectData;
-
-            if (matchingAlgorithmHlaNomenclatureVersion == null)
-            {
-                preparedSubjectData = subjectData;
-            }
-            else
-            {
-                var matchingReplacementMappingKeys = 
-                    LocusValueReplacementMapping.Keys
-                        .Where(k => k <= matchingAlgorithmHlaNomenclatureVersion)
-                        .ToList();
-
-                preparedSubjectData = new SubjectData(
-                    subjectData.HlaTyping.Map((locus, _, hla) =>
-                    {
-                        string replacement = null;
-                        foreach (var matchingReplacementMappingKey in matchingReplacementMappingKeys)
-                        {
-                            LocusValueReplacementMapping[matchingReplacementMappingKey].TryGetValue((locus, hla), out replacement);
-                        }
-
-                        if (replacement != null)
-                        {
-                            return replacement;
-                        }
-
-                        return hla;
-                    }),
-                    subjectData.SubjectFrequencySet
-                );
-            }
-
-            var imputedGenotypes = await genotypeImputer.Impute(new ImputationInput
-            {
-                SubjectData = preparedSubjectData,
-                MatchPredictionParameters = parameters
-            });
-
-            if (imputedGenotypes.Genotypes.IsNullOrEmpty())
-            {
-                return new GenotypeSet(true, new List<GenotypeAtDesiredResolutions>(), 0m);
-            }
-
-            var convertedGenotypes = await genotypeConverter.ConvertGenotypesForMatchCalculation(new GenotypeConverterInput
-            {
-                CompressedPhenotype = preparedSubjectData.HlaTyping,
-                AllowedLoci = parameters.AllowedLoci,
-                Genotypes = imputedGenotypes.Genotypes,
-                GenotypeLikelihoods = imputedGenotypes.GenotypeLikelihoods,
-                HfSetHlaNomenclatureVersion = preparedSubjectData.SubjectFrequencySet.FrequencySet.HlaNomenclatureVersion,
-                MatchingAlgorithmHlaNomenclatureVersion = parameters.MatchingAlgorithmHlaNomenclatureVersion,
-                SubjectLogDescription = preparedSubjectData.SubjectFrequencySet.SubjectLogDescription
-            });
-
-            return new GenotypeSet(false, convertedGenotypes, imputedGenotypes.SumOfLikelihoods);
         }
 
         private IEnumerable<Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>> CombineGenotypes(
