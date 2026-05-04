@@ -23,7 +23,7 @@ stages:
             inputs:
               command: 'buildAndPush'
               repository: $(DOCKER_IMAGE_NAME)
-              dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile'
+              dockerfile: '$(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Worker/Dockerfile'
               containerRegistry: 'AN Container Registry-Atlas'
               tags: |
                 $(DOCKER_IMAGE_TAG)
