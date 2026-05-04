@@ -14,6 +14,7 @@ internal static class SettingsValidationExtensions
         services.AddOptions<ApplicationInsightsSettings>(configuration, "ApplicationInsights");
         services.AddValidatedOptions<AzureStorageSettings, AzureStorageSettingsValidator>(configuration, "AzureStorage");
         services.AddValidatedOptions<HlaMetadataDictionarySettings, HlaMetadataDictionarySettingsValidator>(configuration, "HlaMetadataDictionary");
+        services.AddOptions<HaplotypeFrequencySetCacheSettings>(configuration, "HaplotypeFrequencySetCache");
         services.AddValidatedOptions<MacDictionarySettings, MacDictionarySettingsValidator>(configuration, "MacDictionary");
         services.AddOptions<MatchPredictionRequestsSettings>(configuration, "MatchPredictionRequests");
         services.AddValidatedOptions<MessagingServiceBusSettings, MessagingServiceBusSettingsValidator>(configuration, "MessagingServiceBus");

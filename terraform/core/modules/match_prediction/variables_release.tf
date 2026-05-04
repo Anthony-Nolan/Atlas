@@ -21,6 +21,10 @@ variable "MAC_SOURCE" {
   type = string
 }
 
+variable "ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES" {
+  type = number
+}
+
 variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
   type = number
 }
