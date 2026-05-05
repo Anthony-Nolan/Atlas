@@ -7,8 +7,6 @@ variables:
     value: 'atlas-match-prediction'
   - name: DOCKER_IMAGE_TAG
     value: '$(Build.BuildNumber)'
-  - name: ACR_NAME
-    value: 'ancontainerregistry'
   - name: ACR_LOGIN_SERVER
     value: 'ancontainerregistry.azurecr.io'
 
@@ -78,7 +76,6 @@ stages:
                   displayName: 'Deploy to Dev Container App'
                   inputs:
                     azureSubscription: 'Atlas Dev WIF'
-                    acrName: '$(ACR_NAME)'
                     containerAppName: '$(CONTAINER_APP_NAME)'
                     containerAppEnvironment: '$(CONTAINER_APP_ENVIRONMENT)'
                     resourceGroup: '$(RESOURCE_GROUP)'
