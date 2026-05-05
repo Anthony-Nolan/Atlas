@@ -73,6 +73,11 @@ internal class GenotypeMatcher : IGenotypeMatcher
     /// <inheritdoc />
     public async Task<GenotypeMatcherResult> MatchPatientDonorGenotypes(GenotypeMatcherInput input)
     {
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(input.PatientGenotypeSet);
+        ArgumentNullException.ThrowIfNull(input.DonorData);
+        ArgumentNullException.ThrowIfNull(input.MatchPredictionParameters);
+
         var patientGenotypeSet = input.PatientGenotypeSet;
         var donorGenotypeSet = await genotypeSetService.GetGenotypeSet(input.DonorData, input.MatchPredictionParameters);
 

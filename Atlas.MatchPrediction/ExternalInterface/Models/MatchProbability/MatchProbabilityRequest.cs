@@ -51,7 +51,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
             Donors.Select(d => new SingleDonorMatchProbabilityInput(this)
             {
                 Donor = d
-            }).ToList();
+            });
     }
 
     public class DonorInput

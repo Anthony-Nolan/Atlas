@@ -1,4 +1,5 @@
-﻿using Atlas.Common.Public.Models.GeneticData;
+﻿using System;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Utils.Extensions;
@@ -27,8 +28,8 @@ internal class GenotypeSetService(
     IHaplotypeFrequencyService haplotypeFrequencyService)
     : IGenotypeSetService
 {
-    private readonly Dictionary<int, Dictionary<(Locus, string), string>> LocusValueReplacementMapping =
-        new()
+    private static readonly IReadOnlyDictionary<int, Dictionary<(Locus, string), string>> LocusValueReplacementMapping =
+        new Dictionary<int, Dictionary<(Locus, string), string>>
         {
             {
                 3590, new Dictionary<(Locus, string), string>
@@ -64,9 +65,17 @@ internal class GenotypeSetService(
 
     private async Task<SubjectGenotypeSet> BuildGenotypeSet(SubjectData subjectData, MatchPredictionParameters parameters)
     {
-        int? matchingAlgorithmHlaNomenclatureVersion = parameters.MatchingAlgorithmHlaNomenclatureVersion != null
-            ? int.Parse(parameters.MatchingAlgorithmHlaNomenclatureVersion)
-            : null;
+        int? matchingAlgorithmHlaNomenclatureVersion = null;
+        if (parameters.MatchingAlgorithmHlaNomenclatureVersion != null)
+        {
+            if (!int.TryParse(parameters.MatchingAlgorithmHlaNomenclatureVersion, out var parsedVersion))
+            {
+                throw new ArgumentException(
+                    $"MatchingAlgorithmHlaNomenclatureVersion must be a valid integer, but was '{parameters.MatchingAlgorithmHlaNomenclatureVersion}'.",
+                    nameof(parameters));
+            }
+            matchingAlgorithmHlaNomenclatureVersion = parsedVersion;
+        }
 
         SubjectData preparedSubjectData;
 

@@ -10,6 +10,7 @@ using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Validators;
 using FluentValidation;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
@@ -56,6 +57,8 @@ internal class MatchProbabilityService : IMatchProbabilityService
         SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput,
         SubjectGenotypeSet patientGenotypeSet)
     {
+        ArgumentNullException.ThrowIfNull(patientGenotypeSet);
+
         await new MatchProbabilityInputValidator().ValidateAndThrowAsync(singleDonorMatchProbabilityInput);
 
         matchProbabilityLoggingContext.Initialise(singleDonorMatchProbabilityInput);
@@ -64,12 +67,14 @@ internal class MatchProbabilityService : IMatchProbabilityService
         var allowedLoci = LocusSettings.MatchPredictionLoci.Except(singleDonorMatchProbabilityInput.ExcludedLoci).ToHashSet();
 
         var matcherResult = await genotypeMatcher.MatchPatientDonorGenotypes(new GenotypeMatcherInput
-        {
-            PatientData = new SubjectData(singleDonorMatchProbabilityInput.PatientHla.ToPhenotypeInfo(), frequencySets.Patient),
-            DonorData = new SubjectData(singleDonorMatchProbabilityInput.Donor.DonorHla.ToPhenotypeInfo(), frequencySets.Donor),
-            PatientGenotypeSet = patientGenotypeSet,
-            MatchPredictionParameters = new MatchPredictionParameters(allowedLoci, singleDonorMatchProbabilityInput.MatchingAlgorithmHlaNomenclatureVersion)
-        });
+            {
+                PatientData = new SubjectData(singleDonorMatchProbabilityInput.PatientHla.ToPhenotypeInfo(), frequencySets.Patient),
+                DonorData = new SubjectData(singleDonorMatchProbabilityInput.Donor.DonorHla.ToPhenotypeInfo(), frequencySets.Donor),
+                PatientGenotypeSet = patientGenotypeSet,
+                MatchPredictionParameters =
+                    new MatchPredictionParameters(allowedLoci, singleDonorMatchProbabilityInput.MatchingAlgorithmHlaNomenclatureVersion)
+            }
+        );
 
         if (matcherResult.PatientResult.IsUnrepresented || matcherResult.DonorResult.IsUnrepresented)
         {
@@ -99,7 +104,7 @@ internal class MatchProbabilityService : IMatchProbabilityService
     }
 
     private MatchProbabilityResponse CalculateMatchProbabilityFromMatcherResult(
-        GenotypeMatcherResult matcherResult, 
+        GenotypeMatcherResult matcherResult,
         HashSet<Locus> allowedLoci,
         FrequencySets frequencySets)
     {
