@@ -122,16 +122,16 @@ resource "azurerm_container_app" "atlas_match_prediction" {
       }
 
       liveness_probe {
-        path             = "/api/HealthCheck"
-        port             = 8080
+        path             = "/health/live"
+        port             = 80
         transport        = "HTTP"
         initial_delay    = 10
         interval_seconds = 30
       }
 
       readiness_probe {
-        path             = "/api/HealthCheck"
-        port             = 8080
+        path             = "/health/ready"
+        port             = 80
         transport        = "HTTP"
         interval_seconds = 10
       }
