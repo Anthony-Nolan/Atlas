@@ -96,3 +96,11 @@ output "sql-server-admin-login" {
 output "sql-server-admin-login-password" {
   value = var.DATABASE_SERVER_ADMIN_LOGIN_PASSWORD
 }
+
+output "match-prediction-container-app-name" {
+  value = module.match_prediction.container_app.name
+}
+
+output "container-app-environment-name" {
+  value = azurerm_container_app_environment.atlas.name
+}
