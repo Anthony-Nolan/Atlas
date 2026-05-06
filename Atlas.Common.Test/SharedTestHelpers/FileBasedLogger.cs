@@ -46,6 +46,15 @@ namespace Atlas.Common.Test.SharedTestHelpers
             nLogger.Log(GetSeverityLevel(messageLogLevel), messageText);
         }
 
+        public virtual void SendException(Exception exception, AtlasLogLevel messageLogLevel, Dictionary<string, string> props)
+        {
+            var propsString = props?.Select(kvp => $"{kvp.Key}: {kvp.Value}").StringJoin(" | ");
+            var messageText = props == null
+                ? exception.ToString()
+                : $"{exception}. Properties: {propsString}";
+            nLogger.Log(GetSeverityLevel(messageLogLevel), messageText);
+        }
+
         private static NLogLevel GetSeverityLevel(AtlasLogLevel logLevel)
         {
             switch (logLevel)

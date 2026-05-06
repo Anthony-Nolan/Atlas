@@ -9,6 +9,7 @@ namespace Atlas.Common.ApplicationInsights
     {
         void SendEvent(EventModel eventModel);
         void SendTrace(string message, LogLevel messageLogLevel = LogLevel.Info, Dictionary<string, string> props = null);
+        void SendException(Exception exception, LogLevel messageLogLevel = LogLevel.Error, Dictionary<string, string> props = null);
     }
 
     public class Logger : ILogger
@@ -36,6 +37,27 @@ namespace Atlas.Common.ApplicationInsights
             if (messageLogLevel >= configuredLogLevel)
             {
                 client.TrackTrace(message, GetSeverityLevel(messageLogLevel), props);
+            }
+        }
+
+        public virtual void SendException(Exception exception, LogLevel messageLogLevel, Dictionary<string, string> props)
+        {
+            if (messageLogLevel >= configuredLogLevel)
+            {
+                var telemetry = new ExceptionTelemetry(exception)
+                {
+                    SeverityLevel = GetSeverityLevel(messageLogLevel)
+                };
+
+                if (props != null)
+                {
+                    foreach (var (key, value) in props)
+                    {
+                        telemetry.Properties[key] = value;
+                    }
+                }
+
+                client.TrackException(telemetry);
             }
         }
 
