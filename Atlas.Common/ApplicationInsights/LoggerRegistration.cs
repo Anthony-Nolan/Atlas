@@ -21,6 +21,9 @@ namespace Atlas.Common.ApplicationInsights
             // (in which case there's no need to repeat), or someone's already registered a more
             // *specific* logger, in which case we actively want to avoid over-writing that registration.
             services.TryAddScoped<ILogger, Logger>();
+
+            // Ensure telemetry is flushed on graceful shutdown to prevent data loss.
+            services.AddHostedService<TelemetryFlushService>();
         }
     }
 }

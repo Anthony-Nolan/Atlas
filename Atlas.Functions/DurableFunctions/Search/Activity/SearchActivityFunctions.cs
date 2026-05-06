@@ -114,6 +114,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         public async Task<IReadOnlyDictionary<int, string>> RunMatchPredictionBatch([ActivityTrigger] string requestLocation)
         {
             var matchProbabilityInput = await matchPredictionRequestBlobClient.DownloadBatchRequest(requestLocation);
+            InitializeLoggingContext(matchProbabilityInput.SearchRequestId);
             return await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(matchProbabilityInput);
         }
 
