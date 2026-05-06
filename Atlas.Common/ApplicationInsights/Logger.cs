@@ -27,7 +27,7 @@ namespace Atlas.Common.ApplicationInsights
         {
             if (eventModel.Level >= configuredLogLevel)
             {
-                eventModel.Properties.Add("LogLevel", $"{eventModel.Level}");
+                eventModel.Properties["LogLevel"] = $"{eventModel.Level}";
                 client.TrackEvent(eventModel.Name, eventModel.Properties, eventModel.Metrics);
             }
         }

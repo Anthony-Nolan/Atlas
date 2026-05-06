@@ -129,7 +129,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
             catch (Exception e)
             {
-                logger.SendTrace($"Failure during orchestration. Exception: {e.Message}, {e.InnerException?.Message}");
+                logger.SendException(e, LogLevel.Error, new Dictionary<string, string>
+                {
+                    { "Stage", "Orchestrator" },
+                    { "SearchRequestId", requestInfo.SearchRequestId }
+                });
 
                 // An unexpected exception occurred in the *orchestration* code. Ensure we send a failure notification
                 requestInfo.StageReached = "Orchestrator";
@@ -247,7 +251,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
             catch (Exception e)
             {
-                logger.SendTrace($"Failure during orchestration. Exception: {e.Message}, {e.InnerException?.Message}");
+                logger.SendException(e, LogLevel.Error, new Dictionary<string, string>
+                {
+                    { "Stage", "Orchestrator" },
+                    { "SearchRequestId", requestInfo.SearchRequestId }
+                });
 
                 // An unexpected exception occurred in the *orchestration* code. Ensure we send a failure notification
                 requestInfo.StageReached = "Orchestrator";
@@ -427,7 +435,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
             catch (Exception e)
             {
-                logger.SendTrace($"Failure at stage: {requestInfo.StageReached}. Exception: {e.Message}, {e.InnerException?.Message}");
+                logger.SendException(e, LogLevel.Error, new Dictionary<string, string>
+                {
+                    { "Stage", requestInfo.StageReached },
+                    { "SearchRequestId", requestInfo.SearchRequestId }
+                });
                 await SendFailureNotification(context, requestInfo);
                 throw new HandledOrchestrationException(e);
             }
