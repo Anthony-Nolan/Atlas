@@ -19,14 +19,14 @@ namespace Atlas.Common.Public.Models.MatchPrediction
         /// In this case, if <see cref="MatchingAlgorithmHlaNomenclatureVersion"/> is `null` (or is identical to the HLA version of the referenced HF set),
         /// then a second HLA lookup will not be attempted, resulting in the individual being deemed "unrepresented".
         /// </summary>
-        public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
+        public string? MatchingAlgorithmHlaNomenclatureVersion { get; set; }
 
         [JsonConstructor]
         public MatchPredictionParameters()
         {
         }
 
-        public MatchPredictionParameters(ISet<Locus> allowedLoci, string matchingAlgorithmHlaNomenclatureVersion = null)
+        public MatchPredictionParameters(ISet<Locus> allowedLoci, string? matchingAlgorithmHlaNomenclatureVersion = null)
         {
             AllowedLoci = allowedLoci;
             MatchingAlgorithmHlaNomenclatureVersion = matchingAlgorithmHlaNomenclatureVersion;

@@ -20,7 +20,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var matchProbabilityInput = DefaultInputBuilder.WithDonorHla(donorHla).WithPatientHla(patientHla).Build();
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.MatchProbabilities.ShouldHavePercentages(expected0Mm, expected1Mm, expected2Mm);
         }

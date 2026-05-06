@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
@@ -27,7 +27,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes);
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             LocusSettings.MatchPredictionLoci.Should()
                 .OnlyContain(l => matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(l) != null, "only excluded loci should be null");
@@ -54,7 +54,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes);
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             lociToExclude.Should()
                 .OnlyContain(l => matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(l) == null, "excluded loci should be null");
@@ -113,7 +113,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes);
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(expectedZeroMismatchProbability);
         }

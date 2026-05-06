@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
@@ -39,7 +39,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             await ImportFrequencies(possibleHaplotypes, "patient-registry", "patient-ethnicity", patientNomenclatureVersion);
             await ImportFrequencies(possibleHaplotypes, "donor-registry", "donor-ethnicity", donorNomenclatureVersion);
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.PatientFrequencySetNomenclatureVersion.Should().Be(patientNomenclatureVersion);
             matchDetails.DonorFrequencySetNomenclatureVersion.Should().Be(donorNomenclatureVersion);
@@ -59,7 +59,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
             var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(1m);
             matchDetails.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0m);
@@ -86,7 +86,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
             var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(1m);
             matchDetails.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0m);
@@ -139,7 +139,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
             var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>(1).SetLocus(Locus.Dpb1, null);
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(0m);
             matchDetails.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0m);
@@ -226,7 +226,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 0m
             );
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(0.008230452674897119341563786m);
             matchDetails.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0.1687242798353909465020576132m);
@@ -317,7 +317,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 0m
             );
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(0.012345679012345679012345679m);
             matchDetails.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0.1975308641975308641975308642m);
@@ -344,7 +344,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDonorHla(donorHla)
                 .Build();
 
-            var matchProbability = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchProbability = await CalculateMatchProbability(matchProbabilityInput);
 
             matchProbability.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(22);
         }
@@ -385,7 +385,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     .WithFrequencyAsPercentage(otherHaplotypeFrequencyAsPercentage),
             });
 
-            var matchProbability = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchProbability = await CalculateMatchProbability(matchProbabilityInput);
 
             matchProbability.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(expectedZeroMismatchPercentage);
         }

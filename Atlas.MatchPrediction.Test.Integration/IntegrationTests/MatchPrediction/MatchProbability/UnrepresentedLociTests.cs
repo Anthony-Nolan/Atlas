@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
@@ -36,7 +36,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>((Probability)null);
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
             var roundedMatchDetails = matchDetails.Round(4);
 
             roundedMatchDetails.MatchProbabilities.ZeroMismatchProbability.Should().Be(null);
@@ -64,7 +64,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>((Probability)null);
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
             var roundedMatchDetails = matchDetails.Round(4);
 
             roundedMatchDetails.MatchProbabilities.ZeroMismatchProbability.Should().Be(null);
@@ -92,7 +92,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>((Probability)null);
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
             var roundedMatchDetails = matchDetails.Round(4);
 
             roundedMatchDetails.MatchProbabilities.ZeroMismatchProbability.Should().Be(null);
