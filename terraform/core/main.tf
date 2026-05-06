@@ -5,13 +5,13 @@ terraform {
 }
 
 locals {
-  repository_name          = "Atlas"
-  environment              = var.ENVIRONMENT
-  location                 = var.LOCATION
-  min_tls_version          = "1.2"
-  resource_group_name      = "${local.environment}-ATLAS-RESOURCE-GROUP"
-  subscription_id          = var.AZURE_SUBSCRIPTION_ID
-  shared_subscription_id   = var.SHARED_SUBSCRIPTION_ID
+  repository_name        = "Atlas"
+  environment            = var.ENVIRONMENT
+  location               = var.LOCATION
+  min_tls_version        = "1.2"
+  resource_group_name    = "${local.environment}-ATLAS-RESOURCE-GROUP"
+  subscription_id        = var.AZURE_SUBSCRIPTION_ID
+  shared_subscription_id = var.SHARED_SUBSCRIPTION_ID
   common_tags = {
     controlled_by_terraform = true
     repository_name         = local.repository_name
@@ -212,6 +212,7 @@ module "match_prediction" {
   IP_RESTRICTION_SETTINGS                                  = var.IP_RESTRICTION_SETTINGS
   MAC_SOURCE                                               = var.MAC_SOURCE
   MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM                = var.MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM
+  MATCH_PREDICTION_WORKER_BATCH_SIZE                       = var.MATCH_PREDICTION_WORKER_BATCH_SIZE
   SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS                  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
   SERVICE_BUS_SEND_RETRY_COUNT                             = var.SERVICE_BUS_SEND_RETRY_COUNT
   WEBSITE_RUN_FROM_PACKAGE                                 = var.WEBSITE_RUN_FROM_PACKAGE

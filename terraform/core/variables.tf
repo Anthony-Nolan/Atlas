@@ -251,6 +251,12 @@ variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
   description = "Maximum number of match prediction requests processed in parallel per function instance. Keep this aligned with worker batch sizing."
 }
 
+variable "MATCH_PREDICTION_WORKER_BATCH_SIZE" {
+  type        = number
+  default     = 8
+  description = "Batch size used by the match prediction worker when receiving service bus messages. Aligned with match prediction request parallelism."
+}
+
 variable "MATCHING_PREDICTION_PROCESSING_BATCH_SIZE" {
   type        = number
   default     = 1000

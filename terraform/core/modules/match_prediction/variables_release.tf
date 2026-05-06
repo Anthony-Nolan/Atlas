@@ -25,6 +25,10 @@ variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
   type = number
 }
 
+variable "MATCH_PREDICTION_WORKER_BATCH_SIZE" {
+  type = number
+}
+
 variable "SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS" {
   type = number
 }
