@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Atlas.Common.Utils.Extensions;
 using Microsoft.ApplicationInsights;
@@ -27,6 +28,13 @@ namespace Atlas.Common.ApplicationInsights
             props ??= new Dictionary<string, string>();
             AdornWithContextProps(props);
             base.SendTrace(message, messageLogLevel, props);
+        }
+
+        public override void SendException(Exception exception, LogLevel messageLogLevel, Dictionary<string, string> props)
+        {
+            props ??= new Dictionary<string, string>();
+            AdornWithContextProps(props);
+            base.SendException(exception, messageLogLevel, props);
         }
 
         private void AdornWithContextProps(IDictionary<string, string> properties)
