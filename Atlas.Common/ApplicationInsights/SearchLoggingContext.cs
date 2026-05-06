@@ -4,7 +4,17 @@ namespace Atlas.Common.ApplicationInsights
 {
     public class SearchLoggingContext : LoggingContext
     {
-        public string SearchRequestId { get; set; }
+        private string searchRequestId;
+
+        public string SearchRequestId
+        {
+            get => searchRequestId;
+            set
+            {
+                searchRequestId = value;
+                SearchRequestContext.SearchRequestId = value;
+            }
+        }
 
         public override Dictionary<string, string> PropertiesToLog()
         {

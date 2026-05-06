@@ -21,6 +21,7 @@ namespace Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging
                 }
 
                 searchRequestId = value;
+                SearchRequestContext.SearchRequestId = value;
             }
         }
 

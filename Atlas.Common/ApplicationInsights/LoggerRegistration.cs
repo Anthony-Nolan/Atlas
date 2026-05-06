@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -24,6 +25,9 @@ namespace Atlas.Common.ApplicationInsights
 
             // Ensure telemetry is flushed on graceful shutdown to prevent data loss.
             services.AddHostedService<TelemetryFlushService>();
+
+            // Stamp SearchRequestId on all telemetry items for end-to-end correlation in Application Insights.
+            services.AddSingleton<ITelemetryInitializer, SearchRequestTelemetryInitializer>();
         }
     }
 }
