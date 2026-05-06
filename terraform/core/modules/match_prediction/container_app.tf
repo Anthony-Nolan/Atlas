@@ -65,18 +65,12 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         name        = "MessagingServiceBus__ConnectionString"
         secret_name = "servicebus-manage-connection-string"
       }
-      env {
-        name  = "MessagingServiceBus__ImportFileSubscription"
-        value = azurerm_servicebus_subscription.haplotype-frequency-file-processor.name
-      }
-      env {
-        name  = "MessagingServiceBus__ImportFileTopic"
-        value = azurerm_servicebus_topic.haplotype-frequency-file-uploads.name
-      }
+
       env {
         name  = "MessagingServiceBus__SendRetryCount"
         value = tostring(var.SERVICE_BUS_SEND_RETRY_COUNT)
       }
+      
       env {
         name  = "MessagingServiceBus__SendRetryCooldownSeconds"
         value = tostring(var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS)
