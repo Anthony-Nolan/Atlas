@@ -65,25 +65,19 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         name        = "MessagingServiceBus__ConnectionString"
         secret_name = "servicebus-manage-connection-string"
       }
-      env {
-        name  = "MessagingServiceBus__ImportFileSubscription"
-        value = azurerm_servicebus_subscription.haplotype-frequency-file-processor.name
-      }
-      env {
-        name  = "MessagingServiceBus__ImportFileTopic"
-        value = azurerm_servicebus_topic.haplotype-frequency-file-uploads.name
-      }
+
       env {
         name  = "MessagingServiceBus__SendRetryCount"
         value = tostring(var.SERVICE_BUS_SEND_RETRY_COUNT)
       }
+      
       env {
         name  = "MessagingServiceBus__SendRetryCooldownSeconds"
         value = tostring(var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS)
       }
 
       env {
-        name  = "MatchPredictionRequests__RequestsSubscription"
+        name  = "MatchPredictionWorker__RequestsSubscription"
         value = azurerm_servicebus_subscription.match-prediction-request-runner.name
       }
       env {
@@ -93,6 +87,14 @@ resource "azurerm_container_app" "atlas_match_prediction" {
       env {
         name  = "MatchPredictionRequests__ResultsTopic"
         value = azurerm_servicebus_topic.match-prediction-results.name
+      }
+      env {
+        name  = "MatchPredictionRequests__MaxParallelism"
+        value = tostring(var.MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM)
+      }
+      env {
+        name  = "MatchPredictionWorker__BatchSize"
+        value = tostring(var.MATCH_PREDICTION_WORKER_BATCH_SIZE)
       }
 
       env {
@@ -123,7 +125,7 @@ resource "azurerm_container_app" "atlas_match_prediction" {
 
       liveness_probe {
         path             = "/health/live"
-        port             = 80
+        port             = 8080
         transport        = "HTTP"
         initial_delay    = 10
         interval_seconds = 30
@@ -131,7 +133,7 @@ resource "azurerm_container_app" "atlas_match_prediction" {
 
       readiness_probe {
         path             = "/health/ready"
-        port             = 80
+        port             = 8080
         transport        = "HTTP"
         interval_seconds = 10
       }
