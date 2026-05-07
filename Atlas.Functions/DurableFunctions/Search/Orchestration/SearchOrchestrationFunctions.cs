@@ -129,11 +129,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
             catch (Exception e)
             {
-                logger.SendException(e, LogLevel.Error, new Dictionary<string, string>
+                if (!context.IsReplaying)
                 {
-                    { "Stage", "Orchestrator" },
-                    { "SearchRequestId", requestInfo.SearchRequestId }
-                });
+                    logger.SendException(e, LogLevel.Error, new Dictionary<string, string>
+                    {
+                        { "Stage", "Orchestrator" },
+                        { "SearchRequestId", requestInfo.SearchRequestId }
+                    });
+                }
 
                 // An unexpected exception occurred in the *orchestration* code. Ensure we send a failure notification
                 requestInfo.StageReached = "Orchestrator";
@@ -251,11 +254,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
             catch (Exception e)
             {
-                logger.SendException(e, LogLevel.Error, new Dictionary<string, string>
+                if (!context.IsReplaying)
                 {
-                    { "Stage", "Orchestrator" },
-                    { "SearchRequestId", requestInfo.SearchRequestId }
-                });
+                    logger.SendException(e, LogLevel.Error, new Dictionary<string, string>
+                    {
+                        { "Stage", "Orchestrator" },
+                        { "SearchRequestId", requestInfo.SearchRequestId }
+                    });
+                }
 
                 // An unexpected exception occurred in the *orchestration* code. Ensure we send a failure notification
                 requestInfo.StageReached = "Orchestrator";
@@ -435,11 +441,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
             catch (Exception e)
             {
-                logger.SendException(e, LogLevel.Error, new Dictionary<string, string>
+                if (!context.IsReplaying)
                 {
-                    { "Stage", requestInfo.StageReached },
-                    { "SearchRequestId", requestInfo.SearchRequestId }
-                });
+                    logger.SendException(e, LogLevel.Error, new Dictionary<string, string>
+                    {
+                        { "Stage", requestInfo.StageReached },
+                        { "SearchRequestId", requestInfo.SearchRequestId }
+                    });
+                }
                 await SendFailureNotification(context, requestInfo);
                 throw new HandledOrchestrationException(e);
             }
