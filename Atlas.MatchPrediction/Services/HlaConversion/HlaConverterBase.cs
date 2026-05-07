@@ -74,13 +74,15 @@ namespace Atlas.MatchPrediction.Services.HlaConversion
                 }
                 catch (HlaMetadataDictionaryException exception)
                 {
-                    logger.SendEvent(new HlaConversionFailureEventModel(
-                        locus,
-                        hla,
-                        hmd.HlaNomenclatureVersion,
-                        input.TargetHlaCategory,
-                        input.StageToLog,
-                        exception));
+                    logger.SendEvent("HLA Conversion Failed", LogLevel.Warn, new Dictionary<string, string>
+                    {
+                        { "Locus", locus.ToString() },
+                        { "Hla", hla },
+                        { "HlaNomenclatureVersion", hmd.HlaNomenclatureVersion },
+                        { nameof(TargetHlaCategory), input.TargetHlaCategory.ToString() },
+                        { "Stage of Failure", input.StageToLog },
+                        { nameof(HlaMetadataDictionaryException), exception.ToString() }
+                    });
 
                     return (false, new List<string>());
                 }

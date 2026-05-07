@@ -8,7 +8,6 @@ using Atlas.Common.ServiceBus;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.FileSchema.Models;
 using Newtonsoft.Json;
-using Atlas.DonorImport.ApplicationInsights;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Atlas.Common.Utils;
@@ -108,7 +107,10 @@ namespace Atlas.DonorImport.Services
             }
             catch (Exception e)
             {
-                logger.SendEvent(new DonorImportMessageSenderFailureEvent(e, stringMessage));
+                logger.SendException(e, LogLevel.Warn, new Dictionary<string, string>
+                {
+                    { "Message", stringMessage }
+                });
             }
         }
 

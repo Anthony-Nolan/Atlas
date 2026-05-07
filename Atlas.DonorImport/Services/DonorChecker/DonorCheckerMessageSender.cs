@@ -5,7 +5,6 @@ using Atlas.Common.ServiceBus;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Newtonsoft.Json;
-using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 
 namespace Atlas.DonorImport.Services.DonorChecker
@@ -51,7 +50,10 @@ namespace Atlas.DonorImport.Services.DonorChecker
             }
             catch (Exception e)
             {
-                logger.SendEvent(new DonorCheckMessageSenderFailureEvent(e, stringMessage));
+                logger.SendException(e, LogLevel.Warn, new Dictionary<string, string>
+                {
+                    { "Message", stringMessage }
+                });
             }
         }
     }

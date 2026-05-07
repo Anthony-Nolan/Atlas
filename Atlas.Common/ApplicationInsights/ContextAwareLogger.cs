@@ -17,10 +17,11 @@ namespace Atlas.Common.ApplicationInsights
             this.loggingContext = loggingContext;
         }
 
-        public override void SendEvent(EventModel eventModel)
+        public override void SendEvent(string name, LogLevel level = LogLevel.Info, Dictionary<string, string> props = null, Dictionary<string, double> metrics = null)
         {
-            AdornWithContextProps(eventModel.Properties);
-            base.SendEvent(eventModel);
+            props ??= new Dictionary<string, string>();
+            AdornWithContextProps(props);
+            base.SendEvent(name, level, props, metrics);
         }
 
         public override void SendTrace(string message, LogLevel messageLogLevel, Dictionary<string, string> props)
