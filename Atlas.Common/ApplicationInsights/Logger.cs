@@ -5,19 +5,19 @@ using Microsoft.ApplicationInsights.DataContracts;
 
 namespace Atlas.Common.ApplicationInsights
 {
-    public interface ILogger
+    public interface IAtlasLogger
     {
         void SendEvent(EventModel eventModel);
         void SendTrace(string message, LogLevel messageLogLevel = LogLevel.Info, Dictionary<string, string> props = null);
         void SendException(Exception exception, LogLevel messageLogLevel = LogLevel.Error, Dictionary<string, string> props = null);
     }
 
-    public class Logger : ILogger
+    public class AtlasLogger : IAtlasLogger
     {
         private readonly TelemetryClient client;
         private readonly LogLevel configuredLogLevel;
 
-        public Logger(TelemetryClient client, ApplicationInsightsSettings applicationInsightsSettings)
+        public AtlasLogger(TelemetryClient client, ApplicationInsightsSettings applicationInsightsSettings)
         {
             this.client = client;
             configuredLogLevel = applicationInsightsSettings.LogLevel.ToLogLevel();

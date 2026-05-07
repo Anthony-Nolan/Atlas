@@ -35,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly ISearchServiceBusClient searchServiceBusClient;
         private readonly ISearchService searchService;
         private readonly ISearchResultsBlobStorageClient resultsBlobStorageClient;
-        private readonly ILogger searchLogger;
+        private readonly IAtlasLogger searchLogger;
         private readonly MatchingAlgorithmSearchLoggingContext searchLoggingContext;
         private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
         private readonly IMatchingFailureNotificationSender matchingFailureNotificationSender;

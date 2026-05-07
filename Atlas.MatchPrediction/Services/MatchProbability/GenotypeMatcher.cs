@@ -57,7 +57,7 @@ internal class GenotypeMatcher : IGenotypeMatcher
 {
     private readonly IGenotypeSetService genotypeSetService;
     private readonly IMatchCalculationService matchCalculationService;
-    private readonly ILogger logger;
+    private readonly IAtlasLogger logger;
 
     public GenotypeMatcher(
         IGenotypeSetService genotypeSetService,

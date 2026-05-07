@@ -15,7 +15,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
     {
         protected readonly string ResultsContainer;
 
-        protected MatchProbabilityResultUploader(AzureStorageSettings azureStorageSettings, ILogger logger) : base(azureStorageSettings.ConnectionString, logger)
+        protected MatchProbabilityResultUploader(AzureStorageSettings azureStorageSettings, IAtlasLogger logger) : base(azureStorageSettings.ConnectionString, logger)
         {
             ResultsContainer = azureStorageSettings.MatchPredictionResultsBlobContainer;
         }

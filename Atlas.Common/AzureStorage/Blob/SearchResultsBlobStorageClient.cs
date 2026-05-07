@@ -14,7 +14,7 @@ namespace Atlas.Common.AzureStorage.Blob
 
     public class SearchResultsBlobStorageClient : BlobUploader, ISearchResultsBlobStorageClient
     {
-        public SearchResultsBlobStorageClient(string connectionString, ILogger logger)
+        public SearchResultsBlobStorageClient(string connectionString, IAtlasLogger logger)
             : base(connectionString, logger)
         {
         }

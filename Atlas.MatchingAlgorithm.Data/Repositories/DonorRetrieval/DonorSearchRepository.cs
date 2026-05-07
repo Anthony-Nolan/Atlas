@@ -40,9 +40,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 
     public class DonorSearchRepository : Repository, IDonorSearchRepository
     {
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
-        public DonorSearchRepository(IConnectionStringProvider connectionStringProvider, ILogger logger) : base(connectionStringProvider)
+        public DonorSearchRepository(IConnectionStringProvider connectionStringProvider, IAtlasLogger logger) : base(connectionStringProvider)
         {
             this.logger = logger;
         }

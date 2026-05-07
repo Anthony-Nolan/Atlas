@@ -31,7 +31,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         private readonly IMatchingResultsDownloader matchingResultsDownloader;
         private readonly ISearchResultsBlobStorageClient searchResultsBlobUploader;
         private readonly IResultsCombiner resultsCombiner;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly IMatchPredictionRequestBlobClient matchPredictionRequestBlobClient;
         private readonly SearchLoggingContext loggingContext;
         private readonly AzureStorageSettings azureStorageSettings;

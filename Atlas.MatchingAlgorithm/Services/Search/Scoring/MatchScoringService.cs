@@ -42,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             IScoreResultAggregator scoreResultAggregator,
             IMatchingAlgorithmSearchLogger searchLogger,
             IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator,
-            ILogger logger,
+            IAtlasLogger logger,
             IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher)
             : base(
                 factory,

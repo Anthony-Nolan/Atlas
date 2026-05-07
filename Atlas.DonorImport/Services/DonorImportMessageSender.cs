@@ -24,11 +24,11 @@ namespace Atlas.DonorImport.Services
     internal sealed class DonorImportMessageSender : IDonorImportMessageSender, IAsyncDisposable
     {
         private readonly ITopicClient topicClient;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly int sendRetryCount;
         private readonly int sendRetryCooldownSeconds;
 
-        public DonorImportMessageSender(ILogger logger, [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings)
+        public DonorImportMessageSender(IAtlasLogger logger, [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings)
         {
             this.logger = logger;
             topicClient = topicClientFactory.BuildTopicClient(messagingServiceBusSettings.DonorImportResultsTopic);

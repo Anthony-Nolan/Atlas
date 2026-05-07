@@ -48,7 +48,7 @@ namespace Atlas.MatchPrediction.Services.HlaConversion
 
     internal abstract class HlaConverterBase : IHlaConverter
     {
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
         protected HlaConverterBase(
             // ReSharper disable once SuggestBaseTypeForParameterInConstructor

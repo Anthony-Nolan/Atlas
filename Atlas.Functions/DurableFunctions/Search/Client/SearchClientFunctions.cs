@@ -19,9 +19,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
     /// </summary>
     public class SearchClientFunctions
     {
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
-        public SearchClientFunctions(ILogger logger)
+        public SearchClientFunctions(IAtlasLogger logger)
         {
             this.logger = logger;
         }

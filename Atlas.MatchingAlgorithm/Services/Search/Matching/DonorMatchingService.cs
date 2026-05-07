@@ -39,7 +39,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         private readonly IMatchCriteriaAnalyser matchCriteriaAnalyser;
         private readonly IPerLocusDonorMatchingService perLocusDonorMatchingService;
         private readonly MatchingConfigurationSettings matchingConfigurationSettings;
-        private readonly ILogger searchLogger;
+        private readonly IAtlasLogger searchLogger;
 
         public DonorMatchingService(
             IMatchFilteringService matchFilteringService,

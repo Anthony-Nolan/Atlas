@@ -21,9 +21,9 @@ namespace Atlas.DonorImport.Services.DonorChecker
     internal sealed class DonorCheckerMessageSender : IDonorInfoCheckerMessageSender, IDonorIdCheckerMessageSender, IAsyncDisposable
     {
         private readonly ITopicClient topicClient;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
-        public DonorCheckerMessageSender(ILogger logger, ITopicClientFactory topicClientFactory, string topicName)
+        public DonorCheckerMessageSender(IAtlasLogger logger, ITopicClientFactory topicClientFactory, string topicName)
         {
             this.logger = logger;
             topicClient = topicClientFactory.BuildTopicClient(topicName);

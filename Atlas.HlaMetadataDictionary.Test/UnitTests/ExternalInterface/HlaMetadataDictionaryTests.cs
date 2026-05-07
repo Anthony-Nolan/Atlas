@@ -29,7 +29,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         private ISerologyToAllelesMetadataService serologyToAllelesMetadataService;
         private IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
-        private ILogger logger;
+        private IAtlasLogger logger;
 
         private IHlaMetadataDictionary hlaMetadataDictionary;
 
@@ -48,7 +48,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
             serologyToAllelesMetadataService = Substitute.For<ISerologyToAllelesMetadataService>();
             hlaMetadataGenerationOrchestrator = Substitute.For<IHlaMetadataGenerationOrchestrator>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IAtlasLogger>();
 
             hlaMetadataDictionary = new HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary(
                 DefaultVersion,

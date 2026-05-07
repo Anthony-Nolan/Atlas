@@ -30,7 +30,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
         private IDonorInfoCheckerBlobStorageClient blobStorageClient;
         private IDonorInfoCheckerMessageSender messageSender;
         private INotificationSender notificationSender;
-        private ILogger logger;
+        private IAtlasLogger logger;
         private IDonorUpdateMapper donorUpdateMapper;
 
         private IDonorInfoChecker donorInfoChecker;
@@ -43,7 +43,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
             blobStorageClient = Substitute.For<IDonorInfoCheckerBlobStorageClient>();
             messageSender = Substitute.For<IDonorInfoCheckerMessageSender>();
             notificationSender = Substitute.For<INotificationSender>();
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IAtlasLogger>();
             donorUpdateMapper = Substitute.For<IDonorUpdateMapper>();
             donorUpdateMapper.MapToDatabaseDonor(Arg.Any<DonorUpdate>(), Arg.Any<string>()).Returns(new Donor());
 

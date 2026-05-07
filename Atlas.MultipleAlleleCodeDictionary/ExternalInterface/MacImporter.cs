@@ -22,10 +22,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
 
         private readonly IMacRepository macRepository;
         private readonly IMacFetcher macFetcher;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly INotificationSender notificationSender;
 
-        public MacImporter(IMacRepository macRepository, IMacFetcher macFetcher, ILogger logger, INotificationSender notificationSender)
+        public MacImporter(IMacRepository macRepository, IMacFetcher macFetcher, IAtlasLogger logger, INotificationSender notificationSender)
         {
             this.macRepository = macRepository;
             this.macFetcher = macFetcher;

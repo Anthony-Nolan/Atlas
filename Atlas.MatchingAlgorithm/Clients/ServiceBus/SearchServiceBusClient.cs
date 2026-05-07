@@ -27,9 +27,9 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
         private readonly string resultsNotificationTopicName;
         private readonly int sendRetryCount;
         private readonly int sendRetryCooldownSeconds;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
-        public SearchServiceBusClient([FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings, ILogger logger)
+        public SearchServiceBusClient([FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings, IAtlasLogger logger)
         {
             this.topicClientFactory = topicClientFactory;
 

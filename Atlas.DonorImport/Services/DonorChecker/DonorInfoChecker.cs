@@ -28,10 +28,10 @@ namespace Atlas.DonorImport.Services.DonorChecker
         private readonly IDonorInfoCheckerBlobStorageClient blobStorageClient;
         private readonly IDonorInfoCheckerMessageSender messageSender;
         private readonly INotificationSender notificationSender;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly IDonorUpdateMapper donorUpdateMapper;
 
-        public DonorInfoChecker(IDonorImportFileParser fileParser, IDonorReadRepository donorReadRepository, IDonorInfoCheckerBlobStorageClient blobStorageClient, IDonorInfoCheckerMessageSender messageSender, INotificationSender notificationSender, ILogger logger, IDonorUpdateMapper donorUpdateMapper)
+        public DonorInfoChecker(IDonorImportFileParser fileParser, IDonorReadRepository donorReadRepository, IDonorInfoCheckerBlobStorageClient blobStorageClient, IDonorInfoCheckerMessageSender messageSender, INotificationSender notificationSender, IAtlasLogger logger, IDonorUpdateMapper donorUpdateMapper)
         {
             this.fileParser = fileParser;
             this.donorReadRepository = donorReadRepository;

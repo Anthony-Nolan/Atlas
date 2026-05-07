@@ -23,11 +23,11 @@ namespace Atlas.Common.Notifications
     internal class NotificationSender : INotificationSender
     {
         private readonly INotificationsClient notificationsClient;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
         public NotificationSender(
             INotificationsClient notificationsClient,
-            ILogger logger)
+            IAtlasLogger logger)
         {
             this.notificationsClient = notificationsClient;
             this.logger = logger;

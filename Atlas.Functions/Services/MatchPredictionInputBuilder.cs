@@ -23,7 +23,7 @@ namespace Atlas.Functions.Services
 
     internal class MatchPredictionInputBuilder : IMatchPredictionInputBuilder
     {
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly IDonorInputBatcher donorInputBatcher;
         private readonly int matchPredictionBatchSize;
 

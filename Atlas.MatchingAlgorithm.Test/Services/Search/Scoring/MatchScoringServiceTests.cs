@@ -83,7 +83,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
                 scoreResultAggregator,
                 Substitute.For<IMatchingAlgorithmSearchLogger>(),
                 Substitute.For<IDpb1TceGroupMatchCalculator>(),
-                Substitute.For<ILogger>(),
+                Substitute.For<IAtlasLogger>(),
                 matchingAlgorithmSearchTrackingDispatcher
             );
         }

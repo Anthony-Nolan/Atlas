@@ -60,7 +60,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
         private readonly IFrequencySetImporter frequencySetImporter;
         private readonly INotificationSender notificationSender;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly IFrequencyConsolidator frequencyConsolidator;
         private readonly IHaplotypeFrequencySetRepository frequencySetRepository;
         private readonly IHaplotypeFrequenciesRepository frequencyRepository;

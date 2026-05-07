@@ -32,7 +32,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         private static readonly TaskOptions RetryOptions =
             new(new TaskRetryOptions(new RetryPolicy(5, TimeSpan.FromSeconds(5), backoffCoefficient: 2)));
 
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly IMapper mapper;
         private readonly SearchLoggingContext loggingContext;
         private readonly int matchPredictionProcessingBatchSize;

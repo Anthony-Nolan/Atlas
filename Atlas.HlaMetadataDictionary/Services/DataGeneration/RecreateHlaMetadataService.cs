@@ -28,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
         private readonly IHlaNameToSmallGGroupLookupRepository hlaNameToSmallGGroupLookupRepository;
         private readonly ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository;
         private readonly ISerologyToAllelesMetadataRepository serologyToAllelesMetadataRepository;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
         public RecreateHlaMetadataService(
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
@@ -41,7 +41,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             IHlaNameToSmallGGroupLookupRepository hlaNameToSmallGGroupLookupRepository,
             ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository,
             ISerologyToAllelesMetadataRepository serologyToAllelesMetadataRepository,
-            ILogger logger)
+            IAtlasLogger logger)
         {
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.alleleNamesMetadataRepository = alleleNamesMetadataRepository;
