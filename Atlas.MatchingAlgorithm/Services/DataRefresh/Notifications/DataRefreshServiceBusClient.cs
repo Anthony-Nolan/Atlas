@@ -26,11 +26,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications
         private readonly ITopicClient completionTopicClient;
         private readonly int sendRetryCount;
         private readonly int sendRetryCooldownSeconds;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
         public DataRefreshServiceBusClient(
             [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory,
-            DataRefreshSettings dataRefreshSettings, ILogger logger)
+            DataRefreshSettings dataRefreshSettings, IAtlasLogger logger)
         {
             requestTopicClient = topicClientFactory.BuildTopicClient(dataRefreshSettings.RequestsTopic);
             completionTopicClient = topicClientFactory.BuildTopicClient(dataRefreshSettings.CompletionTopic);

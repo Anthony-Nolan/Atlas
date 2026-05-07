@@ -63,7 +63,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         public DonorImportRepository(
             IHlaNamesRepository hlaNamesRepository,
             IConnectionStringProvider connectionStringProvider,
-            ILogger logger) : base(connectionStringProvider, logger)
+            IAtlasLogger logger) : base(connectionStringProvider, logger)
         {
         }
 

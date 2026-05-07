@@ -35,7 +35,7 @@ namespace Atlas.DonorImport.Services
         private readonly IDonorImportLogService donorLogService;
         private readonly IDonorUpdateCategoriser donorUpdateCategoriser;
         private readonly DonorImportLoggingContext loggingContext;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly IDonorImportMessageSender donorImportMessageSender;
         private readonly DonorImportSettings settings;
 

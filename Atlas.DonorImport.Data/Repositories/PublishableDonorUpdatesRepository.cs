@@ -23,9 +23,9 @@ namespace Atlas.DonorImport.Data.Repositories
 
     public class PublishableDonorUpdatesRepository : BulkInsertRepository<PublishableDonorUpdate>, IPublishableDonorUpdatesRepository
     {
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
-       public PublishableDonorUpdatesRepository(string connectionString, ILogger logger) : base(connectionString, PublishableDonorUpdate.QualifiedTableName)
+       public PublishableDonorUpdatesRepository(string connectionString, IAtlasLogger logger) : base(connectionString, PublishableDonorUpdate.QualifiedTableName)
        {
            this.logger = logger;
        }

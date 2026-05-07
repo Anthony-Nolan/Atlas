@@ -38,11 +38,11 @@ namespace Atlas.DonorImport.Services
 
     internal class DonorUpdateCategoriser : IDonorUpdateCategoriser
     {
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly IDonorReadRepository donorReadRepository;
         private readonly IDonorImportFailureRepository donorImportFailureRepository;
 
-        public DonorUpdateCategoriser(ILogger logger, IDonorReadRepository donorReadRepository, IDonorImportFailureRepository donorImportFailureRepository)
+        public DonorUpdateCategoriser(IAtlasLogger logger, IDonorReadRepository donorReadRepository, IDonorImportFailureRepository donorImportFailureRepository)
         {
             this.logger = logger;
             this.donorReadRepository = donorReadRepository;

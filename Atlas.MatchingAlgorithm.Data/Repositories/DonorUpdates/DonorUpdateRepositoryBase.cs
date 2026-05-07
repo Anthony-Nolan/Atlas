@@ -27,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 {
     public abstract class DonorUpdateRepositoryBase : Repository
     {
-        protected readonly ILogger logger;
+        protected readonly IAtlasLogger logger;
 
         // The order of these matters when setting up the datatable - if re-ordering, also re-order datatable contents
         private readonly string[] donorInsertDataTableColumnNames =
@@ -61,7 +61,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             "HlaNameId"
         };
 
-        protected DonorUpdateRepositoryBase(IConnectionStringProvider connectionStringProvider, ILogger logger) : base(connectionStringProvider)
+        protected DonorUpdateRepositoryBase(IConnectionStringProvider connectionStringProvider, IAtlasLogger logger) : base(connectionStringProvider)
         {
             this.logger = logger;
         }

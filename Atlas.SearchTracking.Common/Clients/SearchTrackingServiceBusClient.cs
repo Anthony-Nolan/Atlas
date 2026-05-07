@@ -23,9 +23,9 @@ namespace Atlas.SearchTracking.Common.Clients
         private readonly string searchTrackingTopicName;
         private readonly int sendRetryCount;
         private readonly int sendRetryCooldownSeconds;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
-        public SearchTrackingServiceBusClient(SearchTrackingServiceBusSettings searchTrackingServiceBusSettings, ILogger logger)
+        public SearchTrackingServiceBusClient(SearchTrackingServiceBusSettings searchTrackingServiceBusSettings, IAtlasLogger logger)
         {
             connectionString = searchTrackingServiceBusSettings.ConnectionString;
             searchTrackingTopicName = searchTrackingServiceBusSettings.SearchTrackingTopic;

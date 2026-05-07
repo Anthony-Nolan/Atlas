@@ -11,7 +11,7 @@ namespace Atlas.Common.AzureStorage.Blob
 
     public class BlobStreamer : AzureStorageBlobClient, IBlobStreamer
     {
-        public BlobStreamer(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString, logger, "Stream")
+        public BlobStreamer(string azureStorageConnectionString, IAtlasLogger logger) : base(azureStorageConnectionString, logger, "Stream")
         {
         }
 

@@ -31,11 +31,11 @@ namespace Atlas.DonorImport.Services.DonorChecker
         private readonly IDonorIdCheckerBlobStorageClient blobStorageClient;
         private readonly IDonorIdCheckerMessageSender messageSender;
         private readonly INotificationSender notificationSender;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
         private Dictionary<string, bool> loadedExternalDonorCodes;
 
-        public DonorIdChecker(IDonorIdCheckerFileParser fileParser, IDonorReadRepository donorReadRepository, IDonorIdCheckerBlobStorageClient blobStorageClient, IDonorIdCheckerMessageSender messageSender, INotificationSender notificationSender, ILogger logger)
+        public DonorIdChecker(IDonorIdCheckerFileParser fileParser, IDonorReadRepository donorReadRepository, IDonorIdCheckerBlobStorageClient blobStorageClient, IDonorIdCheckerMessageSender messageSender, INotificationSender notificationSender, IAtlasLogger logger)
         {
             this.fileParser = fileParser;
             this.donorReadRepository = donorReadRepository;

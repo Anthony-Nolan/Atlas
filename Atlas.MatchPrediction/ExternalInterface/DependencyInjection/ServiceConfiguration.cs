@@ -89,7 +89,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             {
                 var serviceBusSettings = messagingServiceBusSettings(sp);
                 var matchPredictionRequestsSettings = matchPredictionRequestSettings(sp);
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<IAtlasLogger>();
                 var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
                 return new MessageBatchPublisher<IdentifiedMatchPredictionRequest>(topicClientFactory, matchPredictionRequestsSettings.RequestsTopic,
                     serviceBusSettings.SendRetryCount, serviceBusSettings.SendRetryCooldownSeconds, logger);
@@ -111,7 +111,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             {
                 var serviceBusSettings = messagingServiceBusSettings(sp);
                 var matchPredictionRequestsSettings = matchPredictionRequestSettings(sp);
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<IAtlasLogger>();
                 var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
                 return new MessageBatchPublisher<MatchPredictionResultLocation>(topicClientFactory, matchPredictionRequestsSettings.ResultsTopic,
                     serviceBusSettings.SendRetryCount, serviceBusSettings.SendRetryCooldownSeconds, logger);

@@ -9,11 +9,11 @@ namespace Atlas.Common.AzureStorage.Blob
     public abstract class AzureStorageBlobClient
     {
         private readonly BlobServiceClient blobClient;
-        protected readonly ILogger logger;
+        protected readonly IAtlasLogger logger;
 
         private readonly string logLabel;
 
-        protected AzureStorageBlobClient(string azureStorageConnectionString, ILogger logger, string logLabel)
+        protected AzureStorageBlobClient(string azureStorageConnectionString, IAtlasLogger logger, string logLabel)
         {
             blobClient = new BlobServiceClient(azureStorageConnectionString);
             this.logger = logger;

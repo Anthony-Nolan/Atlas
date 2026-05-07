@@ -24,13 +24,13 @@ namespace Atlas.DonorImport.Models.Mapping
     internal class ImportedLocusInterpreter : IImportedLocusInterpreter
     {
         private readonly IHlaCategorisationService categoriser;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private Dictionary<string, string> currentInterpretationContext;
         private const string contextHlaKey = "HLA";
         private const string contextPositionKey = "Position";
         private const string NewAllele = "NEW";
 
-        public ImportedLocusInterpreter(IHlaCategorisationService hlaCategoriser, ILogger logger)
+        public ImportedLocusInterpreter(IHlaCategorisationService hlaCategoriser, IAtlasLogger logger)
         {
             categoriser = hlaCategoriser;
             this.logger = logger;

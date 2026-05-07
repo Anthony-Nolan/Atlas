@@ -7,7 +7,6 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 using Logger = NLog.Logger;
-using IAtlasLogger = Atlas.Common.ApplicationInsights.ILogger;
 using NLogLevel = NLog.LogLevel;
 using AtlasLogLevel = Atlas.Common.ApplicationInsights.LogLevel;
 

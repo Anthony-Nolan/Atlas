@@ -15,13 +15,13 @@ namespace Atlas.Common.Test.Notifications
     {
         private INotificationSender sender;
         private INotificationsClient client;
-        private ILogger logger;
+        private IAtlasLogger logger;
 
         [SetUp]
         public void SetUp()
         {
             client = Substitute.For<INotificationsClient>();
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IAtlasLogger>();
 
             sender = new NotificationSender(client, logger);
         }

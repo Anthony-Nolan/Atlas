@@ -116,7 +116,7 @@ namespace Atlas.Functions
             services.AddScoped<ISearchResultsBlobStorageClient, SearchResultsBlobStorageClient>(sp =>
             {
                 var settings = sp.GetService<IOptions<Settings.AzureStorageSettings>>().Value;
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<IAtlasLogger>();
                 return new SearchResultsBlobStorageClient(settings.MatchingConnectionString, logger);
             });
 

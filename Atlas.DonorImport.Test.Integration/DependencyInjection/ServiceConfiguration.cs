@@ -99,7 +99,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
             services.AddScoped(sp => mockTopicClientFactory);
             #endregion
 
-            services.AddScoped(sp => Substitute.For<ILogger>());
+            services.AddScoped(sp => Substitute.For<IAtlasLogger>());
             services.AddScoped(sp => Substitute.For<IMessageBatchPublisher<SearchableDonorUpdate>>());
         }
 

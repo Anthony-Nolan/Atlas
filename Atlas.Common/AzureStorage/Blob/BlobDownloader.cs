@@ -54,7 +54,7 @@ namespace Atlas.Common.AzureStorage.Blob
     {
         private readonly JsonSerializer serializer;
 
-        public BlobDownloader(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString, logger, "Download")
+        public BlobDownloader(string azureStorageConnectionString, IAtlasLogger logger) : base(azureStorageConnectionString, logger, "Download")
         {
             serializer = new JsonSerializer();
         }

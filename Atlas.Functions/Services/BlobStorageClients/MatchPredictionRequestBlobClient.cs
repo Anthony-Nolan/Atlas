@@ -22,7 +22,7 @@ namespace Atlas.Functions.Services.BlobStorageClients
         private readonly IBlobDownloader blobDownloader;
         private readonly string container;
 
-        public MatchPredictionRequestBlobClient(IOptions<AzureStorageSettings> azureStorageSettings, ILogger logger)
+        public MatchPredictionRequestBlobClient(IOptions<AzureStorageSettings> azureStorageSettings, IAtlasLogger logger)
         {
             blobDownloader = new BlobDownloader(azureStorageSettings.Value.MatchPredictionConnectionString, logger);
             blobUploader = new BlobUploader(azureStorageSettings.Value.MatchPredictionConnectionString, logger);

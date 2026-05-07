@@ -22,7 +22,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
         private IMacImporter macImporter;
         private IMacFetcher mockFetcher;
         private IMacRepository mockRepository;
-        private ILogger mockLogger;
+        private IAtlasLogger mockLogger;
         private INotificationSender mockNotificationSender;
 
         [SetUp]
@@ -32,7 +32,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
             {
                 mockFetcher = Substitute.For<IMacFetcher>();
                 mockRepository = Substitute.For<IMacRepository>();
-                mockLogger = Substitute.For<ILogger>();
+                mockLogger = Substitute.For<IAtlasLogger>();
                 mockNotificationSender = Substitute.For<INotificationSender>();
                 macImporter = new MacImporter(mockRepository, mockFetcher, mockLogger, mockNotificationSender);
             });

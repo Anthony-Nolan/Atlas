@@ -18,7 +18,7 @@ namespace Atlas.DonorImport.Test.Services
     internal class DonorUpdateCategoriserTests
     {
         private IDonorUpdateCategoriser categoriser;
-        private ILogger logger;
+        private IAtlasLogger logger;
         private IDonorReadRepository donorReadRepository;
         private IDonorImportFailureRepository donorImportFailureRepository;
 
@@ -26,7 +26,7 @@ namespace Atlas.DonorImport.Test.Services
         [SetUp]
         public void SetUp()
         {
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IAtlasLogger>();
             donorReadRepository = Substitute.For<IDonorReadRepository>();
             donorImportFailureRepository = Substitute.For<IDonorImportFailureRepository>();
             categoriser = new DonorUpdateCategoriser(logger, donorReadRepository, donorImportFailureRepository);

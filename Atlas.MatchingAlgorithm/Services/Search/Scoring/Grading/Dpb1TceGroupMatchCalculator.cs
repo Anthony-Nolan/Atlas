@@ -22,7 +22,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
         private readonly IHlaCategorisationService categoriser;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
         private const string TceGroup1 = "1";
         private const string TceGroup2 = "2";
@@ -124,7 +124,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
             IHlaMetadataDictionaryFactory hmdFactory,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IHlaCategorisationService categoriser,
-            ILogger logger)
+            IAtlasLogger logger)
         {
             hlaMetadataDictionary = hmdFactory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
             this.categoriser = categoriser;

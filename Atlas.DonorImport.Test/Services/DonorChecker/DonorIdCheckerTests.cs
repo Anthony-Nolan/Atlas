@@ -32,7 +32,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
         private IDonorIdCheckerBlobStorageClient blobStorageClient;
         private IDonorIdCheckerMessageSender messageSender;
         private INotificationSender notificationSender;
-        private ILogger logger;
+        private IAtlasLogger logger;
         private ILazilyParsingDonorIdFile donorIdFile;
 
         private IDonorIdChecker donorIdChecker;
@@ -45,7 +45,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
             blobStorageClient = Substitute.For<IDonorIdCheckerBlobStorageClient>();
             messageSender = Substitute.For<IDonorIdCheckerMessageSender>();
             notificationSender = Substitute.For<INotificationSender>();
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IAtlasLogger>();
 
             donorIdFile = Substitute.For<ILazilyParsingDonorIdFile>();
             donorIdFile.ReadLazyDonorIds().Returns(Enumerable.Empty<string>());

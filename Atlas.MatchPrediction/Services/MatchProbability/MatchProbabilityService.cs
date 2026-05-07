@@ -33,7 +33,7 @@ internal class MatchProbabilityService : IMatchProbabilityService
     private readonly IGenotypeMatcher genotypeMatcher;
     private readonly IMatchProbabilityCalculator matchProbabilityCalculator;
     private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
-    private readonly ILogger logger;
+    private readonly IAtlasLogger logger;
     private readonly MatchProbabilityLoggingContext matchProbabilityLoggingContext;
 
     private record FrequencySets(SubjectFrequencySet Patient, SubjectFrequencySet Donor);

@@ -5,7 +5,7 @@ using Microsoft.ApplicationInsights;
 
 namespace Atlas.Common.ApplicationInsights
 {
-    public class ContextAwareLogger<TLogContext> : Logger where TLogContext: LoggingContext
+    public class ContextAwareLogger<TLogContext> : AtlasLogger where TLogContext: LoggingContext
     {
         private readonly TLogContext loggingContext;
 

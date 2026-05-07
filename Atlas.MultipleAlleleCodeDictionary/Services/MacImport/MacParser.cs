@@ -17,9 +17,9 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImport
 
     internal class MacLineParser : IMacParser
     {
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
-        public MacLineParser(ILogger logger)
+        public MacLineParser(IAtlasLogger logger)
         {
             this.logger = logger;
         }

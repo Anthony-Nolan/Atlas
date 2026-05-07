@@ -263,7 +263,7 @@ namespace Atlas.DonorImport.Test.Services
             public static LocusInterpretationTestPerformer NewTestCase => new LocusInterpretationTestPerformer();
             private ImportedLocus locus = new ImportedLocus();
             private IHlaCategorisationService categoriser = null;
-            private ILogger logger = Substitute.For<ILogger>();
+            private IAtlasLogger logger = Substitute.For<IAtlasLogger>();
 
             public LocusInterpretationTestPerformer WithCategoriser(IHlaCategorisationService categoriser)
             {
