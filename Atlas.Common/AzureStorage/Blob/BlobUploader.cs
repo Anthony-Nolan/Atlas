@@ -22,41 +22,36 @@ namespace Atlas.Common.AzureStorage.Blob
 
         public async Task Upload<T>(string container, string filename, T fileContents)
         {
-            var azureStorageEventModel = StartAzureStorageCommunication(filename, container);
-
-            var containerClient = await CreateAndGetBlobContainer(container);
-            await UploadBlob(containerClient, filename, fileContents);
-
-            EndAzureStorageCommunication(azureStorageEventModel);
+            await TimedCommunication(filename, container, async () =>
+            {
+                var containerClient = await CreateAndGetBlobContainer(container);
+                await UploadBlob(containerClient, filename, fileContents);
+            });
         }
 
         public async Task ChunkAndUpload<T>(IEnumerable<T> list, int batchSize, string blobContainer, string blobFolder)
         {
-            var azureStorageEventModel = StartAzureStorageCommunication(blobFolder, blobContainer);
-
-            var containerClient = await CreateAndGetBlobContainer(blobContainer);
-
-            var batchNumber = 0;
-            foreach (var batch in list.Batch(batchSize))
+            await TimedCommunication(blobFolder, blobContainer, async () =>
             {
-                await UploadBlob(containerClient, $"{blobFolder}/{++batchNumber}.json", batch);
-            }
-
-            EndAzureStorageCommunication(azureStorageEventModel);
+                var containerClient = await CreateAndGetBlobContainer(blobContainer);
+                var batchNumber = 0;
+                foreach (var batch in list.Batch(batchSize))
+                {
+                    await UploadBlob(containerClient, $"{blobFolder}/{++batchNumber}.json", batch);
+                }
+            });
         }
 
         public async Task UploadMultiple<T>(string blobContainer, Dictionary<string, T> fileContentsWithNames)
         {
-            var azureStorageEventModel = StartAzureStorageCommunication(blobContainer, blobContainer);
-
-            var containerClient = await CreateAndGetBlobContainer(blobContainer);
-
-            foreach (var file in fileContentsWithNames)
+            await TimedCommunication(blobContainer, blobContainer, async () =>
             {
-                await UploadBlob(containerClient, file.Key, file.Value);
-            }
-
-            EndAzureStorageCommunication(azureStorageEventModel);
+                var containerClient = await CreateAndGetBlobContainer(blobContainer);
+                foreach (var file in fileContentsWithNames)
+                {
+                    await UploadBlob(containerClient, file.Key, file.Value);
+                }
+            });
         }
 
         private async Task UploadBlob<T>(BlobContainerClient containerClient, string filename, T fileContents)

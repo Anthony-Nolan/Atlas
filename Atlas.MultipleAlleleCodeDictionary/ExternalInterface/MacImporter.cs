@@ -68,7 +68,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
             {
                 await notificationSender.SendAlert("MAC Import failed", "Failed to import MACs, check AI logs for error details.", Priority.High,
                     nameof(MacImporter));
-                logger.SendEvent(new ErrorEventModel($"{TracePrefix}Failed to finish MAC Import", e));
+                logger.SendException(e);
                 throw;
             }
 

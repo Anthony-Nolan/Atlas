@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
@@ -133,7 +134,7 @@ namespace Atlas.MatchPrediction.Test.Services
 
             await converter.ConvertHlaWithLoggingAndRetryOnFailure(input, DefaultLocus, HlaName);
 
-            logger.DidNotReceiveWithAnyArgs().SendEvent(default);
+            logger.DidNotReceiveWithAnyArgs().SendEvent(Arg.Any<string>(), Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>(), Arg.Any<Dictionary<string, double>>());
         }
 
         [Test]
@@ -186,7 +187,7 @@ namespace Atlas.MatchPrediction.Test.Services
 
             await converter.ConvertHlaWithLoggingAndRetryOnFailure(input, DefaultLocus, HlaName);
 
-            logger.Received(1).SendEvent(Arg.Any<HlaConversionFailureEventModel>());
+            logger.Received(1).SendEvent(Arg.Any<string>(), Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>(), Arg.Any<Dictionary<string, double>>());
         }
 
         [Test]
@@ -297,7 +298,7 @@ namespace Atlas.MatchPrediction.Test.Services
 
             await converter.ConvertHlaWithLoggingAndRetryOnFailure(input, DefaultLocus, HlaName);
 
-            logger.Received(2).SendEvent(Arg.Any<HlaConversionFailureEventModel>());
+            logger.Received(2).SendEvent(Arg.Any<string>(), Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>(), Arg.Any<Dictionary<string, double>>());
         }
 
         [Test]

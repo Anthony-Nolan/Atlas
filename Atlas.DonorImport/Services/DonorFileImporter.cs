@@ -6,7 +6,6 @@ using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.Common.Utils.Extensions;
-using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.ExternalInterface.Settings;
@@ -14,9 +13,6 @@ using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Logger;
 using Dasync.Collections;
 using MoreLinq;
-using static Atlas.DonorImport.Services.DonorUpdateCategoriser;
-
-// ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
 
 namespace Atlas.DonorImport.Services
 {
@@ -153,9 +149,13 @@ namespace Atlas.DonorImport.Services
                 await donorImportFileHistoryService.RegisterUnexpectedDonorImportError(file);
                 await SendFailedImportMessage(file.FileLocation, e.Message);
 
-                var donorImportEventModel = new DonorImportFailureEventModel(file, e, importedDonorCount, lazyFile);
-
-                logger.SendEvent(donorImportEventModel);
+                logger.SendException(e, LogLevel.Warn, new Dictionary<string, string>
+                {
+                    { nameof(file.FileLocation), file.FileLocation },
+                    { "ImportedDonorCount", importedDonorCount.ToString() },
+                    { "ParsedDonorCount", lazyFile?.ParsedDonorCount.ToString() },
+                    { "LastDonorCodeParsed", lazyFile?.LastSuccessfullyParsedDonorCode }
+                });
 
                 throw;
             }

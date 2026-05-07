@@ -12,6 +12,7 @@ using LazyCache;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.SupportMessages;
@@ -19,6 +20,7 @@ using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
+using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 using HaplotypeHla = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
@@ -251,7 +253,18 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         {
             var successName = $"{SupportSummaryPrefix} Succeeded";
 
-            logger.SendEvent(new HaplotypeFrequencySetImportEventModel(successName, file));
+            var timeSpan = file.ImportedDateTime - file.UploadedDateTime;
+            var durationMs = timeSpan == null
+                ? "Unknown"
+                : ((int)Math.Round(timeSpan.Value.TotalMilliseconds)).ToString();
+
+            logger.SendEvent(successName, LogLevel.Info, new Dictionary<string, string>
+            {
+                { nameof(file.FileName), file.FileName },
+                { "TotalImportDurationInMs", durationMs },
+                { nameof(file.UploadedDateTime), file.UploadedDateTime?.UtcDateTime.ToString(CultureInfo.InvariantCulture) + " UTC" },
+                { nameof(file.ImportedDateTime), file.ImportedDateTime?.UtcDateTime.ToString(CultureInfo.InvariantCulture) + " UTC" }
+            });
 
             await notificationSender.SendNotification(
                 successName,
@@ -271,7 +284,10 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         {
             var errorName = $"{SupportSummaryPrefix} Failure";
 
-            logger.SendEvent(new FileErrorEventModel(file.FileName, errorName, ex));
+            logger.SendException(ex, LogLevel.Error, new Dictionary<string, string>
+            {
+                { "FileName", file.FileName },
+            });
 
             await notificationSender.SendAlert(
                 errorName,

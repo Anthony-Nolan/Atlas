@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.FileSchema.Models;
@@ -58,7 +57,7 @@ namespace Atlas.DonorImport.Test.Services
 
             result.ValidDonors.Should().BeEmpty();
             result.InvalidDonors.Should().HaveCount(noHlaCount + noDrb1Count);
-            logger.Received(2).SendEvent(Arg.Any<SearchableDonorValidationErrorEventModel>());
+            logger.Received(2).SendEvent(Arg.Any<string>(), Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>(), Arg.Any<Dictionary<string, double>>());
         }
 
         [Test]

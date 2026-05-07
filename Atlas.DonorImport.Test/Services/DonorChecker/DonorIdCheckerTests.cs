@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
@@ -164,7 +163,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
         }
 
         [Test]
-        public void CheckDonorIdsFromFile_WhenUnexpectedException_LogsFailureEvent()
+        public void CheckDonorIdsFromFile_WhenUnexpectedException_LogsException()
         {
             var exception = new Exception("Error message");
             donorIdFile.ReadLazyDonorIds().Throws(exception);
@@ -172,7 +171,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
             donorIdChecker.Invoking(p => p.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build()))
                 .Should().Throw<Exception>();
 
-            logger.Received().SendEvent(Arg.Any<DonorIdCheckFailureEventModel>());
+            logger.Received().SendException(exception, Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>());
         }
     }
 }

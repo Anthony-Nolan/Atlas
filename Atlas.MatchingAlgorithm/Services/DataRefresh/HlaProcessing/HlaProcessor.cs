@@ -3,7 +3,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Utils;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.MatchingAlgorithm.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -88,7 +87,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             }
             catch (Exception e)
             {
-                logger.SendEvent(new HlaRefreshFailureEventModel(e));
+                logger.SendException(e, LogLevel.Critical);
                 throw;
             }
         }
@@ -270,7 +269,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             }
             catch (Exception e)
             {
-                logger.SendEvent(new HlaRefreshSetUpFailureEventModel(e));
+                logger.SendException(e, LogLevel.Critical);
                 throw;
             }
         }

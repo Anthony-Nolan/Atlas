@@ -33,9 +33,11 @@ namespace Atlas.Common.Test.SharedTestHelpers
             nLogger = LogManager.GetCurrentClassLogger();
         }
 
-        public virtual void SendEvent(EventModel eventModel)
+        public virtual void SendEvent(string name, AtlasLogLevel level = AtlasLogLevel.Info, Dictionary<string, string> props = null, Dictionary<string, double> metrics = null)
         {
-            nLogger.Log(GetSeverityLevel(eventModel.Level), eventModel?.ToString());
+            var propsString = props?.Select(kvp => $"{kvp.Key}: {kvp.Value}").StringJoin(" | ");
+            var messageText = props == null ? name : $"{name}. Properties: {propsString}";
+            nLogger.Log(GetSeverityLevel(level), messageText);
         }
 
         public virtual void SendTrace(string message, AtlasLogLevel messageLogLevel, Dictionary<string, string> props)

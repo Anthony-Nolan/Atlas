@@ -7,7 +7,7 @@ namespace Atlas.Common.ApplicationInsights
 {
     public interface IAtlasLogger
     {
-        void SendEvent(EventModel eventModel);
+        void SendEvent(string name, LogLevel level = LogLevel.Info, Dictionary<string, string> props = null, Dictionary<string, double> metrics = null);
         void SendTrace(string message, LogLevel messageLogLevel = LogLevel.Info, Dictionary<string, string> props = null);
         void SendException(Exception exception, LogLevel messageLogLevel = LogLevel.Error, Dictionary<string, string> props = null);
     }
@@ -23,12 +23,13 @@ namespace Atlas.Common.ApplicationInsights
             configuredLogLevel = applicationInsightsSettings.LogLevel.ToLogLevel();
         }
 
-        public virtual void SendEvent(EventModel eventModel)
+        public virtual void SendEvent(string name, LogLevel level = LogLevel.Info, Dictionary<string, string> props = null, Dictionary<string, double> metrics = null)
         {
-            if (eventModel.Level >= configuredLogLevel)
+            if (level >= configuredLogLevel)
             {
-                eventModel.Properties["LogLevel"] = $"{eventModel.Level}";
-                client.TrackEvent(eventModel.Name, eventModel.Properties, eventModel.Metrics);
+                props ??= new Dictionary<string, string>();
+                props["LogLevel"] = $"{level}";
+                client.TrackEvent(name, props, metrics);
             }
         }
 
