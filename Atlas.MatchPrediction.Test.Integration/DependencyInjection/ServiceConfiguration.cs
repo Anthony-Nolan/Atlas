@@ -55,6 +55,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
                 .Build();
 
             services.AddSingleton<IConfiguration>(sp => configuration);
+            services.RegisterAsOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
         }
 
         private static void RegisterIntegrationTestServices(this IServiceCollection services)

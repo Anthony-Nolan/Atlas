@@ -84,6 +84,8 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "Matching:MessagingServiceBus:SearchRequestsTopic" = module.matching_algorithm.service_bus.matching_requests_topic.name
     "Matching:MessagingServiceBus:SearchResultsTopic"  = module.matching_algorithm.service_bus.matching_results_topic.name
 
+    "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes" = var.MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES
+
     "MatchPrediction:AzureStorage:ConnectionString"                    = azurerm_storage_account.azure_storage.primary_connection_string
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer" = module.match_prediction.storage.match_prediction_results_container_name
 

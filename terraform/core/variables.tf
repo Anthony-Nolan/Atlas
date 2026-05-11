@@ -239,6 +239,12 @@ variable "MATCH_PREDICTION_DATABASE_USERNAME" {
   default = "match_prediction"
 }
 
+variable "MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES" {
+  type        = number
+  default     = 5
+  description = "Absolute cache TTL, in minutes, for the active HaplotypeFrequencySets lookup used by the match prediction service."
+}
+
 variable "MATCH_PREDICTION_DOWNLOAD_BATCH_SIZE" {
   type        = number
   default     = 10
