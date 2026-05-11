@@ -188,6 +188,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             int? matchPredictionNumberOfBatches = null;
             MatchPredictionFailureInfo matchPredictionFailureInfo = null;
 
+            loggingContext.SearchRequestId = requestInfo.SearchRequestId;
             var trackingSearchIdentifier = new Guid(requestInfo.RepeatSearchRequestId);
             var originalSearchIdentifier = new Guid(requestInfo.SearchRequestId);
 

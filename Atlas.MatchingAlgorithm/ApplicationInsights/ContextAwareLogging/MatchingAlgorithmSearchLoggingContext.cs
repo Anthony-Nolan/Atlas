@@ -14,7 +14,7 @@ namespace Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging
             get => searchRequestId;
             set
             {
-                if (!string.IsNullOrEmpty(searchRequestId))
+                if (!string.IsNullOrEmpty(searchRequestId) && searchRequestId != value)
                 {
                     throw new InvalidOperationException(
                         $"Cannot set {nameof(SearchRequestId)} to '{value}' as it is already set to '{searchRequestId}'.");
