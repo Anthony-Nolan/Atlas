@@ -164,6 +164,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         [Function(nameof(SendFailureNotification))]
         public async Task SendFailureNotification([ActivityTrigger] FailureNotificationRequestInfo requestInfo)
         {
+            InitializeLoggingContext(requestInfo.SearchRequestId);
             var trackingSearchIdentifier = new Guid(requestInfo.RepeatSearchRequestId ?? requestInfo.SearchRequestId);
             var originalSearchIdentifier = requestInfo.RepeatSearchRequestId != null
                 ? new Guid(requestInfo.SearchRequestId)
@@ -175,6 +176,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         [Function(nameof(UploadSearchLog))]
         public async Task UploadSearchLog([ActivityTrigger] SearchLog searchLog)
         {
+            InitializeLoggingContext(searchLog.SearchRequestId);
             try
             {
                 await searchResultsBlobUploader.UploadResults(searchLog, azureStorageSettings.SearchResultsBlobContainer,
