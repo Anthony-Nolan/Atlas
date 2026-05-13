@@ -8,7 +8,7 @@ namespace Atlas.Functions.Services
 {
     public interface IMatchPredictionSearchTrackingDispatcher
     {
-        Task ProcessInitiation(Guid searchIdentifier, Guid? originalSearchIdentifier, DateTime initiationTime);
+        Task ProcessInitiation(Guid searchIdentifier, Guid? originalSearchIdentifier, DateTime initiationTime, bool isParallelMatchPrediction);
 
         Task ProcessPrepareBatchesStarted(Guid searchIdentifier, Guid? originalSearchIdentifier);
 
@@ -31,14 +31,15 @@ namespace Atlas.Functions.Services
     public class MatchPredictionSearchTrackingDispatcher(ISearchTrackingServiceBusClient searchTrackingServiceBusClient)
         : IMatchPredictionSearchTrackingDispatcher
     {
-        public async Task ProcessInitiation(Guid searchIdentifier, Guid? originalSearchIdentifier, DateTime initiationTime)
+        public async Task ProcessInitiation(Guid searchIdentifier, Guid? originalSearchIdentifier, DateTime initiationTime, bool isParallelMatchPrediction)
         {
             var matchPredictionStartedEvent = new MatchPredictionStartedEvent
             {
                 SearchIdentifier = searchIdentifier,
                 OriginalSearchIdentifier = originalSearchIdentifier,
                 InitiationTimeUtc = initiationTime,
-                StartTimeUtc = DateTime.UtcNow
+                StartTimeUtc = DateTime.UtcNow,
+                IsParallelMatchPrediction = isParallelMatchPrediction
             };
 
             await searchTrackingServiceBusClient.PublishSearchTrackingEvent(

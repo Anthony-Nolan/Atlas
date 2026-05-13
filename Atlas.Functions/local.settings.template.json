@@ -29,8 +29,10 @@
     "AtlasFunction:MessagingServiceBus:SearchResultsDebugSubscription": "debug",
     "AtlasFunction:MessagingServiceBus:SendRetryCount": 5,
     "AtlasFunction:MessagingServiceBus:SendRetryCooldownSeconds": 20,
+    "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionRequestsTopic": "parallel-match-prediction-requests",
 
     "AtlasFunction:Orchestration:MatchPredictionBatchSize": 100,
+    "AtlasFunction:Orchestration:ParallelMpaBatchSize": 100,
 
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
 

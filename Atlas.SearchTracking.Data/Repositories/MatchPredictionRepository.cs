@@ -37,7 +37,8 @@ namespace Atlas.SearchTracking.Data.Repositories
             {
                 SearchRequestId = id,
                 InitiationTimeUtc = matchPredictionStartedEvent.InitiationTimeUtc,
-                StartTimeUtc = matchPredictionStartedEvent.StartTimeUtc
+                StartTimeUtc = matchPredictionStartedEvent.StartTimeUtc,
+                IsParallelMatchPrediction = matchPredictionStartedEvent.IsParallelMatchPrediction
             };
 
             MatchPredictionTimings.Add(matchPrediction);

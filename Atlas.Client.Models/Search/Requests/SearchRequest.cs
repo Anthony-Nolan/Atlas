@@ -58,6 +58,14 @@ namespace Atlas.Client.Models.Search.Requests
         /// These registry codes must *exactly* match (case-sensitive) those provided in donor files used to import donors to Atlas.
         /// </summary>
         public List<string> DonorRegistryCodes { get; set; }
+
+        /// <summary>
+        /// Optional. Controls whether match prediction is run via the parallel ACA Worker path.
+        /// When <c>true</c>, match prediction batches are dispatched to the Worker and results are aggregated asynchronously.
+        /// When <c>false</c>, the legacy sequential Durable orchestrator path is used.
+        /// When <c>null</c> (default), the function app default (<c>AtlasFunction:Search:DefaultParallelMatchPrediction</c>) is applied.
+        /// </summary>
+        public bool? ParallelMatchPrediction { get; set; }
     }
 
     public class MismatchCriteria

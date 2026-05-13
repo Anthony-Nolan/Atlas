@@ -65,6 +65,16 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             var originalSearchIdentifier = requestInfo.RepeatSearchRequestId != null
                 ? new Guid(requestInfo.RepeatSearchRequestId)
                 : (Guid?)null;
+
+            // Parallel path: dispatch batches to the ACA Worker and exit the orchestrator.
+            // Result persistence, log upload, and completion tracking are handled by the aggregator function.
+            if (notification.WasSuccessful && notification.SearchRequest?.ParallelMatchPrediction == true)
+            {
+                await SendMatchPredictionProcessInitiated(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier, InitiationTimeUtc: orchestrationStartTime, IsParallelMatchPrediction: true));
+                await PrepareAndDispatchParallelMatchPredictionBatches(context, notification, requestInfo);
+                return new SearchOrchestrationOutput { MatchingDonorCount = notification.NumberOfResults ?? -1 };
+            }
+
             try
             {
                 if (!notification.WasSuccessful)
@@ -75,7 +85,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     return null;
                 }
 
-                await SendMatchPredictionProcessInitiated(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier, InitiationTimeUtc: orchestrationStartTime));
+                await SendMatchPredictionProcessInitiated(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier, InitiationTimeUtc: orchestrationStartTime, IsParallelMatchPrediction: false));
 
                 var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification, requestInfo);
                 await SendMatchPredictionBatchProcessingStarted(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier));
@@ -165,17 +175,26 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         {
             var notification = context.GetInput<MatchingResultsNotification>();
             var requestInfo = mapper.Map<FailureNotificationRequestInfo>(notification);
-            var requestCompletedSuccessfully = false;
             var orchestrationStartTime = context.CurrentUtcDateTime;
+            var requestCompletedSuccessfully = false;
             TimedResultSet<IReadOnlyDictionary<int, string>> matchPredictionResultLocations = null;
             int? matchPredictionNumberOfBatches = null;
             MatchPredictionFailureInfo matchPredictionFailureInfo = null;
 
             var trackingSearchIdentifier = new Guid(requestInfo.RepeatSearchRequestId);
             var originalSearchIdentifier = new Guid(requestInfo.SearchRequestId);
+
+            // Parallel path: dispatch batches to the ACA Worker and exit the orchestrator.
+            // Result persistence, log upload, and completion tracking are handled by the aggregator function.
+            if (notification.WasSuccessful && notification.SearchRequest?.ParallelMatchPrediction == true)
+            {
+                await SendMatchPredictionProcessInitiated(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: (Guid?)originalSearchIdentifier, InitiationTimeUtc: orchestrationStartTime, IsParallelMatchPrediction: true));
+                await PrepareAndDispatchParallelMatchPredictionBatches(context, notification, requestInfo);
+                return new SearchOrchestrationOutput { MatchingDonorCount = notification.NumberOfResults ?? -1 };
+            }
+
             try
             {
-                var orchestrationInitiated = context.CurrentUtcDateTime;
                 if (!notification.WasSuccessful)
                 {
                     requestInfo.StageReached = "Matching Algorithm";
@@ -184,7 +203,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     return null;
                 }
 
-                await SendMatchPredictionProcessInitiated(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier,  InitiationTimeUtc: orchestrationStartTime));
+                await SendMatchPredictionProcessInitiated(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier,  InitiationTimeUtc: orchestrationStartTime, IsParallelMatchPrediction: false));
 
                 var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification, requestInfo);
                 await SendMatchPredictionBatchProcessingStarted(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier));
@@ -197,7 +216,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     context,
                     new PersistSearchResultsFunctionParameters
                     {
-                        SearchInitiated = orchestrationInitiated,
+                        SearchInitiated = orchestrationStartTime,
                         MatchingResultsNotification = notification,
                         MatchPredictionResultLocations = matchPredictionResultLocations
                     },
@@ -208,7 +227,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
                 return new SearchOrchestrationOutput
                 {
-                    TotalSearchTime = context.CurrentUtcDateTime.Subtract(orchestrationInitiated),
+                    TotalSearchTime = context.CurrentUtcDateTime.Subtract(orchestrationStartTime),
                     MatchingDonorCount = notification.NumberOfResults ?? -1,
                 };
             }
@@ -248,6 +267,29 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 await SendMatchPredictionProcessCompleted(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier,
                     FailureInfo: matchPredictionFailureInfo, DonorsPerBatch: matchPredictionProcessingBatchSize, TotalNumberOfBatches: matchPredictionNumberOfBatches));
             }
+        }
+
+        private async Task PrepareAndDispatchParallelMatchPredictionBatches(
+            TaskOrchestrationContext context,
+            MatchingResultsNotification notification,
+            FailureNotificationRequestInfo requestInfo)
+        {
+            requestInfo.StageReached = nameof(SearchActivityFunctions.PrepareAndDispatchParallelMatchPredictionBatches);
+
+            await RunStageAndHandleFailures(
+                async () => await context.CallActivityAsync(
+                    nameof(SearchActivityFunctions.PrepareAndDispatchParallelMatchPredictionBatches),
+                    notification,
+                    RetryOptions),
+                context,
+                requestInfo
+            );
+
+            context.SetCustomStatus(new OrchestrationStatus
+            {
+                LastCompletedStage = nameof(SearchActivityFunctions.PrepareAndDispatchParallelMatchPredictionBatches),
+                ElapsedTimeOfStage = null,
+            });
         }
 
         private async Task<TimedResultSet<IList<string>>> PrepareMatchPrediction(
@@ -415,7 +457,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
         private static async Task SendMatchPredictionProcessInitiated(
             TaskOrchestrationContext context,
-            (Guid SearchIdentifier, Guid? OriginalSearchIdentifier, DateTime InitiationTimeUtc) eventDetails) =>
+            (Guid SearchIdentifier, Guid? OriginalSearchIdentifier, DateTime InitiationTimeUtc, bool IsParallelMatchPrediction) eventDetails) =>
             await context.CallActivityAsync(
                 nameof(SearchActivityFunctions.SendMatchPredictionProcessInitiated),
                 eventDetails,
