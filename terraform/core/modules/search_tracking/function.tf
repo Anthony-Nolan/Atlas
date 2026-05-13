@@ -55,4 +55,11 @@ resource "azurerm_windows_function_app" "atlas_search_tracking_function" {
     ftps_state              = "AllAllowed"
     scm_minimum_tls_version = "1.0"
   }
+
+  lifecycle {
+    ignore_changes = [
+      site_config[0].health_check_eviction_time_in_min,
+      site_config[0].cors,
+    ]
+  }
 }

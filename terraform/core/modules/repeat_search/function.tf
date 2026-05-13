@@ -115,4 +115,11 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
     type  = "SQLAzure"
     value = var.donor_database_connection_string
   }
+
+  lifecycle {
+    ignore_changes = [
+      site_config[0].health_check_eviction_time_in_min,
+      site_config[0].cors,
+    ]
+  }
 }
