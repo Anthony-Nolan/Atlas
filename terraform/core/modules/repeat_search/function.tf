@@ -120,6 +120,7 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
     ignore_changes = [
       site_config[0].health_check_eviction_time_in_min,
       site_config[0].cors,
+      tags["hidden-link: /app-insights-resource-id"],
     ]
   }
 }

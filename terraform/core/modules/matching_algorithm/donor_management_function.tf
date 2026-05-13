@@ -93,6 +93,7 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_donor_manageme
   lifecycle {
     ignore_changes = [
       site_config[0].cors,
+      tags["hidden-link: /app-insights-resource-id"],
     ]
   }
 }
