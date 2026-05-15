@@ -38,6 +38,7 @@ namespace Atlas.MatchPrediction.Test.Validation
             services.RegisterAsOptions<ValidationAzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
             services.RegisterAsOptions<ValidationHomeworkSettings>("Homework");
+            services.RegisterAsOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<MatchPredictionRequestsSettings>("MatchPredictionRequests");
             services.RegisterAsOptions<ValidationSearchSettings>("Search");

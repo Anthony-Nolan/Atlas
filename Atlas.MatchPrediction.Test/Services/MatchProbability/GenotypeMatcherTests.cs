@@ -20,8 +20,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
     [TestFixture]
     internal class GenotypeMatcherTests
     {
-        private IGenotypeImputationService genotypeImputer;
-        private IGenotypeConverter genotypeConverter;
+        private IGenotypeSetService genotypeSetService;
         private IMatchCalculationService matchCalculationService;
         private IMatchPredictionLogger<MatchProbabilityLoggingContext> logger;
         private IGenotypeMatcher genotypeMatcher;
@@ -31,50 +30,62 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         [SetUp]
         public void SetUp()
         {
-            genotypeImputer = Substitute.For<IGenotypeImputationService>();
-            genotypeConverter = Substitute.For<IGenotypeConverter>();
+            genotypeSetService = Substitute.For<IGenotypeSetService>();
             matchCalculationService = Substitute.For<IMatchCalculationService>();
             logger = Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
 
-            genotypeMatcher = new GenotypeMatcher(genotypeImputer, genotypeConverter, matchCalculationService, logger);
-
-            genotypeImputer.Impute(default).ReturnsForAnyArgs(new ImputedGenotypesBuilder().Default().Build());
+            genotypeMatcher = new GenotypeMatcher(genotypeSetService, matchCalculationService, logger);
 
             var genotype = new GenotypeAtDesiredResolutionsBuilder().Default().Build();
-            genotypeConverter.ConvertGenotypesForMatchCalculation(default)
-                .ReturnsForAnyArgs(new List<GenotypeAtDesiredResolutions> { genotype });
+            genotypeSetService.GetGenotypeSet(default, default)
+                .ReturnsForAnyArgs(new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions> { genotype }, 0.5m));
 
             matchCalculationService.CalculateMatchCounts_Fast(default, default, default)
                 .ReturnsForAnyArgs(new LociInfo<int?>(0));
         }
 
         [Test]
-        public async Task MatchPatientDonorGenotypes_ImputesGenotypes()
+        public async Task MatchPatientDonorGenotypes_ExpandsDonorGenotypes()
         {
             var input = BuildDefaultInput();
             await genotypeMatcher.MatchPatientDonorGenotypes(input);
 
-            await genotypeImputer.Received().Impute(Arg.Is<ImputationInput>(x =>
-                x.MatchPredictionParameters.AllowedLoci.SetEquals(input.MatchPredictionParameters.AllowedLoci) &&
-                x.SubjectData.HlaTyping.Equals(input.PatientData.HlaTyping) &&
-                x.SubjectData.SubjectFrequencySet.FrequencySet.Id == input.PatientData.SubjectFrequencySet.FrequencySet.Id
-            ));
-
-            await genotypeImputer.Received().Impute(Arg.Is<ImputationInput>(x =>
-                x.MatchPredictionParameters.AllowedLoci.SetEquals(input.MatchPredictionParameters.AllowedLoci) &&
-                x.SubjectData.HlaTyping.Equals(input.DonorData.HlaTyping) &&
-                x.SubjectData.SubjectFrequencySet.FrequencySet.Id == input.DonorData.SubjectFrequencySet.FrequencySet.Id
-            ));
+            await genotypeSetService.Received().GetGenotypeSet(
+                Arg.Is<SubjectData>(x =>
+                    x.HlaTyping.Equals(input.DonorData.HlaTyping) &&
+                    x.SubjectFrequencySet.FrequencySet.Id == input.DonorData.SubjectFrequencySet.FrequencySet.Id),
+                Arg.Is<MatchPredictionParameters>(x =>
+                    x.AllowedLoci.SetEquals(input.MatchPredictionParameters.AllowedLoci)));
         }
 
         [Test]
-        public async Task MatchPatientDonorGenotypes_PatientHasNoGenotypes_ReturnsPatientIsUnrepresented()
+        public async Task MatchPatientDonorGenotypes_UsesProvidedPatientGenotypeSet_DoesNotExpandPatient()
         {
             var input = BuildDefaultInput();
+            var patientGenotype = new GenotypeAtDesiredResolutionsBuilder().Default().Build();
+            input.PatientGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions> { patientGenotype }, 0.1m);
 
-            genotypeImputer
-                .Impute(Arg.Is<ImputationInput>(x => x.SubjectData.SubjectFrequencySet.SubjectLogDescription == input.PatientData.SubjectFrequencySet.SubjectLogDescription))
-                .Returns(new ImputedGenotypesBuilder().Build());
+            var result = await genotypeMatcher.MatchPatientDonorGenotypes(input);
+
+            // Should only call GetGenotypeSet for donor, not patient
+            await genotypeSetService.Received(1).GetGenotypeSet(
+                Arg.Any<SubjectData>(),
+                Arg.Any<MatchPredictionParameters>());
+
+            await genotypeSetService.Received().GetGenotypeSet(
+                Arg.Is<SubjectData>(x =>
+                    x.SubjectFrequencySet.SubjectLogDescription == input.DonorData.SubjectFrequencySet.SubjectLogDescription),
+                Arg.Any<MatchPredictionParameters>());
+
+            result.PatientResult.GenotypeCount.Should().Be(1);
+            result.PatientResult.SumOfLikelihoods.Should().Be(0.1m);
+        }
+
+        [Test]
+        public async Task MatchPatientDonorGenotypes_PatientIsUnrepresented_ReturnsPatientIsUnrepresented()
+        {
+            var input = BuildDefaultInput();
+            input.PatientGenotypeSet = new SubjectGenotypeSet(true, new List<GenotypeAtDesiredResolutions>(), 0m);
 
             var result = await genotypeMatcher.MatchPatientDonorGenotypes(input);
 
@@ -86,13 +97,15 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         }
 
         [Test]
-        public async Task MatchPatientDonorGenotypes_DonorHasNoGenotypes_ReturnsDonorIsUnrepresented()
+        public async Task MatchPatientDonorGenotypes_DonorIsUnrepresented_ReturnsDonorIsUnrepresented()
         {
             var input = BuildDefaultInput();
 
-            genotypeImputer
-                .Impute(Arg.Is<ImputationInput>(x => x.SubjectData.SubjectFrequencySet.SubjectLogDescription == input.DonorData.SubjectFrequencySet.SubjectLogDescription))
-                .Returns(new ImputedGenotypesBuilder().Build());
+            genotypeSetService.GetGenotypeSet(
+                    Arg.Is<SubjectData>(x =>
+                        x.SubjectFrequencySet.SubjectLogDescription == input.DonorData.SubjectFrequencySet.SubjectLogDescription),
+                    Arg.Any<MatchPredictionParameters>())
+                .Returns(new SubjectGenotypeSet(true, new List<GenotypeAtDesiredResolutions>(), 0m));
 
             var result = await genotypeMatcher.MatchPatientDonorGenotypes(input);
 
@@ -109,10 +122,13 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             var genotype1 = new GenotypeAtDesiredResolutionsBuilder().Default().Build();
             var genotype2 = new GenotypeAtDesiredResolutionsBuilder().Default().Build();
 
-            genotypeConverter.ConvertGenotypesForMatchCalculation(default)
-                .ReturnsForAnyArgs(new List<GenotypeAtDesiredResolutions> { genotype1, genotype2 });
+            var input = BuildDefaultInput();
+            input.PatientGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions> { genotype1, genotype2 }, 0.5m);
 
-            var result = await genotypeMatcher.MatchPatientDonorGenotypes(BuildDefaultInput());
+            genotypeSetService.GetGenotypeSet(default, default)
+                .ReturnsForAnyArgs(new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions> { genotype1, genotype2 }, 0.5m));
+
+            var result = await genotypeMatcher.MatchPatientDonorGenotypes(input);
 
             result.GenotypeMatchDetails.Count().Should().Be(4);
         }
@@ -123,10 +139,13 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             var genotype1 = new GenotypeAtDesiredResolutionsBuilder().Default().Build();
             var genotype2 = new GenotypeAtDesiredResolutionsBuilder().Default().Build();
 
-            genotypeConverter.ConvertGenotypesForMatchCalculation(default)
-                .ReturnsForAnyArgs(new List<GenotypeAtDesiredResolutions> { genotype1, genotype2 });
+            var input = BuildDefaultInput();
+            input.PatientGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions> { genotype1, genotype2 }, 0.5m);
 
-            var result = await genotypeMatcher.MatchPatientDonorGenotypes(BuildDefaultInput());
+            genotypeSetService.GetGenotypeSet(default, default)
+                .ReturnsForAnyArgs(new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions> { genotype1, genotype2 }, 0.5m));
+
+            var result = await genotypeMatcher.MatchPatientDonorGenotypes(input);
 
             // before enumeration
             matchCalculationService.DidNotReceiveWithAnyArgs().CalculateMatchCounts_Fast(default, default, default);
@@ -143,6 +162,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             var patientHla = new PhenotypeInfoBuilder<string>("patient-hla").Build();
             var patientFrequencySet = fixture.Create<SubjectFrequencySet>();
+            var patientGenotype = new GenotypeAtDesiredResolutionsBuilder().Default().Build();
 
             var donorHla = new PhenotypeInfoBuilder<string>("donor-hla").Build();
             var donorFrequencySet = fixture.Create<SubjectFrequencySet>();
@@ -151,7 +171,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             {
                 MatchPredictionParameters = new MatchPredictionParameters(allowedLoci),
                 PatientData = new SubjectData(patientHla, patientFrequencySet),
-                DonorData = new SubjectData(donorHla, donorFrequencySet)
+                DonorData = new SubjectData(donorHla, donorFrequencySet),
+                PatientGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions> { patientGenotype }, 0.5m)
             };
         }
     }

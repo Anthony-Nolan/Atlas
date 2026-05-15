@@ -53,6 +53,8 @@
     "Matching:MessagingServiceBus:SearchRequestsTopic": "matching-requests",
     "Matching:MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
 
+    "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 5,
+
     "MatchPrediction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer": "match-prediction-results",
 

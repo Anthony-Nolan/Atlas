@@ -7,6 +7,7 @@ using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedSt
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Models.FileSchema;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
@@ -23,6 +24,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected readonly FrequencySetMetadata GlobalHfSetMetadata = new() { EthnicityCode = null, RegistryCode = null };
 
         protected IMatchProbabilityService MatchProbabilityService;
+        protected IGenotypeSetService GenotypeSetService;
+        protected IHaplotypeFrequencyService HaplotypeFrequencyService;
 
         protected const string HfSetHlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
         protected const string MatchingAlgorithmHlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
@@ -39,6 +42,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected void BaseOneTimeSetUp()
         {
             MatchProbabilityService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchProbabilityService>();
+            GenotypeSetService = DependencyInjection.DependencyInjection.Provider.GetService<IGenotypeSetService>();
+            HaplotypeFrequencyService = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
         }
 
         protected async Task ImportFrequencies(
@@ -62,6 +67,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         protected static Builder<HaplotypeFrequency> DefaultSmallGGroupHaplotypeFrequency2 => Builder<HaplotypeFrequency>.New
             .WithHaplotype(Alleles.UnambiguousAlleleDetails.SmallGGroups().Split().Item2);
+
+        protected async Task<Client.Models.Search.Results.MatchPrediction.MatchProbabilityResponse> CalculateMatchProbability(
+            SingleDonorMatchProbabilityInput input)
+        {
+            var patientGenotypeSet = await GenotypeSetService.GetPatientGenotypeSet(input);
+            return await MatchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet);
+        }
 
         protected static PhenotypeInfoBuilder<string> DefaultUnambiguousAllelesBuilder => new(Alleles.UnambiguousAlleleDetails.Alleles());
 
