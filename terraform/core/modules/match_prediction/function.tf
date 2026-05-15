@@ -77,4 +77,12 @@ resource "azurerm_windows_function_app" "atlas_match_prediction_function" {
     type  = "SQLAzure"
     value = local.match_prediction_database_connection_string
   }
+
+  lifecycle {
+    ignore_changes = [
+      site_config[0].health_check_eviction_time_in_min,
+      site_config[0].cors,
+      tags["hidden-link: /app-insights-resource-id"],
+    ]
+  }
 }

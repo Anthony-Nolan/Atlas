@@ -103,6 +103,14 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "WEBSITE_RUN_FROM_PACKAGE"                                = var.WEBSITE_RUN_FROM_PACKAGE
   }
 
+  lifecycle {
+    ignore_changes = [
+      site_config[0].health_check_eviction_time_in_min,
+      site_config[0].cors,
+      tags["hidden-link: /app-insights-resource-id"],
+    ]
+  }
+
   connection_string {
     name  = "Matching:Sql:Persistent"
     type  = "SQLAzure"
@@ -195,6 +203,12 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
   }
 
   lifecycle {
+    ignore_changes = [
+      site_config[0].health_check_eviction_time_in_min,
+      site_config[0].cors,
+      tags["hidden-link: /app-insights-resource-id"],
+    ]
+
     replace_triggered_by = [
       # Recreate the entire functions app if the service plan changes.
       # This is necessary in case of updating var from `true` to `false`, as terraform attempts to destroy the public API service plan /before/ modifying the function app's service_plan_id.
