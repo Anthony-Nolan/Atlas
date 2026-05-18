@@ -8,11 +8,6 @@ namespace Atlas.SearchTracking.Data.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "CompletedBatches",
-                schema: "SearchTracking",
-                table: "SearchRequestMatchPredictions");
-
             migrationBuilder.AddColumn<bool>(
                 name: "IsParallelMatchPrediction",
                 schema: "SearchTracking",
@@ -28,13 +23,6 @@ namespace Atlas.SearchTracking.Data.Migrations
                 name: "IsParallelMatchPrediction",
                 schema: "SearchTracking",
                 table: "SearchRequestMatchPredictions");
-
-            migrationBuilder.AddColumn<int>(
-                name: "CompletedBatches",
-                schema: "SearchTracking",
-                table: "SearchRequestMatchPredictions",
-                type: "int",
-                nullable: true);
         }
     }
 }
