@@ -17,5 +17,8 @@ namespace Atlas.Functions.Settings
         /// Required by debug endpoint that peeks `repeat-search-results-ready` messages.
         /// </summary>
         public string RepeatSearchResultsDebugSubscription { get; set; }
+
+        /// <summary>Topic to which the orchestrator publishes batch-blob locations for the parallel ACA Worker MPA path.</summary>
+        public string ParallelMatchPredictionRequestsTopic { get; set; }
     }
 }

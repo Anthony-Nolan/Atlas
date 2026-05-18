@@ -8,6 +8,8 @@
     "MatchingAlgorithmFunction:BaseUrl": "override-this",
     "MatchingAlgorithmFunction:ApiKey": "override-this",
 
+    "AtlasFunction:Search:DefaultParallelMatchPrediction": false,
+
     "Matching:MessagingServiceBus:ConnectionString": "override-this",
     "Matching:MessagingServiceBus:SearchRequestsTopic": "matching-requests",
     "Matching:MessagingServiceBus:SearchResultsTopic": "matching-results-ready",

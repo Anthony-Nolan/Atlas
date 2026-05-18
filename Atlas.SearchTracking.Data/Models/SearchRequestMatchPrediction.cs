@@ -42,5 +42,7 @@ namespace Atlas.SearchTracking.Data.Models
         public string? FailureInfo_ExceptionStacktrace { get; set; }
 
         public bool? IsSuccessful { get; set; }
+
+        public bool IsParallelMatchPrediction { get; set; }
     }
 }
