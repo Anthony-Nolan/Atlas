@@ -66,17 +66,17 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 ? new Guid(requestInfo.RepeatSearchRequestId)
                 : (Guid?)null;
 
-            // Parallel path: dispatch batches to the ACA Worker and exit the orchestrator.
-            // Result persistence, log upload, and completion tracking are handled by the aggregator function.
-            if (notification.WasSuccessful && notification.SearchRequest?.ParallelMatchPrediction == true)
-            {
-                await SendMatchPredictionProcessInitiated(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier, InitiationTimeUtc: orchestrationStartTime, IsParallelMatchPrediction: true));
-                await PrepareAndDispatchParallelMatchPredictionBatches(context, notification, requestInfo);
-                return new SearchOrchestrationOutput { MatchingDonorCount = notification.NumberOfResults ?? -1 };
-            }
-
             try
             {
+                // Parallel path: dispatch batches to the ACA Worker and exit the orchestrator.
+                // Result persistence, log upload, and completion tracking are handled by the aggregator function.
+                if (notification.WasSuccessful && notification.SearchRequest?.ParallelMatchPrediction == true)
+                {
+                    await SendMatchPredictionProcessInitiated(context, (SearchIdentifier: trackingSearchIdentifier, OriginalSearchIdentifier: originalSearchIdentifier, InitiationTimeUtc: orchestrationStartTime, IsParallelMatchPrediction: true));
+                    await PrepareAndDispatchParallelMatchPredictionBatches(context, notification, requestInfo);
+                    return new SearchOrchestrationOutput { MatchingDonorCount = notification.NumberOfResults ?? -1 };
+                }
+
                 if (!notification.WasSuccessful)
                 {
                     requestInfo.StageReached = "Matching Algorithm";
