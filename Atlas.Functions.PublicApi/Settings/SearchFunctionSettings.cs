@@ -1,6 +1,6 @@
 namespace Atlas.Functions.PublicApi.Settings
 {
-    internal class SearchFunctionSettings
+    public class SearchFunctionSettings
     {
         /// <summary>
         /// Applied to <see cref="Atlas.Client.Models.Search.Requests.SearchRequest.ParallelMatchPrediction"/> when the caller does not specify a value.
