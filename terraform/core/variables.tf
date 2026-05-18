@@ -53,6 +53,34 @@ variable "DATABASE_SERVER_AZUREAD_ADMINISTRATOR_TENANTID" {
   description = "ID of Tenant where admin access AD group resides."
 }
 
+variable "DATABASE_SERVER_EXISTING_NAME" {
+  type        = string
+  default     = null
+  description = "Optional existing Azure SQL server name to use instead of creating the default ENVIRONMENT-ATLAS-SQL-SERVER. Intended for temporary environment-specific overrides, for example pointing DEV at a separate performance-testing server. Remove the value to revert to the standard managed-server pattern. Note that changing this value changes database server_id values and will force replacement of Terraform-managed databases on the selected server."
+}
+
+variable "DATABASE_SERVER_EXISTING_RESOURCE_GROUP_NAME" {
+  type        = string
+  default     = null
+  description = "Optional resource group of DATABASE_SERVER_EXISTING_NAME. Defaults to the Atlas environment resource group when omitted."
+
+  validation {
+    condition     = var.DATABASE_SERVER_EXISTING_RESOURCE_GROUP_NAME == null || var.DATABASE_SERVER_EXISTING_NAME != null
+    error_message = "DATABASE_SERVER_EXISTING_RESOURCE_GROUP_NAME can only be set when DATABASE_SERVER_EXISTING_NAME is also set."
+  }
+}
+
+variable "DATABASE_SERVER_EXISTING_ADMIN_LOGIN" {
+  type        = string
+  default     = null
+  description = "Optional SQL admin login for DATABASE_SERVER_EXISTING_NAME. Leave unset to continue using DATABASE_SERVER_ADMIN_LOGIN. Useful when temporarily pointing an environment at an existing server with different admin credentials. Remove together with DATABASE_SERVER_EXISTING_NAME to revert to the standard managed-server pattern."
+
+  validation {
+    condition     = var.DATABASE_SERVER_EXISTING_ADMIN_LOGIN == null || var.DATABASE_SERVER_EXISTING_NAME != null
+    error_message = "DATABASE_SERVER_EXISTING_ADMIN_LOGIN can only be set when DATABASE_SERVER_EXISTING_NAME is also set."
+  }
+}
+
 variable "DATABASE_SHARED_EDITION" {
   type        = string
   default     = "Standard"

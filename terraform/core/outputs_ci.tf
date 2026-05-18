@@ -86,11 +86,11 @@ output "search-tracking-function-name" {
 }
 
 output "sql-server" {
-  value = azurerm_mssql_server.atlas_sql_server.fully_qualified_domain_name
+  value = local.atlas_sql_server.fully_qualified_domain_name
 }
 
 output "sql-server-admin-login" {
-  value = var.DATABASE_SERVER_ADMIN_LOGIN
+  value = local.existing_sql_server_admin_login
 }
 
 output "sql-server-admin-login-password" {

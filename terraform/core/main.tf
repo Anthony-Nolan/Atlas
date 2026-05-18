@@ -56,7 +56,7 @@ module "donor_import" {
   servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage
   sql_database            = azurerm_mssql_database.atlas-database-shared
-  sql_server              = azurerm_mssql_server.atlas_sql_server
+  sql_server              = local.atlas_sql_server
 
   servicebus_namespace_authorization_rules = {
     write-only = azurerm_servicebus_namespace_authorization_rule.write-only
@@ -115,7 +115,7 @@ module "matching_algorithm" {
   servicebus_namespace           = azurerm_servicebus_namespace.general
   shared_function_storage        = azurerm_storage_account.function_storage
   sql_database_shared            = azurerm_mssql_database.atlas-database-shared
-  sql_server                     = azurerm_mssql_server.atlas_sql_server
+  sql_server                     = local.atlas_sql_server
 
   servicebus_namespace_authorization_rules = {
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
@@ -184,7 +184,7 @@ module "match_prediction" {
   azure_storage           = azurerm_storage_account.azure_storage
   servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage
-  sql_server              = azurerm_mssql_server.atlas_sql_server
+  sql_server              = local.atlas_sql_server
   sql_database            = azurerm_mssql_database.atlas-database-shared
   mac_import_table        = module.multiple_allele_code_lookup.storage_table
 
@@ -265,7 +265,7 @@ module "repeat_search" {
   }
   shared_function_storage = azurerm_storage_account.function_storage
   sql_database            = azurerm_mssql_database.atlas-database-shared
-  sql_server              = azurerm_mssql_server.atlas_sql_server
+  sql_server              = local.atlas_sql_server
 
 
   // Release variables
@@ -307,7 +307,7 @@ module "search_tracking" {
   }
   shared_function_storage = azurerm_storage_account.function_storage
   sql_database            = azurerm_mssql_database.atlas-database-shared
-  sql_server              = azurerm_mssql_server.atlas_sql_server
+  sql_server              = local.atlas_sql_server
 
   // Release variables
   APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL

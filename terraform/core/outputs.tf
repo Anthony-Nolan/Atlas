@@ -44,7 +44,7 @@ output "service_bus" {
 }
 
 output "sql_server" {
-  value = azurerm_mssql_server.atlas_sql_server.name
+  value = local.atlas_sql_server.name
 }
 
 output "storage_account" {
