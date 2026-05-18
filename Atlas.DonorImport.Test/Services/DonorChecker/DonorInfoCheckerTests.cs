@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
@@ -30,7 +29,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
         private IDonorInfoCheckerBlobStorageClient blobStorageClient;
         private IDonorInfoCheckerMessageSender messageSender;
         private INotificationSender notificationSender;
-        private ILogger logger;
+        private IAtlasLogger logger;
         private IDonorUpdateMapper donorUpdateMapper;
 
         private IDonorInfoChecker donorInfoChecker;
@@ -43,7 +42,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
             blobStorageClient = Substitute.For<IDonorInfoCheckerBlobStorageClient>();
             messageSender = Substitute.For<IDonorInfoCheckerMessageSender>();
             notificationSender = Substitute.For<INotificationSender>();
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IAtlasLogger>();
             donorUpdateMapper = Substitute.For<IDonorUpdateMapper>();
             donorUpdateMapper.MapToDatabaseDonor(Arg.Any<DonorUpdate>(), Arg.Any<string>()).Returns(new Donor());
 
@@ -146,16 +145,17 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
         }
 
         [Test]
-        public void CompareDonorInfoInFileToAtlasDonorStore_WhenUnexpectedException_LogsFailureEvent()
+        public void CompareDonorInfoInFileToAtlasDonorStore_WhenUnexpectedException_LogsException()
         {
             var donor = DonorUpdateBuilder.New.Build();
             var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(donor).Build();
             fileParser.PrepareToLazilyParseDonorUpdates(file.Contents).Returns(new LazilyParsingDonorFile(file.Contents));
-            donorReadRepository.GetDonorsHashes(Arg.Any<IEnumerable<string>>()).Throws(new Exception("Error message"));
+            var exception = new Exception("Error message");
+            donorReadRepository.GetDonorsHashes(Arg.Any<IEnumerable<string>>()).Throws(exception);
 
             donorInfoChecker.Invoking(c => c.CompareDonorInfoInFileToAtlasDonorStore(file)).Should().Throw<Exception>();
 
-            logger.Received().SendEvent(Arg.Any<DonorInfoCheckerFailureEventModel>());
+            logger.Received().SendException(exception, Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>());
         }
 
         [Test]

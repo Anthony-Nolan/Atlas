@@ -18,9 +18,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
     {
         private readonly IDonorScoringService donorScoringService;
         private readonly IMapper mapper;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
-        public ScoringRequestService(IDonorScoringService donorScoringService, IMapper mapper, ILogger logger)
+        public ScoringRequestService(IDonorScoringService donorScoringService, IMapper mapper, IAtlasLogger logger)
         {
             this.donorScoringService = donorScoringService;
             this.mapper = mapper;

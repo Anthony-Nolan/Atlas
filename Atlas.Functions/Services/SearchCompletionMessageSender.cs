@@ -27,7 +27,7 @@ namespace Atlas.Functions.Services
 
     internal class SearchCompletionMessageSender : ISearchCompletionMessageSender
     {
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly IMapper mapper;
         private readonly string resultsNotificationTopicName;
         private readonly string repeatResultsNotificationTopicName;

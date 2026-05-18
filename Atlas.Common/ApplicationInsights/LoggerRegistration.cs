@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -20,7 +21,13 @@ namespace Atlas.Common.ApplicationInsights
             // If ILogger has already been registered, then either, it's already been done here
             // (in which case there's no need to repeat), or someone's already registered a more
             // *specific* logger, in which case we actively want to avoid over-writing that registration.
-            services.TryAddScoped<ILogger, Logger>();
+            services.TryAddScoped<IAtlasLogger, AtlasLogger>();
+
+            // Ensure telemetry is flushed on graceful shutdown to prevent data loss.
+            services.AddHostedService<TelemetryFlushService>();
+
+            // Stamp SearchRequestId on all telemetry items for end-to-end correlation in Application Insights.
+            services.AddSingleton<ITelemetryInitializer, SearchRequestTelemetryInitializer>();
         }
     }
 }

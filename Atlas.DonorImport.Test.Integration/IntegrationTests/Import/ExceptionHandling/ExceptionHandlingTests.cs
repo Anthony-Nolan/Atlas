@@ -22,7 +22,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
     public class ExceptionHandlingTests
     {
         private IDonorFileImporter donorFileImporter;
-        private ILogger mockLogger;
+        private IAtlasLogger mockLogger;
         private INotificationSender mockNotificationSender;
         private IDonorImportHistoryRepository donorImportHistoryRepository;
 
@@ -40,7 +40,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
                 DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
 
                 donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
-                mockLogger = DependencyInjection.DependencyInjection.Provider.GetService<ILogger>();
+                mockLogger = DependencyInjection.DependencyInjection.Provider.GetService<IAtlasLogger>();
                 mockNotificationSender = DependencyInjection.DependencyInjection.Provider.GetService<INotificationSender>();
                 donorImportHistoryRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportHistoryRepository>();
             });

@@ -23,7 +23,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             ITableClientFactory factory, 
             ITableReferenceRepository tableReferenceRepository,
             IPersistentCacheProvider cacheProvider,
-            ILogger logger)
+            IAtlasLogger logger)
             : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey, logger)
         {
         }
@@ -36,7 +36,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         private async Task<List<string>> CalculateAllPGroups(string hlaNomenclatureVersion)
         {
             var metadataDictionary = await TableData(hlaNomenclatureVersion);
-            using (Logger.RunTimed("Calculate all P-Groups from matching metadata entries"))
+            using (AtlasLogger.RunTimed("Calculate all P-Groups from matching metadata entries"))
             {
                 return new HashSet<string>(metadataDictionary.Values.SelectMany(v => v.ToHlaMatchingMetadata()?.MatchingPGroups)).ToList();
             }

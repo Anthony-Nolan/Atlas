@@ -19,11 +19,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services
     internal class MacCacheService: IMacCacheService
     {
         private readonly IAppCache cache;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly IMacRepository macRepository;
         private readonly IMacExpander macExpander;
 
-        public MacCacheService(ILogger logger, IPersistentCacheProvider cacheProvider, IMacRepository macRepository, IMacExpander macExpander)
+        public MacCacheService(IAtlasLogger logger, IPersistentCacheProvider cacheProvider, IMacRepository macRepository, IMacExpander macExpander)
         {
             this.logger = logger;
             this.cache = cacheProvider.Cache;

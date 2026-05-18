@@ -17,7 +17,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
 
     public class MatchPredictionRequestResultUploader : MatchProbabilityResultUploader, IMatchPredictionRequestResultUploader
     {
-        public MatchPredictionRequestResultUploader(AzureStorageSettings azureStorageSettings, ILogger logger) : base(azureStorageSettings, logger)
+        public MatchPredictionRequestResultUploader(AzureStorageSettings azureStorageSettings, IAtlasLogger logger) : base(azureStorageSettings, logger)
         {
         }
 

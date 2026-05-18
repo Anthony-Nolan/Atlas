@@ -56,7 +56,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IDonorImportHistoryRepository>(sp => new DonorImportHistoryRepository(fetchDonorImportDatabaseConnectionString(sp)));
             services.AddScoped<IDonorImportLogRepository>(sp => new DonorImportLogRepository(fetchDonorImportDatabaseConnectionString(sp)));
             services.AddScoped<IPublishableDonorUpdatesRepository>(sp => new PublishableDonorUpdatesRepository(fetchDonorImportDatabaseConnectionString(sp)
-                ,sp.GetRequiredService<ILogger>()));
+                ,sp.GetRequiredService<IAtlasLogger>()));
             services.AddScoped<IDonorImportFailureRepository>(sp => new DonorImportFailureRepository(fetchDonorImportDatabaseConnectionString(sp)));
         }
 
@@ -66,7 +66,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
         {
             services.AddScoped<IDonorUpdatesSaver, DonorUpdatesSaver>();
             services.AddScoped<IPublishableDonorUpdatesRepository>(sp => new PublishableDonorUpdatesRepository(fetchDonorImportDatabaseConnectionString(sp)
-                ,sp.GetRequiredService<ILogger>()));
+                ,sp.GetRequiredService<IAtlasLogger>()));
         }
 
         public static void RegisterDonorReader(
@@ -116,7 +116,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IMessageBatchPublisher<SearchableDonorUpdate>, MessageBatchPublisher<SearchableDonorUpdate>>(sp =>
             {
                 var serviceBusSettings = fetchMessagingServiceBusSettings(sp);
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<IAtlasLogger>();
                 var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
                 return new MessageBatchPublisher<SearchableDonorUpdate>(topicClientFactory, serviceBusSettings.UpdatedSearchableDonorsTopic,
                     serviceBusSettings.SendRetryCount, serviceBusSettings.SendRetryCooldownSeconds, logger);
@@ -128,14 +128,14 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IDonorInfoCheckerMessageSender, DonorCheckerMessageSender>(sp =>
             {
                 var messagingServiceBusSettings = fetchMessagingServiceBusSettings(sp);
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<IAtlasLogger>();
                 var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
                 return new DonorCheckerMessageSender(logger, topicClientFactory, messagingServiceBusSettings.DonorInfoCheckerResultsTopic);
             });
             services.AddScoped<IDonorIdCheckerMessageSender, DonorCheckerMessageSender>(sp =>
             {
                 var messagingServiceBusSettings = fetchMessagingServiceBusSettings(sp);
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<IAtlasLogger>();
                 var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
                 return new DonorCheckerMessageSender(logger, topicClientFactory, messagingServiceBusSettings.DonorIdCheckerResultsTopic);
             });
@@ -143,14 +143,14 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IDonorIdCheckerBlobStorageClient, DonorCheckerBlobStorageClient>(sp =>
             {
                 var storageSettings = fetchAzureStorageSettings(sp);
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<IAtlasLogger>();
                 return new DonorCheckerBlobStorageClient(logger, storageSettings.ConnectionString, storageSettings.DonorFileBlobContainer,
                     storageSettings.DonorIdCheckerResultsBlobContainer);
             });
             services.AddScoped<IDonorInfoCheckerBlobStorageClient, DonorCheckerBlobStorageClient>(sp =>
             {
                 var storageSettings = fetchAzureStorageSettings(sp);
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<IAtlasLogger>();
                 return new DonorCheckerBlobStorageClient(logger, storageSettings.ConnectionString, storageSettings.DonorFileBlobContainer,
                     storageSettings.DonorInfoCheckerResultsBlobContainer);
             });
@@ -185,7 +185,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IDonorImportBlobStorageClient, DonorImportBlobStorageClient>(sp =>
             {
                 var storageSettings = fetchAzureStorageSettings(sp);
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<IAtlasLogger>();
                 return new DonorImportBlobStorageClient(logger, storageSettings.ConnectionString, storageSettings.DonorFileBlobContainer);
             });
         }

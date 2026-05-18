@@ -1,5 +1,7 @@
 using Atlas.Common.ApplicationInsights;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Client.Models.SupportMessages;
 
@@ -23,11 +25,11 @@ namespace Atlas.Common.Notifications
     internal class NotificationSender : INotificationSender
     {
         private readonly INotificationsClient notificationsClient;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
         public NotificationSender(
             INotificationsClient notificationsClient,
-            ILogger logger)
+            IAtlasLogger logger)
         {
             this.notificationsClient = notificationsClient;
             this.logger = logger;
@@ -40,7 +42,9 @@ namespace Atlas.Common.Notifications
 
             try
             {
-                logger.SendTrace($"{nameof(Notification)} sent from {notification.Originator}. Summary: {notification.Summary}. Detail: {notification.Description}");
+                logger.SendTrace(
+                    $"{nameof(Notification)} sent from {notification.Originator}. Summary: {notification.Summary}. Detail: {notification.Description}"
+                );
                 await notificationsClient.SendNotification(notification);
             }
             catch (Exception ex)
@@ -56,7 +60,10 @@ namespace Atlas.Common.Notifications
 
             try
             {
-                logger.SendTrace($"{nameof(Alert)} sent from {alert.Originator}. Priority: {alert.Priority.ToString()}. Summary: {alert.Summary}. Detail: {alert.Description}", LogLevel.Warn);
+                logger.SendTrace(
+                    $"{nameof(Alert)} sent from {alert.Originator}. Priority: {alert.Priority.ToString()}. Summary: {alert.Summary}. Detail: {alert.Description}",
+                    LogLevel.Warn
+                );
                 await notificationsClient.SendAlert(alert);
             }
             catch (Exception ex)
@@ -69,7 +76,12 @@ namespace Atlas.Common.Notifications
         {
             try
             {
-                logger.SendEvent(new NotificationSenderFailureEventModel(exception, message));
+                logger.SendException(exception, LogLevel.Warn, new Dictionary<string, string>
+                    {
+                        { "Type", message.GetType().Name },
+                        { "Message", JsonConvert.SerializeObject(message) },
+                    }
+                );
             }
             catch
             {

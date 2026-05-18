@@ -1,7 +1,8 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.AzureStorage.ApplicationInsights;
 using Azure.Storage.Blobs;
 
 namespace Atlas.Common.AzureStorage.Blob
@@ -9,11 +10,10 @@ namespace Atlas.Common.AzureStorage.Blob
     public abstract class AzureStorageBlobClient
     {
         private readonly BlobServiceClient blobClient;
-        protected readonly ILogger logger;
-
+        protected readonly IAtlasLogger logger;
         private readonly string logLabel;
 
-        protected AzureStorageBlobClient(string azureStorageConnectionString, ILogger logger, string logLabel)
+        protected AzureStorageBlobClient(string azureStorageConnectionString, IAtlasLogger logger, string logLabel)
         {
             blobClient = new BlobServiceClient(azureStorageConnectionString);
             this.logger = logger;
@@ -46,17 +46,28 @@ namespace Atlas.Common.AzureStorage.Blob
             return container;
         }
 
-        protected AzureStorageEventModel StartAzureStorageCommunication(string filename, string container)
+        protected async Task<T> TimedCommunication<T>(string filename, string container, Func<Task<T>> operation)
         {
-            var azureStorageEventModel = new AzureStorageEventModel(filename, container);
-            azureStorageEventModel.StartAzureStorageCommunication();
-            return azureStorageEventModel;
+            var sw = Stopwatch.StartNew();
+            var result = await operation();
+            sw.Stop();
+            SendAzureStorageEvent(filename, container, sw.ElapsedMilliseconds);
+            return result;
         }
 
-        protected void EndAzureStorageCommunication(AzureStorageEventModel azureStorageEventModel)
+        protected async Task TimedCommunication(string filename, string container, Func<Task> operation)
         {
-            azureStorageEventModel.EndAzureStorageCommunication(logLabel);
-            logger.SendEvent(azureStorageEventModel);
+            var sw = Stopwatch.StartNew();
+            await operation();
+            sw.Stop();
+            SendAzureStorageEvent(filename, container, sw.ElapsedMilliseconds);
+        }
+
+        protected void SendAzureStorageEvent(string filename, string container, long elapsedMs)
+        {
+            logger.SendEvent("Azure Storage", LogLevel.Verbose,
+                new Dictionary<string, string> { { "Filename", filename }, { "Container", container } },
+                new Dictionary<string, double> { { $"Azure Storage - {logLabel} - duration /ms", elapsedMs } });
         }
     }
 }

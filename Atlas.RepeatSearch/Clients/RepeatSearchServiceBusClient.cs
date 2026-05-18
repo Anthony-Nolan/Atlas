@@ -26,9 +26,9 @@ namespace Atlas.RepeatSearch.Clients
         private readonly ITopicClientFactory topicClientFactory;
         private readonly int sendRetryCount;
         private readonly int sendRetryCooldownSeconds;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
-        public RepeatSearchServiceBusClient(MessagingServiceBusSettings messagingServiceBusSettings, [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, ILogger logger)
+        public RepeatSearchServiceBusClient(MessagingServiceBusSettings messagingServiceBusSettings, [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, IAtlasLogger logger)
         {
             repeatSearchRequestsTopicName = messagingServiceBusSettings.RepeatSearchRequestsTopic;
             resultsNotificationTopicName = messagingServiceBusSettings.RepeatSearchMatchingResultsTopic;

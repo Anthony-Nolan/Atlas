@@ -32,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly IMatchCriteriaMapper matchCriteriaMapper;
         private readonly IMatchScoringService scoringService;
         private readonly IMatchingService matchingService;
-        private readonly ILogger searchLogger;
+        private readonly IAtlasLogger searchLogger;
         private readonly IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher;
 
         public SearchService(

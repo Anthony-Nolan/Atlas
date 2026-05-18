@@ -50,7 +50,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly ISerologyToAllelesMetadataService serologyToAllelesMetadataService;
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
         //For CacheControl
         private readonly IAlleleNamesMetadataRepository alleleNamesRepository;
@@ -78,7 +78,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             ISerologyToAllelesMetadataService serologyToAllelesMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
-            ILogger logger,
+            IAtlasLogger logger,
 
             //For CacheControl
             IAlleleNamesMetadataRepository alleleNamesRepository,

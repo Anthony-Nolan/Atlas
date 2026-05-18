@@ -26,13 +26,13 @@ namespace Atlas.DonorImport.Services
         private readonly IDonorImportHistoryRepository repository;
         private readonly INotificationSender notificationSender;
         private readonly TimeSpan durationToCheckForStalledFiles;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
         public DonorImportFileHistoryService(
             IDonorImportHistoryRepository repository,
             INotificationSender notificationSender,
             DonorImportSettings donorImportSettings,
-            ILogger logger)
+            IAtlasLogger logger)
         {
             this.repository = repository;
             this.notificationSender = notificationSender;

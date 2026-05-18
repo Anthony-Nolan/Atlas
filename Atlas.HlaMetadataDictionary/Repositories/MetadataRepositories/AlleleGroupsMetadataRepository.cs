@@ -24,7 +24,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             ITableClientFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             IPersistentCacheProvider cacheProvider,
-            ILogger logger)
+            IAtlasLogger logger)
             : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey, logger)
         {
         }
