@@ -17,7 +17,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDonorMetadata(new FrequencySetMetadata {RegistryCode = RegistrySmallG})
                 .Build();
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.MatchProbabilities.ShouldHavePercentages(13, 30, 39);
         }

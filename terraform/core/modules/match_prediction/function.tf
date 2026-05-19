@@ -23,6 +23,7 @@ resource "azurerm_windows_function_app" "atlas_match_prediction_function" {
 
     "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.azure_storage.primary_connection_string
     "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds" = var.SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
+    "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes"                      = var.ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES
 
     "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
     "MacDictionary:TableName"                    = var.mac_import_table.name,
@@ -75,5 +76,13 @@ resource "azurerm_windows_function_app" "atlas_match_prediction_function" {
     name  = "MatchPredictionSql"
     type  = "SQLAzure"
     value = local.match_prediction_database_connection_string
+  }
+
+  lifecycle {
+    ignore_changes = [
+      site_config[0].health_check_eviction_time_in_min,
+      site_config[0].cors,
+      tags["hidden-link: /app-insights-resource-id"],
+    ]
   }
 }

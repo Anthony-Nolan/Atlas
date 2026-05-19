@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Startup.Configure(builder.Services);
+Startup.Configure(builder.Services, builder.Configuration);
 
 var app = builder.Build();
 

@@ -36,6 +36,7 @@ namespace Atlas.MatchPrediction.Functions
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
+            services.RegisterAsOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
             services.RegisterAsOptions<MatchPredictionRequestsSettings>("MatchPredictionRequests");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");

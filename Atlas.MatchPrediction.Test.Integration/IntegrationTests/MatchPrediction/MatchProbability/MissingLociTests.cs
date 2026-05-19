@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
@@ -48,7 +48,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes);
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(nullLocus).Percentage.Should().Be(zeroMismatchExpectedProbability);
             matchDetails.OneMismatchProbabilityPerLocus.GetLocus(nullLocus).Percentage.Should().Be(oneMismatchExpectedProbability);
@@ -79,7 +79,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes);
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(nullLocus).Percentage.Should().Be(zeroMismatchExpectedProbability);
             matchDetails.OneMismatchProbabilityPerLocus.GetLocus(nullLocus).Percentage.Should().Be(oneMismatchExpectedProbability);
@@ -121,7 +121,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes);
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(zeroMismatchProbability);
             matchDetails.MatchProbabilities.OneMismatchProbability.Percentage.Should().Be(oneMismatchProbability);

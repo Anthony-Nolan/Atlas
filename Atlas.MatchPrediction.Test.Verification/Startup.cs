@@ -2,6 +2,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.ManualTesting.Common.Settings;
 using Atlas.MatchingAlgorithm.DependencyInjection;
+using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Test.Verification;
 using Atlas.MatchPrediction.Test.Verification.DependencyInjection;
 using Atlas.MatchPrediction.Test.Verification.Settings;
@@ -48,6 +49,7 @@ namespace Atlas.MatchPrediction.Test.Verification
             services.RegisterAsOptions<VerificationAzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
+            services.RegisterAsOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
             services.RegisterAsOptions<MacDownloadSettings>("MacDictionary:Download");
         }

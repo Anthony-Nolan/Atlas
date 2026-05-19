@@ -1,9 +1,11 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
@@ -27,18 +29,21 @@ namespace Atlas.MatchPrediction.ExternalInterface
     internal class MatchPredictionAlgorithm : IMatchPredictionAlgorithm
     {
         private readonly IMatchProbabilityService matchProbabilityService;
+        private readonly IGenotypeSetService genotypeSetService;
         private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
         private readonly ISearchDonorResultUploader resultUploader;
         private readonly ILogger logger;
 
         public MatchPredictionAlgorithm(
             IMatchProbabilityService matchProbabilityService,
+            IGenotypeSetService genotypeSetService,
             // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
             IHaplotypeFrequencyService haplotypeFrequencyService,
             ISearchDonorResultUploader resultUploader)
         {
             this.matchProbabilityService = matchProbabilityService;
+            this.genotypeSetService = genotypeSetService;
             this.logger = logger;
             this.haplotypeFrequencyService = haplotypeFrequencyService;
             this.resultUploader = resultUploader;
@@ -49,7 +54,8 @@ namespace Atlas.MatchPrediction.ExternalInterface
         {
             using (logger.RunTimed("Run Match Prediction Algorithm"))
             {
-                var result = await matchProbabilityService.CalculateMatchProbability(singleDonorMatchProbabilityInput);
+                var patientGenotypeSet = await genotypeSetService.GetPatientGenotypeSet(singleDonorMatchProbabilityInput);
+                var result = await matchProbabilityService.CalculateMatchProbability(singleDonorMatchProbabilityInput, patientGenotypeSet);
                 return result.Round(4);
             }
         }
@@ -62,11 +68,19 @@ namespace Atlas.MatchPrediction.ExternalInterface
             {
                 var searchRequestId = multipleDonorMatchProbabilityInput.SearchRequestId;
                 var fileNames = new Dictionary<int, string>();
-                foreach (var matchProbabilityInput in multipleDonorMatchProbabilityInput.SingleDonorMatchProbabilityInputs)
+                var matchProbabilityInputs = multipleDonorMatchProbabilityInput.SingleDonorMatchProbabilityInputs.ToList();
+                if (matchProbabilityInputs.Count == 0)
+                {
+                    return fileNames;
+                }
+
+                var patientGenotypeSet = await genotypeSetService.GetPatientGenotypeSet(matchProbabilityInputs.First());
+
+                foreach (var matchProbabilityInput in matchProbabilityInputs)
                 {
                     using (logger.RunTimed("Run Match Prediction Algorithm per donor"))
                     {
-                        var result = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+                        var result = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput, patientGenotypeSet);
                         var matchProbabilityInputFileNames = await resultUploader.UploadSearchDonorResults(searchRequestId, matchProbabilityInput.Donor.DonorIds, result);
                         fileNames = fileNames.Merge(matchProbabilityInputFileNames);
                     }
@@ -82,5 +96,6 @@ namespace Atlas.MatchPrediction.ExternalInterface
                 haplotypeFrequencySetInput.DonorInfo,
                 haplotypeFrequencySetInput.PatientInfo);
         }
+
     }
 }

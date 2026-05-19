@@ -239,6 +239,12 @@ variable "MATCH_PREDICTION_DATABASE_USERNAME" {
   default = "match_prediction"
 }
 
+variable "MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES" {
+  type        = number
+  default     = 5
+  description = "Absolute cache TTL, in minutes, for the active HaplotypeFrequencySets lookup used by the match prediction service."
+}
+
 variable "MATCH_PREDICTION_DOWNLOAD_BATCH_SIZE" {
   type        = number
   default     = 10
@@ -249,6 +255,12 @@ variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
   type        = number
   default     = 8
   description = "Maximum number of match prediction requests processed in parallel per function instance. Keep this aligned with worker batch sizing."
+}
+
+variable "MATCH_PREDICTION_WORKER_BATCH_SIZE" {
+  type        = number
+  default     = 8
+  description = "Batch size used by the match prediction worker when receiving service bus messages. Aligned with match prediction request parallelism."
 }
 
 variable "MATCHING_PREDICTION_PROCESSING_BATCH_SIZE" {
@@ -527,4 +539,54 @@ variable "SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID" {
   type        = string
   default     = null
   description = "The ID of the action group to be used for deadletter alerts."
+}
+
+// Container Apps / ACR
+
+variable "ACR_NAME" {
+  type        = string
+  default     = "ancontainerregistry"
+  description = "Name of the shared Azure Container Registry."
+}
+
+variable "ACR_RESOURCE_GROUP_NAME" {
+  type        = string
+  default     = "AN-RESOURCE-GROUP"
+  description = "Resource group of the shared Azure Container Registry."
+}
+
+variable "SHARED_SUBSCRIPTION_ID" {
+  type        = string
+  default     = "f37d6d06-4bc8-4146-add7-fe2911b47e11"
+  description = "Subscription ID where shared organization-level resources reside (e.g., Container Registry)."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_IMAGE_TAG" {
+  type        = string
+  default     = "latest"
+  description = "Docker image tag for the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_CPU" {
+  type        = number
+  default     = 1.0
+  description = "CPU cores allocated to the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_MEMORY" {
+  type        = string
+  default     = "2Gi"
+  description = "Memory allocated to the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_MIN_REPLICAS" {
+  type        = number
+  default     = 0
+  description = "Minimum replica count for the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_MAX_REPLICAS" {
+  type        = number
+  default     = 1
+  description = "Maximum replica count for the match prediction container app."
 }

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
@@ -57,7 +57,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var patientHla = BuildHlaWithNullAllelePositionOf(nullAllele);
             var donorHla = BuildHlaWithNullAllelePositionOf(nullAllele);
 
-            var matchProbability = await MatchProbabilityService.CalculateMatchProbability(BuildInput(patientHla, donorHla));
+            var matchProbability = await CalculateMatchProbability(BuildInput(patientHla, donorHla));
 
             matchProbability.OverallMatchCount.Should().Be(10);
         }
@@ -68,7 +68,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var patientHla = BuildHlaWithNullAllelePositionOf(nullAllele);
             var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(LocusUnderTest, ExpressingAllele, ExpressingAllele).Build();
 
-            var matchProbability = await MatchProbabilityService.CalculateMatchProbability(BuildInput(patientHla, donorHla));
+            var matchProbability = await CalculateMatchProbability(BuildInput(patientHla, donorHla));
 
             matchProbability.OverallMatchCount.Should().Be(10);
         }
@@ -79,7 +79,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var patientHla = BuildHlaWithNullAllelePositionOf(nullAllele);
             var donorHla = DefaultUnambiguousAllelesBuilder.Build();
 
-            var matchProbability = await MatchProbabilityService.CalculateMatchProbability(BuildInput(patientHla, donorHla));
+            var matchProbability = await CalculateMatchProbability(BuildInput(patientHla, donorHla));
 
             matchProbability.OverallMatchCount.Should().Be(9);
         }
@@ -90,7 +90,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var patientHla = DefaultUnambiguousAllelesBuilder.WithDataAt(LocusUnderTest, MismatchedAllele, nullAllele).Build();
             var donorHla = DefaultUnambiguousAllelesBuilder.Build();
 
-            var matchProbability = await MatchProbabilityService.CalculateMatchProbability(BuildInput(patientHla, donorHla));
+            var matchProbability = await CalculateMatchProbability(BuildInput(patientHla, donorHla));
 
             matchProbability.OverallMatchCount.Should().Be(8);
         }
@@ -101,7 +101,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var patientHla = BuildHlaWithNullAllelePositionOf(nullAllele);
             var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(LocusUnderTest, MismatchedAllele, MismatchedAllele).Build();
 
-            var matchProbability = await MatchProbabilityService.CalculateMatchProbability(BuildInput(patientHla, donorHla));
+            var matchProbability = await CalculateMatchProbability(BuildInput(patientHla, donorHla));
 
             matchProbability.OverallMatchCount.Should().Be(8);
         }
@@ -112,7 +112,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var patientHla = BuildHlaWithNullAllelePositionOf(nullAllele);
             var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(LocusUnderTest, MismatchedAllele, nullAllele).Build();
 
-            var matchProbability = await MatchProbabilityService.CalculateMatchProbability(BuildInput(patientHla, donorHla));
+            var matchProbability = await CalculateMatchProbability(BuildInput(patientHla, donorHla));
 
             matchProbability.OverallMatchCount.Should().Be(8);
         }

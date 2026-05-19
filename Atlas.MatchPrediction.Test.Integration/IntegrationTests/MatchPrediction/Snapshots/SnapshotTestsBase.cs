@@ -9,6 +9,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using Atlas.MatchPrediction.Services.MatchProbability;
+using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
@@ -32,6 +33,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
     internal partial class SnapshotTests
     {
         private IMatchProbabilityService MatchProbabilityService { get; set; }
+        private IGenotypeSetService GenotypeSetService { get; set; }
 
         // Registry and ethnicity values must match those used in test HF set files.
         private const string Registry1 = "reg-1";
@@ -60,6 +62,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         public void SetUp()
         {
             MatchProbabilityService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchProbabilityService>();
+            GenotypeSetService = DependencyInjection.DependencyInjection.Provider.GetService<IGenotypeSetService>();
         }
 
         [OneTimeSetUp]
@@ -73,9 +76,15 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         // Confirm that a search with all the default builder values runs successfully
         public async Task Control()
         {
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(DefaultInputBuilder.Build());
+            var matchDetails = await CalculateMatchProbability(DefaultInputBuilder.Build());
 
             matchDetails.MatchProbabilities.ShouldHavePercentages(16, 30, 39);
+        }
+
+        private async Task<MatchProbabilityResponse> CalculateMatchProbability(SingleDonorMatchProbabilityInput input)
+        {
+            var patientGenotypeSet = await GenotypeSetService.GetPatientGenotypeSet(input);
+            return await MatchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet);
         }
 
         private static async Task ImportHaplotypeFrequencies()

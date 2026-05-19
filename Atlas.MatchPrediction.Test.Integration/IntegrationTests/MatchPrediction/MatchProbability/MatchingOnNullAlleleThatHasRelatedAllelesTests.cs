@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchPrediction.Data.Models;
@@ -42,7 +42,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(LocusUnderTest, NullAllelePosition, ExpressingAlleleFromSameGGroupAsNull).Build();
 
             var input = DefaultInputBuilder.WithPatientHla(patientHla).WithDonorHla(donorHla).Build();
-            var matchProbability = await MatchProbabilityService.CalculateMatchProbability(input);
+            var matchProbability = await CalculateMatchProbability(input);
 
             matchProbability.OverallMatchCount.Should().Be(9);
         }
@@ -54,7 +54,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(LocusUnderTest, NullAllelePosition, ExpressingAlleleFromSameGGroupAsNull).Build();
 
             var input = DefaultInputBuilder.WithPatientHla(patientHla).WithDonorHla(donorHla).Build();
-            var matchProbability = await MatchProbabilityService.CalculateMatchProbability(input);
+            var matchProbability = await CalculateMatchProbability(input);
 
             matchProbability.OverallMatchCount.Should().Be(9);
         }

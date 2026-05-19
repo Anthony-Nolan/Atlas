@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.MatchPrediction;
@@ -58,7 +58,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDonorMetadata(new FrequencySetMetadata {EthnicityCode = SpecificEthnicityCode, RegistryCode = SpecificRegistryCode})
                 .Build();
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             // We are expecting to use DefaultHaplotypeFrequencySetOption2, which will have a one mismatch probability of 50%.
             matchDetails.MatchProbabilities.OneMismatchProbability.Percentage.Should().Be(50);
@@ -86,7 +86,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 })
                 .Build();
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             // We are expecting to use DefaultHaplotypeFrequencySetOption2, which will have a one mismatch probability of 50%.
             matchDetails.MatchProbabilities.OneMismatchProbability.Percentage.Should().Be(50);
@@ -115,7 +115,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 })
                 .Build();
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             // We are expecting to use DefaultHaplotypeFrequencySetOption1, which will have a one mismatch probability of 11%.
             matchDetails.MatchProbabilities.OneMismatchProbability.Percentage.Should().Be(11);
@@ -145,7 +145,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDonorMetadata(new FrequencySetMetadata {EthnicityCode = donorEthnicity, RegistryCode = sharedRegistry})
                 .Build();
 
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
             // This test uses a combination of DefaultHaplotypeFrequencySetOption2 and DefaultHaplotypeFrequencySetOption3
             matchDetails.MatchProbabilities.OneMismatchProbability.Percentage.Should().Be(80);

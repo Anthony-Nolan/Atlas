@@ -85,6 +85,8 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "Matching:MessagingServiceBus:SearchRequestsTopic" = module.matching_algorithm.service_bus.matching_requests_topic.name
     "Matching:MessagingServiceBus:SearchResultsTopic"  = module.matching_algorithm.service_bus.matching_results_topic.name
 
+    "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes" = var.MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES
+
     "MatchPrediction:AzureStorage:ConnectionString"                    = azurerm_storage_account.azure_storage.primary_connection_string
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer" = module.match_prediction.storage.match_prediction_results_container_name
 
@@ -100,6 +102,14 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "SearchTrackingServiceBus:SendRetryCount"                 = var.SERVICE_BUS_SEND_RETRY_COUNT
     "SearchTrackingServiceBus:SendRetryCooldownSeconds"       = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
     "WEBSITE_RUN_FROM_PACKAGE"                                = var.WEBSITE_RUN_FROM_PACKAGE
+  }
+
+  lifecycle {
+    ignore_changes = [
+      site_config[0].health_check_eviction_time_in_min,
+      site_config[0].cors,
+      tags["hidden-link: /app-insights-resource-id"],
+    ]
   }
 
   connection_string {
@@ -194,6 +204,12 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
   }
 
   lifecycle {
+    ignore_changes = [
+      site_config[0].health_check_eviction_time_in_min,
+      site_config[0].cors,
+      tags["hidden-link: /app-insights-resource-id"],
+    ]
+
     replace_triggered_by = [
       # Recreate the entire functions app if the service plan changes.
       # This is necessary in case of updating var from `true` to `false`, as terraform attempts to destroy the public API service plan /before/ modifying the function app's service_plan_id.
