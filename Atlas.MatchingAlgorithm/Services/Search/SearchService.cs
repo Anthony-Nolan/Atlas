@@ -33,21 +33,20 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly IMatchScoringService scoringService;
         private readonly IMatchingService matchingService;
         private readonly IAtlasLogger searchLogger;
-        private readonly IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher;
+        private readonly ISearchTrackingEventPublisher searchTrackingEventPublisher;
 
         public SearchService(
             IMatchCriteriaMapper matchCriteriaMapper,
             IMatchScoringService scoringService,
             IMatchingService matchingService,
-            // ReSharper disable once SuggestBaseTypeForParameter
             IMatchingAlgorithmSearchLogger searchLogger,
-            IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher)
+            ISearchTrackingEventPublisher searchTrackingEventPublisher)
         {
             this.scoringService = scoringService;
             this.matchingService = matchingService;
             this.searchLogger = searchLogger;
             this.matchCriteriaMapper = matchCriteriaMapper;
-            this.matchingAlgorithmSearchTrackingDispatcher = matchingAlgorithmSearchTrackingDispatcher;
+            this.searchTrackingEventPublisher = searchTrackingEventPublisher;
         }
 
         public async Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest matchingRequest, DateTimeOffset? cutOffDate)
@@ -83,7 +82,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
         private async IAsyncEnumerable<MatchResult> RunSubSearches(List<AlleleLevelMatchCriteria> splitSearch, DateTimeOffset? cutOffDate, NonHlaFilteringCriteria nonHlaFilteringCriteria)
         {
-            await matchingAlgorithmSearchTrackingDispatcher.ProcessCoreMatchingStarted();
+            await searchTrackingEventPublisher.ProcessCoreMatchingStarted();
 
             foreach (var subSearch in splitSearch)
             {
@@ -95,7 +94,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 }
             }
 
-            await matchingAlgorithmSearchTrackingDispatcher.ProcessCoreMatchingEnded();
+            await searchTrackingEventPublisher.ProcessCoreMatchingEnded();
         }
 
         private MatchingAlgorithmResult MapSearchResultToApiSearchResult(

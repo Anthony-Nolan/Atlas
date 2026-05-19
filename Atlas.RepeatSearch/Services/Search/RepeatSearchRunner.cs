@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -47,14 +47,13 @@ namespace Atlas.RepeatSearch.Services.Search
         private readonly AzureStorageSettings azureStorageSettings;
         private readonly int searchRequestMaxRetryCount;
         private readonly IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender;
-        private readonly IMatchingAlgorithmSearchTrackingContextManager matchingAlgorithmSearchTrackingContextManager;
-        private readonly IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher;
+        private readonly MatchingAlgorithmSearchTrackingContext matchingAlgorithmSearchTrackingContext;
+        private readonly ISearchTrackingEventPublisher searchTrackingEventPublisher;
 
         public RepeatSearchRunner(
             IRepeatSearchServiceBusClient repeatSearchServiceBusClient,
             ISearchService searchService,
             ISearchResultsBlobStorageClient repeatResultsBlobStorageClient,
-            // ReSharper disable once SuggestBaseTypeForParameter
             IMatchingAlgorithmSearchLogger repeatSearchLogger,
             MatchingAlgorithmSearchLoggingContext repeatSearchLoggingContext,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
@@ -65,8 +64,8 @@ namespace Atlas.RepeatSearch.Services.Search
             AzureStorageSettings azureStorageSettings,
             MessagingServiceBusSettings messagingServiceBusSettings,
             IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender,
-            IMatchingAlgorithmSearchTrackingContextManager matchingAlgorithmSearchTrackingContextManager,
-            IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher)
+            MatchingAlgorithmSearchTrackingContext matchingAlgorithmSearchTrackingContext,
+            ISearchTrackingEventPublisher searchTrackingEventPublisher)
         {
             this.repeatSearchServiceBusClient = repeatSearchServiceBusClient;
             this.searchService = searchService;
@@ -81,8 +80,8 @@ namespace Atlas.RepeatSearch.Services.Search
             this.azureStorageSettings = azureStorageSettings;
             searchRequestMaxRetryCount = messagingServiceBusSettings.RepeatSearchRequestsMaxDeliveryCount;
             this.repeatSearchMatchingFailureNotificationSender = repeatSearchMatchingFailureNotificationSender;
-            this.matchingAlgorithmSearchTrackingContextManager = matchingAlgorithmSearchTrackingContextManager;
-            this.matchingAlgorithmSearchTrackingDispatcher = matchingAlgorithmSearchTrackingDispatcher;
+            this.matchingAlgorithmSearchTrackingContext = matchingAlgorithmSearchTrackingContext;
+            this.searchTrackingEventPublisher = searchTrackingEventPublisher;
         }
 
         public async Task RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber, DateTimeOffset enqueuedTimeUtc)
@@ -100,20 +99,15 @@ namespace Atlas.RepeatSearch.Services.Search
             repeatSearchLoggingContext.SearchRequestId = originalSearchRequestId;
             repeatSearchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
 
-            var context = new MatchingAlgorithmSearchTrackingContext
-            {
-                SearchIdentifier = new Guid(repeatSearchId),
-                OriginalSearchIdentifier = new Guid(originalSearchRequestId),
-                AttemptNumber = (byte)attemptNumber
-            };
-
-            matchingAlgorithmSearchTrackingContextManager.Set(context);
+            matchingAlgorithmSearchTrackingContext.SearchIdentifier = new Guid(repeatSearchId);
+            matchingAlgorithmSearchTrackingContext.OriginalSearchIdentifier = new Guid(originalSearchRequestId);
+            matchingAlgorithmSearchTrackingContext.AttemptNumber = (byte)attemptNumber;
 
             try
             {
                 await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
 
-                await matchingAlgorithmSearchTrackingDispatcher.ProcessInitiation(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
+                await searchTrackingEventPublisher.ProcessInitiation(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
 
                 // ReSharper disable once PossibleInvalidOperationException - validation has ensured this is not null.
                 var searchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value;
@@ -144,10 +138,10 @@ namespace Atlas.RepeatSearch.Services.Search
                     MatchingStartTime = searchStartTime
                 };
 
-                await matchingAlgorithmSearchTrackingDispatcher.ProcessPersistingResultsStarted();
+                await searchTrackingEventPublisher.ProcessPersistingResultsStarted();
                 await repeatResultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,
                     $"{originalSearchRequestId}/{repeatSearchId}");
-                await matchingAlgorithmSearchTrackingDispatcher.ProcessPersistingResultsEnded();
+                await searchTrackingEventPublisher.ProcessPersistingResultsEnded();
                 resultsSentTime = DateTime.UtcNow;
 
                 var notification = new MatchingResultsNotification
@@ -219,7 +213,7 @@ namespace Atlas.RepeatSearch.Services.Search
             }
             finally
             {
-                await matchingAlgorithmSearchTrackingDispatcher.ProcessCompleted((
+                await searchTrackingEventPublisher.ProcessCompleted((
                     HlaNomenclatureVersion: hlaNomenclatureVersion,
                     ResultsSentTimeUtc: resultsSentTime,
                     NumberOfResults: numberOfResults,

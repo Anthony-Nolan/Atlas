@@ -40,7 +40,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
         private IRankingService rankingService;
         private IMatchScoreCalculator matchScoreCalculator;
         private IScoreResultAggregator scoreResultAggregator;
-        private IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher;
+        private ISearchTrackingEventPublisher searchTrackingEventPublisher;
 
         private IMatchScoringService scoringService;
 
@@ -56,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
             matchScoreCalculator = Substitute.For<IMatchScoreCalculator>();
             scoreResultAggregator = Substitute.For<IScoreResultAggregator>();
             var hlaVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
-            matchingAlgorithmSearchTrackingDispatcher = Substitute.For<IMatchingAlgorithmSearchTrackingDispatcher>();
+            searchTrackingEventPublisher = Substitute.For<ISearchTrackingEventPublisher>();
 
             rankingService.RankSearchResults(Arg.Any<IEnumerable<MatchAndScoreResult>>())
                 .Returns(callInfo => (IEnumerable<MatchAndScoreResult>) callInfo.Args().First());
@@ -84,7 +84,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
                 Substitute.For<IMatchingAlgorithmSearchLogger>(),
                 Substitute.For<IDpb1TceGroupMatchCalculator>(),
                 Substitute.For<IAtlasLogger>(),
-                matchingAlgorithmSearchTrackingDispatcher
+                searchTrackingEventPublisher
             );
         }
 

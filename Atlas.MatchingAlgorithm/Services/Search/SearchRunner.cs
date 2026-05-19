@@ -41,22 +41,21 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly IMatchingFailureNotificationSender matchingFailureNotificationSender;
         private readonly int searchRequestMaxRetryCount;
         private readonly AzureStorageSettings azureStorageSettings;
-        private readonly IMatchingAlgorithmSearchTrackingContextManager matchingAlgorithmSearchTrackingContextManager;
-        private readonly IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher;
+        private readonly MatchingAlgorithmSearchTrackingContext matchingAlgorithmSearchTrackingContext;
+        private readonly ISearchTrackingEventPublisher searchTrackingEventPublisher;
 
         public SearchRunner(
             ISearchServiceBusClient searchServiceBusClient,
             ISearchService searchService,
             ISearchResultsBlobStorageClient resultsBlobStorageClient,
-            // ReSharper disable once SuggestBaseTypeForParameter
             IMatchingAlgorithmSearchLogger searchLogger,
             MatchingAlgorithmSearchLoggingContext searchLoggingContext,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             MessagingServiceBusSettings messagingServiceBusSettings,
             IMatchingFailureNotificationSender matchingFailureNotificationSender,
             AzureStorageSettings azureStorageSettings,
-            IMatchingAlgorithmSearchTrackingContextManager matchingAlgorithmSearchTrackingContextManager,
-            IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher)
+            MatchingAlgorithmSearchTrackingContext matchingAlgorithmSearchTrackingContext,
+            ISearchTrackingEventPublisher searchTrackingEventPublisher)
         {
             this.searchServiceBusClient = searchServiceBusClient;
             this.searchService = searchService;
@@ -67,8 +66,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.matchingFailureNotificationSender = matchingFailureNotificationSender;
             searchRequestMaxRetryCount = messagingServiceBusSettings.SearchRequestsMaxDeliveryCount;
             this.azureStorageSettings = azureStorageSettings;
-            this.matchingAlgorithmSearchTrackingContextManager = matchingAlgorithmSearchTrackingContextManager;
-            this.matchingAlgorithmSearchTrackingDispatcher = matchingAlgorithmSearchTrackingDispatcher;
+            this.matchingAlgorithmSearchTrackingContext = matchingAlgorithmSearchTrackingContext;
+            this.searchTrackingEventPublisher = searchTrackingEventPublisher;
         }
 
         public async Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest, int attemptNumber, DateTimeOffset enqueuedTimeUtc)
@@ -84,18 +83,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             int? numberOfResults = null;
             MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = null;
 
-            var context = new MatchingAlgorithmSearchTrackingContext
-            {
-                SearchIdentifier = new Guid(searchRequestId),
-                AttemptNumber = (byte)attemptNumber
-            };
-            matchingAlgorithmSearchTrackingContextManager.Set(context);
+            matchingAlgorithmSearchTrackingContext.SearchIdentifier = new Guid(searchRequestId);
+            matchingAlgorithmSearchTrackingContext.AttemptNumber = (byte)attemptNumber;
 
             try
             {
                 await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.SearchRequest);
 
-                await matchingAlgorithmSearchTrackingDispatcher.ProcessInitiation(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
+                await searchTrackingEventPublisher.ProcessInitiation(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
 
                 searchStopWatch.Start();
                 var results = (await searchService.Search(identifiedSearchRequest.SearchRequest, null)).ToList();
@@ -113,10 +108,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     MatchingStartTime = searchStartTime
                 };
 
-                await matchingAlgorithmSearchTrackingDispatcher.ProcessPersistingResultsStarted();
+                await searchTrackingEventPublisher.ProcessPersistingResultsStarted();
                 await resultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,
                     searchResultSet.SearchRequestId);
-                await matchingAlgorithmSearchTrackingDispatcher.ProcessPersistingResultsEnded();
+                await searchTrackingEventPublisher.ProcessPersistingResultsEnded();
                 numberOfResults = results.Count;
 
                 var notification = new MatchingResultsNotification
@@ -212,7 +207,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     }
                 });
 
-                await matchingAlgorithmSearchTrackingDispatcher.ProcessCompleted(
+                await searchTrackingEventPublisher.ProcessCompleted(
                     (
                         HlaNomenclatureVersion: hlaNomenclatureVersion,
                         ResultsSentTimeUtc: resultsSentTime,

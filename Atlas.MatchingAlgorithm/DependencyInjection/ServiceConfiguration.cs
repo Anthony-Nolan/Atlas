@@ -400,8 +400,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<MatchingAlgorithmImportLoggingContext>();
             services.AddScoped<IMatchingAlgorithmImportLogger, MatchingAlgorithmImportLogger>();
             services.AddScoped<MatchingAlgorithmSearchTrackingContext>();
-            services.AddScoped<IMatchingAlgorithmSearchTrackingContextManager, MatchingAlgorithmSearchTrackingContextManager>();
-            services.AddScoped<IMatchingAlgorithmSearchTrackingDispatcher, MatchingAlgorithmSearchTrackingDispatcher>();
+            services.AddScoped<ISearchTrackingEventPublisher, SearchTrackingEventPublisher>();
 
             // Matching Services
             services.AddScoped<IMatchingService, MatchingService>();
