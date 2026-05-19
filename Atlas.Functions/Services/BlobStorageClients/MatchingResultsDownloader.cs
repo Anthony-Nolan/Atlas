@@ -15,7 +15,7 @@ namespace Atlas.Functions.Services.BlobStorageClients
     {
         /// <summary>
         /// if "batchFolder" is not null, results will be loaded from all files within this folder, otherwise - results will be loaded along with search summary from "blobName" file
-        /// <summary>
+        /// </summary>
         public Task<ResultSet<MatchingAlgorithmResult>> Download(string blobName, bool isRepeatSearch, string batchFolder = null);
 
         Task<ResultSet<MatchingAlgorithmResult>> DownloadSummary(string blobName, bool isRepeatSearch);
