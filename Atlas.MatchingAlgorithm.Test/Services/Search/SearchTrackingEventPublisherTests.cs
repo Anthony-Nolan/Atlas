@@ -1,10 +1,10 @@
-﻿using System;
+using System;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.SearchTracking.Common.Clients;
 using NSubstitute;
 using NUnit.Framework;
 using System.Threading.Tasks;
-using Atlas.MatchingAlgorithm.Models;
 using Atlas.SearchTracking.Common.Models;
 using Atlas.SearchTracking.Common.Enums;
 using FluentAssertions;
@@ -13,22 +13,20 @@ using FluentAssertions.Extensions;
 namespace Atlas.MatchingAlgorithm.Test.Services.Search
 {
     [TestFixture]
-    public class MatchingAlgorithmSearchTrackingDispatcherTests
+    public class SearchTrackingEventPublisherTests
     {
         private ISearchTrackingServiceBusClient searchTrackingServiceBusClient;
-        private IMatchingAlgorithmSearchTrackingContextManager searchTrackingContextManager;
 
-        private MatchingAlgorithmSearchTrackingDispatcher searchTrackingDispatcher;
+        private SearchTrackingEventPublisher searchTrackingDispatcher;
 
         [SetUp]
         public void SetUp()
         {
             searchTrackingServiceBusClient = Substitute.For<ISearchTrackingServiceBusClient>();
-            searchTrackingContextManager = Substitute.For<IMatchingAlgorithmSearchTrackingContextManager>();
-            searchTrackingContextManager.Retrieve().ReturnsForAnyArgs(new MatchingAlgorithmSearchTrackingContext
-                { SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"), AttemptNumber = 1 });
+            var context = new MatchingAlgorithmSearchTrackingContext
+                { SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"), AttemptNumber = 1 };
 
-            searchTrackingDispatcher = new MatchingAlgorithmSearchTrackingDispatcher(searchTrackingContextManager, searchTrackingServiceBusClient);
+            searchTrackingDispatcher = new SearchTrackingEventPublisher(context, searchTrackingServiceBusClient);
         }
 
         [Test]
