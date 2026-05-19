@@ -22,13 +22,12 @@ namespace Atlas.Functions.Services
     public interface ISearchCompletionMessageSender
     {
         Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime, string resultsBatchFolder) where T : SearchResultSet;
-        Task PublishFailureMessage(SearchRequestIdentifiers requestInfo);
+        Task PublishFailureMessage(SendFailureNotificationParameters parameters);
     }
 
     internal class SearchCompletionMessageSender : ISearchCompletionMessageSender
     {
         private readonly IAtlasLogger logger;
-        private readonly IMapper mapper;
         private readonly string resultsNotificationTopicName;
         private readonly string repeatResultsNotificationTopicName;
         private readonly ITopicClientFactory topicClientFactory;
@@ -39,11 +38,9 @@ namespace Atlas.Functions.Services
         public SearchCompletionMessageSender(
             IOptions<MessagingServiceBusSettings> messagingServiceBusSettings,
             ISearchLogger<SearchLoggingContext> logger,
-            IMapper mapper,
             [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory)
         {
             this.logger = logger;
-            this.mapper = mapper;
             this.topicClientFactory = topicClientFactory;
 
             resultsNotificationTopicName = messagingServiceBusSettings.Value.SearchResultsTopic;
@@ -96,14 +93,18 @@ namespace Atlas.Functions.Services
         }
 
         /// <inheritdoc />
-        public async Task PublishFailureMessage(SearchRequestIdentifiers requestInfo)
+        public async Task PublishFailureMessage(SendFailureNotificationParameters parameters)
         {
             var searchResultsNotification = new SearchResultsNotification
             {
                 WasSuccessful = false,
-                SearchRequestId = requestInfo.SearchRequestId,
-                RepeatSearchRequestId = requestInfo.RepeatSearchRequestId,
-                FailureInfo = mapper.Map<SearchFailureInfo>(requestInfo)
+                SearchRequestId = parameters.SearchRequestId,
+                RepeatSearchRequestId = parameters.RepeatSearchRequestId,
+                FailureInfo = new SearchFailureInfo
+                {
+                    StageReached = parameters.StageReached,
+                    MatchingAlgorithmFailureInfo = parameters.MatchingAlgorithmFailureInfo
+                }
             };
 
             await SendNotificationMessage(searchResultsNotification);
