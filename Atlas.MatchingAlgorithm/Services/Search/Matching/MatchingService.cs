@@ -35,8 +35,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             IMatchFilteringService matchFilteringService,
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchingAlgorithmSearchLogger searchLogger,
-            MatchingConfigurationSettings matchingConfigurationSettings,
-            IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher)
+            MatchingConfigurationSettings matchingConfigurationSettings)
         {
             this.donorMatchingService = donorMatchingService;
             donorInspectionRepository = transientRepositoryFactory.GetDonorInspectionRepository();

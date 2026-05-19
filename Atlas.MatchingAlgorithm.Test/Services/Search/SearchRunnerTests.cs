@@ -13,6 +13,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
@@ -38,8 +39,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         private ISearchResultsBlobStorageClient resultsBlobStorageClient;
         private IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
         private IMatchingFailureNotificationSender matchingFailureNotificationSender;
-        private IMatchingAlgorithmSearchTrackingContextManager matchingAlgorithmSearchTrackingContextManager;
-        private IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher;
+        private ISearchTrackingEventPublisher searchTrackingEventPublisher;
 
         private ISearchRunner searchRunner;
         private ISearchRunner batchedResultsSearchRunner;
@@ -53,8 +53,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             hlaNomenclatureVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
             var logger = Substitute.For<IMatchingAlgorithmSearchLogger>();
             matchingFailureNotificationSender = Substitute.For<IMatchingFailureNotificationSender>();
-            matchingAlgorithmSearchTrackingContextManager = Substitute.For<IMatchingAlgorithmSearchTrackingContextManager>();
-            matchingAlgorithmSearchTrackingDispatcher = Substitute.For<IMatchingAlgorithmSearchTrackingDispatcher>();
+            searchTrackingEventPublisher = Substitute.For<ISearchTrackingEventPublisher>();
 
             batchedResultsSearchService = Substitute.For<ISearchService>();
             batchedResultsSearchService.Search(Arg.Any<SearchRequest>(), Arg.Any<DateTimeOffset?>())
@@ -70,8 +69,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                 new MessagingServiceBusSettings { SearchRequestsMaxDeliveryCount = MaxRetryCount },
                 matchingFailureNotificationSender,
                 new Settings.Azure.AzureStorageSettings(),
-                matchingAlgorithmSearchTrackingContextManager,
-                matchingAlgorithmSearchTrackingDispatcher);
+                new MatchingAlgorithmSearchTrackingContext(),
+                searchTrackingEventPublisher);
 
             batchedResultsSearchRunner = new SearchRunner(
                 searchServiceBusClient,
@@ -83,8 +82,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                 new MessagingServiceBusSettings { SearchRequestsMaxDeliveryCount = MaxRetryCount },
                 matchingFailureNotificationSender,
                 new Settings.Azure.AzureStorageSettings { SearchResultsBatchSize = 1 },
-                matchingAlgorithmSearchTrackingContextManager,
-                matchingAlgorithmSearchTrackingDispatcher);
+                new MatchingAlgorithmSearchTrackingContext(),
+                searchTrackingEventPublisher);
         }
 
         [Test]
@@ -315,7 +314,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             }
             finally
             {
-                await matchingAlgorithmSearchTrackingDispatcher.Received().ProcessCompleted(
+                await searchTrackingEventPublisher.Received().ProcessCompleted(
                     Arg.Any<(string, DateTime?, int?, MatchingAlgorithmFailureInfo, MatchingAlgorithmRepeatSearchResultsDetails, int?)>());
             }
         }
@@ -340,7 +339,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             }
             finally
             {
-                await matchingAlgorithmSearchTrackingDispatcher.Received().ProcessCompleted(
+                await searchTrackingEventPublisher.Received().ProcessCompleted(
                     Arg.Any<(string, DateTime?, int?, MatchingAlgorithmFailureInfo, MatchingAlgorithmRepeatSearchResultsDetails, int?)>());
             }
         }
