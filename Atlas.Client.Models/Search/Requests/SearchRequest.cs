@@ -2,11 +2,6 @@
 using Atlas.Client.Models.Common.Requests;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 
-// ReSharper disable ClassNeverInstantiated.Global
-
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-
 namespace Atlas.Client.Models.Search.Requests
 {
     public class SearchRequest
