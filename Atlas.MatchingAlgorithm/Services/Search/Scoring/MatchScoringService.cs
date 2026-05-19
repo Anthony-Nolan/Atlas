@@ -29,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
     {
         private readonly IRankingService rankingService;
         private readonly IMatchingAlgorithmSearchLogger searchLogger;
-        private readonly IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher;
+        private readonly ISearchTrackingEventPublisher searchTrackingEventPublisher;
 
         public MatchScoringService(
             IHlaMetadataDictionaryFactory factory,
@@ -43,7 +43,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             IMatchingAlgorithmSearchLogger searchLogger,
             IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator,
             IAtlasLogger logger,
-            IMatchingAlgorithmSearchTrackingDispatcher matchingAlgorithmSearchTrackingDispatcher)
+            ISearchTrackingEventPublisher searchTrackingEventPublisher)
             : base(
                 factory,
                 hlaNomenclatureVersionAccessor,
@@ -57,7 +57,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         {
             this.rankingService = rankingService;
             this.searchLogger = searchLogger;
-            this.matchingAlgorithmSearchTrackingDispatcher = matchingAlgorithmSearchTrackingDispatcher;
+            this.searchTrackingEventPublisher = searchTrackingEventPublisher;
         }
 
         /// <inheritdoc />
@@ -108,7 +108,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                 var matchResultsCount = await request.MatchResults.CountAsync();
                 await foreach (var matchResult in request.MatchResults)
                 {
-                    await matchingAlgorithmSearchTrackingDispatcher.ProcessCoreScoringOneDonorStarted();
+                    await searchTrackingEventPublisher.ProcessCoreScoringOneDonorStarted();
 
                     yield return new MatchAndScoreResult
                     {
@@ -119,7 +119,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
                 if (matchResultsCount > 0)
                 {
-                    await matchingAlgorithmSearchTrackingDispatcher.ProcessCoreScoringAllDonorsEnded();
+                    await searchTrackingEventPublisher.ProcessCoreScoringAllDonorsEnded();
                 }
             }
         }
