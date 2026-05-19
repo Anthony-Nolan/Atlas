@@ -22,7 +22,7 @@ namespace Atlas.Functions.Services
     public interface ISearchCompletionMessageSender
     {
         Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime, string resultsBatchFolder) where T : SearchResultSet;
-        Task PublishFailureMessage(FailureNotificationRequestInfo requestInfo);
+        Task PublishFailureMessage(SearchRequestIdentifiers requestInfo);
     }
 
     internal class SearchCompletionMessageSender : ISearchCompletionMessageSender
@@ -96,7 +96,7 @@ namespace Atlas.Functions.Services
         }
 
         /// <inheritdoc />
-        public async Task PublishFailureMessage(FailureNotificationRequestInfo requestInfo)
+        public async Task PublishFailureMessage(SearchRequestIdentifiers requestInfo)
         {
             var searchResultsNotification = new SearchResultsNotification
             {
