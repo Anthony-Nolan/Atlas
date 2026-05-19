@@ -19,3 +19,9 @@ output "sql_database" {
     connection_string = local.match_prediction_database_connection_string
   }
 }
+
+output "service_bus" {
+  value = {
+    parallel_match_prediction_requests_topic = azurerm_servicebus_topic.parallel-match-prediction-requests
+  }
+}
