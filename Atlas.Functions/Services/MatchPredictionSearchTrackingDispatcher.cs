@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System;
+using Atlas.Functions.Models;
 using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
@@ -22,8 +23,7 @@ namespace Atlas.Functions.Services
 
         Task ProcessPersistingResultsEnded(Guid searchIdentifier, Guid? originalSearchIdentifier);
 
-        Task ProcessCompleted((Guid SearchIdentifier, Guid? OriginalSearchIdentifier, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)
-            eventDetails);
+        Task ProcessCompleted(MatchPredictionProcessCompletedParameters parameters);
         
         Task ProcessResultsSent(Guid searchIdentifier, Guid? originalSearchIdentifier);
     }
@@ -124,19 +124,19 @@ namespace Atlas.Functions.Services
                 matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionRunningBatchesEnded);
         }
 
-        public async Task ProcessCompleted((Guid SearchIdentifier, Guid? OriginalSearchIdentifier, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) eventDetails)
+        public async Task ProcessCompleted(MatchPredictionProcessCompletedParameters parameters)
         {
             var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
             {
-                SearchIdentifier = eventDetails.SearchIdentifier,
-                OriginalSearchIdentifier = eventDetails.OriginalSearchIdentifier,
+                SearchIdentifier = parameters.SearchIdentifier,
+                OriginalSearchIdentifier = parameters.OriginalSearchIdentifier,
                 CompletionTimeUtc = DateTime.UtcNow,
                 CompletionDetails = new MatchPredictionCompletionDetails
                 {
-                    IsSuccessful = eventDetails.FailureInfo == null,
-                    FailureInfo = eventDetails.FailureInfo,
-                    DonorsPerBatch = eventDetails.DonorsPerBatch,
-                    TotalNumberOfBatches = eventDetails.TotalNumberOfBatches,
+                    IsSuccessful = parameters.FailureInfo == null,
+                    FailureInfo = parameters.FailureInfo,
+                    DonorsPerBatch = parameters.DonorsPerBatch,
+                    TotalNumberOfBatches = parameters.TotalNumberOfBatches,
                 }
             };
 

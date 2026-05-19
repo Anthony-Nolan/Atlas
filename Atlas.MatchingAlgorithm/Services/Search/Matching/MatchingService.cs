@@ -30,10 +30,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
         public MatchingService(
             IDonorMatchingService donorMatchingService,
-            // ReSharper disable once SuggestBaseTypeForParameter
             IActiveRepositoryFactory transientRepositoryFactory,
             IMatchFilteringService matchFilteringService,
-            // ReSharper disable once SuggestBaseTypeForParameter
             IMatchingAlgorithmSearchLogger searchLogger,
             MatchingConfigurationSettings matchingConfigurationSettings)
         {
