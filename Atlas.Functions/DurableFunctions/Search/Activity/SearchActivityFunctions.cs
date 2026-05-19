@@ -225,7 +225,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [Function(nameof(SendFailureNotification))]
-        public async Task SendFailureNotification([ActivityTrigger] FailureNotificationRequestInfo requestInfo)
+        public async Task SendFailureNotification([ActivityTrigger] SearchRequestIdentifiers requestInfo)
         {
             InitializeLoggingContext(requestInfo.SearchRequestId);
             var trackingSearchIdentifier = new Guid(requestInfo.RepeatSearchRequestId ?? requestInfo.SearchRequestId);

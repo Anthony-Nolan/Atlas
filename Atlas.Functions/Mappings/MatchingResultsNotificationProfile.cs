@@ -8,9 +8,9 @@ namespace Atlas.Functions.Mappings
     {
         public MatchingResultsNotificationProfile()
         {
-            CreateMap<MatchingResultsNotification, FailureNotificationRequestInfo>()
-                .ForMember(dest => dest.StageReached, opt => opt.Ignore())
-                .ForMember(dest => dest.MatchingAlgorithmFailureInfo, opt => opt.MapFrom(src => src.FailureInfo));
+            // Maps only the request identity fields; failure-specific details are assembled
+            // on demand (see SearchOrchestrationFunctions.SendFailureNotification).
+            CreateMap<MatchingResultsNotification, SearchRequestIdentifiers>();
         }
     }
 }
