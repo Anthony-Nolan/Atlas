@@ -147,27 +147,27 @@ variable "SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
 }
 
 // External SQL variables
-variable "use_external_sql" {
+variable "USE_EXTERNAL_SQL" {
   type    = bool
   default = false
 }
 
-variable "external_sql_server_name" {
+variable "EXTERNAL_SQL_SERVER_NAME" {
   type    = string
   default = ""
 }
 
-variable "external_sql_db_shared" {
+variable "EXTERNAL_SQL_DB_SHARED" {
   type    = string
   default = ""
 }
 
-variable "external_sql_db_matching_a" {
+variable "EXTERNAL_SQL_DB_MATCHING_A" {
   type    = string
   default = ""
 }
 
-variable "external_sql_db_matching_b" {
+variable "EXTERNAL_SQL_DB_MATCHING_B" {
   type    = string
   default = ""
 }

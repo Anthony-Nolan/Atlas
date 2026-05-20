@@ -91,9 +91,9 @@ module "donor_import" {
   ALLOW_FULL_MODE_IMPORT                        = var.DONOR_IMPORT_ALLOW_FULL_MODE_IMPORT
 
   // External SQL variables
-  use_external_sql         = var.use_external_sql
-  external_sql_server_name = var.external_sql_server_name
-  external_sql_db_shared   = var.external_sql_db_shared
+  USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
+  EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
+  EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
 }
 
 module "matching_algorithm" {
@@ -173,11 +173,11 @@ module "matching_algorithm" {
   SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC = var.MATCHING_ALGORITHM_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
 
   // External SQL variables
-  use_external_sql           = var.use_external_sql
-  external_sql_server_name   = var.external_sql_server_name
-  external_sql_db_shared     = var.external_sql_db_shared
-  external_sql_db_matching_a = var.external_sql_db_matching_a
-  external_sql_db_matching_b = var.external_sql_db_matching_b
+  USE_EXTERNAL_SQL           = var.USE_EXTERNAL_SQL
+  EXTERNAL_SQL_SERVER_NAME   = var.EXTERNAL_SQL_SERVER_NAME
+  EXTERNAL_SQL_DB_SHARED     = var.EXTERNAL_SQL_DB_SHARED
+  EXTERNAL_SQL_DB_MATCHING_A = var.EXTERNAL_SQL_DB_MATCHING_A
+  EXTERNAL_SQL_DB_MATCHING_B = var.EXTERNAL_SQL_DB_MATCHING_B
 }
 
 module "match_prediction" {
@@ -237,9 +237,9 @@ module "match_prediction" {
   CONTAINER_MAX_REPLICAS                                   = var.MATCH_PREDICTION_CONTAINER_MAX_REPLICAS
 
   // External SQL variables
-  use_external_sql         = var.use_external_sql
-  external_sql_server_name = var.external_sql_server_name
-  external_sql_db_shared   = var.external_sql_db_shared
+  USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
+  EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
+  EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
 }
 
 module "multiple_allele_code_lookup" {
@@ -302,9 +302,9 @@ module "repeat_search" {
   STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT           = var.STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT
 
   // External SQL variables
-  use_external_sql         = var.use_external_sql
-  external_sql_server_name = var.external_sql_server_name
-  external_sql_db_shared   = var.external_sql_db_shared
+  USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
+  EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
+  EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
 }
 
 module "search_tracking" {
@@ -338,9 +338,9 @@ module "search_tracking" {
   IP_RESTRICTION_SETTINGS        = var.IP_RESTRICTION_SETTINGS
 
   // External SQL variables
-  use_external_sql         = var.use_external_sql
-  external_sql_server_name = var.external_sql_server_name
-  external_sql_db_shared   = var.external_sql_db_shared
+  USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
+  EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
+  EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
 }
 
 module "support" {

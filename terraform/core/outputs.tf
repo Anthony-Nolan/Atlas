@@ -68,5 +68,5 @@ output "container_app_environment" {
 
 output "active_sql_source" {
   description = "Indicates whether function apps target Terraform-managed or external SQL."
-  value       = var.use_external_sql ? "external" : "terraform-managed"
+  value       = var.USE_EXTERNAL_SQL ? "external" : "terraform-managed"
 }

@@ -60,17 +60,17 @@ variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT" {
 }
 
 // External SQL variables
-variable "use_external_sql" {
+variable "USE_EXTERNAL_SQL" {
   type    = bool
   default = false
 }
 
-variable "external_sql_server_name" {
+variable "EXTERNAL_SQL_SERVER_NAME" {
   type    = string
   default = ""
 }
 
-variable "external_sql_db_shared" {
+variable "EXTERNAL_SQL_DB_SHARED" {
   type    = string
   default = ""
 }

@@ -593,32 +593,32 @@ variable "MATCH_PREDICTION_CONTAINER_MAX_REPLICAS" {
 
 # --- External SQL variables (for retargeting function app connection strings) ---
 
-variable "use_external_sql" {
+variable "USE_EXTERNAL_SQL" {
   description = "When true, function app connection strings target an external SQL server instead of the Terraform-managed one."
   type        = bool
   default     = false
 }
 
-variable "external_sql_server_name" {
-  description = "Short name of the external Azure SQL server (without .database.windows.net suffix). Consumed via TF_VAR_external_sql_server_name."
+variable "EXTERNAL_SQL_SERVER_NAME" {
+  description = "Short name of the external Azure SQL server (without .database.windows.net suffix). Consumed via TF_VAR_EXTERNAL_SQL_SERVER_NAME."
   type        = string
   default     = ""
 }
 
-variable "external_sql_db_shared" {
-  description = "Name of the external shared (atlas) database. Consumed via TF_VAR_external_sql_db_shared."
+variable "EXTERNAL_SQL_DB_SHARED" {
+  description = "Name of the external shared (atlas) database. Consumed via TF_VAR_EXTERNAL_SQL_DB_SHARED."
   type        = string
   default     = ""
 }
 
-variable "external_sql_db_matching_a" {
-  description = "Name of the external matching-a database. Consumed via TF_VAR_external_sql_db_matching_a."
+variable "EXTERNAL_SQL_DB_MATCHING_A" {
+  description = "Name of the external matching-a database. Consumed via TF_VAR_EXTERNAL_SQL_DB_MATCHING_A."
   type        = string
   default     = ""
 }
 
-variable "external_sql_db_matching_b" {
-  description = "Name of the external matching-b database. Consumed via TF_VAR_external_sql_db_matching_b."
+variable "EXTERNAL_SQL_DB_MATCHING_B" {
+  description = "Name of the external matching-b database. Consumed via TF_VAR_EXTERNAL_SQL_DB_MATCHING_B."
   type        = string
   default     = ""
 }
