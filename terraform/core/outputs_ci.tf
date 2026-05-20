@@ -86,11 +86,11 @@ output "search-tracking-function-name" {
 }
 
 output "sql-server" {
-  value = azurerm_mssql_server.atlas_sql_server.fully_qualified_domain_name
+  value = var.USE_EXTERNAL_SQL ? "${var.EXTERNAL_SQL_SERVER_NAME}.database.windows.net" : azurerm_mssql_server.atlas_sql_server.fully_qualified_domain_name
 }
 
 output "sql-server-admin-login" {
-  value = var.DATABASE_SERVER_ADMIN_LOGIN
+  value = var.USE_EXTERNAL_SQL ? var.EXTERNAL_SQL_SERVER_ADMIN_LOGIN : var.DATABASE_SERVER_ADMIN_LOGIN
 }
 
 output "sql-server-admin-login-password" {

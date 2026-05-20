@@ -622,3 +622,9 @@ variable "EXTERNAL_SQL_DB_MATCHING_B" {
   type        = string
   default     = ""
 }
+
+variable "EXTERNAL_SQL_SERVER_ADMIN_LOGIN" {
+  description = "Admin login for the external SQL server. Consumed via TF_VAR_EXTERNAL_SQL_SERVER_ADMIN_LOGIN."
+  type        = string
+  default     = ""
+}
