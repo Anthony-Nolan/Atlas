@@ -82,3 +82,19 @@ variable "FAILURE_LOGS_EXPIRY_IN_DAYS" {
 variable "ALLOW_FULL_MODE_IMPORT" {
   type = bool
 }
+
+// External SQL variables
+variable "use_external_sql" {
+  type    = bool
+  default = false
+}
+
+variable "external_sql_server_name" {
+  type    = string
+  default = ""
+}
+
+variable "external_sql_db_shared" {
+  type    = string
+  default = ""
+}

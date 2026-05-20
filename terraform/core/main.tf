@@ -89,6 +89,11 @@ module "donor_import" {
   FAILURE_LOGS_CRONTAB                          = var.DONOR_IMPORT_FAILURE_LOGS_CRONTAB
   FAILURE_LOGS_EXPIRY_IN_DAYS                   = var.DONOR_IMPORT_FAILURE_LOGS_EXPIRY_IN_DAYS
   ALLOW_FULL_MODE_IMPORT                        = var.DONOR_IMPORT_ALLOW_FULL_MODE_IMPORT
+
+  // External SQL variables
+  use_external_sql         = var.use_external_sql
+  external_sql_server_name = var.external_sql_server_name
+  external_sql_db_shared   = var.external_sql_db_shared
 }
 
 module "matching_algorithm" {
@@ -166,6 +171,13 @@ module "matching_algorithm" {
   WEBSITE_RUN_FROM_PACKAGE                                 = var.WEBSITE_RUN_FROM_PACKAGE
   WMDA_FILE_URL                                            = var.WMDA_FILE_URL
   SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC = var.MATCHING_ALGORITHM_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
+
+  // External SQL variables
+  use_external_sql           = var.use_external_sql
+  external_sql_server_name   = var.external_sql_server_name
+  external_sql_db_shared     = var.external_sql_db_shared
+  external_sql_db_matching_a = var.external_sql_db_matching_a
+  external_sql_db_matching_b = var.external_sql_db_matching_b
 }
 
 module "match_prediction" {
@@ -223,6 +235,11 @@ module "match_prediction" {
   CONTAINER_MEMORY                                         = var.MATCH_PREDICTION_CONTAINER_MEMORY
   CONTAINER_MIN_REPLICAS                                   = var.MATCH_PREDICTION_CONTAINER_MIN_REPLICAS
   CONTAINER_MAX_REPLICAS                                   = var.MATCH_PREDICTION_CONTAINER_MAX_REPLICAS
+
+  // External SQL variables
+  use_external_sql         = var.use_external_sql
+  external_sql_server_name = var.external_sql_server_name
+  external_sql_db_shared   = var.external_sql_db_shared
 }
 
 module "multiple_allele_code_lookup" {
@@ -283,6 +300,11 @@ module "repeat_search" {
   SERVICE_BUS_SEND_RETRY_COUNT                             = var.SERVICE_BUS_SEND_RETRY_COUNT
   STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE         = var.STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE
   STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT           = var.STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT
+
+  // External SQL variables
+  use_external_sql         = var.use_external_sql
+  external_sql_server_name = var.external_sql_server_name
+  external_sql_db_shared   = var.external_sql_db_shared
 }
 
 module "search_tracking" {
@@ -314,6 +336,11 @@ module "search_tracking" {
   DATABASE_PASSWORD              = var.SEARCH_TRACKING_DATABASE_PASSWORD
   DATABASE_USERNAME              = var.SEARCH_TRACKING_DATABASE_USERNAME
   IP_RESTRICTION_SETTINGS        = var.IP_RESTRICTION_SETTINGS
+
+  // External SQL variables
+  use_external_sql         = var.use_external_sql
+  external_sql_server_name = var.external_sql_server_name
+  external_sql_db_shared   = var.external_sql_db_shared
 }
 
 module "support" {
