@@ -6,7 +6,7 @@ output "donor-database-username" {
 }
 
 output "donor-import-database-name" {
-  value = azurerm_mssql_database.atlas-database-shared.name
+  value = var.USE_EXTERNAL_SQL ? var.EXTERNAL_SQL_DB_SHARED : azurerm_mssql_database.atlas-database-shared.name
 }
 
 output "donor-import-function-name" {
@@ -22,7 +22,7 @@ output "function-app-name" {
 }
 
 output "match-prediction-database-name" {
-  value = azurerm_mssql_database.atlas-database-shared.name
+  value = var.USE_EXTERNAL_SQL ? var.EXTERNAL_SQL_DB_SHARED : azurerm_mssql_database.atlas-database-shared.name
 }
 
 output "match-prediction-function-name" {
@@ -34,15 +34,15 @@ output "match-prediction-database-username" {
 }
 
 output "matching-algorithm-database-persistent-name" {
-  value = azurerm_mssql_database.atlas-database-shared.name
+  value = var.USE_EXTERNAL_SQL ? var.EXTERNAL_SQL_DB_SHARED : azurerm_mssql_database.atlas-database-shared.name
 }
 
 output "matching-algorithm-database-transient-a-name" {
-  value = module.matching_algorithm.sql_database.transient_a_database_name
+  value = var.USE_EXTERNAL_SQL ? var.EXTERNAL_SQL_DB_MATCHING_A : module.matching_algorithm.sql_database.transient_a_database_name
 }
 
 output "matching-algorithm-database-transient-b-name" {
-  value = module.matching_algorithm.sql_database.transient_b_database_name
+  value = var.USE_EXTERNAL_SQL ? var.EXTERNAL_SQL_DB_MATCHING_B : module.matching_algorithm.sql_database.transient_b_database_name
 }
 
 output "matching-algorithm-function-name" {
@@ -62,7 +62,7 @@ output "public-api-function-app-name" {
 }
 
 output "repeat-search-database-name" {
-  value = azurerm_mssql_database.atlas-database-shared.name
+  value = var.USE_EXTERNAL_SQL ? var.EXTERNAL_SQL_DB_SHARED : azurerm_mssql_database.atlas-database-shared.name
 }
 
 output "repeat-search-username" {
@@ -74,7 +74,7 @@ output "repeat-search-function-name" {
 }
 
 output "search-tracking-database-name" {
-  value = azurerm_mssql_database.atlas-database-shared.name
+  value = var.USE_EXTERNAL_SQL ? var.EXTERNAL_SQL_DB_SHARED : azurerm_mssql_database.atlas-database-shared.name
 }
 
 output "search-tracking-username" {
