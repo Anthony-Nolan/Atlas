@@ -17,17 +17,20 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
     private readonly IBlobDownloader blobDownloader;
     private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
     private readonly string requestsContainer;
+    private readonly int maxDegreeOfParallelism;
     private readonly ILogger<ParallelMatchPredictionBatchRunner> logger;
 
     public ParallelMatchPredictionBatchRunner(
         IBlobDownloader blobDownloader,
         IMatchPredictionAlgorithm matchPredictionAlgorithm,
         IOptions<AzureStorageSettings> azureStorageSettings,
+        IOptions<MatchPredictionRequestsSettings> matchPredictionRequestsSettings,
         ILogger<ParallelMatchPredictionBatchRunner> logger)
     {
         this.blobDownloader = blobDownloader;
         this.matchPredictionAlgorithm = matchPredictionAlgorithm;
         requestsContainer = azureStorageSettings.Value.MatchPredictionRequestsBlobContainer;
+        maxDegreeOfParallelism = matchPredictionRequestsSettings.Value.MaxParallelism;
         this.logger = logger;
     }
 
@@ -43,7 +46,7 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
             "Downloaded {DonorCount} donors for search {SearchRequestId}, blob {BlobLocation}",
             batchInput.Donors?.Count, request.SearchRequestId, request.BlobLocation);
 
-        var results = await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(batchInput);
+        var results = await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatchParallel(batchInput, maxDegreeOfParallelism);
 
         logger.LogInformation(
             "Completed match prediction for {DonorCount} donors for search {SearchRequestId}, blob {BlobLocation}",

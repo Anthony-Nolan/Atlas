@@ -17,6 +17,7 @@ using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using NSubstitute;
 using NUnit.Framework;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.MatchPrediction.Test.Services
 {
@@ -29,6 +30,7 @@ namespace Atlas.MatchPrediction.Test.Services
         private ISearchDonorResultUploader resultUploader;
         private IMatchPredictionLogger<MatchProbabilityLoggingContext> logger;
         private IMatchPredictionAlgorithm matchPredictionAlgorithm;
+        private IServiceScopeFactory serviceScopeFactory;
 
         [SetUp]
         public void SetUp()
@@ -38,13 +40,14 @@ namespace Atlas.MatchPrediction.Test.Services
             haplotypeFrequencyService = Substitute.For<IHaplotypeFrequencyService>();
             resultUploader = Substitute.For<ISearchDonorResultUploader>();
             logger = Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
+            serviceScopeFactory = Substitute.For<IServiceScopeFactory>();
 
             matchPredictionAlgorithm = new MatchPredictionAlgorithm(
                 matchProbabilityService,
                 genotypeSetService,
                 logger,
                 haplotypeFrequencyService,
-                resultUploader);
+                resultUploader, serviceScopeFactory);
 
             haplotypeFrequencyService.GetSingleHaplotypeFrequencySet(default)
                 .ReturnsForAnyArgs(new HaplotypeFrequencySet());

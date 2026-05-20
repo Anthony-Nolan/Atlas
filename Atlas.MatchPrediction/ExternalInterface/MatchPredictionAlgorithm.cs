@@ -6,6 +6,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Public.Models.MatchPrediction;
+using Atlas.Common.Utils.Concurrency;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
@@ -13,6 +14,7 @@ using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using LoggingStopwatch;
 using Atlas.Common.Utils.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.MatchPrediction.ExternalInterface
 {
@@ -23,6 +25,15 @@ namespace Atlas.MatchPrediction.ExternalInterface
         /// <returns>A dictionary of donorId:filenames in blob storage where the per-donor results can be located.</returns>
         public Task<IReadOnlyDictionary<int, string>> RunMatchPredictionAlgorithmBatch(MultipleDonorMatchProbabilityInput multipleDonorMatchProbabilityInput);
 
+        /// <summary>
+        /// Same as <see cref="RunMatchPredictionAlgorithmBatch"/> but processes donors in parallel,
+        /// each in its own DI scope, up to <paramref name="maxDegreeOfParallelism"/> concurrent tasks.
+        /// </summary>
+        /// <returns>A dictionary of donorId:filenames in blob storage where the per-donor results can be located.</returns>
+        public Task<IReadOnlyDictionary<int, string>> RunMatchPredictionAlgorithmBatchParallel(
+            MultipleDonorMatchProbabilityInput multipleDonorMatchProbabilityInput,
+            int maxDegreeOfParallelism);
+
         public Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet(HaplotypeFrequencySetInput haplotypeFrequencySetInput);
     }
 
@@ -32,6 +43,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
         private readonly IGenotypeSetService genotypeSetService;
         private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
         private readonly ISearchDonorResultUploader resultUploader;
+        private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly ILogger logger;
 
         public MatchPredictionAlgorithm(
@@ -40,13 +52,15 @@ namespace Atlas.MatchPrediction.ExternalInterface
             // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
             IHaplotypeFrequencyService haplotypeFrequencyService,
-            ISearchDonorResultUploader resultUploader)
+            ISearchDonorResultUploader resultUploader,
+            IServiceScopeFactory serviceScopeFactory)
         {
             this.matchProbabilityService = matchProbabilityService;
             this.genotypeSetService = genotypeSetService;
             this.logger = logger;
             this.haplotypeFrequencyService = haplotypeFrequencyService;
             this.resultUploader = resultUploader;
+            this.serviceScopeFactory = serviceScopeFactory;
         }
 
         /// <inheritdoc />
@@ -87,6 +101,43 @@ namespace Atlas.MatchPrediction.ExternalInterface
                 }
 
                 return fileNames;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyDictionary<int, string>> RunMatchPredictionAlgorithmBatchParallel(
+            MultipleDonorMatchProbabilityInput multipleDonorMatchProbabilityInput,
+            int maxDegreeOfParallelism)
+        {
+            using (logger.RunLongOperationWithTimer("Run Match Prediction Algorithm Batch (Parallel)", new LongLoggingSettings()))
+            {
+                var searchRequestId = multipleDonorMatchProbabilityInput.SearchRequestId;
+                var matchProbabilityInputs = multipleDonorMatchProbabilityInput.SingleDonorMatchProbabilityInputs.ToList();
+                if (matchProbabilityInputs.Count == 0)
+                {
+                    return new Dictionary<int, string>();
+                }
+
+                var patientGenotypeSet = await genotypeSetService.GetPatientGenotypeSet(matchProbabilityInputs.First());
+
+                var perDonorResults = await matchProbabilityInputs.WhenAll(
+                    async input =>
+                    {
+                        await using var scope = serviceScopeFactory.CreateAsyncScope();
+                        var scopedMatchProbabilityService = scope.ServiceProvider.GetRequiredService<IMatchProbabilityService>();
+                        var scopedResultUploader = scope.ServiceProvider.GetRequiredService<ISearchDonorResultUploader>();
+
+                        using (logger.RunTimed("Run Match Prediction Algorithm per donor (parallel)"))
+                        {
+                            var result = await scopedMatchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet);
+                            return await scopedResultUploader.UploadSearchDonorResults(searchRequestId, input.Donor.DonorIds, result);
+                        }
+                    },
+                    maxDegreeOfParallelism);
+
+                return perDonorResults
+                    .SelectMany(d => d)
+                    .ToDictionary(kv => kv.Key, kv => kv.Value);
             }
         }
 
