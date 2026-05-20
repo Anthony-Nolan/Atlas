@@ -116,7 +116,7 @@ namespace Atlas.Functions
             services.AddScoped<ISearchResultsBlobStorageClient, SearchResultsBlobStorageClient>(sp =>
             {
                 var settings = sp.GetService<IOptions<Settings.AzureStorageSettings>>().Value;
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<IAtlasLogger>();
                 return new SearchResultsBlobStorageClient(settings.MatchingConnectionString, logger);
             });
 
@@ -133,7 +133,7 @@ namespace Atlas.Functions
             services.AddScoped<IMessageBatchPublisher<ParallelMatchPredictionBatchRequest>, MessageBatchPublisher<ParallelMatchPredictionBatchRequest>>(sp =>
             {
                 var settings = sp.GetRequiredService<IOptions<Settings.MessagingServiceBusSettings>>().Value;
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<IAtlasLogger>();
                 var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(Settings.MessagingServiceBusSettings));
                 return new MessageBatchPublisher<ParallelMatchPredictionBatchRequest>(
                     topicClientFactory,

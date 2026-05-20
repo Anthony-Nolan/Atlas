@@ -22,7 +22,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies.Import
         private IHaplotypeFrequenciesRepository frequenciesRepository;
         private IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private IFrequencySetValidator frequencySetValidator;
-        private ILogger logger;
+        private IAtlasLogger logger;
 
         private IFrequencySetImporter frequencySetImporter;
 
@@ -43,7 +43,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies.Import
             frequenciesRepository = Substitute.For<IHaplotypeFrequenciesRepository>();
             hlaMetadataDictionaryFactory = Substitute.For<IHlaMetadataDictionaryFactory>();
             frequencySetValidator = Substitute.For<IFrequencySetValidator>();
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IAtlasLogger>();
 
             frequencySetImporter = new FrequencySetImporter(frequencyFileParser, setRepository, frequenciesRepository, hlaMetadataDictionaryFactory, frequencySetValidator, logger);
         }

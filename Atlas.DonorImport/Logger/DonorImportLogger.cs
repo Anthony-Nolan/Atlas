@@ -3,7 +3,7 @@ using Microsoft.ApplicationInsights;
 
 namespace Atlas.DonorImport.Logger
 {
-    public interface IDonorImportLogger<TLoggingContext> : ILogger
+    public interface IDonorImportLogger<TLoggingContext> : IAtlasLogger
         where TLoggingContext : DonorImportLoggingContext
     {
     }

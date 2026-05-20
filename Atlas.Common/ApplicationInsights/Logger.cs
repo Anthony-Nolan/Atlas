@@ -5,29 +5,31 @@ using Microsoft.ApplicationInsights.DataContracts;
 
 namespace Atlas.Common.ApplicationInsights
 {
-    public interface ILogger
+    public interface IAtlasLogger
     {
-        void SendEvent(EventModel eventModel);
+        void SendEvent(string name, LogLevel level = LogLevel.Info, Dictionary<string, string> props = null, Dictionary<string, double> metrics = null);
         void SendTrace(string message, LogLevel messageLogLevel = LogLevel.Info, Dictionary<string, string> props = null);
+        void SendException(Exception exception, LogLevel messageLogLevel = LogLevel.Error, Dictionary<string, string> props = null);
     }
 
-    public class Logger : ILogger
+    public class AtlasLogger : IAtlasLogger
     {
         private readonly TelemetryClient client;
         private readonly LogLevel configuredLogLevel;
 
-        public Logger(TelemetryClient client, ApplicationInsightsSettings applicationInsightsSettings)
+        public AtlasLogger(TelemetryClient client, ApplicationInsightsSettings applicationInsightsSettings)
         {
             this.client = client;
             configuredLogLevel = applicationInsightsSettings.LogLevel.ToLogLevel();
         }
 
-        public virtual void SendEvent(EventModel eventModel)
+        public virtual void SendEvent(string name, LogLevel level = LogLevel.Info, Dictionary<string, string> props = null, Dictionary<string, double> metrics = null)
         {
-            if (eventModel.Level >= configuredLogLevel)
+            if (level >= configuredLogLevel)
             {
-                eventModel.Properties.Add("LogLevel", $"{eventModel.Level}");
-                client.TrackEvent(eventModel.Name, eventModel.Properties, eventModel.Metrics);
+                props ??= new Dictionary<string, string>();
+                props["LogLevel"] = $"{level}";
+                client.TrackEvent(name, props, metrics);
             }
         }
 
@@ -36,6 +38,27 @@ namespace Atlas.Common.ApplicationInsights
             if (messageLogLevel >= configuredLogLevel)
             {
                 client.TrackTrace(message, GetSeverityLevel(messageLogLevel), props);
+            }
+        }
+
+        public virtual void SendException(Exception exception, LogLevel messageLogLevel, Dictionary<string, string> props)
+        {
+            if (messageLogLevel >= configuredLogLevel)
+            {
+                var telemetry = new ExceptionTelemetry(exception)
+                {
+                    SeverityLevel = GetSeverityLevel(messageLogLevel)
+                };
+
+                if (props != null)
+                {
+                    foreach (var (key, value) in props)
+                    {
+                        telemetry.Properties[key] = value;
+                    }
+                }
+
+                client.TrackException(telemetry);
             }
         }
 

@@ -26,7 +26,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         public DonorUpdateRepository(
             IHlaImportRepository hlaImportRepository,
             IConnectionStringProvider connectionStringProvider,
-            ILogger logger)
+            IAtlasLogger logger)
             : base(connectionStringProvider, logger)
         {
             this.hlaImportRepository = hlaImportRepository;

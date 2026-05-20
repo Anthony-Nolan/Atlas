@@ -5,7 +5,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.ServiceBus;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
-using Atlas.MatchingAlgorithm.ApplicationInsights.DonorProcessing;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
@@ -136,7 +135,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 DefaultEventName
             );
 
-            logger.Received(2).SendEvent(Arg.Any<DonorInfoGenericFailureEventModel<Anticipated>>());
+            logger.Received(2).SendEvent(Arg.Any<string>(), Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>(), Arg.Any<Dictionary<string, double>>());
         }
 
         [Test]
@@ -149,7 +148,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 DefaultEventName
             );
 
-            logger.DidNotReceive().SendEvent(Arg.Any<EventModel>());
+            logger.DidNotReceive().SendEvent(Arg.Any<string>(), Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>(), Arg.Any<Dictionary<string, double>>());
         }
 
         [Test]
@@ -223,7 +222,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 DefaultEventName
             );
 
-            logger.Received(1).SendEvent(Arg.Any<DonorInfoGenericFailureEventModel<Anticipated>>());
+            logger.Received(1).SendEvent(Arg.Any<string>(), Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>(), Arg.Any<Dictionary<string, double>>());
         }
 
         [Test]

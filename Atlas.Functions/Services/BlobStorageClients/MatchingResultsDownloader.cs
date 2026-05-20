@@ -26,9 +26,9 @@ namespace Atlas.Functions.Services.BlobStorageClients
     {
         private readonly AzureStorageSettings azureStorageSettings;
         private readonly IBlobDownloader blobDownloader;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
-        public MatchingResultsDownloader(IOptions<AzureStorageSettings> azureStorageSettings, IBlobDownloader blobDownloader, ILogger logger)
+        public MatchingResultsDownloader(IOptions<AzureStorageSettings> azureStorageSettings, IBlobDownloader blobDownloader, IAtlasLogger logger)
         {
             this.azureStorageSettings = azureStorageSettings.Value;
             this.blobDownloader = blobDownloader;

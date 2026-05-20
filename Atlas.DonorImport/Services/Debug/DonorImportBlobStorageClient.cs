@@ -16,7 +16,7 @@ namespace Atlas.DonorImport.Services.Debug
         private readonly string donorBlobContainer;
 
         public DonorImportBlobStorageClient(
-            ILogger logger,
+            IAtlasLogger logger,
             string connectionString,
             string donorBlobContainer) : base(connectionString, logger)
         {

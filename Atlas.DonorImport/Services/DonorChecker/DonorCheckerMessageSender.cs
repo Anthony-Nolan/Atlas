@@ -5,7 +5,6 @@ using Atlas.Common.ServiceBus;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Newtonsoft.Json;
-using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 
 namespace Atlas.DonorImport.Services.DonorChecker
@@ -21,9 +20,9 @@ namespace Atlas.DonorImport.Services.DonorChecker
     internal sealed class DonorCheckerMessageSender : IDonorInfoCheckerMessageSender, IDonorIdCheckerMessageSender, IAsyncDisposable
     {
         private readonly ITopicClient topicClient;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
-        public DonorCheckerMessageSender(ILogger logger, ITopicClientFactory topicClientFactory, string topicName)
+        public DonorCheckerMessageSender(IAtlasLogger logger, ITopicClientFactory topicClientFactory, string topicName)
         {
             this.logger = logger;
             topicClient = topicClientFactory.BuildTopicClient(topicName);
@@ -51,7 +50,10 @@ namespace Atlas.DonorImport.Services.DonorChecker
             }
             catch (Exception e)
             {
-                logger.SendEvent(new DonorCheckMessageSenderFailureEvent(e, stringMessage));
+                logger.SendException(e, LogLevel.Warn, new Dictionary<string, string>
+                {
+                    { "Message", stringMessage }
+                });
             }
         }
     }

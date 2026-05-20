@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.DonorImport.Validators;
 using Atlas.Common.Utils.Extensions;
-using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Models;
@@ -38,11 +37,11 @@ namespace Atlas.DonorImport.Services
 
     internal class DonorUpdateCategoriser : IDonorUpdateCategoriser
     {
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly IDonorReadRepository donorReadRepository;
         private readonly IDonorImportFailureRepository donorImportFailureRepository;
 
-        public DonorUpdateCategoriser(ILogger logger, IDonorReadRepository donorReadRepository, IDonorImportFailureRepository donorImportFailureRepository)
+        public DonorUpdateCategoriser(IAtlasLogger logger, IDonorReadRepository donorReadRepository, IDonorImportFailureRepository donorImportFailureRepository)
         {
             this.logger = logger;
             this.donorReadRepository = donorReadRepository;
@@ -98,8 +97,12 @@ namespace Atlas.DonorImport.Services
 
             foreach (var error in errorMessages)
             {
-                var errorEvent = new SearchableDonorValidationErrorEventModel(error.ErrorMessage, error.FailedDonorIds);
-                logger.SendEvent(errorEvent);
+                logger.SendEvent("Searchable Donor Validation Error", LogLevel.Warn, new Dictionary<string, string>
+                {
+                    { "errorMessage", error.ErrorMessage },
+                    { "failedDonorCount", error.FailedDonorIds.Count.ToString() },
+                    { "failedDonorIds", string.Join(",", error.FailedDonorIds) }
+                });
             }
         }
 

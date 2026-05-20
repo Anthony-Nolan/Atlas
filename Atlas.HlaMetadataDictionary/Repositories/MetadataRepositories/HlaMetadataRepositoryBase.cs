@@ -33,7 +33,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             string dataFunctionalTableReferencePrefix,
             IPersistentCacheProvider cacheProvider,
             string cacheKey,
-            ILogger logger)
+            IAtlasLogger logger)
             : base(factory, tableReferenceRepository, dataFunctionalTableReferencePrefix, cacheProvider, cacheKey, logger)
         {
         }

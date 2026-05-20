@@ -32,7 +32,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         private static readonly TaskOptions RetryOptions =
             new(new TaskRetryOptions(new RetryPolicy(5, TimeSpan.FromSeconds(5), backoffCoefficient: 2)));
 
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly IMapper mapper;
         private readonly SearchLoggingContext loggingContext;
         private readonly int matchPredictionProcessingBatchSize;
@@ -129,7 +129,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
             catch (Exception e)
             {
-                logger.SendTrace($"Failure during orchestration. Exception: {e.Message}, {e.InnerException?.Message}");
+                if (!context.IsReplaying)
+                {
+                    logger.SendException(e, LogLevel.Error, new Dictionary<string, string>
+                    {
+                        { "Stage", "Orchestrator" },
+                        { "SearchRequestId", requestInfo.SearchRequestId }
+                    });
+                }
 
                 // An unexpected exception occurred in the *orchestration* code. Ensure we send a failure notification
                 requestInfo.StageReached = "Orchestrator";
@@ -181,6 +188,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             int? matchPredictionNumberOfBatches = null;
             MatchPredictionFailureInfo matchPredictionFailureInfo = null;
 
+            loggingContext.SearchRequestId = requestInfo.SearchRequestId;
             var trackingSearchIdentifier = new Guid(requestInfo.RepeatSearchRequestId);
             var originalSearchIdentifier = new Guid(requestInfo.SearchRequestId);
 
@@ -247,7 +255,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
             catch (Exception e)
             {
-                logger.SendTrace($"Failure during orchestration. Exception: {e.Message}, {e.InnerException?.Message}");
+                if (!context.IsReplaying)
+                {
+                    logger.SendException(e, LogLevel.Error, new Dictionary<string, string>
+                    {
+                        { "Stage", "Orchestrator" },
+                        { "SearchRequestId", requestInfo.SearchRequestId }
+                    });
+                }
 
                 // An unexpected exception occurred in the *orchestration* code. Ensure we send a failure notification
                 requestInfo.StageReached = "Orchestrator";
@@ -427,7 +442,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
             catch (Exception e)
             {
-                logger.SendTrace($"Failure at stage: {requestInfo.StageReached}. Exception: {e.Message}, {e.InnerException?.Message}");
+                if (!context.IsReplaying)
+                {
+                    logger.SendException(e, LogLevel.Error, new Dictionary<string, string>
+                    {
+                        { "Stage", requestInfo.StageReached },
+                        { "SearchRequestId", requestInfo.SearchRequestId }
+                    });
+                }
                 await SendFailureNotification(context, requestInfo);
                 throw new HandledOrchestrationException(e);
             }

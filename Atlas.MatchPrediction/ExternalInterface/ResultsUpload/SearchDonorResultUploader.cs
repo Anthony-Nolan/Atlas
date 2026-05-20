@@ -19,7 +19,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
 
     internal class SearchDonorResultUploader : MatchProbabilityResultUploader, ISearchDonorResultUploader
     {
-        public SearchDonorResultUploader(AzureStorageSettings azureStorageSettings, ILogger logger) : base(azureStorageSettings, logger)
+        public SearchDonorResultUploader(AzureStorageSettings azureStorageSettings, IAtlasLogger logger) : base(azureStorageSettings, logger)
         {
         }
 

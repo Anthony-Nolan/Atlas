@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         private readonly IDonorMatchingService donorMatchingService;
         private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IMatchFilteringService matchFilteringService;
-        private readonly ILogger searchLogger;
+        private readonly IAtlasLogger searchLogger;
         private readonly MatchingConfigurationSettings matchingConfigurationSettings;
 
         public MatchingService(

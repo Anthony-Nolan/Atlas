@@ -8,7 +8,6 @@ using Atlas.Common.ServiceBus;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.FileSchema.Models;
 using Newtonsoft.Json;
-using Atlas.DonorImport.ApplicationInsights;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Atlas.Common.Utils;
@@ -24,11 +23,11 @@ namespace Atlas.DonorImport.Services
     internal sealed class DonorImportMessageSender : IDonorImportMessageSender, IAsyncDisposable
     {
         private readonly ITopicClient topicClient;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly int sendRetryCount;
         private readonly int sendRetryCooldownSeconds;
 
-        public DonorImportMessageSender(ILogger logger, [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings)
+        public DonorImportMessageSender(IAtlasLogger logger, [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings)
         {
             this.logger = logger;
             topicClient = topicClientFactory.BuildTopicClient(messagingServiceBusSettings.DonorImportResultsTopic);
@@ -108,7 +107,10 @@ namespace Atlas.DonorImport.Services
             }
             catch (Exception e)
             {
-                logger.SendEvent(new DonorImportMessageSenderFailureEvent(e, stringMessage));
+                logger.SendException(e, LogLevel.Warn, new Dictionary<string, string>
+                {
+                    { "Message", stringMessage }
+                });
             }
         }
 

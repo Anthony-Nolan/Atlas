@@ -133,7 +133,7 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
             services.AddScoped<IBlobStreamer, BlobStreamer>(sp =>
             {
                 var settings = fetchValidationAzureStorageSettings(sp);
-                return new BlobStreamer(settings.ConnectionString, sp.GetService<ILogger>());
+                return new BlobStreamer(settings.ConnectionString, sp.GetService<IAtlasLogger>());
             });
             services.AddScoped<IMatchPredictionResultsProcessor, MatchPredictionResultsProcessor>();
             services.AddScoped<IMatchPredictionLocationSender, MatchPredictionLocationSender>();
@@ -142,7 +142,7 @@ namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
             {
                 var messageSettings = fetchMessageServiceBusSettings(sp);
                 var searchSettings = fetchValidationSearchSettings(sp);
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<IAtlasLogger>();
                 var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
                 return new MessageBatchPublisher<SearchResultsNotification>(topicClientFactory, searchSettings.ResultsTopic, messageSettings.SendRetryCount, messageSettings.SendRetryCooldownSeconds, logger);
             });
