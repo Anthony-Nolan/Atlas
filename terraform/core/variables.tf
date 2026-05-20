@@ -603,11 +603,6 @@ variable "external_sql_server_name" {
   description = "Short name of the external Azure SQL server (without .database.windows.net suffix). Consumed via TF_VAR_external_sql_server_name."
   type        = string
   default     = ""
-
-  validation {
-    condition     = var.use_external_sql ? length(var.external_sql_server_name) > 0 : true
-    error_message = "external_sql_server_name is required when use_external_sql is true."
-  }
 }
 
 variable "external_sql_db_shared" {
