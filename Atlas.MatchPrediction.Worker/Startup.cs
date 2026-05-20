@@ -1,4 +1,5 @@
 ﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus;
 using Atlas.Common.ServiceBus.BatchReceiving;
@@ -6,6 +7,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
+using Atlas.MatchPrediction.Worker.Services;
 using Atlas.MatchPrediction.Worker.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -34,12 +36,20 @@ public static class Startup
             OptionsReaderFor<MatchPredictionRequestsSettings>()
         );
 
-        services.AddSingleton<IServiceBusMessageReceiver<IdentifiedMatchPredictionRequest>>(sp =>
+        services.AddScoped<IBlobDownloader>(sp =>
+        {
+            var settings = sp.GetRequiredService<IOptions<AzureStorageSettings>>().Value;
+            var atlasLogger = sp.GetService<Atlas.Common.ApplicationInsights.ILogger>();
+            return new BlobDownloader(settings.MatchPredictionConnectionString, atlasLogger);
+        });
+        services.AddScoped<IParallelMatchPredictionBatchRunner, ParallelMatchPredictionBatchRunner>();
+
+        services.AddSingleton<IServiceBusMessageReceiver<ParallelMatchPredictionBatchRequest>>(sp =>
             {
                 var requestSettings = sp.GetRequiredService<IOptions<MatchPredictionRequestsSettings>>().Value;
                 var workerSettings = sp.GetRequiredService<IOptions<MatchPredictionWorkerSettings>>().Value;
                 var factory = sp.GetRequiredKeyedService<IMessageReceiverFactory>(typeof(MessagingServiceBusSettings));
-                return new ServiceBusMessageReceiver<IdentifiedMatchPredictionRequest>(
+                return new ServiceBusMessageReceiver<ParallelMatchPredictionBatchRequest>(
                     factory,
                     requestSettings.RequestsTopic,
                     workerSettings.RequestsSubscription,

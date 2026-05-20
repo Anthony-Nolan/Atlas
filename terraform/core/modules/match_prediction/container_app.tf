@@ -39,8 +39,16 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         secret_name = "azure-storage-connection-string"
       }
       env {
+        name        = "AzureStorage__MatchPredictionConnectionString"
+        secret_name = "azure-storage-connection-string"
+      }
+      env {
         name  = "AzureStorage__MatchPredictionResultsBlobContainer"
         value = azurerm_storage_container.match_prediction_results_container.name
+      }
+      env {
+        name  = "AzureStorage__MatchPredictionRequestsBlobContainer"
+        value = azurerm_storage_container.match_prediction_requests_container.name
       }
 
       env {
