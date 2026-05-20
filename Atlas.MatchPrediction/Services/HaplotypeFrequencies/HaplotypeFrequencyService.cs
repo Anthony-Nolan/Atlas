@@ -21,7 +21,6 @@ using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
-using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -79,9 +78,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             IHaplotypeFrequencySetRepository frequencySetRepository,
             IHaplotypeFrequenciesRepository frequencyRepository,
             INotificationSender notificationSender,
-            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
-            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IPersistentCacheProvider persistentCacheProvider,
             IFrequencyConsolidator frequencyConsolidator,
             IOptions<HaplotypeFrequencySetCacheSettings> haplotypeFrequencySetCacheSettings
@@ -293,13 +290,23 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 ? "Unknown"
                 : ((int)Math.Round(timeSpan.Value.TotalMilliseconds)).ToString();
 
-            logger.SendEvent(successName, LogLevel.Info, new Dictionary<string, string>
+            var eventProperties = new Dictionary<string, string>
             {
                 { nameof(file.FileName), file.FileName },
                 { "TotalImportDurationInMs", durationMs },
-                { nameof(file.UploadedDateTime), file.UploadedDateTime?.UtcDateTime.ToString(CultureInfo.InvariantCulture) + " UTC" },
-                { nameof(file.ImportedDateTime), file.ImportedDateTime?.UtcDateTime.ToString(CultureInfo.InvariantCulture) + " UTC" }
-            });
+            };
+
+            if (file.UploadedDateTime != null)
+            {
+                eventProperties[nameof(file.UploadedDateTime)] = file.UploadedDateTime.Value.UtcDateTime.ToString(CultureInfo.InvariantCulture) + " UTC";
+            }
+
+            if (file.ImportedDateTime != null)
+            {
+                eventProperties[nameof(file.ImportedDateTime)] = file.ImportedDateTime.Value.UtcDateTime.ToString(CultureInfo.InvariantCulture) + " UTC";
+            }
+
+            logger.SendEvent(successName, LogLevel.Info, eventProperties);
 
             await notificationSender.SendNotification(
                 successName,

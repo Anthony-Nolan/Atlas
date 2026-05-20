@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Hosting;
@@ -25,7 +26,15 @@ namespace Atlas.Common.ApplicationInsights
             telemetryClient.Flush();
 
             // Give the channel time to transmit buffered telemetry before the process exits.
-            await Task.Delay(2000, cancellationToken).ConfigureAwait(false);
+            // Cancellation is expected on shutdown; swallow it so StopAsync doesn't surface a noisy error.
+            try
+            {
+                await Task.Delay(2000, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                // Shutdown was signalled before the delay elapsed — this is normal.
+            }
         }
     }
 }
