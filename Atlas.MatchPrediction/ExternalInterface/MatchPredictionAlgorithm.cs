@@ -136,8 +136,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
                     maxDegreeOfParallelism);
 
                 return perDonorResults
-                    .SelectMany(d => d)
-                    .ToDictionary(kv => kv.Key, kv => kv.Value);
+                    .Aggregate(new Dictionary<int, string>(), (fileNames, matchProbabilityInputFileNames) => fileNames.Merge(matchProbabilityInputFileNames));
             }
         }
 
