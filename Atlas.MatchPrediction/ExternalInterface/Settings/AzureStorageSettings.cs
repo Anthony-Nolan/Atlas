@@ -8,6 +8,12 @@ namespace Atlas.MatchPrediction.ExternalInterface.Settings
         public string ConnectionString { get; set; }
 
         [Required(AllowEmptyStrings = false)]
+        public string MatchPredictionConnectionString { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
         public string MatchPredictionResultsBlobContainer { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
+        public string MatchPredictionRequestsBlobContainer { get; set; }
     }
 }

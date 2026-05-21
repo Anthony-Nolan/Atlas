@@ -39,8 +39,16 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         secret_name = "azure-storage-connection-string"
       }
       env {
+        name        = "AzureStorage__MatchPredictionConnectionString"
+        secret_name = "azure-storage-connection-string"
+      }
+      env {
         name  = "AzureStorage__MatchPredictionResultsBlobContainer"
         value = azurerm_storage_container.match_prediction_results_container.name
+      }
+      env {
+        name  = "AzureStorage__MatchPredictionRequestsBlobContainer"
+        value = azurerm_storage_container.match_prediction_requests_container.name
       }
 
       env {
@@ -78,11 +86,11 @@ resource "azurerm_container_app" "atlas_match_prediction" {
 
       env {
         name  = "MatchPredictionWorker__RequestsSubscription"
-        value = azurerm_servicebus_subscription.match-prediction-request-runner.name
+        value = azurerm_servicebus_subscription.parallel-match-prediction-request-runner.name
       }
       env {
         name  = "MatchPredictionRequests__RequestsTopic"
-        value = azurerm_servicebus_topic.match-prediction-requests.name
+        value = azurerm_servicebus_topic.parallel-match-prediction-requests.name
       }
       env {
         name  = "MatchPredictionRequests__ResultsTopic"

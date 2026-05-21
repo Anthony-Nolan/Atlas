@@ -1,7 +1,6 @@
 using Atlas.Common.ServiceBus.BatchReceiving;
-using Atlas.MatchPrediction.Exceptions;
-using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;
+using Atlas.MatchPrediction.Worker.Services;
 using Atlas.MatchPrediction.Worker.Settings;
 using Microsoft.Extensions.Options;
 
@@ -9,7 +8,7 @@ namespace Atlas.MatchPrediction.Worker;
 
 public class MatchPredictionWorker(
     IServiceScopeFactory serviceScopeFactory,
-    IServiceBusMessageReceiver<IdentifiedMatchPredictionRequest> messageReceiver,
+    IServiceBusMessageReceiver<ParallelMatchPredictionBatchRequest> messageReceiver,
     IOptions<MatchPredictionWorkerSettings> settings,
     ILogger<MatchPredictionWorker> logger) : BackgroundService
 {
@@ -30,25 +29,24 @@ public class MatchPredictionWorker(
                 continue;
             }
 
-            using var batchLock = new MessageBatchLock<IdentifiedMatchPredictionRequest>(messageReceiver, messages);
+            using var batchLock = new MessageBatchLock<ParallelMatchPredictionBatchRequest>(messageReceiver, messages);
 
             try
             {
                 await using var scope = serviceScopeFactory.CreateAsyncScope();
-                var runner = scope.ServiceProvider.GetRequiredService<IMatchPredictionRequestRunner>();
+                var runner = scope.ServiceProvider.GetRequiredService<IParallelMatchPredictionBatchRunner>();
                 var requests = messages.Select(m => m.DeserializedBody).ToList();
 
-                await runner.RunMatchPredictionRequestBatch(requests);
+                foreach (var request in requests)
+                {
+                    await runner.RunBatch(request);
+                }
+
                 await batchLock.CompleteBatchAsync();
-            }
-            catch (MatchPredictionRequestException ex)
-            {
-                logger.LogError(ex, "Unhandled error processing match prediction batch — abandoning batch.");
-                await batchLock.AbandonBatchAsync();
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Unexpected error processing match prediction batch — abandoning batch.");
+                logger.LogError(ex, "Unexpected error processing parallel match prediction batch — abandoning batch.");
                 await batchLock.AbandonBatchAsync();
             }
         }
