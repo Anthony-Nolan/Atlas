@@ -39,6 +39,11 @@ public static class Startup
             OptionsReaderFor<MatchPredictionRequestsSettings>()
         );
 
+        services.RegisterParallelMatchPredictionBatchResultPublisher(
+            OptionsReaderFor<MessagingServiceBusSettings>(),
+            OptionsReaderFor<MatchPredictionRequestsSettings>()
+        );
+
         services.AddScoped<IBlobDownloader>(sp =>
         {
             var settings = sp.GetRequiredService<IOptions<AzureStorageSettings>>().Value;

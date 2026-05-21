@@ -30,6 +30,8 @@
     "AtlasFunction:MessagingServiceBus:SendRetryCount": 5,
     "AtlasFunction:MessagingServiceBus:SendRetryCooldownSeconds": 20,
     "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionRequestsTopic": "parallel-match-prediction-requests",
+    "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionResultsTopic": "parallel-match-prediction-results",
+    "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionResultsSubscription": "aggregator",
 
     "AtlasFunction:Orchestration:MatchPredictionBatchSize": 100,
     "AtlasFunction:Orchestration:ParallelMpaBatchSize": 100,
@@ -76,6 +78,7 @@
     "Matching:Sql:A": "Data Source=(local);Initial Catalog=AtlasMatchingA;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
     "Matching:Sql:B": "Data Source=(local);Initial Catalog=AtlasMatchingB;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
 
-    "MatchPrediction:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"
+    "MatchPrediction:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
+    "SearchTracking:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"
   }
 }
