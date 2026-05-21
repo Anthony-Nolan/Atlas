@@ -21,9 +21,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators
     internal class GGroupToPGroupService : IGGroupToPGroupService
     {
         private readonly IWmdaDataRepository wmdaDataRepository;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
-        public GGroupToPGroupService(IWmdaDataRepository wmdaDataRepository, ILogger logger)
+        public GGroupToPGroupService(IWmdaDataRepository wmdaDataRepository, IAtlasLogger logger)
         {
             this.wmdaDataRepository = wmdaDataRepository;
             this.logger = logger;

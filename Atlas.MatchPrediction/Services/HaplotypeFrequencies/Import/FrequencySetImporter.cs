@@ -51,7 +51,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         private readonly IHaplotypeFrequenciesRepository frequenciesRepository;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly IFrequencySetValidator frequencySetValidator;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
         public FrequencySetImporter(
             IFrequencyFileParser frequencyFileParser,
@@ -59,7 +59,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             IHaplotypeFrequenciesRepository frequenciesRepository,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             IFrequencySetValidator frequencySetValidator,
-            ILogger logger)
+            IAtlasLogger logger)
         {
             this.frequencyFileParser = frequencyFileParser;
             this.setRepository = setRepository;

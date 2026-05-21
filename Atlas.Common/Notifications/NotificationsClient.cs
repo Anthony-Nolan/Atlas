@@ -24,9 +24,9 @@ namespace Atlas.Common.Notifications
         private readonly ITopicClient alertTopicClient;
         private readonly int sendRetryCount;
         private readonly int sendRetryCooldownSeconds;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
-        public NotificationsClient(NotificationsServiceBusSettings settings, [FromKeyedServices(typeof(NotificationsServiceBusSettings))]ITopicClientFactory topicClientFactory, ILogger logger)
+        public NotificationsClient(NotificationsServiceBusSettings settings, [FromKeyedServices(typeof(NotificationsServiceBusSettings))]ITopicClientFactory topicClientFactory, IAtlasLogger logger)
         {
             notificationTopicClient = topicClientFactory.BuildTopicClient(settings.NotificationsTopic);
             alertTopicClient = topicClientFactory.BuildTopicClient(settings.AlertsTopic);

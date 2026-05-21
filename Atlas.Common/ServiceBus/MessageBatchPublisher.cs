@@ -17,9 +17,9 @@ namespace Atlas.Common.ServiceBus
         private readonly ITopicClient topicClient;
         private readonly int sendRetryCount;
         private readonly int sendRetryCooldownSeconds;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
-        public MessageBatchPublisher(ITopicClientFactory topicClientFactory, string topicName, int sendRetryCount, int sendRetryCooldownSeconds, ILogger logger)
+        public MessageBatchPublisher(ITopicClientFactory topicClientFactory, string topicName, int sendRetryCount, int sendRetryCooldownSeconds, IAtlasLogger logger)
         {
             this.topicClient = topicClientFactory.BuildTopicClient(topicName);
             this.sendRetryCount = sendRetryCount;

@@ -11,7 +11,17 @@ namespace Atlas.MatchPrediction.ApplicationInsights
 {
     public class MatchProbabilityLoggingContext : LoggingContext
     {
-        public string SearchRequestId { get; set; }
+        private string searchRequestId;
+
+        public string SearchRequestId
+        {
+            get => searchRequestId;
+            set
+            {
+                searchRequestId = value;
+                SearchRequestContext.SearchRequestId = value;
+            }
+        }
         public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
         public string DonorIds { get; set; }
         public PhenotypeInfo<string> DonorHla { get; set; }

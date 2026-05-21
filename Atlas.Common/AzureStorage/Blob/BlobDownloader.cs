@@ -1,4 +1,5 @@
-﻿using Atlas.Common.ApplicationInsights;
+﻿using System.Diagnostics;
+using Atlas.Common.ApplicationInsights;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -54,67 +55,55 @@ namespace Atlas.Common.AzureStorage.Blob
     {
         private readonly JsonSerializer serializer;
 
-        public BlobDownloader(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString, logger, "Download")
+        public BlobDownloader(string azureStorageConnectionString, IAtlasLogger logger) : base(azureStorageConnectionString, logger, "Download")
         {
             serializer = new JsonSerializer();
         }
 
         public async Task<T> Download<T>(string container, string filename)
         {
-            var azureStorageEventModel = StartAzureStorageCommunication(filename, container);
-
-            var containerClient = GetBlobContainer(container);
-            var data = await GetBlobData<T>(containerClient, filename);
-
-            EndAzureStorageCommunication(azureStorageEventModel);
-
-            return data;
+            return await TimedCommunication(filename, container, async () =>
+            {
+                var containerClient = GetBlobContainer(container);
+                return await GetBlobData<T>(containerClient, filename);
+            });
         }
 
         public async Task<IEnumerable<T>> DownloadFolderContents<T>(string container, string folderName)
         {
-            var data = new List<T>();
-
-            var azureStorageEventModel = StartAzureStorageCommunication(folderName, container);
-
-            var containerClient = GetBlobContainer(container);
-            var blobs =  containerClient.GetBlobsAsync(prefix: $"{folderName}/");
-
-            await foreach (var blob in blobs)
+            return await TimedCommunication(folderName, container, async () =>
             {
-                data.AddRange(await GetBlobData<IEnumerable<T>>(containerClient, blob.Name));
-            }
-
-            EndAzureStorageCommunication(azureStorageEventModel);
-
-            return data;
+                var data = new List<T>();
+                var containerClient = GetBlobContainer(container);
+                var blobs = containerClient.GetBlobsAsync(prefix: $"{folderName}/");
+                await foreach (var blob in blobs)
+                {
+                    data.AddRange(await GetBlobData<IEnumerable<T>>(containerClient, blob.Name));
+                }
+                return (IEnumerable<T>)data;
+            });
         }
 
         public async Task<Dictionary<int, T>> DownloadMultipleBlobs<T>(string container, IReadOnlyDictionary<int, string> locations, int batchSize)
         {
-            var data = new Dictionary<int, T>();
-
-            var azureStorageEventModel = StartAzureStorageCommunication(container, container);
-
-            var containerClient = GetBlobContainer(container);
-
-            foreach (var locationBatch in locations.Batch(batchSize))
+            return await TimedCommunication(container, container, async () =>
             {
-                var getBlobDataTasksDictionary = Enumerable.ToDictionary(locationBatch, location => location.Key,
-                    location => Task.Run(() => GetBlobData<T>(containerClient, location.Value)));
-                await Task.WhenAll(getBlobDataTasksDictionary.Values);
-                locationBatch.ForEach(location => { data[location.Key] = getBlobDataTasksDictionary[location.Key].Result; });
-            }
-
-            EndAzureStorageCommunication(azureStorageEventModel);
-
-            return data;
+                var data = new Dictionary<int, T>();
+                var containerClient = GetBlobContainer(container);
+                foreach (var locationBatch in locations.Batch(batchSize))
+                {
+                    var getBlobDataTasksDictionary = Enumerable.ToDictionary(locationBatch, location => location.Key,
+                        location => Task.Run(() => GetBlobData<T>(containerClient, location.Value)));
+                    await Task.WhenAll(getBlobDataTasksDictionary.Values);
+                    locationBatch.ForEach(location => { data[location.Key] = getBlobDataTasksDictionary[location.Key].Result; });
+                }
+                return data;
+            });
         }
 
         public async IAsyncEnumerable<IEnumerable<T>> DownloadFolderContentsFileByFile<T>(string container, string folderName)
         {
-            var azureStorageEventModel = StartAzureStorageCommunication(folderName, container);
-
+            var sw = Stopwatch.StartNew();
             var containerClient = GetBlobContainer(container);
             var blobs = containerClient.GetBlobsAsync(prefix: $"{folderName}/");
 
@@ -123,7 +112,8 @@ namespace Atlas.Common.AzureStorage.Blob
                 yield return await GetBlobData<IEnumerable<T>>(containerClient, blob.Name);
             }
 
-            EndAzureStorageCommunication(azureStorageEventModel);
+            sw.Stop();
+            SendAzureStorageEvent(folderName, container, sw.ElapsedMilliseconds);
         }
 
         private async Task<T> GetBlobData<T>(BlobContainerClient containerClient, string filename)

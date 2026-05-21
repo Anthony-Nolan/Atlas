@@ -103,7 +103,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             services.AddSingleton<IBlobDownloader>(sp =>
             {
                 var storageSettings = sp.GetService<RepeatSearch.Settings.Azure.AzureStorageSettings>();
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<IAtlasLogger>();
                 return new BlobDownloader(storageSettings.ConnectionString, logger);
             });
 

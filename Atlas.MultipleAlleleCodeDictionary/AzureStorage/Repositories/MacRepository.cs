@@ -30,12 +30,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
     internal class MacRepository : IMacRepository
     {
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         protected readonly TableClient Table;
 
         private readonly string NonMetaDataFilter = TableClient.CreateQueryFilter($"PartitionKey ne {LastStoredMacMetadataEntity.MetadataPartitionKey}");
 
-        public MacRepository(MacDictionarySettings macDictionarySettings, ILogger logger)
+        public MacRepository(MacDictionarySettings macDictionarySettings, IAtlasLogger logger)
         {
             this.logger = logger;
             var connectionString = macDictionarySettings.AzureStorageConnectionString;

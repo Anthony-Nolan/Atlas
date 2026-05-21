@@ -1,10 +1,11 @@
+using System;
 using System.Collections.Generic;
 using Atlas.Common.Utils.Extensions;
 using Microsoft.ApplicationInsights;
 
 namespace Atlas.Common.ApplicationInsights
 {
-    public class ContextAwareLogger<TLogContext> : Logger where TLogContext: LoggingContext
+    public class ContextAwareLogger<TLogContext> : AtlasLogger where TLogContext: LoggingContext
     {
         private readonly TLogContext loggingContext;
 
@@ -16,10 +17,11 @@ namespace Atlas.Common.ApplicationInsights
             this.loggingContext = loggingContext;
         }
 
-        public override void SendEvent(EventModel eventModel)
+        public override void SendEvent(string name, LogLevel level = LogLevel.Info, Dictionary<string, string> props = null, Dictionary<string, double> metrics = null)
         {
-            AdornWithContextProps(eventModel.Properties);
-            base.SendEvent(eventModel);
+            props ??= new Dictionary<string, string>();
+            AdornWithContextProps(props);
+            base.SendEvent(name, level, props, metrics);
         }
 
         public override void SendTrace(string message, LogLevel messageLogLevel, Dictionary<string, string> props)
@@ -27,6 +29,13 @@ namespace Atlas.Common.ApplicationInsights
             props ??= new Dictionary<string, string>();
             AdornWithContextProps(props);
             base.SendTrace(message, messageLogLevel, props);
+        }
+
+        public override void SendException(Exception exception, LogLevel messageLogLevel, Dictionary<string, string> props)
+        {
+            props ??= new Dictionary<string, string>();
+            AdornWithContextProps(props);
+            base.SendException(exception, messageLogLevel, props);
         }
 
         private void AdornWithContextProps(IDictionary<string, string> properties)

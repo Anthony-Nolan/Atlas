@@ -46,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         private readonly IMatchScoreCalculator matchScoreCalculator;
         private readonly IScoreResultAggregator scoreResultAggregator;
         private readonly IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
         public DonorScoringService(
             IHlaMetadataDictionaryFactory factory,
@@ -57,7 +57,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             IMatchScoreCalculator matchScoreCalculator,
             IScoreResultAggregator scoreResultAggregator,
             IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator,
-            ILogger logger)
+            IAtlasLogger logger)
         {
             hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
             this.gradingService = gradingService;

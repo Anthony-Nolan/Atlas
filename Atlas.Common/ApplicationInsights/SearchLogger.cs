@@ -2,7 +2,7 @@
 
 namespace Atlas.Common.ApplicationInsights
 {
-    public interface ISearchLogger<TLoggingContext> : ILogger
+    public interface ISearchLogger<TLoggingContext> : IAtlasLogger
         where TLoggingContext : SearchLoggingContext
     {
     }

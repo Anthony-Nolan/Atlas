@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.DonorImport.ApplicationInsights;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
@@ -28,10 +28,12 @@ namespace Atlas.DonorImport.Services.DonorChecker
         private readonly IDonorInfoCheckerBlobStorageClient blobStorageClient;
         private readonly IDonorInfoCheckerMessageSender messageSender;
         private readonly INotificationSender notificationSender;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly IDonorUpdateMapper donorUpdateMapper;
 
-        public DonorInfoChecker(IDonorImportFileParser fileParser, IDonorReadRepository donorReadRepository, IDonorInfoCheckerBlobStorageClient blobStorageClient, IDonorInfoCheckerMessageSender messageSender, INotificationSender notificationSender, ILogger logger, IDonorUpdateMapper donorUpdateMapper)
+        public DonorInfoChecker(IDonorImportFileParser fileParser, IDonorReadRepository donorReadRepository,
+            IDonorInfoCheckerBlobStorageClient blobStorageClient, IDonorInfoCheckerMessageSender messageSender,
+            INotificationSender notificationSender, IAtlasLogger logger, IDonorUpdateMapper donorUpdateMapper)
         {
             this.fileParser = fileParser;
             this.donorReadRepository = donorReadRepository;
@@ -51,14 +53,14 @@ namespace Atlas.DonorImport.Services.DonorChecker
             var checkerResults = new DonorCheckerResults();
             try
             {
-
                 foreach (var donorsBatch in lazyFile.ReadLazyDonorUpdates().Batch(BatchSize))
                 {
                     var donors = donorsBatch.ToList();
                     var donorsHashes = await donorReadRepository.GetDonorsHashes(donors.Select(d => d.RecordId));
 
                     checkerResults.DonorRecordIds.AddRange(donors.Select(d => donorUpdateMapper.MapToDatabaseDonor(d, file.FileLocation))
-                        .Where(DonorIsAbsentOrHashIsDifferent).Select(d => d.ExternalDonorCode));
+                        .Where(DonorIsAbsentOrHashIsDifferent).Select(d => d.ExternalDonorCode)
+                    );
 
                     checkedDonorsCount += donors.Count;
                     LogMessage($"Batch complete - compared {donors.Count} donor(s) this batch. Cumulatively {checkedDonorsCount} donor(s). ");
@@ -72,7 +74,9 @@ namespace Atlas.DonorImport.Services.DonorChecker
                     await blobStorageClient.UploadResults(checkerResults, filename);
                 }
 
-                LogMessage($"Donor Info Check for file '{file.FileLocation}' complete. Checked {checkedDonorsCount} donor(s). Found {checkerResults.DonorRecordIds.Count} differences.");
+                LogMessage(
+                    $"Donor Info Check for file '{file.FileLocation}' complete. Checked {checkedDonorsCount} donor(s). Found {checkerResults.DonorRecordIds.Count} differences."
+                );
 
                 await messageSender.SendSuccessDonorCheckMessage(file.FileLocation, checkerResults.DonorRecordIds.Count, filename);
             }
@@ -90,7 +94,11 @@ namespace Atlas.DonorImport.Services.DonorChecker
             }
             catch (Exception e)
             {
-                logger.SendEvent(new DonorInfoCheckerFailureEventModel(file, e));
+                logger.SendException(e, LogLevel.Warn, new Dictionary<string, string>
+                    {
+                        { nameof(file.FileLocation), file.FileLocation },
+                    }
+                );
 
                 throw;
             }

@@ -37,7 +37,7 @@ namespace Atlas.RepeatSearch.Services.Search
         private readonly IRepeatSearchServiceBusClient repeatSearchServiceBusClient;
         private readonly ISearchService searchService;
         private readonly ISearchResultsBlobStorageClient repeatResultsBlobStorageClient;
-        private readonly ILogger repeatSearchLogger;
+        private readonly IAtlasLogger repeatSearchLogger;
         private readonly MatchingAlgorithmSearchLoggingContext repeatSearchLoggingContext;
         private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
         private readonly IRepeatSearchHistoryRepository repeatSearchHistoryRepository;

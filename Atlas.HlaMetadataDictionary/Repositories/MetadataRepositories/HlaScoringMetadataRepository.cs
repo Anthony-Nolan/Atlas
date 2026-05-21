@@ -25,7 +25,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             ITableClientFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             IPersistentCacheProvider cacheProvider,
-            ILogger logger)
+            IAtlasLogger logger)
             : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey, logger)
         {
         }
@@ -39,7 +39,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         private async Task<IDictionary<Locus, List<string>>> CalculateAllGGroups(string hlaNomenclatureVersion)
         {
             var metadataDictionary = await TableData(hlaNomenclatureVersion);
-            using (Logger.RunTimed("Calculate all GGroups"))
+            using (AtlasLogger.RunTimed("Calculate all GGroups"))
             {
                 var byLocus = metadataDictionary.Values.GroupBy(v => v.Locus);
                 return byLocus.ToDictionary(

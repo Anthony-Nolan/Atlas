@@ -28,7 +28,7 @@ namespace Atlas.Functions.Services
 
     internal class ResultsCombiner : IResultsCombiner
     {
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly IBlobDownloader blobDownloader;
         private readonly IPositionalMatchCategoryService matchCategoryService;
         private readonly string resultsContainer;

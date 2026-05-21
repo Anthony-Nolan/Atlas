@@ -45,6 +45,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
         private readonly ISearchDonorResultUploader resultUploader;
         private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
         public MatchPredictionAlgorithm(
             IMatchProbabilityService matchProbabilityService,

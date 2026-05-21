@@ -37,13 +37,13 @@ public class MatchPredictionRequestRunner : IMatchPredictionRequestRunner
     private readonly IServiceScopeFactory serviceScopeFactory;
     private readonly IMessageBatchPublisher<MatchPredictionResultLocation> messagePublisher;
     private int maxDegreeOfParallelism;
-    private readonly ILogger serviceLogger;
+    private readonly IAtlasLogger serviceLogger;
 
     public MatchPredictionRequestRunner(
         IServiceScopeFactory serviceScopeFactory,
         IMessageBatchPublisher<MatchPredictionResultLocation> messagePublisher,
         MatchPredictionRequestsSettings settings,
-        ILogger serviceLogger)
+        IAtlasLogger serviceLogger)
     {
         this.serviceScopeFactory = serviceScopeFactory;
         this.messagePublisher = messagePublisher;

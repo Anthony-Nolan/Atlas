@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.MatchingAlgorithm.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models;
@@ -468,7 +467,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 default);
 
             // third donor update is applicable; only 2 events should be logged
-            logger.Received(2).SendEvent(Arg.Any<DonorUpdateNotAppliedEventModel>());
+            logger.Received(2).SendEvent(Arg.Any<string>(), Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>(), Arg.Any<Dictionary<string, double>>());
         }
 
         [Test]

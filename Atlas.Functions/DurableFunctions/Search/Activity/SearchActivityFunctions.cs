@@ -33,7 +33,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         private readonly IMatchingResultsDownloader matchingResultsDownloader;
         private readonly ISearchResultsBlobStorageClient searchResultsBlobUploader;
         private readonly IResultsCombiner resultsCombiner;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly IMatchPredictionRequestBlobClient matchPredictionRequestBlobClient;
         private readonly SearchLoggingContext loggingContext;
         private readonly AzureStorageSettings azureStorageSettings;
@@ -177,6 +177,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         public async Task<IReadOnlyDictionary<int, string>> RunMatchPredictionBatch([ActivityTrigger] string requestLocation)
         {
             var matchProbabilityInput = await matchPredictionRequestBlobClient.DownloadBatchRequest(requestLocation);
+            InitializeLoggingContext(matchProbabilityInput.SearchRequestId);
             return await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(matchProbabilityInput);
         }
 
@@ -226,6 +227,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         [Function(nameof(SendFailureNotification))]
         public async Task SendFailureNotification([ActivityTrigger] FailureNotificationRequestInfo requestInfo)
         {
+            InitializeLoggingContext(requestInfo.SearchRequestId);
             var trackingSearchIdentifier = new Guid(requestInfo.RepeatSearchRequestId ?? requestInfo.SearchRequestId);
             var originalSearchIdentifier = requestInfo.RepeatSearchRequestId != null
                 ? new Guid(requestInfo.SearchRequestId)
@@ -237,6 +239,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         [Function(nameof(UploadSearchLog))]
         public async Task UploadSearchLog([ActivityTrigger] SearchLog searchLog)
         {
+            InitializeLoggingContext(searchLog.SearchRequestId);
             try
             {
                 await searchResultsBlobUploader.UploadResults(searchLog, azureStorageSettings.SearchResultsBlobContainer,

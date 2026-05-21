@@ -138,12 +138,12 @@ namespace Atlas.ManualTesting.DependencyInjection
                 return new WmdaDiscrepantResultsReporter(resultsComparer, cacheProvider, hlaConverter, TargetHlaCategory.Serology);
             });
 
-            services.AddSingleton<ILogger, FileBasedLogger>();
+            services.AddSingleton<IAtlasLogger, FileBasedLogger>();
 
             services.AddSingleton<IBlobDownloader>(sp =>
             {
                 var storageSettings = fetchAzureStorageSettings(sp);
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<IAtlasLogger>();
                 return new BlobDownloader(storageSettings.ConnectionString, logger);
             });
 

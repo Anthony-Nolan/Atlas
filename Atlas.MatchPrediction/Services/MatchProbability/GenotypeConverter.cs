@@ -39,7 +39,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     internal class GenotypeConverter : IGenotypeConverter
     {
         private const string StageToLog = "Convert genotypes for match calculation";
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly IHlaCategorisationService categoriser;
         private readonly IHlaToTargetCategoryConverter hlaToTargetCategoryConverter;

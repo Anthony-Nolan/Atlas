@@ -38,7 +38,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         private const string LoggingPrefix = "MatchPrediction: ";
         private readonly ICompressedPhenotypeExpander compressedPhenotypeExpander;
         private readonly IGenotypeLikelihoodService genotypeLikelihoodService;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
         public GenotypeImputationService(
             ICompressedPhenotypeExpander compressedPhenotypeExpander,

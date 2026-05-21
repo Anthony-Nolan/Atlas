@@ -32,9 +32,9 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
     internal class FrequencySetValidator : IFrequencySetValidator
     {
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
-        public FrequencySetValidator(IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory, ILogger logger)
+        public FrequencySetValidator(IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory, IAtlasLogger logger)
         {
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
             this.logger = logger;

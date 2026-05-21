@@ -86,7 +86,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly ISerologyToAllelesMetadataService serologyToAllelesMetadataService;
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
         public HlaMetadataDictionary(
             string hlaNomenclatureVersionOrDefault,
@@ -102,7 +102,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             ISerologyToAllelesMetadataService serologyToAllelesMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
-            ILogger logger)
+            IAtlasLogger logger)
         {
             this.hlaNomenclatureVersionOrDefault = hlaNomenclatureVersionOrDefault;
             this.recreateMetadataService = recreateMetadataService;

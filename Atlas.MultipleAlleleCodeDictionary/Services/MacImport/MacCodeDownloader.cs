@@ -20,11 +20,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImport
 
     internal class MacCodeDownloader : IMacCodeDownloader
     {
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly WebClient webClient = new WebClient();
         private readonly string url;
 
-        public MacCodeDownloader(MacDownloadSettings macDownloadSettings, ILogger logger)
+        public MacCodeDownloader(MacDownloadSettings macDownloadSettings, IAtlasLogger logger)
         {
             this.logger = logger;
             url = macDownloadSettings.MacSourceUrl;
