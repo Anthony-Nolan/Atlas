@@ -76,3 +76,19 @@ variable "CONTAINER_MAX_REPLICAS" {
   type    = number
   default = 1
 }
+
+// External SQL variables
+variable "USE_EXTERNAL_SQL" {
+  type    = bool
+  default = false
+}
+
+variable "EXTERNAL_SQL_SERVER_NAME" {
+  type    = string
+  default = ""
+}
+
+variable "EXTERNAL_SQL_DB_SHARED" {
+  type    = string
+  default = ""
+}

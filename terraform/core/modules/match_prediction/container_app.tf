@@ -78,7 +78,7 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         name  = "MessagingServiceBus__SendRetryCount"
         value = tostring(var.SERVICE_BUS_SEND_RETRY_COUNT)
       }
-      
+
       env {
         name  = "MessagingServiceBus__SendRetryCooldownSeconds"
         value = tostring(var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS)

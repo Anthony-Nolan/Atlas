@@ -65,3 +65,8 @@ output "container_app_environment" {
     name = azurerm_container_app_environment.atlas.name
   }
 }
+
+output "active_sql_source" {
+  description = "Indicates whether function apps target Terraform-managed or external SQL."
+  value       = var.USE_EXTERNAL_SQL ? "external" : "terraform-managed"
+}
