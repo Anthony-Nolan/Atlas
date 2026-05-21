@@ -68,6 +68,8 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "AtlasFunction:MessagingServiceBus:SendRetryCount"                          = var.SERVICE_BUS_SEND_RETRY_COUNT
     "AtlasFunction:MessagingServiceBus:SendRetryCooldownSeconds"                = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
     "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionRequestsTopic"    = module.match_prediction.service_bus.parallel_match_prediction_requests_topic.name
+    "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionResultsTopic"     = module.match_prediction.service_bus.parallel_match_prediction_results_topic.name
+    "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionResultsSubscription" = module.match_prediction.service_bus.parallel_match_prediction_results_aggregator_subscription.name
     "AtlasFunction:Orchestration:MatchPredictionBatchSize"                      = var.ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE
 
     "HlaMetadataDictionary:AzureStorageConnectionString"                          = azurerm_storage_account.azure_storage.primary_connection_string
@@ -134,6 +136,12 @@ resource "azurerm_windows_function_app" "atlas_function" {
     name  = "MatchPrediction:Sql"
     type  = "SQLAzure"
     value = module.match_prediction.sql_database.connection_string
+  }
+
+  connection_string {
+    name  = "SearchTracking:Sql"
+    type  = "SQLAzure"
+    value = module.search_tracking.sql_database.connection_string
   }
 }
 

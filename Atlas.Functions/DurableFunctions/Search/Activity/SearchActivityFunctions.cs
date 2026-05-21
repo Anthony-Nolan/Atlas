@@ -13,9 +13,10 @@ using Atlas.Common.ServiceBus;
 using Atlas.Functions.Models;
 using Atlas.Functions.Services;
 using Atlas.Functions.Services.BlobStorageClients;
-using Atlas.Functions.Settings;using Atlas.MatchPrediction.ExternalInterface;
+using Atlas.Functions.Settings;
+using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;
-using Atlas.SearchTracking.Common.Models;
+using Atlas.SearchTracking.Data.Repositories;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Options;
 
@@ -39,6 +40,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         private readonly IMatchPredictionSearchTrackingDispatcher matchPredictionSearchTrackingDispatcher;
 
         private readonly IMessageBatchPublisher<ParallelMatchPredictionBatchRequest> parallelBatchPublisher;
+        private readonly ISearchRequestParallelMatchPredictionMetadataRepository parallelMetadataRepository;
         private readonly int parallelMpaBatchSize;
 
         public SearchActivityFunctions(
@@ -53,6 +55,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             IMatchPredictionRequestBlobClient matchPredictionRequestBlobClient,
             IMatchPredictionSearchTrackingDispatcher matchPredictionSearchTrackingDispatcher,
             IMessageBatchPublisher<ParallelMatchPredictionBatchRequest> parallelBatchPublisher,
+            ISearchRequestParallelMatchPredictionMetadataRepository parallelMetadataRepository,
             IOptions<AzureStorageSettings> azureStorageSettings,
             IOptions<OrchestrationSettings> orchestrationSettings,
             SearchLoggingContext loggingContext)
@@ -67,6 +70,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             this.matchPredictionRequestBlobClient = matchPredictionRequestBlobClient;
             this.matchPredictionSearchTrackingDispatcher = matchPredictionSearchTrackingDispatcher;
             this.parallelBatchPublisher = parallelBatchPublisher;
+            this.parallelMetadataRepository = parallelMetadataRepository;
             this.loggingContext = loggingContext;
             this.azureStorageSettings = azureStorageSettings.Value;
             parallelMpaBatchSize = orchestrationSettings.Value.ParallelMpaBatchSize;
@@ -161,12 +165,26 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 
             await matchPredictionSearchTrackingDispatcher.ProcessPrepareBatchesEnded(trackingSearchIdentifier, originalSearchIdentifier);
 
+            var parallelMetadataId = await parallelMetadataRepository.Create(
+                searchIdentifier: new Guid(matchingResultsNotification.SearchRequestId),
+                isRepeatSearch: matchingResultsNotification.IsRepeatSearch,
+                repeatSearchIdentifier: matchingResultsNotification.RepeatSearchRequestId != null
+                    ? new Guid(matchingResultsNotification.RepeatSearchRequestId)
+                    : null,
+                resultsFileName: matchingResultsNotification.ResultsFileName,
+                resultsBatched: matchingResultsNotification.ResultsBatched,
+                batchFolderName: matchingResultsNotification.BatchFolderName,
+                matchingAlgorithmElapsedTime: matchingResultsNotification.ElapsedTime,
+                searchInitiatedTimeUtc: parameters.SearchInitiatedTimeUtc,
+                totalBatchCount: blobLocations.Count
+            );
+
             var batchRequests = blobLocations.Select(location => new ParallelMatchPredictionBatchRequest
             {
                 BlobLocation = location,
                 SearchRequestId = matchingResultsNotification.SearchRequestId,
                 IsRepeatSearch = matchingResultsNotification.IsRepeatSearch,
-                RepeatSearchRequestId = matchingResultsNotification.RepeatSearchRequestId,
+                ParallelMetadataId = parallelMetadataId,
                 TotalBatches = blobLocations.Count,
             });
 

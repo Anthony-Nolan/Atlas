@@ -151,7 +151,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
             finally
             {
-                // Only reached on the sequential path, so WasSuccessful is always true here
                 var performanceMetrics = new RequestPerformanceMetrics
                 {
                     InitiationTime = parameters.InitiationTime,
@@ -277,7 +276,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
             finally
             {
-                // Only reached on the sequential path, so WasSuccessful is always true here
                 await SendMatchPredictionProcessCompleted(context, new MatchPredictionProcessCompletedParameters
                 {
                     SearchIdentifier = trackingSearchIdentifier,
