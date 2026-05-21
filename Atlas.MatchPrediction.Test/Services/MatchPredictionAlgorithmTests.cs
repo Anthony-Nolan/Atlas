@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
@@ -58,6 +59,19 @@ namespace Atlas.MatchPrediction.Test.Services
             matchProbabilityService.CalculateMatchProbability(default, default).ReturnsForAnyArgs(new MatchProbabilityResponse(null, new HashSet<Locus>()));
             resultUploader.UploadSearchDonorResults(default, default, default).ReturnsForAnyArgs(call =>
                 ((IEnumerable<int>)call[1]).ToDictionary(id => id, id => $"{id}.json"));
+
+            serviceScopeFactory.CreateScope().Returns(_ => CreateMockScope());
+        }
+
+        private IServiceScope CreateMockScope()
+        {
+            var serviceProvider = Substitute.For<IServiceProvider>();
+            serviceProvider.GetService(typeof(IMatchProbabilityService)).Returns(matchProbabilityService);
+            serviceProvider.GetService(typeof(ISearchDonorResultUploader)).Returns(resultUploader);
+            serviceProvider.GetService(typeof(IMatchPredictionLogger<MatchProbabilityLoggingContext>)).Returns(logger);
+            var scope = Substitute.For<IServiceScope>();
+            scope.ServiceProvider.Returns(serviceProvider);
+            return scope;
         }
 
         [Test]
@@ -86,6 +100,102 @@ namespace Atlas.MatchPrediction.Test.Services
             await matchProbabilityService.Received(2).CalculateMatchProbability(
                 Arg.Any<SingleDonorMatchProbabilityInput>(),
                 Arg.Is<SubjectGenotypeSet>(x => ReferenceEquals(x, patientGenotypeSet)));
+        }
+
+        [Test]
+        public async Task RunMatchPredictionAlgorithmBatchParallel_ExpandsPatientGenotypesOnceAndReusesThemForEachDonor()
+        {
+            var patientGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions>(), 0.1m);
+            genotypeSetService.GetPatientGenotypeSet(default).ReturnsForAnyArgs(patientGenotypeSet);
+
+            var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest
+            {
+                SearchRequestId = "search-request-id",
+                PatientHla = new PhenotypeInfo<string>("patient-hla").ToPhenotypeInfoTransfer()
+            })
+            {
+                Donors = new List<DonorInput>
+                {
+                    DonorInputBuilder.Default.WithDonorIds(1).Build(),
+                    DonorInputBuilder.Default.WithDonorIds(2).Build()
+                }
+            };
+
+            await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatchParallel(input, maxDegreeOfParallelism: 10);
+
+            await genotypeSetService.Received(1).GetPatientGenotypeSet(Arg.Any<SingleDonorMatchProbabilityInput>());
+            await matchProbabilityService.Received(2).CalculateMatchProbability(
+                Arg.Any<SingleDonorMatchProbabilityInput>(),
+                Arg.Is<SubjectGenotypeSet>(x => ReferenceEquals(x, patientGenotypeSet)));
+        }
+
+        [Test]
+        public async Task RunMatchPredictionAlgorithmBatchParallel_ProcessesAllDonorsWithConstrainedParallelism()
+        {
+            var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest
+            {
+                SearchRequestId = "search-request-id",
+                PatientHla = new PhenotypeInfo<string>("patient-hla").ToPhenotypeInfoTransfer()
+            })
+            {
+                Donors = new List<DonorInput>
+                {
+                    DonorInputBuilder.Default.WithDonorIds(1).Build(),
+                    DonorInputBuilder.Default.WithDonorIds(2).Build(),
+                    DonorInputBuilder.Default.WithDonorIds(3).Build()
+                }
+            };
+
+            await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatchParallel(input, maxDegreeOfParallelism: 1);
+
+            await matchProbabilityService.Received(3).CalculateMatchProbability(
+                Arg.Any<SingleDonorMatchProbabilityInput>(),
+                Arg.Any<SubjectGenotypeSet>());
+        }
+
+        [Test]
+        public async Task RunMatchPredictionAlgorithmBatchParallel_CreatesNewScopePerDonor()
+        {
+            var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest
+            {
+                SearchRequestId = "search-request-id",
+                PatientHla = new PhenotypeInfo<string>("patient-hla").ToPhenotypeInfoTransfer()
+            })
+            {
+                Donors = new List<DonorInput>
+                {
+                    DonorInputBuilder.Default.WithDonorIds(1).Build(),
+                    DonorInputBuilder.Default.WithDonorIds(2).Build(),
+                    DonorInputBuilder.Default.WithDonorIds(3).Build()
+                }
+            };
+
+            await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatchParallel(input, maxDegreeOfParallelism: 10);
+
+            serviceScopeFactory.Received(3).CreateScope();
+        }
+
+        [Test]
+        public async Task RunMatchPredictionAlgorithmBatchParallel_AggregatesAllDonorResults()
+        {
+            var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest
+            {
+                SearchRequestId = "search-request-id",
+                PatientHla = new PhenotypeInfo<string>("patient-hla").ToPhenotypeInfoTransfer()
+            })
+            {
+                Donors = new List<DonorInput>
+                {
+                    DonorInputBuilder.Default.WithDonorIds(1).Build(),
+                    DonorInputBuilder.Default.WithDonorIds(2).Build()
+                }
+            };
+
+            var results = await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatchParallel(input, maxDegreeOfParallelism: 10);
+
+            Assert.That(results.Keys, Is.EquivalentTo(new[] { 1, 2 }));
+            Assert.That(results[1], Is.EqualTo("1.json"));
+            Assert.That(results[2], Is.EqualTo("2.json"));
         }
 
         [Test]
