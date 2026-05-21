@@ -126,8 +126,9 @@ namespace Atlas.MatchPrediction.ExternalInterface
                         await using var scope = serviceScopeFactory.CreateAsyncScope();
                         var scopedMatchProbabilityService = scope.ServiceProvider.GetRequiredService<IMatchProbabilityService>();
                         var scopedResultUploader = scope.ServiceProvider.GetRequiredService<ISearchDonorResultUploader>();
+                        var scopedLogger = scope.ServiceProvider.GetRequiredService<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
 
-                        using (logger.RunTimed("Run Match Prediction Algorithm per donor (parallel)"))
+                        using (scopedLogger.RunTimed("Run Match Prediction Algorithm per donor (parallel)"))
                         {
                             var result = await scopedMatchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet);
                             return await scopedResultUploader.UploadSearchDonorResults(searchRequestId, input.Donor.DonorIds, result);
