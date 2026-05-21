@@ -75,7 +75,7 @@ jobs:
           arguments: '--no-restore'
 
       - task: Docker@2
-        displayName: 'Build and push Match Prediction Worker image to ACR'
+        displayName: 'Build and Push MPA Worker Image'
         inputs:
           command: 'buildAndPush'
           repository: 'atlas-match-prediction'
@@ -83,8 +83,8 @@ jobs:
           dockerfile: 'Atlas.MatchPrediction.Worker/Dockerfile'
           containerRegistry: 'AN Container Registry-Atlas'
           tags: |
-            latest
             $(Build.BuildNumber)
+            latest
 
       - task: DotNetCoreCLI@2
         displayName: 'Pack API Client Packages'
