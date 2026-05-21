@@ -15,20 +15,20 @@ public interface IParallelMatchPredictionBatchRunner
 internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatchRunner
 {
     private readonly IBlobDownloader blobDownloader;
-    private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
+    private readonly IParallelMatchPredictionAlgorithm parallelMatchPredictionAlgorithm;
     private readonly string requestsContainer;
     private readonly int maxDegreeOfParallelism;
     private readonly ILogger<ParallelMatchPredictionBatchRunner> logger;
 
     public ParallelMatchPredictionBatchRunner(
         IBlobDownloader blobDownloader,
-        IMatchPredictionAlgorithm matchPredictionAlgorithm,
+        IParallelMatchPredictionAlgorithm parallelMatchPredictionAlgorithm,
         IOptions<AzureStorageSettings> azureStorageSettings,
         IOptions<MatchPredictionRequestsSettings> matchPredictionRequestsSettings,
         ILogger<ParallelMatchPredictionBatchRunner> logger)
     {
         this.blobDownloader = blobDownloader;
-        this.matchPredictionAlgorithm = matchPredictionAlgorithm;
+        this.parallelMatchPredictionAlgorithm = parallelMatchPredictionAlgorithm;
         requestsContainer = azureStorageSettings.Value.MatchPredictionRequestsBlobContainer;
         maxDegreeOfParallelism = matchPredictionRequestsSettings.Value.MaxParallelism;
         this.logger = logger;
@@ -46,7 +46,7 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
             "Downloaded {DonorCount} donors for search {SearchRequestId}, blob {BlobLocation}",
             batchInput.Donors?.Count, request.SearchRequestId, request.BlobLocation);
 
-        var results = await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatchParallel(batchInput, maxDegreeOfParallelism);
+        var results = await parallelMatchPredictionAlgorithm.RunBatch(batchInput, maxDegreeOfParallelism);
 
         logger.LogInformation(
             "Completed match prediction for {DonorCount} donors for search {SearchRequestId}, blob {BlobLocation}",

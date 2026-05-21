@@ -151,6 +151,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.AddScoped(typeof(IMatchPredictionLogger<>), typeof(MatchPredictionLogger<>));
 
             services.AddScoped<IMatchPredictionAlgorithm, MatchPredictionAlgorithm>();
+            services.AddScoped<IParallelMatchPredictionAlgorithm, ParallelMatchPredictionAlgorithm>();
             services.AddScoped<IDonorInputBatcher, DonorInputBatcher>();
 
             services.AddScoped<IFrequencySetImporter, FrequencySetImporter>();
