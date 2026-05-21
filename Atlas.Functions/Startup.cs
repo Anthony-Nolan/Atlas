@@ -19,6 +19,9 @@ using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.Dispatchers;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
+using Atlas.SearchTracking.Data.Context;
+using Atlas.SearchTracking.Data.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
@@ -101,6 +104,8 @@ namespace Atlas.Functions
 
             RegisterMatchPredictionSearchTracking(services, OptionsReaderFor<SearchTrackingServiceBusSettings>());
 
+            RegisterSearchTrackingDatabase(services);
+
             RegisterDebugServices(services);
 
             services.AddScoped<IMatchPredictionInputBuilder, MatchPredictionInputBuilder>();
@@ -114,6 +119,7 @@ namespace Atlas.Functions
                 return new ResultsCombiner(options, logger, downloader, matchCategoryService);
             });
             services.AddScoped<ISearchCompletionMessageSender, SearchCompletionMessageSender>();
+            services.AddScoped<IParallelMatchPredictionCompletionService, ParallelMatchPredictionCompletionService>();
             services.AddScoped<ISearchResultsBlobStorageClient, SearchResultsBlobStorageClient>(sp =>
             {
                 var settings = sp.GetService<IOptions<Settings.AzureStorageSettings>>().Value;
@@ -131,6 +137,15 @@ namespace Atlas.Functions
             });
             services.AddScoped<IMatchPredictionRequestBlobClient, MatchPredictionRequestBlobClient>();
 
+            // IBlobDownloader keyed to the match-prediction storage account – used by the parallel aggregator
+            // to download per-batch IReadOnlyDictionary<int,string> blobs published by the ACA Worker.
+            services.AddScoped<IBlobDownloader>(sp =>
+            {
+                var logger = sp.GetService<ISearchLogger<SearchLoggingContext>>();
+                var options = sp.GetService<IOptions<Settings.AzureStorageSettings>>();
+                return new BlobDownloader(options.Value.MatchPredictionConnectionString, logger);
+            });
+
             services.AddScoped<IMessageBatchPublisher<ParallelMatchPredictionBatchRequest>, MessageBatchPublisher<ParallelMatchPredictionBatchRequest>>(sp =>
             {
                 var settings = sp.GetRequiredService<IOptions<Settings.MessagingServiceBusSettings>>().Value;
@@ -145,6 +160,18 @@ namespace Atlas.Functions
             });
 
             services.AddSingleton(sp => AutoMapperConfig.CreateMapper());
+        }
+
+        private static void RegisterSearchTrackingDatabase(IServiceCollection services)
+        {
+            services.AddDbContext<ISearchTrackingContext, SearchTrackingContext>((sp, options) =>
+            {
+                options.UseSqlServer(ConnectionStringReader("SearchTracking:Sql")(sp));
+            });
+
+            services.AddScoped<IMatchPredictionRepository, MatchPredictionRepository>();
+            services.AddScoped<ISearchRequestRepository, SearchRequestRepository>();
+            services.AddScoped<ISearchRequestParallelMatchPredictionMetadataRepository, SearchRequestParallelMatchPredictionMetadataRepository>();
         }
 
         private static void RegisterSearchLogger(IServiceCollection services)

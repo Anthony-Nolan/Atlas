@@ -20,5 +20,11 @@ namespace Atlas.Functions.Settings
 
         /// <summary>Topic to which the orchestrator publishes batch-blob locations for the parallel ACA Worker MPA path.</summary>
         public string ParallelMatchPredictionRequestsTopic { get; set; }
+
+        /// <summary>Topic on which the ACA Worker publishes batch results for the parallel MPA path.</summary>
+        public string ParallelMatchPredictionResultsTopic { get; set; }
+
+        /// <summary>Subscription name on <see cref="ParallelMatchPredictionResultsTopic"/> used by the aggregator function.</summary>
+        public string ParallelMatchPredictionResultsSubscription { get; set; }
     }
 }
