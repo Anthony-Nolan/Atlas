@@ -39,7 +39,7 @@ public static class Startup
         services.AddScoped<IBlobDownloader>(sp =>
         {
             var settings = sp.GetRequiredService<IOptions<AzureStorageSettings>>().Value;
-            var atlasLogger = sp.GetService<IAtlasLogger>();
+            var atlasLogger = sp.GetRequiredService<IAtlasLogger>();
             return new BlobDownloader(settings.MatchPredictionConnectionString, atlasLogger);
         });
         services.AddScoped<IParallelMatchPredictionBatchRunner, ParallelMatchPredictionBatchRunner>();
