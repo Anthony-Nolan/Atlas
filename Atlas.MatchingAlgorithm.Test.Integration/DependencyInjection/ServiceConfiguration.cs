@@ -154,7 +154,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.AddScoped(_ => MockDonorReader);
 
             // Log to file, not to ApplicationInsights!
-            services.AddSingleton<ILogger, FileBasedLogger>();
+            services.AddSingleton<IAtlasLogger, FileBasedLogger>();
 
         }
 

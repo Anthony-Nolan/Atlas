@@ -32,7 +32,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
         private readonly IAlleleGroupsService alleleGroupsService;
         private readonly IGGroupToPGroupService gGroupToPGroupService;
         private readonly ISmallGGroupsService smallGGroupsService;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
         public HlaMetadataGenerationOrchestrator(
             IHlaMatchPreCalculationService matchPreCalculationService,
@@ -43,7 +43,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             IAlleleGroupsService alleleGroupsService,
             IGGroupToPGroupService gGroupToPGroupService,
             ISmallGGroupsService smallGGroupsService,
-            ILogger logger)
+            IAtlasLogger logger)
         {
             this.matchPreCalculationService = matchPreCalculationService;
             this.alleleNamesService = alleleNamesService;

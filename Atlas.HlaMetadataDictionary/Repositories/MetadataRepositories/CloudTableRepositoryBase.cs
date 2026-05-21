@@ -30,7 +30,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         where TStorable : ISerialisableHlaMetadata
     {
         protected readonly IAppCache Cache;
-        protected readonly ILogger Logger;
+        protected readonly IAtlasLogger AtlasLogger;
 
         private readonly ITableClientFactory tableFactory;
         private readonly ITableReferenceRepository tableReferenceRepository;
@@ -45,14 +45,14 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             // ReSharper disable once SuggestBaseTypeForParameter
             IPersistentCacheProvider cacheProvider,
             string cacheKey,
-            ILogger logger)
+            IAtlasLogger logger)
         {
             tableFactory = factory;
             this.tableReferenceRepository = tableReferenceRepository;
             this.functionalTableReferencePrefix = functionalTableReferencePrefix;
             Cache = cacheProvider.Cache;
             this.cacheKey = cacheKey;
-            Logger = logger;
+            AtlasLogger = logger;
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         private async Task<Dictionary<string, TTableRow>> FetchAllRowsInTable(string hlaNomenclatureVersion)
         {
             var operationDescription = $"Fetch and cache Hla Metadata Dictionary data: {cacheKey} at version: '{hlaNomenclatureVersion}'.";
-            using (Logger.RunTimed(operationDescription))
+            using (AtlasLogger.RunTimed(operationDescription))
             {
                 var currentDataTable = await GetVersionedDataTable(hlaNomenclatureVersion);
                 //var tableResults = new CloudTableBatchQueryAsync<TTableRow>(currentDataTable);

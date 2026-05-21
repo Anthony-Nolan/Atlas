@@ -32,7 +32,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
         private readonly IGenotypeSetService genotypeSetService;
         private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
         private readonly ISearchDonorResultUploader resultUploader;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
         public MatchPredictionAlgorithm(
             IMatchProbabilityService matchProbabilityService,

@@ -49,6 +49,9 @@ namespace Atlas.Functions.PublicApi
             // Matching Algorithm Scoring
             services.RegisterAsOptions<MatchingAlgorithmFunctionSettings>("MatchingAlgorithmFunction");
 
+            // Search function settings
+            services.RegisterAsOptions<SearchFunctionSettings>("AtlasFunction:Search");
+
             // Search Tracking
             services.RegisterAsOptions<SearchTrackingServiceBusSettings>("SearchTracking:SearchTrackingServiceBus");
 

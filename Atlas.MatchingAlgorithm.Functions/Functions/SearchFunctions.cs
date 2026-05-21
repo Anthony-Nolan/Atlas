@@ -1,6 +1,7 @@
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Utils;
 using Atlas.Common.Validation;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.Search;
 using FluentValidation;
@@ -24,13 +25,20 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         private readonly ISearchRunner searchRunner;
         private readonly IMatchingFailureNotificationSender matchingFailureNotificationSender;
         private readonly ILogger<SearchFunctions> logger;
+        private readonly MatchingAlgorithmSearchLoggingContext searchLoggingContext;
 
-        public SearchFunctions(ISearchDispatcher searchDispatcher, ISearchRunner searchRunner, IMatchingFailureNotificationSender matchingFailureNotificationSender, ILogger<SearchFunctions> logger)
+        public SearchFunctions(
+            ISearchDispatcher searchDispatcher,
+            ISearchRunner searchRunner,
+            IMatchingFailureNotificationSender matchingFailureNotificationSender,
+            ILogger<SearchFunctions> logger,
+            MatchingAlgorithmSearchLoggingContext searchLoggingContext)
         {
             this.searchDispatcher = searchDispatcher;
             this.searchRunner = searchRunner;
             this.matchingFailureNotificationSender = matchingFailureNotificationSender;
             this.logger = logger;
+            this.searchLoggingContext = searchLoggingContext;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -43,7 +51,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             try
             {
                 var id = await searchDispatcher.DispatchSearch(searchRequest);
-                return new JsonResult(new SearchInitiationResponse {SearchIdentifier = id});
+                return new JsonResult(new SearchInitiationResponse { SearchIdentifier = id });
             }
             catch (ValidationException e)
             {
@@ -57,12 +65,14 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             [ServiceBusTrigger(
                 "%MessagingServiceBus:SearchRequestsTopic%",
                 "%MessagingServiceBus:SearchRequestsSubscription%",
-                Connection = "MessagingServiceBus:ConnectionString")]
+                Connection = "MessagingServiceBus:ConnectionString"
+            )]
             IdentifiedSearchRequest request,
             int deliveryCount,
             DateTime enqueuedTimeUtc,
             CancellationToken cancellationToken)
         {
+            searchLoggingContext.SearchRequestId = request.Id;
             try
             {
                 logger.LogInformation("Function {FunctionName} executing; Search Id: {SearchId}", nameof(RunSearch), request.Id);
@@ -74,12 +84,9 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             }
             catch (OperationCanceledException ex)
             {
-                var message = $"Function {nameof(RunSearch)} has been cancelled; " +
-                              $"Search Id: {request.Id}";
+                var wrappedException = new OperationCanceledException($"Function {nameof(RunSearch)} has been cancelled; " + $"Search Id: {request.Id}", ex, cancellationToken);
 
-                var wrappedException = new OperationCanceledException(message, ex, cancellationToken);
-
-                logger.LogError(wrappedException, message);
+                logger.LogError(wrappedException, "Function {FunctionName} has been cancelled; Search Id: {SearchId}", nameof(RunSearch), request.Id);
 
                 throw wrappedException;
             }
@@ -90,7 +97,8 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             [ServiceBusTrigger(
                 "%MessagingServiceBus:SearchRequestsTopic%/Subscriptions/%MessagingServiceBus:SearchRequestsSubscription%/$DeadLetterQueue",
                 "%MessagingServiceBus:SearchRequestsSubscription%",
-                Connection = "MessagingServiceBus:ConnectionString")]
+                Connection = "MessagingServiceBus:ConnectionString"
+            )]
             IdentifiedSearchRequest request,
             int deliveryCount)
         {

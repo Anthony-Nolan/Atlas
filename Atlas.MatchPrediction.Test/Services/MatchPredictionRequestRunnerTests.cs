@@ -33,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Services
         private IMatchPredictionAlgorithm matchPredictionAlgorithm;
         private IMatchPredictionRequestResultUploader resultUploader;
         private IMessageBatchPublisher<MatchPredictionResultLocation> locationPublisher;
-        private ILogger batchLogger;
+        private IAtlasLogger batchLogger;
         private IMatchPredictionLogger<MatchPredictionRequestLoggingContext> logger;
         private MatchPredictionRequestsSettings settings;
         private ServiceProvider serviceProvider;
@@ -46,7 +46,7 @@ namespace Atlas.MatchPrediction.Test.Services
             matchPredictionAlgorithm = Substitute.For<IMatchPredictionAlgorithm>();
             resultUploader = Substitute.For<IMatchPredictionRequestResultUploader>();
             locationPublisher = Substitute.For<IMessageBatchPublisher<MatchPredictionResultLocation>>();
-            batchLogger = Substitute.For<ILogger>();
+            batchLogger = Substitute.For<IAtlasLogger>();
             logger = Substitute.For<IMatchPredictionLogger<MatchPredictionRequestLoggingContext>>();
             settings = new MatchPredictionRequestsSettings { MaxParallelism = 4 };
 
@@ -54,7 +54,7 @@ namespace Atlas.MatchPrediction.Test.Services
                 .AddScoped(_ => matchPredictionAlgorithm)
                 .AddScoped(_ => resultUploader)
                 .AddScoped(_ => locationPublisher)
-                .AddScoped<ILogger>(_ => batchLogger)
+                .AddScoped<IAtlasLogger>(_ => batchLogger)
                 .AddScoped(_ => logger)
                 .AddSingleton(_ => settings)
                 .AddScoped<MatchPredictionRequestLoggingContext>()

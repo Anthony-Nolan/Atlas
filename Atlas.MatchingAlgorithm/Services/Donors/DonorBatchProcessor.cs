@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Validation;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
-using Atlas.MatchingAlgorithm.ApplicationInsights.DonorProcessing;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Models;
+using FluentValidation;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Services.Donors
 {
@@ -93,10 +96,29 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
                 var failedDonorInfo = getFailedDonorInfo(d);
                 failedDonors.Add(failedDonorInfo);
 
-                var eventModel = DonorProcessingFailureEventModelFactory<TException>.GetEventModel(
-                    failureEventName,
-                    new DonorProcessingException<TException>(failedDonorInfo, e));
-                logger.SendEvent(eventModel);
+                var props = new Dictionary<string, string>
+                {
+                    { "Exception", e.ToString() },
+                    { "AtlasDonorId", failedDonorInfo.AtlasDonorId.ToString() },
+                    { "DonorInfo", JsonConvert.SerializeObject(failedDonorInfo.DonorInfo) }
+                };
+
+                switch (e)
+                {
+                    case HlaMetadataDictionaryException hlaEx:
+                        props["Locus"] = hlaEx.Locus;
+                        props["HlaName"] = hlaEx.HlaName;
+                        props["InnerExceptionType"] = hlaEx.InnerException?.GetType().Name ?? "N/A";
+                        break;
+                    case ValidationException valEx:
+                        props["ValidationErrors"] = valEx.ToErrorMessagesString();
+                        break;
+                    default:
+                        props["ExceptionType"] = e.GetType().FullName;
+                        break;
+                }
+
+                logger.SendEvent(failureEventName, LogLevel.Error, props);
 
                 return default;
             }

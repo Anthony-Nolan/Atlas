@@ -27,7 +27,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             ITableClientFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             IPersistentCacheProvider cacheProvider,
-            ILogger logger)
+            IAtlasLogger logger)
             : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey, logger)
         {
         }
@@ -55,7 +55,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         private async Task<IDictionary<Locus, ISet<string>>> CalculateAllSmallGGroups(string hlaNomenclatureVersion)
         {
             var tableData = await TableData(hlaNomenclatureVersion);
-            using (Logger.RunTimed("Calculate all small g-groups"))
+            using (AtlasLogger.RunTimed("Calculate all small g-groups"))
             {
                 var byLocus = tableData.Values.GroupBy(v => v.Locus);
                 return byLocus.ToDictionary(

@@ -24,7 +24,7 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
         private ISerologyToAllelesMetadataService serologyToAlleles;
         private IHlaMetadataGenerationOrchestrator metadata;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
-        private ILogger logger;
+        private IAtlasLogger logger;
         private IHlaMetadataDictionary cannedResponse = null;
 
         public HlaMetadataDictionaryBuilder()
@@ -46,7 +46,7 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
             serologyToAlleles = Substitute.For<ISerologyToAllelesMetadataService>();
             metadata = Substitute.For<IHlaMetadataGenerationOrchestrator>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IAtlasLogger>();
         }
 
         public HlaMetadataDictionaryBuilder Returning(IHlaMetadataDictionary cannedResponse)

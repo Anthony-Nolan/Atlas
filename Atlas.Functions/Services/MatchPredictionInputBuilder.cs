@@ -18,12 +18,14 @@ namespace Atlas.Functions.Services
 {
     public interface IMatchPredictionInputBuilder
     {
-        IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(ResultSet<MatchingAlgorithmResult> matchingResultSet);
+        IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(
+            ResultSet<MatchingAlgorithmResult> matchingResultSet,
+            int? batchSizeOverride = null);
     }
 
     internal class MatchPredictionInputBuilder : IMatchPredictionInputBuilder
     {
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
         private readonly IDonorInputBatcher donorInputBatcher;
         private readonly int matchPredictionBatchSize;
 
@@ -38,14 +40,16 @@ namespace Atlas.Functions.Services
         }
 
         /// <inheritdoc />
-        public IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(ResultSet<MatchingAlgorithmResult> matchingResultSet)
+        public IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(
+            ResultSet<MatchingAlgorithmResult> matchingResultSet,
+            int? batchSizeOverride = null)
         {
             using (logger.RunTimed($"Building match prediction inputs: {matchingResultSet.SearchRequestId}"))
             {
                 var nonDonorInput = BuildSearchRequestMatchPredictionInput(matchingResultSet);
                 var donorInputs = matchingResultSet.Results.Select(BuildPerDonorMatchPredictionInput);
 
-                return donorInputBatcher.BatchDonorInputs(nonDonorInput, donorInputs, matchPredictionBatchSize).ToList();
+                return donorInputBatcher.BatchDonorInputs(nonDonorInput, donorInputs, batchSizeOverride > 0 ? batchSizeOverride.Value : matchPredictionBatchSize).ToList();
             }
         }
 

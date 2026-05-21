@@ -232,6 +232,9 @@ namespace Atlas.SearchTracking.Data.Migrations
                     b.Property<DateTime>("InitiationTimeUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsParallelMatchPrediction")
+                        .HasColumnType("bit");
+
                     b.Property<bool?>("IsSuccessful")
                         .HasColumnType("bit");
 
@@ -264,7 +267,7 @@ namespace Atlas.SearchTracking.Data.Migrations
             modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequestMatchingAlgorithmAttempts", b =>
                 {
                     b.HasOne("Atlas.SearchTracking.Data.Models.SearchRequest", "SearchRequest")
-                        .WithMany("SearchRequestMatchingAlgorithmAttempts")
+                        .WithMany("MatchingAlgorithmAttempts")
                         .HasForeignKey("SearchRequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -275,7 +278,7 @@ namespace Atlas.SearchTracking.Data.Migrations
             modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequestMatchPrediction", b =>
                 {
                     b.HasOne("Atlas.SearchTracking.Data.Models.SearchRequest", "SearchRequest")
-                        .WithOne("SearchRequestMatchPrediction")
+                        .WithOne("MatchPrediction")
                         .HasForeignKey("Atlas.SearchTracking.Data.Models.SearchRequestMatchPrediction", "SearchRequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -285,9 +288,9 @@ namespace Atlas.SearchTracking.Data.Migrations
 
             modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequest", b =>
                 {
-                    b.Navigation("SearchRequestMatchPrediction");
+                    b.Navigation("MatchPrediction");
 
-                    b.Navigation("SearchRequestMatchingAlgorithmAttempts");
+                    b.Navigation("MatchingAlgorithmAttempts");
                 });
 #pragma warning restore 612, 618
         }

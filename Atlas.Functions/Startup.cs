@@ -13,6 +13,7 @@ using Atlas.Functions.Services.MatchCategories;
 using Atlas.Functions.Settings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.SearchTracking.Common.Clients;
@@ -115,7 +116,7 @@ namespace Atlas.Functions
             services.AddScoped<ISearchResultsBlobStorageClient, SearchResultsBlobStorageClient>(sp =>
             {
                 var settings = sp.GetService<IOptions<Settings.AzureStorageSettings>>().Value;
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<IAtlasLogger>();
                 return new SearchResultsBlobStorageClient(settings.MatchingConnectionString, logger);
             });
 
@@ -128,6 +129,20 @@ namespace Atlas.Functions
                 return new MatchingResultsDownloader(options, downloader, logger);
             });
             services.AddScoped<IMatchPredictionRequestBlobClient, MatchPredictionRequestBlobClient>();
+
+            services.AddScoped<IMessageBatchPublisher<ParallelMatchPredictionBatchRequest>, MessageBatchPublisher<ParallelMatchPredictionBatchRequest>>(sp =>
+            {
+                var settings = sp.GetRequiredService<IOptions<Settings.MessagingServiceBusSettings>>().Value;
+                var logger = sp.GetService<IAtlasLogger>();
+                var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(Settings.MessagingServiceBusSettings));
+                return new MessageBatchPublisher<ParallelMatchPredictionBatchRequest>(
+                    topicClientFactory,
+                    settings.ParallelMatchPredictionRequestsTopic,
+                    settings.SendRetryCount,
+                    settings.SendRetryCooldownSeconds,
+                    logger);
+            });
+
             services.AddSingleton(sp => AutoMapperConfig.CreateMapper());
         }
 

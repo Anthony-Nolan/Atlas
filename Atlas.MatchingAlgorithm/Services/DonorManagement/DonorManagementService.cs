@@ -7,7 +7,6 @@ using System.Transactions;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
-using Atlas.MatchingAlgorithm.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -16,6 +15,7 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Donors;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 {
@@ -143,7 +143,12 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 
             foreach (var update in nonApplicableUpdates)
             {
-                logger.SendEvent(GetDonorUpdateNotAppliedEventModel(update));
+                logger.SendEvent("Donor update not applied", LogLevel.Warn, new Dictionary<string, string>
+                {
+                    { "DonorId", update.DonorAvailabilityUpdate.DonorId.ToString() },
+                    { "LastUpdateDateTime", update.DonorManagementLog.LastUpdateDateTime.ToString() },
+                    { "DonorUpdate", JsonConvert.SerializeObject(update.DonorAvailabilityUpdate) }
+                });
             }
 
             logger.SendTrace(
@@ -152,10 +157,6 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
                 LogLevel.Warn);
         }
 
-        private static DonorUpdateNotAppliedEventModel GetDonorUpdateNotAppliedEventModel(NonApplicableUpdate update)
-        {
-            return new DonorUpdateNotAppliedEventModel(update.DonorManagementLog.LastUpdateDateTime, update.DonorAvailabilityUpdate);
-        }
 
         private async Task ApplyDonorUpdates(
             List<DonorAvailabilityUpdate> updatesList,

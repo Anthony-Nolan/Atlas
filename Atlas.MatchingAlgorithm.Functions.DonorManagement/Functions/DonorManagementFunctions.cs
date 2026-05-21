@@ -19,9 +19,9 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
         private const string ErrorMessagePrefix = "Error when running the donor management function. ";
 
         private readonly IDonorUpdateProcessor donorUpdateProcessor;
-        private readonly ILogger logger;
+        private readonly IAtlasLogger logger;
 
-        public DonorManagementFunctions(IDonorUpdateProcessor donorUpdateProcessor, ILogger logger)
+        public DonorManagementFunctions(IDonorUpdateProcessor donorUpdateProcessor, IAtlasLogger logger)
         {
             this.donorUpdateProcessor = donorUpdateProcessor;
             this.logger = logger;

@@ -590,3 +590,41 @@ variable "MATCH_PREDICTION_CONTAINER_MAX_REPLICAS" {
   default     = 1
   description = "Maximum replica count for the match prediction container app."
 }
+
+# --- External SQL variables (for retargeting function app connection strings) ---
+
+variable "USE_EXTERNAL_SQL" {
+  description = "When true, function app connection strings target an external SQL server instead of the Terraform-managed one."
+  type        = bool
+  default     = false
+}
+
+variable "EXTERNAL_SQL_SERVER_NAME" {
+  description = "Short name of the external Azure SQL server (without .database.windows.net suffix). Consumed via TF_VAR_EXTERNAL_SQL_SERVER_NAME."
+  type        = string
+  default     = ""
+}
+
+variable "EXTERNAL_SQL_DB_SHARED" {
+  description = "Name of the external shared (atlas) database. Consumed via TF_VAR_EXTERNAL_SQL_DB_SHARED."
+  type        = string
+  default     = ""
+}
+
+variable "EXTERNAL_SQL_DB_MATCHING_A" {
+  description = "Name of the external matching-a database. Consumed via TF_VAR_EXTERNAL_SQL_DB_MATCHING_A."
+  type        = string
+  default     = ""
+}
+
+variable "EXTERNAL_SQL_DB_MATCHING_B" {
+  description = "Name of the external matching-b database. Consumed via TF_VAR_EXTERNAL_SQL_DB_MATCHING_B."
+  type        = string
+  default     = ""
+}
+
+variable "EXTERNAL_SQL_SERVER_ADMIN_LOGIN" {
+  description = "Admin login for the external SQL server. Consumed via TF_VAR_EXTERNAL_SQL_SERVER_ADMIN_LOGIN."
+  type        = string
+  default     = ""
+}

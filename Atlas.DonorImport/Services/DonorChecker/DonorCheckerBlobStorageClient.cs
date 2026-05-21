@@ -19,7 +19,7 @@ namespace Atlas.DonorImport.Services.DonorChecker
         private readonly string donorBlobContainer;
         private readonly string checkerFolderName;
 
-        public DonorCheckerBlobStorageClient(ILogger logger, string connectionString, string donorBlobContainer, string checkerFolderName) : base(connectionString, logger)
+        public DonorCheckerBlobStorageClient(IAtlasLogger logger, string connectionString, string donorBlobContainer, string checkerFolderName) : base(connectionString, logger)
         {
             this.donorBlobContainer = donorBlobContainer;
             this.checkerFolderName = checkerFolderName;

@@ -38,7 +38,6 @@ namespace Atlas.MatchPrediction.Test.Services
             haplotypeFrequencyService = Substitute.For<IHaplotypeFrequencyService>();
             resultUploader = Substitute.For<ISearchDonorResultUploader>();
             logger = Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
-
             matchPredictionAlgorithm = new MatchPredictionAlgorithm(
                 matchProbabilityService,
                 genotypeSetService,
@@ -55,6 +54,7 @@ namespace Atlas.MatchPrediction.Test.Services
             matchProbabilityService.CalculateMatchProbability(default, default).ReturnsForAnyArgs(new MatchProbabilityResponse(null, new HashSet<Locus>()));
             resultUploader.UploadSearchDonorResults(default, default, default).ReturnsForAnyArgs(call =>
                 ((IEnumerable<int>)call[1]).ToDictionary(id => id, id => $"{id}.json"));
+
         }
 
         [Test]

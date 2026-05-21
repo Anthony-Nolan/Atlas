@@ -3,7 +3,7 @@ using Microsoft.ApplicationInsights;
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging
 {
-    public interface IMatchingAlgorithmImportLogger : ILogger
+    public interface IMatchingAlgorithmImportLogger : IAtlasLogger
     {
     }
 

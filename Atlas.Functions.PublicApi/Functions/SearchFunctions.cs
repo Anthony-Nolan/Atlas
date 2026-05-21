@@ -1,6 +1,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
+using Atlas.Functions.PublicApi.Settings;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using Atlas.MatchPrediction.ExternalInterface;
@@ -12,6 +13,7 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace Atlas.Functions.PublicApi.Functions
@@ -21,12 +23,18 @@ namespace Atlas.Functions.PublicApi.Functions
         private readonly ISearchDispatcher searchDispatcher;
         private readonly IRepeatSearchDispatcher repeatSearchDispatcher;
         private readonly IMatchPredictionValidator matchPredictionValidator;
+        private readonly bool defaultParallelMatchPrediction;
 
-        public SearchFunctions(ISearchDispatcher searchDispatcher, IRepeatSearchDispatcher repeatSearchDispatcher, IMatchPredictionValidator matchPredictionValidator)
+        public SearchFunctions(
+            ISearchDispatcher searchDispatcher,
+            IRepeatSearchDispatcher repeatSearchDispatcher,
+            IMatchPredictionValidator matchPredictionValidator,
+            IOptions<SearchFunctionSettings> searchFunctionSettings)
         {
             this.searchDispatcher = searchDispatcher;
             this.repeatSearchDispatcher = repeatSearchDispatcher;
             this.matchPredictionValidator = matchPredictionValidator;
+            defaultParallelMatchPrediction = searchFunctionSettings.Value.DefaultParallelMatchPrediction;
         }
 
         [Function(nameof(Search))]
@@ -49,6 +57,8 @@ namespace Atlas.Functions.PublicApi.Functions
             {
                 return BuildValidationResponse(probabilityValidationResult);
             }
+
+            searchRequest.ParallelMatchPrediction ??= defaultParallelMatchPrediction;
 
             var id = await searchDispatcher.DispatchSearch(searchRequest);
             await searchDispatcher.DispatchSearchTrackingEvent(searchRequest, id);
@@ -76,6 +86,8 @@ namespace Atlas.Functions.PublicApi.Functions
             {
                 return BuildValidationResponse(probabilityValidationResult);
             }
+
+            repeatSearchRequest.SearchRequest.ParallelMatchPrediction ??= defaultParallelMatchPrediction;
 
             var repeatSearchId = await repeatSearchDispatcher.DispatchSearch(repeatSearchRequest);
             await repeatSearchDispatcher.DispatchSearchTrackingEvent(repeatSearchRequest, repeatSearchId);

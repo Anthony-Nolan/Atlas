@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
@@ -15,13 +16,13 @@ namespace Atlas.Common.Test.Notifications
     {
         private INotificationSender sender;
         private INotificationsClient client;
-        private ILogger logger;
+        private IAtlasLogger logger;
 
         [SetUp]
         public void SetUp()
         {
             client = Substitute.For<INotificationsClient>();
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IAtlasLogger>();
 
             sender = new NotificationSender(client, logger);
         }
@@ -37,9 +38,10 @@ namespace Atlas.Common.Test.Notifications
         }
 
         [Test]
-        public async Task SendFailedDonorsAlert_ExceptionThrownByNotificationsClient_LogsNotificationSenderFailureEvent()
+        public async Task SendFailedDonorsAlert_ExceptionThrownByNotificationsClient_LogsException()
         {
-            client.SendAlert(default).ThrowsForAnyArgs(new Exception());
+            var exception = new Exception();
+            client.SendAlert(null).ThrowsForAnyArgs(exception);
 
             try
             {
@@ -50,7 +52,7 @@ namespace Atlas.Common.Test.Notifications
                 // This shouldn't throw, but if it does, that's the responsibility of the other test
             }
 
-            logger.Received().SendEvent(Arg.Any<NotificationSenderFailureEventModel>());
+            logger.Received().SendException(exception, Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>());
         }
     }
 }
