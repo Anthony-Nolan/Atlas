@@ -1,4 +1,5 @@
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.Common.ServiceBus;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
@@ -17,6 +18,7 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
 {
     private readonly IBlobDownloader blobDownloader;
     private readonly IParallelMatchPredictionAlgorithm parallelMatchPredictionAlgorithm;
+    private readonly ISessionMessagePublisher<ParallelMatchPredictionBatchResult> resultPublisher;
     private readonly IMatchPredictionSearchTrackingDispatcher trackingDispatcher;
     private readonly string requestsContainer;
     private readonly int maxDegreeOfParallelism;
@@ -25,6 +27,7 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
     public ParallelMatchPredictionBatchRunner(
         IBlobDownloader blobDownloader,
         IParallelMatchPredictionAlgorithm parallelMatchPredictionAlgorithm,
+        ISessionMessagePublisher<ParallelMatchPredictionBatchResult> resultPublisher,
         IMatchPredictionSearchTrackingDispatcher trackingDispatcher,
         IOptions<AzureStorageSettings> azureStorageSettings,
         IOptions<MatchPredictionRequestsSettings> matchPredictionRequestsSettings,
@@ -32,6 +35,7 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
     {
         this.blobDownloader = blobDownloader;
         this.parallelMatchPredictionAlgorithm = parallelMatchPredictionAlgorithm;
+        this.resultPublisher = resultPublisher;
         this.trackingDispatcher = trackingDispatcher;
         requestsContainer = azureStorageSettings.Value.MatchPredictionRequestsBlobContainer;
         maxDegreeOfParallelism = matchPredictionRequestsSettings.Value.MaxParallelism;
@@ -42,13 +46,15 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
     {
         logger.LogInformation(
             "Downloading batch blob {BlobLocation} for search {SearchRequestId}",
-            request.BlobLocation, request.SearchRequestId);
+            request.BlobLocation, request.SearchRequestId
+        );
 
         var batchInput = await blobDownloader.Download<MultipleDonorMatchProbabilityInput>(requestsContainer, request.BlobLocation);
 
         logger.LogInformation(
             "Downloaded {DonorCount} donors for search {SearchRequestId}, blob {BlobLocation}",
-            batchInput.Donors?.Count, request.SearchRequestId, request.BlobLocation);
+            batchInput.Donors?.Count, request.SearchRequestId, request.BlobLocation
+        );
 
         var searchIdentifier = request.IsRepeatSearch
             ? Guid.Parse(request.RepeatSearchRequestId)
@@ -65,8 +71,22 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
 
         logger.LogInformation(
             "Completed match prediction for {DonorCount} donors for search {SearchRequestId}, blob {BlobLocation}",
-            results.Count, request.SearchRequestId, request.BlobLocation);
+            results.Count, request.SearchRequestId, request.BlobLocation
+        );
 
-        // TODO: publish results to parallel-match-prediction-results with SessionId = request.SearchRequestId, TotalBatches = request.TotalBatches
+        var batchResult = new ParallelMatchPredictionBatchResult
+        {
+            SearchIdentifier = new Guid(request.SearchRequestId),
+            RepeatSearchIdentifier = request.RepeatSearchRequestId == null ? null : new Guid(request.RepeatSearchRequestId),
+            MatchPredictionResultLocations = results,
+            ParallelMetadataId = request.ParallelMetadataId,
+        };
+
+        await resultPublisher.PublishWithSession(batchResult, sessionId: request.SearchRequestId);
+
+        logger.LogInformation(
+            "Published batch result for search {SearchRequestId} (session) to parallel-match-prediction-results",
+            request.SearchRequestId
+        );
     }
 }

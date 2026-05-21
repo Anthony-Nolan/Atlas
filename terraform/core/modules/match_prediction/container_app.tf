@@ -109,6 +109,10 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         value = azurerm_servicebus_topic.match-prediction-results.name
       }
       env {
+        name  = "MatchPredictionRequests__ParallelResultsTopic"
+        value = azurerm_servicebus_topic.parallel-match-prediction-results.name
+      }
+      env {
         name  = "MatchPredictionRequests__MaxParallelism"
         value = tostring(var.MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM)
       }
