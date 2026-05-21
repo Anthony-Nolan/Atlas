@@ -74,6 +74,18 @@ jobs:
           projects: '**/*Test.csproj'
           arguments: '--no-restore'
 
+      - task: Docker@2
+        displayName: 'Build and Push MPA Worker Image'
+        inputs:
+          command: 'buildAndPush'
+          repository: 'atlas-match-prediction'
+          buildContext: '$(System.DefaultWorkingDirectory)'
+          dockerfile: 'Atlas.MatchPrediction.Worker/Dockerfile'
+          containerRegistry: 'AN Container Registry-Atlas'
+          tags: |
+            $(Build.BuildNumber)
+            latest
+
       - task: DotNetCoreCLI@2
         displayName: 'Pack API Client Packages'
         inputs:
