@@ -83,8 +83,8 @@ jobs:
           dockerfile: 'Atlas.MatchPrediction.Worker/Dockerfile'
           containerRegistry: 'AN Container Registry-Atlas'
           tags: |
-            'latest'
-            '$(Build.BuildNumber)'
+            latest
+            $(Build.BuildNumber)
 
       - task: DotNetCoreCLI@2
         displayName: 'Pack API Client Packages'
