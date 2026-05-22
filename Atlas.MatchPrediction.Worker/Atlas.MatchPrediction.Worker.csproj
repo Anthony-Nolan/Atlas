@@ -23,5 +23,6 @@
         <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj"/>
         <ProjectReference Include="..\Atlas.Common.Public.Models\Atlas.Common.Public.Models.csproj"/>
         <ProjectReference Include="..\Atlas.MatchPrediction\Atlas.MatchPrediction.csproj"/>
+        <ProjectReference Include="..\Atlas.SearchTracking.Common\Atlas.SearchTracking.Common.csproj"/>
     </ItemGroup>
 </Project>

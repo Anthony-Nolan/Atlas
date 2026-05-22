@@ -3,6 +3,7 @@ using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Atlas.SearchTracking.Common.Settings.ServiceBus;
 using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchPrediction.Worker.Settings;
@@ -22,6 +23,7 @@ internal static class SettingsValidationExtensions
             "NotificationsServiceBus"
         );
         services.AddOptions<MatchPredictionWorkerSettings>(configuration, "MatchPredictionWorker");
+        services.AddOptions<SearchTrackingServiceBusSettings>(configuration, "SearchTrackingServiceBus");
     }
 
     private static void AddOptions<TOptions>(this IServiceCollection services, IConfiguration configuration, string sectionName)
