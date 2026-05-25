@@ -50,11 +50,9 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
             "Downloaded {DonorCount} donors for search {SearchRequestId}, blob {BlobLocation}",
             batchInput.Donors?.Count, request.SearchRequestId, request.BlobLocation);
 
-        var searchIdentifier = request.IsRepeatSearch
-            ? Guid.Parse(request.RepeatSearchRequestId)
-            : Guid.Parse(request.SearchRequestId);
+        var searchIdentifier = Guid.Parse(request.SearchRequestId);
         var originalSearchIdentifier = request.IsRepeatSearch
-            ? Guid.Parse(request.SearchRequestId)
+            ? Guid.Parse(request.RepeatSearchRequestId)
             : (Guid?)null;
 
         await trackingDispatcher.ProcessRunningBatchesStarted(searchIdentifier, originalSearchIdentifier);
