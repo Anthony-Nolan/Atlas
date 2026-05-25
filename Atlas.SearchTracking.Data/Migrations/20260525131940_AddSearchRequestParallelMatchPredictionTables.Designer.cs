@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.SearchTracking.Data.Migrations
 {
     [DbContext(typeof(SearchTrackingContext))]
-    [Migration("20260522134305_AddSearchRequestParallelMatchPredictionTables")]
+    [Migration("20260525131940_AddSearchRequestParallelMatchPredictionTables")]
     partial class AddSearchRequestParallelMatchPredictionTables
     {
         /// <inheritdoc />
@@ -319,9 +319,6 @@ namespace Atlas.SearchTracking.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("DonorId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Id")
                         .HasColumnType("int");
 
                     b.Property<string>("ResultBlobFileName")

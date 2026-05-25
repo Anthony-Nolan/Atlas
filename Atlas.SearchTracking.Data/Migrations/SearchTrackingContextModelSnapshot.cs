@@ -318,9 +318,6 @@ namespace Atlas.SearchTracking.Data.Migrations
                     b.Property<int>("DonorId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
                     b.Property<string>("ResultBlobFileName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

@@ -185,6 +185,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 BlobLocation = location,
                 SearchRequestId = matchingResultsNotification.SearchRequestId,
                 IsRepeatSearch = matchingResultsNotification.IsRepeatSearch,
+                RepeatSearchRequestId = matchingResultsNotification.IsRepeatSearch
+                    ? matchingResultsNotification.RepeatSearchRequestId
+                    : null,
                 ParallelMetadataId = parallelMetadataId,
                 TotalBatches = blobLocations.Count,
             });
