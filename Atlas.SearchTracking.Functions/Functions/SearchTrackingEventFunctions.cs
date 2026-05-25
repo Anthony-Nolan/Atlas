@@ -20,7 +20,8 @@ namespace Atlas.SearchTracking.Functions.Functions
         public async Task HandleSearchTrackingEvent(
             [ServiceBusTrigger("%MessagingServiceBus:SearchTrackingTopic%",
                 "%MessagingServiceBus:SearchTrackingSubscription%",
-                Connection = "MessagingServiceBus:ConnectionString")]
+                Connection = "MessagingServiceBus:ConnectionString",
+                IsSessionsEnabled = true)]
             ServiceBusReceivedMessage message,
             int deliveryCount)
         {
