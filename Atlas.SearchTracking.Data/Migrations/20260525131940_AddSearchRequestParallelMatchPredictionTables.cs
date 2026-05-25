@@ -41,7 +41,6 @@ namespace Atlas.SearchTracking.Data.Migrations
                 {
                     MetadataId = table.Column<int>(type: "int", nullable: false),
                     DonorId = table.Column<int>(type: "int", nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false),
                     ResultBlobFileName = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>

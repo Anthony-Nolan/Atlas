@@ -1,6 +1,7 @@
 ﻿using Atlas.SearchTracking.Data.Context;
 using Atlas.SearchTracking.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Atlas.SearchTracking.Data.Repositories;
 
@@ -81,25 +82,44 @@ public class SearchRequestParallelMatchPredictionMetadataRepository : ISearchReq
     {
         await using var transaction = await DbContext.Database.BeginTransactionAsync();
 
-        int processedBatchCount;
+        int? processedBatchCount;
         try
         {
-            // Do
-            processedBatchCount = await DbContext.Database.SqlQuery<int>(
+            // Idempotency guard: if any donors from this batch are already persisted, this message
+            // was already processed (Service Bus retry/duplicate). Return the current count unchanged.
+            var donorIds = resultLocations.Keys.ToList();
+            var alreadyInsertedCount = await ResultLocations
+                .CountAsync(r => r.MetadataId == parallelMetadataId && donorIds.Contains(r.DonorId));
+
+            if (alreadyInsertedCount > 0)
+            {
+                processedBatchCount = await Metadata
+                    .Where(m => m.Id == parallelMetadataId)
+                    .Select(m => m.ProcessedBatchCount)
+                    .SingleOrDefaultAsync();
+                await transaction.CommitAsync();
+                return processedBatchCount.Value;
+            }
+
+            // Atomically increment ProcessedBatchCount. OUTPUT returns no rows (default 0) when the
+            // metadata row does not exist, allowing us to detect the missing-row case without a
+            // separate query.
+            // Can't use fancy .FromSql or anything else because of EF Core shenanigans
+            var command = DbContext.Database.GetDbConnection().CreateCommand();
+            command.CommandText =
                 $"""
                  UPDATE [{SearchTrackingContext.Schema}].[SearchRequestParallelMatchPredictionMetadata]
-                                        SET ProcessedBatchCount = ProcessedBatchCount + 1
-                                        WHERE Id = {parallelMetadataId}
-                                        OUTPUT inserted.ProcessedBatchCount
-                 """
-            ).SingleAsync();
+                 SET ProcessedBatchCount = ProcessedBatchCount + 1
+                 OUTPUT inserted.ProcessedBatchCount
+                 WHERE Id = @parallelMetadataId
+                 """;
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@parallelMetadataId", parallelMetadataId));
+            // Transaction is not set on the command by default, so we have to do it manually.
+            command.Transaction = transaction.GetDbTransaction();
 
-            var metadataId = await Metadata
-                .Where(m => m.Id == parallelMetadataId)
-                .Select(m => m.Id)
-                .FirstOrDefaultAsync();
+            processedBatchCount = (int?)await command.ExecuteScalarAsync();
 
-            if (metadataId == 0)
+            if (processedBatchCount is null or 0)
             {
                 throw new InvalidOperationException(
                     $"No parallel match prediction metadata found with id '{parallelMetadataId}'."
@@ -109,7 +129,7 @@ public class SearchRequestParallelMatchPredictionMetadataRepository : ISearchReq
             ResultLocations.AddRange(resultLocations.Select(kv =>
                     new SearchRequestParallelMatchPredictionResultLocation
                     {
-                        MetadataId = metadataId,
+                        MetadataId = parallelMetadataId,
                         DonorId = kv.Key,
                         ResultBlobFileName = kv.Value
                     }
@@ -126,7 +146,7 @@ public class SearchRequestParallelMatchPredictionMetadataRepository : ISearchReq
             throw;
         }
 
-        return processedBatchCount;
+        return processedBatchCount.Value;
     }
 
     /// <inheritdoc />

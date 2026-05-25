@@ -5,11 +5,10 @@ namespace Atlas.SearchTracking.Data.Models;
 
 /// <summary>
 /// One row per donor result location received from the ACA Worker across all parallel MPA batches.
+/// Primary key is the composite (MetadataId, DonorId) as configured in <see cref="Context.SearchTrackingContext"/>.
 /// </summary>
 public class SearchRequestParallelMatchPredictionResultLocation
 {
-    [Key]
-    public int Id { get; set; }
 
     /// <summary>Foreign key to <see cref="SearchRequestParallelMatchPredictionMetadata"/></summary>
     [ForeignKey(nameof(Metadata))]
