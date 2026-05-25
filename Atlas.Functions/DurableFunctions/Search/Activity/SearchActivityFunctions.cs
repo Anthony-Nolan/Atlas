@@ -13,6 +13,7 @@ using Atlas.Common.ServiceBus;
 using Atlas.Functions.Models;
 using Atlas.Functions.Services;
 using Atlas.Functions.Services.BlobStorageClients;
+using Atlas.SearchTracking.Common.Dispatchers;
 using Atlas.Functions.Settings;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;

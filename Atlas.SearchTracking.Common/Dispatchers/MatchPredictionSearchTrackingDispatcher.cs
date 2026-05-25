@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
 using System;
+using System.Threading.Tasks;
 using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
 
-namespace Atlas.Functions.Services
+namespace Atlas.SearchTracking.Common.Dispatchers
 {
     public interface IMatchPredictionSearchTrackingDispatcher
     {
@@ -24,7 +24,7 @@ namespace Atlas.Functions.Services
 
         Task ProcessCompleted((Guid SearchIdentifier, Guid? OriginalSearchIdentifier, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)
             eventDetails);
-        
+
         Task ProcessResultsSent(Guid searchIdentifier, Guid? originalSearchIdentifier);
     }
 
@@ -72,32 +72,6 @@ namespace Atlas.Functions.Services
                 matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionBatchPreparationEnded);
         }
 
-        public async Task ProcessPersistingResultsStarted(Guid searchIdentifier, Guid? originalSearchIdentifier)
-        {
-            var matchPredictionTimingEvent = new MatchPredictionTimingEvent
-            {
-                SearchIdentifier = searchIdentifier,
-                OriginalSearchIdentifier = originalSearchIdentifier,
-                TimeUtc = DateTime.UtcNow
-            };
-
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionPersistingResultsStarted);
-        }
-
-        public async Task ProcessPersistingResultsEnded(Guid searchIdentifier, Guid? originalSearchIdentifier)
-        {
-            var matchPredictionTimingEvent = new MatchPredictionTimingEvent
-            {
-                SearchIdentifier = searchIdentifier,
-                OriginalSearchIdentifier = originalSearchIdentifier,
-                TimeUtc = DateTime.UtcNow
-            };
-
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionPersistingResultsEnded);
-        }
-
         public async Task ProcessRunningBatchesStarted(Guid searchIdentifier, Guid? originalSearchIdentifier)
         {
             var matchPredictionTimingEvent = new MatchPredictionTimingEvent
@@ -122,6 +96,32 @@ namespace Atlas.Functions.Services
 
             await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
                 matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionRunningBatchesEnded);
+        }
+
+        public async Task ProcessPersistingResultsStarted(Guid searchIdentifier, Guid? originalSearchIdentifier)
+        {
+            var matchPredictionTimingEvent = new MatchPredictionTimingEvent
+            {
+                SearchIdentifier = searchIdentifier,
+                OriginalSearchIdentifier = originalSearchIdentifier,
+                TimeUtc = DateTime.UtcNow
+            };
+
+            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionPersistingResultsStarted);
+        }
+
+        public async Task ProcessPersistingResultsEnded(Guid searchIdentifier, Guid? originalSearchIdentifier)
+        {
+            var matchPredictionTimingEvent = new MatchPredictionTimingEvent
+            {
+                SearchIdentifier = searchIdentifier,
+                OriginalSearchIdentifier = originalSearchIdentifier,
+                TimeUtc = DateTime.UtcNow
+            };
+
+            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionPersistingResultsEnded);
         }
 
         public async Task ProcessCompleted((Guid SearchIdentifier, Guid? OriginalSearchIdentifier, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) eventDetails)

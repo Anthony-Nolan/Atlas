@@ -10,6 +10,9 @@ using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Worker.Services;
 using Atlas.MatchPrediction.Worker.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Atlas.SearchTracking.Common.Clients;
+using Atlas.SearchTracking.Common.Dispatchers;
+using Atlas.SearchTracking.Common.Settings.ServiceBus;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -42,6 +45,16 @@ public static class Startup
             var atlasLogger = sp.GetRequiredService<IAtlasLogger>();
             return new BlobDownloader(settings.MatchPredictionConnectionString, atlasLogger);
         });
+
+        services.AddScoped<ISearchTrackingServiceBusClient>(sp =>
+        {
+            var settings = sp.GetRequiredService<IOptions<SearchTrackingServiceBusSettings>>().Value;
+            var logger = sp.GetRequiredService<IAtlasLogger>();
+            return new SearchTrackingServiceBusClient(settings, logger);
+        });
+
+        services.AddScoped<IMatchPredictionSearchTrackingDispatcher, MatchPredictionSearchTrackingDispatcher>();
+
         services.AddScoped<IParallelMatchPredictionBatchRunner, ParallelMatchPredictionBatchRunner>();
 
         services.AddSingleton<IServiceBusMessageReceiver<ParallelMatchPredictionBatchRequest>>(sp =>

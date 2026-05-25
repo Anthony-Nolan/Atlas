@@ -3,6 +3,7 @@ using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Atlas.SearchTracking.Common.Settings.ServiceBus;
 using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchPrediction.Worker.Settings;
@@ -22,6 +23,7 @@ internal static class SettingsValidationExtensions
             "NotificationsServiceBus"
         );
         services.AddOptions<MatchPredictionWorkerSettings>(configuration, "MatchPredictionWorker");
+        services.AddValidatedOptions<SearchTrackingServiceBusSettings, SearchTrackingServiceBusSettingsValidator>(configuration, "SearchTrackingServiceBus");
     }
 
     private static void AddOptions<TOptions>(this IServiceCollection services, IConfiguration configuration, string sectionName)
@@ -138,6 +140,22 @@ internal sealed class NotificationsServiceBusSettingsValidator : IValidateOption
          && SettingsValidationHelpers.IsPlaceholder(options.ConnectionString))
         {
             failures.Add("NotificationsServiceBus:ConnectionString must be replaced with a real Azure Service Bus connection string.");
+        }
+
+        return SettingsValidationHelpers.SuccessOrFailures(failures);
+    }
+}
+
+internal sealed class SearchTrackingServiceBusSettingsValidator : IValidateOptions<SearchTrackingServiceBusSettings>
+{
+    public ValidateOptionsResult Validate(string? name, SearchTrackingServiceBusSettings options)
+    {
+        var failures = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(options.ConnectionString)
+         && SettingsValidationHelpers.IsPlaceholder(options.ConnectionString))
+        {
+            failures.Add("SearchTrackingServiceBus:ConnectionString must be replaced with a real Azure Service Bus connection string.");
         }
 
         return SettingsValidationHelpers.SuccessOrFailures(failures);
