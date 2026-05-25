@@ -85,7 +85,7 @@ variable "acr" {
   })
 }
 
-variable "acr_pull_identity" {
+variable "aca_identity" {
   type = object({
     id           = string
     principal_id = string

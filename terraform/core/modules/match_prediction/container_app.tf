@@ -11,7 +11,7 @@ resource "azurerm_container_app" "atlas_match_prediction" {
 
   identity {
     type         = "UserAssigned"
-    identity_ids = [var.acr_pull_identity.id]
+    identity_ids = [var.aca_identity.id]
   }
 
   template {
@@ -161,7 +161,7 @@ resource "azurerm_container_app" "atlas_match_prediction" {
 
   registry {
     server   = var.acr.login_server
-    identity = var.acr_pull_identity.id
+    identity = var.aca_identity.id
   }
 
   secret {
