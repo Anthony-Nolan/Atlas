@@ -23,7 +23,7 @@ internal static class SettingsValidationExtensions
             "NotificationsServiceBus"
         );
         services.AddOptions<MatchPredictionWorkerSettings>(configuration, "MatchPredictionWorker");
-        services.AddOptions<SearchTrackingServiceBusSettings>(configuration, "SearchTrackingServiceBus");
+        services.AddValidatedOptions<SearchTrackingServiceBusSettings, SearchTrackingServiceBusSettingsValidator>(configuration, "SearchTrackingServiceBus");
     }
 
     private static void AddOptions<TOptions>(this IServiceCollection services, IConfiguration configuration, string sectionName)
@@ -140,6 +140,22 @@ internal sealed class NotificationsServiceBusSettingsValidator : IValidateOption
          && SettingsValidationHelpers.IsPlaceholder(options.ConnectionString))
         {
             failures.Add("NotificationsServiceBus:ConnectionString must be replaced with a real Azure Service Bus connection string.");
+        }
+
+        return SettingsValidationHelpers.SuccessOrFailures(failures);
+    }
+}
+
+internal sealed class SearchTrackingServiceBusSettingsValidator : IValidateOptions<SearchTrackingServiceBusSettings>
+{
+    public ValidateOptionsResult Validate(string? name, SearchTrackingServiceBusSettings options)
+    {
+        var failures = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(options.ConnectionString)
+         && SettingsValidationHelpers.IsPlaceholder(options.ConnectionString))
+        {
+            failures.Add("SearchTrackingServiceBus:ConnectionString must be replaced with a real Azure Service Bus connection string.");
         }
 
         return SettingsValidationHelpers.SuccessOrFailures(failures);
