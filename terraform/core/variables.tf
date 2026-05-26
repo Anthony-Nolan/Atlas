@@ -591,6 +591,12 @@ variable "MATCH_PREDICTION_CONTAINER_MAX_REPLICAS" {
   description = "Maximum replica count for the match prediction container app."
 }
 
+variable "MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT" {
+  type        = number
+  default     = 5
+  description = "Message threshold for the match prediction container ACA Service Bus custom scale rule. Override via TF_VAR_MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT."
+}
+
 # --- External SQL variables (for retargeting function app connection strings) ---
 
 variable "USE_EXTERNAL_SQL" {

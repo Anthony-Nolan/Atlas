@@ -77,6 +77,11 @@ variable "CONTAINER_MAX_REPLICAS" {
   default = 10
 }
 
+variable "CONTAINER_SCALE_RULE_MESSAGE_COUNT" {
+  type    = number
+  default = 5
+}
+
 // External SQL variables
 variable "USE_EXTERNAL_SQL" {
   type    = bool

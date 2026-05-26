@@ -235,6 +235,7 @@ module "match_prediction" {
   CONTAINER_MEMORY                                         = var.MATCH_PREDICTION_CONTAINER_MEMORY
   CONTAINER_MIN_REPLICAS                                   = var.MATCH_PREDICTION_CONTAINER_MIN_REPLICAS
   CONTAINER_MAX_REPLICAS                                   = var.MATCH_PREDICTION_CONTAINER_MAX_REPLICAS
+  CONTAINER_SCALE_RULE_MESSAGE_COUNT                       = var.MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT
 
   // External SQL variables
   USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
