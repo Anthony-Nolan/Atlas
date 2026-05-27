@@ -118,6 +118,23 @@ resource "azurerm_container_app" "atlas_match_prediction" {
       }
 
       env {
+        name        = "SearchTrackingServiceBus__ConnectionString"
+        secret_name = "servicebus-write-only-connection-string"
+      }
+      env {
+        name  = "SearchTrackingServiceBus__SearchTrackingTopic"
+        value = var.servicebus_topics.search_tracking.name
+      }
+      env {
+        name  = "SearchTrackingServiceBus__SendRetryCount"
+        value = tostring(var.SERVICE_BUS_SEND_RETRY_COUNT)
+      }
+      env {
+        name  = "SearchTrackingServiceBus__SendRetryCooldownSeconds"
+        value = tostring(var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS)
+      }
+
+      env {
         name        = "NotificationsServiceBus__ConnectionString"
         secret_name = "servicebus-write-only-connection-string"
       }

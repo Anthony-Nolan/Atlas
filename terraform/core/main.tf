@@ -208,8 +208,9 @@ module "match_prediction" {
   }
 
   servicebus_topics = {
-    alerts        = module.support.general.alerts_servicebus_topic
-    notifications = module.support.general.notifications_servicebus_topic
+    alerts          = module.support.general.alerts_servicebus_topic
+    notifications   = module.support.general.notifications_servicebus_topic
+    search_tracking = module.search_tracking.service_bus.search_tracking_topic
   }
 
   // Container Apps DI Variables
