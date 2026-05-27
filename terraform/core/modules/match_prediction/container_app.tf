@@ -21,16 +21,12 @@ resource "azurerm_container_app" "atlas_match_prediction" {
     custom_scale_rule {
       name             = "parallel-match-prediction-requests-scale-rule"
       custom_rule_type = "azure-servicebus"
+      identity_id      = var.aca_identity.id
       metadata = {
         topicName        = "parallel-match-prediction-requests"
         subscriptionName = "match-prediction"
         namespace        = var.servicebus_namespace.name
         messageCount     = tostring(var.CONTAINER_SCALE_RULE_MESSAGE_COUNT)
-      }
-
-      authentication {
-        secret_name       = "servicebus-manage-connection-string"
-        trigger_parameter = "connection"
       }
     }
 
