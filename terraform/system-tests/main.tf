@@ -13,7 +13,7 @@ provider "azurerm" {
   // so will trigger 403s for most devs. Accordingly, we disable the "register everything" behaviour, and
   // initial registrations will need to be organised as a one-off.
   // Currently, the only resource provider needed is this AzureRM provider.
-  skip_provider_registration = false
+  resource_provider_registrations = "core"
   features {}
 }
 

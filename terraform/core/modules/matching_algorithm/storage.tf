@@ -9,13 +9,13 @@ resource "azurerm_storage_account" "matching_function_storage" {
   account_tier                    = "Standard"
   account_replication_type        = "LRS"
   allow_nested_items_to_be_public = false
-  enable_https_traffic_only       = true
+  https_traffic_only_enabled      = true
   min_tls_version                 = "TLS1_2"
   tags                            = var.general.common_tags
 }
 
 resource "azurerm_storage_container" "search_matching_results_blob_container" {
   name                  = "matching-algorithm-results"
-  storage_account_name  = var.azure_storage.name
+  storage_account_id    = var.azure_storage.id
   container_access_type = "private"
 }

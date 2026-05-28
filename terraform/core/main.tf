@@ -27,14 +27,14 @@ provider "azurerm" {
   // so will trigger 403s for most devs. Accordingly, we disable the "register everything" behaviour, and
   // initial registrations will need to be organised as a one-off.
   // Currently, the only resource provider needed is this AzureRM provider.
-  skip_provider_registration = false
+  resource_provider_registrations = "core"
   features {}
 }
 
 provider "azurerm" {
-  alias                      = "shared"
-  subscription_id            = local.shared_subscription_id
-  skip_provider_registration = true
+  alias                           = "shared"
+  subscription_id                 = local.shared_subscription_id
+  resource_provider_registrations = "none"
   features {}
 }
 
@@ -216,7 +216,7 @@ module "match_prediction" {
   // Container Apps DI Variables
   container_app_environment = azurerm_container_app_environment.atlas
   acr                       = data.azurerm_container_registry.shared
-  acr_pull_identity         = azurerm_user_assigned_identity.acr_pull
+  aca_identity              = azurerm_user_assigned_identity.aca_identity
 
   // Release variables
   APPLICATION_INSIGHTS_LOG_LEVEL                           = var.APPLICATION_INSIGHTS_LOG_LEVEL
@@ -236,6 +236,7 @@ module "match_prediction" {
   CONTAINER_MEMORY                                         = var.MATCH_PREDICTION_CONTAINER_MEMORY
   CONTAINER_MIN_REPLICAS                                   = var.MATCH_PREDICTION_CONTAINER_MIN_REPLICAS
   CONTAINER_MAX_REPLICAS                                   = var.MATCH_PREDICTION_CONTAINER_MAX_REPLICAS
+  CONTAINER_SCALE_RULE_MESSAGE_COUNT                       = var.MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT
 
   // External SQL variables
   USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
