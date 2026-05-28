@@ -14,6 +14,11 @@ Initialise the Terraform backend, select the `atlas-dev` workspace, and run a pl
 - You have just cloned the repo or need to reinitialise the backend
 - You want to confirm the current workspace before running a plan
 
+## Guardrails
+
+- DONT ever run `terraform apply` as part of this validation/plan workflow.
+- This skill is strictly for read-only checks (`terraform validate` and `terraform plan`).
+
 ## Procedure
 
 All commands must be run from the `terraform/core` directory.
