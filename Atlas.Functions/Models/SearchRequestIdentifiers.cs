@@ -2,8 +2,6 @@
 
 /// <summary>
 /// Identifies a search request (and optionally its originating repeat search) throughout orchestration.
-/// This is distinct from <see cref="FailureNotificationRequestInfo"/>, which is only constructed
-/// at the point of failure and carries failure-specific details.
 /// </summary>
 public class SearchRequestIdentifiers
 {
@@ -15,4 +13,3 @@ public class SearchRequestIdentifiers
     /// </summary>
     public string RepeatSearchRequestId { get; set; }
 }
-

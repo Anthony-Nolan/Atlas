@@ -12,11 +12,16 @@ public record MatchPredictionProcessCompletedParameters
     public Guid? OriginalSearchIdentifier { get; init; }
 
     /// <summary>
-    /// Null when the process completed without error.
+    /// Explicit success flag. Always set by the caller so completion tracking does not have to infer it
+    /// from the (nullable) <see cref="FailureInfo"/>.
+    /// </summary>
+    public bool IsSuccessful { get; init; }
+
+    /// <summary>
+    /// Populated only when <see cref="IsSuccessful"/> is <c>false</c>.
     /// </summary>
     public MatchPredictionFailureInfo FailureInfo { get; init; }
 
     public int? DonorsPerBatch { get; init; }
     public int? TotalNumberOfBatches { get; init; }
 }
-

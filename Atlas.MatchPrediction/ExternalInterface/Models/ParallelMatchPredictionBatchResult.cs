@@ -10,7 +10,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models;
 public class ParallelMatchPredictionBatchResult
 {
     public Guid SearchIdentifier { get; set; }
-    
+
     public Guid? RepeatSearchIdentifier { get; set; }
 
     /// <summary>
@@ -19,5 +19,12 @@ public class ParallelMatchPredictionBatchResult
     /// </summary>
     public IReadOnlyDictionary<int, string> MatchPredictionResultLocations { get; set; }
 
-    public int ParallelMetadataId { get; set; }
+    /// <summary>Id of the parent <c>ParallelMatchPredictionRun</c> row.</summary>
+    public int ParallelRunId { get; set; }
+
+    /// <summary>
+    /// Sequence number of this batch as assigned by the orchestrator. Together with <see cref="ParallelRunId"/>
+    /// forms the idempotency key used by the aggregator.
+    /// </summary>
+    public int BatchSequenceNumber { get; set; }
 }

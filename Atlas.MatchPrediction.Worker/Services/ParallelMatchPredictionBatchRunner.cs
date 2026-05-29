@@ -79,7 +79,8 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
             SearchIdentifier = new Guid(request.SearchRequestId),
             RepeatSearchIdentifier = request.RepeatSearchRequestId == null ? null : new Guid(request.RepeatSearchRequestId),
             MatchPredictionResultLocations = results,
-            ParallelMetadataId = request.ParallelMetadataId,
+            ParallelRunId = request.ParallelRunId,
+            BatchSequenceNumber = request.BatchSequenceNumber,
         };
 
         await resultPublisher.PublishWithSession(batchResult, sessionId: request.SearchRequestId);

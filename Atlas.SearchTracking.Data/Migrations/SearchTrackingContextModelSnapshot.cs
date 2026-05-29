@@ -18,7 +18,7 @@ namespace Atlas.SearchTracking.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("SearchTracking")
-                .HasAnnotation("ProductVersion", "8.0.5")
+                .HasAnnotation("ProductVersion", "6.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -264,69 +264,6 @@ namespace Atlas.SearchTracking.Data.Migrations
                     b.ToTable("SearchRequestMatchingAlgorithmAttempts", "SearchTracking");
                 });
 
-            modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequestParallelMatchPredictionMetadata", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("BatchFolderName")
-                        .HasMaxLength(36)
-                        .HasColumnType("nvarchar(36)");
-
-                    b.Property<bool>("IsRepeatSearch")
-                        .HasColumnType("bit");
-
-                    b.Property<long>("MatchingAlgorithmElapsedTime")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("ProcessedBatchCount")
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("RepeatSearchIdentifier")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("ResultsBatched")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("ResultsFileName")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<Guid>("SearchIdentifier")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("SearchInitiatedTimeUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("TotalBatchCount")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SearchRequestParallelMatchPredictionMetadata", "SearchTracking");
-                });
-
-            modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequestParallelMatchPredictionResultLocation", b =>
-                {
-                    b.Property<int>("MetadataId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DonorId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ResultBlobFileName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("MetadataId", "DonorId");
-
-                    b.ToTable("SearchRequestParallelMatchPredictionResultLocations", "SearchTracking");
-                });
-
             modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequestMatchPrediction", b =>
                 {
                     b.HasOne("Atlas.SearchTracking.Data.Models.SearchRequest", "SearchRequest")
@@ -349,27 +286,11 @@ namespace Atlas.SearchTracking.Data.Migrations
                     b.Navigation("SearchRequest");
                 });
 
-            modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequestParallelMatchPredictionResultLocation", b =>
-                {
-                    b.HasOne("Atlas.SearchTracking.Data.Models.SearchRequestParallelMatchPredictionMetadata", "Metadata")
-                        .WithMany("ResultLocations")
-                        .HasForeignKey("MetadataId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Metadata");
-                });
-
             modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequest", b =>
                 {
                     b.Navigation("MatchPrediction");
 
                     b.Navigation("MatchingAlgorithmAttempts");
-                });
-
-            modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequestParallelMatchPredictionMetadata", b =>
-                {
-                    b.Navigation("ResultLocations");
                 });
 #pragma warning restore 612, 618
         }

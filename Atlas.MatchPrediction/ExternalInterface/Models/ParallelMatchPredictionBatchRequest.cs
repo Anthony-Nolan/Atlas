@@ -18,11 +18,12 @@ public class ParallelMatchPredictionBatchRequest
     /// <summary>Non-null only when <see cref="IsRepeatSearch"/> is <c>true</c>.</summary>
     public string RepeatSearchRequestId { get; set; }
 
-    /// <summary>
-    /// Total number of batch messages dispatched for this search request.
-    /// The Worker must forward this value on every result message so the aggregator knows when all batches are complete.
-    /// </summary>
-    public int TotalBatches { get; set; }
+    /// <summary>Id of the parent <c>ParallelMatchPredictionRun</c> row created by the orchestrator before dispatch.</summary>
+    public int ParallelRunId { get; set; }
 
-    public int ParallelMetadataId { get; set; }
+    /// <summary>
+    /// Zero-based sequence number of this batch within the parallel run. Together with <see cref="ParallelRunId"/>
+    /// forms the idempotency key used by the aggregator when persisting per-batch results.
+    /// </summary>
+    public int BatchSequenceNumber { get; set; }
 }

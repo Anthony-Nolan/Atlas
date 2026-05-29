@@ -12,6 +12,8 @@ using Atlas.Functions.Services.Debug;
 using Atlas.Functions.Services.MatchCategories;
 using Atlas.Functions.Settings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
+using Atlas.MatchPrediction.Data.Context;
+using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
@@ -19,8 +21,6 @@ using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.Dispatchers;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
-using Atlas.SearchTracking.Data.Context;
-using Atlas.SearchTracking.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -104,7 +104,7 @@ namespace Atlas.Functions
 
             RegisterMatchPredictionSearchTracking(services, OptionsReaderFor<SearchTrackingServiceBusSettings>());
 
-            RegisterSearchTrackingDatabase(services);
+            RegisterMatchPredictionDatabase(services);
 
             RegisterDebugServices(services);
 
@@ -162,16 +162,14 @@ namespace Atlas.Functions
             services.AddSingleton(sp => AutoMapperConfig.CreateMapper());
         }
 
-        private static void RegisterSearchTrackingDatabase(IServiceCollection services)
+        private static void RegisterMatchPredictionDatabase(IServiceCollection services)
         {
-            services.AddDbContext<ISearchTrackingContext, SearchTrackingContext>((sp, options) =>
+            services.AddDbContext<MatchPredictionContext>((sp, options) =>
             {
-                options.UseSqlServer(ConnectionStringReader("SearchTracking:Sql")(sp));
+                options.UseSqlServer(ConnectionStringReader("MatchPrediction:Sql")(sp));
             });
 
-            services.AddScoped<IMatchPredictionRepository, MatchPredictionRepository>();
-            services.AddScoped<ISearchRequestRepository, SearchRequestRepository>();
-            services.AddScoped<ISearchRequestParallelMatchPredictionMetadataRepository, SearchRequestParallelMatchPredictionMetadataRepository>();
+            services.AddScoped<IParallelMatchPredictionRepository, ParallelMatchPredictionRepository>();
         }
 
         private static void RegisterSearchLogger(IServiceCollection services)

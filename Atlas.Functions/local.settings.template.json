@@ -31,10 +31,14 @@
     "AtlasFunction:MessagingServiceBus:SendRetryCooldownSeconds": 20,
     "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionRequestsTopic": "parallel-match-prediction-requests",
     "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionResultsTopic": "parallel-match-prediction-results",
-    "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionResultsSubscription": "aggregator",
+    "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionResultsSubscription": "debug",
 
     "AtlasFunction:Orchestration:MatchPredictionBatchSize": 100,
     "AtlasFunction:Orchestration:ParallelMpaBatchSize": 100,
+    "AtlasFunction:Orchestration:ParallelFinalizationCronSchedule": "0 0 * * * *",
+    "AtlasFunction:Orchestration:ParallelBatchCleanupCronSchedule": "0 0 3 * * *",
+    "AtlasFunction:Orchestration:ParallelBatchRetentionDays": 90,
+    "AtlasFunction:Orchestration:ParallelFinalizationLeaseDurationMinutes": 10,
 
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
 
@@ -78,7 +82,6 @@
     "Matching:Sql:A": "Data Source=(local);Initial Catalog=AtlasMatchingA;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
     "Matching:Sql:B": "Data Source=(local);Initial Catalog=AtlasMatchingB;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
 
-    "MatchPrediction:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
-    "SearchTracking:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"
+    "MatchPrediction:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"
   }
 }

@@ -171,6 +171,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 {
                     SearchIdentifier = trackingSearchIdentifier,
                     OriginalSearchIdentifier = originalSearchIdentifier,
+                    IsSuccessful = requestCompletedSuccessfully,
                     FailureInfo = matchPredictionFailureInfo,
                     DonorsPerBatch = matchPredictionProcessingBatchSize,
                     TotalNumberOfBatches = matchPredictionNumberOfBatches
@@ -208,6 +209,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             // Sequential path: run match prediction inline, then persist results and emit metrics
             int? matchPredictionNumberOfBatches = null;
             MatchPredictionFailureInfo matchPredictionFailureInfo = null;
+            var requestCompletedSuccessfully = false;
 
             try
             {
@@ -230,6 +232,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                         MatchPredictionResultLocations = matchPredictionResultLocations
                     },
                     requestInfo);
+
+                requestCompletedSuccessfully = true;
 
                 // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
                 return new SearchOrchestrationOutput
@@ -280,6 +284,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 {
                     SearchIdentifier = trackingSearchIdentifier,
                     OriginalSearchIdentifier = originalSearchIdentifier,
+                    IsSuccessful = requestCompletedSuccessfully,
                     FailureInfo = matchPredictionFailureInfo,
                     DonorsPerBatch = matchPredictionProcessingBatchSize,
                     TotalNumberOfBatches = matchPredictionNumberOfBatches

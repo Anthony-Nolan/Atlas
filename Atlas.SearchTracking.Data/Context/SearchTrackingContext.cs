@@ -13,10 +13,6 @@ namespace Atlas.SearchTracking.Data.Context
 
         public DbSet<SearchRequestMatchPrediction> SearchRequestMatchPredictions { get; }
 
-        public DbSet<SearchRequestParallelMatchPredictionMetadata> SearchRequestParallelMatchPredictionMetadata { get; }
-
-        public DbSet<SearchRequestParallelMatchPredictionResultLocation> SearchRequestParallelMatchPredictionResultLocations { get; }
-
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 
@@ -45,14 +41,6 @@ namespace Atlas.SearchTracking.Data.Context
                 .HasMany(x => x.MatchingAlgorithmAttempts)
                 .WithOne(x => x.SearchRequest)
                 .HasForeignKey(x => x.SearchRequestId);
-
-            modelBuilder.Entity<SearchRequestParallelMatchPredictionResultLocation>()
-                .HasKey(x => new { x.MetadataId, x.DonorId });
-
-            modelBuilder.Entity<SearchRequestParallelMatchPredictionMetadata>()
-                .Property(x => x.MatchingAlgorithmElapsedTime)
-                .HasConversion<TimeSpanToTicksConverter>()
-                .HasColumnType("bigint");
 
             modelBuilder.Entity<SearchRequest>().Property(e => e.DonorRegistryCodes)
                 .HasConversion(
@@ -85,9 +73,5 @@ namespace Atlas.SearchTracking.Data.Context
         public DbSet<SearchRequestMatchingAlgorithmAttempts> SearchRequestMatchingAlgorithmAttempts { get; set; }
 
         public DbSet<SearchRequestMatchPrediction> SearchRequestMatchPredictions { get; set; }
-
-        public DbSet<SearchRequestParallelMatchPredictionMetadata> SearchRequestParallelMatchPredictionMetadata { get; set; }
-
-        public DbSet<SearchRequestParallelMatchPredictionResultLocation> SearchRequestParallelMatchPredictionResultLocations { get; set; }
     }
 }

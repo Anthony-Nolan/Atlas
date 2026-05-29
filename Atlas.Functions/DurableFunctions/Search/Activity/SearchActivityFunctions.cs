@@ -16,8 +16,8 @@ using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.Functions.Settings;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.SearchTracking.Common.Dispatchers;
+using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.ExternalInterface.Models;
-using Atlas.SearchTracking.Data.Repositories;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Options;
 
@@ -41,7 +41,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         private readonly IMatchPredictionSearchTrackingDispatcher matchPredictionSearchTrackingDispatcher;
 
         private readonly IMessageBatchPublisher<ParallelMatchPredictionBatchRequest> parallelBatchPublisher;
-        private readonly ISearchRequestParallelMatchPredictionMetadataRepository parallelMetadataRepository;
+        private readonly IParallelMatchPredictionRepository parallelMatchPredictionRepository;
         private readonly int parallelMpaBatchSize;
 
         public SearchActivityFunctions(
@@ -56,7 +56,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             IMatchPredictionRequestBlobClient matchPredictionRequestBlobClient,
             IMatchPredictionSearchTrackingDispatcher matchPredictionSearchTrackingDispatcher,
             IMessageBatchPublisher<ParallelMatchPredictionBatchRequest> parallelBatchPublisher,
-            ISearchRequestParallelMatchPredictionMetadataRepository parallelMetadataRepository,
+            IParallelMatchPredictionRepository parallelMatchPredictionRepository,
             IOptions<AzureStorageSettings> azureStorageSettings,
             IOptions<OrchestrationSettings> orchestrationSettings,
             SearchLoggingContext loggingContext)
@@ -71,7 +71,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             this.matchPredictionRequestBlobClient = matchPredictionRequestBlobClient;
             this.matchPredictionSearchTrackingDispatcher = matchPredictionSearchTrackingDispatcher;
             this.parallelBatchPublisher = parallelBatchPublisher;
-            this.parallelMetadataRepository = parallelMetadataRepository;
+            this.parallelMatchPredictionRepository = parallelMatchPredictionRepository;
             this.loggingContext = loggingContext;
             this.azureStorageSettings = azureStorageSettings.Value;
             parallelMpaBatchSize = orchestrationSettings.Value.ParallelMpaBatchSize;
@@ -166,21 +166,23 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 
             await matchPredictionSearchTrackingDispatcher.ProcessPrepareBatchesEnded(trackingSearchIdentifier, originalSearchIdentifier);
 
-            var parallelMetadataId = await parallelMetadataRepository.Create(
-                searchIdentifier: new Guid(matchingResultsNotification.SearchRequestId),
-                isRepeatSearch: matchingResultsNotification.IsRepeatSearch,
-                repeatSearchIdentifier: matchingResultsNotification.RepeatSearchRequestId != null
-                    ? new Guid(matchingResultsNotification.RepeatSearchRequestId)
-                    : null,
-                resultsFileName: matchingResultsNotification.ResultsFileName,
-                resultsBatched: matchingResultsNotification.ResultsBatched,
-                batchFolderName: matchingResultsNotification.BatchFolderName,
-                matchingAlgorithmElapsedTime: matchingResultsNotification.ElapsedTime,
-                searchInitiatedTimeUtc: parameters.SearchInitiatedTimeUtc,
-                totalBatchCount: blobLocations.Count
+            var parallelRunId = await parallelMatchPredictionRepository.CreateRun(
+                new CreateParallelMatchPredictionRunInfo(
+                    SearchIdentifier: new Guid(matchingResultsNotification.SearchRequestId),
+                    IsRepeatSearch: matchingResultsNotification.IsRepeatSearch,
+                    RepeatSearchIdentifier: matchingResultsNotification.RepeatSearchRequestId != null
+                        ? new Guid(matchingResultsNotification.RepeatSearchRequestId)
+                        : null,
+                    ResultsFileName: matchingResultsNotification.ResultsFileName,
+                    ResultsBatched: matchingResultsNotification.ResultsBatched,
+                    BatchFolderName: matchingResultsNotification.BatchFolderName,
+                    MatchingAlgorithmElapsedTime: matchingResultsNotification.ElapsedTime,
+                    SearchInitiatedTimeUtc: parameters.SearchInitiatedTimeUtc,
+                    TotalBatchCount: blobLocations.Count
+                )
             );
 
-            var batchRequests = blobLocations.Select(location => new ParallelMatchPredictionBatchRequest
+            var batchRequests = blobLocations.Select((location, index) => new ParallelMatchPredictionBatchRequest
             {
                 BlobLocation = location,
                 SearchRequestId = matchingResultsNotification.SearchRequestId,
@@ -188,8 +190,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 RepeatSearchRequestId = matchingResultsNotification.IsRepeatSearch
                     ? matchingResultsNotification.RepeatSearchRequestId
                     : null,
-                ParallelMetadataId = parallelMetadataId,
-                TotalBatches = blobLocations.Count,
+                ParallelRunId = parallelRunId,
+                BatchSequenceNumber = index,
             });
 
             await parallelBatchPublisher.BatchPublish(batchRequests);
@@ -296,10 +298,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         public async Task SendMatchPredictionProcessCompleted([ActivityTrigger] MatchPredictionProcessCompletedParameters parameters)
         {
             await matchPredictionSearchTrackingDispatcher.ProcessCompleted(
-                (parameters.SearchIdentifier, 
-                    parameters.OriginalSearchIdentifier, 
-                    parameters.FailureInfo, 
-                    parameters.DonorsPerBatch, 
+                (parameters.SearchIdentifier,
+                    parameters.OriginalSearchIdentifier,
+                    parameters.IsSuccessful,
+                    parameters.FailureInfo,
+                    parameters.DonorsPerBatch,
                     parameters.TotalNumberOfBatches)
                 );
         }

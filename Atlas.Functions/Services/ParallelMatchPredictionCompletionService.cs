@@ -8,11 +8,10 @@ using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
-using Atlas.Functions.Models;
 using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.Functions.Settings;
+using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.SearchTracking.Common.Dispatchers;
-using Atlas.SearchTracking.Data.Models;
 using Microsoft.Extensions.Options;
 
 namespace Atlas.Functions.Services;
@@ -20,19 +19,24 @@ namespace Atlas.Functions.Services;
 public interface IParallelMatchPredictionCompletionService
 {
     /// <summary>
-    /// Performs the final persistence pipeline for a completed parallel match-prediction search:
-    /// combines MPA results with matching results, uploads to blob storage, sends the completion
-    /// notification, uploads the search log, and emits the search-tracking event.
-    /// <param name="metadata">Metadata for the parallel match-prediction search, including the original search request and tracking identifiers.
-    /// Expected to have parent <see cref="SearchRequestMatchPrediction"/> and <see cref="SearchRequest"/></param>
+    /// Performs the final persistence pipeline for a single completed parallel match-prediction run:
+    /// combines per-batch MPA results with matching results, uploads the combined result set to blob storage,
+    /// sends the completion notification, uploads the search log, marks the run as finalised in the
+    /// <see cref="IParallelMatchPredictionRepository"/>, and emits the match-prediction completion tracking event.
     /// </summary>
-    Task Complete(
-        SearchRequestParallelMatchPredictionMetadata metadata,
-        IReadOnlyDictionary<int, string> mergedMatchPredictionResultLocations);
+    /// <remarks>
+    /// Safe under concurrent invocation. A finalisation lease is taken via
+    /// <see cref="IParallelMatchPredictionRepository.TryClaimRunForFinalisation"/> before any work begins, and the
+    /// run is only marked finalised (via <see cref="IParallelMatchPredictionRepository.MarkRunFinalised"/>) once the
+    /// whole pipeline has succeeded. If this method fails part-way through, the run is <em>not</em> marked finalised,
+    /// so it becomes eligible for re-Finalisation again once the lease lapses (rather than being abandoned).
+    /// </remarks>
+    Task CompleteRun(int runId);
 }
 
 public class ParallelMatchPredictionCompletionService : IParallelMatchPredictionCompletionService
 {
+    private readonly IParallelMatchPredictionRepository repository;
     private readonly IMatchingResultsDownloader matchingResultsDownloader;
     private readonly IResultsCombiner resultsCombiner;
     private readonly ISearchResultsBlobStorageClient searchResultsBlobUploader;
@@ -41,8 +45,10 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
     private readonly IAtlasLogger logger;
     private readonly AzureStorageSettings azureStorageSettings;
     private readonly int parallelMpaBatchSize;
+    private readonly TimeSpan finalisationLeaseDuration;
 
     public ParallelMatchPredictionCompletionService(
+        IParallelMatchPredictionRepository repository,
         IMatchingResultsDownloader matchingResultsDownloader,
         IResultsCombiner resultsCombiner,
         ISearchResultsBlobStorageClient searchResultsBlobUploader,
@@ -52,6 +58,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         IOptions<AzureStorageSettings> azureStorageSettings,
         IOptions<OrchestrationSettings> orchestrationSettings)
     {
+        this.repository = repository;
         this.matchingResultsDownloader = matchingResultsDownloader;
         this.resultsCombiner = resultsCombiner;
         this.searchResultsBlobUploader = searchResultsBlobUploader;
@@ -60,17 +67,40 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         this.logger = logger;
         this.azureStorageSettings = azureStorageSettings.Value;
         parallelMpaBatchSize = orchestrationSettings.Value.ParallelMpaBatchSize;
+
+        finalisationLeaseDuration = TimeSpan.FromMinutes(orchestrationSettings.Value.ParallelFinalisationLeaseDurationMinutes);
     }
 
-    public async Task Complete(
-        SearchRequestParallelMatchPredictionMetadata metadata,
-        IReadOnlyDictionary<int, string> mergedMatchPredictionResultLocations)
+    public async Task CompleteRun(int runId)
     {
-        var trackingSearchIdentifier = metadata.IsRepeatSearch
-            ? metadata.RepeatSearchIdentifier!.Value
-            : metadata.SearchIdentifier;
-        var originalSearchIdentifier = metadata.IsRepeatSearch
-            ? metadata.SearchIdentifier
+        var runResults = await repository.GetRunWithResults(runId);
+        if (runResults is null)
+        {
+            logger.SendTrace(
+                $"Parallel match prediction run with id {runId} not found; skipping finalisation.",
+                LogLevel.Warn);
+            return;
+        }
+        var run = runResults.Run;
+        var resultsLocations = runResults.MergedResultLocations;
+
+        // Take an exclusive, time-bound lease before doing any work. Only one finaliser wins; others bail out.
+        // Crucially the run is NOT marked finalised here — that happens only after the whole pipeline succeeds,
+        // so a crash mid-pipeline leaves the run recoverable once the lease lapses.
+        var leaseOwner = Guid.NewGuid();
+        if (!await repository.TryClaimRunForFinalisation(runId, leaseOwner, DateTime.UtcNow, finalisationLeaseDuration))
+        {
+            logger.SendTrace(
+                $"Parallel match prediction run with id {runId} is already finalised or being finalised by another instance; skipping.",
+                LogLevel.Info);
+            return;
+        }
+
+        var trackingSearchIdentifier = run.IsRepeatSearch
+            ? run.RepeatSearchIdentifier!.Value
+            : run.SearchIdentifier;
+        var originalSearchIdentifier = run.IsRepeatSearch
+            ? run.SearchIdentifier
             : (Guid?)null;
 
         await matchPredictionSearchTrackingDispatcher.ProcessPersistingResultsStarted(
@@ -80,35 +110,35 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         var matchingResultsSummary = await logger.RunTimedAsync(
             "Download matching results summary",
             async () => await matchingResultsDownloader.DownloadSummary(
-                metadata.ResultsFileName,
-                metadata.IsRepeatSearch
+                run.ResultsFileName,
+                run.IsRepeatSearch
             )
         );
 
-        // The parallel path does not provide match Prediction time, so set to zero
+        // The parallel path does not provide match prediction time, so set to zero
         var resultSet = resultsCombiner.BuildResultsSummary(
-            matchingResultsSummary, TimeSpan.Zero, metadata.MatchingAlgorithmElapsedTime
+            matchingResultsSummary, TimeSpan.Zero, run.MatchingAlgorithmElapsedTime
         );
 
         resultSet.BlobStorageContainerName = resultSet.IsRepeatSearchSet
             ? azureStorageSettings.RepeatSearchResultsBlobContainer
             : azureStorageSettings.SearchResultsBlobContainer;
-        resultSet.BatchedResult = metadata.ResultsBatched && azureStorageSettings.ShouldBatchResults;
+        resultSet.BatchedResult = run.ResultsBatched && azureStorageSettings.ShouldBatchResults;
 
         resultSet.Results = await logger.RunTimedAsync("Combining search results", async () =>
-            metadata.ResultsBatched
-                ? await ProcessBatchedSearchResults(
+            run.ResultsBatched
+                ? await CombineBatchedSearchResults(
                     resultSet.SearchRequestId,
-                    metadata.IsRepeatSearch,
-                    mergedMatchPredictionResultLocations,
-                    metadata.BatchFolderName,
+                    run.IsRepeatSearch,
+                    resultsLocations,
+                    run.BatchFolderName,
                     resultSet.BlobStorageContainerName,
                     azureStorageSettings.ShouldBatchResults
                 )
-                : await ProcessSearchResults(
+                : await CombineSearchResults(
                     resultSet.SearchRequestId,
                     matchingResultsSummary.Results,
-                    mergedMatchPredictionResultLocations
+                    resultsLocations
                 )
         );
 
@@ -119,7 +149,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
             trackingSearchIdentifier, originalSearchIdentifier
         );
         await searchCompletionMessageSender.PublishResultsMessage(
-            resultSet, metadata.SearchInitiatedTimeUtc, metadata.BatchFolderName
+            resultSet, run.SearchInitiatedTimeUtc, run.BatchFolderName
         );
         await matchPredictionSearchTrackingDispatcher.ProcessResultsSent(
             trackingSearchIdentifier, originalSearchIdentifier
@@ -130,26 +160,26 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         {
             var searchLog = new SearchLog
             {
-                SearchRequestId = metadata.SearchIdentifier.ToString(),
+                SearchRequestId = run.SearchIdentifier.ToString(),
                 WasSuccessful = true,
                 SearchRequest = null,
                 RequestPerformanceMetrics = new RequestPerformanceMetrics
                 {
-                    InitiationTime = metadata.SearchInitiatedTimeUtc,
-                    StartTime = metadata.SearchInitiatedTimeUtc,
+                    InitiationTime = run.SearchInitiatedTimeUtc,
+                    StartTime = run.SearchInitiatedTimeUtc,
                     CompletionTime = DateTime.UtcNow,
                 }
             };
             await searchResultsBlobUploader.UploadResults(
                 searchLog,
                 azureStorageSettings.SearchResultsBlobContainer,
-                $"{metadata.SearchIdentifier}-log.json"
+                $"{run.SearchIdentifier}-log.json"
             );
         }
         catch
         {
             logger.SendTrace(
-                $"Failed to write performance log file for search with id {metadata.SearchIdentifier}.",
+                $"Failed to write performance log file for search with id {run.SearchIdentifier}.",
                 LogLevel.Error
             );
         }
@@ -157,16 +187,21 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         // Send match prediction process completed event
         await matchPredictionSearchTrackingDispatcher.ProcessCompleted(
             (
-                 trackingSearchIdentifier,
-                 originalSearchIdentifier,
-                 null,
-                 parallelMpaBatchSize,
-                 null
+                trackingSearchIdentifier,
+                originalSearchIdentifier,
+                IsSuccessful: true,
+                FailureInfo: null,
+                DonorsPerBatch: parallelMpaBatchSize,
+                TotalNumberOfBatches: run.TotalBatchCount
             )
         );
+
+        // Only now — after the entire pipeline has succeeded — mark the run finalised. Until this point a
+        // failure leaves the run un-Finalised so it can be retried once the lease lapses.
+        await repository.MarkRunFinalised(runId, leaseOwner, DateTime.UtcNow);
     }
 
-    private async Task<IEnumerable<SearchResult>> ProcessBatchedSearchResults(
+    private async Task<IEnumerable<SearchResult>> CombineBatchedSearchResults(
         string searchRequestId,
         bool isRepeatSearch,
         IReadOnlyDictionary<int, string> matchPredictionResultLocations,
@@ -182,8 +217,8 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
             var matchingAlgorithmResults = matchingResults.ToList();
             var donorIds = matchingAlgorithmResults.Select(r => r.AtlasDonorId).ToList();
             var matchPredictionResultLocationsForCurrentDonors =
-                matchPredictionResultLocations.Where(l => donorIds.Contains(l.Key)).ToDictionary();
-            var currentSearchResults = await ProcessSearchResults(
+                matchPredictionResultLocations.Where(l => donorIds.Contains(l.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
+            var currentSearchResults = await CombineSearchResults(
                 searchRequestId, matchingAlgorithmResults, matchPredictionResultLocationsForCurrentDonors
             );
 
@@ -202,7 +237,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         return allSearchResults;
     }
 
-    private async Task<IEnumerable<SearchResult>> ProcessSearchResults(
+    private async Task<IEnumerable<SearchResult>> CombineSearchResults(
         string searchRequestId,
         IEnumerable<MatchingAlgorithmResult> matchingResults,
         IReadOnlyDictionary<int, string> matchPredictionResultLocations) =>
