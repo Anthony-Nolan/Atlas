@@ -1,6 +1,6 @@
 resource "azurerm_application_insights" "atlas" {
   application_type     = "web"
-  daily_data_cap_in_gb = 100
+  daily_data_cap_in_gb = var.APPLICATION_INSIGHTS_DAILY_DATA_CAP_IN_GB
   location             = local.location
   name                 = "${local.environment}-ATLAS"
   resource_group_name  = azurerm_resource_group.atlas_resource_group.name
