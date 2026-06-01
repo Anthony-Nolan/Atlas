@@ -4,6 +4,12 @@ variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
   description = "Corresponds to the severity levels defined by application insights. Allowed values: Verbose, Info (maps to Information), Warn (maps to Warning), Error, Critical."
 }
 
+variable "APPLICATION_INSIGHTS_DAILY_DATA_CAP_IN_GB" {
+  type        = number
+  default     = 100
+  description = "Daily data cap in GB for Application Insights. Use TF_VAR_APPLICATION_INSIGHTS_DAILY_DATA_CAP_IN_GB environment variable to override for specific environments."
+}
+
 variable "AZURE_CLIENT_ID" {
   type        = string
   description = "Client ID used for authenticating to manage Azure resources from code."
