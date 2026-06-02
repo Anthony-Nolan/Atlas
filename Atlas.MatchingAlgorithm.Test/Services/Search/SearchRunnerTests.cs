@@ -59,6 +59,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             batchedResultsSearchService.Search(Arg.Any<SearchRequest>(), Arg.Any<DateTimeOffset?>())
                 .Returns(new List<MatchingAlgorithmResult> { new MatchingAlgorithmResult() });
 
+            searchService.Search(Arg.Any<SearchRequest>(), Arg.Any<DateTimeOffset?>())
+                .Returns(new List<MatchingAlgorithmResult> { new MatchingAlgorithmResult() });
+
             searchRunner = new SearchRunner(
                 searchServiceBusClient,
                 searchService,
@@ -96,37 +99,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             await searchService.Received().Search(searchRequest);
         }
-
+                                                                                           
         [Test]
-        public async Task RunSearch_WhenResultsAreNotBatched_StoresResultsInBlobStorage()
+        public async Task RunSearch_StoresResultsInBlobStorage()
         {
             const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default, default);
 
-            await resultsBlobStorageClient.Received().UploadResults(Arg.Is<ResultSet<MatchingAlgorithmResult>>(r => !r.BatchedResult), Arg.Any<int>(), id);
-        }
-
-        [Test]
-        public async Task RunSearch_WhenResultsAreBatched_StoresResultsInBlobStorage()
-        {
-            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
-
-            await batchedResultsSearchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default, default);
-
-            await resultsBlobStorageClient.Received().UploadResults(Arg.Is<ResultSet<MatchingAlgorithmResult>>(r => r.BatchedResult), Arg.Any<int>(), id);
-        }
-
-        [Test]
-        public async Task RunSearch_WhenResultsAreNotBatched_PublishesSuccessNotification()
-        {
-            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
-
-            await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default, default);
-
-            await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
-                r.WasSuccessful && r.SearchRequestId == id && !r.ResultsBatched && string.IsNullOrEmpty(r.BatchFolderName)
-            ));
+            await resultsBlobStorageClient.Received().UploadResults(Arg.Any<ResultSet<MatchingAlgorithmResult>>(), Arg.Any<int>(), id);
         }
 
         [Test]
@@ -144,7 +125,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         }
 
         [Test]
-        public async Task RunSearch_WhenResultsAreBatched_PublishesSuccessNotificationWithBatchInfo()
+        public async Task RunSearch_PublishesSuccessNotificationWithBatchInfo()
         {
             const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
             var identifiedSearchRequest = new IdentifiedSearchRequest
@@ -153,10 +134,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                 SearchRequest = DefaultMatchingRequest
             };
 
-            await batchedResultsSearchRunner.RunSearch(identifiedSearchRequest, default, default);
+            await searchRunner.RunSearch(identifiedSearchRequest, default, default);
 
             await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
-                r.ResultsBatched && r.BatchFolderName.Equals(identifiedSearchRequest.Id)
+                r.BatchFolderName.Equals(identifiedSearchRequest.Id)
             ));
         }
 

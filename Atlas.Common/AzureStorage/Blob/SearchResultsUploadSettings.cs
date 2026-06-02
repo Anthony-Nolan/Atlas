@@ -3,7 +3,5 @@
     public class SearchResultsUploadSettings
     {
         public int SearchResultsBatchSize { get; set; }
-
-        public bool ShouldBatchResults => SearchResultsBatchSize > 0;
     }
 }
