@@ -22,7 +22,9 @@ namespace Atlas.Client.Models.Search.Results.ResultSet
         /// Will be `null` for result sets created before this property was added, or if no data refresh has completed.
         /// </summary>
         public int? MatchingAlgorithmDataRefreshRecordId { get; set; }
+        
         public string BlobStorageContainerName { get; set; }
+
         public abstract string ResultsFileName { get; }
 
         public int TotalResults { get; set; }
@@ -62,17 +64,10 @@ namespace Atlas.Client.Models.Search.Results.ResultSet
 
         public IEnumerable<TResult> Results { get; set; }
 
-        /// <summary>
-        /// This method is used to control serialization of Results property
-        /// When this method returns true - <see cref="Results" /> will be serialized, when it's false - <see cref="Results" /> won't be serialized
-        /// https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm
-        /// </summary>
-        public bool ShouldSerializeResults() => !BatchedResult;
-
-
-        /// <summary>
+       /// <summary>
         /// This property is used to be able to control in runtime if <see cref="Results" /> should be serialized or not
         /// </summary>
+        [Obsolete("All results should be batched.")]
         [JsonIgnore]
         public bool BatchedResult { get; set; } = false;
 
