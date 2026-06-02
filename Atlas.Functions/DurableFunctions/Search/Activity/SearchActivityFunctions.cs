@@ -205,18 +205,15 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             var resultSet = resultsCombiner.BuildResultsSummary(matchingResultsSummary, parameters.MatchPredictionResultLocations.ElapsedTime, parameters.MatchingResultsNotification.ElapsedTime);
 
             resultSet.BlobStorageContainerName = resultSet.IsRepeatSearchSet ? azureStorageSettings.RepeatSearchResultsBlobContainer : azureStorageSettings.SearchResultsBlobContainer;
-            resultSet.BatchedResult = matchingResultsNotification.ResultsBatched && azureStorageSettings.ShouldBatchResults;
 
             resultSet.Results = await logger.RunTimedAsync("Combining search results", async () =>
-                matchingResultsNotification.ResultsBatched
-                ? await ProcessBatchedSearchResults(
+                 await ProcessBatchedSearchResults(
                     resultSet.SearchRequestId,
                     matchingResultsNotification.IsRepeatSearch,
                     parameters.MatchPredictionResultLocations.ResultSet,
                     matchingResultsNotification.BatchFolderName,
                     resultSet.BlobStorageContainerName,
-                    azureStorageSettings.ShouldBatchResults)
-                : await ProcessSearchResults(resultSet.SearchRequestId, matchingResultsSummary.Results, parameters.MatchPredictionResultLocations.ResultSet)
+                    true)
             );
 
             await searchResultsBlobUploader.UploadResults(resultSet, resultSet.BlobStorageContainerName, resultSet.ResultsFileName);

@@ -17,8 +17,6 @@
 
     "AtlasFunction:AzureStorage:SearchResultsBlobContainer": "atlas-search-results",
 
-    "AtlasFunction:AzureStorage:ShouldBatchResults": false,
-
     "AtlasFunction:MessagingServiceBus:ConnectionString": "override-this",
     "AtlasFunction:MessagingServiceBus:MatchingResultsSubscription": "match-prediction-orchestration",
     "AtlasFunction:MessagingServiceBus:MatchingResultsTopic": "matching-results-ready",

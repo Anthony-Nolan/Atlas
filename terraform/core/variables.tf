@@ -467,12 +467,6 @@ variable "SERVICE_BUS_SEND_RETRY_COUNT" {
   description = "When sending a service bus message, the total number of retries to attempt"
 }
 
-variable "SHOULD_BATCH_RESULTS" {
-  type        = bool
-  default     = false
-  description = "Indicates whether final search/repeat search results should be batched or not"
-}
-
 variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE" {
   type        = number
   default     = 10000
