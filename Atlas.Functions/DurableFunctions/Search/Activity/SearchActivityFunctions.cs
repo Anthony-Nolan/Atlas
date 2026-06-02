@@ -42,7 +42,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 
         private readonly IMessageBatchPublisher<ParallelMatchPredictionBatchRequest> parallelBatchPublisher;
         private readonly IParallelMatchPredictionRepository parallelMatchPredictionRepository;
-        private readonly int parallelMpaBatchSize;
+        private readonly int parallelMatchPredictionBatchSize;
 
         public SearchActivityFunctions(
             // Match Prediction services
@@ -74,7 +74,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             this.parallelMatchPredictionRepository = parallelMatchPredictionRepository;
             this.loggingContext = loggingContext;
             this.azureStorageSettings = azureStorageSettings.Value;
-            parallelMpaBatchSize = orchestrationSettings.Value.ParallelMpaBatchSize;
+            parallelMatchPredictionBatchSize = orchestrationSettings.Value.ParallelMatchPredictionBatchSize;
         }
 
         [Function(nameof(PrepareMatchPredictionBatches))]
@@ -124,8 +124,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         /// <summary>
-        /// Parallel MPA path: downloads matching results, builds batched inputs using <see cref="OrchestrationSettings.ParallelMpaBatchSize"/>,
-        /// uploads blobs, then publishes one <see cref="ParallelMatchPredictionBatchRequest"/> message per blob to
+        /// Parallel match-prediction path: downloads matching results, builds batched inputs using
+        /// <see cref="OrchestrationSettings.ParallelMatchPredictionBatchSize"/>,
+        /// uploads blobs, then creates the run record and pre-creates one batch row per blob in the repository
+        /// (ensuring <c>BatchSequenceNumber</c> 0 … N−1 matches the order in <c>blobLocations</c>), and finally
+        /// publishes one <see cref="ParallelMatchPredictionBatchRequest"/> message per blob to
         /// <c>parallel-match-prediction-requests</c>.  The ACA Worker processes each batch and publishes results
         /// to <c>parallel-match-prediction-results</c>; the aggregator function handles final persistence.
         /// </summary>
@@ -153,7 +156,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             );
 
             var matchPredictionInputs = logger.RunTimed("Build Parallel Match Prediction Inputs", () =>
-                matchPredictionInputBuilder.BuildMatchPredictionInputs(matchingResults, parallelMpaBatchSize)
+                matchPredictionInputBuilder.BuildMatchPredictionInputs(matchingResults, parallelMatchPredictionBatchSize)
             );
 
             IList<string> blobLocations;

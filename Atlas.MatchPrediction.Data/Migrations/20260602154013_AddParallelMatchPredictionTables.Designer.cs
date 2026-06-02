@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.MatchPrediction.Data.Migrations
 {
     [DbContext(typeof(MatchPredictionContext))]
-    [Migration("20260601133623_AddParallelMatchPredictionTables")]
+    [Migration("20260602154013_AddParallelMatchPredictionTables")]
     partial class AddParallelMatchPredictionTables
     {
         /// <inheritdoc />
@@ -137,12 +137,25 @@ namespace Atlas.MatchPrediction.Data.Migrations
                     b.Property<int>("BatchSequenceNumber")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("ReceivedTimeUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ResultLocationsJson")
+                    b.Property<string>("BatchStatus")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)")
+                        .HasDefaultValue("Requested");
+
+                    b.Property<string>("FailureException")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FailureMessage")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<string>("ResultLocationJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ResultReceivedTimeUtc")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("RunId")
                         .HasColumnType("int");
@@ -167,9 +180,6 @@ namespace Atlas.MatchPrediction.Data.Migrations
                         .HasMaxLength(36)
                         .HasColumnType("nvarchar(36)");
 
-                    b.Property<DateTime?>("FinalisationLeaseExpiresUtc")
-                        .HasColumnType("datetime2");
-
                     b.Property<Guid?>("FinalisationLeaseOwner")
                         .HasColumnType("uniqueidentifier");
 
@@ -178,6 +188,12 @@ namespace Atlas.MatchPrediction.Data.Migrations
 
                     b.Property<bool>("IsRepeatSearch")
                         .HasColumnType("bit");
+
+                    b.Property<bool?>("IsSuccessful")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("MatchPredictionRunInitiatedUtc")
+                        .HasColumnType("datetime2");
 
                     b.Property<long>("MatchingAlgorithmElapsedTime")
                         .HasColumnType("bigint");
@@ -199,12 +215,20 @@ namespace Atlas.MatchPrediction.Data.Migrations
                     b.Property<DateTime>("SearchInitiatedTimeUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTime?>("StatusDateUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("TotalBatchCount")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FinalisedTimeUtc");
+                    b.HasIndex("Status", "FinalisedTimeUtc");
 
                     b.ToTable("ParallelMatchPredictionRuns", "MatchPrediction");
                 });

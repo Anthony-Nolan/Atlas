@@ -34,11 +34,10 @@
     "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionResultsSubscription": "debug",
 
     "AtlasFunction:Orchestration:MatchPredictionBatchSize": 100,
-    "AtlasFunction:Orchestration:ParallelMpaBatchSize": 100,
-    "AtlasFunction:Orchestration:ParallelFinalizationCronSchedule": "0 0 * * * *",
+    "AtlasFunction:Orchestration:ParallelMatchPredictionBatchSize": 100,
+    "AtlasFunction:Orchestration:ParallelFinalisationCronSchedule": "0 */1 * * * *",
     "AtlasFunction:Orchestration:ParallelBatchCleanupCronSchedule": "0 0 3 * * *",
     "AtlasFunction:Orchestration:ParallelBatchRetentionDays": 90,
-    "AtlasFunction:Orchestration:ParallelFinalizationLeaseDurationMinutes": 10,
 
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
 

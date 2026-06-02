@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Atlas.Functions.Services;
+using Atlas.Functions.Settings;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Microsoft.Azure.Functions.Worker;
@@ -26,7 +27,7 @@ public class ParallelMatchPredictionAggregatorFunctions
     public ParallelMatchPredictionAggregatorFunctions(
         IParallelMatchPredictionRepository repository,
         IParallelMatchPredictionCompletionService completionService,
-        IOptions<Settings.OrchestrationSettings> orchestrationSettings,
+        IOptions<OrchestrationSettings> orchestrationSettings,
         ILogger<ParallelMatchPredictionAggregatorFunctions> logger)
     {
         this.repository = repository;
@@ -39,6 +40,8 @@ public class ParallelMatchPredictionAggregatorFunctions
     /// Session-aware Service Bus trigger. Persists a single batch result row keyed by
     /// <c>(RunId, BatchSequenceNumber)</c>. Duplicate Service Bus deliveries are silently ignored at the
     /// repository level (idempotency is enforced by the unique index, not by the function).
+    /// Failure results (<see cref="ParallelMatchPredictionBatchResult.IsSuccessful"/> == <c>false</c>) record
+    /// the batch as <c>Failed</c> so the run can still be finalised even when some batches fail.
     /// </summary>
     [Function(nameof(StoreParallelMatchPredictionBatchResult))]
     public async Task StoreParallelMatchPredictionBatchResult(
@@ -50,41 +53,73 @@ public class ParallelMatchPredictionAggregatorFunctions
         )]
         ParallelMatchPredictionBatchResult message)
     {
-        var inserted = await repository.RecordBatchResult(
-            message.ParallelRunId,
-            message.BatchSequenceNumber,
-            message.MatchPredictionResultLocations
-        );
+        bool inserted;
 
-        if (inserted)
+        if (message.IsSuccessful)
         {
-            logger.LogInformation(
-                "Recorded parallel MPA batch result. RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}.",
-                message.ParallelRunId, message.BatchSequenceNumber, message.SearchIdentifier
+            inserted = await repository.RecordBatchResult(
+                message.ParallelRunId,
+                message.BatchSequenceNumber,
+                message.MatchPredictionResultLocations
             );
+
+            if (inserted)
+            {
+                logger.LogInformation(
+                    "Recorded parallel MPA batch result. RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}.",
+                    message.ParallelRunId, message.BatchSequenceNumber, message.SearchIdentifier
+                );
+            }
+            else
+            {
+                logger.LogWarning(
+                    "Duplicate parallel MPA batch result ignored. RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}.",
+                    message.ParallelRunId, message.BatchSequenceNumber, message.SearchIdentifier
+                );
+            }
         }
         else
         {
-            logger.LogWarning(
-                "Duplicate parallel MPA batch result ignored. RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}.",
-                message.ParallelRunId, message.BatchSequenceNumber, message.SearchIdentifier
+            inserted = await repository.RecordBatchFailure(
+                message.ParallelRunId,
+                message.BatchSequenceNumber,
+                message.FailureMessage,
+                message.FailureException
             );
+
+            if (inserted)
+            {
+                logger.LogError(
+                    "Recorded parallel MPA batch failure. RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}. Failure: {FailureMessage}",
+                    message.ParallelRunId, message.BatchSequenceNumber, message.SearchIdentifier, message.FailureMessage
+                );
+            }
+            else
+            {
+                logger.LogWarning(
+                    "Duplicate parallel MPA batch failure ignored. RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}.",
+                    message.ParallelRunId, message.BatchSequenceNumber, message.SearchIdentifier
+                );
+            }
         }
     }
 
     /// <summary>
-    /// Timer-triggered finaliser. Scans for runs that have received all expected batches and are not yet
-    /// finalised (and not currently held by a live finalisation lease), then drives the persistence pipeline for
-    /// each via <see cref="IParallelMatchPredictionCompletionService.CompleteRun"/>. Runs concurrently with the
-    /// batch-store trigger; each run is claimed with an atomic lease so duplicate work cannot happen, and a run is
-    /// only marked finalised after its pipeline succeeds.
+    /// Timer-triggered finaliser. Scans for unclaimed runs that have received all expected batches and are still in the
+    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.Running"/> state, then atomically
+    /// claims each run with a per-invocation lease GUID before driving the persistence pipeline via
+    /// <see cref="IParallelMatchPredictionCompletionService.CompleteRun"/>. The lease prevents concurrent invocations
+    /// from processing the same run: only the invocation that wins the compare-and-swap claim will proceed.
+    /// On failure the completion service moves the run to
+    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.FailedDuringCompletion"/>
+    /// and rethrows; this trigger swallows the exception so other runs in the same tick still get processed.
     /// </summary>
     [Function(nameof(FinaliseCompletedParallelMatchPredictionRuns))]
     public async Task FinaliseCompletedParallelMatchPredictionRuns(
         [TimerTrigger("%AtlasFunction:Orchestration:ParallelFinalisationCronSchedule%")]
         TimerInfo timer)
     {
-        var runIdsAwaitingFinalisation = await repository.GetRunIdsAwaitingFinalisation(DateTime.UtcNow);
+        var runIdsAwaitingFinalisation = await repository.GetRunIdsAwaitingFinalisation();
         if (runIdsAwaitingFinalisation.Count == 0)
         {
             return;
@@ -95,17 +130,31 @@ public class ParallelMatchPredictionAggregatorFunctions
             runIdsAwaitingFinalisation.Count
         );
 
+        // A unique id for this invocation — used as the lease owner so concurrent scheduled runs
+        // cannot claim and double-process the same match-prediction run.
+        var invocationLeaseOwner = Guid.NewGuid();
+
         foreach (var runId in runIdsAwaitingFinalisation)
         {
+            var claimed = await repository.TryClaimFinalisationLease(runId, invocationLeaseOwner);
+            if (!claimed)
+            {
+                logger.LogInformation(
+                    "Parallel match prediction run {RunId} was already claimed by another invocation; skipping.",
+                    runId
+                );
+                continue;
+            }
+
             try
             {
                 await completionService.CompleteRun(runId);
             }
             catch (Exception ex)
             {
-                // Don't let a single bad run stop the rest of the batch — log and continue.
+                // Run is already marked FailedDuringCompletion by the completion service — log and move on.
                 logger.LogError(ex,
-                    "Failed to finalise parallel match prediction run {RunId}; will retry on next timer tick if lease allows.",
+                    "Parallel match prediction run {RunId} failed during completion and has been marked as FailedDuringCompletion.",
                     runId
                 );
             }
@@ -114,8 +163,10 @@ public class ParallelMatchPredictionAggregatorFunctions
 
     /// <summary>
     /// Timer-triggered clean-up. Deletes per-batch rows belonging to runs that finalised more than
-    /// <c>ParallelBatchRetentionDays</c> ago. The parent <c>ParallelMatchPredictionRun</c> rows are kept
-    /// indefinitely so historic searches remain visible in dashboards/audits.
+    /// <c>ParallelBatchRetentionDays</c> ago and marks those runs as
+    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.FinalisedAndCleanedUp"/>.
+    /// The parent <c>ParallelMatchPredictionRun</c> rows are kept indefinitely so historic searches remain visible
+    /// in dashboards/audits.
     /// </summary>
     [Function(nameof(CleanupOldParallelMatchPredictionBatches))]
     public async Task CleanupOldParallelMatchPredictionBatches(
@@ -123,9 +174,9 @@ public class ParallelMatchPredictionAggregatorFunctions
         TimerInfo timer)
     {
         var cutoffDate = DateTime.UtcNow.AddDays(-retentionDays);
-        var deletedBatchesCount = await repository.DeleteBatchesForRunsFinalisedBefore(cutoffDate);
+        var deletedBatchesCount = await repository.CleanupBatchesForRunsFinalisedBefore(cutoffDate);
         logger.LogInformation(
-            "Parallel match prediction batch cleanup deleted {Count} batch row(s) finalised before {Cutoff:o} (retention {Days} day(s)).",
+            "Parallel match prediction batch cleanup deleted {Count} batch row(s) finalised before {Cutoff:o} (retention {Days} day(s)) and marked their parent runs as cleaned up.",
             deletedBatchesCount, cutoffDate, retentionDays
         );
     }

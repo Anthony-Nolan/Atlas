@@ -10,7 +10,7 @@ namespace Atlas.MatchPrediction.Data.Models;
 /// One row per <c>SearchRequest</c> on the parallel path. Survives the batch clean-up so that
 /// historic searches remain visible even after their per-batch detail rows have been purged.
 /// </summary>
-[Index(nameof(FinalisedTimeUtc))]
+[Index(nameof(Status), nameof(FinalisedTimeUtc))]
 public class ParallelMatchPredictionRun
 {
     [Key]
@@ -53,32 +53,52 @@ public class ParallelMatchPredictionRun
     /// <summary>UTC time at which the durable orchestration was initiated (used for performance tracking).</summary>
     public DateTime SearchInitiatedTimeUtc { get; set; }
 
-    /// <summary>Total number of batches dispatched. Used by the finaliser to detect completeness.</summary>
+    /// <summary>Total number of batches dispatched. Matches the number of pre-created <see cref="ParallelMatchPredictionBatch"/> rows.</summary>
     public int TotalBatchCount { get; set; }
 
-    // ── finalisation lease + completion ────────────────────────────────────────────
+    /// <summary>UTC time at which this parallel match-prediction run was created (i.e. batches pre-created and messages about to be dispatched).</summary>
+    public DateTime MatchPredictionRunInitiatedUtc { get; set; }
+
+    // ── Status ────────────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Identifies the finaliser instance that currently holds the finalisation lease on this run.
-    /// Set atomically when a finaliser claims the run; checked again when marking the run finalised so a
-    /// stale finaliser (whose lease expired and was re-claimed by another instance) cannot complete it.
+    /// Current lifecycle status of this run. Stored as a string for readability.
+    /// See <see cref="ParallelMatchPredictionRunStatus"/> for the valid values.
+    /// </summary>
+    [MaxLength(32)]
+    public ParallelMatchPredictionRunStatus Status { get; set; }
+
+    /// <summary>UTC time at which <see cref="Status"/> was last updated.</summary>
+    public DateTime? StatusDateUtc { get; set; }
+
+    // ── Finalisation lease ────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// The id of the finalisation-function invocation that has claimed this run for processing.
+    /// Set atomically (compare-and-swap via a conditional UPDATE) before the finalisation pipeline starts;
+    /// remains set until the run reaches a terminal status (<see cref="ParallelMatchPredictionRunStatus.Finalised"/>,
+    /// <see cref="ParallelMatchPredictionRunStatus.Failed"/>, or
+    /// <see cref="ParallelMatchPredictionRunStatus.FailedDuringCompletion"/>).
+    /// <c>null</c> means unclaimed and available for the next scheduled invocation to pick up.
+    /// No expiry is required: the claiming invocation always drives the run to completion or failure before releasing.
     /// </summary>
     public Guid? FinalisationLeaseOwner { get; set; }
 
-    /// <summary>
-    /// UTC time at which the current finalisation lease expires. <c>null</c> when no finaliser has ever
-    /// claimed the run. A run is claimable when this is <c>null</c> or in the past, which allows a crashed
-    /// finaliser's work to be retried once its lease lapses (rather than the run being abandoned).
-    /// </summary>
-    public DateTime? FinalisationLeaseExpiresUtc { get; set; }
+    // ── Completion ────────────────────────────────────────────────────────────────
 
     /// <summary>
     /// UTC time at which final persistence <em>successfully completed</em>.
-    /// <c>null</c> until the entire persistence pipeline has finished — set only as the very last step so
-    /// that a failure part-way through leaves the run eligible for re-Finalisation once its lease expires.
+    /// <c>null</c> until the entire persistence pipeline has finished — set only as the very last step.
     /// Used both for the "find complete runs" query and for cleanup eligibility.
     /// </summary>
     public DateTime? FinalisedTimeUtc { get; set; }
+
+    /// <summary>
+    /// Whether this run completed successfully.
+    /// <c>null</c> until all batches have been processed (either <c>ResultsReceived</c> or <c>Failed</c>).
+    /// <c>true</c> when every batch succeeded; <c>false</c> when at least one batch failed.
+    /// </summary>
+    public bool? IsSuccessful { get; set; }
 
     public ICollection<ParallelMatchPredictionBatch> Batches { get; set; }
 }

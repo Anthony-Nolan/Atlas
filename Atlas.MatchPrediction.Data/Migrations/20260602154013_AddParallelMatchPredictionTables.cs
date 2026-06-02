@@ -27,9 +27,12 @@ namespace Atlas.MatchPrediction.Data.Migrations
                     MatchingAlgorithmElapsedTime = table.Column<long>(type: "bigint", nullable: false),
                     SearchInitiatedTimeUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TotalBatchCount = table.Column<int>(type: "int", nullable: false),
+                    MatchPredictionRunInitiatedUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    StatusDateUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
                     FinalisationLeaseOwner = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    FinalisationLeaseExpiresUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    FinalisedTimeUtc = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    FinalisedTimeUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsSuccessful = table.Column<bool>(type: "bit", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -45,8 +48,11 @@ namespace Atlas.MatchPrediction.Data.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RunId = table.Column<int>(type: "int", nullable: false),
                     BatchSequenceNumber = table.Column<int>(type: "int", nullable: false),
-                    ReceivedTimeUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ResultLocationsJson = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    BatchStatus = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false, defaultValue: "Requested"),
+                    ResultReceivedTimeUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ResultLocationJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FailureMessage = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true),
+                    FailureException = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -68,10 +74,10 @@ namespace Atlas.MatchPrediction.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ParallelMatchPredictionRuns_FinalisedTimeUtc",
+                name: "IX_ParallelMatchPredictionRuns_Status_FinalisedTimeUtc",
                 schema: "MatchPrediction",
                 table: "ParallelMatchPredictionRuns",
-                column: "FinalisedTimeUtc");
+                columns: new[] { "Status", "FinalisedTimeUtc" });
         }
 
         /// <inheritdoc />

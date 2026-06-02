@@ -71,11 +71,10 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionResultsTopic"        = module.match_prediction.service_bus.parallel_match_prediction_results_topic.name
     "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionResultsSubscription" = module.match_prediction.service_bus.parallel_match_prediction_results_aggregator_subscription.name
     "AtlasFunction:Orchestration:MatchPredictionBatchSize"                         = var.ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE
-    "AtlasFunction:Orchestration:ParallelMpaBatchSize"                             = var.ORCHESTRATION_PARALLEL_MPA_BATCH_SIZE
-    "AtlasFunction:Orchestration:ParallelFinalizationCronSchedule"                 = var.ORCHESTRATION_PARALLEL_FINALIZATION_CRON_SCHEDULE
+    "AtlasFunction:Orchestration:ParallelMatchPredictionBatchSize"                 = var.ORCHESTRATION_PARALLEL_MATCH_PREDICTION_BATCH_SIZE
+    "AtlasFunction:Orchestration:ParallelFinalisationCronSchedule"                 = var.ORCHESTRATION_PARALLEL_FINALISATION_CRON_SCHEDULE
     "AtlasFunction:Orchestration:ParallelBatchCleanupCronSchedule"                 = var.ORCHESTRATION_PARALLEL_BATCH_CLEANUP_CRON_SCHEDULE
     "AtlasFunction:Orchestration:ParallelBatchRetentionDays"                       = var.ORCHESTRATION_PARALLEL_BATCH_RETENTION_DAYS
-    "AtlasFunction:Orchestration:ParallelFinalizationLeaseDurationMinutes"         = var.ORCHESTRATION_PARALLEL_FINALIZATION_LEASE_DURATION_MINUTES
 
     "HlaMetadataDictionary:AzureStorageConnectionString"                          = azurerm_storage_account.azure_storage.primary_connection_string
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"                              = var.WMDA_FILE_URL

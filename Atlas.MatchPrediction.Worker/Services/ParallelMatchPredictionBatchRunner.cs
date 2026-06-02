@@ -44,6 +44,42 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
 
     public async Task RunBatch(ParallelMatchPredictionBatchRequest request)
     {
+        try
+        {
+            await ProcessBatch(request);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex,
+                "Error processing batch {BatchSequenceNumber} for run {ParallelRunId}, search {SearchRequestId}. " +
+                "Publishing failure result so the batch is recorded as Failed.",
+                request.BatchSequenceNumber, request.ParallelRunId, request.SearchRequestId
+            );
+
+            var failureResult = new ParallelMatchPredictionBatchResult
+            {
+                SearchIdentifier = new Guid(request.SearchRequestId),
+                RepeatSearchIdentifier = request.RepeatSearchRequestId == null ? null : new Guid(request.RepeatSearchRequestId),
+                ParallelRunId = request.ParallelRunId,
+                BatchSequenceNumber = request.BatchSequenceNumber,
+                IsSuccessful = false,
+                FailureMessage = ex.Message,
+                FailureException = ex.ToString(),
+            };
+
+            // Publish the failure result so the aggregator can record it and the run can still be finalised.
+            // If publishing itself throws the exception propagates to the outer worker loop, which abandons the message for retry.
+            await resultPublisher.PublishWithSession(failureResult, sessionId: request.SearchRequestId);
+
+            logger.LogInformation(
+                "Published failure result for batch {BatchSequenceNumber}, run {ParallelRunId}, search {SearchRequestId}.",
+                request.BatchSequenceNumber, request.ParallelRunId, request.SearchRequestId
+            );
+        }
+    }
+
+    private async Task ProcessBatch(ParallelMatchPredictionBatchRequest request)
+    {
         logger.LogInformation(
             "Downloading batch blob {BlobLocation} for search {SearchRequestId}",
             request.BlobLocation, request.SearchRequestId
@@ -78,6 +114,7 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
         {
             SearchIdentifier = new Guid(request.SearchRequestId),
             RepeatSearchIdentifier = request.RepeatSearchRequestId == null ? null : new Guid(request.RepeatSearchRequestId),
+            IsSuccessful = true,
             MatchPredictionResultLocations = results,
             ParallelRunId = request.ParallelRunId,
             BatchSequenceNumber = request.BatchSequenceNumber,

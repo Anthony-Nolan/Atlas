@@ -431,19 +431,13 @@ variable "ORCHESTRATION_PARALLEL_BATCH_RETENTION_DAYS" {
   description = "Number of days to retain per-batch rows after a parallel match-prediction run finalises. Parent run rows are always retained."
 }
 
-variable "ORCHESTRATION_PARALLEL_FINALIZATION_CRON_SCHEDULE" {
+variable "ORCHESTRATION_PARALLEL_FINALISATION_CRON_SCHEDULE" {
   type        = string
-  default     = "0 0 * * * *"
+  default     = "0 */1 * * * *"
   description = "CRON schedule (six-field NCrontab) for the timer that finalises completed parallel match-prediction runs."
 }
 
-variable "ORCHESTRATION_PARALLEL_FINALIZATION_LEASE_DURATION_MINUTES" {
-  type        = number
-  default     = 10
-  description = "Duration in minutes of the lease a finaliser holds on a completed parallel match-prediction run while it runs the persistence pipeline. Must comfortably exceed the worst-case pipeline time, as a run only becomes eligible for re-finalisation once this lease lapses."
-}
-
-variable "ORCHESTRATION_PARALLEL_MPA_BATCH_SIZE" {
+variable "ORCHESTRATION_PARALLEL_MATCH_PREDICTION_BATCH_SIZE" {
   type        = number
   default     = 100
   description = "Donor batch size used when preparing blobs for the parallel ACA Worker match-prediction path."

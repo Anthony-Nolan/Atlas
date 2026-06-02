@@ -6,6 +6,9 @@ namespace Atlas.SearchTracking.Common.Enums
     public enum MatchPredictionFailureType
     {
         OrchestrationError,
-        UnexpectedError
+        UnexpectedError,
+
+        /// <summary>One or more ACA Worker batches failed during match-prediction processing.</summary>
+        BatchWorkerFailure,
     }
 }

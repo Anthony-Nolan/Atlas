@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Models;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchPrediction.Data.Repositories;
@@ -23,76 +22,116 @@ public record CreateParallelMatchPredictionRunInfo(
     int TotalBatchCount);
 
 /// <summary>
-/// A run together with the merged donor → blob location map built from all of its batch rows.
+/// A run together with the merged donor → blob location map built from all of its received batch rows.
 /// </summary>
 public class ParallelMatchPredictionRunResults
 {
     public ParallelMatchPredictionRun Run { get; init; }
 
     public IReadOnlyDictionary<int, string> MergedResultLocations { get; init; }
+
+    /// <summary>Batches whose <see cref="ParallelMatchPredictionBatch.BatchStatus"/> is <see cref="ParallelMatchPredictionBatchStatus.Failed"/>.</summary>
+    public IReadOnlyList<ParallelMatchPredictionBatch> FailedBatches { get; init; }
 }
 
 public interface IParallelMatchPredictionRepository
 {
     /// <summary>
-    /// Creates the parent run record before any batches are dispatched. Returns the new run id.
+    /// Creates the parent run record (with status <see cref="ParallelMatchPredictionRunStatus.Running"/>) and
+    /// pre-creates one <see cref="ParallelMatchPredictionBatch"/> row per expected batch
+    /// (<c>BatchSequenceNumber</c> 0 … <c>TotalBatchCount − 1</c>) before any batch messages are dispatched.
+    /// Returns the new run id.
     /// </summary>
     Task<int> CreateRun(CreateParallelMatchPredictionRunInfo info);
 
     /// <summary>
-    /// Records a single batch result, keyed by <c>(runId, batchSequenceNumber)</c>.
-    /// Idempotent: duplicate Service Bus deliveries are detected by the unique constraint and ignored.
+    /// Records a single successful batch result by updating the pre-created batch row keyed by
+    /// <c>(runId, batchSequenceNumber)</c>. Idempotent: if the result was already recorded the update
+    /// is a no-op and <c>false</c> is returned.
     /// </summary>
-    /// <returns><c>true</c> if a new row was inserted; <c>false</c> if this batch had already been recorded.</returns>
+    /// <returns>
+    /// <c>true</c> if this is the first time the result was recorded; <c>false</c> if it was a duplicate.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no pre-created batch row exists for the given key, which indicates an invalid message or data corruption.
+    /// </exception>
     Task<bool> RecordBatchResult(int runId, int batchSequenceNumber, IReadOnlyDictionary<int, string> resultLocations);
 
     /// <summary>
-    /// Returns the ids of all runs that are ready to be finalised: they (a) have received
-    /// <c>TotalBatchCount</c> batch rows, (b) have not yet been finalised, and (c) are not currently held
-    /// by a live finalisation lease (i.e. no lease, or the lease has expired).
-    /// Intended for the finalisation timer.
+    /// Records a batch failure by updating the pre-created batch row keyed by
+    /// <c>(runId, batchSequenceNumber)</c>. Idempotent: if the batch was already recorded the update
+    /// is a no-op and <c>false</c> is returned.
     /// </summary>
-    Task<IReadOnlyList<int>> GetRunIdsAwaitingFinalisation(DateTime nowUtc);
+    /// <returns>
+    /// <c>true</c> if this is the first time the failure was recorded; <c>false</c> if it was a duplicate.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no pre-created batch row exists for the given key.
+    /// </exception>
+    Task<bool> RecordBatchFailure(int runId, int batchSequenceNumber, string failureMessage, string failureException);
 
     /// <summary>
-    /// Returns the run together with the merged donor → blob location map built from its batch rows.
+    /// Returns the ids of all <see cref="ParallelMatchPredictionRunStatus.Running"/> runs whose every batch
+    /// has a <see cref="ParallelMatchPredictionBatch.BatchStatus"/> other than
+    /// <see cref="ParallelMatchPredictionBatchStatus.Requested"/> (i.e. every batch has a result, success or failure)
+    /// <em>and</em> that have not yet been claimed by another invocation
+    /// (i.e. <see cref="ParallelMatchPredictionRun.FinalisationLeaseOwner"/> is <c>null</c>).
+    /// Intended for the finalisation timer.
+    /// </summary>
+    Task<IReadOnlyList<int>> GetRunIdsAwaitingFinalisation();
+
+    /// <summary>
+    /// Attempts to atomically claim the given run for finalisation by this invocation.
+    /// Sets <see cref="ParallelMatchPredictionRun.FinalisationLeaseOwner"/> to <paramref name="leaseOwner"/>
+    /// only when the run has status <see cref="ParallelMatchPredictionRunStatus.Running"/> and its
+    /// <see cref="ParallelMatchPredictionRun.FinalisationLeaseOwner"/> is currently <c>null</c>.
+    /// </summary>
+    /// <returns>
+    /// <c>true</c> if the lease was successfully acquired by this call; <c>false</c> if another invocation
+    /// already holds the lease or the run is no longer in the <c>Running</c> state.
+    /// </returns>
+    Task<bool> TryClaimFinalisationLease(int runId, Guid leaseOwner);
+
+    /// <summary>
+    /// Returns the run together with the merged donor → blob location map built from its received batch rows.
     /// Returns <c>null</c> if the run does not exist.
     /// </summary>
     Task<ParallelMatchPredictionRunResults> GetRunWithResults(int runId);
 
     /// <summary>
-    /// Atomically claims a finalisation lease on the run for <paramref name="leaseOwner"/>, provided the run
-    /// is not already finalised and is not currently held by another live lease. The lease is granted until
-    /// <paramref name="nowUtc"/> + <paramref name="leaseDuration"/>.
+    /// Marks the run as <see cref="ParallelMatchPredictionRunStatus.Finalised"/> and sets
+    /// <see cref="ParallelMatchPredictionRun.IsSuccessful"/> to <c>true</c>, provided it still has
+    /// status <see cref="ParallelMatchPredictionRunStatus.Running"/>. Call this as the very last step,
+    /// after all persistence has succeeded.
     /// </summary>
-    /// <returns><c>true</c> if the caller won the lease and should perform the persistence work; <c>false</c> otherwise.</returns>
-    Task<bool> TryClaimRunForFinalisation(int runId, Guid leaseOwner, DateTime nowUtc, TimeSpan leaseDuration);
+    Task MarkRunFinalised(int runId, DateTime finalisedTimeUtc);
 
     /// <summary>
-    /// Marks the run as fully finalised, but only if it is still not finalised and the caller
-    /// (<paramref name="leaseOwner"/>) still holds the lease. Call this as the very last step, after all
-    /// persistence has succeeded.
+    /// Marks the run as <see cref="ParallelMatchPredictionRunStatus.Failed"/> and sets
+    /// <see cref="ParallelMatchPredictionRun.IsSuccessful"/> to <c>false</c> when one or more batches
+    /// failed during Worker processing. The completion pipeline still runs (metrics, notification, tracking).
     /// </summary>
-    /// <returns><c>true</c> if the run was marked finalised by this caller; <c>false</c> if it was already
-    /// finalised or the lease had been taken over by another finaliser.</returns>
-    Task<bool> MarkRunFinalised(int runId, Guid leaseOwner, DateTime finalisedTimeUtc);
+    Task MarkRunFailed(int runId, DateTime nowUtc);
 
     /// <summary>
-    /// Deletes batch rows belonging to runs that finalised before <paramref name="cutoffUtc"/>.
+    /// Marks the run as <see cref="ParallelMatchPredictionRunStatus.FailedDuringCompletion"/> when the
+    /// persistence pipeline throws. Terminal: the finalisation timer will not re-pick the run.
+    /// </summary>
+    Task MarkRunFailedDuringCompletion(int runId, DateTime nowUtc);
+
+    /// <summary>
+    /// Deletes batch rows belonging to runs that have status <see cref="ParallelMatchPredictionRunStatus.Finalised"/>
+    /// and whose <c>FinalisedTimeUtc</c> is before <paramref name="cutoffUtc"/>, then marks those runs as
+    /// <see cref="ParallelMatchPredictionRunStatus.FinalisedAndCleanedUp"/>. The whole operation is wrapped in a
+    /// transaction so that the status update and batch deletion are atomic.
     /// Parent run rows are intentionally retained.
     /// </summary>
     /// <returns>The number of batch rows deleted.</returns>
-    Task<int> DeleteBatchesForRunsFinalisedBefore(DateTime cutoffUtc);
+    Task<int> CleanupBatchesForRunsFinalisedBefore(DateTime cutoffUtc);
 }
 
 public class ParallelMatchPredictionRepository : IParallelMatchPredictionRepository
 {
-    // SQL Server error numbers raised when an INSERT violates a uniqueness guarantee.
-    // 2627 = violation of a UNIQUE constraint / PRIMARY KEY; 2601 = duplicate key row in a UNIQUE index.
-    // https://learn.microsoft.com/en-us/sql/relational-databases/errors-events/database-engine-events-and-errors-2000-to-2999
-    private const int SqlServerUniqueConstraintViolation = 2627;
-    private const int SqlServerDuplicateKeyInUniqueIndex = 2601;
-
     private readonly MatchPredictionContext context;
 
     public ParallelMatchPredictionRepository(MatchPredictionContext context)
@@ -102,6 +141,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
 
     public async Task<int> CreateRun(CreateParallelMatchPredictionRunInfo info)
     {
+        var now = DateTime.UtcNow;
         var entity = new ParallelMatchPredictionRun
         {
             SearchIdentifier = info.SearchIdentifier,
@@ -113,67 +153,130 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
             MatchingAlgorithmElapsedTime = info.MatchingAlgorithmElapsedTime,
             SearchInitiatedTimeUtc = info.SearchInitiatedTimeUtc,
             TotalBatchCount = info.TotalBatchCount,
+            MatchPredictionRunInitiatedUtc = now,
+            Status = ParallelMatchPredictionRunStatus.Running,
+            StatusDateUtc = now,
             FinalisedTimeUtc = null,
+            IsSuccessful = null,
         };
         context.ParallelMatchPredictionRuns.Add(entity);
         await context.SaveChangesAsync();
+
+        // Pre-create one batch row per expected batch so that results can be recorded via UPDATE rather than INSERT.
+        for (var seq = 0; seq < info.TotalBatchCount; seq++)
+        {
+            var matchPredictionBatch = new ParallelMatchPredictionBatch
+            {
+                RunId = entity.Id,
+                BatchSequenceNumber = seq,
+                BatchStatus = ParallelMatchPredictionBatchStatus.Requested,
+            };
+            context.ParallelMatchPredictionBatches.Add(matchPredictionBatch);
+        }
+        await context.SaveChangesAsync();
+
         return entity.Id;
     }
 
     public async Task<bool> RecordBatchResult(int runId, int batchSequenceNumber, IReadOnlyDictionary<int, string> resultLocations)
     {
-        var batch = new ParallelMatchPredictionBatch
-        {
-            RunId = runId,
-            BatchSequenceNumber = batchSequenceNumber,
-            ReceivedTimeUtc = DateTime.UtcNow,
-            ResultLocationsJson = JsonSerializer.Serialize(resultLocations),
-        };
+        var now = DateTime.UtcNow;
+        var serializedLocations = JsonSerializer.Serialize(resultLocations);
 
-        context.ParallelMatchPredictionBatches.Add(batch);
+        // Atomically update only if still Requested — prevents overwriting with a duplicate delivery.
+        var rowsUpdated = await context.ParallelMatchPredictionBatches
+            .Where(b => b.RunId == runId
+                     && b.BatchSequenceNumber == batchSequenceNumber
+                     && b.BatchStatus == ParallelMatchPredictionBatchStatus.Requested)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(b => b.BatchStatus, ParallelMatchPredictionBatchStatus.ResultsReceived)
+                .SetProperty(b => b.ResultReceivedTimeUtc, now)
+                .SetProperty(b => b.ResultLocationJson, serializedLocations)
+            );
 
-        try
+        if (rowsUpdated == 1)
         {
-            await context.SaveChangesAsync();
             return true;
         }
-        catch (DbUpdateException ex)
+
+        // Distinguish "already received" (idempotent duplicate) from "row not found" (data error).
+        var exists = await context.ParallelMatchPredictionBatches
+            .AnyAsync(b => b.RunId == runId && b.BatchSequenceNumber == batchSequenceNumber);
+
+        if (!exists)
         {
-            // Detach the failed (never-inserted) entity so subsequent operations on this context are unaffected.
-            context.Entry(batch).State = EntityState.Detached;
-
-            // Fast, deterministic path for SQL Server (the production provider): a unique-constraint error
-            // number unambiguously identifies the expected duplicate Service Bus delivery, with no extra query.
-            if (IsSqlServerDuplicateKeyViolation(ex))
-            {
-                return false;
-            }
-
-            throw;
+            throw new InvalidOperationException(
+                $"No pre-created batch row found for RunId={runId}, BatchSequenceNumber={batchSequenceNumber}. " +
+                "This indicates an invalid message or data corruption — a batch result was received for a run/batch that was never registered."
+            );
         }
+
+        // Row exists but result was already recorded — duplicate Service Bus delivery, treated as idempotent.
+        return false;
     }
 
-    /// <summary>
-    /// Determines whether the given exception was caused by a SQL Server uniqueness violation
-    /// by inspecting the underlying <see cref="SqlException"/> error number. This is deterministic
-    /// and avoids treating unrelated <see cref="DbUpdateException"/>s (FK violations, timeouts,
-    /// deadlocks, etc.) as duplicates.
-    /// </summary>
-    private static bool IsSqlServerDuplicateKeyViolation(DbUpdateException ex) =>
-        ex.InnerException is SqlException { Number: SqlServerUniqueConstraintViolation or SqlServerDuplicateKeyInUniqueIndex };
-
-    public async Task<IReadOnlyList<int>> GetRunIdsAwaitingFinalisation(DateTime nowUtc)
+    public async Task<bool> RecordBatchFailure(int runId, int batchSequenceNumber, string failureMessage, string failureException)
     {
-        // A run is ready to finalise when all its batch rows are present, it has not been finalised, and it
-        // is not currently held by a live finalisation lease (no lease, or an expired one).
+        var now = DateTime.UtcNow;
+
+        // Atomically update only if still Requested — prevents overwriting with a duplicate delivery.
+        var rowsUpdated = await context.ParallelMatchPredictionBatches
+            .Where(b => b.RunId == runId
+                     && b.BatchSequenceNumber == batchSequenceNumber
+                     && b.BatchStatus == ParallelMatchPredictionBatchStatus.Requested)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(b => b.BatchStatus, ParallelMatchPredictionBatchStatus.Failed)
+                .SetProperty(b => b.ResultReceivedTimeUtc, now)
+                .SetProperty(b => b.FailureMessage, failureMessage)
+                .SetProperty(b => b.FailureException, failureException)
+            );
+
+        if (rowsUpdated == 1)
+        {
+            return true;
+        }
+
+        var exists = await context.ParallelMatchPredictionBatches
+            .AnyAsync(b => b.RunId == runId && b.BatchSequenceNumber == batchSequenceNumber);
+
+        if (!exists)
+        {
+            throw new InvalidOperationException(
+                $"No pre-created batch row found for RunId={runId}, BatchSequenceNumber={batchSequenceNumber}. " +
+                "This indicates an invalid message or data corruption — a batch failure was received for a run/batch that was never registered."
+            );
+        }
+
+        // Row exists but was already recorded — duplicate Service Bus delivery, treated as idempotent.
+        return false;
+    }
+
+    public async Task<IReadOnlyList<int>> GetRunIdsAwaitingFinalisation()
+    {
+        // A run is ready to finalise when it is Running, every batch has moved past the Requested state
+        // (i.e. every batch is either ResultsReceived or Failed), and no other invocation has already
+        // claimed it (FinalisationLeaseOwner IS NULL).
         return await context.ParallelMatchPredictionRuns
             .AsNoTracking()
-            .Where(r => r.FinalisedTimeUtc == null
-                     && (r.FinalisationLeaseExpiresUtc == null || r.FinalisationLeaseExpiresUtc < nowUtc)
-                     && r.Batches.Count == r.TotalBatchCount
+            .Where(r => r.Status == ParallelMatchPredictionRunStatus.Running
+                     && r.FinalisationLeaseOwner == null
+                     && r.Batches.All(b => b.BatchStatus != ParallelMatchPredictionBatchStatus.Requested)
             )
             .Select(r => r.Id)
             .ToListAsync();
+    }
+
+    public async Task<bool> TryClaimFinalisationLease(int runId, Guid leaseOwner)
+    {
+        var rowsUpdated = await context.ParallelMatchPredictionRuns
+            .Where(r => r.Id == runId
+                     && r.Status == ParallelMatchPredictionRunStatus.Running
+                     && r.FinalisationLeaseOwner == null)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(r => r.FinalisationLeaseOwner, leaseOwner)
+            );
+
+        return rowsUpdated == 1;
     }
 
     public async Task<ParallelMatchPredictionRunResults> GetRunWithResults(int runId)
@@ -189,54 +292,88 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         }
 
         var mergedResultLocations = new Dictionary<int, string>();
-        foreach (var batch in run.Batches)
+        foreach (var batch in run.Batches.Where(b => b.BatchStatus == ParallelMatchPredictionBatchStatus.ResultsReceived))
         {
-            var currentBatchResultLocations = JsonSerializer.Deserialize<Dictionary<int, string>>(batch.ResultLocationsJson)
+            var currentBatchResultLocations = JsonSerializer.Deserialize<Dictionary<int, string>>(batch.ResultLocationJson)
                                            ?? new Dictionary<int, string>();
             mergedResultLocations = mergedResultLocations.Merge(currentBatchResultLocations);
         }
 
+        var failedBatches = run.Batches
+            .Where(b => b.BatchStatus == ParallelMatchPredictionBatchStatus.Failed)
+            .ToList();
+
         return new ParallelMatchPredictionRunResults
         {
             Run = run,
-            MergedResultLocations = mergedResultLocations
+            MergedResultLocations = mergedResultLocations,
+            FailedBatches = failedBatches,
         };
     }
 
-    public async Task<bool> TryClaimRunForFinalisation(int runId, Guid leaseOwner, DateTime nowUtc, TimeSpan leaseDuration)
+    public async Task MarkRunFinalised(int runId, DateTime finalisedTimeUtc)
     {
-        // Single conditional UPDATE acts as the atomic claim: only one finaliser can transition the run from
-        // "unclaimed / lease expired" to "leased by me". The returned row count tells us whether we won.
-        var leaseExpiresUtc = nowUtc.Add(leaseDuration);
-        var rowsUpdated = await context.ParallelMatchPredictionRuns
-            .Where(r => r.Id == runId
-                     && r.FinalisedTimeUtc == null
-                     && (r.FinalisationLeaseExpiresUtc == null || r.FinalisationLeaseExpiresUtc < nowUtc)
-            )
+        await context.ParallelMatchPredictionRuns
+            .Where(r => r.Id == runId && r.Status == ParallelMatchPredictionRunStatus.Running)
             .ExecuteUpdateAsync(s => s
-                .SetProperty(r => r.FinalisationLeaseOwner, leaseOwner)
-                .SetProperty(r => r.FinalisationLeaseExpiresUtc, leaseExpiresUtc)
+                .SetProperty(r => r.FinalisedTimeUtc, finalisedTimeUtc)
+                .SetProperty(r => r.IsSuccessful, true)
+                .SetProperty(r => r.Status, ParallelMatchPredictionRunStatus.Finalised)
+                .SetProperty(r => r.StatusDateUtc, finalisedTimeUtc)
             );
-        return rowsUpdated == 1;
     }
 
-    public async Task<bool> MarkRunFinalised(int runId, Guid leaseOwner, DateTime finalisedTimeUtc)
+    public async Task MarkRunFailed(int runId, DateTime nowUtc)
     {
-        // Only the current leaseholder may finalise. If a slow finaliser's lease expired and was re-claimed
-        // by another instance, the owner check prevents it from marking the run done out from under the new owner.
-        var rowsUpdated = await context.ParallelMatchPredictionRuns
-            .Where(r => r.Id == runId
-                     && r.FinalisedTimeUtc == null
-                     && r.FinalisationLeaseOwner == leaseOwner
-            )
-            .ExecuteUpdateAsync(s => s.SetProperty(r => r.FinalisedTimeUtc, finalisedTimeUtc));
-        return rowsUpdated == 1;
+        await context.ParallelMatchPredictionRuns
+            .Where(r => r.Id == runId && r.Status == ParallelMatchPredictionRunStatus.Running)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(r => r.IsSuccessful, false)
+                .SetProperty(r => r.Status, ParallelMatchPredictionRunStatus.Failed)
+                .SetProperty(r => r.StatusDateUtc, nowUtc)
+            );
     }
 
-    public async Task<int> DeleteBatchesForRunsFinalisedBefore(DateTime cutoffUtc)
+    public async Task MarkRunFailedDuringCompletion(int runId, DateTime nowUtc)
     {
-        return await context.ParallelMatchPredictionBatches
-            .Where(b => b.Run.FinalisedTimeUtc != null && b.Run.FinalisedTimeUtc < cutoffUtc)
+        await context.ParallelMatchPredictionRuns
+            .Where(r => r.Id == runId && r.Status == ParallelMatchPredictionRunStatus.Running)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(r => r.Status, ParallelMatchPredictionRunStatus.FailedDuringCompletion)
+                .SetProperty(r => r.StatusDateUtc, nowUtc)
+            );
+    }
+
+    public async Task<int> CleanupBatchesForRunsFinalisedBefore(DateTime cutoffUtc)
+    {
+        var runIds = await context.ParallelMatchPredictionRuns
+            .AsNoTracking()
+            .Where(r => r.Status == ParallelMatchPredictionRunStatus.Finalised
+                     && r.FinalisedTimeUtc < cutoffUtc)
+            .Select(r => r.Id)
+            .ToListAsync();
+
+        if (runIds.Count == 0)
+        {
+            return 0;
+        }
+
+        // Use a transaction so the batch deletion and the parent-status update are atomic.
+        await using var transaction = await context.Database.BeginTransactionAsync();
+
+        var deletedBatchCount = await context.ParallelMatchPredictionBatches
+            .Where(b => runIds.Contains(b.RunId))
             .ExecuteDeleteAsync();
+
+        var now = DateTime.UtcNow;
+        await context.ParallelMatchPredictionRuns
+            .Where(r => runIds.Contains(r.Id))
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(r => r.Status, ParallelMatchPredictionRunStatus.FinalisedAndCleanedUp)
+                .SetProperty(r => r.StatusDateUtc, now)
+            );
+
+        await transaction.CommitAsync();
+        return deletedBatchCount;
     }
 }

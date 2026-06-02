@@ -4,8 +4,8 @@ public class OrchestrationSettings
 {
     public int MatchPredictionBatchSize { get; set; }
 
-    /// <summary>Donor batch size used when preparing blobs for the parallel ACA Worker MPA path.</summary>
-    public int ParallelMpaBatchSize { get; set; }
+    /// <summary>Donor batch size used when preparing blobs for the parallel ACA Worker match-prediction path.</summary>
+    public int ParallelMatchPredictionBatchSize { get; set; }
 
     /// <summary>
     /// CRON schedule for the parallel-MPA finaliser timer trigger
@@ -24,12 +24,4 @@ public class OrchestrationSettings
     /// are always retained — only the verbose per-batch rows are purged.
     /// </summary>
     public int ParallelBatchRetentionDays { get; set; }
-
-    /// <summary>
-    /// Duration (in minutes) of the finalisation lease a finaliser takes on a completed parallel MPA run
-    /// before performing the persistence pipeline. It must comfortably exceed the worst-case time to run
-    /// that pipeline: if a finaliser crashes midway, the run only becomes eligible for re-Finalisation once
-    /// this lease lapses.
-    /// </summary>
-    public int ParallelFinalisationLeaseDurationMinutes { get; set; }
 }

@@ -24,6 +24,16 @@ public class MatchPredictionContext : DbContext
             .HasConversion<TimeSpanToTicksConverter>()
             .HasColumnType("bigint");
 
+        modelBuilder.Entity<ParallelMatchPredictionRun>()
+            .Property(x => x.Status)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<ParallelMatchPredictionBatch>()
+            .Property(x => x.BatchStatus)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .HasDefaultValue(ParallelMatchPredictionBatchStatus.Requested);
+
         base.OnModelCreating(modelBuilder);
     }
 
