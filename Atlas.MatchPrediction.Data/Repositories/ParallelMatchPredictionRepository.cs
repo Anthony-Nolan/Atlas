@@ -107,7 +107,7 @@ public interface IParallelMatchPredictionRepository
     Task MarkRunFinalised(int runId, DateTime finalisedTimeUtc);
 
     /// <summary>
-    /// Marks the run as <see cref="ParallelMatchPredictionRunStatus.Failed"/> and sets
+    /// Marks the run as <see cref="ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing"/> and sets
     /// <see cref="ParallelMatchPredictionRun.IsSuccessful"/> to <c>false</c> when one or more batches
     /// failed during Worker processing. The completion pipeline still runs (metrics, notification, tracking).
     /// </summary>
@@ -141,41 +141,51 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
 
     public async Task<int> CreateRun(CreateParallelMatchPredictionRunInfo info)
     {
-        var now = DateTime.UtcNow;
-        var entity = new ParallelMatchPredictionRun
+        await using var transaction = await context.Database.BeginTransactionAsync();
+        try
         {
-            SearchIdentifier = info.SearchIdentifier,
-            IsRepeatSearch = info.IsRepeatSearch,
-            RepeatSearchIdentifier = info.RepeatSearchIdentifier,
-            ResultsFileName = info.ResultsFileName,
-            ResultsBatched = info.ResultsBatched,
-            BatchFolderName = info.BatchFolderName,
-            MatchingAlgorithmElapsedTime = info.MatchingAlgorithmElapsedTime,
-            SearchInitiatedTimeUtc = info.SearchInitiatedTimeUtc,
-            TotalBatchCount = info.TotalBatchCount,
-            MatchPredictionRunInitiatedUtc = now,
-            Status = ParallelMatchPredictionRunStatus.Running,
-            StatusDateUtc = now,
-            FinalisedTimeUtc = null,
-            IsSuccessful = null,
-        };
-        context.ParallelMatchPredictionRuns.Add(entity);
-        await context.SaveChangesAsync();
-
-        // Pre-create one batch row per expected batch so that results can be recorded via UPDATE rather than INSERT.
-        for (var seq = 0; seq < info.TotalBatchCount; seq++)
-        {
-            var matchPredictionBatch = new ParallelMatchPredictionBatch
+            var now = DateTime.UtcNow;
+            var entity = new ParallelMatchPredictionRun
             {
-                RunId = entity.Id,
-                BatchSequenceNumber = seq,
-                BatchStatus = ParallelMatchPredictionBatchStatus.Requested,
+                SearchIdentifier = info.SearchIdentifier,
+                IsRepeatSearch = info.IsRepeatSearch,
+                RepeatSearchIdentifier = info.RepeatSearchIdentifier,
+                ResultsFileName = info.ResultsFileName,
+                ResultsBatched = info.ResultsBatched,
+                BatchFolderName = info.BatchFolderName,
+                MatchingAlgorithmElapsedTime = info.MatchingAlgorithmElapsedTime,
+                SearchInitiatedTimeUtc = info.SearchInitiatedTimeUtc,
+                TotalBatchCount = info.TotalBatchCount,
+                MatchPredictionRunInitiatedUtc = now,
+                Status = ParallelMatchPredictionRunStatus.Running,
+                StatusDateUtc = now,
+                FinalisedTimeUtc = null,
+                IsSuccessful = null,
             };
-            context.ParallelMatchPredictionBatches.Add(matchPredictionBatch);
-        }
-        await context.SaveChangesAsync();
+            context.ParallelMatchPredictionRuns.Add(entity);
 
-        return entity.Id;
+            // Pre-create one batch row per expected batch so that results can be recorded via UPDATE rather than INSERT.
+            for (var seq = 0; seq < info.TotalBatchCount; seq++)
+            {
+                var matchPredictionBatch = new ParallelMatchPredictionBatch
+                {
+                    Run = entity,
+                    BatchSequenceNumber = seq,
+                    BatchStatus = ParallelMatchPredictionBatchStatus.Requested,
+                };
+                context.ParallelMatchPredictionBatches.Add(matchPredictionBatch);
+            }
+
+            await context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+            return entity.Id;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<bool> RecordBatchResult(int runId, int batchSequenceNumber, IReadOnlyDictionary<int, string> resultLocations)
@@ -187,7 +197,8 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         var rowsUpdated = await context.ParallelMatchPredictionBatches
             .Where(b => b.RunId == runId
                      && b.BatchSequenceNumber == batchSequenceNumber
-                     && b.BatchStatus == ParallelMatchPredictionBatchStatus.Requested)
+                     && b.BatchStatus == ParallelMatchPredictionBatchStatus.Requested
+            )
             .ExecuteUpdateAsync(s => s
                 .SetProperty(b => b.BatchStatus, ParallelMatchPredictionBatchStatus.ResultsReceived)
                 .SetProperty(b => b.ResultReceivedTimeUtc, now)
@@ -206,8 +217,8 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         if (!exists)
         {
             throw new InvalidOperationException(
-                $"No pre-created batch row found for RunId={runId}, BatchSequenceNumber={batchSequenceNumber}. " +
-                "This indicates an invalid message or data corruption — a batch result was received for a run/batch that was never registered."
+                $"No pre-created batch row found for RunId={runId}, BatchSequenceNumber={batchSequenceNumber}. "
+              + "This indicates an invalid message or data corruption — a batch result was received for a run/batch that was never registered."
             );
         }
 
@@ -223,7 +234,8 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         var rowsUpdated = await context.ParallelMatchPredictionBatches
             .Where(b => b.RunId == runId
                      && b.BatchSequenceNumber == batchSequenceNumber
-                     && b.BatchStatus == ParallelMatchPredictionBatchStatus.Requested)
+                     && b.BatchStatus == ParallelMatchPredictionBatchStatus.Requested
+            )
             .ExecuteUpdateAsync(s => s
                 .SetProperty(b => b.BatchStatus, ParallelMatchPredictionBatchStatus.Failed)
                 .SetProperty(b => b.ResultReceivedTimeUtc, now)
@@ -242,8 +254,8 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         if (!exists)
         {
             throw new InvalidOperationException(
-                $"No pre-created batch row found for RunId={runId}, BatchSequenceNumber={batchSequenceNumber}. " +
-                "This indicates an invalid message or data corruption — a batch failure was received for a run/batch that was never registered."
+                $"No pre-created batch row found for RunId={runId}, BatchSequenceNumber={batchSequenceNumber}. "
+              + "This indicates an invalid message or data corruption — a batch failure was received for a run/batch that was never registered."
             );
         }
 
@@ -271,7 +283,8 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         var rowsUpdated = await context.ParallelMatchPredictionRuns
             .Where(r => r.Id == runId
                      && r.Status == ParallelMatchPredictionRunStatus.Running
-                     && r.FinalisationLeaseOwner == null)
+                     && r.FinalisationLeaseOwner == null
+            )
             .ExecuteUpdateAsync(s => s
                 .SetProperty(r => r.FinalisationLeaseOwner, leaseOwner)
             );
@@ -329,7 +342,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
             .Where(r => r.Id == runId && r.Status == ParallelMatchPredictionRunStatus.Running)
             .ExecuteUpdateAsync(s => s
                 .SetProperty(r => r.IsSuccessful, false)
-                .SetProperty(r => r.Status, ParallelMatchPredictionRunStatus.Failed)
+                .SetProperty(r => r.Status, ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing)
                 .SetProperty(r => r.StatusDateUtc, nowUtc)
             );
     }
@@ -349,7 +362,8 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         var runIds = await context.ParallelMatchPredictionRuns
             .AsNoTracking()
             .Where(r => r.Status == ParallelMatchPredictionRunStatus.Finalised
-                     && r.FinalisedTimeUtc < cutoffUtc)
+                     && r.FinalisedTimeUtc < cutoffUtc
+            )
             .Select(r => r.Id)
             .ToListAsync();
 

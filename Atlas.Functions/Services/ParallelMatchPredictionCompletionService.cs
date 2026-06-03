@@ -11,6 +11,7 @@ using Atlas.Common.AzureStorage.Blob;
 using Atlas.Functions.Models;
 using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.Functions.Settings;
+using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.SearchTracking.Common.Dispatchers;
 using Atlas.SearchTracking.Common.Enums;
@@ -33,7 +34,7 @@ public interface IParallelMatchPredictionCompletionService
     /// and <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRun.IsSuccessful"/> is set to <c>true</c>.
     /// </para>
     /// <para>
-    /// If any batch failed the run is marked <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.Failed"/>
+    /// If any batch failed the run is marked <see cref="ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing"/>
     /// and <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRun.IsSuccessful"/> is set to <c>false</c>.
     /// Performance metrics, the failure notification, search logs and the tracking event are still emitted.
     /// </para>

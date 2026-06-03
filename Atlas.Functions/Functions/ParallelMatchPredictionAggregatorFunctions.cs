@@ -53,17 +53,16 @@ public class ParallelMatchPredictionAggregatorFunctions
         )]
         ParallelMatchPredictionBatchResult message)
     {
-        bool inserted;
 
         if (message.IsSuccessful)
         {
-            inserted = await repository.RecordBatchResult(
+            var wasBatchResultRecordedSuccessfully = await repository.RecordBatchResult(
                 message.ParallelRunId,
                 message.BatchSequenceNumber,
                 message.MatchPredictionResultLocations
             );
 
-            if (inserted)
+            if (wasBatchResultRecordedSuccessfully)
             {
                 logger.LogInformation(
                     "Recorded parallel MPA batch result. RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}.",
@@ -80,14 +79,14 @@ public class ParallelMatchPredictionAggregatorFunctions
         }
         else
         {
-            inserted = await repository.RecordBatchFailure(
+            var wasFailureRecordedSuccessfully = await repository.RecordBatchFailure(
                 message.ParallelRunId,
                 message.BatchSequenceNumber,
                 message.FailureMessage,
                 message.FailureException
             );
 
-            if (inserted)
+            if (wasFailureRecordedSuccessfully)
             {
                 logger.LogError(
                     "Recorded parallel MPA batch failure. RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}. Failure: {FailureMessage}",

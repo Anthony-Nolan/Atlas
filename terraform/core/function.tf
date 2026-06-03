@@ -141,12 +141,6 @@ resource "azurerm_windows_function_app" "atlas_function" {
     type  = "SQLAzure"
     value = module.match_prediction.sql_database.connection_string
   }
-
-  connection_string {
-    name  = "SearchTracking:Sql"
-    type  = "SQLAzure"
-    value = module.search_tracking.sql_database.connection_string
-  }
 }
 
 resource "azurerm_windows_function_app" "atlas_public_api_function" {

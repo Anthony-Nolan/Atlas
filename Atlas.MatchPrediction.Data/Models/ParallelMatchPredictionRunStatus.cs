@@ -30,6 +30,6 @@ public enum ParallelMatchPredictionRunStatus
     /// At least one ACA Worker batch reported a failure. The completion pipeline ran (sending performance
     /// metrics, a failure notification and the tracking event) but no search results were persisted.
     /// </summary>
-    Failed,
+    FailedDuringBatchProcessing,
 }
 

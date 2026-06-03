@@ -77,7 +77,7 @@ public class ParallelMatchPredictionRun
     /// The id of the finalisation-function invocation that has claimed this run for processing.
     /// Set atomically (compare-and-swap via a conditional UPDATE) before the finalisation pipeline starts;
     /// remains set until the run reaches a terminal status (<see cref="ParallelMatchPredictionRunStatus.Finalised"/>,
-    /// <see cref="ParallelMatchPredictionRunStatus.Failed"/>, or
+    /// <see cref="ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing"/>, or
     /// <see cref="ParallelMatchPredictionRunStatus.FailedDuringCompletion"/>).
     /// <c>null</c> means unclaimed and available for the next scheduled invocation to pick up.
     /// No expiry is required: the claiming invocation always drives the run to completion or failure before releasing.
