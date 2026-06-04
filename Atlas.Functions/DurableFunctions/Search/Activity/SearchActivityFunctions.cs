@@ -100,7 +100,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 await matchingResultsDownloader.Download(
                     matchingResultsNotification.ResultsFileName,
                     matchingResultsNotification.IsRepeatSearch,
-                    matchingResultsNotification.ResultsBatched ? matchingResultsNotification.BatchFolderName : null)
+                    matchingResultsNotification.BatchFolderName)
             );
 
             var matchPredictionInputs = await logger.RunTimedAsync("Build Match Prediction Inputs", async () =>
@@ -153,7 +153,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 await matchingResultsDownloader.Download(
                     matchingResultsNotification.ResultsFileName,
                     matchingResultsNotification.IsRepeatSearch,
-                    matchingResultsNotification.ResultsBatched ? matchingResultsNotification.BatchFolderName : null)
+                    matchingResultsNotification.BatchFolderName)
             );
 
             var matchPredictionInputs = await logger.RunTimedAsync("Build Parallel Match Prediction Inputs", async () =>
@@ -263,8 +263,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                     matchingResultsNotification.IsRepeatSearch,
                     parameters.MatchPredictionResultLocations.ResultSet,
                     matchingResultsNotification.BatchFolderName,
-                    resultSet.BlobStorageContainerName,
-                    true)
+                    resultSet.BlobStorageContainerName)
             );
 
             await searchResultsBlobUploader.UploadResults(resultSet, resultSet.BlobStorageContainerName, resultSet.ResultsFileName);
@@ -337,8 +336,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             bool isRepeatSearch,
             IReadOnlyDictionary<int, string> matchPredictionResultLocations,
             string batchFolder,
-            string blobStorageContainerName,
-            bool resultsShouldBeBatched)
+            string blobStorageContainerName)
         {
             var allSearchResults = new List<SearchResult>();
             var batchNumber = 0;
@@ -354,14 +352,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                     }
                 }
                 var currentSearchResults = await ProcessSearchResults(searchRequestId, matchingResults, matchPredictionResultLocationsForCurrentDonors);
-                if (resultsShouldBeBatched)
-                {
-                    await searchResultsBlobUploader.UploadResults(currentSearchResults, blobStorageContainerName, $"{batchFolder}/{++batchNumber}.json");
-                }
-                else
-                {
-                    allSearchResults.AddRange(currentSearchResults);
-                }
+                await searchResultsBlobUploader.UploadResults(currentSearchResults, blobStorageContainerName, $"{batchFolder}/{++batchNumber}.json");
             }
 
             return allSearchResults;

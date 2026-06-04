@@ -162,7 +162,6 @@ namespace Atlas.RepeatSearch.Services.Search
                     BlobStorageContainerName = azureStorageSettings.MatchingResultsBlobContainer,
                     ResultsFileName = searchResultSet.ResultsFileName,
                     ElapsedTime = stopwatch.Elapsed,
-                    ResultsBatched = true,
                     BatchFolderName = results.Any() ? $"{originalSearchRequestId}/{repeatSearchId}" : null
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
