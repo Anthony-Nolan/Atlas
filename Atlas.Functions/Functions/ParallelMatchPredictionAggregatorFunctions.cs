@@ -118,7 +118,7 @@ public class ParallelMatchPredictionAggregatorFunctions
         [TimerTrigger("%AtlasFunction:Orchestration:ParallelFinalisationCronSchedule%")]
         TimerInfo timer)
     {
-        var runIdsAwaitingFinalisation = await repository.GetRunIdsAwaitingFinalisation();
+        var runIdsAwaitingFinalisation = await repository.GetRunIdsAwaitingFinalisationAndNotLeased();
         if (runIdsAwaitingFinalisation.Count == 0)
         {
             return;

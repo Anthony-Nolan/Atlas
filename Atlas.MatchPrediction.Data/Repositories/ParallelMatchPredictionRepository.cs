@@ -78,7 +78,7 @@ public interface IParallelMatchPredictionRepository
     /// (i.e. <see cref="ParallelMatchPredictionRun.FinalisationLeaseOwner"/> is <c>null</c>).
     /// Intended for the finalisation timer.
     /// </summary>
-    Task<IReadOnlyList<int>> GetRunIdsAwaitingFinalisation();
+    Task<IReadOnlyList<int>> GetRunIdsAwaitingFinalisationAndNotLeased();
 
     /// <summary>
     /// Attempts to atomically claim the given run for finalisation by this invocation.
@@ -263,7 +263,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         return false;
     }
 
-    public async Task<IReadOnlyList<int>> GetRunIdsAwaitingFinalisation()
+    public async Task<IReadOnlyList<int>> GetRunIdsAwaitingFinalisationAndNotLeased()
     {
         // A run is ready to finalise when it is Running, every batch has moved past the Requested state
         // (i.e. every batch is either ResultsReceived or Failed), and no other invocation has already
