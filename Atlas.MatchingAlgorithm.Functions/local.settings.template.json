@@ -14,7 +14,7 @@
     "AzureAppConfiguration:ConnectionString": "override-this",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:SearchResultsBlobContainer": "matching-algorithm-results",
-    "AzureStorage:SearchResultsBatchSize": 0,
+    "AzureStorage:SearchResultsBatchSize": 2000,
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "DataRefresh:ActiveDatabaseSize": "S3",
     "DataRefresh:AutoRunDataRefresh": "false",

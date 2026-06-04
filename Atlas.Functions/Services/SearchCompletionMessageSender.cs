@@ -88,7 +88,6 @@ namespace Atlas.Functions.Services
                     MatchingAlgorithmTime = searchResultSet.MatchingAlgorithmTime,
                     MatchPredictionTime = searchResultSet.MatchPredictionTime,
                     OverallSearchTime = searchTime,
-                    ResultsBatched = true,
                     BatchFolderName = searchResultSet.TotalResults > 0 ? resultsBatchFolder : null
                 };
                 await SendNotificationMessage(searchResultsNotification);

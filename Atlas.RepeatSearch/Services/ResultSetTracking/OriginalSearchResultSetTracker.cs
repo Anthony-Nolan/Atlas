@@ -36,7 +36,7 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
 
             if (notification.NumberOfResults > 0)
             {
-                if (notification.ResultsBatched && !string.IsNullOrEmpty(notification.BatchFolderName))
+                if (!string.IsNullOrEmpty(notification.BatchFolderName))
                 {
                     var matchingAlgorithmResults = blobDownloader.DownloadFolderContentsFileByFile<MatchingAlgorithmResult>(notification.BlobStorageContainerName, notification.BatchFolderName);
                     await foreach (var resultsList in matchingAlgorithmResults)
