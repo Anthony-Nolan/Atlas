@@ -8,6 +8,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
+using Microsoft.Extensions.Logging;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
@@ -115,6 +116,32 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
                 var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
                 return new MessageBatchPublisher<MatchPredictionResultLocation>(topicClientFactory, matchPredictionRequestsSettings.ResultsTopic,
                     serviceBusSettings.SendRetryCount, serviceBusSettings.SendRetryCooldownSeconds, logger);
+            });
+        }
+
+        /// <summary>
+        /// Registers <see cref="ISessionMessagePublisher{T}"/> for <see cref="ParallelMatchPredictionBatchResult"/>
+        /// so the ACA Worker can publish batch results to the session-enabled
+        /// <c>parallel-match-prediction-results</c> Service Bus topic.
+        /// </summary>
+        public static void RegisterParallelMatchPredictionBatchResultPublisher(
+            this IServiceCollection services,
+            Func<IServiceProvider, MessagingServiceBusSettings> messagingServiceBusSettings,
+            Func<IServiceProvider, MatchPredictionRequestsSettings> matchPredictionRequestSettings)
+        {
+            services.AddScoped<ISessionMessagePublisher<ParallelMatchPredictionBatchResult>,
+                SessionMessagePublisher<ParallelMatchPredictionBatchResult>>(sp =>
+            {
+                var serviceBusSettings = messagingServiceBusSettings(sp);
+                var requestsSettings = matchPredictionRequestSettings(sp);
+                var logger = sp.GetRequiredService<ILogger<SessionMessagePublisher<ParallelMatchPredictionBatchResult>>>();
+                var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
+                return new SessionMessagePublisher<ParallelMatchPredictionBatchResult>(
+                    topicClientFactory,
+                    requestsSettings.ParallelResultsTopic,
+                    serviceBusSettings.SendRetryCount,
+                    serviceBusSettings.SendRetryCooldownSeconds,
+                    logger);
             });
         }
 

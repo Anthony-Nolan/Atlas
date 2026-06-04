@@ -21,7 +21,7 @@ namespace Atlas.SearchTracking.Data.Migrations
                 .HasAnnotation("ProductVersion", "6.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequest", b =>
                 {
@@ -29,7 +29,7 @@ namespace Atlas.SearchTracking.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("AreBetterMatchesIncluded")
                         .HasColumnType("bit");
@@ -142,74 +142,13 @@ namespace Atlas.SearchTracking.Data.Migrations
                     b.ToTable("SearchRequests", "SearchTracking");
                 });
 
-            modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequestMatchingAlgorithmAttempts", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<DateTime?>("AlgorithmCore_Matching_EndTimeUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("AlgorithmCore_Matching_StartTimeUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("AlgorithmCore_Scoring_EndTimeUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("AlgorithmCore_Scoring_StartTimeUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<byte>("AttemptNumber")
-                        .HasColumnType("tinyint");
-
-                    b.Property<DateTime?>("CompletionTimeUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("FailureInfo_ExceptionStacktrace")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FailureInfo_Message")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FailureInfo_Type")
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("InitiationTimeUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool?>("IsSuccessful")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("PersistingResults_EndTimeUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("PersistingResults_StartTimeUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("SearchRequestId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StartTimeUtc")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SearchRequestId", "AttemptNumber")
-                        .HasDatabaseName("IX_SearchRequestId_And_AttemptNumber");
-
-                    b.ToTable("SearchRequestMatchingAlgorithmAttempts", "SearchTracking");
-                });
-
             modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequestMatchPrediction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime?>("AlgorithmCore_RunningBatches_EndTimeUtc")
                         .HasColumnType("datetime2");
@@ -266,13 +205,63 @@ namespace Atlas.SearchTracking.Data.Migrations
 
             modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequestMatchingAlgorithmAttempts", b =>
                 {
-                    b.HasOne("Atlas.SearchTracking.Data.Models.SearchRequest", "SearchRequest")
-                        .WithMany("MatchingAlgorithmAttempts")
-                        .HasForeignKey("SearchRequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Navigation("SearchRequest");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AlgorithmCore_Matching_EndTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("AlgorithmCore_Matching_StartTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("AlgorithmCore_Scoring_EndTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("AlgorithmCore_Scoring_StartTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte>("AttemptNumber")
+                        .HasColumnType("tinyint");
+
+                    b.Property<DateTime?>("CompletionTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FailureInfo_ExceptionStacktrace")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FailureInfo_Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FailureInfo_Type")
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("InitiationTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("IsSuccessful")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("PersistingResults_EndTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("PersistingResults_StartTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("SearchRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SearchRequestId", "AttemptNumber")
+                        .HasDatabaseName("IX_SearchRequestId_And_AttemptNumber");
+
+                    b.ToTable("SearchRequestMatchingAlgorithmAttempts", "SearchTracking");
                 });
 
             modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequestMatchPrediction", b =>
@@ -280,6 +269,17 @@ namespace Atlas.SearchTracking.Data.Migrations
                     b.HasOne("Atlas.SearchTracking.Data.Models.SearchRequest", "SearchRequest")
                         .WithOne("MatchPrediction")
                         .HasForeignKey("Atlas.SearchTracking.Data.Models.SearchRequestMatchPrediction", "SearchRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SearchRequest");
+                });
+
+            modelBuilder.Entity("Atlas.SearchTracking.Data.Models.SearchRequestMatchingAlgorithmAttempts", b =>
+                {
+                    b.HasOne("Atlas.SearchTracking.Data.Models.SearchRequest", "SearchRequest")
+                        .WithMany("MatchingAlgorithmAttempts")
+                        .HasForeignKey("SearchRequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

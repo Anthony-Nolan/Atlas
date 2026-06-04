@@ -419,6 +419,30 @@ variable "ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE" {
   default = 10
 }
 
+variable "ORCHESTRATION_PARALLEL_BATCH_CLEANUP_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 0 3 * * *"
+  description = "CRON schedule (six-field NCrontab) for the timer that purges per-batch rows of finalised parallel match-prediction runs."
+}
+
+variable "ORCHESTRATION_PARALLEL_BATCH_RETENTION_DAYS" {
+  type        = number
+  default     = 90
+  description = "Number of days to retain per-batch rows after a parallel match-prediction run finalises. Parent run rows are always retained."
+}
+
+variable "ORCHESTRATION_PARALLEL_FINALISATION_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */1 * * * *"
+  description = "CRON schedule (six-field NCrontab) for the timer that finalises completed parallel match-prediction runs."
+}
+
+variable "ORCHESTRATION_PARALLEL_MATCH_PREDICTION_BATCH_SIZE" {
+  type        = number
+  default     = 100
+  description = "Donor batch size used when preparing blobs for the parallel ACA Worker match-prediction path."
+}
+
 variable "REPEAT_SEARCH_DATABASE_PASSWORD" {
   type = string
 }

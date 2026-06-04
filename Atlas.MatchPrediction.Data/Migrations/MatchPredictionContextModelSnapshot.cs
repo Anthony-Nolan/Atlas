@@ -18,10 +18,10 @@ namespace Atlas.MatchPrediction.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("MatchPrediction")
-                .HasAnnotation("ProductVersion", "6.0.3")
+                .HasAnnotation("ProductVersion", "8.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Atlas.MatchPrediction.Data.Models.HaplotypeFrequency", b =>
                 {
@@ -29,7 +29,7 @@ namespace Atlas.MatchPrediction.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("A")
                         .IsRequired()
@@ -86,7 +86,7 @@ namespace Atlas.MatchPrediction.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("Active")
                         .HasColumnType("bit");
@@ -123,6 +123,113 @@ namespace Atlas.MatchPrediction.Data.Migrations
                     b.ToTable("HaplotypeFrequencySets", "MatchPrediction");
                 });
 
+            modelBuilder.Entity("Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionBatch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BatchSequenceNumber")
+                        .HasColumnType("int");
+
+                    b.Property<string>("BatchStatus")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)")
+                        .HasDefaultValue("Requested");
+
+                    b.Property<string>("FailureException")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FailureMessage")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<string>("ResultLocationJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ResultReceivedTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RunId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RunId", "BatchSequenceNumber")
+                        .IsUnique();
+
+                    b.ToTable("ParallelMatchPredictionBatches", "MatchPrediction");
+                });
+
+            modelBuilder.Entity("Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRun", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BatchFolderName")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<Guid?>("FinalisationLeaseOwner")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("FinalisedTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRepeatSearch")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsSuccessful")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("MatchPredictionRunInitiatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("MatchingAlgorithmElapsedTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid?>("RepeatSearchIdentifier")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("ResultsBatched")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ResultsFileName")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<Guid>("SearchIdentifier")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("SearchInitiatedTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTime?>("StatusDateUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TotalBatchCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Status", "FinalisedTimeUtc");
+
+                    b.ToTable("ParallelMatchPredictionRuns", "MatchPrediction");
+                });
+
             modelBuilder.Entity("Atlas.MatchPrediction.Data.Models.HaplotypeFrequency", b =>
                 {
                     b.HasOne("Atlas.MatchPrediction.Data.Models.HaplotypeFrequencySet", "Set")
@@ -132,6 +239,22 @@ namespace Atlas.MatchPrediction.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Set");
+                });
+
+            modelBuilder.Entity("Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionBatch", b =>
+                {
+                    b.HasOne("Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRun", "Run")
+                        .WithMany("Batches")
+                        .HasForeignKey("RunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Run");
+                });
+
+            modelBuilder.Entity("Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRun", b =>
+                {
+                    b.Navigation("Batches");
                 });
 #pragma warning restore 612, 618
         }

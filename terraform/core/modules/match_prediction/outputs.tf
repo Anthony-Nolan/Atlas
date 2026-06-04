@@ -23,6 +23,8 @@ output "sql_database" {
 output "service_bus" {
   value = {
     parallel_match_prediction_requests_topic = azurerm_servicebus_topic.parallel-match-prediction-requests
+    parallel_match_prediction_results_topic  = azurerm_servicebus_topic.parallel-match-prediction-results
+    parallel_match_prediction_results_aggregator_subscription = azurerm_servicebus_subscription.parallel-match-prediction-results-aggregator
   }
 }
 

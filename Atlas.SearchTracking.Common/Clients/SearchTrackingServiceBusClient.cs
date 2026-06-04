@@ -42,6 +42,7 @@ namespace Atlas.SearchTracking.Common.Clients
             message.UserProperties[SearchTrackingConstants.EventType] = eventType.ToString();
             message.UserProperties.Add("SearchIdentifier", searchTrackingEvent.SearchIdentifier);
             message.UserProperties.Add("OriginalSearchIdentifier", searchTrackingEvent.OriginalSearchIdentifier);
+            message.SessionId = searchTrackingEvent.SearchIdentifier.ToString();
             if (searchTrackingEvent is ISearchTrackingMatchingAttemptEvent attemptEvent)
             {
                 message.UserProperties["AttemptNumber"] = attemptEvent.AttemptNumber;

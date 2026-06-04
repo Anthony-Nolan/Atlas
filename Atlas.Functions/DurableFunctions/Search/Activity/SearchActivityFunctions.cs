@@ -13,11 +13,11 @@ using Atlas.Common.ServiceBus;
 using Atlas.Functions.Models;
 using Atlas.Functions.Services;
 using Atlas.Functions.Services.BlobStorageClients;
-using Atlas.SearchTracking.Common.Dispatchers;
 using Atlas.Functions.Settings;
 using Atlas.MatchPrediction.ExternalInterface;
+using Atlas.SearchTracking.Common.Dispatchers;
+using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.ExternalInterface.Models;
-using Atlas.SearchTracking.Common.Models;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Options;
 
@@ -41,7 +41,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         private readonly IMatchPredictionSearchTrackingDispatcher matchPredictionSearchTrackingDispatcher;
 
         private readonly IMessageBatchPublisher<ParallelMatchPredictionBatchRequest> parallelBatchPublisher;
-        private readonly int parallelMpaBatchSize;
+        private readonly IParallelMatchPredictionRepository parallelMatchPredictionRepository;
+        private readonly int parallelMatchPredictionBatchSize;
 
         public SearchActivityFunctions(
             // Match Prediction services
@@ -55,6 +56,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             IMatchPredictionRequestBlobClient matchPredictionRequestBlobClient,
             IMatchPredictionSearchTrackingDispatcher matchPredictionSearchTrackingDispatcher,
             IMessageBatchPublisher<ParallelMatchPredictionBatchRequest> parallelBatchPublisher,
+            IParallelMatchPredictionRepository parallelMatchPredictionRepository,
             IOptions<AzureStorageSettings> azureStorageSettings,
             IOptions<OrchestrationSettings> orchestrationSettings,
             SearchLoggingContext loggingContext)
@@ -69,9 +71,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             this.matchPredictionRequestBlobClient = matchPredictionRequestBlobClient;
             this.matchPredictionSearchTrackingDispatcher = matchPredictionSearchTrackingDispatcher;
             this.parallelBatchPublisher = parallelBatchPublisher;
+            this.parallelMatchPredictionRepository = parallelMatchPredictionRepository;
             this.loggingContext = loggingContext;
             this.azureStorageSettings = azureStorageSettings.Value;
-            parallelMpaBatchSize = orchestrationSettings.Value.ParallelMpaBatchSize;
+            parallelMatchPredictionBatchSize = orchestrationSettings.Value.ParallelMatchPredictionBatchSize;
         }
 
         [Function(nameof(PrepareMatchPredictionBatches))]
@@ -121,15 +124,19 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         /// <summary>
-        /// Parallel MPA path: downloads matching results, builds batched inputs using <see cref="OrchestrationSettings.ParallelMpaBatchSize"/>,
-        /// uploads blobs, then publishes one <see cref="ParallelMatchPredictionBatchRequest"/> message per blob to
+        /// Parallel match-prediction path: downloads matching results, builds batched inputs using
+        /// <see cref="OrchestrationSettings.ParallelMatchPredictionBatchSize"/>,
+        /// uploads blobs, then creates the run record and pre-creates one batch row per blob in the repository
+        /// (ensuring <c>BatchSequenceNumber</c> 0 … N−1 matches the order in <c>blobLocations</c>), and finally
+        /// publishes one <see cref="ParallelMatchPredictionBatchRequest"/> message per blob to
         /// <c>parallel-match-prediction-requests</c>.  The ACA Worker processes each batch and publishes results
         /// to <c>parallel-match-prediction-results</c>; the aggregator function handles final persistence.
         /// </summary>
         [Function(nameof(PrepareAndDispatchParallelMatchPredictionBatches))]
         public async Task PrepareAndDispatchParallelMatchPredictionBatches(
-            [ActivityTrigger] MatchingResultsNotification matchingResultsNotification)
+            [ActivityTrigger] PrepareAndDispatchParallelMatchPredictionBatchesParameters parameters)
         {
+            var matchingResultsNotification = parameters.MatchingResultsNotification;
             InitializeLoggingContext(matchingResultsNotification.SearchRequestId);
 
             var trackingSearchIdentifier = matchingResultsNotification.IsRepeatSearch
@@ -149,7 +156,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             );
 
             var matchPredictionInputs = logger.RunTimed("Build Parallel Match Prediction Inputs", () =>
-                matchPredictionInputBuilder.BuildMatchPredictionInputs(matchingResults, parallelMpaBatchSize)
+                matchPredictionInputBuilder.BuildMatchPredictionInputs(matchingResults, parallelMatchPredictionBatchSize)
             );
 
             IList<string> blobLocations;
@@ -162,13 +169,32 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 
             await matchPredictionSearchTrackingDispatcher.ProcessPrepareBatchesEnded(trackingSearchIdentifier, originalSearchIdentifier);
 
-            var batchRequests = blobLocations.Select(location => new ParallelMatchPredictionBatchRequest
+            var parallelRunId = await parallelMatchPredictionRepository.CreateRun(
+                new CreateParallelMatchPredictionRunInfo(
+                    SearchIdentifier: new Guid(matchingResultsNotification.SearchRequestId),
+                    IsRepeatSearch: matchingResultsNotification.IsRepeatSearch,
+                    RepeatSearchIdentifier: matchingResultsNotification.RepeatSearchRequestId != null
+                        ? new Guid(matchingResultsNotification.RepeatSearchRequestId)
+                        : null,
+                    ResultsFileName: matchingResultsNotification.ResultsFileName,
+                    ResultsBatched: matchingResultsNotification.ResultsBatched,
+                    BatchFolderName: matchingResultsNotification.BatchFolderName,
+                    MatchingAlgorithmElapsedTime: matchingResultsNotification.ElapsedTime,
+                    SearchInitiatedTimeUtc: parameters.SearchInitiatedTimeUtc,
+                    TotalBatchCount: blobLocations.Count
+                )
+            );
+
+            var batchRequests = blobLocations.Select((location, index) => new ParallelMatchPredictionBatchRequest
             {
                 BlobLocation = location,
                 SearchRequestId = matchingResultsNotification.SearchRequestId,
                 IsRepeatSearch = matchingResultsNotification.IsRepeatSearch,
-                RepeatSearchRequestId = matchingResultsNotification.RepeatSearchRequestId,
-                TotalBatches = blobLocations.Count,
+                RepeatSearchRequestId = matchingResultsNotification.IsRepeatSearch
+                    ? matchingResultsNotification.RepeatSearchRequestId
+                    : null,
+                ParallelRunId = parallelRunId,
+                BatchSequenceNumber = index,
             });
 
             await parallelBatchPublisher.BatchPublish(batchRequests);
@@ -226,14 +252,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [Function(nameof(SendFailureNotification))]
-        public async Task SendFailureNotification([ActivityTrigger] FailureNotificationRequestInfo requestInfo)
+        public async Task SendFailureNotification([ActivityTrigger] SendFailureNotificationParameters parameters)
         {
-            InitializeLoggingContext(requestInfo.SearchRequestId);
-            var trackingSearchIdentifier = new Guid(requestInfo.RepeatSearchRequestId ?? requestInfo.SearchRequestId);
-            var originalSearchIdentifier = requestInfo.RepeatSearchRequestId != null
-                ? new Guid(requestInfo.SearchRequestId)
+            InitializeLoggingContext(parameters.SearchRequestId);
+            var trackingSearchIdentifier = new Guid(parameters.RepeatSearchRequestId ?? parameters.SearchRequestId);
+            var originalSearchIdentifier = parameters.RepeatSearchRequestId != null
+                ? new Guid(parameters.SearchRequestId)
                 : (Guid?)null;
-            await searchCompletionMessageSender.PublishFailureMessage(requestInfo);
+            await searchCompletionMessageSender.PublishFailureMessage(parameters);
             await matchPredictionSearchTrackingDispatcher.ProcessResultsSent(trackingSearchIdentifier, originalSearchIdentifier);
         }
 
@@ -253,28 +279,35 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [Function(nameof(SendMatchPredictionProcessInitiated))]
-        public async Task SendMatchPredictionProcessInitiated([ActivityTrigger] (Guid SearchIdentifier, Guid? OriginalSearchIdentifier, DateTime InitiationTimeUtc, bool IsParallelMatchPrediction) eventDetails)
+        public async Task SendMatchPredictionProcessInitiated([ActivityTrigger] MatchPredictionProcessInitiatedParameters parameters)
         {
             await matchPredictionSearchTrackingDispatcher.ProcessInitiation(
-                eventDetails.SearchIdentifier, eventDetails.OriginalSearchIdentifier, eventDetails.InitiationTimeUtc, eventDetails.IsParallelMatchPrediction);
+                parameters.SearchIdentifier, parameters.OriginalSearchIdentifier, parameters.InitiationTimeUtc, parameters.IsParallelMatchPrediction);
         }
 
         [Function(nameof(SendMatchPredictionBatchProcessingStarted))]
-        public async Task SendMatchPredictionBatchProcessingStarted([ActivityTrigger] (Guid SearchIdentifier, Guid? OriginalSearchIdentifier) eventDetails)
+        public async Task SendMatchPredictionBatchProcessingStarted([ActivityTrigger] MatchPredictionSearchIdentifiers parameters)
         {
-            await matchPredictionSearchTrackingDispatcher.ProcessRunningBatchesStarted(eventDetails.SearchIdentifier, eventDetails.OriginalSearchIdentifier);
+            await matchPredictionSearchTrackingDispatcher.ProcessRunningBatchesStarted(parameters.SearchIdentifier, parameters.OriginalSearchIdentifier);
         }
 
         [Function(nameof(SendMatchPredictionBatchProcessingEnded))]
-        public async Task SendMatchPredictionBatchProcessingEnded([ActivityTrigger] (Guid SearchIdentifier, Guid? OriginalSearchIdentifier) eventDetails)
+        public async Task SendMatchPredictionBatchProcessingEnded([ActivityTrigger] MatchPredictionSearchIdentifiers parameters)
         {
-            await matchPredictionSearchTrackingDispatcher.ProcessRunningBatchesEnded(eventDetails.SearchIdentifier ,eventDetails.OriginalSearchIdentifier);
+            await matchPredictionSearchTrackingDispatcher.ProcessRunningBatchesEnded(parameters.SearchIdentifier, parameters.OriginalSearchIdentifier);
         }
 
         [Function(nameof(SendMatchPredictionProcessCompleted))]
-        public async Task SendMatchPredictionProcessCompleted([ActivityTrigger] (Guid SearchIdentifier, Guid? OriginalSearchIdentifier, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) eventDetails)
+        public async Task SendMatchPredictionProcessCompleted([ActivityTrigger] MatchPredictionProcessCompletedParameters parameters)
         {
-            await matchPredictionSearchTrackingDispatcher.ProcessCompleted(eventDetails);
+            await matchPredictionSearchTrackingDispatcher.ProcessCompleted(
+                (parameters.SearchIdentifier,
+                    parameters.OriginalSearchIdentifier,
+                    parameters.IsSuccessful,
+                    parameters.FailureInfo,
+                    parameters.DonorsPerBatch,
+                    parameters.TotalNumberOfBatches)
+                );
         }
 
         private async Task<IEnumerable<SearchResult>> ProcessBatchedSearchResults(

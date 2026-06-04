@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
@@ -22,7 +20,7 @@ namespace Atlas.SearchTracking.Common.Dispatchers
 
         Task ProcessPersistingResultsEnded(Guid searchIdentifier, Guid? originalSearchIdentifier);
 
-        Task ProcessCompleted((Guid SearchIdentifier, Guid? OriginalSearchIdentifier, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)
+        Task ProcessCompleted((Guid SearchIdentifier, Guid? OriginalSearchIdentifier, bool IsSuccessful, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)
             eventDetails);
 
         Task ProcessResultsSent(Guid searchIdentifier, Guid? originalSearchIdentifier);
@@ -124,7 +122,7 @@ namespace Atlas.SearchTracking.Common.Dispatchers
                 matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionPersistingResultsEnded);
         }
 
-        public async Task ProcessCompleted((Guid SearchIdentifier, Guid? OriginalSearchIdentifier, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) eventDetails)
+        public async Task ProcessCompleted((Guid SearchIdentifier, Guid? OriginalSearchIdentifier, bool IsSuccessful, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) eventDetails)
         {
             var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
             {
@@ -133,7 +131,7 @@ namespace Atlas.SearchTracking.Common.Dispatchers
                 CompletionTimeUtc = DateTime.UtcNow,
                 CompletionDetails = new MatchPredictionCompletionDetails
                 {
-                    IsSuccessful = eventDetails.FailureInfo == null,
+                    IsSuccessful = eventDetails.IsSuccessful,
                     FailureInfo = eventDetails.FailureInfo,
                     DonorsPerBatch = eventDetails.DonorsPerBatch,
                     TotalNumberOfBatches = eventDetails.TotalNumberOfBatches,

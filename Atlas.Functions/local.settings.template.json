@@ -30,9 +30,14 @@
     "AtlasFunction:MessagingServiceBus:SendRetryCount": 5,
     "AtlasFunction:MessagingServiceBus:SendRetryCooldownSeconds": 20,
     "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionRequestsTopic": "parallel-match-prediction-requests",
+    "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionResultsTopic": "parallel-match-prediction-results",
+    "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionResultsSubscription": "debug",
 
     "AtlasFunction:Orchestration:MatchPredictionBatchSize": 100,
-    "AtlasFunction:Orchestration:ParallelMpaBatchSize": 100,
+    "AtlasFunction:Orchestration:ParallelMatchPredictionBatchSize": 100,
+    "AtlasFunction:Orchestration:ParallelFinalisationCronSchedule": "0 */1 * * * *",
+    "AtlasFunction:Orchestration:ParallelBatchCleanupCronSchedule": "0 0 3 * * *",
+    "AtlasFunction:Orchestration:ParallelBatchRetentionDays": 90,
 
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
 

@@ -1,5 +1,4 @@
 using Azure.Messaging.ServiceBus;
-using Microsoft.Azure.ServiceBus;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
