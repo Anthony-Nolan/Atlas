@@ -14,7 +14,9 @@ namespace Atlas.Client.Models.Search.Results.ResultSet
         public abstract bool IsRepeatSearchSet { get; }
 
         public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
+
         public string BlobStorageContainerName { get; set; }
+
         public abstract string ResultsFileName { get; }
 
         public int TotalResults { get; set; }
@@ -53,20 +55,6 @@ namespace Atlas.Client.Models.Search.Results.ResultSet
         }
 
         public IEnumerable<TResult> Results { get; set; }
-
-        /// <summary>
-        /// This method is used to control serialization of Results property
-        /// When this method returns true - <see cref="Results" /> will be serialized, when it's false - <see cref="Results" /> won't be serialized
-        /// https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm
-        /// </summary>
-        public bool ShouldSerializeResults() => !BatchedResult;
-
-
-        /// <summary>
-        /// This property is used to be able to control in runtime if <see cref="Results" /> should be serialized or not
-        /// </summary>
-        [JsonIgnore]
-        public bool BatchedResult { get; set; } = false;
 
         /// <summary>
         /// The <see cref="SearchRequest"/> that this result set is for. Not strictly necessary for consuming results, but can be very useful for

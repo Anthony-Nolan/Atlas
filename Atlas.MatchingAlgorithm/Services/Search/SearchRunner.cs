@@ -109,7 +109,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
                     BlobStorageContainerName = azureStorageSettings.SearchResultsBlobContainer,
                     SearchRequest = identifiedSearchRequest.SearchRequest,
-                    BatchedResult = azureStorageSettings.ShouldBatchResults,
                     MatchingStartTime = searchStartTime
                 };
 
@@ -130,8 +129,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     BlobStorageContainerName = azureStorageSettings.SearchResultsBlobContainer,
                     ResultsFileName = searchResultSet.ResultsFileName,
                     ElapsedTime = searchStopWatch.Elapsed,
-                    ResultsBatched = azureStorageSettings.ShouldBatchResults,
-                    BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? searchRequestId : null
+                    BatchFolderName = results.Any() ? searchRequestId : null
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
 

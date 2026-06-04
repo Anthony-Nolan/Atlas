@@ -442,7 +442,7 @@ variable "REPEAT_SEARCH_MATCHING_MAX_SCALE_OUT" {
 
 variable "RESULTS_BATCH_SIZE" {
   type        = number
-  default     = 0
+  default     = 2000
   description = "Batch size (number of results written per file) for saving search/matching results"
 }
 
@@ -471,12 +471,6 @@ variable "SERVICE_BUS_SEND_RETRY_COUNT" {
   type        = number
   default     = 5
   description = "When sending a service bus message, the total number of retries to attempt"
-}
-
-variable "SHOULD_BATCH_RESULTS" {
-  type        = bool
-  default     = false
-  description = "Indicates whether final search/repeat search results should be batched or not"
 }
 
 variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE" {
