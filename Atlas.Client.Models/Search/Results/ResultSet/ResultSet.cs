@@ -56,13 +56,6 @@ namespace Atlas.Client.Models.Search.Results.ResultSet
 
         public IEnumerable<TResult> Results { get; set; }
 
-       /// <summary>
-        /// This property is used to be able to control in runtime if <see cref="Results" /> should be serialized or not
-        /// </summary>
-        [Obsolete("All results should be batched.")]
-        [JsonIgnore]
-        public bool BatchedResult { get; set; } = false;
-
         /// <summary>
         /// The <see cref="SearchRequest"/> that this result set is for. Not strictly necessary for consuming results, but can be very useful for
         /// debugging / support purposes, removing the need to cross reference result sets to request details.  
