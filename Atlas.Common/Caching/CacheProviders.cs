@@ -21,20 +21,30 @@ namespace Atlas.Common.Caching
 
     public class PersistentCacheProvider : IPersistentCacheProvider
     {
-        public IAppCache Cache { get; set; }
-        public PersistentCacheProvider(IAppCache cache) { Cache = cache; }
+        private IAppCache cache;
 
+        public IAppCache Cache
+        {
+            get
+            {
+                if (cache == null)
+                {
+                    cache = new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))
+                    {
+                        DefaultCachePolicy = new CacheDefaults
+                        {
+                            DefaultCacheDurationSeconds = int.MaxValue
+                        }
+                    };
+                }
+                return cache;
+            }
+        }
+    
         public void ClearCache()
         {
             Cache.CacheProvider.Dispose();
-
-            Cache = new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))
-            {
-                DefaultCachePolicy = new CacheDefaults
-                {
-                    DefaultCacheDurationSeconds = int.MaxValue
-                }
-            };
+            cache = null;
         }
     }
 
