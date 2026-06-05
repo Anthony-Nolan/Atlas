@@ -1,4 +1,6 @@
 using LazyCache;
+using LazyCache.Providers;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Atlas.Common.Caching
 {
@@ -13,17 +15,37 @@ namespace Atlas.Common.Caching
     public interface ICacheProvider
     {
         IAppCache Cache { get; }
+
+        void ClearCache();
     }
 
     public class PersistentCacheProvider : IPersistentCacheProvider
-    { 
-        public IAppCache Cache { get; }
+    {
+        public IAppCache Cache { get; set; }
         public PersistentCacheProvider(IAppCache cache) { Cache = cache; }
+
+        public void ClearCache()
+        {
+            Cache.CacheProvider.Dispose();
+
+            Cache = new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))
+            {
+                DefaultCachePolicy = new CacheDefaults
+                {
+                    DefaultCacheDurationSeconds = int.MaxValue
+                }
+            };
+        }
     }
 
     public class TransientCacheProvider : ITransientCacheProvider
     {
         public IAppCache Cache { get; }
         public TransientCacheProvider(IAppCache cache) { Cache = cache; }
+
+        public void ClearCache()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

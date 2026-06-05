@@ -1,7 +1,10 @@
+using Atlas.Common.Caching;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Worker.Services;
 using Atlas.MatchPrediction.Worker.Settings;
+using LazyCache.Providers;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchPrediction.Worker;
@@ -10,7 +13,8 @@ public class MatchPredictionWorker(
     IServiceScopeFactory serviceScopeFactory,
     IServiceBusMessageReceiver<ParallelMatchPredictionBatchRequest> messageReceiver,
     IOptions<MatchPredictionWorkerSettings> settings,
-    ILogger<MatchPredictionWorker> logger) : BackgroundService
+    ILogger<MatchPredictionWorker> logger,
+    IPersistentCacheProvider cacheProvider) : BackgroundService
 {
     private readonly int batchSize = settings.Value.BatchSize;
 
@@ -39,7 +43,14 @@ public class MatchPredictionWorker(
 
                 foreach (var request in requests)
                 {
-                    await runner.RunBatch(request);
+                    try
+                    {
+                        await runner.RunBatch(request);
+                    }
+                    finally
+                    {
+                        cacheProvider.ClearCache();
+                    }
                 }
 
                 await batchLock.CompleteBatchAsync();
@@ -49,7 +60,7 @@ public class MatchPredictionWorker(
                 logger.LogError(ex, "Unexpected error processing parallel match prediction batch — abandoning batch.");
                 await batchLock.AbandonBatchAsync();
             }
-        }
+       }
 
         logger.LogInformation("MatchPredictionWorker stopping.");
     }
