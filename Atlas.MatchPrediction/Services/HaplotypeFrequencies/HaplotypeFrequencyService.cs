@@ -70,7 +70,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         private readonly IFrequencyConsolidator frequencyConsolidator;
         private readonly IHaplotypeFrequencySetRepository frequencySetRepository;
         private readonly IHaplotypeFrequenciesRepository frequencyRepository;
-        private readonly IAppCache cache;
+        private readonly IPersistentCacheProvider persistentCacheProvider;
         private readonly HaplotypeFrequencySetCacheSettings haplotypeFrequencySetCacheSettings;
 
         public HaplotypeFrequencyService(
@@ -91,7 +91,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             this.frequencySetRepository = frequencySetRepository;
             this.frequencyRepository = frequencyRepository;
             this.haplotypeFrequencySetCacheSettings = haplotypeFrequencySetCacheSettings.Value;
-            cache = persistentCacheProvider.Cache;
+            this.persistentCacheProvider = persistentCacheProvider;
         }
 
         public async Task ImportFrequencySet(FrequencySetFile file, FrequencySetImportBehaviour importBehaviour)
@@ -101,7 +101,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             try
             {
                 await frequencySetImporter.Import(file, importBehaviour);
-                cache.Remove(ActiveHaplotypeFrequencySetsCacheKey);
+                persistentCacheProvider.Cache.Remove(ActiveHaplotypeFrequencySetsCacheKey);
                 file.ImportedDateTime = DateTimeOffset.UtcNow;
 
                 await SendSuccessNotification(file);
@@ -183,7 +183,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         public async Task<ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId)
         {
             var cacheKey = $"hf-set-{setId}";
-            return await cache.GetOrAddAsync(cacheKey, async () =>
+            return await persistentCacheProvider.Cache.GetOrAddAsync(cacheKey, async () =>
                 {
                     using (logger.RunTimed("Get All Frequencies from HF set - from SQL database", LogLevel.Verbose))
                     {
@@ -223,7 +223,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             var cacheKey = $"hf-set-consolidated-{setId}";
             // It is significantly faster to calculate all consolidated values up front than to calculate on the fly, even when caching individual values. 
             // Many consolidated haplotypes may be inferable from the input data, but not actually represented in the haplotype frequency dataset  
-            return await cache.GetSingleItemAndScheduleWholeCollectionCacheWarm(
+            return await persistentCacheProvider.Cache.GetSingleItemAndScheduleWholeCollectionCacheWarm(
                 cacheKey,
                 async () =>
                 {
@@ -261,7 +261,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
         private async Task<IReadOnlyDictionary<(string RegistryCode, string EthnicityCode), HaplotypeFrequencySet>> GetActiveHaplotypeFrequencySets()
         {
-            return await cache.GetOrAddAsync(
+            return await persistentCacheProvider.Cache.GetOrAddAsync(
                 ActiveHaplotypeFrequencySetsCacheKey,
                 async () =>
                 {
@@ -276,6 +276,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 },
                 new MemoryCacheEntryOptions
                 {
+
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(haplotypeFrequencySetCacheSettings.ActiveSetCacheExpiryMinutes)
                 }
             );

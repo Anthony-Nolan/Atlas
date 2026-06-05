@@ -35,7 +35,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
     /// </remarks>
     internal class HlaMetadataDictionaryFactory : IHlaMetadataDictionaryFactory
     {
-        private readonly IAppCache cache;
+        private readonly IPersistentCacheProvider cacheProvider;
 
         //For Dictionary
         private readonly IRecreateHlaMetadataService recreateMetadataService;
@@ -90,7 +90,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository,
             ISerologyToAllelesMetadataRepository serologyToAllelesMetadataRepository)
         {
-            this.cache = cacheProvider.Cache;
+            this.cacheProvider = cacheProvider;
 
             //For Dictionary
             this.recreateMetadataService = recreateMetadataService;
@@ -132,14 +132,14 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         public IHlaMetadataDictionary BuildDictionary(string activeHlaNomenclatureVersion)
         {
             var key = CacheKey(activeHlaNomenclatureVersion);
-            var cachedTuple = cache.GetOrAdd(key, () => BuildTuple(activeHlaNomenclatureVersion));
+            var cachedTuple = cacheProvider.Cache.GetOrAdd(key, () => BuildTuple(activeHlaNomenclatureVersion));
             return cachedTuple.Dictionary;
         }
 
         public IHlaMetadataCacheControl BuildCacheControl(string activeHlaNomenclatureVersion)
         {
             var key = CacheKey(activeHlaNomenclatureVersion);
-            var cachedTuple = cache.GetOrAdd(key, () => BuildTuple(activeHlaNomenclatureVersion));
+            var cachedTuple = cacheProvider.Cache.GetOrAdd(key, () => BuildTuple(activeHlaNomenclatureVersion));
             return cachedTuple.CacheControl;
         }
 
