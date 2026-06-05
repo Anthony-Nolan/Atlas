@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Core;
 using Azure.Data.Tables;
-using Dasync.Collections;
 using MoreLinq;
 
 namespace Atlas.Common.AzureStorage.TableStorage

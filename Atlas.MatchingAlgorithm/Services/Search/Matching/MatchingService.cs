@@ -11,7 +11,6 @@ using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Settings;
-using Dasync.Collections;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
@@ -97,7 +96,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             using (searchLogger.RunTimed("Matching timing: Phase 2 complete"))
             {
                 var count = 0;
-                await foreach (var resultBatch in matches.Batch(matchingConfigurationSettings.MatchingBatchSize))
+                await foreach (var resultBatch in matches.Chunk(matchingConfigurationSettings.MatchingBatchSize))
                 {
                     var matchesWithDonorInfoPopulated = await PopulateDonorData(resultBatch.ToDictionary(x => x.DonorId, x => x));
                     var filteredMatchesByDonorInformation = matchesWithDonorInfoPopulated

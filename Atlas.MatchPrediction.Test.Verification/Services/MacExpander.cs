@@ -3,7 +3,6 @@ using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
-using Dasync.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -37,10 +36,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
 
             var genericMacs = await FetchLatestGenericMacs();
 
-            await genericMacs
-                .SelectMany(Expand)
-                .Batch(BatchSize)
-                .ForEachAsync(async batch => await repository.BulkInsert(batch));
+            await foreach (var chunk in genericMacs
+                               .SelectMany(Expand)
+                               .Chunk(BatchSize))
+            {
+                await repository.BulkInsert(chunk);
+            }
 
             System.Diagnostics.Debug.WriteLine("MAC expansion completed.");
         }
@@ -56,7 +57,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
             // MACs are retrieved using a service that is internal to the MAC dictionary project.
             // The service was intentionally kept internal (and not exposed via the External Interface) to ensure
             // that production code only ever uses the dictionary as the single source of MAC lookups.
-            return IAsyncEnumerableExtensions.Where(macFetcher.FetchAndLazilyParseMacsSince(lastCode), m => m.IsGeneric);
+            return macFetcher.FetchAndLazilyParseMacsSince(lastCode).Where(m => m.IsGeneric);
         }
 
         private async Task<string> GetLastStoredCode()
@@ -75,10 +76,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
             System.Diagnostics.Debug.WriteLine($"Expanding code: {mac.Code}.");
 
             return AlleleStringSplitter.SplitAlleleString(mac.Hla).Select(secondField => new ExpandedMac
-            {
-                SecondField = secondField,
-                Code = mac.Code
-            });
+                {
+                    SecondField = secondField,
+                    Code = mac.Code
+                }
+            );
         }
     }
 }
