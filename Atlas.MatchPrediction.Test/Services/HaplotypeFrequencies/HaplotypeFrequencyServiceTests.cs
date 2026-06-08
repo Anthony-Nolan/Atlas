@@ -29,6 +29,7 @@ internal class HaplotypeFrequencyServiceTests
     private IMatchPredictionLogger<MatchProbabilityLoggingContext> logger;
     private IFrequencyConsolidator frequencyConsolidator;
     private IPersistentCacheProvider persistentCacheProvider;
+    private IHaplotypeFrequencyCache haplotypeFrequencyCache;
 
     private Fixture fixture;
 
@@ -48,6 +49,7 @@ internal class HaplotypeFrequencyServiceTests
         var cacheSettings = fixture.Build<HaplotypeFrequencySetCacheSettings>()
             .With(x => x.ActiveSetCacheExpiryMinutes, 5)
             .Create();
+        haplotypeFrequencyCache = Substitute.For<IHaplotypeFrequencyCache>();
 
         sut = new HaplotypeFrequencyService(
             frequencySetImporter,
@@ -57,7 +59,8 @@ internal class HaplotypeFrequencyServiceTests
             logger,
             persistentCacheProvider,
             frequencyConsolidator,
-            Options.Create(cacheSettings)
+            Options.Create(cacheSettings),
+            haplotypeFrequencyCache
         );
     }
 

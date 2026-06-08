@@ -168,25 +168,26 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
 
         private async Task<DataByResolution<IReadOnlyCollection<LociInfo<string>>>> FetchHaplotypesGroupedByTypingCategory(int frequencySetId)
         {
-            var haplotypeFrequencies = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySetId);
+            // This piece of code doesn't even need dictionary, it just needs typingCategory => List<Hla> mapping from it
+            var (frequencies, interner) = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySetId);
 
-            if (haplotypeFrequencies.IsNullOrEmpty())
+            if (frequencies.Count == 0)
             {
                 throw new Exception($"No haplotypes could be found for set id {frequencySetId}.");
             }
 
-            var groupedFrequencies = haplotypeFrequencies
+            var groupedFrequencies = frequencies 
                 .GroupBy(f => f.Value.TypingCategory)
-                .Select(g =>
-                    new KeyValuePair<HaplotypeTypingCategory, IReadOnlyCollection<LociInfo<string>>>(g.Key, g.Select(f => f.Value.Hla).ToList())
-                )
-                .ToDictionary();
+                .ToDictionary(
+                    key => key.Key,
+                    value => value.Select(f => interner.ReverseLookup(f.Key)).ToList()
+                );
 
             return new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
             {
-                GGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.GGroup, new List<LociInfo<string>>()),
-                PGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.PGroup, new List<LociInfo<string>>()),
-                SmallGGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.SmallGGroup, new List<LociInfo<string>>()),
+                GGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.GGroup, []),
+                PGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.PGroup, []),
+                SmallGGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.SmallGGroup, []),
             };
         }
 
