@@ -11,6 +11,7 @@ using Atlas.MatchPrediction.Worker.Services;
 using Atlas.MatchPrediction.Worker.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.SearchTracking.Common.Clients;
+using Atlas.SearchTracking.Common.DependencyInjection;
 using Atlas.SearchTracking.Common.Dispatchers;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -51,12 +52,9 @@ public static class Startup
             return new BlobDownloader(settings.MatchPredictionConnectionString, atlasLogger);
         });
 
-        services.AddScoped<ISearchTrackingServiceBusClient>(sp =>
-        {
-            var settings = sp.GetRequiredService<IOptions<SearchTrackingServiceBusSettings>>().Value;
-            var logger = sp.GetRequiredService<IAtlasLogger>();
-            return new SearchTrackingServiceBusClient(settings, logger);
-        });
+        // Make the settings available as a plain singleton so the shared registration (and the client's constructor) can resolve it.
+        services.AddSingleton(sp => sp.GetRequiredService<IOptions<SearchTrackingServiceBusSettings>>().Value);
+        services.RegisterSearchTrackingServiceBusClient();
 
         services.AddScoped<IMatchPredictionSearchTrackingDispatcher, MatchPredictionSearchTrackingDispatcher>();
 

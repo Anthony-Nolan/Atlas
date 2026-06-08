@@ -7,6 +7,7 @@ using Atlas.SearchTracking.Common.Models;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
 using Atlas.Common.Utils;
 using Azure.Messaging.ServiceBus;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Polly;
 
@@ -19,15 +20,22 @@ public interface ISearchTrackingServiceBusClient
 
 public class SearchTrackingServiceBusClient : ISearchTrackingServiceBusClient
 {
+    // Key used to resolve the shared, singleton ServiceBusSender registered in RegisterSearchTrackingServiceBusClient.
+    public const string ServiceBusKey = "SearchTracking";
+
     private readonly ServiceBusSender sender;
     private readonly int sendRetryCount;
     private readonly int sendRetryCooldownSeconds;
     private readonly IAtlasLogger logger;
 
-    public SearchTrackingServiceBusClient(SearchTrackingServiceBusSettings searchTrackingServiceBusSettings, IAtlasLogger logger)
+    public SearchTrackingServiceBusClient(
+        [FromKeyedServices(ServiceBusKey)] ServiceBusSender sender,
+        SearchTrackingServiceBusSettings searchTrackingServiceBusSettings,
+        IAtlasLogger logger)
     {
-        var client = new ServiceBusClient(searchTrackingServiceBusSettings.ConnectionString);
-        sender = client.CreateSender(searchTrackingServiceBusSettings.SearchTrackingTopic);
+        // The sender (and its underlying ServiceBusClient/AMQP connection) is a shared singleton - thread-safe and
+        // reused for the app lifetime, per Azure SDK guidance. This client must NOT create or dispose its own.
+        this.sender = sender;
         sendRetryCount = searchTrackingServiceBusSettings.SendRetryCount;
         sendRetryCooldownSeconds = searchTrackingServiceBusSettings.SendRetryCooldownSeconds;
         this.logger = logger;
