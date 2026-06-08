@@ -28,15 +28,23 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
             this.stringBasedLocusMatchCalculator = stringBasedLocusMatchCalculator;
         }
 
-        // This method will be called millions of times in match prediction, and needs to stay as fast as possible. 
+        // This method will be called millions of times in match prediction, and needs to stay as fast as possible.
+        // The explicit, unrolled form below is deliberate: it avoids the per-call closure allocation, the six
+        // Func<Locus, int?> delegate invocations, and the GetLocus(..) switch lookups that the lambda-based
+        // LociInfo constructor incurred. Accessing the A/B/C.. properties directly is allocation-free and inlinable.
         public LociInfo<int?> CalculateMatchCounts_Fast(
             PhenotypeInfo<string> patientGenotype,
             PhenotypeInfo<string> donorGenotype,
             ISet<Locus> allowedLoci)
         {
-            return new LociInfo<int?>(l => allowedLoci.Contains(l)
-                    ? stringBasedLocusMatchCalculator.MatchCount(patientGenotype.GetLocus(l), donorGenotype.GetLocus(l))
-                    : null);
+            return new LociInfo<int?>(
+                valueA: allowedLoci.Contains(Locus.A) ? stringBasedLocusMatchCalculator.MatchCount(patientGenotype.A, donorGenotype.A) : null,
+                valueB: allowedLoci.Contains(Locus.B) ? stringBasedLocusMatchCalculator.MatchCount(patientGenotype.B, donorGenotype.B) : null,
+                valueC: allowedLoci.Contains(Locus.C) ? stringBasedLocusMatchCalculator.MatchCount(patientGenotype.C, donorGenotype.C) : null,
+                valueDpb1: allowedLoci.Contains(Locus.Dpb1) ? stringBasedLocusMatchCalculator.MatchCount(patientGenotype.Dpb1, donorGenotype.Dpb1) : null,
+                valueDqb1: allowedLoci.Contains(Locus.Dqb1) ? stringBasedLocusMatchCalculator.MatchCount(patientGenotype.Dqb1, donorGenotype.Dqb1) : null,
+                valueDrb1: allowedLoci.Contains(Locus.Drb1) ? stringBasedLocusMatchCalculator.MatchCount(patientGenotype.Drb1, donorGenotype.Drb1) : null
+            );
         }
     }
 }
