@@ -44,6 +44,10 @@ public sealed class HaplotypeInterner
         return true;
     }
 
+    // Resolves each allele independently: 0 for untyped loci, the interned id for known alleles,
+    // and AlleleInterner.NotFound for alleles absent from this set. A NotFound at a non-excluded locus
+    // guarantees a lookup miss (frequency 0), which is correct - the set has never seen that allele.
+    // The returned key is for lookups only and must not be passed to ReverseLookup.
     public HaplotypeKey ConvertWherePossible(string? a, string? b, string? c, string? dqb1, string? drb1)
     {
         var ia = A.Resolve(a);

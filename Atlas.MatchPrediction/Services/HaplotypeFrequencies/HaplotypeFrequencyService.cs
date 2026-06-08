@@ -191,13 +191,13 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                     using (logger.RunTimed("Get All Frequencies from HF set - from SQL database", LogLevel.Verbose))
                     {
                         var allFrequencies = await frequencyRepository.GetAllHaplotypeFrequencies(setId);
-                        // Initialize interner, build it and store it into the cache 
+                        // Initialize interner, build it and store it into the cache
                         var haplotypeInterner = new HaplotypeInterner();
                         var resultDictionary = new Dictionary<HaplotypeKey, HaplotypeFrequencyValue>();
-                        foreach (var (key, value) in allFrequencies)
+                        foreach (var frequency in allFrequencies)
                         {
-                            var haplotypeKey = haplotypeInterner.Intern(a:key.A, b: key.B, c: key.C, dqb1: key.Dqb1, drb1: key.Drb1);
-                            var haplotypeFrequencyValue = new HaplotypeFrequencyValue(value.Frequency, value.TypingCategory);
+                            var haplotypeKey = haplotypeInterner.Intern(a: frequency.A, b: frequency.B, c: frequency.C, dqb1: frequency.DQB1, drb1: frequency.DRB1);
+                            var haplotypeFrequencyValue = new HaplotypeFrequencyValue(frequency.Frequency, frequency.TypingCategory);
                             resultDictionary.Add(haplotypeKey, haplotypeFrequencyValue);
                         }
 
@@ -252,7 +252,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 }
             );
             var keyToSeek = interner.ConvertWherePossible(hla.A, hla.B, hla.C, hla.Dqb1, hla.Drb1);
-            keyToSeek.RemoveLoci(excludedLoci.ToArray());
+            keyToSeek = keyToSeek.RemoveLoci(excludedLoci.ToArray());
             frequences.TryGetValue(keyToSeek, out var result);
             return result;
         }
