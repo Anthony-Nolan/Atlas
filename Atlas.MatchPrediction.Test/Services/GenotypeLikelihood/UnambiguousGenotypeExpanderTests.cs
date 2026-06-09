@@ -56,7 +56,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             var actualDiplotypeHla = expandedGenotype.Diplotypes.Select(d => d.Map(h => h.Hla));
             var actualHomozygousValue = expandedGenotype.IsHomozygousAtEveryLocus;
 
-            actualDiplotypeHla.Should().BeEquivalentTo(expectedDiplotypeHla);
+            actualDiplotypeHla.Should().BeEquivalentTo(new[] { expectedDiplotypeHla });
             actualHomozygousValue.Should().BeTrue();
         }
 

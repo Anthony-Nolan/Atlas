@@ -163,13 +163,13 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
         }
 
         [Test]
-        public void CheckDonorIdsFromFile_WhenUnexpectedException_LogsException()
+        public async Task CheckDonorIdsFromFile_WhenUnexpectedException_LogsException()
         {
             var exception = new Exception("Error message");
             donorIdFile.ReadLazyDonorIds().Throws(exception);
-            
-            donorIdChecker.Invoking(p => p.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build()))
-                .Should().Throw<Exception>();
+
+            await donorIdChecker.Invoking(p => p.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build()))
+                .Should().ThrowAsync<Exception>();
 
             logger.Received().SendException(exception, Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>());
         }

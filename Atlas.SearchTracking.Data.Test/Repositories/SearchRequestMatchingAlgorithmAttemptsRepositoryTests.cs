@@ -38,7 +38,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
             var act = async () => await searchRequestMatchingAlgorithmAttemptsRepository
                 .GetSearchRequestMatchingAlgorithmAttemptsById(id);
 
-            act.Should().Throw<Exception>().WithMessage($"Matching algorithm attempt timing with id {id} not found");
+            await act.Should().ThrowAsync<Exception>().WithMessage($"Matching algorithm attempt timing with id {id} not found");
         }
 
         [Test]

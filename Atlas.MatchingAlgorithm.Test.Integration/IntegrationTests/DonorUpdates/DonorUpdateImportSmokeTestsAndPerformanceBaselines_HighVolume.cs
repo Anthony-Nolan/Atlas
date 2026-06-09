@@ -214,18 +214,18 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 secondaryCreationsCount +
                 drasticUpdatesCount +
                 gentleUpdatesCount;
-            totalUsedFromFile.Should().BeLessOrEqualTo(20_000, "only 20k donors are available in the File.");
+            totalUsedFromFile.Should().BeLessThanOrEqualTo(20_000, "only 20k donors are available in the File.");
 
             var totalInitialAvailableDonorsEdited =
                 drasticUpdatesCount +
                 gentleUpdatesCount +
                 makeUnavailableCount;
-            totalInitialAvailableDonorsEdited.Should().BeLessOrEqualTo(initialAvailableCreationsCount);
+            totalInitialAvailableDonorsEdited.Should().BeLessThanOrEqualTo(initialAvailableCreationsCount);
 
             var totalInitialUnavailableDonorsEdited = makeAvailableCount;
-            totalInitialUnavailableDonorsEdited.Should().BeLessOrEqualTo(initialUnavailableCreationsCount);
+            totalInitialUnavailableDonorsEdited.Should().BeLessThanOrEqualTo(initialUnavailableCreationsCount);
 
-            artificialBatchSize.Should().BeLessOrEqualTo(1_000, "Batching is imposed elsewhere, so anything greater than that won't actually take effect.");
+            artificialBatchSize.Should().BeLessThanOrEqualTo(1_000, "Batching is imposed elsewhere, so anything greater than that won't actually take effect.");
         }
 
         public async Task<(Queue<Donor>, Queue<Donor>)> SetupInitialDonorsInDb(Queue<Donor> newDonors, int availableCount, int unavailableCount)

@@ -65,11 +65,11 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
-        public void GetSinglePGroupForGGroup_ForInvalidGGroup_ThrowsException()
+        public async Task GetSinglePGroupForGGroup_ForInvalidGGroup_ThrowsException()
         {
-            metadataService.Invoking(async service =>
-                 await service.ConvertGGroupToPGroup(Locus.A, "not-a-valid-g-group", HlaVersion)
-                ).Should().Throw<HlaMetadataDictionaryException>();
+            await metadataService.Invoking(service =>
+                 service.ConvertGGroupToPGroup(Locus.A, "not-a-valid-g-group", HlaVersion)
+                ).Should().ThrowAsync<HlaMetadataDictionaryException>();
         }
     }
 }
