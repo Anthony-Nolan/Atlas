@@ -7,8 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FluentAssertions" Version="5.10.3" />
-        <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4" />
+        <PackageReference Include="FluentAssertions" Version="8.10.0" />
+        <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.1.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="LochNessBuilder" Version="1.0.1" />
         <PackageReference Include="NSubstitute" Version="5.3.0" />
         <PackageReference Include="nunit" Version="4.6.1" />

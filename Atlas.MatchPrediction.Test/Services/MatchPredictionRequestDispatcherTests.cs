@@ -52,10 +52,10 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public void DispatchMatchPredictionRequestBatch_InvalidInput_DoesNotThrow()
+        public async Task DispatchMatchPredictionRequestBatch_InvalidInput_DoesNotThrow()
         {
-            dispatcher.Invoking(async service => await service.DispatchMatchPredictionRequestBatch(InputMissingDonorInfo.Build(1)))
-                .Should().NotThrow();
+            await dispatcher.Invoking(service => service.DispatchMatchPredictionRequestBatch(InputMissingDonorInfo.Build(1)))
+                .Should().NotThrowAsync();
         }
 
         [Test]
@@ -125,13 +125,13 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public void DispatchMatchPredictionRequestBatch_OtherExceptionOccurs_ThrowsException()
+        public async Task DispatchMatchPredictionRequestBatch_OtherExceptionOccurs_ThrowsException()
         {
             requestPublisher.BatchPublish(default).ThrowsForAnyArgs(new Exception("error"));
-            
+
             var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build(1);
 
-            dispatcher.Invoking(async service => await service.DispatchMatchPredictionRequestBatch(input)).Should().Throw<Exception>();
+            await dispatcher.Invoking(service => service.DispatchMatchPredictionRequestBatch(input)).Should().ThrowAsync<Exception>();
         }
     }
 }

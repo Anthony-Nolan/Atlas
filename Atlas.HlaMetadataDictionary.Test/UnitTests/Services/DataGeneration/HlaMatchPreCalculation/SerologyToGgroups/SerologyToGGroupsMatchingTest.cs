@@ -11,7 +11,7 @@ using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation.SerologyToGgroups
 {
-    [UseReporter(typeof(NUnitReporter))]
+    [UseReporter(typeof(NUnit4Reporter))]
     [UseApprovalSubdirectory("Approvals")]
     internal class SerologyToGGroupsMatchingTest : MatchedOnTestBase<MatchedSerology>
     {
