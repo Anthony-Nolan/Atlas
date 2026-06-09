@@ -63,7 +63,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies.Import
             };
 
             // Act
-            frequencySetImporter.Invoking(i => i.Import(file, importBehavior)).Should().Throw<Exception>();
+            await frequencySetImporter.Invoking(i => i.Import(file, importBehavior)).Should().ThrowAsync<Exception>();
 
             // Assert
             await setRepository.Received(1).ActivateSet(Arg.Any<int>());

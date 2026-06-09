@@ -82,7 +82,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorUpdates
 
             var updates = (await updatesInspectionRepository.GetAll()).ToList();
 
-            updates.Select(u => u.CreatedOn).Distinct().Single().Should().BeCloseTo(dateTimeJustAfterUpdateCreation, 10000);
+            updates.Select(u => u.CreatedOn).Distinct().Single().Should().BeCloseTo(dateTimeJustAfterUpdateCreation, TimeSpan.FromMilliseconds(10000));
             updates.Select(u => u.IsPublished).Should().AllBeEquivalentTo(false);
             updates.Select(u => u.PublishedOn).Should().AllBeEquivalentTo((DateTimeOffset?)null);
         }
