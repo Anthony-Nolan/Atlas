@@ -37,7 +37,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var act = async () => await matchPredictionRepository.GetSearchRequestMatchPredictionById(id);
 
-            act.Should().Throw<Exception>().WithMessage($"Match prediction timing for search id { id } not found");
+            await act.Should().ThrowAsync<Exception>().WithMessage($"Match prediction timing for search id { id } not found");
         }
 
         [Test]

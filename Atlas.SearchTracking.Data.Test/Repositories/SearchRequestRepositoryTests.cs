@@ -35,7 +35,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var act = async () => await searchRequestRepository.GetSearchRequestByIdentifier(expectedSearchRequestId);
 
-            act.Should().Throw<Exception>().WithMessage($"Search request with identifier {expectedSearchRequestId} not found");
+            await act.Should().ThrowAsync<Exception>().WithMessage($"Search request with identifier {expectedSearchRequestId} not found");
         }
 
         [Test]

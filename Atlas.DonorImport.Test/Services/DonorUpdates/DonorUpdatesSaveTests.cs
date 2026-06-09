@@ -126,7 +126,7 @@ namespace Atlas.DonorImport.Test.Services.DonorUpdates
 
             var info = searchableDonorUpdate.SearchableDonorInformation;
             info.DonorId.Should().Be(donorId);
-            info.DonorType.Should().Be(donorType);
+            info.DonorType.ToString().Should().Be(donorType.ToString());
             info.ExternalDonorCode.Should().Be($"#{donorId}{nameof(Donor.ExternalDonorCode)}");
             info.EthnicityCode.Should().Be($"#{donorId}{nameof(Donor.EthnicityCode)}");
             info.RegistryCode.Should().Be($"#{donorId}{nameof(Donor.RegistryCode)}");

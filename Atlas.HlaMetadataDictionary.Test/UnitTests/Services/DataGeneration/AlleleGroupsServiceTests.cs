@@ -84,7 +84,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             var result = alleleGroupsService.GetAlleleGroupsMetadata("version").ToList();
 
-            result.Select(grp => grp.Locus).Should().BeEquivalentTo(expectedLocus);
+            result.Select(grp => grp.Locus).Should().BeEquivalentTo(new[] { expectedLocus });
         }
 
         [TestCase("A*", Locus.A)]
@@ -104,7 +104,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             var result = alleleGroupsService.GetAlleleGroupsMetadata("version").ToList();
 
-            result.Select(grp => grp.Locus).Should().BeEquivalentTo(expectedLocus);
+            result.Select(grp => grp.Locus).Should().BeEquivalentTo(new[] { expectedLocus });
         }
 
         [TestCase(Locus.A)]
@@ -125,7 +125,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             var result = alleleGroupsService.GetAlleleGroupsMetadata("version").ToList();
 
-            result.Select(grp => grp.Locus).Should().BeEquivalentTo(locus);
+            result.Select(grp => grp.Locus).Should().BeEquivalentTo(new[] { locus });
         }
 
         [Test]

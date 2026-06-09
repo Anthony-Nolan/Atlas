@@ -145,7 +145,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
         }
 
         [Test]
-        public void CompareDonorInfoInFileToAtlasDonorStore_WhenUnexpectedException_LogsException()
+        public async Task CompareDonorInfoInFileToAtlasDonorStore_WhenUnexpectedException_LogsException()
         {
             var donor = DonorUpdateBuilder.New.Build();
             var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(donor).Build();
@@ -153,7 +153,7 @@ namespace Atlas.DonorImport.Test.Services.DonorChecker
             var exception = new Exception("Error message");
             donorReadRepository.GetDonorsHashes(Arg.Any<IEnumerable<string>>()).Throws(exception);
 
-            donorInfoChecker.Invoking(c => c.CompareDonorInfoInFileToAtlasDonorStore(file)).Should().Throw<Exception>();
+            await donorInfoChecker.Invoking(c => c.CompareDonorInfoInFileToAtlasDonorStore(file)).Should().ThrowAsync<Exception>();
 
             logger.Received().SendException(exception, Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>());
         }

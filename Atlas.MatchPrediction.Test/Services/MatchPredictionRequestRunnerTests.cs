@@ -136,12 +136,12 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public void RunMatchPredictionRequestBatch_InvalidRequestInBatch_DoesNotThrow()
+        public async Task RunMatchPredictionRequestBatch_InvalidRequestInBatch_DoesNotThrow()
         {
             var requestBatch = DefaultRequestBuilder.Build(1);
             matchPredictionAlgorithm.RunMatchPredictionAlgorithm(default).ThrowsForAnyArgs(new ValidationException("error"));
 
-            runner.Invoking(async service => await service.RunMatchPredictionRequestBatch(requestBatch)).Should().NotThrow();
+            await runner.Invoking(service => service.RunMatchPredictionRequestBatch(requestBatch)).Should().NotThrowAsync();
         }
 
         [Test]
@@ -185,13 +185,13 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public void RunMatchPredictionRequestBatch_InvalidHlaInBatch_DoesNotThrow()
+        public async Task RunMatchPredictionRequestBatch_InvalidHlaInBatch_DoesNotThrow()
         {
             var requestBatch = DefaultRequestBuilder.Build(1);
 
             matchPredictionAlgorithm.RunMatchPredictionAlgorithm(default).ThrowsForAnyArgs(new HlaMetadataDictionaryException("A*", "invalid-hla", "message"));
 
-            runner.Invoking(async service => await service.RunMatchPredictionRequestBatch(requestBatch)).Should().NotThrow();
+            await runner.Invoking(service => service.RunMatchPredictionRequestBatch(requestBatch)).Should().NotThrowAsync();
         }
 
         [Test]
@@ -217,13 +217,13 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public void RunMatchPredictionRequestBatch_OtherExceptionOccurs_AllowsExceptionToBeThrown()
+        public async Task RunMatchPredictionRequestBatch_OtherExceptionOccurs_AllowsExceptionToBeThrown()
         {
             var requestBatch = DefaultRequestBuilder.Build(1);
 
             matchPredictionAlgorithm.RunMatchPredictionAlgorithm(default).ThrowsForAnyArgs(new Exception());
 
-            runner.Invoking(async service => await service.RunMatchPredictionRequestBatch(requestBatch)).Should().Throw<Exception>();
+            await runner.Invoking(service => service.RunMatchPredictionRequestBatch(requestBatch)).Should().ThrowAsync<Exception>();
         }
     }
 

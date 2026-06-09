@@ -36,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             var higherResult = ParseResultType(results, higherResultType)?.AtlasDonorId;
             var lowerResult = ParseResultType(results, lowerResultType)?.AtlasDonorId;
 
-            results.Select(r => r.AtlasDonorId).Should().ContainInOrder(new List<int?> { higherResult, lowerResult });
+            results.Select(r => (int?)r.AtlasDonorId).Should().ContainInOrder(higherResult, lowerResult);
         }
 
         [Then("the match category should be (.*)")]
