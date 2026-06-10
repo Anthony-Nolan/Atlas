@@ -7,7 +7,7 @@
 using System;
 using System.Diagnostics;
 
-namespace LoggingStopwatch;
+namespace Atlas.Common.ApplicationInsights.Timing;
 
 /// <summary>
 /// Starts a System.Diagnostics.Stopwatch on construction, and logs the elapsed time when `.Dispose()` is called.

@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Sql;
 using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
-using LoggingStopwatch;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories;
 

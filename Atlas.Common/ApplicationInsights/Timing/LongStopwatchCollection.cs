@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace LoggingStopwatch;
+namespace Atlas.Common.ApplicationInsights.Timing;
 
 public class LongStopwatchCollection
 {

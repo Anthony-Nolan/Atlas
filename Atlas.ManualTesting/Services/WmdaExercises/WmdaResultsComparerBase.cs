@@ -8,7 +8,7 @@ using Atlas.ManualTesting.Common.Models;
 using Atlas.ManualTesting.Common.Services;
 using Atlas.ManualTesting.Models;
 
-namespace Atlas.ManualTesting.Services.WmdaConsensusResults;
+namespace Atlas.ManualTesting.Services.WmdaExercises;
 
 public class WmdaComparerResult
 {

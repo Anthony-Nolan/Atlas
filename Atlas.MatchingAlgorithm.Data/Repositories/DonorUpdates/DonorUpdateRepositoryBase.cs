@@ -3,6 +3,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
@@ -13,7 +14,6 @@ using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
-using LoggingStopwatch;
 using Microsoft.Data.SqlClient;
 
 // ReSharper disable InconsistentNaming

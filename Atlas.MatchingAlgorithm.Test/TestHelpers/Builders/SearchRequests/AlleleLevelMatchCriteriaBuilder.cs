@@ -5,7 +5,7 @@ using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
+namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 
 public class AlleleLevelMatchCriteriaBuilder
 {

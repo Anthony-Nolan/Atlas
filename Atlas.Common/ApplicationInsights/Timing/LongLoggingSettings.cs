@@ -3,9 +3,10 @@
    ****************************** */
 // This was taken from a Softwire shareable Repo. At soem point it may get nugetified, in which case we might want
 // migrate to that. Worth checking whether we've diverged, from the original code, though.
+
 using System;
 
-namespace LoggingStopwatch;
+namespace Atlas.Common.ApplicationInsights.Timing;
 
 /// <summary>
 /// Defines

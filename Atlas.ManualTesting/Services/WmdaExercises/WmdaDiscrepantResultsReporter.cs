@@ -8,7 +8,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.ManualTesting.Models;
 using LazyCache;
 
-namespace Atlas.ManualTesting.Services.WmdaConsensusResults;
+namespace Atlas.ManualTesting.Services.WmdaExercises;
 
 public interface IWmdaDiscrepantResultsReporter
 {

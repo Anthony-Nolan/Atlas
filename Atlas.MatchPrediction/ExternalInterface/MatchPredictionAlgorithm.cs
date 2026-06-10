@@ -10,7 +10,6 @@ using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
-using LoggingStopwatch;
 using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.MatchPrediction.ExternalInterface;

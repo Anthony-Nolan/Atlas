@@ -2,7 +2,7 @@
 using Atlas.SearchTracking.Common.Models;
 using LochNessBuilder;
 
-namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
+namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 
 [Builder]
 internal static class SearchRequestedEventBuilder

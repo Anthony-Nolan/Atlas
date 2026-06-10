@@ -4,7 +4,7 @@ using Atlas.ManualTesting.Common.Services;
 using Atlas.ManualTesting.Services.Scoring;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 
-namespace Atlas.ManualTesting.Services.WmdaConsensusResults.Scorers;
+namespace Atlas.ManualTesting.Services.WmdaExercises.Scorers;
 
 public interface IWmdaExerciseOneScorer : IScoreRequestProcessor
 {

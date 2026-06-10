@@ -6,7 +6,7 @@
 
 using System;
 
-namespace LoggingStopwatch;
+namespace Atlas.Common.ApplicationInsights.Timing;
 
 /// <summary>
 /// Defined in case you ever want something that looks like a ILongOperationLoggingStopwatch but does nothing, and has no overhead.

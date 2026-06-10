@@ -2,7 +2,7 @@
 using AzureFunctions.Extensions.Swashbuckle;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Atlas.Functions;
+namespace Atlas.Functions.PublicApi;
 
 internal static class SwashBuckleStartup 
 {

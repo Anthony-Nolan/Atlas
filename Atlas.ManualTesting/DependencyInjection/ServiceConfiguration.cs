@@ -17,13 +17,13 @@ using Atlas.ManualTesting.Services;
 using Atlas.ManualTesting.Services.HaplotypeFrequencySet;
 using Atlas.ManualTesting.Services.Scoring;
 using Atlas.ManualTesting.Services.ServiceBus;
-using Atlas.ManualTesting.Services.WmdaConsensusResults;
-using Atlas.ManualTesting.Services.WmdaConsensusResults.Scorers;
 using Atlas.ManualTesting.Settings;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Atlas.ManualTesting.Services.WmdaExercises;
+using Atlas.ManualTesting.Services.WmdaExercises.Scorers;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.ManualTesting.DependencyInjection;

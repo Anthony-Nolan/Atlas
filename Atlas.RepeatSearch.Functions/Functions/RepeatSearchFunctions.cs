@@ -1,4 +1,8 @@
-﻿using Atlas.Client.Models.Search.Requests;
+﻿using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Validation;
 using Atlas.RepeatSearch.Models;
 using Atlas.RepeatSearch.Services.Search;
@@ -9,10 +13,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Atlas.RepeatSearch.Functions.Functions;
 

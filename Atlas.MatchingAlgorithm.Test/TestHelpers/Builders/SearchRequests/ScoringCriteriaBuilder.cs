@@ -5,7 +5,7 @@ using Atlas.Common.Public.Models.GeneticData;
 using LochNessBuilder;
 using static EnumStringValues.EnumExtensions;
 
-namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
+namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 
 [Builder]
 internal static class ScoringCriteriaBuilder

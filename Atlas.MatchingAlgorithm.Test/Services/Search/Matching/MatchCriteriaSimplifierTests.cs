@@ -3,6 +3,7 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 using FluentAssertions;
 using NUnit.Framework;
 
