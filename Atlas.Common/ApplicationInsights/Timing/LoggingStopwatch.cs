@@ -1,13 +1,13 @@
 ﻿/* ******************************
-   **  Copyright Softwire 2020 ** 
-   ****************************** */
+ **  Copyright Softwire 2020 **
+ ****************************** */
 // This was taken from a Softwire shareable Repo. At soem point it may get nugetified, in which case we might want
 // migrate to that. Worth checking whether we've diverged, from the original code, though.
 
 using System;
 using System.Diagnostics;
 
-namespace LoggingStopwatch
+namespace Atlas.Common.ApplicationInsights.Timing
 {
     /// <summary>
     /// Starts a System.Diagnostics.Stopwatch on construction, and logs the elapsed time when `.Dispose()` is called.
@@ -58,7 +58,7 @@ namespace LoggingStopwatch
 
             Timer.Start();
         }
-        
+
         protected void Log(string text, long? elapsedMilliseconds = null)
         {
             loggingAction($"{identifier} |{uniqueId}| {text}", elapsedMilliseconds);

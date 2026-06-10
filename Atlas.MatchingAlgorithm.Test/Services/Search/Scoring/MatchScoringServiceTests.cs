@@ -27,6 +27,7 @@ using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching;
 using Atlas.Client.Models.Common.Results;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 {
