@@ -9,29 +9,29 @@ using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Atlas.Common.Sql.BulkInsert;
 
-namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
+namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories;
+
+public interface INormalisedPoolRepository
 {
-    public interface INormalisedPoolRepository
+    Task<int> AddNormalisedPool(int haplotypeFrequencySetId, string dataSource, ImportTypingCategory typingCategory);
+    Task TruncateNormalisedHaplotypeFrequencies();
+    Task BulkInsertNormalisedHaplotypeFrequencies(IReadOnlyCollection<NormalisedHaplotypeFrequency> haplotypeFrequencies);
+}
+
+public class NormalisedPoolRepository : INormalisedPoolRepository
+{
+    private readonly string connectionString;
+
+    public NormalisedPoolRepository(string connectionString)
     {
-        Task<int> AddNormalisedPool(int haplotypeFrequencySetId, string dataSource, ImportTypingCategory typingCategory);
-        Task TruncateNormalisedHaplotypeFrequencies();
-        Task BulkInsertNormalisedHaplotypeFrequencies(IReadOnlyCollection<NormalisedHaplotypeFrequency> haplotypeFrequencies);
+        this.connectionString = connectionString;
     }
 
-    public class NormalisedPoolRepository : INormalisedPoolRepository
+    public async Task<int> AddNormalisedPool(int haplotypeFrequencySetId, string dataSource, ImportTypingCategory typingCategory)
     {
-        private readonly string connectionString;
+        var category = typingCategory.ToString();
 
-        public NormalisedPoolRepository(string connectionString)
-        {
-            this.connectionString = connectionString;
-        }
-
-        public async Task<int> AddNormalisedPool(int haplotypeFrequencySetId, string dataSource, ImportTypingCategory typingCategory)
-        {
-            var category = typingCategory.ToString();
-
-            var sql = @$"
+        var sql = @$"
                 INSERT INTO {nameof(MatchPredictionVerificationContext.NormalisedPool)}(
                     {nameof(NormalisedPool.HaplotypeFrequencySetId)},
                     {nameof(NormalisedPool.HaplotypeFrequenciesDataSource)},
@@ -40,80 +40,79 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
                     VALUES(@{nameof(haplotypeFrequencySetId)}, @{nameof(dataSource)}, @{nameof(category)});
                 SELECT CAST(SCOPE_IDENTITY() as int);";
 
-            await using (var conn = new SqlConnection(connectionString))
-            {
-                return (await conn.QueryAsync<int>(sql, new { haplotypeFrequencySetId, dataSource, category })).Single();
-            }
-        }
-
-        public async Task TruncateNormalisedHaplotypeFrequencies()
+        await using (var conn = new SqlConnection(connectionString))
         {
-            var sql = $"TRUNCATE TABLE {nameof(MatchPredictionVerificationContext.NormalisedHaplotypeFrequencies)}";
-
-            await using (var conn = new SqlConnection(connectionString))
-            {
-                await conn.ExecuteAsync(sql);
-            }
+            return (await conn.QueryAsync<int>(sql, new { haplotypeFrequencySetId, dataSource, category })).Single();
         }
+    }
 
-        public async Task BulkInsertNormalisedHaplotypeFrequencies(IReadOnlyCollection<NormalisedHaplotypeFrequency> haplotypeFrequencies)
+    public async Task TruncateNormalisedHaplotypeFrequencies()
+    {
+        var sql = $"TRUNCATE TABLE {nameof(MatchPredictionVerificationContext.NormalisedHaplotypeFrequencies)}";
+
+        await using (var conn = new SqlConnection(connectionString))
         {
-            if (!haplotypeFrequencies.Any())
-            {
-                return;
-            }
-
-            var columnNames = haplotypeFrequencies.GetColumnNamesForBulkInsert();
-            var dataTable = BuildDataTable(haplotypeFrequencies, columnNames);
-
-            using (var sqlBulk = BuildSqlBulkCopy(columnNames))
-            {
-                await sqlBulk.WriteToServerAsync(dataTable);
-            }
+            await conn.ExecuteAsync(sql);
         }
+    }
 
-        private static DataTable BuildDataTable(
-            IReadOnlyCollection<NormalisedHaplotypeFrequency> haplotypeFrequencies,
-            IEnumerable<string> columnNames)
+    public async Task BulkInsertNormalisedHaplotypeFrequencies(IReadOnlyCollection<NormalisedHaplotypeFrequency> haplotypeFrequencies)
+    {
+        if (!haplotypeFrequencies.Any())
         {
-            var dataTable = new DataTable();
-            foreach (var columnName in columnNames)
-            {
-                dataTable.Columns.Add(columnName);
-            }
-
-            foreach (var haplotypeFrequency in haplotypeFrequencies)
-            {
-                dataTable.Rows.Add(
-                    haplotypeFrequency.NormalisedPool_Id,
-                    haplotypeFrequency.A,
-                    haplotypeFrequency.B,
-                    haplotypeFrequency.C,
-                    haplotypeFrequency.DQB1,
-                    haplotypeFrequency.DRB1,
-                    haplotypeFrequency.Frequency,
-                    haplotypeFrequency.CopyNumber);
-            }
-
-            return dataTable;
+            return;
         }
 
-        private SqlBulkCopy BuildSqlBulkCopy(IEnumerable<string> columnNames)
+        var columnNames = haplotypeFrequencies.GetColumnNamesForBulkInsert();
+        var dataTable = BuildDataTable(haplotypeFrequencies, columnNames);
+
+        using (var sqlBulk = BuildSqlBulkCopy(columnNames))
         {
-            var sqlBulk = new SqlBulkCopy(connectionString)
-            {
-                BulkCopyTimeout = 3600,
-                BatchSize = 10000,
-                DestinationTableName = nameof(MatchPredictionVerificationContext.NormalisedHaplotypeFrequencies)
-            };
-
-            foreach (var columnName in columnNames)
-            {
-                // Relies on setting up the data table with column names matching the database columns.
-                sqlBulk.ColumnMappings.Add(columnName, columnName);
-            }
-
-            return sqlBulk;
+            await sqlBulk.WriteToServerAsync(dataTable);
         }
+    }
+
+    private static DataTable BuildDataTable(
+        IReadOnlyCollection<NormalisedHaplotypeFrequency> haplotypeFrequencies,
+        IEnumerable<string> columnNames)
+    {
+        var dataTable = new DataTable();
+        foreach (var columnName in columnNames)
+        {
+            dataTable.Columns.Add(columnName);
+        }
+
+        foreach (var haplotypeFrequency in haplotypeFrequencies)
+        {
+            dataTable.Rows.Add(
+                haplotypeFrequency.NormalisedPool_Id,
+                haplotypeFrequency.A,
+                haplotypeFrequency.B,
+                haplotypeFrequency.C,
+                haplotypeFrequency.DQB1,
+                haplotypeFrequency.DRB1,
+                haplotypeFrequency.Frequency,
+                haplotypeFrequency.CopyNumber);
+        }
+
+        return dataTable;
+    }
+
+    private SqlBulkCopy BuildSqlBulkCopy(IEnumerable<string> columnNames)
+    {
+        var sqlBulk = new SqlBulkCopy(connectionString)
+        {
+            BulkCopyTimeout = 3600,
+            BatchSize = 10000,
+            DestinationTableName = nameof(MatchPredictionVerificationContext.NormalisedHaplotypeFrequencies)
+        };
+
+        foreach (var columnName in columnNames)
+        {
+            // Relies on setting up the data table with column names matching the database columns.
+            sqlBulk.ColumnMappings.Add(columnName, columnName);
+        }
+
+        return sqlBulk;
     }
 }

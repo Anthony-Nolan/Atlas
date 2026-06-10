@@ -11,73 +11,72 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
-namespace Atlas.RepeatSearch.Clients
+namespace Atlas.RepeatSearch.Clients;
+
+public interface IRepeatSearchServiceBusClient
 {
-    public interface IRepeatSearchServiceBusClient
+    Task PublishToRepeatSearchRequestsTopic(IdentifiedRepeatSearchRequest searchRequest);
+    Task PublishToResultsNotificationTopic(MatchingResultsNotification matchingResultsNotification);
+}
+
+public class RepeatSearchServiceBusClient : IRepeatSearchServiceBusClient
+{
+    private readonly string repeatSearchRequestsTopicName;
+    private readonly string resultsNotificationTopicName;
+    private readonly ITopicClientFactory topicClientFactory;
+    private readonly int sendRetryCount;
+    private readonly int sendRetryCooldownSeconds;
+    private readonly IAtlasLogger logger;
+
+    public RepeatSearchServiceBusClient(MessagingServiceBusSettings messagingServiceBusSettings, [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, IAtlasLogger logger)
     {
-        Task PublishToRepeatSearchRequestsTopic(IdentifiedRepeatSearchRequest searchRequest);
-        Task PublishToResultsNotificationTopic(MatchingResultsNotification matchingResultsNotification);
+        repeatSearchRequestsTopicName = messagingServiceBusSettings.RepeatSearchRequestsTopic;
+        resultsNotificationTopicName = messagingServiceBusSettings.RepeatSearchMatchingResultsTopic;
+        sendRetryCount = messagingServiceBusSettings.SendRetryCount;
+        sendRetryCooldownSeconds = messagingServiceBusSettings.SendRetryCooldownSeconds;
+        this.topicClientFactory = topicClientFactory;
+        this.logger = logger;
     }
 
-    public class RepeatSearchServiceBusClient : IRepeatSearchServiceBusClient
+    public async Task PublishToRepeatSearchRequestsTopic(IdentifiedRepeatSearchRequest searchRequest)
     {
-        private readonly string repeatSearchRequestsTopicName;
-        private readonly string resultsNotificationTopicName;
-        private readonly ITopicClientFactory topicClientFactory;
-        private readonly int sendRetryCount;
-        private readonly int sendRetryCooldownSeconds;
-        private readonly IAtlasLogger logger;
+        var json = JsonConvert.SerializeObject(searchRequest);
+        var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(json));
 
-        public RepeatSearchServiceBusClient(MessagingServiceBusSettings messagingServiceBusSettings, [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, IAtlasLogger logger)
+        message.ApplicationProperties.Add("SearchRequestId", searchRequest.OriginalSearchId);
+        message.ApplicationProperties.Add("RepeatSearchRequestId", searchRequest.RepeatSearchId);
+
+        await using var client = topicClientFactory.BuildTopicClient(repeatSearchRequestsTopicName);
+
+        using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
         {
-            repeatSearchRequestsTopicName = messagingServiceBusSettings.RepeatSearchRequestsTopic;
-            resultsNotificationTopicName = messagingServiceBusSettings.RepeatSearchMatchingResultsTopic;
-            sendRetryCount = messagingServiceBusSettings.SendRetryCount;
-            sendRetryCooldownSeconds = messagingServiceBusSettings.SendRetryCooldownSeconds;
-            this.topicClientFactory = topicClientFactory;
-            this.logger = logger;
+            await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                (exception, retryNumber) => logger.SendTrace($"Could not send repeat search request message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
         }
+    }
 
-        public async Task PublishToRepeatSearchRequestsTopic(IdentifiedRepeatSearchRequest searchRequest)
+    public async Task PublishToResultsNotificationTopic(MatchingResultsNotification matchingResultsNotification)
+    {
+        var json = JsonConvert.SerializeObject(matchingResultsNotification);
+        var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(json))
         {
-            var json = JsonConvert.SerializeObject(searchRequest);
-            var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(json));
-
-            message.ApplicationProperties.Add("SearchRequestId", searchRequest.OriginalSearchId);
-            message.ApplicationProperties.Add("RepeatSearchRequestId", searchRequest.RepeatSearchId);
-
-            await using var client = topicClientFactory.BuildTopicClient(repeatSearchRequestsTopicName);
-
-            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
+            ApplicationProperties =
             {
-                await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
-                    (exception, retryNumber) => logger.SendTrace($"Could not send repeat search request message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
+                {nameof(MatchingResultsNotification.SearchRequestId), matchingResultsNotification.SearchRequestId},
+                {nameof(MatchingResultsNotification.RepeatSearchRequestId), matchingResultsNotification.RepeatSearchRequestId},
+                {nameof(MatchingResultsNotification.WasSuccessful), matchingResultsNotification.WasSuccessful},
+                {nameof(MatchingResultsNotification.NumberOfResults), matchingResultsNotification.NumberOfResults},
+                {nameof(MatchingResultsNotification.MatchingAlgorithmHlaNomenclatureVersion), matchingResultsNotification.MatchingAlgorithmHlaNomenclatureVersion},
+                {nameof(MatchingResultsNotification.ElapsedTime), matchingResultsNotification.ElapsedTime},
             }
-        }
+        };
 
-        public async Task PublishToResultsNotificationTopic(MatchingResultsNotification matchingResultsNotification)
+        await using var client = topicClientFactory.BuildTopicClient(resultsNotificationTopicName);
+
+        using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
         {
-            var json = JsonConvert.SerializeObject(matchingResultsNotification);
-            var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(json))
-            {
-                ApplicationProperties =
-                {
-                    {nameof(MatchingResultsNotification.SearchRequestId), matchingResultsNotification.SearchRequestId},
-                    {nameof(MatchingResultsNotification.RepeatSearchRequestId), matchingResultsNotification.RepeatSearchRequestId},
-                    {nameof(MatchingResultsNotification.WasSuccessful), matchingResultsNotification.WasSuccessful},
-                    {nameof(MatchingResultsNotification.NumberOfResults), matchingResultsNotification.NumberOfResults},
-                    {nameof(MatchingResultsNotification.MatchingAlgorithmHlaNomenclatureVersion), matchingResultsNotification.MatchingAlgorithmHlaNomenclatureVersion},
-                    {nameof(MatchingResultsNotification.ElapsedTime), matchingResultsNotification.ElapsedTime},
-                }
-            };
-
-            await using var client = topicClientFactory.BuildTopicClient(resultsNotificationTopicName);
-
-            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
-            {
-                await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
-                    (exception, retryNumber) => logger.SendTrace($"Could not send repeat search matching result message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
-            }
+            await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                (exception, retryNumber) => logger.SendTrace($"Could not send repeat search matching result message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
         }
     }
 }

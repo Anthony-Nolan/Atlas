@@ -6,71 +6,70 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 
-namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
+namespace Atlas.MatchingAlgorithm.Services.Search.Scoring;
+
+public interface IScoringRequestService
 {
-    public interface IScoringRequestService
+    Task<ScoringResult> Score(DonorHlaScoringRequest scoringRequest);
+    Task<List<DonorScoringResult>> ScoreBatch(BatchScoringRequest batchScoringRequest);
+}
+
+public class ScoringRequestService : IScoringRequestService
+{
+    private readonly IDonorScoringService donorScoringService;
+    private readonly IMapper mapper;
+    private readonly IAtlasLogger logger;
+
+    public ScoringRequestService(IDonorScoringService donorScoringService, IMapper mapper, IAtlasLogger logger)
     {
-        Task<ScoringResult> Score(DonorHlaScoringRequest scoringRequest);
-        Task<List<DonorScoringResult>> ScoreBatch(BatchScoringRequest batchScoringRequest);
+        this.donorScoringService = donorScoringService;
+        this.mapper = mapper;
+        this.logger = logger;
     }
 
-    public class ScoringRequestService : IScoringRequestService
+    public async Task<ScoringResult> Score(DonorHlaScoringRequest scoringRequest)
     {
-        private readonly IDonorScoringService donorScoringService;
-        private readonly IMapper mapper;
-        private readonly IAtlasLogger logger;
+        var scoringResult = await donorScoringService.ScoreDonorHlaAgainstPatientHla(scoringRequest);
 
-        public ScoringRequestService(IDonorScoringService donorScoringService, IMapper mapper, IAtlasLogger logger)
-        {
-            this.donorScoringService = donorScoringService;
-            this.mapper = mapper;
-            this.logger = logger;
-        }
+        return mapper.Map<ScoringResult>(scoringResult);
+    }
 
-        public async Task<ScoringResult> Score(DonorHlaScoringRequest scoringRequest)
-        {
-            var scoringResult = await donorScoringService.ScoreDonorHlaAgainstPatientHla(scoringRequest);
+    public async Task<List<DonorScoringResult>> ScoreBatch(BatchScoringRequest batchScoringRequest)
+    {
+        logger.SendTrace("Received ScoreBatch request");
+        var patientPhenotypeInfo = batchScoringRequest.PatientHla.ToPhenotypeInfo();
+        var donorPhenotypeMapping = batchScoringRequest.DonorsHla
+            .Select(d => (DonorId: d.DonorId, DonorPhenotype: d.ToPhenotypeInfo()))
+            .ToList();
 
-            return mapper.Map<ScoringResult>(scoringResult);
-        }
+        logger.SendTrace($"Starting to score a batch of {donorPhenotypeMapping.Count} donors", LogLevel.Info);
 
-        public async Task<List<DonorScoringResult>> ScoreBatch(BatchScoringRequest batchScoringRequest)
-        {
-            logger.SendTrace("Received ScoreBatch request");
-            var patientPhenotypeInfo = batchScoringRequest.PatientHla.ToPhenotypeInfo();
-            var donorPhenotypeMapping = batchScoringRequest.DonorsHla
-                .Select(d => (DonorId: d.DonorId, DonorPhenotype: d.ToPhenotypeInfo()))
-                .ToList();
-
-            logger.SendTrace($"Starting to score a batch of {donorPhenotypeMapping.Count} donors", LogLevel.Info);
-
-            var distinctDonorPhenotypes = donorPhenotypeMapping.Select(m => m.DonorPhenotype).Distinct().ToList();
-            var scoringResults = await donorScoringService.ScoreDonorsHlaAgainstPatientHla(
-                distinctDonorPhenotypes,
-                patientPhenotypeInfo,
-                batchScoringRequest.ScoringCriteria);
-            var donorScoringResults = donorPhenotypeMapping
-                .Select(
-                    donor =>
+        var distinctDonorPhenotypes = donorPhenotypeMapping.Select(m => m.DonorPhenotype).Distinct().ToList();
+        var scoringResults = await donorScoringService.ScoreDonorsHlaAgainstPatientHla(
+            distinctDonorPhenotypes,
+            patientPhenotypeInfo,
+            batchScoringRequest.ScoringCriteria);
+        var donorScoringResults = donorPhenotypeMapping
+            .Select(
+                donor =>
+                {
+                    var scoringResult = scoringResults.Single(s => s.Key == donor.DonorPhenotype).Value;
+                    return new DonorScoringResult()
                     {
-                        var scoringResult = scoringResults.Single(s => s.Key == donor.DonorPhenotype).Value;
-                        return new DonorScoringResult()
-                        {
-                            DonorId = donor.DonorId,
-                            ScoringResult = mapper.Map<ScoringResult>(scoringResult)
-                        };
-                    })
-                .ToList();
+                        DonorId = donor.DonorId,
+                        ScoringResult = mapper.Map<ScoringResult>(scoringResult)
+                    };
+                })
+            .ToList();
 
-            var donorIdsWithNullScoringResults = donorScoringResults.Where(s => s.ScoringResult == null).Select(s => s.DonorId).ToList();
-            if (donorIdsWithNullScoringResults.Any())
-            {
-                logger.SendTrace($"Batch scoring has not returned results for several donors: {string.Join(", ", donorIdsWithNullScoringResults)}", LogLevel.Error);
-            }
-
-            logger.SendTrace($"Scoring a batch of {donorPhenotypeMapping.Count} donors has finished", LogLevel.Info);
-
-            return donorScoringResults;
+        var donorIdsWithNullScoringResults = donorScoringResults.Where(s => s.ScoringResult == null).Select(s => s.DonorId).ToList();
+        if (donorIdsWithNullScoringResults.Any())
+        {
+            logger.SendTrace($"Batch scoring has not returned results for several donors: {string.Join(", ", donorIdsWithNullScoringResults)}", LogLevel.Error);
         }
+
+        logger.SendTrace($"Scoring a batch of {donorPhenotypeMapping.Count} donors has finished", LogLevel.Info);
+
+        return donorScoringResults;
     }
 }

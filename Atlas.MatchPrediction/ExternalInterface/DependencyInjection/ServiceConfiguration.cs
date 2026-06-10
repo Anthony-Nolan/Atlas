@@ -24,192 +24,191 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
-namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
+namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
+
+public static class ServiceConfiguration
 {
-    public static class ServiceConfiguration
+    public static void RegisterMatchPredictionAlgorithm(
+        this IServiceCollection services,
+        Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+        Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
+        Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
+        Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
+        Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+        Func<IServiceProvider, string> fetchSqlConnectionString
+    )
     {
-        public static void RegisterMatchPredictionAlgorithm(
-            this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
-            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
-            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, string> fetchSqlConnectionString
-        )
+        services.RegisterSettings(fetchNotificationsServiceBusSettings, fetchAzureStorageSettings);
+        services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
+        services.RegisterServices();
+        services.RegisterDatabaseServices(fetchSqlConnectionString);
+        services.RegisterClientServices();
+        services.RegisterCommonMatchingServices();
+        services.RegisterHlaMetadataDictionary(
+            fetchHlaMetadataDictionarySettings,
+            fetchApplicationInsightsSettings,
+            fetchMacDictionarySettings
+        );
+    }
+
+    public static void RegisterMatchPredictionValidator(this IServiceCollection services)
+    {
+        services.AddScoped<IMatchPredictionValidator, MatchPredictionValidator>();
+    }
+
+    public static void RegisterHaplotypeFrequenciesReader(
+        this IServiceCollection services,
+        Func<IServiceProvider, string> fetchMatchPredictionDatabaseConnectionString)
+    {
+        services.AddScoped<IHaplotypeFrequencySetReader, HaplotypeFrequencySetReader>();
+        services.AddScoped<IFrequencySetValidator, FrequencySetValidator>();
+        services.RegisterFrequencyFileReader();
+
+        services.AddScoped<IHaplotypeFrequencySetReadRepository>(sp =>
+            new HaplotypeFrequencySetReadRepository(fetchMatchPredictionDatabaseConnectionString(sp))
+        );
+    }
+
+    public static void RegisterFrequencyFileReader(this IServiceCollection services)
+    {
+        services.AddScoped<IFrequencyFileParser, FrequencyFileParser>();
+    }
+
+    public static void RegisterMatchPredictionRequester(
+        this IServiceCollection services,
+        Func<IServiceProvider, MessagingServiceBusSettings> messagingServiceBusSettings,
+        Func<IServiceProvider, MatchPredictionRequestsSettings> matchPredictionRequestSettings)
+    {
+        var serviceKey = typeof(MessagingServiceBusSettings);
+        services.RegisterServiceBusAsKeyedServices(serviceKey,sp => messagingServiceBusSettings(sp).ConnectionString);
+        services.MakeSettingsAvailableForUse(matchPredictionRequestSettings);
+
+        // services for requesting a match prediction
+        services.AddScoped<IMatchPredictionValidator, MatchPredictionValidator>();
+        services.AddScoped<IMatchPredictionRequestDispatcher, MatchPredictionRequestDispatcher>();
+        services.AddScoped<IMessageBatchPublisher<IdentifiedMatchPredictionRequest>, MessageBatchPublisher<IdentifiedMatchPredictionRequest>>(sp =>
         {
-            services.RegisterSettings(fetchNotificationsServiceBusSettings, fetchAzureStorageSettings);
-            services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
-            services.RegisterServices();
-            services.RegisterDatabaseServices(fetchSqlConnectionString);
-            services.RegisterClientServices();
-            services.RegisterCommonMatchingServices();
-            services.RegisterHlaMetadataDictionary(
-                fetchHlaMetadataDictionarySettings,
-                fetchApplicationInsightsSettings,
-                fetchMacDictionarySettings
-            );
-        }
+            var serviceBusSettings = messagingServiceBusSettings(sp);
+            var matchPredictionRequestsSettings = matchPredictionRequestSettings(sp);
+            var logger = sp.GetService<IAtlasLogger>();
+            var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
+            return new MessageBatchPublisher<IdentifiedMatchPredictionRequest>(topicClientFactory, matchPredictionRequestsSettings.RequestsTopic,
+                serviceBusSettings.SendRetryCount, serviceBusSettings.SendRetryCooldownSeconds, logger);
+        });
 
-        public static void RegisterMatchPredictionValidator(this IServiceCollection services)
+        // services for running a match prediction request
+        services.AddScoped<IMatchPredictionRequestRunner, MatchPredictionRequestRunner>();
+        services.AddScoped<MatchPredictionRequestLoggingContext>();
+        services.AddScoped<IMatchPredictionRequestResultUploader, MatchPredictionRequestResultUploader>();
+        services.RegisterMatchPredictionResultsLocationPublisher(messagingServiceBusSettings, matchPredictionRequestSettings);
+    }
+
+    public static void RegisterMatchPredictionResultsLocationPublisher(
+        this IServiceCollection services,
+        Func<IServiceProvider, MessagingServiceBusSettings> messagingServiceBusSettings,
+        Func<IServiceProvider, MatchPredictionRequestsSettings> matchPredictionRequestSettings)
+    {
+        services.AddScoped<IMessageBatchPublisher<MatchPredictionResultLocation>, MessageBatchPublisher<MatchPredictionResultLocation>>(sp =>
         {
-            services.AddScoped<IMatchPredictionValidator, MatchPredictionValidator>();
-        }
+            var serviceBusSettings = messagingServiceBusSettings(sp);
+            var matchPredictionRequestsSettings = matchPredictionRequestSettings(sp);
+            var logger = sp.GetService<IAtlasLogger>();
+            var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
+            return new MessageBatchPublisher<MatchPredictionResultLocation>(topicClientFactory, matchPredictionRequestsSettings.ResultsTopic,
+                serviceBusSettings.SendRetryCount, serviceBusSettings.SendRetryCooldownSeconds, logger);
+        });
+    }
 
-        public static void RegisterHaplotypeFrequenciesReader(
-            this IServiceCollection services,
-            Func<IServiceProvider, string> fetchMatchPredictionDatabaseConnectionString)
+    /// <summary>
+    /// Registers <see cref="ISessionMessagePublisher{T}"/> for <see cref="ParallelMatchPredictionBatchResult"/>
+    /// so the ACA Worker can publish batch results to the session-enabled
+    /// <c>parallel-match-prediction-results</c> Service Bus topic.
+    /// </summary>
+    public static void RegisterParallelMatchPredictionBatchResultPublisher(
+        this IServiceCollection services,
+        Func<IServiceProvider, MessagingServiceBusSettings> messagingServiceBusSettings,
+        Func<IServiceProvider, MatchPredictionRequestsSettings> matchPredictionRequestSettings)
+    {
+        services.AddScoped<ISessionMessagePublisher<ParallelMatchPredictionBatchResult>,
+            SessionMessagePublisher<ParallelMatchPredictionBatchResult>>(sp =>
         {
-            services.AddScoped<IHaplotypeFrequencySetReader, HaplotypeFrequencySetReader>();
-            services.AddScoped<IFrequencySetValidator, FrequencySetValidator>();
-            services.RegisterFrequencyFileReader();
+            var serviceBusSettings = messagingServiceBusSettings(sp);
+            var requestsSettings = matchPredictionRequestSettings(sp);
+            var logger = sp.GetRequiredService<ILogger<SessionMessagePublisher<ParallelMatchPredictionBatchResult>>>();
+            var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
+            return new SessionMessagePublisher<ParallelMatchPredictionBatchResult>(
+                topicClientFactory,
+                requestsSettings.ParallelResultsTopic,
+                serviceBusSettings.SendRetryCount,
+                serviceBusSettings.SendRetryCooldownSeconds,
+                logger);
+        });
+    }
 
-            services.AddScoped<IHaplotypeFrequencySetReadRepository>(sp =>
-                new HaplotypeFrequencySetReadRepository(fetchMatchPredictionDatabaseConnectionString(sp))
-            );
-        }
+    private static void RegisterSettings(
+        this IServiceCollection services,
+        Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
+        Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
+    {
+        services.MakeSettingsAvailableForUse(fetchNotificationsServiceBusSettings);
+        services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
+    }
 
-        public static void RegisterFrequencyFileReader(this IServiceCollection services)
-        {
-            services.AddScoped<IFrequencyFileParser, FrequencyFileParser>();
-        }
+    private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)
+    {
+        services.AddTransient<IHaplotypeFrequencySetRepository, HaplotypeFrequencySetRepository>(sp =>
+            new HaplotypeFrequencySetRepository(fetchSqlConnectionString(sp), new ContextFactory())
+        );
+        services.AddTransient<IHaplotypeFrequenciesRepository, HaplotypeFrequenciesRepository>(sp =>
+            new HaplotypeFrequenciesRepository(fetchSqlConnectionString(sp))
+        );
+    }
 
-        public static void RegisterMatchPredictionRequester(
-            this IServiceCollection services,
-            Func<IServiceProvider, MessagingServiceBusSettings> messagingServiceBusSettings,
-            Func<IServiceProvider, MatchPredictionRequestsSettings> matchPredictionRequestSettings)
-        {
-            var serviceKey = typeof(MessagingServiceBusSettings);
-            services.RegisterServiceBusAsKeyedServices(serviceKey,sp => messagingServiceBusSettings(sp).ConnectionString);
-            services.MakeSettingsAvailableForUse(matchPredictionRequestSettings);
+    private static void RegisterClientServices(this IServiceCollection services)
+    {
+        services.RegisterNotificationSender(
+            OptionsReaderFor<NotificationsServiceBusSettings>(),
+            OptionsReaderFor<ApplicationInsightsSettings>()
+        );
+    }
 
-            // services for requesting a match prediction
-            services.AddScoped<IMatchPredictionValidator, MatchPredictionValidator>();
-            services.AddScoped<IMatchPredictionRequestDispatcher, MatchPredictionRequestDispatcher>();
-            services.AddScoped<IMessageBatchPublisher<IdentifiedMatchPredictionRequest>, MessageBatchPublisher<IdentifiedMatchPredictionRequest>>(sp =>
-            {
-                var serviceBusSettings = messagingServiceBusSettings(sp);
-                var matchPredictionRequestsSettings = matchPredictionRequestSettings(sp);
-                var logger = sp.GetService<IAtlasLogger>();
-                var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
-                return new MessageBatchPublisher<IdentifiedMatchPredictionRequest>(topicClientFactory, matchPredictionRequestsSettings.RequestsTopic,
-                    serviceBusSettings.SendRetryCount, serviceBusSettings.SendRetryCooldownSeconds, logger);
-            });
+    private static void RegisterServices(this IServiceCollection services)
+    {
+        services.AddScoped<MatchProbabilityLoggingContext>();
+        services.AddScoped(typeof(IMatchPredictionLogger<>), typeof(MatchPredictionLogger<>));
 
-            // services for running a match prediction request
-            services.AddScoped<IMatchPredictionRequestRunner, MatchPredictionRequestRunner>();
-            services.AddScoped<MatchPredictionRequestLoggingContext>();
-            services.AddScoped<IMatchPredictionRequestResultUploader, MatchPredictionRequestResultUploader>();
-            services.RegisterMatchPredictionResultsLocationPublisher(messagingServiceBusSettings, matchPredictionRequestSettings);
-        }
+        services.AddScoped<IMatchPredictionAlgorithm, MatchPredictionAlgorithm>();
+        services.AddScoped<IParallelMatchPredictionAlgorithm, ParallelMatchPredictionAlgorithm>();
+        services.AddScoped<IDonorInputBatcher, DonorInputBatcher>();
 
-        public static void RegisterMatchPredictionResultsLocationPublisher(
-            this IServiceCollection services,
-            Func<IServiceProvider, MessagingServiceBusSettings> messagingServiceBusSettings,
-            Func<IServiceProvider, MatchPredictionRequestsSettings> matchPredictionRequestSettings)
-        {
-            services.AddScoped<IMessageBatchPublisher<MatchPredictionResultLocation>, MessageBatchPublisher<MatchPredictionResultLocation>>(sp =>
-            {
-                var serviceBusSettings = messagingServiceBusSettings(sp);
-                var matchPredictionRequestsSettings = matchPredictionRequestSettings(sp);
-                var logger = sp.GetService<IAtlasLogger>();
-                var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
-                return new MessageBatchPublisher<MatchPredictionResultLocation>(topicClientFactory, matchPredictionRequestsSettings.ResultsTopic,
-                    serviceBusSettings.SendRetryCount, serviceBusSettings.SendRetryCooldownSeconds, logger);
-            });
-        }
+        services.AddScoped<IFrequencySetImporter, FrequencySetImporter>();
+        services.AddScoped<IFrequencyFileParser, FrequencyFileParser>();
+        services.AddScoped<IFrequencySetValidator, FrequencySetValidator>();
+        services.AddScoped<IHaplotypeFrequencyService, HaplotypeFrequencyService>();
+        services.AddScoped<IFrequencyConsolidator, FrequencyConsolidator>();
+        services.AddScoped<IHaplotypeFrequencyCache, HaplotypeFrequencyCache>();
 
-        /// <summary>
-        /// Registers <see cref="ISessionMessagePublisher{T}"/> for <see cref="ParallelMatchPredictionBatchResult"/>
-        /// so the ACA Worker can publish batch results to the session-enabled
-        /// <c>parallel-match-prediction-results</c> Service Bus topic.
-        /// </summary>
-        public static void RegisterParallelMatchPredictionBatchResultPublisher(
-            this IServiceCollection services,
-            Func<IServiceProvider, MessagingServiceBusSettings> messagingServiceBusSettings,
-            Func<IServiceProvider, MatchPredictionRequestsSettings> matchPredictionRequestSettings)
-        {
-            services.AddScoped<ISessionMessagePublisher<ParallelMatchPredictionBatchResult>,
-                SessionMessagePublisher<ParallelMatchPredictionBatchResult>>(sp =>
-            {
-                var serviceBusSettings = messagingServiceBusSettings(sp);
-                var requestsSettings = matchPredictionRequestSettings(sp);
-                var logger = sp.GetRequiredService<ILogger<SessionMessagePublisher<ParallelMatchPredictionBatchResult>>>();
-                var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
-                return new SessionMessagePublisher<ParallelMatchPredictionBatchResult>(
-                    topicClientFactory,
-                    requestsSettings.ParallelResultsTopic,
-                    serviceBusSettings.SendRetryCount,
-                    serviceBusSettings.SendRetryCooldownSeconds,
-                    logger);
-            });
-        }
-
-        private static void RegisterSettings(
-            this IServiceCollection services,
-            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
-        {
-            services.MakeSettingsAvailableForUse(fetchNotificationsServiceBusSettings);
-            services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
-        }
-
-        private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)
-        {
-            services.AddTransient<IHaplotypeFrequencySetRepository, HaplotypeFrequencySetRepository>(sp =>
-                new HaplotypeFrequencySetRepository(fetchSqlConnectionString(sp), new ContextFactory())
-            );
-            services.AddTransient<IHaplotypeFrequenciesRepository, HaplotypeFrequenciesRepository>(sp =>
-                new HaplotypeFrequenciesRepository(fetchSqlConnectionString(sp))
-            );
-        }
-
-        private static void RegisterClientServices(this IServiceCollection services)
-        {
-            services.RegisterNotificationSender(
-                OptionsReaderFor<NotificationsServiceBusSettings>(),
-                OptionsReaderFor<ApplicationInsightsSettings>()
-            );
-        }
-
-        private static void RegisterServices(this IServiceCollection services)
-        {
-            services.AddScoped<MatchProbabilityLoggingContext>();
-            services.AddScoped(typeof(IMatchPredictionLogger<>), typeof(MatchPredictionLogger<>));
-
-            services.AddScoped<IMatchPredictionAlgorithm, MatchPredictionAlgorithm>();
-            services.AddScoped<IParallelMatchPredictionAlgorithm, ParallelMatchPredictionAlgorithm>();
-            services.AddScoped<IDonorInputBatcher, DonorInputBatcher>();
-
-            services.AddScoped<IFrequencySetImporter, FrequencySetImporter>();
-            services.AddScoped<IFrequencyFileParser, FrequencyFileParser>();
-            services.AddScoped<IFrequencySetValidator, FrequencySetValidator>();
-            services.AddScoped<IHaplotypeFrequencyService, HaplotypeFrequencyService>();
-            services.AddScoped<IFrequencyConsolidator, FrequencyConsolidator>();
-            services.AddScoped<IHaplotypeFrequencyCache, HaplotypeFrequencyCache>();
-
-            services.AddScoped<IGenotypeLikelihoodService, GenotypeLikelihoodService>();
-            services.AddScoped<IDiplotypeLikelihoodCalculator, DiplotypeLikelihoodCalculator>();
-            services.AddScoped<IUnambiguousGenotypeExpander, UnambiguousGenotypeExpander>();
-            services.AddScoped<IGenotypeLikelihoodCalculator, GenotypeLikelihoodCalculator>();
-            services.AddScoped<IGenotypeAlleleTruncater, GenotypeAlleleTruncater>();
+        services.AddScoped<IGenotypeLikelihoodService, GenotypeLikelihoodService>();
+        services.AddScoped<IDiplotypeLikelihoodCalculator, DiplotypeLikelihoodCalculator>();
+        services.AddScoped<IUnambiguousGenotypeExpander, UnambiguousGenotypeExpander>();
+        services.AddScoped<IGenotypeLikelihoodCalculator, GenotypeLikelihoodCalculator>();
+        services.AddScoped<IGenotypeAlleleTruncater, GenotypeAlleleTruncater>();
             
-            services.AddScoped<ICompressedPhenotypeExpander, CompressedPhenotypeExpander>();
-            services.AddScoped<ICompressedPhenotypeConverter, CompressedPhenotypeConverter>();
-            services.AddScoped<IHlaToTargetCategoryConverter, HlaToTargetCategoryConverter>();
-            services.AddScoped<ISmallGGroupToPGroupConverter, SmallGGroupToPGroupConverter>();
-            services.AddScoped<IGGroupToPGroupConverter, GGroupToPGroupConverter>();
+        services.AddScoped<ICompressedPhenotypeExpander, CompressedPhenotypeExpander>();
+        services.AddScoped<ICompressedPhenotypeConverter, CompressedPhenotypeConverter>();
+        services.AddScoped<IHlaToTargetCategoryConverter, HlaToTargetCategoryConverter>();
+        services.AddScoped<ISmallGGroupToPGroupConverter, SmallGGroupToPGroupConverter>();
+        services.AddScoped<IGGroupToPGroupConverter, GGroupToPGroupConverter>();
 
-            services.AddScoped<IMatchCalculationService, MatchCalculationService>();
+        services.AddScoped<IMatchCalculationService, MatchCalculationService>();
 
-            services.AddScoped<IMatchProbabilityService, MatchProbabilityService>();
-            services.AddScoped<IGenotypeImputationService, GenotypeImputationService>();
-            services.AddScoped<IGenotypeSetService, GenotypeSetService>();
-            services.AddScoped<IGenotypeMatcher, GenotypeMatcher>();
-            services.AddScoped<IMatchProbabilityCalculator, MatchProbabilityCalculator>();
-            services.AddScoped<IGenotypeConverter, GenotypeConverter>();
+        services.AddScoped<IMatchProbabilityService, MatchProbabilityService>();
+        services.AddScoped<IGenotypeImputationService, GenotypeImputationService>();
+        services.AddScoped<IGenotypeSetService, GenotypeSetService>();
+        services.AddScoped<IGenotypeMatcher, GenotypeMatcher>();
+        services.AddScoped<IMatchProbabilityCalculator, MatchProbabilityCalculator>();
+        services.AddScoped<IGenotypeConverter, GenotypeConverter>();
 
-            services.AddScoped<ISearchDonorResultUploader, SearchDonorResultUploader>();
-        }
+        services.AddScoped<ISearchDonorResultUploader, SearchDonorResultUploader>();
     }
 }

@@ -1,17 +1,16 @@
 using System.Threading;
 
-namespace Atlas.MatchingAlgorithm.Services.Utility
+namespace Atlas.MatchingAlgorithm.Services.Utility;
+
+public interface IThreadSleeper
 {
-    public interface IThreadSleeper
-    {
-        void Sleep(int milliseconds);
-    }
+    void Sleep(int milliseconds);
+}
     
-    public class ThreadSleeper: IThreadSleeper
+public class ThreadSleeper: IThreadSleeper
+{
+    public void Sleep(int milliseconds)
     {
-        public void Sleep(int milliseconds)
-        {
-            Thread.Sleep(milliseconds);
-        }
+        Thread.Sleep(milliseconds);
     }
 }

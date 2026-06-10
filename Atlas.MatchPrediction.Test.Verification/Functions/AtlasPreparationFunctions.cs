@@ -12,57 +12,56 @@ using System.Threading.Tasks;
 using Atlas.MatchPrediction.Test.Verification.Services;
 using Microsoft.Azure.Functions.Worker;
 
-namespace Atlas.MatchPrediction.Test.Verification.Functions
+namespace Atlas.MatchPrediction.Test.Verification.Functions;
+
+public class AtlasPreparationFunctions
 {
-    public class AtlasPreparationFunctions
+    private readonly IVerificationAtlasPreparer atlasPreparer;
+    private readonly ITestHarnessRepository testHarnessRepository;
+
+    public AtlasPreparationFunctions(IVerificationAtlasPreparer atlasPreparer, ITestHarnessRepository testHarnessRepository)
     {
-        private readonly IVerificationAtlasPreparer atlasPreparer;
-        private readonly ITestHarnessRepository testHarnessRepository;
+        this.atlasPreparer = atlasPreparer;
+        this.testHarnessRepository = testHarnessRepository;
+    }
 
-        public AtlasPreparationFunctions(IVerificationAtlasPreparer atlasPreparer, ITestHarnessRepository testHarnessRepository)
+    [Function(nameof(PrepareAtlasDonorStores))]
+    public async Task PrepareAtlasDonorStores(
+        [HttpTrigger(AuthorizationLevel.Function, "post")]
+        [RequestBodyType(typeof(TestHarnessDetails), nameof(TestHarnessDetails))]
+        HttpRequest request)
+    {
+        try
         {
-            this.atlasPreparer = atlasPreparer;
-            this.testHarnessRepository = testHarnessRepository;
-        }
+            var testHarnessId = JsonConvert.DeserializeObject<TestHarnessDetails>(
+                await new StreamReader(request.Body).ReadToEndAsync()).TestHarnessId;
 
-        [Function(nameof(PrepareAtlasDonorStores))]
-        public async Task PrepareAtlasDonorStores(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(TestHarnessDetails), nameof(TestHarnessDetails))]
-            HttpRequest request)
-        {
-            try
+            if (await TestHarnessNotCompleted(testHarnessId))
             {
-                var testHarnessId = JsonConvert.DeserializeObject<TestHarnessDetails>(
-                    await new StreamReader(request.Body).ReadToEndAsync()).TestHarnessId;
-
-                if (await TestHarnessNotCompleted(testHarnessId))
-                {
-                    throw new ArgumentException($"Cannot export donors for test harness {testHarnessId} as it is marked as incomplete.");
-                }
-
-                await atlasPreparer.PrepareAtlasWithTestHarnessDonors(testHarnessId);
+                throw new ArgumentException($"Cannot export donors for test harness {testHarnessId} as it is marked as incomplete.");
             }
-            catch (Exception ex)
-            {
-                throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failed to prepare Atlas donor stores.", ex);
-            }
-        }
 
-        [Function(nameof(HandleDataRefreshCompletion))]
-        public async Task HandleDataRefreshCompletion(
-            [ServiceBusTrigger(
-                "%DataRefresh:CompletionTopic%",
-                "%DataRefresh:CompletionTopicSubscription%",
-                Connection = "MessagingServiceBus:ConnectionString")]
-            CompletedDataRefresh dataRefresh)
-        {
-            await atlasPreparer.SaveDataRefreshDetails(dataRefresh);
+            await atlasPreparer.PrepareAtlasWithTestHarnessDonors(testHarnessId);
         }
+        catch (Exception ex)
+        {
+            throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failed to prepare Atlas donor stores.", ex);
+        }
+    }
 
-        private async Task<bool> TestHarnessNotCompleted(int testHarnessId)
-        {
-            return !(await testHarnessRepository.GetTestHarness(testHarnessId)).WasCompleted;
-        }
+    [Function(nameof(HandleDataRefreshCompletion))]
+    public async Task HandleDataRefreshCompletion(
+        [ServiceBusTrigger(
+            "%DataRefresh:CompletionTopic%",
+            "%DataRefresh:CompletionTopicSubscription%",
+            Connection = "MessagingServiceBus:ConnectionString")]
+        CompletedDataRefresh dataRefresh)
+    {
+        await atlasPreparer.SaveDataRefreshDetails(dataRefresh);
+    }
+
+    private async Task<bool> TestHarnessNotCompleted(int testHarnessId)
+    {
+        return !(await testHarnessRepository.GetTestHarness(testHarnessId)).WasCompleted;
     }
 }

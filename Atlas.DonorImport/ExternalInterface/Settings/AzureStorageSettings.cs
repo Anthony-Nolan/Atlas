@@ -1,10 +1,9 @@
-﻿namespace Atlas.DonorImport.ExternalInterface.Settings
+﻿namespace Atlas.DonorImport.ExternalInterface.Settings;
+
+public class AzureStorageSettings
 {
-    public class AzureStorageSettings
-    {
-        public string ConnectionString { get; set; }
-        public string DonorFileBlobContainer { get; set; }
-        public string DonorIdCheckerResultsBlobContainer { get; set; }
-        public string DonorInfoCheckerResultsBlobContainer { get; set; }
-    }
+    public string ConnectionString { get; set; }
+    public string DonorFileBlobContainer { get; set; }
+    public string DonorIdCheckerResultsBlobContainer { get; set; }
+    public string DonorInfoCheckerResultsBlobContainer { get; set; }
 }

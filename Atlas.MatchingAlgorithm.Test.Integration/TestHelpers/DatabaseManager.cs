@@ -9,71 +9,71 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ContextFactory = Atlas.MatchingAlgorithm.Data.Context.ContextFactory;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
+namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
+
+internal class DatabaseManager
 {
-    internal class DatabaseManager
+    /// <summary>
+    /// Creates if necessary, and runs migrations on both a transient and persistent database
+    /// </summary>
+    public static void MigrateDatabases()
     {
-        /// <summary>
-        /// Creates if necessary, and runs migrations on both a transient and persistent database
-        /// </summary>
-        public static void MigrateDatabases()
+        var transientContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmContext>();
+        var persistentContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmPersistentContext>();
+
+        var connectionStringB =
+            DependencyInjection.DependencyInjection.Provider.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"];
+        var transientContextB = new ContextFactory().Create(connectionStringB);
+
+        if (transientContext == null || persistentContext == null)
         {
-            var transientContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmContext>();
-            var persistentContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmPersistentContext>();
-
-            var connectionStringB =
-                DependencyInjection.DependencyInjection.Provider.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"];
-            var transientContextB = new ContextFactory().Create(connectionStringB);
-
-            if (transientContext == null || persistentContext == null)
-            {
-                throw new Exception("Database context could resolved - DI has not been correctly configured.");
-            }
-
-            transientContext.Database.Migrate();
-            transientContextB?.Database.Migrate();
-            persistentContext.Database.Migrate();
+            throw new Exception("Database context could resolved - DI has not been correctly configured.");
         }
 
-        /// <summary>
-        /// Clears the test database of data. Can be accessed by fixtures to run after each fixture, but not after each test.
-        /// </summary>
-        public static void ClearDatabases()
-        {
-            ClearTransientDatabases();
-            ClearPersistentDatabase();
-        }
+        transientContext.Database.Migrate();
+        transientContextB?.Database.Migrate();
+        persistentContext.Database.Migrate();
+    }
 
-        /// <summary>
-        /// Clearing the persistent database will clear all refresh records, and there will no longer be an active HLA nomenclature version
-        /// Of you call this anywhere other than global setup, you must re-add a data refresh record to prevent search tests failing due to this.
-        /// </summary>
-        private static void ClearPersistentDatabase()
-        {
-            var persistentContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmPersistentContext>();
-            Task.WaitAll(ClearPersistentDatabase(persistentContext));
-        }
+    /// <summary>
+    /// Clears the test database of data. Can be accessed by fixtures to run after each fixture, but not after each test.
+    /// </summary>
+    public static void ClearDatabases()
+    {
+        ClearTransientDatabases();
+        ClearPersistentDatabase();
+    }
 
-        public static void ClearTransientDatabases()
-        {
-            var connStringFactory = DependencyInjection.DependencyInjection.Provider
-                .GetService<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
-            var connStringA = connStringFactory.GenerateConnectionStringProvider(TransientDatabase.DatabaseA).GetConnectionString();
-            var connStringB = connStringFactory.GenerateConnectionStringProvider(TransientDatabase.DatabaseB).GetConnectionString();
+    /// <summary>
+    /// Clearing the persistent database will clear all refresh records, and there will no longer be an active HLA nomenclature version
+    /// Of you call this anywhere other than global setup, you must re-add a data refresh record to prevent search tests failing due to this.
+    /// </summary>
+    private static void ClearPersistentDatabase()
+    {
+        var persistentContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmPersistentContext>();
+        Task.WaitAll(ClearPersistentDatabase(persistentContext));
+    }
 
-            var transientContextA = new ContextFactory().Create(connStringA);
-            var transientContextB = new ContextFactory().Create(connStringB);
-            Task.WaitAll(
-                ClearTransientDatabase(transientContextA),
-                ClearTransientDatabase(transientContextB)
-            );
-        }
+    public static void ClearTransientDatabases()
+    {
+        var connStringFactory = DependencyInjection.DependencyInjection.Provider
+            .GetService<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
+        var connStringA = connStringFactory.GenerateConnectionStringProvider(TransientDatabase.DatabaseA).GetConnectionString();
+        var connStringB = connStringFactory.GenerateConnectionStringProvider(TransientDatabase.DatabaseB).GetConnectionString();
 
-        private static Task ClearTransientDatabase(DbContext context)
+        var transientContextA = new ContextFactory().Create(connStringA);
+        var transientContextB = new ContextFactory().Create(connStringB);
+        Task.WaitAll(
+            ClearTransientDatabase(transientContextA),
+            ClearTransientDatabase(transientContextB)
+        );
+    }
+
+    private static Task ClearTransientDatabase(DbContext context)
+    {
+        if (context != null)
         {
-            if (context != null)
-            {
-                return context.Database.ExecuteSqlRawAsync(@$"
+            return context.Database.ExecuteSqlRawAsync(@$"
                 TRUNCATE TABLE [HlaNamePGroupRelationAtA]
                 TRUNCATE TABLE [HlaNamePGroupRelationAtB]
                 TRUNCATE TABLE [HlaNamePGroupRelationAtC]
@@ -93,14 +93,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
 
                 TRUNCATE TABLE [DonorManagementLogs]
                 ");
-            }
-
-            return Task.CompletedTask;
         }
 
-        private static Task ClearPersistentDatabase(SearchAlgorithmPersistentContext context)
-        {
-            return context.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE {DataRefreshRecord.QualifiedTableName}");
-        }
+        return Task.CompletedTask;
+    }
+
+    private static Task ClearPersistentDatabase(SearchAlgorithmPersistentContext context)
+    {
+        return context.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE {DataRefreshRecord.QualifiedTableName}");
     }
 }

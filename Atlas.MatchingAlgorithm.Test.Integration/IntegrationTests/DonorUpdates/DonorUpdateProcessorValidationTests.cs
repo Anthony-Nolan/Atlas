@@ -18,266 +18,265 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
+namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates;
+
+/// <summary>
+/// Tests the processing and validation of donor update messages.
+/// Fixture does not go so far as to check that updates reach the database,
+/// as that is covered by other integration tests, e.g., donor service tests.
+/// Only a few invalid scenarios are included here to ensure validation is taking place;
+/// validator logic is extensively covered by unit tests.
+/// </summary>
+[TestFixture]
+public class DonorUpdateProcessorValidationTests
 {
-    /// <summary>
-    /// Tests the processing and validation of donor update messages.
-    /// Fixture does not go so far as to check that updates reach the database,
-    /// as that is covered by other integration tests, e.g., donor service tests.
-    /// Only a few invalid scenarios are included here to ensure validation is taking place;
-    /// validator logic is extensively covered by unit tests.
-    /// </summary>
-    [TestFixture]
-    public class DonorUpdateProcessorValidationTests
+    private readonly string invalidHlaAtRequiredLocus = null;
+
+    private IDonorUpdateProcessor donorUpdateProcessor;
+
+    private IServiceBusMessageReceiver<SearchableDonorUpdate> messageReceiver;
+    private DonorUpdateMessageProcessor messageProcessor;
+    private IDonorManagementService donorManagementService;
+    private ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
+    private IMatchingAlgorithmImportLogger logger;
+    private IDonorReader donorReader;
+    private IDonorUpdatesSaver donorUpdatesSaver;
+    private int batchSize;
+    private const TransientDatabase DbTarget = TransientDatabase.DatabaseA;
+
+    [SetUp]
+    public void SetUp()
     {
-        private readonly string invalidHlaAtRequiredLocus = null;
+        var provider = DependencyInjection.DependencyInjection.Provider;
 
-        private IDonorUpdateProcessor donorUpdateProcessor;
+        messageReceiver = Substitute.For<IServiceBusMessageReceiver<SearchableDonorUpdate>>();
+        messageProcessor = new DonorUpdateMessageProcessor(messageReceiver);
 
-        private IServiceBusMessageReceiver<SearchableDonorUpdate> messageReceiver;
-        private DonorUpdateMessageProcessor messageProcessor;
-        private IDonorManagementService donorManagementService;
-        private ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
-        private IMatchingAlgorithmImportLogger logger;
-        private IDonorReader donorReader;
-        private IDonorUpdatesSaver donorUpdatesSaver;
-        private int batchSize;
-        private const TransientDatabase DbTarget = TransientDatabase.DatabaseA;
+        var refreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
+        refreshHistoryRepository.GetActiveDatabase().Returns(DbTarget);
+        refreshHistoryRepository.GetIncompleteRefreshJobs().Returns(Enumerable.Empty<DataRefreshRecord>());
 
-        [SetUp]
-        public void SetUp()
-        {
-            var provider = DependencyInjection.DependencyInjection.Provider;
+        donorManagementService = Substitute.For<IDonorManagementService>();
+        searchableDonorUpdateConverter = provider.GetService<ISearchableDonorUpdateConverter>();
+        var hlaVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
+        logger = Substitute.For<IMatchingAlgorithmImportLogger>();
+        donorReader = Substitute.For<IDonorReader>();
+        donorUpdatesSaver = Substitute.For<IDonorUpdatesSaver>();
 
-            messageReceiver = Substitute.For<IServiceBusMessageReceiver<SearchableDonorUpdate>>();
-            messageProcessor = new DonorUpdateMessageProcessor(messageReceiver);
+        batchSize = 10;
 
-            var refreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
-            refreshHistoryRepository.GetActiveDatabase().Returns(DbTarget);
-            refreshHistoryRepository.GetIncompleteRefreshJobs().Returns(Enumerable.Empty<DataRefreshRecord>());
+        donorUpdateProcessor = new DonorUpdateProcessor(
+            messageProcessor,
+            messageProcessor,
+            refreshHistoryRepository,
+            donorManagementService,
+            searchableDonorUpdateConverter,
+            hlaVersionAccessor,
+            new DonorManagementSettings {BatchSize = batchSize, OngoingDifferentialDonorUpdatesShouldBeFullyTransactional = false},
+            logger,
+            new MatchingAlgorithmImportLoggingContext(),
+            donorReader,
+            donorUpdatesSaver);
+    }
 
-            donorManagementService = Substitute.For<IDonorManagementService>();
-            searchableDonorUpdateConverter = provider.GetService<ISearchableDonorUpdateConverter>();
-            var hlaVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
-            logger = Substitute.For<IMatchingAlgorithmImportLogger>();
-            donorReader = Substitute.For<IDonorReader>();
-            donorUpdatesSaver = Substitute.For<IDonorUpdatesSaver>();
+    [Test]
+    public async Task ProcessDonorUpdates_SingleUpdateHasValidRequiredDonorInfo_ManagesDonorUpdate()
+    {
+        var message = SearchableDonorUpdateMessageBuilder.New.Build();
+        messageReceiver
+            .ReceiveMessageBatchAsync(Arg.Any<int>())
+            .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
 
-            batchSize = 10;
+        await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
 
-            donorUpdateProcessor = new DonorUpdateProcessor(
-                messageProcessor,
-                messageProcessor,
-                refreshHistoryRepository,
-                donorManagementService,
-                searchableDonorUpdateConverter,
-                hlaVersionAccessor,
-                new DonorManagementSettings {BatchSize = batchSize, OngoingDifferentialDonorUpdatesShouldBeFullyTransactional = false},
-                logger,
-                new MatchingAlgorithmImportLoggingContext(),
-                donorReader,
-                donorUpdatesSaver);
-        }
+        await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
+            Arg.Is<IReadOnlyCollection<DonorAvailabilityUpdate>>(x => x.Count == 1),
+            Arg.Any<TransientDatabase>(),
+            Arg.Any<string>(),
+            Arg.Any<bool>());
+    }
 
-        [Test]
-        public async Task ProcessDonorUpdates_SingleUpdateHasValidRequiredDonorInfo_ManagesDonorUpdate()
-        {
-            var message = SearchableDonorUpdateMessageBuilder.New.Build();
-            messageReceiver
-                .ReceiveMessageBatchAsync(Arg.Any<int>())
-                .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
+    [Test]
+    public async Task ProcessDonorUpdates_SingleUpdateHasInvalidDonorInfo_DoesNotManageDonorUpdate()
+    {
+        var donorInfo = SearchableDonorInformationBuilder.New
+            .With(x => x.A_1, invalidHlaAtRequiredLocus)
+            .Build();
 
-            await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
+        var update = SearchableDonorUpdateBuilder.New
+            .With(x => x.SearchableDonorInformation, donorInfo)
+            .With(x => x.DonorId, donorInfo.DonorId);
 
-            await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
-                Arg.Is<IReadOnlyCollection<DonorAvailabilityUpdate>>(x => x.Count == 1),
-                Arg.Any<TransientDatabase>(),
-                Arg.Any<string>(),
-                Arg.Any<bool>());
-        }
+        var message = SearchableDonorUpdateMessageBuilder.New
+            .With(x => x.DeserializedBody, update)
+            .Build();
+        messageReceiver
+            .ReceiveMessageBatchAsync(Arg.Any<int>())
+            .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
 
-        [Test]
-        public async Task ProcessDonorUpdates_SingleUpdateHasInvalidDonorInfo_DoesNotManageDonorUpdate()
-        {
-            var donorInfo = SearchableDonorInformationBuilder.New
-                .With(x => x.A_1, invalidHlaAtRequiredLocus)
-                .Build();
+        await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
 
-            var update = SearchableDonorUpdateBuilder.New
-                .With(x => x.SearchableDonorInformation, donorInfo)
-                .With(x => x.DonorId, donorInfo.DonorId);
+        await donorManagementService.DidNotReceiveWithAnyArgs().ApplyDonorUpdatesToDatabase(default, default, default, default);
+    }
 
-            var message = SearchableDonorUpdateMessageBuilder.New
-                .With(x => x.DeserializedBody, update)
-                .Build();
-            messageReceiver
-                .ReceiveMessageBatchAsync(Arg.Any<int>())
-                .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
+    [Test]
+    public void ProcessDonorUpdates_SingleUpdateHasInvalidDonorInfo_DoesNotThrowValidationException()
+    {
+        var donorInfo = SearchableDonorInformationBuilder.New
+            .With(x => x.A_1, invalidHlaAtRequiredLocus)
+            .Build();
 
-            await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
+        var update = SearchableDonorUpdateBuilder.New
+            .With(x => x.SearchableDonorInformation, donorInfo)
+            .With(x => x.DonorId, donorInfo.DonorId);
 
-            await donorManagementService.DidNotReceiveWithAnyArgs().ApplyDonorUpdatesToDatabase(default, default, default, default);
-        }
+        var message = SearchableDonorUpdateMessageBuilder.New
+            .With(x => x.DeserializedBody, update)
+            .Build();
+        messageReceiver
+            .ReceiveMessageBatchAsync(Arg.Any<int>())
+            .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
 
-        [Test]
-        public void ProcessDonorUpdates_SingleUpdateHasInvalidDonorInfo_DoesNotThrowValidationException()
-        {
-            var donorInfo = SearchableDonorInformationBuilder.New
-                .With(x => x.A_1, invalidHlaAtRequiredLocus)
-                .Build();
+        Assert.DoesNotThrowAsync(async () => await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget));
+    }
 
-            var update = SearchableDonorUpdateBuilder.New
-                .With(x => x.SearchableDonorInformation, donorInfo)
-                .With(x => x.DonorId, donorInfo.DonorId);
+    [TestCase(null)]
+    [TestCase("")]
+    public async Task ProcessDonorUpdates_SingleUpdateIsMissingRequiredHla_DoesNotManageDonorUpdate(string missingHla)
+    {
+        var donorInfo = SearchableDonorInformationBuilder.New
+            .With(x => x.A_1, missingHla)
+            .With(x => x.A_2, missingHla)
+            .With(x => x.B_1, missingHla)
+            .With(x => x.B_2, missingHla)
+            .With(x => x.DRB1_1, missingHla)
+            .With(x => x.DRB1_1, missingHla)
+            .Build();
 
-            var message = SearchableDonorUpdateMessageBuilder.New
-                .With(x => x.DeserializedBody, update)
-                .Build();
-            messageReceiver
-                .ReceiveMessageBatchAsync(Arg.Any<int>())
-                .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
+        var update = SearchableDonorUpdateBuilder.New
+            .With(x => x.SearchableDonorInformation, donorInfo)
+            .With(x => x.DonorId, donorInfo.DonorId);
 
-            Assert.DoesNotThrowAsync(async () => await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget));
-        }
+        var message = SearchableDonorUpdateMessageBuilder.New
+            .With(x => x.DeserializedBody, update)
+            .Build();
+        messageReceiver
+            .ReceiveMessageBatchAsync(Arg.Any<int>())
+            .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
 
-        [TestCase(null)]
-        [TestCase("")]
-        public async Task ProcessDonorUpdates_SingleUpdateIsMissingRequiredHla_DoesNotManageDonorUpdate(string missingHla)
-        {
-            var donorInfo = SearchableDonorInformationBuilder.New
-                .With(x => x.A_1, missingHla)
-                .With(x => x.A_2, missingHla)
-                .With(x => x.B_1, missingHla)
-                .With(x => x.B_2, missingHla)
-                .With(x => x.DRB1_1, missingHla)
-                .With(x => x.DRB1_1, missingHla)
-                .Build();
+        await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
 
-            var update = SearchableDonorUpdateBuilder.New
-                .With(x => x.SearchableDonorInformation, donorInfo)
-                .With(x => x.DonorId, donorInfo.DonorId);
+        await donorManagementService.DidNotReceiveWithAnyArgs().ApplyDonorUpdatesToDatabase(default, default, default, default);
+    }
 
-            var message = SearchableDonorUpdateMessageBuilder.New
-                .With(x => x.DeserializedBody, update)
-                .Build();
-            messageReceiver
-                .ReceiveMessageBatchAsync(Arg.Any<int>())
-                .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
+    [TestCase(null)]
+    [TestCase("")]
+    public void ProcessDonorUpdates_SingleUpdateIsMissingRequiredHla_DoesNotThrowValidationException(string missingHla)
+    {
+        var donorInfo = SearchableDonorInformationBuilder.New
+            .With(x => x.A_1, missingHla)
+            .With(x => x.A_2, missingHla)
+            .With(x => x.B_1, missingHla)
+            .With(x => x.B_2, missingHla)
+            .With(x => x.DRB1_1, missingHla)
+            .With(x => x.DRB1_1, missingHla)
+            .Build();
 
-            await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
+        var update = SearchableDonorUpdateBuilder.New
+            .With(x => x.SearchableDonorInformation, donorInfo)
+            .With(x => x.DonorId, donorInfo.DonorId);
 
-            await donorManagementService.DidNotReceiveWithAnyArgs().ApplyDonorUpdatesToDatabase(default, default, default, default);
-        }
+        var message = SearchableDonorUpdateMessageBuilder.New
+            .With(x => x.DeserializedBody, update)
+            .Build();
+        messageReceiver
+            .ReceiveMessageBatchAsync(Arg.Any<int>())
+            .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
 
-        [TestCase(null)]
-        [TestCase("")]
-        public void ProcessDonorUpdates_SingleUpdateIsMissingRequiredHla_DoesNotThrowValidationException(string missingHla)
-        {
-            var donorInfo = SearchableDonorInformationBuilder.New
-                .With(x => x.A_1, missingHla)
-                .With(x => x.A_2, missingHla)
-                .With(x => x.B_1, missingHla)
-                .With(x => x.B_2, missingHla)
-                .With(x => x.DRB1_1, missingHla)
-                .With(x => x.DRB1_1, missingHla)
-                .Build();
+        Assert.DoesNotThrowAsync(async () => await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget));
+    }
 
-            var update = SearchableDonorUpdateBuilder.New
-                .With(x => x.SearchableDonorInformation, donorInfo)
-                .With(x => x.DonorId, donorInfo.DonorId);
+    [TestCase(null)]
+    [TestCase("")]
+    public async Task ProcessDonorUpdates_SingleUpdateIsMissingOptionalHla_ManagesDonorUpdate(string missingHla)
+    {
+        var donorInfo = SearchableDonorInformationBuilder.New
+            .With(x => x.C_1, missingHla)
+            .With(x => x.C_2, missingHla)
+            .With(x => x.DPB1_1, missingHla)
+            .With(x => x.DPB1_1, missingHla)
+            .With(x => x.DQB1_1, missingHla)
+            .With(x => x.DQB1_1, missingHla)
+            .Build();
 
-            var message = SearchableDonorUpdateMessageBuilder.New
-                .With(x => x.DeserializedBody, update)
-                .Build();
-            messageReceiver
-                .ReceiveMessageBatchAsync(Arg.Any<int>())
-                .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
+        var update = SearchableDonorUpdateBuilder.New
+            .With(x => x.SearchableDonorInformation, donorInfo)
+            .With(x => x.DonorId, donorInfo.DonorId);
 
-            Assert.DoesNotThrowAsync(async () => await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget));
-        }
+        var message = SearchableDonorUpdateMessageBuilder.New
+            .With(x => x.DeserializedBody, update)
+            .Build();
+        messageReceiver
+            .ReceiveMessageBatchAsync(Arg.Any<int>())
+            .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
 
-        [TestCase(null)]
-        [TestCase("")]
-        public async Task ProcessDonorUpdates_SingleUpdateIsMissingOptionalHla_ManagesDonorUpdate(string missingHla)
-        {
-            var donorInfo = SearchableDonorInformationBuilder.New
-                .With(x => x.C_1, missingHla)
-                .With(x => x.C_2, missingHla)
-                .With(x => x.DPB1_1, missingHla)
-                .With(x => x.DPB1_1, missingHla)
-                .With(x => x.DQB1_1, missingHla)
-                .With(x => x.DQB1_1, missingHla)
-                .Build();
+        await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
 
-            var update = SearchableDonorUpdateBuilder.New
-                .With(x => x.SearchableDonorInformation, donorInfo)
-                .With(x => x.DonorId, donorInfo.DonorId);
+        await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
+            Arg.Is<IReadOnlyCollection<DonorAvailabilityUpdate>>(x => x.Count == 1),
+            Arg.Any<TransientDatabase>(),
+            Arg.Any<string>(),
+            Arg.Any<bool>());
+    }
 
-            var message = SearchableDonorUpdateMessageBuilder.New
-                .With(x => x.DeserializedBody, update)
-                .Build();
-            messageReceiver
-                .ReceiveMessageBatchAsync(Arg.Any<int>())
-                .Returns(new List<DeserializedMessage<SearchableDonorUpdate>> {message});
+    [Test]
+    public async Task ProcessDonorUpdates_MultipleUpdates_AllValid_ManagesAllDonorUpdates()
+    {
+        const int updateCount = 3;
+        var messages = SearchableDonorUpdateMessageBuilder.New.Build(updateCount);
+        messageReceiver
+            .ReceiveMessageBatchAsync(Arg.Any<int>())
+            .Returns(messages);
 
-            await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
+        await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
 
-            await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
-                Arg.Is<IReadOnlyCollection<DonorAvailabilityUpdate>>(x => x.Count == 1),
-                Arg.Any<TransientDatabase>(),
-                Arg.Any<string>(),
-                Arg.Any<bool>());
-        }
+        await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
+            Arg.Is<IReadOnlyCollection<DonorAvailabilityUpdate>>(x => x.Count == updateCount),
+            Arg.Any<TransientDatabase>(),
+            Arg.Any<string>(),
+            Arg.Any<bool>());
+    }
 
-        [Test]
-        public async Task ProcessDonorUpdates_MultipleUpdates_AllValid_ManagesAllDonorUpdates()
-        {
-            const int updateCount = 3;
-            var messages = SearchableDonorUpdateMessageBuilder.New.Build(updateCount);
-            messageReceiver
-                .ReceiveMessageBatchAsync(Arg.Any<int>())
-                .Returns(messages);
+    [Test]
+    public async Task ProcessDonorUpdates_MultipleUpdates_OneValid_OnlyManagesOneDonorUpdate()
+    {
+        var validMessage = SearchableDonorUpdateMessageBuilder.New.Build();
 
-            await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
+        var invalidDonorInfo = SearchableDonorInformationBuilder.New
+            .With(d => d.A_1, invalidHlaAtRequiredLocus)
+            .Build();
 
-            await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
-                Arg.Is<IReadOnlyCollection<DonorAvailabilityUpdate>>(x => x.Count == updateCount),
-                Arg.Any<TransientDatabase>(),
-                Arg.Any<string>(),
-                Arg.Any<bool>());
-        }
+        var invalidUpdate = SearchableDonorUpdateBuilder.New
+            .With(x => x.SearchableDonorInformation, invalidDonorInfo)
+            .With(x => x.DonorId, invalidDonorInfo.DonorId);
 
-        [Test]
-        public async Task ProcessDonorUpdates_MultipleUpdates_OneValid_OnlyManagesOneDonorUpdate()
-        {
-            var validMessage = SearchableDonorUpdateMessageBuilder.New.Build();
+        var invalidMessage = SearchableDonorUpdateMessageBuilder.New
+            .With(x => x.DeserializedBody, invalidUpdate)
+            .Build();
 
-            var invalidDonorInfo = SearchableDonorInformationBuilder.New
-                .With(d => d.A_1, invalidHlaAtRequiredLocus)
-                .Build();
+        messageReceiver
+            .ReceiveMessageBatchAsync(Arg.Any<int>())
+            .Returns(new List<DeserializedMessage<SearchableDonorUpdate>>
+            {
+                validMessage, invalidMessage
+            });
 
-            var invalidUpdate = SearchableDonorUpdateBuilder.New
-                .With(x => x.SearchableDonorInformation, invalidDonorInfo)
-                .With(x => x.DonorId, invalidDonorInfo.DonorId);
+        await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
 
-            var invalidMessage = SearchableDonorUpdateMessageBuilder.New
-                .With(x => x.DeserializedBody, invalidUpdate)
-                .Build();
-
-            messageReceiver
-                .ReceiveMessageBatchAsync(Arg.Any<int>())
-                .Returns(new List<DeserializedMessage<SearchableDonorUpdate>>
-                {
-                    validMessage, invalidMessage
-                });
-
-            await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DbTarget);
-
-            await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
-                Arg.Is<IReadOnlyCollection<DonorAvailabilityUpdate>>(x => x.Count == 1),
-                Arg.Any<TransientDatabase>(),
-                Arg.Any<string>(),
-                Arg.Any<bool>());
-        }
+        await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
+            Arg.Is<IReadOnlyCollection<DonorAvailabilityUpdate>>(x => x.Count == 1),
+            Arg.Any<TransientDatabase>(),
+            Arg.Any<string>(),
+            Arg.Any<bool>());
     }
 }

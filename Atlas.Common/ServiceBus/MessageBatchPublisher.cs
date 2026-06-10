@@ -4,51 +4,50 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 
-namespace Atlas.Common.ServiceBus
+namespace Atlas.Common.ServiceBus;
+
+public interface IMessageBatchPublisher<in T>
 {
-    public interface IMessageBatchPublisher<in T>
+    Task BatchPublish(IEnumerable<T> contentToPublish);
+}
+
+public class MessageBatchPublisher<T> : IMessageBatchPublisher<T>
+{
+    private readonly ITopicClient topicClient;
+    private readonly int sendRetryCount;
+    private readonly int sendRetryCooldownSeconds;
+    private readonly IAtlasLogger logger;
+
+    public MessageBatchPublisher(ITopicClientFactory topicClientFactory, string topicName, int sendRetryCount, int sendRetryCooldownSeconds, IAtlasLogger logger)
     {
-        Task BatchPublish(IEnumerable<T> contentToPublish);
+        this.topicClient = topicClientFactory.BuildTopicClient(topicName);
+        this.sendRetryCount = sendRetryCount;
+        this.sendRetryCooldownSeconds = sendRetryCooldownSeconds;
+        this.logger = logger;
     }
 
-    public class MessageBatchPublisher<T> : IMessageBatchPublisher<T>
+    public async Task BatchPublish(IEnumerable<T> contentToPublish)
     {
-        private readonly ITopicClient topicClient;
-        private readonly int sendRetryCount;
-        private readonly int sendRetryCooldownSeconds;
-        private readonly IAtlasLogger logger;
+        var localQueue = new Queue<ServiceBusMessage>();
 
-        public MessageBatchPublisher(ITopicClientFactory topicClientFactory, string topicName, int sendRetryCount, int sendRetryCooldownSeconds, IAtlasLogger logger)
+        foreach (var content in contentToPublish)
         {
-            this.topicClient = topicClientFactory.BuildTopicClient(topicName);
-            this.sendRetryCount = sendRetryCount;
-            this.sendRetryCooldownSeconds = sendRetryCooldownSeconds;
-            this.logger = logger;
+            var json = JsonConvert.SerializeObject(content);
+            localQueue.Enqueue(new ServiceBusMessage(json));
         }
 
-        public async Task BatchPublish(IEnumerable<T> contentToPublish)
+
+        while (localQueue.Count > 0)
         {
-            var localQueue = new Queue<ServiceBusMessage>();
+            var batch = await topicClient.CreateMessageBatchAsync();
 
-            foreach (var content in contentToPublish)
+            while (localQueue.Count > 0 && batch.TryAddMessage(localQueue.Peek()))
             {
-                var json = JsonConvert.SerializeObject(content);
-                localQueue.Enqueue(new ServiceBusMessage(json));
+                localQueue.Dequeue();
             }
 
-
-            while (localQueue.Count > 0)
-            {
-                var batch = await topicClient.CreateMessageBatchAsync();
-
-                while (localQueue.Count > 0 && batch.TryAddMessage(localQueue.Peek()))
-                {
-                    localQueue.Dequeue();
-                }
-
-                await topicClient.SendBatchWithRetryAndWaitAsync(batch, sendRetryCount, sendRetryCooldownSeconds,
-                    (exception, retryNumber) => logger.SendTrace($"Could not send batch message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
-            }
+            await topicClient.SendBatchWithRetryAndWaitAsync(batch, sendRetryCount, sendRetryCooldownSeconds,
+                (exception, retryNumber) => logger.SendTrace($"Could not send batch message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
         }
     }
 }

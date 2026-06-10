@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace Atlas.DonorImport.Exceptions
+namespace Atlas.DonorImport.Exceptions;
+
+internal class MalformedDonorFileException : Exception
 {
-    internal class MalformedDonorFileException : Exception
+    internal MalformedDonorFileException(string message) : base(message)
     {
-        internal MalformedDonorFileException(string message) : base(message)
-        {
-        }
     }
 }

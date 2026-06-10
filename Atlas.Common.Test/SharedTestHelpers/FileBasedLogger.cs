@@ -10,69 +10,68 @@ using Logger = NLog.Logger;
 using NLogLevel = NLog.LogLevel;
 using AtlasLogLevel = Atlas.Common.ApplicationInsights.LogLevel;
 
-namespace Atlas.Common.Test.SharedTestHelpers
+namespace Atlas.Common.Test.SharedTestHelpers;
+
+public class FileBasedLogger : IAtlasLogger
 {
-    public class FileBasedLogger : IAtlasLogger
+    private readonly Logger nLogger;
+
+    public FileBasedLogger()
     {
-        private readonly Logger nLogger;
+        var config = new LoggingConfiguration();
 
-        public FileBasedLogger()
+        var traceFileInfo = new FileTarget("logfile") { FileName = "${basedir}\\trace.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2 };
+        var logfileInfo = new FileTarget("logfile") { FileName = "${basedir}\\info.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2 };
+        var logfileError = new FileTarget("logfile") { FileName = "${basedir}\\error.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2 };
+
+        config.AddRule(NLogLevel.Trace, NLogLevel.Trace, traceFileInfo);
+        config.AddRule(NLogLevel.Info, NLogLevel.Info, logfileInfo);
+        config.AddRule(NLogLevel.Error, NLogLevel.Fatal, logfileError);
+
+        LogManager.Configuration = config;
+
+        nLogger = LogManager.GetCurrentClassLogger();
+    }
+
+    public virtual void SendEvent(string name, AtlasLogLevel level = AtlasLogLevel.Info, Dictionary<string, string> props = null, Dictionary<string, double> metrics = null)
+    {
+        var propsString = props?.Select(kvp => $"{kvp.Key}: {kvp.Value}").StringJoin(" | ");
+        var messageText = props == null ? name : $"{name}. Properties: {propsString}";
+        nLogger.Log(GetSeverityLevel(level), messageText);
+    }
+
+    public virtual void SendTrace(string message, AtlasLogLevel messageLogLevel, Dictionary<string, string> props)
+    {
+        var propsString = props?.Select(kvp => $"{kvp.Key}: {kvp.Value}").StringJoin(" | ");
+        var messageText = props == null ? message : $"{message}. Properties: {propsString}";
+        nLogger.Log(GetSeverityLevel(messageLogLevel), messageText);
+    }
+
+    public virtual void SendException(Exception exception, AtlasLogLevel messageLogLevel, Dictionary<string, string> props)
+    {
+        var propsString = props?.Select(kvp => $"{kvp.Key}: {kvp.Value}").StringJoin(" | ");
+        var messageText = props == null
+            ? exception.ToString()
+            : $"{exception}. Properties: {propsString}";
+        nLogger.Log(GetSeverityLevel(messageLogLevel), messageText);
+    }
+
+    private static NLogLevel GetSeverityLevel(AtlasLogLevel logLevel)
+    {
+        switch (logLevel)
         {
-            var config = new LoggingConfiguration();
-
-            var traceFileInfo = new FileTarget("logfile") { FileName = "${basedir}\\trace.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2 };
-            var logfileInfo = new FileTarget("logfile") { FileName = "${basedir}\\info.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2 };
-            var logfileError = new FileTarget("logfile") { FileName = "${basedir}\\error.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2 };
-
-            config.AddRule(NLogLevel.Trace, NLogLevel.Trace, traceFileInfo);
-            config.AddRule(NLogLevel.Info, NLogLevel.Info, logfileInfo);
-            config.AddRule(NLogLevel.Error, NLogLevel.Fatal, logfileError);
-
-            LogManager.Configuration = config;
-
-            nLogger = LogManager.GetCurrentClassLogger();
-        }
-
-        public virtual void SendEvent(string name, AtlasLogLevel level = AtlasLogLevel.Info, Dictionary<string, string> props = null, Dictionary<string, double> metrics = null)
-        {
-            var propsString = props?.Select(kvp => $"{kvp.Key}: {kvp.Value}").StringJoin(" | ");
-            var messageText = props == null ? name : $"{name}. Properties: {propsString}";
-            nLogger.Log(GetSeverityLevel(level), messageText);
-        }
-
-        public virtual void SendTrace(string message, AtlasLogLevel messageLogLevel, Dictionary<string, string> props)
-        {
-            var propsString = props?.Select(kvp => $"{kvp.Key}: {kvp.Value}").StringJoin(" | ");
-            var messageText = props == null ? message : $"{message}. Properties: {propsString}";
-            nLogger.Log(GetSeverityLevel(messageLogLevel), messageText);
-        }
-
-        public virtual void SendException(Exception exception, AtlasLogLevel messageLogLevel, Dictionary<string, string> props)
-        {
-            var propsString = props?.Select(kvp => $"{kvp.Key}: {kvp.Value}").StringJoin(" | ");
-            var messageText = props == null
-                ? exception.ToString()
-                : $"{exception}. Properties: {propsString}";
-            nLogger.Log(GetSeverityLevel(messageLogLevel), messageText);
-        }
-
-        private static NLogLevel GetSeverityLevel(AtlasLogLevel logLevel)
-        {
-            switch (logLevel)
-            {
-                case AtlasLogLevel.Verbose:
-                    return NLogLevel.Trace;
-                case AtlasLogLevel.Info:
-                    return NLogLevel.Info;
-                case AtlasLogLevel.Warn:
-                    return NLogLevel.Warn;
-                case AtlasLogLevel.Error:
-                    return NLogLevel.Error;
-                case AtlasLogLevel.Critical:
-                    return NLogLevel.Fatal;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, null);
-            }
+            case AtlasLogLevel.Verbose:
+                return NLogLevel.Trace;
+            case AtlasLogLevel.Info:
+                return NLogLevel.Info;
+            case AtlasLogLevel.Warn:
+                return NLogLevel.Warn;
+            case AtlasLogLevel.Error:
+                return NLogLevel.Error;
+            case AtlasLogLevel.Critical:
+                return NLogLevel.Fatal;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, null);
         }
     }
 }

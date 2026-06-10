@@ -7,89 +7,88 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace Atlas.MatchPrediction.Test.Validation.Functions
+namespace Atlas.MatchPrediction.Test.Validation.Functions;
+
+/// <summary>
+/// Functions required for running of exercise 3 of the WMDA consensus dataset.
+/// </summary>
+public class Exercise3Functions
 {
-    /// <summary>
-    /// Functions required for running of exercise 3 of the WMDA consensus dataset.
-    /// </summary>
-    public class Exercise3Functions
+    private const string FunctionNamePrefix = "Exercise3_";
+    private readonly IMatchPredictionRequester matchPredictionRequester;
+    private readonly IMatchPredictionResultsProcessor matchPredictionResultsProcessor;
+    private readonly IMatchPredictionLocationSender matchPredictionLocationSender;
+
+    public Exercise3Functions(
+        IMatchPredictionRequester matchPredictionRequester, 
+        IMatchPredictionResultsProcessor matchPredictionResultsProcessor, 
+        IMatchPredictionLocationSender matchPredictionLocationSender)
     {
-        private const string FunctionNamePrefix = "Exercise3_";
-        private readonly IMatchPredictionRequester matchPredictionRequester;
-        private readonly IMatchPredictionResultsProcessor matchPredictionResultsProcessor;
-        private readonly IMatchPredictionLocationSender matchPredictionLocationSender;
+        this.matchPredictionRequester = matchPredictionRequester;
+        this.matchPredictionResultsProcessor = matchPredictionResultsProcessor;
+        this.matchPredictionLocationSender = matchPredictionLocationSender;
+    }
 
-        public Exercise3Functions(
-            IMatchPredictionRequester matchPredictionRequester, 
-            IMatchPredictionResultsProcessor matchPredictionResultsProcessor, 
-            IMatchPredictionLocationSender matchPredictionLocationSender)
+    [Function($"{FunctionNamePrefix}{nameof(SendMatchPredictionRequests)}")]
+    public async Task SendMatchPredictionRequests(
+        [HttpTrigger(AuthorizationLevel.Function, "post")]
+        HttpRequest request)
+    {
+        try
         {
-            this.matchPredictionRequester = matchPredictionRequester;
-            this.matchPredictionResultsProcessor = matchPredictionResultsProcessor;
-            this.matchPredictionLocationSender = matchPredictionLocationSender;
+            await matchPredictionRequester.SendMatchPredictionRequests();
         }
-
-        [Function($"{FunctionNamePrefix}{nameof(SendMatchPredictionRequests)}")]
-        public async Task SendMatchPredictionRequests(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            HttpRequest request)
+        catch (Exception ex)
         {
-            try
-            {
-                await matchPredictionRequester.SendMatchPredictionRequests();
-            }
-            catch (Exception ex)
-            {
-                throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failure whilst sending requests.", ex);
-            }
+            throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failure whilst sending requests.", ex);
         }
+    }
 
-        [Function($"{FunctionNamePrefix}{nameof(ResumeMatchPredictionRequests)}")]
-        public async Task ResumeMatchPredictionRequests(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            HttpRequest request)
+    [Function($"{FunctionNamePrefix}{nameof(ResumeMatchPredictionRequests)}")]
+    public async Task ResumeMatchPredictionRequests(
+        [HttpTrigger(AuthorizationLevel.Function, "post")]
+        HttpRequest request)
+    {
+        try
         {
-            try
-            {
-                await matchPredictionRequester.ResumeMatchPredictionRequests();
-            }
-            catch (Exception ex)
-            {
-                throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failure whilst resuming to send requests.", ex);
-            }
+            await matchPredictionRequester.ResumeMatchPredictionRequests();
         }
-
-        [Function($"{FunctionNamePrefix}{nameof(PromptDownloadOfMissingResults)}")]
-        public async Task PromptDownloadOfMissingResults(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            HttpRequest request)
+        catch (Exception ex)
         {
-            try
-            {
-                await matchPredictionLocationSender.PublishLocationsForMatchPredictionRequestMissingResults();
-            }
-            catch (Exception ex)
-            {
-                throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failure whilst downloading missing results.", ex);
-            }
+            throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failure whilst resuming to send requests.", ex);
         }
+    }
 
-        [Function($"{FunctionNamePrefix}{nameof(ProcessResults)}")]
-        public async Task ProcessResults(
-            [ServiceBusTrigger(
-                "%MatchPredictionRequests:ResultsTopic%",
-                "%MatchPredictionRequests:ResultsSubscription%",
-                Connection = "MessagingServiceBus:ConnectionString")]
-            MatchPredictionResultLocation[] locations)
+    [Function($"{FunctionNamePrefix}{nameof(PromptDownloadOfMissingResults)}")]
+    public async Task PromptDownloadOfMissingResults(
+        [HttpTrigger(AuthorizationLevel.Function, "post")]
+        HttpRequest request)
+    {
+        try
         {
-            try
-            {
-                await matchPredictionResultsProcessor.ProcessAndStoreResults(locations);
-            }
-            catch (Exception ex)
-            {
-                throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failed to process results.", ex);
-            }
+            await matchPredictionLocationSender.PublishLocationsForMatchPredictionRequestMissingResults();
+        }
+        catch (Exception ex)
+        {
+            throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failure whilst downloading missing results.", ex);
+        }
+    }
+
+    [Function($"{FunctionNamePrefix}{nameof(ProcessResults)}")]
+    public async Task ProcessResults(
+        [ServiceBusTrigger(
+            "%MatchPredictionRequests:ResultsTopic%",
+            "%MatchPredictionRequests:ResultsSubscription%",
+            Connection = "MessagingServiceBus:ConnectionString")]
+        MatchPredictionResultLocation[] locations)
+    {
+        try
+        {
+            await matchPredictionResultsProcessor.ProcessAndStoreResults(locations);
+        }
+        catch (Exception ex)
+        {
+            throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failed to process results.", ex);
         }
     }
 }

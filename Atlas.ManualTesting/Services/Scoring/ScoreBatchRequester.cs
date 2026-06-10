@@ -14,116 +14,115 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Atlas.ManualTesting.Services.Scoring
+namespace Atlas.ManualTesting.Services.Scoring;
+
+public class ScoreBatchRequest
 {
-    public class ScoreBatchRequest
+    public ImportedSubject Patient { get; set; }
+    public IEnumerable<ImportedSubject> Donors { get; set; }
+    public string ResultsFileDirectory { get; set; }
+    public ScoringCriteria ScoringCriteria { get; set; }
+}
+
+public interface IScoreBatchRequester
+{
+    Task<IEnumerable<DonorScoringResult>> ScoreBatch(ScoreBatchRequest request);
+}
+
+internal class ScoreBatchRequester : IScoreBatchRequester
+{
+    private static readonly HttpClient HttpRequestClient = new();
+    private readonly ScoringSettings scoringSettings;
+
+    public ScoreBatchRequester(IOptions<ScoringSettings> settings)
     {
-        public ImportedSubject Patient { get; set; }
-        public IEnumerable<ImportedSubject> Donors { get; set; }
-        public string ResultsFileDirectory { get; set; }
-        public ScoringCriteria ScoringCriteria { get; set; }
+        scoringSettings = settings.Value;
     }
 
-    public interface IScoreBatchRequester
+    public async Task<IEnumerable<DonorScoringResult>> ScoreBatch(ScoreBatchRequest request)
     {
-        Task<IEnumerable<DonorScoringResult>> ScoreBatch(ScoreBatchRequest request);
+        if (request?.Patient is null ||
+            !request.Donors.Any() ||
+            string.IsNullOrWhiteSpace(request.ResultsFileDirectory) ||
+            request.ScoringCriteria is null)
+        {
+            throw new ArgumentException("ScoreBatch request is missing required data.");
+        }
+
+        return await ScoreBatchRequest(request);
     }
 
-    internal class ScoreBatchRequester : IScoreBatchRequester
+    private async Task<IEnumerable<DonorScoringResult>> ScoreBatchRequest(ScoreBatchRequest scoreBatchRequest)
     {
-        private static readonly HttpClient HttpRequestClient = new();
-        private readonly ScoringSettings scoringSettings;
+        var retryPolicy = Policy.Handle<Exception>().RetryAsync(10);
+        var request = BuildScoreBatchRequest(scoreBatchRequest);
 
-        public ScoreBatchRequester(IOptions<ScoringSettings> settings)
+        var requestResponse = await retryPolicy.ExecuteAndCaptureAsync(
+            async () => await SubmitScoreBatchRequest(request, scoreBatchRequest.Patient.ID));
+
+        if (requestResponse.Outcome == OutcomeType.Successful)
         {
-            scoringSettings = settings.Value;
+            return requestResponse.Result;
         }
 
-        public async Task<IEnumerable<DonorScoringResult>> ScoreBatch(ScoreBatchRequest request)
+        await WriteFailuresToFile(scoreBatchRequest);
+        return new List<DonorScoringResult>();
+
+    }
+
+    private static BatchScoringRequest BuildScoreBatchRequest(ScoreBatchRequest request)
+    {
+        return new BatchScoringRequest
         {
-            if (request?.Patient is null ||
-                !request.Donors.Any() ||
-                string.IsNullOrWhiteSpace(request.ResultsFileDirectory) ||
-                request.ScoringCriteria is null)
-            {
-                throw new ArgumentException("ScoreBatch request is missing required data.");
-            }
+            PatientHla = request.Patient.ToPhenotypeInfo().ToPhenotypeInfoTransfer(),
+            DonorsHla = request.Donors.Select(ToIdentifiedDonorHla),
+            ScoringCriteria = request.ScoringCriteria
+        };
+    }
 
-            return await ScoreBatchRequest(request);
-        }
+    private static IdentifiedDonorHla ToIdentifiedDonorHla(ImportedSubject donor)
+    {
+        var donorHla = donor.ToPhenotypeInfo().ToPhenotypeInfoTransfer();
 
-        private async Task<IEnumerable<DonorScoringResult>> ScoreBatchRequest(ScoreBatchRequest scoreBatchRequest)
+        return new IdentifiedDonorHla
         {
-            var retryPolicy = Policy.Handle<Exception>().RetryAsync(10);
-            var request = BuildScoreBatchRequest(scoreBatchRequest);
+            DonorId = donor.ID,
+            A = donorHla.A,
+            B = donorHla.B,
+            C = donorHla.C,
+            Dqb1 = donorHla.Dqb1,
+            Drb1 = donorHla.Drb1,
+            Dpb1 = donorHla.Dpb1
+        };
+    }
 
-            var requestResponse = await retryPolicy.ExecuteAndCaptureAsync(
-                    async () => await SubmitScoreBatchRequest(request, scoreBatchRequest.Patient.ID));
+    private async Task<IReadOnlyCollection<DonorScoringResult>> SubmitScoreBatchRequest(BatchScoringRequest scoreBatchRequest, string patientId)
+    {
+        var firstDonorIdInBatch = scoreBatchRequest.DonorsHla.FirstOrDefault()?.DonorId;
 
-            if (requestResponse.Outcome == OutcomeType.Successful)
-            {
-                return requestResponse.Result;
-            }
-
-            await WriteFailuresToFile(scoreBatchRequest);
-            return new List<DonorScoringResult>();
-
-        }
-
-        private static BatchScoringRequest BuildScoreBatchRequest(ScoreBatchRequest request)
+        try
         {
-            return new BatchScoringRequest
-            {
-                PatientHla = request.Patient.ToPhenotypeInfo().ToPhenotypeInfoTransfer(),
-                DonorsHla = request.Donors.Select(ToIdentifiedDonorHla),
-                ScoringCriteria = request.ScoringCriteria
-            };
-        }
+            var response = await HttpRequestClient.PostAsync(
+                scoringSettings.ScoreBatchRequestUrl, new StringContent(JsonConvert.SerializeObject(scoreBatchRequest)));
+            response.EnsureSuccessStatusCode();
+            var scoringResult = JsonConvert.DeserializeObject<List<DonorScoringResult>>(await response.Content.ReadAsStringAsync());
 
-        private static IdentifiedDonorHla ToIdentifiedDonorHla(ImportedSubject donor)
-        {
-            var donorHla = donor.ToPhenotypeInfo().ToPhenotypeInfoTransfer();
-
-            return new IdentifiedDonorHla
-            {
-                DonorId = donor.ID,
-                A = donorHla.A,
-                B = donorHla.B,
-                C = donorHla.C,
-                Dqb1 = donorHla.Dqb1,
-                Drb1 = donorHla.Drb1,
-                Dpb1 = donorHla.Dpb1
-            };
-        }
-
-        private async Task<IReadOnlyCollection<DonorScoringResult>> SubmitScoreBatchRequest(BatchScoringRequest scoreBatchRequest, string patientId)
-        {
-            var firstDonorIdInBatch = scoreBatchRequest.DonorsHla.FirstOrDefault()?.DonorId;
-
-            try
-            {
-                var response = await HttpRequestClient.PostAsync(
-                    scoringSettings.ScoreBatchRequestUrl, new StringContent(JsonConvert.SerializeObject(scoreBatchRequest)));
-                response.EnsureSuccessStatusCode();
-                var scoringResult = JsonConvert.DeserializeObject<List<DonorScoringResult>>(await response.Content.ReadAsStringAsync());
-
-                System.Diagnostics.Debug.WriteLine($"ScoreBatch result received for patient {patientId}, first donor in batch {firstDonorIdInBatch}");
+            System.Diagnostics.Debug.WriteLine($"ScoreBatch result received for patient {patientId}, first donor in batch {firstDonorIdInBatch}");
                 
-                return scoringResult;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"ScoreBatch request for failed for patient {patientId}, first donor in batch {firstDonorIdInBatch}. Details: {ex.Message} " +
-                                "Re-attempting until success or re-attempt count reached.");
-                throw;
-            }
+            return scoringResult;
         }
-
-        private static async Task WriteFailuresToFile(ScoreBatchRequest scoreBatchRequest)
+        catch (Exception ex)
         {
-            var failedRequestsPath = scoreBatchRequest.ResultsFileDirectory + "\\failedScoringRequests.txt";
-            var contents = $"{scoreBatchRequest.Patient.ID}:{string.Join(",", scoreBatchRequest.Donors.Select(d => d.ID))}";
-            await File.AppendAllTextAsync(failedRequestsPath, contents);
+            System.Diagnostics.Debug.WriteLine($"ScoreBatch request for failed for patient {patientId}, first donor in batch {firstDonorIdInBatch}. Details: {ex.Message} " +
+                                               "Re-attempting until success or re-attempt count reached.");
+            throw;
         }
+    }
+
+    private static async Task WriteFailuresToFile(ScoreBatchRequest scoreBatchRequest)
+    {
+        var failedRequestsPath = scoreBatchRequest.ResultsFileDirectory + "\\failedScoringRequests.txt";
+        var contents = $"{scoreBatchRequest.Patient.ID}:{string.Join(",", scoreBatchRequest.Donors.Select(d => d.ID))}";
+        await File.AppendAllTextAsync(failedRequestsPath, contents);
     }
 }

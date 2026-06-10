@@ -2,13 +2,12 @@
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.ResultSet;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
+
+public class SearchAlgorithmApiResult
 {
-    public class SearchAlgorithmApiResult
-    {
-        public HttpStatusCode StatusCode { get; set; }
-        public bool IsSuccess { get; set; }
-        public string ErrorMessage { get; set; }
-        public ResultSet<MatchingAlgorithmResult> Results { get; set; }
-    }
+    public HttpStatusCode StatusCode { get; set; }
+    public bool IsSuccess { get; set; }
+    public string ErrorMessage { get; set; }
+    public ResultSet<MatchingAlgorithmResult> Results { get; set; }
 }

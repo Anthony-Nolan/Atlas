@@ -4,35 +4,34 @@ using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Microsoft.Azure.Functions.Worker;
 
-namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
+namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions;
+
+public class CachingFunctions
 {
-    public class CachingFunctions
+    private readonly IHlaMetadataCacheControl hlaMetadataCacheControl;
+
+    public CachingFunctions(
+        IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
+        IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor
+    )
     {
-        private readonly IHlaMetadataCacheControl hlaMetadataCacheControl;
-
-        public CachingFunctions(
-            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
-            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor
-        )
+        try
         {
-            try
-            {
-                var activeHlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
-                hlaMetadataCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(activeHlaNomenclatureVersion);
-            }
-            catch (ArgumentNullException)
-            {
-                //No active version is defined. No cache warming is necessary.
-                hlaMetadataCacheControl = null;
-            }
+            var activeHlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
+            hlaMetadataCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(activeHlaNomenclatureVersion);
         }
-
-        [Function(nameof(UpdateHlaMetadataDictionaryCache))]
-        public async Task UpdateHlaMetadataDictionaryCache(
-            [TimerTrigger("00 00 03 * * *", RunOnStartup = true)]
-            TimerInfo timerInfo)
+        catch (ArgumentNullException)
         {
-            await (hlaMetadataCacheControl?.PreWarmAlleleNameCache() ?? Task.CompletedTask);
+            //No active version is defined. No cache warming is necessary.
+            hlaMetadataCacheControl = null;
         }
+    }
+
+    [Function(nameof(UpdateHlaMetadataDictionaryCache))]
+    public async Task UpdateHlaMetadataDictionaryCache(
+        [TimerTrigger("00 00 03 * * *", RunOnStartup = true)]
+        TimerInfo timerInfo)
+    {
+        await (hlaMetadataCacheControl?.PreWarmAlleleNameCache() ?? Task.CompletedTask);
     }
 }

@@ -1,8 +1,7 @@
-﻿namespace Atlas.HlaMetadataDictionary.Services.HlaValidation
+﻿namespace Atlas.HlaMetadataDictionary.Services.HlaValidation;
+
+internal class HlaValidationBehaviour
 {
-    internal class HlaValidationBehaviour
-    {
-        public HlaValidationCategory TargetHlaCategory { get; set; }
-        public string HlaNomenclatureVersion { get; set; }
-    }
+    public HlaValidationCategory TargetHlaCategory { get; set; }
+    public string HlaNomenclatureVersion { get; set; }
 }

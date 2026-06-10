@@ -11,106 +11,105 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
+namespace Atlas.MatchPrediction.Test.Verification.Services.Verification;
+
+public interface IVerificationResultsWriter
 {
-    public interface IVerificationResultsWriter
+    Task WriteVerificationResultsToFile(VerificationResultsRequest request);
+}
+
+internal class VerificationResultsWriter : IVerificationResultsWriter
+{
+    private readonly IVerificationResultsCompiler resultsCompiler;
+
+    public VerificationResultsWriter(IVerificationResultsCompiler resultsCompiler)
     {
-        Task WriteVerificationResultsToFile(VerificationResultsRequest request);
+        this.resultsCompiler = resultsCompiler;
     }
 
-    internal class VerificationResultsWriter : IVerificationResultsWriter
+    public async Task WriteVerificationResultsToFile(VerificationResultsRequest request)
     {
-        private readonly IVerificationResultsCompiler resultsCompiler;
-
-        public VerificationResultsWriter(IVerificationResultsCompiler resultsCompiler)
+        if (request.WriteDirectory.IsNullOrEmpty())
         {
-            this.resultsCompiler = resultsCompiler;
+            throw new ArgumentException($"{nameof(request.WriteDirectory)} cannot be null or empty; provide a valid directory.");
         }
 
-        public async Task WriteVerificationResultsToFile(VerificationResultsRequest request)
+        var results = await CompileResults(request);
+        WriteResults(request, results);
+
+        System.Diagnostics.Debug.WriteLine("Completed writing results.");
+    }
+
+    private async Task<IReadOnlyCollection<VerificationResult>> CompileResults(VerificationResultsRequest request)
+    {
+        var singleLocusRequests = MatchPredictionStaticData.MatchPredictionLoci
+            .SelectMany(l => BuildCompileRequestByPrediction(request.VerificationRunId, l));
+        var crossLociRequests = BuildCompileRequestByPrediction(request.VerificationRunId);
+        var compileRequests = singleLocusRequests.Concat(crossLociRequests);
+
+        var results = new List<VerificationResult>();
+
+        foreach (var compileRequest in compileRequests)
         {
-            if (request.WriteDirectory.IsNullOrEmpty())
-            {
-                throw new ArgumentException($"{nameof(request.WriteDirectory)} cannot be null or empty; provide a valid directory.");
-            }
-
-            var results = await CompileResults(request);
-            WriteResults(request, results);
-
-            System.Diagnostics.Debug.WriteLine("Completed writing results.");
+            System.Diagnostics.Debug.WriteLine($"Compiling results for {compileRequest}.");
+            results.Add(await resultsCompiler.CompileVerificationResults(compileRequest));
         }
 
-        private async Task<IReadOnlyCollection<VerificationResult>> CompileResults(VerificationResultsRequest request)
+        return results;
+    }
+
+    private static IEnumerable<CompileResultsRequest> BuildCompileRequestByPrediction(int runId, Locus? locus = null)
+    {
+        var mismatchCounts = new[] { 0, 1, 2 };
+        return mismatchCounts.Select(mc => new CompileResultsRequest
         {
-            var singleLocusRequests = MatchPredictionStaticData.MatchPredictionLoci
-                .SelectMany(l => BuildCompileRequestByPrediction(request.VerificationRunId, l));
-            var crossLociRequests = BuildCompileRequestByPrediction(request.VerificationRunId);
-            var compileRequests = singleLocusRequests.Concat(crossLociRequests);
+            VerificationRunId = runId,
+            Locus = locus,
+            MismatchCount = mc
+        });
+    }
 
-            var results = new List<VerificationResult>();
+    private static void WriteResults(VerificationResultsRequest request, IReadOnlyCollection<VerificationResult> results)
+    {
+        var avEDir = $"{request.WriteDirectory}\\AvE";
+        Directory.CreateDirectory(avEDir);
 
-            foreach (var compileRequest in compileRequests)
-            {
-                System.Diagnostics.Debug.WriteLine($"Compiling results for {compileRequest}.");
-                results.Add(await resultsCompiler.CompileVerificationResults(compileRequest));
-            }
+        results.ForEach(r => WriteActualVsExpectedResults(avEDir, request.VerificationRunId, r));
+        WriteMetrics(request.WriteDirectory, request.VerificationRunId, results);
+    }
 
-            return results;
+    private static void WriteActualVsExpectedResults(string writeDirectory, int runId, VerificationResult result)
+    {
+        if (result.ActualVersusExpectedResults.IsNullOrEmpty())
+        {
+            System.Diagnostics.Debug.WriteLine($"No results found for {result.Request}.");
+            return;
         }
 
-        private static IEnumerable<CompileResultsRequest> BuildCompileRequestByPrediction(int runId, Locus? locus = null)
+        var filePath = $"{writeDirectory}\\VerId-{runId}" + $"_Prediction-{result.Request.PredictionName}.csv";
+
+        using var writer = new StreamWriter(filePath);
+        using var csv = new CsvWriter(writer);
+        csv.WriteRecords(result.ActualVersusExpectedResults.OrderBy(r => r.Probability));
+
+        System.Diagnostics.Debug.WriteLine($"AvE results written for {result.Request}.");
+    }
+
+    private static void WriteMetrics(string writeDirectory, int runId, IReadOnlyCollection<VerificationResult> results)
+    {
+        var filePath = $"{writeDirectory}\\VerId-{runId}-metrics.csv";
+
+        using var writer = new StreamWriter(filePath);
+        using var csv = new CsvWriter(writer);
+        csv.WriteRecords(results.Select(r => new
         {
-            var mismatchCounts = new[] { 0, 1, 2 };
-            return mismatchCounts.Select(mc => new CompileResultsRequest
-            {
-                VerificationRunId = runId,
-                Locus = locus,
-                MismatchCount = mc
-            });
-        }
-
-        private static void WriteResults(VerificationResultsRequest request, IReadOnlyCollection<VerificationResult> results)
-        {
-            var avEDir = $"{request.WriteDirectory}\\AvE";
-            Directory.CreateDirectory(avEDir);
-
-            results.ForEach(r => WriteActualVsExpectedResults(avEDir, request.VerificationRunId, r));
-            WriteMetrics(request.WriteDirectory, request.VerificationRunId, results);
-        }
-
-        private static void WriteActualVsExpectedResults(string writeDirectory, int runId, VerificationResult result)
-        {
-            if (result.ActualVersusExpectedResults.IsNullOrEmpty())
-            {
-                System.Diagnostics.Debug.WriteLine($"No results found for {result.Request}.");
-                return;
-            }
-
-            var filePath = $"{writeDirectory}\\VerId-{runId}" + $"_Prediction-{result.Request.PredictionName}.csv";
-
-            using var writer = new StreamWriter(filePath);
-            using var csv = new CsvWriter(writer);
-            csv.WriteRecords(result.ActualVersusExpectedResults.OrderBy(r => r.Probability));
-
-            System.Diagnostics.Debug.WriteLine($"AvE results written for {result.Request}.");
-        }
-
-        private static void WriteMetrics(string writeDirectory, int runId, IReadOnlyCollection<VerificationResult> results)
-        {
-            var filePath = $"{writeDirectory}\\VerId-{runId}-metrics.csv";
-
-            using var writer = new StreamWriter(filePath);
-            using var csv = new CsvWriter(writer);
-            csv.WriteRecords(results.Select(r => new
-            {
-                RunId = r.Request.VerificationRunId,
-                Locus = r.Request.LocusName,
-                MM = r.Request.MismatchCount,
-                r.TotalPdpCount,
-                WCBD = r.WeightedCityBlockDistance,
-                r.WeightedLinearRegression.Slope,
-                r.WeightedLinearRegression.Intercept
-            }));
-        }
+            RunId = r.Request.VerificationRunId,
+            Locus = r.Request.LocusName,
+            MM = r.Request.MismatchCount,
+            r.TotalPdpCount,
+            WCBD = r.WeightedCityBlockDistance,
+            r.WeightedLinearRegression.Slope,
+            r.WeightedLinearRegression.Intercept
+        }));
     }
 }

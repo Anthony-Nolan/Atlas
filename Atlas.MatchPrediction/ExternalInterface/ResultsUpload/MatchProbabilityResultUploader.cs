@@ -7,31 +7,30 @@ using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 
-namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
+namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
+
+public abstract class MatchProbabilityResultUploader : BlobUploader
 {
-    public abstract class MatchProbabilityResultUploader : BlobUploader
+    protected readonly string ResultsContainer;
+
+    protected MatchProbabilityResultUploader(AzureStorageSettings azureStorageSettings, IAtlasLogger logger) : base(azureStorageSettings.ConnectionString, logger)
     {
-        protected readonly string ResultsContainer;
+        ResultsContainer = azureStorageSettings.MatchPredictionResultsBlobContainer;
+    }
 
-        protected MatchProbabilityResultUploader(AzureStorageSettings azureStorageSettings, IAtlasLogger logger) : base(azureStorageSettings.ConnectionString, logger)
+    public async Task UploadResult(string fileName, MatchProbabilityResponse matchProbabilityResponse)
+    {
+        using (logger.RunTimed("Uploading match prediction results", LogLevel.Verbose))
         {
-            ResultsContainer = azureStorageSettings.MatchPredictionResultsBlobContainer;
+            await Upload(ResultsContainer, fileName, matchProbabilityResponse);
         }
+    }
 
-        public async Task UploadResult(string fileName, MatchProbabilityResponse matchProbabilityResponse)
+    public async Task UploadResults(IEnumerable<string> fileNames, MatchProbabilityResponse matchProbabilityResponse)
+    {
+        using (logger.RunTimed("Uploading match prediction results", LogLevel.Verbose))
         {
-            using (logger.RunTimed("Uploading match prediction results", LogLevel.Verbose))
-            {
-                await Upload(ResultsContainer, fileName, matchProbabilityResponse);
-            }
-        }
-
-        public async Task UploadResults(IEnumerable<string> fileNames, MatchProbabilityResponse matchProbabilityResponse)
-        {
-            using (logger.RunTimed("Uploading match prediction results", LogLevel.Verbose))
-            {
-                await UploadMultiple(ResultsContainer, fileNames.Select(f => new KeyValuePair<string, MatchProbabilityResponse>(f, matchProbabilityResponse)).ToDictionary());
-            }
+            await UploadMultiple(ResultsContainer, fileNames.Select(f => new KeyValuePair<string, MatchProbabilityResponse>(f, matchProbabilityResponse)).ToDictionary());
         }
     }
 }

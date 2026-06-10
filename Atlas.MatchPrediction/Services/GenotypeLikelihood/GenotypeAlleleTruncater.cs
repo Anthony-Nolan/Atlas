@@ -1,22 +1,21 @@
 ﻿using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
-namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
-{
-    internal interface IGenotypeAlleleTruncater
-    {
-        /// <summary>
-        /// This will only be used when we implement 2-field HF sets.
-        /// </summary>
-        public PhenotypeInfo<string> TruncateGenotypeAlleles(PhenotypeInfo<string> genotype);
-    }
+namespace Atlas.MatchPrediction.Services.GenotypeLikelihood;
 
-    internal class GenotypeAlleleTruncater : IGenotypeAlleleTruncater
+internal interface IGenotypeAlleleTruncater
+{
+    /// <summary>
+    /// This will only be used when we implement 2-field HF sets.
+    /// </summary>
+    public PhenotypeInfo<string> TruncateGenotypeAlleles(PhenotypeInfo<string> genotype);
+}
+
+internal class GenotypeAlleleTruncater : IGenotypeAlleleTruncater
+{
+    public PhenotypeInfo<string> TruncateGenotypeAlleles(PhenotypeInfo<string> genotype)
     {
-        public PhenotypeInfo<string> TruncateGenotypeAlleles(PhenotypeInfo<string> genotype)
-        {
-            return genotype.Map((locus, position, allele) =>
-                allele == null ? null : AlleleSplitter.FirstTwoFieldsAsString(allele));
-        }
+        return genotype.Map((locus, position, allele) =>
+            allele == null ? null : AlleleSplitter.FirstTwoFieldsAsString(allele));
     }
 }

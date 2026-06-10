@@ -8,41 +8,40 @@ using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
 using FluentValidation;
 
-namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
+namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
+
+public interface IDonorInfoConverter
 {
-    public interface IDonorInfoConverter
+    Task<DonorBatchProcessingResult<DonorInfo>> ConvertDonorInfoAsync(
+        IEnumerable<SearchableDonorInformation> donorInfos,
+        string failureEventName);
+}
+
+public class DonorInfoConverter :
+    DonorBatchProcessor<SearchableDonorInformation, DonorInfo>,
+    IDonorInfoConverter
+{
+    public DonorInfoConverter(IMatchingAlgorithmImportLogger logger) : base(logger)
     {
-        Task<DonorBatchProcessingResult<DonorInfo>> ConvertDonorInfoAsync(
-            IEnumerable<SearchableDonorInformation> donorInfos,
-            string failureEventName);
     }
 
-    public class DonorInfoConverter :
-        DonorBatchProcessor<SearchableDonorInformation, DonorInfo>,
-        IDonorInfoConverter
+    public async Task<DonorBatchProcessingResult<DonorInfo>> ConvertDonorInfoAsync(
+        IEnumerable<SearchableDonorInformation> donorInfos,
+        string failureEventName)
     {
-        public DonorInfoConverter(IMatchingAlgorithmImportLogger logger) : base(logger)
-        {
-        }
+        return await ProcessBatchAsyncWithAnticipatedExceptions<ValidationException>(
+            donorInfos,
+            async info => await ConvertDonorInfo(info),
+            info => new FailedDonorInfo(info)
+            {
+                AtlasDonorId = info.DonorId
+            },
+            failureEventName);
+    }
 
-        public async Task<DonorBatchProcessingResult<DonorInfo>> ConvertDonorInfoAsync(
-            IEnumerable<SearchableDonorInformation> donorInfos,
-            string failureEventName)
-        {
-            return await ProcessBatchAsyncWithAnticipatedExceptions<ValidationException>(
-                donorInfos,
-                async info => await ConvertDonorInfo(info),
-                info => new FailedDonorInfo(info)
-                {
-                    AtlasDonorId = info.DonorId
-                },
-                failureEventName);
-        }
-
-        private static async Task<DonorInfo> ConvertDonorInfo(SearchableDonorInformation donorInfo)
-        {
-            await new SearchableDonorInformationValidator().ValidateAndThrowAsync(donorInfo);
-            return donorInfo.ToDonorInfo();
-        }
+    private static async Task<DonorInfo> ConvertDonorInfo(SearchableDonorInformation donorInfo)
+    {
+        await new SearchableDonorInformationValidator().ValidateAndThrowAsync(donorInfo);
+        return donorInfo.ToDonorInfo();
     }
 }

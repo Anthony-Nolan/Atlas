@@ -17,38 +17,38 @@ using Atlas.MatchingAlgorithm.Services.Donors;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
+namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement;
+
+[TestFixture]
+public class DonorManagementServiceTests
 {
-    [TestFixture]
-    public class DonorManagementServiceTests
+    private IDonorManagementLogRepository logRepository;
+    private IDonorService donorService;
+    private IDonorManagementService donorManagementService;
+    private IMatchingAlgorithmImportLogger logger;
+
+    [SetUp]
+    public void SetUp()
     {
-        private IDonorManagementLogRepository logRepository;
-        private IDonorService donorService;
-        private IDonorManagementService donorManagementService;
-        private IMatchingAlgorithmImportLogger logger;
+        logRepository = Substitute.For<IDonorManagementLogRepository>();
+        logRepository.GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>()).Returns(new DonorManagementLog[] { });
 
-        [SetUp]
-        public void SetUp()
-        {
-            logRepository = Substitute.For<IDonorManagementLogRepository>();
-            logRepository.GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>()).Returns(new DonorManagementLog[] { });
+        var repositoryFactory = Substitute.For<IStaticallyChosenDatabaseRepositoryFactory>();
+        repositoryFactory.GetDonorManagementLogRepositoryForDatabase(default).ReturnsForAnyArgs(logRepository);
 
-            var repositoryFactory = Substitute.For<IStaticallyChosenDatabaseRepositoryFactory>();
-            repositoryFactory.GetDonorManagementLogRepositoryForDatabase(default).ReturnsForAnyArgs(logRepository);
-
-            donorService = Substitute.For<IDonorService>();
-            logger = Substitute.For<IMatchingAlgorithmImportLogger>();
+        donorService = Substitute.For<IDonorService>();
+        logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             
-            donorManagementService = new DonorManagementService(repositoryFactory, donorService, logger);
-        }
+        donorManagementService = new DonorManagementService(repositoryFactory, donorService, logger);
+    }
 
-        [Test]
-        public async Task ApplyDonorUpdatesToDatabase_DonorIsAvailableForSearch_AddsOrUpdatesDonor()
-        {
-            const int donorId = 456;
-            const DonorType donorType = DonorType.Adult;
+    [Test]
+    public async Task ApplyDonorUpdatesToDatabase_DonorIsAvailableForSearch_AddsOrUpdatesDonor()
+    {
+        const int donorId = 456;
+        const DonorType donorType = DonorType.Adult;
 
-            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
+        await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
@@ -59,26 +59,26 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     },
                     IsAvailableForSearch = true
                 }},
-                default,
-                default,
-                default);
+            default,
+            default,
+            default);
 
-            await donorService
-                .Received(1)
-                .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<DonorInfo>>(x =>
-                        x.Single().DonorId == donorId &&
-                        x.Single().DonorType == donorType),
-                    Arg.Any<TransientDatabase>(),
-                    Arg.Any<string>(),
-                    Arg.Any<bool>());
-        }
+        await donorService
+            .Received(1)
+            .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<DonorInfo>>(x =>
+                    x.Single().DonorId == donorId &&
+                    x.Single().DonorType == donorType),
+                Arg.Any<TransientDatabase>(),
+                Arg.Any<string>(),
+                Arg.Any<bool>());
+    }
 
-        [Test]
-        public async Task ApplyDonorUpdatesToDatabase_DonorIsAvailableForSearch_DoesNotSetDonorAsUnavailable()
-        {
-            const int donorId = 456;
+    [Test]
+    public async Task ApplyDonorUpdatesToDatabase_DonorIsAvailableForSearch_DoesNotSetDonorAsUnavailable()
+    {
+        const int donorId = 456;
 
-            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
+        await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
@@ -89,223 +89,223 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     },
                     IsAvailableForSearch = true
                 }},
-                default,
-                default,
-                default);
+            default,
+            default,
+            default);
 
-            await donorService
-                .DidNotReceiveWithAnyArgs()
-                .SetDonorBatchAsUnavailableForSearch(default, default);
-        }
+        await donorService
+            .DidNotReceiveWithAnyArgs()
+            .SetDonorBatchAsUnavailableForSearch(default, default);
+    }
 
-        [Test]
-        public async Task ApplyDonorUpdatesToDatabase_DonorIsNotAvailableForSearch_SetsDonorAsUnavailable()
-        {
-            const int donorId = 789;
+    [Test]
+    public async Task ApplyDonorUpdatesToDatabase_DonorIsNotAvailableForSearch_SetsDonorAsUnavailable()
+    {
+        const int donorId = 789;
 
-            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
+        await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
                     IsAvailableForSearch = false
                 }},
-                default,
-                default,
-                default);
+            default,
+            default,
+            default);
 
-            await donorService
-                .Received(1)
-                .SetDonorBatchAsUnavailableForSearch(
-                    Arg.Is<List<int>>(x => x.Single() == donorId),
-                    Arg.Any<TransientDatabase>());
-        }
+        await donorService
+            .Received(1)
+            .SetDonorBatchAsUnavailableForSearch(
+                Arg.Is<List<int>>(x => x.Single() == donorId),
+                Arg.Any<TransientDatabase>());
+    }
 
-        [Test]
-        public async Task ApplyDonorUpdatesToDatabase_DonorIsNotAvailableForSearch_DoesNotAddOrUpdateDonor()
-        {
-            const int donorId = 789;
+    [Test]
+    public async Task ApplyDonorUpdatesToDatabase_DonorIsNotAvailableForSearch_DoesNotAddOrUpdateDonor()
+    {
+        const int donorId = 789;
 
-            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
+        await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
                     IsAvailableForSearch = false
                 }},
-                default,
-                default,
-                default);
+            default,
+            default,
+            default);
 
-            await donorService
-                .DidNotReceiveWithAnyArgs()
-                .CreateOrUpdateDonorBatch(default, default, default, default);
-        }
+        await donorService
+            .DidNotReceiveWithAnyArgs()
+            .CreateOrUpdateDonorBatch(default, default, default, default);
+    }
 
-        [Test]
-        public async Task ApplyDonorUpdatesToDatabase_MultipleUpdatesPerDonor_AndDonorIsAvailableInLatest_AddsOrUpdatesDonor()
+    [Test]
+    public async Task ApplyDonorUpdatesToDatabase_MultipleUpdatesPerDonor_AndDonorIsAvailableInLatest_AddsOrUpdatesDonor()
+    {
+        const int donorId = 456;
+        const DonorType donorType = DonorType.Adult;
+
+        var olderUnavailableUpdate = new DonorAvailabilityUpdate
         {
-            const int donorId = 456;
-            const DonorType donorType = DonorType.Adult;
+            DonorId = donorId,
+            IsAvailableForSearch = false,
+            UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100))
+        };
 
-            var olderUnavailableUpdate = new DonorAvailabilityUpdate
+        var newerAvailableUpdate = new DonorAvailabilityUpdate
+        {
+            DonorId = donorId,
+            DonorInfo = new DonorInfo
             {
                 DonorId = donorId,
-                IsAvailableForSearch = false,
-                UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100))
-            };
+                DonorType = donorType
+            },
+            IsAvailableForSearch = true,
+            UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1))
+        };
 
-            var newerAvailableUpdate = new DonorAvailabilityUpdate
+        await donorManagementService.ApplyDonorUpdatesToDatabase(
+            new[] { olderUnavailableUpdate, newerAvailableUpdate },
+            default,
+            default,
+            default);
+
+        await donorService
+            .Received(1)
+            .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<DonorInfo>>(x =>
+                    x.Single().DonorId == donorId &&
+                    x.Single().DonorType == donorType),
+                Arg.Any<TransientDatabase>(),
+                Arg.Any<string>(),
+                Arg.Any<bool>());
+    }
+
+    [Test]
+    public async Task ApplyDonorUpdatesToDatabase_MultipleUpdatesPerDonor_AndDonorIsAvailableInLatest_DoesNotSetDonorAsUnavailable()
+    {
+        const int donorId = 456;
+
+        var olderUnavailableUpdate = new DonorAvailabilityUpdate
+        {
+            DonorId = donorId,
+            IsAvailableForSearch = false,
+            UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100))
+        };
+
+        var newerAvailableUpdate = new DonorAvailabilityUpdate
+        {
+            DonorId = donorId,
+            DonorInfo = new DonorInfo
             {
                 DonorId = donorId,
-                DonorInfo = new DonorInfo
+                DonorType = DonorType.Adult
+            },
+            IsAvailableForSearch = true,
+            UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1))
+        };
+
+        await donorManagementService.ApplyDonorUpdatesToDatabase(
+            new[] { olderUnavailableUpdate, newerAvailableUpdate },
+            default,
+            default,
+            default);
+
+        await donorService
+            .DidNotReceiveWithAnyArgs()
+            .SetDonorBatchAsUnavailableForSearch(default, default);
+    }
+
+    [Test]
+    public async Task ApplyDonorUpdatesToDatabase_MultipleUpdatesPerDonor_AndDonorIsUnavailableInLatest_SetsDonorAsUnavailable()
+    {
+        const int donorId = 789;
+
+        var olderAvailableUpdate = new DonorAvailabilityUpdate
+        {
+            DonorId = donorId,
+            DonorInfo = new DonorInfo
+            {
+                DonorId = donorId,
+                DonorType = DonorType.Adult
+            },
+            IsAvailableForSearch = true,
+            UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100))
+        };
+
+        var newerUnavailableUpdate = new DonorAvailabilityUpdate
+        {
+            DonorId = donorId,
+            IsAvailableForSearch = false,
+            UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1))
+        };
+
+        await donorManagementService.ApplyDonorUpdatesToDatabase(
+            new[] { olderAvailableUpdate, newerUnavailableUpdate },
+            default,
+            default,
+            default);
+
+        await donorService
+            .Received(1)
+            .SetDonorBatchAsUnavailableForSearch(
+                Arg.Is<List<int>>(x => x.Single() == donorId),
+                Arg.Any<TransientDatabase>());
+    }
+
+    [Test]
+    public async Task ApplyDonorUpdatesToDatabase_MultipleUpdatesPerDonor_AndDonorIsUnavailableInLatest_DoesNotAddOrUpdateDonor()
+    {
+        const int donorId = 789;
+
+        var olderAvailableUpdate = new DonorAvailabilityUpdate
+        {
+            DonorId = donorId,
+            DonorInfo = new DonorInfo
+            {
+                DonorId = donorId,
+                DonorType = DonorType.Adult
+            },
+            IsAvailableForSearch = true,
+            UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100))
+        };
+
+        var newerUnavailableUpdate = new DonorAvailabilityUpdate
+        {
+            DonorId = donorId,
+            IsAvailableForSearch = false,
+            UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1))
+        };
+
+        await donorManagementService.ApplyDonorUpdatesToDatabase(
+            new[] { olderAvailableUpdate, newerUnavailableUpdate },
+            default,
+            default,
+            default);
+
+        await donorService
+            .DidNotReceiveWithAnyArgs()
+            .CreateOrUpdateDonorBatch(default, default, default, default);
+    }
+
+    [Test]
+    public async Task ApplyDonorUpdatesToDatabase_DonorIsAvailable_AndUpdateIsNewerThanThatLastApplied_AddsOrUpdatesDonor()
+    {
+        const int donorId = 456;
+        var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+        var olderTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100));
+
+        logRepository
+            .GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>())
+            .Returns(new[] {
+                new DonorManagementLog
                 {
                     DonorId = donorId,
-                    DonorType = donorType
-                },
-                IsAvailableForSearch = true,
-                UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1))
-            };
+                    LastUpdateDateTime = olderTimestamp
+                }
+            });
 
-            await donorManagementService.ApplyDonorUpdatesToDatabase(
-                new[] { olderUnavailableUpdate, newerAvailableUpdate },
-                default,
-                default,
-                default);
-
-            await donorService
-                .Received(1)
-                .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<DonorInfo>>(x =>
-                        x.Single().DonorId == donorId &&
-                        x.Single().DonorType == donorType),
-                    Arg.Any<TransientDatabase>(),
-                    Arg.Any<string>(),
-                    Arg.Any<bool>());
-        }
-
-        [Test]
-        public async Task ApplyDonorUpdatesToDatabase_MultipleUpdatesPerDonor_AndDonorIsAvailableInLatest_DoesNotSetDonorAsUnavailable()
-        {
-            const int donorId = 456;
-
-            var olderUnavailableUpdate = new DonorAvailabilityUpdate
-            {
-                DonorId = donorId,
-                IsAvailableForSearch = false,
-                UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100))
-            };
-
-            var newerAvailableUpdate = new DonorAvailabilityUpdate
-            {
-                DonorId = donorId,
-                DonorInfo = new DonorInfo
-                {
-                    DonorId = donorId,
-                    DonorType = DonorType.Adult
-                },
-                IsAvailableForSearch = true,
-                UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1))
-            };
-
-            await donorManagementService.ApplyDonorUpdatesToDatabase(
-                new[] { olderUnavailableUpdate, newerAvailableUpdate },
-                default,
-                default,
-                default);
-
-            await donorService
-                .DidNotReceiveWithAnyArgs()
-                .SetDonorBatchAsUnavailableForSearch(default, default);
-        }
-
-        [Test]
-        public async Task ApplyDonorUpdatesToDatabase_MultipleUpdatesPerDonor_AndDonorIsUnavailableInLatest_SetsDonorAsUnavailable()
-        {
-            const int donorId = 789;
-
-            var olderAvailableUpdate = new DonorAvailabilityUpdate
-            {
-                DonorId = donorId,
-                DonorInfo = new DonorInfo
-                {
-                    DonorId = donorId,
-                    DonorType = DonorType.Adult
-                },
-                IsAvailableForSearch = true,
-                UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100))
-            };
-
-            var newerUnavailableUpdate = new DonorAvailabilityUpdate
-            {
-                DonorId = donorId,
-                IsAvailableForSearch = false,
-                UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1))
-            };
-
-            await donorManagementService.ApplyDonorUpdatesToDatabase(
-                new[] { olderAvailableUpdate, newerUnavailableUpdate },
-                default,
-                default,
-                default);
-
-            await donorService
-                .Received(1)
-                .SetDonorBatchAsUnavailableForSearch(
-                    Arg.Is<List<int>>(x => x.Single() == donorId),
-                    Arg.Any<TransientDatabase>());
-        }
-
-        [Test]
-        public async Task ApplyDonorUpdatesToDatabase_MultipleUpdatesPerDonor_AndDonorIsUnavailableInLatest_DoesNotAddOrUpdateDonor()
-        {
-            const int donorId = 789;
-
-            var olderAvailableUpdate = new DonorAvailabilityUpdate
-            {
-                DonorId = donorId,
-                DonorInfo = new DonorInfo
-                {
-                    DonorId = donorId,
-                    DonorType = DonorType.Adult
-                },
-                IsAvailableForSearch = true,
-                UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100))
-            };
-
-            var newerUnavailableUpdate = new DonorAvailabilityUpdate
-            {
-                DonorId = donorId,
-                IsAvailableForSearch = false,
-                UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1))
-            };
-
-            await donorManagementService.ApplyDonorUpdatesToDatabase(
-                new[] { olderAvailableUpdate, newerUnavailableUpdate },
-                default,
-                default,
-                default);
-
-            await donorService
-                .DidNotReceiveWithAnyArgs()
-                .CreateOrUpdateDonorBatch(default, default, default, default);
-        }
-
-        [Test]
-        public async Task ApplyDonorUpdatesToDatabase_DonorIsAvailable_AndUpdateIsNewerThanThatLastApplied_AddsOrUpdatesDonor()
-        {
-            const int donorId = 456;
-            var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
-            var olderTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100));
-
-            logRepository
-                .GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>())
-                .Returns(new[] {
-                    new DonorManagementLog
-                    {
-                        DonorId = donorId,
-                        LastUpdateDateTime = olderTimestamp
-                    }
-                });
-
-            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
+        await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
@@ -313,33 +313,33 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     IsAvailableForSearch = true,
                     UpdateDateTime = newerTimestamp
                 }},
-                default,
-                default,
-                default);
+            default,
+            default,
+            default);
 
-            await donorService
-                .ReceivedWithAnyArgs(1)
-                .CreateOrUpdateDonorBatch(default, default, default, default);
-        }
+        await donorService
+            .ReceivedWithAnyArgs(1)
+            .CreateOrUpdateDonorBatch(default, default, default, default);
+    }
 
-        [Test]
-        public async Task ApplyDonorUpdatesToDatabase_DonorIsAvailable_AndUpdateIsOlderThanThatLastApplied_DoesNotAddOrUpdateDonor()
-        {
-            const int donorId = 456;
-            var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
-            var olderTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100));
+    [Test]
+    public async Task ApplyDonorUpdatesToDatabase_DonorIsAvailable_AndUpdateIsOlderThanThatLastApplied_DoesNotAddOrUpdateDonor()
+    {
+        const int donorId = 456;
+        var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+        var olderTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100));
 
-            logRepository
-                .GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>())
-                .Returns(new[] { 
-                    new DonorManagementLog
-                    {
-                        DonorId = donorId,
-                        LastUpdateDateTime = newerTimestamp
-                    }
-                });
+        logRepository
+            .GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>())
+            .Returns(new[] { 
+                new DonorManagementLog
+                {
+                    DonorId = donorId,
+                    LastUpdateDateTime = newerTimestamp
+                }
+            });
 
-            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
+        await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
@@ -347,106 +347,106 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     IsAvailableForSearch = true,
                     UpdateDateTime = olderTimestamp
                 }},
-                default,
-                default,
-                default);
+            default,
+            default,
+            default);
 
-            await donorService
-                .DidNotReceiveWithAnyArgs()
-                .CreateOrUpdateDonorBatch(default, default, default, default);
-        }
+        await donorService
+            .DidNotReceiveWithAnyArgs()
+            .CreateOrUpdateDonorBatch(default, default, default, default);
+    }
 
-        [Test]
-        public async Task ApplyDonorUpdatesToDatabase_DonorIsNotAvailable_AndUpdateIsNewerThanThatLastApplied_SetsDonorAsUnavailable()
-        {
-            const int donorId = 789;
-            var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
-            var olderTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100));
+    [Test]
+    public async Task ApplyDonorUpdatesToDatabase_DonorIsNotAvailable_AndUpdateIsNewerThanThatLastApplied_SetsDonorAsUnavailable()
+    {
+        const int donorId = 789;
+        var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+        var olderTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100));
 
-            logRepository
-                .GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>())
-                .Returns(new[] {
-                    new DonorManagementLog
-                    {
-                        DonorId = donorId,
-                        LastUpdateDateTime = olderTimestamp
-                    }
-                });
+        logRepository
+            .GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>())
+            .Returns(new[] {
+                new DonorManagementLog
+                {
+                    DonorId = donorId,
+                    LastUpdateDateTime = olderTimestamp
+                }
+            });
 
-            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
+        await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
                     IsAvailableForSearch = false,
                     UpdateDateTime = newerTimestamp
                 }},
-                default,
-                default,
-                default);
+            default,
+            default,
+            default);
 
-            await donorService
-                .ReceivedWithAnyArgs(1)
-                .SetDonorBatchAsUnavailableForSearch(default, default);
-        }
+        await donorService
+            .ReceivedWithAnyArgs(1)
+            .SetDonorBatchAsUnavailableForSearch(default, default);
+    }
 
-        [Test]
-        public async Task ApplyDonorUpdatesToDatabase_DonorIsNotAvailable_AndUpdateIsOlderThanThatLastApplied_DoesNotSetDonorAsUnavailable()
-        {
-            const int donorId = 789;
-            var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
-            var olderTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100));
+    [Test]
+    public async Task ApplyDonorUpdatesToDatabase_DonorIsNotAvailable_AndUpdateIsOlderThanThatLastApplied_DoesNotSetDonorAsUnavailable()
+    {
+        const int donorId = 789;
+        var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+        var olderTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100));
 
-            logRepository
-                .GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>())
-                .Returns(new[] {
-                    new DonorManagementLog
-                    {
-                        DonorId = donorId,
-                        LastUpdateDateTime = newerTimestamp
-                    }
-                });
+        logRepository
+            .GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>())
+            .Returns(new[] {
+                new DonorManagementLog
+                {
+                    DonorId = donorId,
+                    LastUpdateDateTime = newerTimestamp
+                }
+            });
 
-            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
+        await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
                     IsAvailableForSearch = false,
                     UpdateDateTime = olderTimestamp
                 }},
-                default,
-                default,
-                default);
+            default,
+            default,
+            default);
 
-            await donorService
-                .DidNotReceiveWithAnyArgs()
-                .SetDonorBatchAsUnavailableForSearch(default, default);
-        }
+        await donorService
+            .DidNotReceiveWithAnyArgs()
+            .SetDonorBatchAsUnavailableForSearch(default, default);
+    }
 
-        [Test]
-        public async Task ApplyDonorUpdatesToDatabase_SomeUpdatesOlderThanThoseLastApplied_LogsEventForEachNonApplicableUpdate()
-        {
-            const int donorId1 = 456;
-            const int donorId2 = 789;
-            const int donorId3 = 999;
-            var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
-            var olderTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100));
+    [Test]
+    public async Task ApplyDonorUpdatesToDatabase_SomeUpdatesOlderThanThoseLastApplied_LogsEventForEachNonApplicableUpdate()
+    {
+        const int donorId1 = 456;
+        const int donorId2 = 789;
+        const int donorId3 = 999;
+        var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+        var olderTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(100));
 
-            logRepository
-                .GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>())
-                .Returns(new[] {
-                    new DonorManagementLog
-                    {
-                        DonorId = donorId1,
-                        LastUpdateDateTime = newerTimestamp
-                    },
-                    new DonorManagementLog
-                    {
-                        DonorId = donorId2,
-                        LastUpdateDateTime = newerTimestamp
-                    }
-                });
+        logRepository
+            .GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>())
+            .Returns(new[] {
+                new DonorManagementLog
+                {
+                    DonorId = donorId1,
+                    LastUpdateDateTime = newerTimestamp
+                },
+                new DonorManagementLog
+                {
+                    DonorId = donorId2,
+                    LastUpdateDateTime = newerTimestamp
+                }
+            });
 
-            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
+        await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId1,
@@ -461,22 +461,22 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 {
                     DonorId = donorId3
                 }},
-                default,
-                default,
-                default);
+            default,
+            default,
+            default);
 
-            // third donor update is applicable; only 2 events should be logged
-            logger.Received(2).SendEvent(Arg.Any<string>(), Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>(), Arg.Any<Dictionary<string, double>>());
-        }
+        // third donor update is applicable; only 2 events should be logged
+        logger.Received(2).SendEvent(Arg.Any<string>(), Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>(), Arg.Any<Dictionary<string, double>>());
+    }
 
-        [Test]
-        public async Task ApplyDonorUpdatesToDatabase_UpdatesContainAvailableAndUnavailableDonors_ModifiesDonorsCorrectly()
-        {
-            const int availableDonorId = 123;
-            const int unavailableDonorId = 456;
-            const DonorType donorType = DonorType.Adult;
+    [Test]
+    public async Task ApplyDonorUpdatesToDatabase_UpdatesContainAvailableAndUnavailableDonors_ModifiesDonorsCorrectly()
+    {
+        const int availableDonorId = 123;
+        const int unavailableDonorId = 456;
+        const DonorType donorType = DonorType.Adult;
 
-            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
+        await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = unavailableDonorId,
@@ -492,45 +492,44 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     },
                     IsAvailableForSearch = true
                 }},
-                default,
-                default,
-                default);
+            default,
+            default,
+            default);
 
-            await donorService
-                .Received(1)
-                .SetDonorBatchAsUnavailableForSearch(
-                    Arg.Is<List<int>>(x => x.Single() == unavailableDonorId),
-                    Arg.Any<TransientDatabase>());
+        await donorService
+            .Received(1)
+            .SetDonorBatchAsUnavailableForSearch(
+                Arg.Is<List<int>>(x => x.Single() == unavailableDonorId),
+                Arg.Any<TransientDatabase>());
 
-            await donorService
-                .Received(1)
-                .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<DonorInfo>>(x =>
-                        x.Single().DonorId == availableDonorId &&
-                        x.Single().DonorType == donorType),
-                    Arg.Any<TransientDatabase>(),
-                    Arg.Any<string>(),
-                    Arg.Any<bool>());
-        }
+        await donorService
+            .Received(1)
+            .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<DonorInfo>>(x =>
+                    x.Single().DonorId == availableDonorId &&
+                    x.Single().DonorType == donorType),
+                Arg.Any<TransientDatabase>(),
+                Arg.Any<string>(),
+                Arg.Any<bool>());
+    }
 
-        [Test]
-        public async Task ApplyDonorUpdatesToDatabase_CreatesOrUpdatesDonorManagementLog()
-        {
-            const int donorId = 789;
-            const int sequenceNumber = 123456789;
-            var updateDateTime = DateTimeOffset.UtcNow;
+    [Test]
+    public async Task ApplyDonorUpdatesToDatabase_CreatesOrUpdatesDonorManagementLog()
+    {
+        const int donorId = 789;
+        const int sequenceNumber = 123456789;
+        var updateDateTime = DateTimeOffset.UtcNow;
 
-            await donorManagementService.ApplyDonorUpdatesToDatabase(
-                new[] { new DonorAvailabilityUpdate { DonorId = donorId, UpdateDateTime = updateDateTime, UpdateSequenceNumber = sequenceNumber} },
-                default,
-                default,
-                default);
+        await donorManagementService.ApplyDonorUpdatesToDatabase(
+            new[] { new DonorAvailabilityUpdate { DonorId = donorId, UpdateDateTime = updateDateTime, UpdateSequenceNumber = sequenceNumber} },
+            default,
+            default,
+            default);
 
-            await logRepository
-                .Received(1)
-                .CreateOrUpdateDonorManagementLogBatch(Arg.Is<IEnumerable<DonorManagementInfo>>(x =>
-                    x.Single().DonorId == donorId &&
-                    x.Single().UpdateSequenceNumber == sequenceNumber &&
-                    x.Single().UpdateDateTime == updateDateTime));
-        }
+        await logRepository
+            .Received(1)
+            .CreateOrUpdateDonorManagementLogBatch(Arg.Is<IEnumerable<DonorManagementInfo>>(x =>
+                x.Single().DonorId == donorId &&
+                x.Single().UpdateSequenceNumber == sequenceNumber &&
+                x.Single().UpdateDateTime == updateDateTime));
     }
 }

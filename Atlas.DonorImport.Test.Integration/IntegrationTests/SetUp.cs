@@ -3,25 +3,24 @@ using Atlas.DonorImport.Test.Integration.DependencyInjection;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using NUnit.Framework;
 
-namespace Atlas.DonorImport.Test.Integration.IntegrationTests
-{
-    [SetUpFixture]
-    public class IntegrationTestSetUp
-    {
-        [OneTimeSetUp]
-        public void Setup()
-        {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
-            {
-                DependencyInjection.DependencyInjection.BackingProvider = ServiceConfiguration.CreateProvider();
-                ResetDatabase();
-            });
-        }
+namespace Atlas.DonorImport.Test.Integration.IntegrationTests;
 
-        private static void ResetDatabase()
+[SetUpFixture]
+public class IntegrationTestSetUp
+{
+    [OneTimeSetUp]
+    public void Setup()
+    {
+        TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
         {
-            DatabaseManager.SetupDatabase();
-            DatabaseManager.ClearDatabases();
-        }
+            DependencyInjection.DependencyInjection.BackingProvider = ServiceConfiguration.CreateProvider();
+            ResetDatabase();
+        });
+    }
+
+    private static void ResetDatabase()
+    {
+        DatabaseManager.SetupDatabase();
+        DatabaseManager.ClearDatabases();
     }
 }

@@ -4,29 +4,28 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 
-namespace Atlas.MatchingAlgorithm.Common.Models
+namespace Atlas.MatchingAlgorithm.Common.Models;
+
+public class AlleleLevelMatchCriteria
 {
-    public class AlleleLevelMatchCriteria
-    {
-        public DonorType SearchType { get; set; }
+    public DonorType SearchType { get; set; }
 
-        public int DonorMismatchCount { get; set; }
+    public int DonorMismatchCount { get; set; }
         
-        public bool ShouldIncludeBetterMatches { get; set; }
+    public bool ShouldIncludeBetterMatches { get; set; }
 
-        public LociInfo<AlleleLevelLocusMatchCriteria> LocusCriteria { get; set; } = new LociInfo<AlleleLevelLocusMatchCriteria>();
+    public LociInfo<AlleleLevelLocusMatchCriteria> LocusCriteria { get; set; } = new LociInfo<AlleleLevelLocusMatchCriteria>();
 
-        public IEnumerable<Locus> LociWithCriteriaSpecified() =>
-            LocusCriteria.Map((l, c) => c == null ? (Locus?) null : l)
-                .ToEnumerable()
-                .Where(x => x != null)
-                .Select(x => x.Value);
-    }
+    public IEnumerable<Locus> LociWithCriteriaSpecified() =>
+        LocusCriteria.Map((l, c) => c == null ? (Locus?) null : l)
+            .ToEnumerable()
+            .Where(x => x != null)
+            .Select(x => x.Value);
+}
 
-    public class AlleleLevelLocusMatchCriteria
-    {
-        public int MismatchCount { get; set; }
-        public IEnumerable<string> PGroupsToMatchInPositionOne { get; set; }
-        public IEnumerable<string> PGroupsToMatchInPositionTwo { get; set; }
-    }
+public class AlleleLevelLocusMatchCriteria
+{
+    public int MismatchCount { get; set; }
+    public IEnumerable<string> PGroupsToMatchInPositionOne { get; set; }
+    public IEnumerable<string> PGroupsToMatchInPositionTwo { get; set; }
 }

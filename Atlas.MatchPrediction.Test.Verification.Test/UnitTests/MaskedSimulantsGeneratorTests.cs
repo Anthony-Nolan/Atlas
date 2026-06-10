@@ -14,188 +14,187 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
+namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests;
+
+[TestFixture]
+public class MaskedSimulantsGeneratorTests
 {
-    [TestFixture]
-    public class MaskedSimulantsGeneratorTests
+    private ILocusHlaMasker locusHlaMasker;
+    private ISimulantsRepository simulantsRepository;
+    private ITestHarnessRepository testHarnessRepository;
+
+    private IMaskedSimulantsGenerator simulantsGenerator;
+
+    [SetUp]
+    public void SetUp()
     {
-        private ILocusHlaMasker locusHlaMasker;
-        private ISimulantsRepository simulantsRepository;
-        private ITestHarnessRepository testHarnessRepository;
+        locusHlaMasker = Substitute.For<ILocusHlaMasker>();
+        simulantsRepository = Substitute.For<ISimulantsRepository>();
+        testHarnessRepository = Substitute.For<ITestHarnessRepository>();
 
-        private IMaskedSimulantsGenerator simulantsGenerator;
+        simulantsGenerator = new MaskedSimulantsGenerator(locusHlaMasker, testHarnessRepository, simulantsRepository);
 
-        [SetUp]
-        public void SetUp()
-        {
-            locusHlaMasker = Substitute.For<ILocusHlaMasker>();
-            simulantsRepository = Substitute.For<ISimulantsRepository>();
-            testHarnessRepository = Substitute.For<ITestHarnessRepository>();
+        simulantsRepository.GetGenotypeSimulants(default, default)
+            .ReturnsForAnyArgs(new List<Simulant>());
 
-            simulantsGenerator = new MaskedSimulantsGenerator(locusHlaMasker, testHarnessRepository, simulantsRepository);
+    }
 
-            simulantsRepository.GetGenotypeSimulants(default, default)
-                .ReturnsForAnyArgs(new List<Simulant>());
+    [TestCase(TestIndividualCategory.Donor)]
+    [TestCase(TestIndividualCategory.Patient)]
+    public async Task GenerateSimulants_GetsCorrectGenotypesFromDatabase(TestIndividualCategory category)
+    {
+        const int testHarnessId = 1;
 
-        }
+        await simulantsGenerator.GenerateSimulants(
+            new GenerateSimulantsRequest
+            {
+                TestHarnessId = testHarnessId,
+                TestIndividualCategory = category
+            },
+            new MaskingRequests(),
+            default,
+            default);
 
-        [TestCase(TestIndividualCategory.Donor)]
-        [TestCase(TestIndividualCategory.Patient)]
-        public async Task GenerateSimulants_GetsCorrectGenotypesFromDatabase(TestIndividualCategory category)
-        {
-            const int testHarnessId = 1;
+        await simulantsRepository.Received().GetGenotypeSimulants(testHarnessId, category.ToString());
+    }
 
-            await simulantsGenerator.GenerateSimulants(
-                new GenerateSimulantsRequest
-                {
-                    TestHarnessId = testHarnessId,
-                    TestIndividualCategory = category
-                },
-                new MaskingRequests(),
-                default,
-                default);
+    [TestCase(0, 100)]
+    [TestCase(100, 10)]
+    public async Task GenerateSimulants_NumberOfGenotypesDoesNotMatchSimulantCount_ThrowsException(int genotypeCount, int simulantCount)
+    {
+        simulantsRepository.GetGenotypeSimulants(default, default)
+            .ReturnsForAnyArgs(SimulantBuilder.Default.Build(genotypeCount));
 
-            await simulantsRepository.Received().GetGenotypeSimulants(testHarnessId, category.ToString());
-        }
-
-        [TestCase(0, 100)]
-        [TestCase(100, 10)]
-        public async Task GenerateSimulants_NumberOfGenotypesDoesNotMatchSimulantCount_ThrowsException(int genotypeCount, int simulantCount)
-        {
-            simulantsRepository.GetGenotypeSimulants(default, default)
-                .ReturnsForAnyArgs(SimulantBuilder.Default.Build(genotypeCount));
-
-            var act = async () => await simulantsGenerator.GenerateSimulants(
-                new GenerateSimulantsRequest { SimulantCount = simulantCount },
-                new MaskingRequests(),
-                default,
-                default
-            );
+        var act = async () => await simulantsGenerator.GenerateSimulants(
+            new GenerateSimulantsRequest { SimulantCount = simulantCount },
+            new MaskingRequests(),
+            default,
+            default
+        );
             
-            await act.Should().ThrowAsync<Exception>();
-        }
+        await act.Should().ThrowAsync<Exception>();
+    }
 
-        [Test]
-        public async Task GenerateSimulants_MasksGenotypesByMatchPredictionLocus()
-        {
-            const int genotypeCount = 1;
-            simulantsRepository.GetGenotypeSimulants(default, default)
-                .ReturnsForAnyArgs(SimulantBuilder.Default.Build(genotypeCount));
+    [Test]
+    public async Task GenerateSimulants_MasksGenotypesByMatchPredictionLocus()
+    {
+        const int genotypeCount = 1;
+        simulantsRepository.GetGenotypeSimulants(default, default)
+            .ReturnsForAnyArgs(SimulantBuilder.Default.Build(genotypeCount));
 
-            await simulantsGenerator.GenerateSimulants(
-                new GenerateSimulantsRequest { SimulantCount = genotypeCount },
-                new MaskingRequests(),
-                default,
-                default);
+        await simulantsGenerator.GenerateSimulants(
+            new GenerateSimulantsRequest { SimulantCount = genotypeCount },
+            new MaskingRequests(),
+            default,
+            default);
 
-            await locusHlaMasker.Received(1).MaskHlaForSingleLocus(
-                Arg.Any<LocusMaskingRequests>(),
-                Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.A));
-            await locusHlaMasker.Received(1).MaskHlaForSingleLocus(
-                Arg.Any<LocusMaskingRequests>(),
-                Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.B));
-            await locusHlaMasker.Received(1).MaskHlaForSingleLocus(
-                Arg.Any<LocusMaskingRequests>(),
-                Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.C));
-            await locusHlaMasker.Received(1).MaskHlaForSingleLocus(
-                Arg.Any<LocusMaskingRequests>(),
-                Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.Dqb1));
-            await locusHlaMasker.Received(1).MaskHlaForSingleLocus(
-                Arg.Any<LocusMaskingRequests>(),
-                Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.Drb1));
+        await locusHlaMasker.Received(1).MaskHlaForSingleLocus(
+            Arg.Any<LocusMaskingRequests>(),
+            Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.A));
+        await locusHlaMasker.Received(1).MaskHlaForSingleLocus(
+            Arg.Any<LocusMaskingRequests>(),
+            Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.B));
+        await locusHlaMasker.Received(1).MaskHlaForSingleLocus(
+            Arg.Any<LocusMaskingRequests>(),
+            Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.C));
+        await locusHlaMasker.Received(1).MaskHlaForSingleLocus(
+            Arg.Any<LocusMaskingRequests>(),
+            Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.Dqb1));
+        await locusHlaMasker.Received(1).MaskHlaForSingleLocus(
+            Arg.Any<LocusMaskingRequests>(),
+            Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.Drb1));
 
-            await locusHlaMasker.DidNotReceive().MaskHlaForSingleLocus(
-                Arg.Any<LocusMaskingRequests>(),
-                Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.Dpb1));
-        }
+        await locusHlaMasker.DidNotReceive().MaskHlaForSingleLocus(
+            Arg.Any<LocusMaskingRequests>(),
+            Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.Dpb1));
+    }
 
-        [Test]
-        public async Task GenerateSimulants_MasksAllGenotypes()
-        {
-            const string firstHla = "hla-1";
-            const string secondHla = "hla-2";
+    [Test]
+    public async Task GenerateSimulants_MasksAllGenotypes()
+    {
+        const string firstHla = "hla-1";
+        const string secondHla = "hla-2";
 
-            var firstGenotype = SimulantBuilder.New.WithHlaAtEveryLocus(firstHla).Build();
-            var secondGenotype = SimulantBuilder.New.WithHlaAtEveryLocus(secondHla).Build();
-            var genotypes = new List<Simulant> { firstGenotype, secondGenotype };
+        var firstGenotype = SimulantBuilder.New.WithHlaAtEveryLocus(firstHla).Build();
+        var secondGenotype = SimulantBuilder.New.WithHlaAtEveryLocus(secondHla).Build();
+        var genotypes = new List<Simulant> { firstGenotype, secondGenotype };
 
-            simulantsRepository.GetGenotypeSimulants(default, default)
-                .ReturnsForAnyArgs(genotypes);
+        simulantsRepository.GetGenotypeSimulants(default, default)
+            .ReturnsForAnyArgs(genotypes);
 
-            await simulantsGenerator.GenerateSimulants(
-                new GenerateSimulantsRequest { SimulantCount = genotypes.Count },
-                new MaskingRequests(),
-                default,
-                default);
+        await simulantsGenerator.GenerateSimulants(
+            new GenerateSimulantsRequest { SimulantCount = genotypes.Count },
+            new MaskingRequests(),
+            default,
+            default);
 
-            await locusHlaMasker.Received(5).MaskHlaForSingleLocus(
-                Arg.Any<LocusMaskingRequests>(),
-                Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x =>
-                    x.Select(g => g.GenotypeSimulantId).SequenceEqual(new[] { firstGenotype.Id, secondGenotype.Id }) &&
-                    x.Select(g => g.HlaTyping).SequenceEqual(new[] { new LocusInfo<string>(firstHla), new LocusInfo<string>(secondHla) })));
-        }
+        await locusHlaMasker.Received(5).MaskHlaForSingleLocus(
+            Arg.Any<LocusMaskingRequests>(),
+            Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x =>
+                x.Select(g => g.GenotypeSimulantId).SequenceEqual(new[] { firstGenotype.Id, secondGenotype.Id }) &&
+                x.Select(g => g.HlaTyping).SequenceEqual(new[] { new LocusInfo<string>(firstHla), new LocusInfo<string>(secondHla) })));
+    }
 
-        [Test]
-        public async Task GenerateSimulants_BuildsSimulantFromMaskedLociTypings()
-        {
-            locusHlaMasker.MaskHlaForSingleLocus(default, default).ReturnsForAnyArgs(
-                BuildHlaFor(Locus.A),
-BuildHlaFor(Locus.B),
-                BuildHlaFor(Locus.C),
-                BuildHlaFor(Locus.Dqb1),
-                BuildHlaFor(Locus.Drb1)
-                );
+    [Test]
+    public async Task GenerateSimulants_BuildsSimulantFromMaskedLociTypings()
+    {
+        locusHlaMasker.MaskHlaForSingleLocus(default, default).ReturnsForAnyArgs(
+            BuildHlaFor(Locus.A),
+            BuildHlaFor(Locus.B),
+            BuildHlaFor(Locus.C),
+            BuildHlaFor(Locus.Dqb1),
+            BuildHlaFor(Locus.Drb1)
+        );
 
-            await simulantsGenerator.GenerateSimulants(new GenerateSimulantsRequest(), new MaskingRequests(), default, default);
+        await simulantsGenerator.GenerateSimulants(new GenerateSimulantsRequest(), new MaskingRequests(), default, default);
 
-            await simulantsRepository.Received().BulkInsertSimulants(Arg.Is<IReadOnlyCollection<Simulant>>(x =>
-                x.First().A_1.Equals("A-1") &&
-                x.First().A_2.Equals("A-2") &&
-                x.First().B_1.Equals("B-1") &&
-                x.First().B_2.Equals("B-2") &&
-                x.First().C_1.Equals("C-1") &&
-                x.First().C_2.Equals("C-2") &&
-                x.First().DQB1_1.Equals("Dqb1-1") &&
-                x.First().DQB1_2.Equals("Dqb1-2") &&
-                x.First().DRB1_1.Equals("Drb1-1") &&
-                x.First().DRB1_2.Equals("Drb1-2")));
-        }
+        await simulantsRepository.Received().BulkInsertSimulants(Arg.Is<IReadOnlyCollection<Simulant>>(x =>
+            x.First().A_1.Equals("A-1") &&
+            x.First().A_2.Equals("A-2") &&
+            x.First().B_1.Equals("B-1") &&
+            x.First().B_2.Equals("B-2") &&
+            x.First().C_1.Equals("C-1") &&
+            x.First().C_2.Equals("C-2") &&
+            x.First().DQB1_1.Equals("Dqb1-1") &&
+            x.First().DQB1_2.Equals("Dqb1-2") &&
+            x.First().DRB1_1.Equals("Drb1-1") &&
+            x.First().DRB1_2.Equals("Drb1-2")));
+    }
 
-        [TestCase(TestIndividualCategory.Donor)]
-        [TestCase(TestIndividualCategory.Patient)]
-        public async Task GenerateSimulants_WritesPhenotypesToDatabaseWithCorrectMetadata(TestIndividualCategory testIndividualCategory)
-        {
-            const int testHarnessId = 123;
+    [TestCase(TestIndividualCategory.Donor)]
+    [TestCase(TestIndividualCategory.Patient)]
+    public async Task GenerateSimulants_WritesPhenotypesToDatabaseWithCorrectMetadata(TestIndividualCategory testIndividualCategory)
+    {
+        const int testHarnessId = 123;
 
-            var typings = locusHlaMasker.MaskHlaForSingleLocus(default, default).ReturnsForAnyArgs(
-                BuildHlaFor(Locus.A),
-                BuildHlaFor(Locus.B),
-                BuildHlaFor(Locus.C),
-                BuildHlaFor(Locus.Dqb1),
-                BuildHlaFor(Locus.Drb1)
-            );
+        var typings = locusHlaMasker.MaskHlaForSingleLocus(default, default).ReturnsForAnyArgs(
+            BuildHlaFor(Locus.A),
+            BuildHlaFor(Locus.B),
+            BuildHlaFor(Locus.C),
+            BuildHlaFor(Locus.Dqb1),
+            BuildHlaFor(Locus.Drb1)
+        );
 
-            await simulantsGenerator.GenerateSimulants(
-                new GenerateSimulantsRequest
-                {
-                    TestHarnessId = testHarnessId,
-                    TestIndividualCategory = testIndividualCategory
-                },
-                new MaskingRequests(),
-                default,
-                default);
+        await simulantsGenerator.GenerateSimulants(
+            new GenerateSimulantsRequest
+            {
+                TestHarnessId = testHarnessId,
+                TestIndividualCategory = testIndividualCategory
+            },
+            new MaskingRequests(),
+            default,
+            default);
 
-            await simulantsRepository.Received().BulkInsertSimulants(Arg.Is<IReadOnlyCollection<Simulant>>(x =>
-                x.First().TestHarness_Id == testHarnessId &&
-                x.First().TestIndividualCategory == testIndividualCategory &&
-                x.First().SimulatedHlaTypingCategory == SimulatedHlaTypingCategory.Masked &&
-                x.First().SourceSimulantId != null
-                ));
-        }
+        await simulantsRepository.Received().BulkInsertSimulants(Arg.Is<IReadOnlyCollection<Simulant>>(x =>
+            x.First().TestHarness_Id == testHarnessId &&
+            x.First().TestIndividualCategory == testIndividualCategory &&
+            x.First().SimulatedHlaTypingCategory == SimulatedHlaTypingCategory.Masked &&
+            x.First().SourceSimulantId != null
+        ));
+    }
 
-        private static IReadOnlyCollection<SimulantLocusHla> BuildHlaFor(Locus locus)
-        {
-            return SimulantLocusHlaBuilder.New.WithTypingFromLocusName(locus).Build(1).ToList();
-        }
+    private static IReadOnlyCollection<SimulantLocusHla> BuildHlaFor(Locus locus)
+    {
+        return SimulantLocusHlaBuilder.New.WithTypingFromLocusName(locus).Build(1).ToList();
     }
 }

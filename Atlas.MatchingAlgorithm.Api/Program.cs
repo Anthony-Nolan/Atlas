@@ -1,18 +1,17 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Atlas.MatchingAlgorithm.Api
-{
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            CreateWebHostBuilder(args).Build().Run();
-        }
+namespace Atlas.MatchingAlgorithm.Api;
 
-        private static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost
-                .CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        CreateWebHostBuilder(args).Build().Run();
     }
+
+    private static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+        WebHost
+            .CreateDefaultBuilder(args)
+            .UseStartup<Startup>();
 }

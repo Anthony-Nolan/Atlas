@@ -3,61 +3,60 @@ using Newtonsoft.Json.Converters;
 using System.Collections.Generic;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 
-namespace Atlas.MatchPrediction.Test.Verification.Models
+namespace Atlas.MatchPrediction.Test.Verification.Models;
+
+public class GenerateTestHarnessRequest
 {
-    public class GenerateTestHarnessRequest
-    {
-        public MaskingRequestsTransfer PatientMaskingRequests { get; set; }
-        public MaskingRequestsTransfer DonorMaskingRequests { get; set; }
-
-        /// <summary>
-        /// Optional: Comments to store with the generated test harness.
-        /// </summary>
-        public string Comments { get; set; }
-    }
+    public MaskingRequestsTransfer PatientMaskingRequests { get; set; }
+    public MaskingRequestsTransfer DonorMaskingRequests { get; set; }
 
     /// <summary>
-    /// Multiple masking requests may be submitted per locus.
-    /// The final sum of typings proportions per locus must be between 0 to 100%, inclusive.
+    /// Optional: Comments to store with the generated test harness.
     /// </summary>
-    public class MaskingRequestsTransfer : LociInfoTransfer<IEnumerable<MaskingRequest>>
-    {
-    }
+    public string Comments { get; set; }
+}
 
-    public class MaskingRequest
-    {
-        public MaskingCategory MaskingCategory { get; set; }
+/// <summary>
+/// Multiple masking requests may be submitted per locus.
+/// The final sum of typings proportions per locus must be between 0 to 100%, inclusive.
+/// </summary>
+public class MaskingRequestsTransfer : LociInfoTransfer<IEnumerable<MaskingRequest>>
+{
+}
 
-        /// <summary>
-        /// Percentage (to nearest whole integer) of locus typings to mask to category of <see cref="MaskingCategory"/>.
-        /// </summary>
-        public int ProportionToMask { get; set; }
-    }
+public class MaskingRequest
+{
+    public MaskingCategory MaskingCategory { get; set; }
 
     /// <summary>
-    /// Currently available options for the masking of genotype HLA.
+    /// Percentage (to nearest whole integer) of locus typings to mask to category of <see cref="MaskingCategory"/>.
     /// </summary>
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum MaskingCategory
-    {
-        /// <summary>
-        /// If genotype has >2 fields, truncates typing to its first two fields (does not preserve expression letters)
-        /// </summary>
-        TwoField,
+    public int ProportionToMask { get; set; }
+}
 
-        PGroup,
+/// <summary>
+/// Currently available options for the masking of genotype HLA.
+/// </summary>
+[JsonConverter(typeof(StringEnumConverter))]
+public enum MaskingCategory
+{
+    /// <summary>
+    /// If genotype has >2 fields, truncates typing to its first two fields (does not preserve expression letters)
+    /// </summary>
+    TwoField,
 
-        /// <summary>
-        /// a.k.a. "NMDP code"
-        /// </summary>
-        MultipleAlleleCode,
+    PGroup,
 
-        XxCode,
-        Serology,
+    /// <summary>
+    /// a.k.a. "NMDP code"
+    /// </summary>
+    MultipleAlleleCode,
 
-        /// <summary>
-        /// Delete the locus typing - not permitted at "required" matching loci.
-        /// </summary>
-        Delete
-    }
+    XxCode,
+    Serology,
+
+    /// <summary>
+    /// Delete the locus typing - not permitted at "required" matching loci.
+    /// </summary>
+    Delete
 }

@@ -5,22 +5,21 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Threading.Tasks;
 using System;
 
-namespace Atlas.MatchPrediction.Test.Verification.Functions
+namespace Atlas.MatchPrediction.Test.Verification.Functions;
+
+public class HealthCheckFunctions
 {
-    public class HealthCheckFunctions
+    private readonly HealthCheckService healthCheckService;
+
+    public HealthCheckFunctions(HealthCheckService healthCheckService)
     {
-        private readonly HealthCheckService healthCheckService;
+        this.healthCheckService = healthCheckService;
+    }
 
-        public HealthCheckFunctions(HealthCheckService healthCheckService)
-        {
-            this.healthCheckService = healthCheckService;
-        }
-
-        [Function(nameof(HealthCheck))]
-        public async Task<IActionResult> HealthCheck([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest request)
-        {
-            var healthStatus = await healthCheckService.CheckHealthAsync();
-            return new JsonResult(Enum.GetName(typeof(HealthStatus), healthStatus.Status));
-        }
+    [Function(nameof(HealthCheck))]
+    public async Task<IActionResult> HealthCheck([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest request)
+    {
+        var healthStatus = await healthCheckService.CheckHealthAsync();
+        return new JsonResult(Enum.GetName(typeof(HealthStatus), healthStatus.Status));
     }
 }

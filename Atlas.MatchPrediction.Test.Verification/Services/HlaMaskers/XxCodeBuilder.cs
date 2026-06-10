@@ -1,27 +1,26 @@
 ﻿using System.Threading.Tasks;
 using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
+namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers;
+
+internal interface IXxCodeBuilder
 {
-    internal interface IXxCodeBuilder
+    Task<TransformationResult> ConvertRandomLocusHlaToXxCodes(TransformationRequest request);
+    string ConvertHlaToXxCode(string hla);
+}
+
+internal class XxCodeBuilder : HlaTransformerBase, IXxCodeBuilder
+{
+    public async Task<TransformationResult> ConvertRandomLocusHlaToXxCodes(TransformationRequest request)
     {
-        Task<TransformationResult> ConvertRandomLocusHlaToXxCodes(TransformationRequest request);
-        string ConvertHlaToXxCode(string hla);
+        return await TransformRandomlySelectedTypings(
+            request, 
+            hlaName => Task.FromResult(ConvertHlaToXxCode(hlaName)));
     }
 
-    internal class XxCodeBuilder : HlaTransformerBase, IXxCodeBuilder
+    public string ConvertHlaToXxCode(string hlaName)
     {
-        public async Task<TransformationResult> ConvertRandomLocusHlaToXxCodes(TransformationRequest request)
-        {
-            return await TransformRandomlySelectedTypings(
-                request, 
-                hlaName => Task.FromResult(ConvertHlaToXxCode(hlaName)));
-        }
-
-        public string ConvertHlaToXxCode(string hlaName)
-        {
-            const string xxCodeSuffix = ":XX";
-            return $"{AlleleSplitter.FirstField(hlaName)}{xxCodeSuffix}";
-        }
+        const string xxCodeSuffix = ":XX";
+        return $"{AlleleSplitter.FirstField(hlaName)}{xxCodeSuffix}";
     }
 }

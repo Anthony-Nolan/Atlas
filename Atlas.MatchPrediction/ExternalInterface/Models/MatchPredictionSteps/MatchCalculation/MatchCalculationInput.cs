@@ -2,13 +2,12 @@
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
-namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.MatchCalculation
+namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.MatchCalculation;
+
+public class MatchCalculationInput
 {
-    public class MatchCalculationInput
-    {
-        public PhenotypeInfo<string> DonorHla { get; set; }
-        public PhenotypeInfo<string> PatientHla { get; set; }
-        public string HlaNomenclatureVersion { get; set; }
-        public ISet<Locus> AllowedLoci { get; set; }
-    }
+    public PhenotypeInfo<string> DonorHla { get; set; }
+    public PhenotypeInfo<string> PatientHla { get; set; }
+    public string HlaNomenclatureVersion { get; set; }
+    public ISet<Locus> AllowedLoci { get; set; }
 }

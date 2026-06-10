@@ -24,156 +24,155 @@ using System;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
 using Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework;
 
-namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
+namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection;
+
+internal static class ServiceConfiguration
 {
-    internal static class ServiceConfiguration
+    public static void RegisterValidationServices(
+        this IServiceCollection services,
+        Func<IServiceProvider, OutgoingMatchPredictionRequestSettings> fetchOutgoingMatchPredictionRequestSettings,
+        Func<IServiceProvider, ValidationAzureStorageSettings> fetchValidationAzureStorageSettings,
+        Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
+        Func<IServiceProvider, MessagingServiceBusSettings> fetchMessageServiceBusSettings,
+        Func<IServiceProvider, MatchPredictionRequestsSettings> fetchMatchPredictionRequestSettings,
+        Func<IServiceProvider, ValidationSearchSettings> fetchValidationSearchSettings,
+        Func<IServiceProvider, ValidationHomeworkSettings> fetchValidationHomeworkSettings,
+        Func<IServiceProvider, string> fetchMatchPredictionValidationSqlConnectionString,
+        Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString,
+        Func<IServiceProvider, string> fetchDonorImportSqlConnectionString)
     {
-        public static void RegisterValidationServices(
-            this IServiceCollection services,
-            Func<IServiceProvider, OutgoingMatchPredictionRequestSettings> fetchOutgoingMatchPredictionRequestSettings,
-            Func<IServiceProvider, ValidationAzureStorageSettings> fetchValidationAzureStorageSettings,
-            Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessageServiceBusSettings,
-            Func<IServiceProvider, MatchPredictionRequestsSettings> fetchMatchPredictionRequestSettings,
-            Func<IServiceProvider, ValidationSearchSettings> fetchValidationSearchSettings,
-            Func<IServiceProvider, ValidationHomeworkSettings> fetchValidationHomeworkSettings,
-            Func<IServiceProvider, string> fetchMatchPredictionValidationSqlConnectionString,
-            Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString,
-            Func<IServiceProvider, string> fetchDonorImportSqlConnectionString)
+        services.RegisterSettings(
+            fetchOutgoingMatchPredictionRequestSettings,
+            fetchValidationAzureStorageSettings,
+            fetchValidationSearchSettings,
+            fetchValidationHomeworkSettings);
+
+        services.RegisterDatabaseServices(fetchMatchPredictionValidationSqlConnectionString);
+
+        services.RegisterServices(
+            fetchValidationAzureStorageSettings, fetchDataRefreshSettings, fetchMessageServiceBusSettings, fetchValidationSearchSettings);
+
+        services.RegisterHaplotypeFrequenciesReader(fetchMatchPredictionSqlConnectionString);
+        services.RegisterImportDatabaseTypes(fetchDonorImportSqlConnectionString);
+        services.RegisterMatchPredictionResultsLocationPublisher(fetchMessageServiceBusSettings, fetchMatchPredictionRequestSettings);
+
+        services.RegisterHomeworkServices(fetchMatchPredictionValidationSqlConnectionString);
+    }
+
+    private static void RegisterSettings(
+        this IServiceCollection services,
+        Func<IServiceProvider, OutgoingMatchPredictionRequestSettings> fetchOutgoingMatchPredictionRequestSettings,
+        Func<IServiceProvider, ValidationAzureStorageSettings> fetchValidationAzureStorageSettings,
+        Func<IServiceProvider, ValidationSearchSettings> fetchValidationSearchSettings,
+        Func<IServiceProvider, ValidationHomeworkSettings> fetchValidationHomeworkSettings)
+    {
+        services.MakeSettingsAvailableForUse(fetchOutgoingMatchPredictionRequestSettings);
+        services.MakeSettingsAvailableForUse(fetchValidationAzureStorageSettings);
+        services.MakeSettingsAvailableForUse(fetchValidationSearchSettings);
+        services.MakeSettingsAvailableForUse(fetchValidationHomeworkSettings);
+    }
+
+    private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)
+    {
+        services.AddScoped<IValidationRepository, ValidationRepository>(sp =>
+            new ValidationRepository(fetchSqlConnectionString(sp)));
+        services.AddScoped<ISubjectRepository, SubjectRepository>(sp =>
+            new SubjectRepository(fetchSqlConnectionString(sp)));
+
+        services.AddScoped<ITestDonorExportRepository>(sp =>
+            new TestDonorExportRepository(fetchSqlConnectionString(sp)));
+        services.AddScoped<ISearchSetRepository>(sp =>
+            new SearchSetRepository(fetchSqlConnectionString(sp)));
+        services.AddScoped<ISearchRequestsRepository<ValidationSearchRequestRecord>>(sp =>
+            new SearchRequestsRepository(fetchSqlConnectionString(sp)));
+        services.AddScoped<IMatchedDonorsRepository, MatchedDonorsRepository>(sp =>
+            new MatchedDonorsRepository(fetchSqlConnectionString(sp)));
+        services.AddScoped<IProcessedResultsRepository<MatchedDonor>, MatchedDonorsRepository>(sp =>
+            new MatchedDonorsRepository(fetchSqlConnectionString(sp)));
+        services.AddScoped<IProcessedResultsRepository<LocusMatchDetails>, LocusMatchDetailsRepository>(sp =>
+            new LocusMatchDetailsRepository(fetchSqlConnectionString(sp)));
+        services.AddScoped<IProcessedResultsRepository<MatchedDonorProbability>, MatchProbabilitiesRepository>(sp =>
+            new MatchProbabilitiesRepository(fetchSqlConnectionString(sp)));
+
+        services.AddScoped<IMatchPredictionRequestRepository, MatchPredictionRequestRepository>(sp =>
+            new MatchPredictionRequestRepository(fetchSqlConnectionString(sp)));
+        services.AddScoped<IMatchPredictionResultsRepository, MatchPredictionResultsRepository>(sp =>
+            new MatchPredictionResultsRepository(fetchSqlConnectionString(sp)));
+    }
+
+    private static void RegisterServices(
+        this IServiceCollection services,
+        Func<IServiceProvider, ValidationAzureStorageSettings> fetchValidationAzureStorageSettings,
+        Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
+        Func<IServiceProvider, MessagingServiceBusSettings> fetchMessageServiceBusSettings,
+        Func<IServiceProvider, ValidationSearchSettings> fetchValidationSearchSettings)
+    {
+        services.AddScoped<ISubjectInfoImporter, SubjectInfoImporter>();
+        services.AddScoped(typeof(IFileReader<>), typeof(FileReader<>));
+        services.AddScoped<ITestDonorExporter, TestDonorExporter>();
+        services.AddScoped<ISearchRequester, SearchRequester>();
+
+        services.AddScoped<IValidationAtlasPreparer, ValidationAtlasPreparer>(sp =>
         {
-            services.RegisterSettings(
-                fetchOutgoingMatchPredictionRequestSettings,
-                fetchValidationAzureStorageSettings,
-                fetchValidationSearchSettings,
-                fetchValidationHomeworkSettings);
+            var subjectRepo = sp.GetService<ISubjectRepository>();
+            var setReader = sp.GetService<IHaplotypeFrequencySetReader>();
+            var testDonorExporter = sp.GetService<ITestDonorExporter>();
+            var testDonorExportRepo = sp.GetService<ITestDonorExportRepository>();
+            var requestUrl = fetchDataRefreshSettings(sp).RequestUrl;
+            return new ValidationAtlasPreparer(subjectRepo, setReader, testDonorExporter, testDonorExportRepo, requestUrl);
+        });
 
-            services.RegisterDatabaseServices(fetchMatchPredictionValidationSqlConnectionString);
+        services.AddScoped<IResultSetProcessor<SearchResultsNotification>, SearchResultSetProcessor>();
+        services.AddScoped<IResultsStorer<SearchResult, MatchedDonor>, SearchResultDonorStorer>();
+        services.AddScoped<IResultsStorer<SearchResult, LocusMatchDetails>, SearchLocusDetailsStorer>();
+        services.AddScoped<IResultsStorer<SearchResult, MatchedDonorProbability>, MatchedDonorProbabilitiesStorer>();
 
-            services.RegisterServices(
-                fetchValidationAzureStorageSettings, fetchDataRefreshSettings, fetchMessageServiceBusSettings, fetchValidationSearchSettings);
-
-            services.RegisterHaplotypeFrequenciesReader(fetchMatchPredictionSqlConnectionString);
-            services.RegisterImportDatabaseTypes(fetchDonorImportSqlConnectionString);
-            services.RegisterMatchPredictionResultsLocationPublisher(fetchMessageServiceBusSettings, fetchMatchPredictionRequestSettings);
-
-            services.RegisterHomeworkServices(fetchMatchPredictionValidationSqlConnectionString);
-        }
-
-        private static void RegisterSettings(
-            this IServiceCollection services,
-            Func<IServiceProvider, OutgoingMatchPredictionRequestSettings> fetchOutgoingMatchPredictionRequestSettings,
-            Func<IServiceProvider, ValidationAzureStorageSettings> fetchValidationAzureStorageSettings,
-            Func<IServiceProvider, ValidationSearchSettings> fetchValidationSearchSettings,
-            Func<IServiceProvider, ValidationHomeworkSettings> fetchValidationHomeworkSettings)
+        services.AddScoped<IMatchPredictionRequester, MatchPredictionRequester>();
+        services.AddScoped<IBlobStreamer, BlobStreamer>(sp =>
         {
-            services.MakeSettingsAvailableForUse(fetchOutgoingMatchPredictionRequestSettings);
-            services.MakeSettingsAvailableForUse(fetchValidationAzureStorageSettings);
-            services.MakeSettingsAvailableForUse(fetchValidationSearchSettings);
-            services.MakeSettingsAvailableForUse(fetchValidationHomeworkSettings);
-        }
+            var settings = fetchValidationAzureStorageSettings(sp);
+            return new BlobStreamer(settings.ConnectionString, sp.GetService<IAtlasLogger>());
+        });
+        services.AddScoped<IMatchPredictionResultsProcessor, MatchPredictionResultsProcessor>();
+        services.AddScoped<IMatchPredictionLocationSender, MatchPredictionLocationSender>();
 
-        private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)
+        services.AddScoped<IMessageBatchPublisher<SearchResultsNotification>, MessageBatchPublisher<SearchResultsNotification>>(sp =>
         {
-            services.AddScoped<IValidationRepository, ValidationRepository>(sp =>
-                new ValidationRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<ISubjectRepository, SubjectRepository>(sp =>
-                new SubjectRepository(fetchSqlConnectionString(sp)));
+            var messageSettings = fetchMessageServiceBusSettings(sp);
+            var searchSettings = fetchValidationSearchSettings(sp);
+            var logger = sp.GetService<IAtlasLogger>();
+            var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
+            return new MessageBatchPublisher<SearchResultsNotification>(topicClientFactory, searchSettings.ResultsTopic, messageSettings.SendRetryCount, messageSettings.SendRetryCooldownSeconds, logger);
+        });
 
-            services.AddScoped<ITestDonorExportRepository>(sp =>
-             new TestDonorExportRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<ISearchSetRepository>(sp =>
-                new SearchSetRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<ISearchRequestsRepository<ValidationSearchRequestRecord>>(sp =>
-                new SearchRequestsRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<IMatchedDonorsRepository, MatchedDonorsRepository>(sp =>
-                new MatchedDonorsRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<IProcessedResultsRepository<MatchedDonor>, MatchedDonorsRepository>(sp =>
-                new MatchedDonorsRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<IProcessedResultsRepository<LocusMatchDetails>, LocusMatchDetailsRepository>(sp =>
-                new LocusMatchDetailsRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<IProcessedResultsRepository<MatchedDonorProbability>, MatchProbabilitiesRepository>(sp =>
-                new MatchProbabilitiesRepository(fetchSqlConnectionString(sp)));
-
-            services.AddScoped<IMatchPredictionRequestRepository, MatchPredictionRequestRepository>(sp =>
-                new MatchPredictionRequestRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<IMatchPredictionResultsRepository, MatchPredictionResultsRepository>(sp =>
-                new MatchPredictionResultsRepository(fetchSqlConnectionString(sp)));
-        }
-
-        private static void RegisterServices(
-            this IServiceCollection services,
-            Func<IServiceProvider, ValidationAzureStorageSettings> fetchValidationAzureStorageSettings,
-            Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessageServiceBusSettings,
-            Func<IServiceProvider, ValidationSearchSettings> fetchValidationSearchSettings)
+        services.AddScoped<ISearchResultNotificationSender, SearchResultNotificationSender>(sp =>
         {
-            services.AddScoped<ISubjectInfoImporter, SubjectInfoImporter>();
-            services.AddScoped(typeof(IFileReader<>), typeof(FileReader<>));
-            services.AddScoped<ITestDonorExporter, TestDonorExporter>();
-            services.AddScoped<ISearchRequester, SearchRequester>();
+            var publisher = sp.GetService<IMessageBatchPublisher<SearchResultsNotification>>();
+            var storageSettings = fetchValidationAzureStorageSettings(sp);
+            return new SearchResultNotificationSender(publisher, storageSettings.SearchResultsBlobContainer);
+        });
+    }
 
-            services.AddScoped<IValidationAtlasPreparer, ValidationAtlasPreparer>(sp =>
-            {
-                var subjectRepo = sp.GetService<ISubjectRepository>();
-                var setReader = sp.GetService<IHaplotypeFrequencySetReader>();
-                var testDonorExporter = sp.GetService<ITestDonorExporter>();
-                var testDonorExportRepo = sp.GetService<ITestDonorExportRepository>();
-                var requestUrl = fetchDataRefreshSettings(sp).RequestUrl;
-                return new ValidationAtlasPreparer(subjectRepo, setReader, testDonorExporter, testDonorExportRepo, requestUrl);
-            });
+    private static void RegisterHomeworkServices(
+        this IServiceCollection services,
+        Func<IServiceProvider, string> fetchSqlConnectionString)
+    {
+        services.AddScoped<IHomeworkDeletionRepository, HomeworkDeletionRepository>(sp =>
+            new HomeworkDeletionRepository(fetchSqlConnectionString(sp)));
+        services.AddScoped<IHomeworkSetRepository, HomeworkSetRepository>(sp =>
+            new HomeworkSetRepository(fetchSqlConnectionString(sp)));
+        services.AddScoped<IPatientDonorPairRepository, PatientDonorPairRepository>(sp =>
+            new PatientDonorPairRepository(fetchSqlConnectionString(sp)));
+        services.AddScoped<IImputationSummaryRepository, ImputationSummaryRepository>(sp =>
+            new ImputationSummaryRepository(fetchSqlConnectionString(sp)));
+        services.AddScoped<IMatchingGenotypesRepository, MatchingGenotypesRepository>(sp =>
+            new MatchingGenotypesRepository(fetchSqlConnectionString(sp)));
 
-            services.AddScoped<IResultSetProcessor<SearchResultsNotification>, SearchResultSetProcessor>();
-            services.AddScoped<IResultsStorer<SearchResult, MatchedDonor>, SearchResultDonorStorer>();
-            services.AddScoped<IResultsStorer<SearchResult, LocusMatchDetails>, SearchLocusDetailsStorer>();
-            services.AddScoped<IResultsStorer<SearchResult, MatchedDonorProbability>, MatchedDonorProbabilitiesStorer>();
-
-            services.AddScoped<IMatchPredictionRequester, MatchPredictionRequester>();
-            services.AddScoped<IBlobStreamer, BlobStreamer>(sp =>
-            {
-                var settings = fetchValidationAzureStorageSettings(sp);
-                return new BlobStreamer(settings.ConnectionString, sp.GetService<IAtlasLogger>());
-            });
-            services.AddScoped<IMatchPredictionResultsProcessor, MatchPredictionResultsProcessor>();
-            services.AddScoped<IMatchPredictionLocationSender, MatchPredictionLocationSender>();
-
-            services.AddScoped<IMessageBatchPublisher<SearchResultsNotification>, MessageBatchPublisher<SearchResultsNotification>>(sp =>
-            {
-                var messageSettings = fetchMessageServiceBusSettings(sp);
-                var searchSettings = fetchValidationSearchSettings(sp);
-                var logger = sp.GetService<IAtlasLogger>();
-                var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
-                return new MessageBatchPublisher<SearchResultsNotification>(topicClientFactory, searchSettings.ResultsTopic, messageSettings.SendRetryCount, messageSettings.SendRetryCooldownSeconds, logger);
-            });
-
-            services.AddScoped<ISearchResultNotificationSender, SearchResultNotificationSender>(sp =>
-            {
-                var publisher = sp.GetService<IMessageBatchPublisher<SearchResultsNotification>>();
-                var storageSettings = fetchValidationAzureStorageSettings(sp);
-                return new SearchResultNotificationSender(publisher, storageSettings.SearchResultsBlobContainer);
-            });
-        }
-
-        private static void RegisterHomeworkServices(
-            this IServiceCollection services,
-            Func<IServiceProvider, string> fetchSqlConnectionString)
-        {
-            services.AddScoped<IHomeworkDeletionRepository, HomeworkDeletionRepository>(sp =>
-                new HomeworkDeletionRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<IHomeworkSetRepository, HomeworkSetRepository>(sp =>
-                new HomeworkSetRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<IPatientDonorPairRepository, PatientDonorPairRepository>(sp =>
-                new PatientDonorPairRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<IImputationSummaryRepository, ImputationSummaryRepository>(sp =>
-                new ImputationSummaryRepository(fetchSqlConnectionString(sp)));
-            services.AddScoped<IMatchingGenotypesRepository, MatchingGenotypesRepository>(sp =>
-                new MatchingGenotypesRepository(fetchSqlConnectionString(sp)));
-
-            services.AddScoped<IHomeworkCreator, HomeworkCreator>();
-            services.AddScoped<IHomeworkProcessor, HomeworkProcessor>();
-            services.AddScoped<IPatientDonorPairProcessor, PatientDonorPairProcessor>();
-            services.AddScoped<IMissingHlaChecker, MissingHlaChecker>();
-            services.AddScoped<IMatchingGenotypesRequester, MatchingGenotypesRequester>();
-            services.AddScoped<IMatchingGenotypesProcessor, MatchingGenotypesProcessor>();
-        }
+        services.AddScoped<IHomeworkCreator, HomeworkCreator>();
+        services.AddScoped<IHomeworkProcessor, HomeworkProcessor>();
+        services.AddScoped<IPatientDonorPairProcessor, PatientDonorPairProcessor>();
+        services.AddScoped<IMissingHlaChecker, MissingHlaChecker>();
+        services.AddScoped<IMatchingGenotypesRequester, MatchingGenotypesRequester>();
+        services.AddScoped<IMatchingGenotypesProcessor, MatchingGenotypesProcessor>();
     }
 }

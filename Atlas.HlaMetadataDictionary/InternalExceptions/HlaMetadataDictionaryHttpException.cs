@@ -2,18 +2,17 @@
 using System.Net;
 using Atlas.Common.Utils.Http;
 
-namespace Atlas.HlaMetadataDictionary.InternalExceptions
-{
-    internal class HlaMetadataDictionaryHttpException : AtlasHttpException
-    {
-        public HlaMetadataDictionaryHttpException(string message)
-            : base(HttpStatusCode.InternalServerError, message)
-        {
-        }
+namespace Atlas.HlaMetadataDictionary.InternalExceptions;
 
-        public HlaMetadataDictionaryHttpException(string message, Exception inner)
-            : base(HttpStatusCode.InternalServerError, message, inner)
-        {
-        }
+internal class HlaMetadataDictionaryHttpException : AtlasHttpException
+{
+    public HlaMetadataDictionaryHttpException(string message)
+        : base(HttpStatusCode.InternalServerError, message)
+    {
+    }
+
+    public HlaMetadataDictionaryHttpException(string message, Exception inner)
+        : base(HttpStatusCode.InternalServerError, message, inner)
+    {
     }
 }

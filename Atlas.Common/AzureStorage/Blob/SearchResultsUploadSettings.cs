@@ -1,9 +1,8 @@
-﻿namespace Atlas.Common.AzureStorage.Blob
-{
-    public class SearchResultsUploadSettings
-    {
-        public int SearchResultsBatchSize { get; set; }
+﻿namespace Atlas.Common.AzureStorage.Blob;
 
-        public bool ShouldBatchResults => SearchResultsBatchSize > 0;
-    }
+public class SearchResultsUploadSettings
+{
+    public int SearchResultsBatchSize { get; set; }
+
+    public bool ShouldBatchResults => SearchResultsBatchSize > 0;
 }

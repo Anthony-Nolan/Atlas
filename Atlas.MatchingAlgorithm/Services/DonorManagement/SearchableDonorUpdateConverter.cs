@@ -8,51 +8,50 @@ using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
 using FluentValidation;
 
-namespace Atlas.MatchingAlgorithm.Services.DonorManagement
+namespace Atlas.MatchingAlgorithm.Services.DonorManagement;
+
+public interface ISearchableDonorUpdateConverter
 {
-    public interface ISearchableDonorUpdateConverter
+    Task<DonorBatchProcessingResult<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
+        IEnumerable<DeserializedMessage<SearchableDonorUpdate>> updates);
+}
+
+public class SearchableDonorUpdateConverter :
+    DonorBatchProcessor<DeserializedMessage<SearchableDonorUpdate>, DonorAvailabilityUpdate>,
+    ISearchableDonorUpdateConverter
+{
+    private const string UpdateFailureEventName = "Searchable Donor Update parsing Failure(s) in the Matching Algorithm's Continuous Donor Update sytem";
+
+    public SearchableDonorUpdateConverter(IMatchingAlgorithmImportLogger logger) : base(logger)
     {
-        Task<DonorBatchProcessingResult<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
-            IEnumerable<DeserializedMessage<SearchableDonorUpdate>> updates);
     }
 
-    public class SearchableDonorUpdateConverter :
-        DonorBatchProcessor<DeserializedMessage<SearchableDonorUpdate>, DonorAvailabilityUpdate>,
-        ISearchableDonorUpdateConverter
+    public async Task<DonorBatchProcessingResult<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
+        IEnumerable<DeserializedMessage<SearchableDonorUpdate>> updates)
     {
-        private const string UpdateFailureEventName = "Searchable Donor Update parsing Failure(s) in the Matching Algorithm's Continuous Donor Update sytem";
-
-        public SearchableDonorUpdateConverter(IMatchingAlgorithmImportLogger logger) : base(logger)
-        {
-        }
-
-        public async Task<DonorBatchProcessingResult<DonorAvailabilityUpdate>> ConvertSearchableDonorUpdatesAsync(
-            IEnumerable<DeserializedMessage<SearchableDonorUpdate>> updates)
-        {
-            return await ProcessBatchAsyncWithAnticipatedExceptions<ValidationException>(
-                updates,
-                async update => await GetDonorAvailabilityUpdate(update),
-                update => new FailedDonorInfo(update)
-                {
-                    AtlasDonorId = update.DeserializedBody?.DonorId
-                },
-                UpdateFailureEventName);
-        }
-
-        private static async Task<DonorAvailabilityUpdate> GetDonorAvailabilityUpdate(DeserializedMessage<SearchableDonorUpdate> update)
-        {
-            await new DonorUpdateMessageValidator().ValidateAndThrowAsync(update);
-
-            var body = update.DeserializedBody;
-
-            return new DonorAvailabilityUpdate
+        return await ProcessBatchAsyncWithAnticipatedExceptions<ValidationException>(
+            updates,
+            async update => await GetDonorAvailabilityUpdate(update),
+            update => new FailedDonorInfo(update)
             {
-                UpdateSequenceNumber = update.SequenceNumber,
-                UpdateDateTime = body.SearchableDonorInformation?.LastUpdated ?? body.PublishedDateTime,
-                DonorId = body.DonorId,
-                DonorInfo = body.SearchableDonorInformation?.ToDonorInfo(),
-                IsAvailableForSearch = body.IsAvailableForSearch
-            };
-        }
+                AtlasDonorId = update.DeserializedBody?.DonorId
+            },
+            UpdateFailureEventName);
+    }
+
+    private static async Task<DonorAvailabilityUpdate> GetDonorAvailabilityUpdate(DeserializedMessage<SearchableDonorUpdate> update)
+    {
+        await new DonorUpdateMessageValidator().ValidateAndThrowAsync(update);
+
+        var body = update.DeserializedBody;
+
+        return new DonorAvailabilityUpdate
+        {
+            UpdateSequenceNumber = update.SequenceNumber,
+            UpdateDateTime = body.SearchableDonorInformation?.LastUpdated ?? body.PublishedDateTime,
+            DonorId = body.DonorId,
+            DonorInfo = body.SearchableDonorInformation?.ToDonorInfo(),
+            IsAvailableForSearch = body.IsAvailableForSearch
+        };
     }
 }

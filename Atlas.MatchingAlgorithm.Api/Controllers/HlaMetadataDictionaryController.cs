@@ -8,86 +8,85 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Atlas.MatchingAlgorithm.Api.Controllers
+namespace Atlas.MatchingAlgorithm.Api.Controllers;
+
+[Route("hla-metadata-dictionary")]
+public class HlaMetadataDictionaryController : ControllerBase
 {
-    [Route("hla-metadata-dictionary")]
-    public class HlaMetadataDictionaryController : ControllerBase
+    private readonly IHlaMetadataDictionary hlaMetadataDictionary;
+
+    public HlaMetadataDictionaryController(
+        IHlaMetadataDictionaryFactory factory,
+        IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
     {
-        private readonly IHlaMetadataDictionary hlaMetadataDictionary;
+        // TODO: ATLAS-355: Remove the need for a hardcoded default value
+        var hlaVersionOrDefault = hlaNomenclatureVersionAccessor.DoesActiveHlaNomenclatureVersionExist()
+            ? hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion()
+            : HlaMetadataDictionaryConstants.NoActiveVersionValue;
 
-        public HlaMetadataDictionaryController(
-            IHlaMetadataDictionaryFactory factory,
-            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
+        hlaMetadataDictionary = factory.BuildDictionary(hlaVersionOrDefault);
+    }
+
+    [HttpPost]
+    [Route("create-latest-version")]
+    public async Task CreateLatestHlaMetadataDictionary()
+    {
+        await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
+    }
+
+    [HttpPost]
+    [Route("create-specific-version")]
+    public async Task CreateSpecificHlaMetadataDictionary(string version)
+    {
+        await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(version));
+    }
+
+    [HttpPost]
+    [Route("recreate-active-version")]
+    public async Task RecreateActiveHlaMetadataDictionary()
+    {
+        await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Active);
+    }
+
+    /// <summary>
+    /// Gets all pre-calculated HLA metadata to the specified version.
+    /// Note: none of the returned data is persisted.
+    /// Used when manually refreshing the contents of the file-backed HMD.
+    /// </summary>
+    [HttpPost]
+    [Route("regenerate-metadata-file")]
+    public string RegenerateNewMetadataFile(string version, string outputPath = null)
+    {
+        var metadata = hlaMetadataDictionary.GenerateAllHlaMetadata(version);
+        var stringRepresentation = SerialiseToJsonString(metadata);
+
+        if (!string.IsNullOrWhiteSpace(outputPath))
         {
-            // TODO: ATLAS-355: Remove the need for a hardcoded default value
-            var hlaVersionOrDefault = hlaNomenclatureVersionAccessor.DoesActiveHlaNomenclatureVersionExist()
-                ? hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion()
-                : HlaMetadataDictionaryConstants.NoActiveVersionValue;
-
-            hlaMetadataDictionary = factory.BuildDictionary(hlaVersionOrDefault);
+            System.IO.File.WriteAllText(outputPath, stringRepresentation);
         }
+        return stringRepresentation;
+    }
 
-        [HttpPost]
-        [Route("create-latest-version")]
-        public async Task CreateLatestHlaMetadataDictionary()
+    private static string SerialiseToJsonString(HlaMetadataCollection metadata)
+    {
+        var jsonSerializerSettings = new JsonSerializerSettings {ContractResolver = new IgnoreHlaInfoToSerialise()};
+        return JsonConvert.SerializeObject(metadata, Formatting.Indented, jsonSerializerSettings);
+    }
+
+    public class IgnoreHlaInfoToSerialise : DefaultContractResolver
+    {
+        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
-            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
-        }
+            var property = base.CreateProperty(member, memberSerialization);
 
-        [HttpPost]
-        [Route("create-specific-version")]
-        public async Task CreateSpecificHlaMetadataDictionary(string version)
-        {
-            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(version));
-        }
-
-        [HttpPost]
-        [Route("recreate-active-version")]
-        public async Task RecreateActiveHlaMetadataDictionary()
-        {
-            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Active);
-        }
-
-        /// <summary>
-        /// Gets all pre-calculated HLA metadata to the specified version.
-        /// Note: none of the returned data is persisted.
-        /// Used when manually refreshing the contents of the file-backed HMD.
-        /// </summary>
-        [HttpPost]
-        [Route("regenerate-metadata-file")]
-        public string RegenerateNewMetadataFile(string version, string outputPath = null)
-        {
-            var metadata = hlaMetadataDictionary.GenerateAllHlaMetadata(version);
-            var stringRepresentation = SerialiseToJsonString(metadata);
-
-            if (!string.IsNullOrWhiteSpace(outputPath))
+            //It seems to check both the interface AND the concrete class and writes if EITHER are non-Ignored, and we can't [JsonIgnore] the prop on the interface.
+            if (property.PropertyName == nameof(ISerialisableHlaMetadata.HlaInfoToSerialise))
             {
-                System.IO.File.WriteAllText(outputPath, stringRepresentation);
+                property.ShouldSerialize = _ => false;
+                property.Ignored = true;
             }
-            return stringRepresentation;
-        }
 
-        private static string SerialiseToJsonString(HlaMetadataCollection metadata)
-        {
-            var jsonSerializerSettings = new JsonSerializerSettings {ContractResolver = new IgnoreHlaInfoToSerialise()};
-            return JsonConvert.SerializeObject(metadata, Formatting.Indented, jsonSerializerSettings);
-        }
-
-        public class IgnoreHlaInfoToSerialise : DefaultContractResolver
-        {
-            protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
-            {
-                var property = base.CreateProperty(member, memberSerialization);
-
-                //It seems to check both the interface AND the concrete class and writes if EITHER are non-Ignored, and we can't [JsonIgnore] the prop on the interface.
-                if (property.PropertyName == nameof(ISerialisableHlaMetadata.HlaInfoToSerialise))
-                {
-                    property.ShouldSerialize = _ => false;
-                    property.Ignored = true;
-                }
-
-                return property;
-            }
+            return property;
         }
     }
 }

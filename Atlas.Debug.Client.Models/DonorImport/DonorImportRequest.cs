@@ -1,18 +1,17 @@
-﻿namespace Atlas.Debug.Client.Models.DonorImport
+﻿namespace Atlas.Debug.Client.Models.DonorImport;
+
+/// <summary>
+/// Request object for the donor import debug endpoint.
+/// </summary>
+public class DonorImportRequest
 {
     /// <summary>
-    /// Request object for the donor import debug endpoint.
+    /// Name to be assigned to the file upload.
     /// </summary>
-    public class DonorImportRequest
-    {
-        /// <summary>
-        /// Name to be assigned to the file upload.
-        /// </summary>
-        public string FileName { get; set; }
+    public string FileName { get; set; }
 
-        /// <summary>
-        /// Contents of the donor import file.
-        /// </summary>
-        public DonorImportFileContents FileContents { get; set; }
-    }
+    /// <summary>
+    /// Contents of the donor import file.
+    /// </summary>
+    public DonorImportFileContents FileContents { get; set; }
 }

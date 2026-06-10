@@ -1,11 +1,10 @@
 using System;
 
-namespace Atlas.MatchingAlgorithm.Exceptions.Azure
+namespace Atlas.MatchingAlgorithm.Exceptions.Azure;
+
+public class AzureManagementException : Exception
 {
-    public class AzureManagementException : Exception
+    public AzureManagementException(string message) : base(message)
     {
-        public AzureManagementException(string message) : base(message)
-        {
-        }
     }
 }

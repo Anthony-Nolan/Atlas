@@ -1,7 +1,6 @@
-﻿namespace Atlas.ManualTesting.Settings
+﻿namespace Atlas.ManualTesting.Settings;
+
+public class MessagingServiceBusSettings
 {
-    public class MessagingServiceBusSettings
-    {
-        public string ConnectionString { get; set; }
-    }
+    public string ConnectionString { get; set; }
 }

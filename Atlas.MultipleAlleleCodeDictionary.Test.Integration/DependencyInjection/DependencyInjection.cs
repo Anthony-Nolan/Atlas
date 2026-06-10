@@ -1,22 +1,21 @@
 using System;
 
-namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjection
-{
-    public static class DependencyInjection
-    {
-        private static IServiceProvider provider;
+namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjection;
 
-        public static IServiceProvider Provider
+public static class DependencyInjection
+{
+    private static IServiceProvider provider;
+
+    public static IServiceProvider Provider
+    {
+        get
         {
-            get
+            if (provider == null)
             {
-                if (provider == null)
-                {
-                    throw new Exception("Provider has not been set up");
-                }
-                return provider;
+                throw new Exception("Provider has not been set up");
             }
-            set => provider = value;
+            return provider;
         }
+        set => provider = value;
     }
 }

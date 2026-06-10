@@ -5,91 +5,90 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Client.Models.SupportMessages;
 
-namespace Atlas.Common.Notifications
-{
-    public interface INotificationSender
-    {
-        /// <summary>
-        /// Sends a Notification to the configured MessageBus.
-        /// Will not leak any exceptions, if that can't be achieved
-        /// </summary>
-        Task SendNotification(string summary, string description, string source);
+namespace Atlas.Common.Notifications;
 
-        /// <summary>
-        /// Sends a Notification to the configured MessageBus.
-        /// Will not leak any exceptions, if that can't be achieved
-        /// </summary>
-        Task SendAlert(string summary, string description, Priority priority, string source);
+public interface INotificationSender
+{
+    /// <summary>
+    /// Sends a Notification to the configured MessageBus.
+    /// Will not leak any exceptions, if that can't be achieved
+    /// </summary>
+    Task SendNotification(string summary, string description, string source);
+
+    /// <summary>
+    /// Sends a Notification to the configured MessageBus.
+    /// Will not leak any exceptions, if that can't be achieved
+    /// </summary>
+    Task SendAlert(string summary, string description, Priority priority, string source);
+}
+
+internal class NotificationSender : INotificationSender
+{
+    private readonly INotificationsClient notificationsClient;
+    private readonly IAtlasLogger logger;
+
+    public NotificationSender(
+        INotificationsClient notificationsClient,
+        IAtlasLogger logger)
+    {
+        this.notificationsClient = notificationsClient;
+        this.logger = logger;
     }
 
-    internal class NotificationSender : INotificationSender
+    public async Task SendNotification(string summary, string description, string source)
     {
-        private readonly INotificationsClient notificationsClient;
-        private readonly IAtlasLogger logger;
+        description ??= "";
+        var notification = new Notification(summary, description, source);
 
-        public NotificationSender(
-            INotificationsClient notificationsClient,
-            IAtlasLogger logger)
+        try
         {
-            this.notificationsClient = notificationsClient;
-            this.logger = logger;
+            logger.SendTrace(
+                $"{nameof(Notification)} sent from {notification.Originator}. Summary: {notification.Summary}. Detail: {notification.Description}"
+            );
+            await notificationsClient.SendNotification(notification);
         }
-
-        public async Task SendNotification(string summary, string description, string source)
+        catch (Exception ex)
         {
-            description ??= "";
-            var notification = new Notification(summary, description, source);
-
-            try
-            {
-                logger.SendTrace(
-                    $"{nameof(Notification)} sent from {notification.Originator}. Summary: {notification.Summary}. Detail: {notification.Description}"
-                );
-                await notificationsClient.SendNotification(notification);
-            }
-            catch (Exception ex)
-            {
-                SendNotificationSenderFailureEvent(ex, notification);
-            }
+            SendNotificationSenderFailureEvent(ex, notification);
         }
+    }
 
-        public async Task SendAlert(string summary, string description, Priority priority, string source)
+    public async Task SendAlert(string summary, string description, Priority priority, string source)
+    {
+        description ??= "";
+        var alert = new Alert(summary, description, priority, source);
+
+        try
         {
-            description ??= "";
-            var alert = new Alert(summary, description, priority, source);
-
-            try
-            {
-                logger.SendTrace(
-                    $"{nameof(Alert)} sent from {alert.Originator}. Priority: {alert.Priority.ToString()}. Summary: {alert.Summary}. Detail: {alert.Description}",
-                    LogLevel.Warn
-                );
-                await notificationsClient.SendAlert(alert);
-            }
-            catch (Exception ex)
-            {
-                SendNotificationSenderFailureEvent(ex, alert);
-            }
+            logger.SendTrace(
+                $"{nameof(Alert)} sent from {alert.Originator}. Priority: {alert.Priority.ToString()}. Summary: {alert.Summary}. Detail: {alert.Description}",
+                LogLevel.Warn
+            );
+            await notificationsClient.SendAlert(alert);
         }
-
-        private void SendNotificationSenderFailureEvent(Exception exception, BaseNotificationsMessage message)
+        catch (Exception ex)
         {
-            try
-            {
-                logger.SendException(exception, LogLevel.Warn, new Dictionary<string, string>
-                    {
-                        { "Type", message.GetType().Name },
-                        { "Message", JsonConvert.SerializeObject(message) },
-                    }
-                );
-            }
-            catch
-            {
-                // If we can't log, then there's not much point in whinging about it.
-                // On the off chance that the underlying operation succeeded, we don't
-                // want to crash a happy execution just because the logging broke.
-                // So just swallow this.
-            }
+            SendNotificationSenderFailureEvent(ex, alert);
+        }
+    }
+
+    private void SendNotificationSenderFailureEvent(Exception exception, BaseNotificationsMessage message)
+    {
+        try
+        {
+            logger.SendException(exception, LogLevel.Warn, new Dictionary<string, string>
+                {
+                    { "Type", message.GetType().Name },
+                    { "Message", JsonConvert.SerializeObject(message) },
+                }
+            );
+        }
+        catch
+        {
+            // If we can't log, then there's not much point in whinging about it.
+            // On the off chance that the underlying operation succeeded, we don't
+            // want to crash a happy execution just because the logging broke.
+            // So just swallow this.
         }
     }
 }

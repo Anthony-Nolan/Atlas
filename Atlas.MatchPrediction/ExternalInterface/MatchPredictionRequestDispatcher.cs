@@ -8,78 +8,77 @@ using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Validators;
 using FluentValidation;
 
-namespace Atlas.MatchPrediction.ExternalInterface
+namespace Atlas.MatchPrediction.ExternalInterface;
+
+public interface IMatchPredictionRequestDispatcher
 {
-    public interface IMatchPredictionRequestDispatcher
+    /// <summary>
+    /// Dispatch a match prediction request for each patient-donor pair within the submitted batch, without running a full search.
+    /// Note: if any single donor input is deemed invalid, then the validation errors will be logged within the response,
+    /// and the <see cref="ValidationException"/> will be suppressed to allow processing of the batch to continue.
+    /// Any other exception, e.g., a connection error, will be allowed to throw, thus disrupting the batch.
+    /// </summary>
+    Task<BatchedMatchPredictionInitiationResponse> DispatchMatchPredictionRequestBatch(IEnumerable<SingleDonorMatchProbabilityInput> inputBatch);
+}
+
+public class MatchPredictionRequestDispatcher : IMatchPredictionRequestDispatcher
+{
+    private readonly IMessageBatchPublisher<IdentifiedMatchPredictionRequest> requestPublisher;
+
+    public MatchPredictionRequestDispatcher(IMessageBatchPublisher<IdentifiedMatchPredictionRequest> requestPublisher)
     {
-        /// <summary>
-        /// Dispatch a match prediction request for each patient-donor pair within the submitted batch, without running a full search.
-        /// Note: if any single donor input is deemed invalid, then the validation errors will be logged within the response,
-        /// and the <see cref="ValidationException"/> will be suppressed to allow processing of the batch to continue.
-        /// Any other exception, e.g., a connection error, will be allowed to throw, thus disrupting the batch.
-        /// </summary>
-        Task<BatchedMatchPredictionInitiationResponse> DispatchMatchPredictionRequestBatch(IEnumerable<SingleDonorMatchProbabilityInput> inputBatch);
+        this.requestPublisher = requestPublisher;
     }
 
-    public class MatchPredictionRequestDispatcher : IMatchPredictionRequestDispatcher
+    /// <inheritdoc />
+    public async Task<BatchedMatchPredictionInitiationResponse> DispatchMatchPredictionRequestBatch(IEnumerable<SingleDonorMatchProbabilityInput> inputBatch)
     {
-        private readonly IMessageBatchPublisher<IdentifiedMatchPredictionRequest> requestPublisher;
+        var allResponses = new List<DonorResponse>();
+        var validRequests = new List<IdentifiedMatchPredictionRequest>();
 
-        public MatchPredictionRequestDispatcher(IMessageBatchPublisher<IdentifiedMatchPredictionRequest> requestPublisher)
+        foreach (var input in inputBatch)
         {
-            this.requestPublisher = requestPublisher;
-        }
-
-        /// <inheritdoc />
-        public async Task<BatchedMatchPredictionInitiationResponse> DispatchMatchPredictionRequestBatch(IEnumerable<SingleDonorMatchProbabilityInput> inputBatch)
-        {
-            var allResponses = new List<DonorResponse>();
-            var validRequests = new List<IdentifiedMatchPredictionRequest>();
-
-            foreach (var input in inputBatch)
+            try
             {
-                try
+                var request = await ValidateAndConvertToRequest(input);
+                validRequests.Add(request);
+                allResponses.Add(new DonorResponse
                 {
-                    var request = await ValidateAndConvertToRequest(input);
-                    validRequests.Add(request);
-                    allResponses.Add(new DonorResponse
-                    {
-                        DonorId = GetDonorId(input),
-                        MatchPredictionRequestId = request.Id
-                    });
-                }
-                catch (ValidationException ex)
-                {
-                    allResponses.Add(new DonorResponse
-                    {
-                        DonorId = GetDonorId(input),
-                        ValidationErrors = ex.Errors.ToList()
-                    });
-                }
+                    DonorId = GetDonorId(input),
+                    MatchPredictionRequestId = request.Id
+                });
             }
-
-            await requestPublisher.BatchPublish(validRequests);
-
-            // Not using `.Single` here on purpose as don't want to throw in case multiple IDs (of same phenotype) were submitted.
-            // Multiple IDs is an unlikely use case, and not worth fretting over.
-            static int? GetDonorId(SingleDonorMatchProbabilityInput input) => input.Donor?.DonorIds?.FirstOrDefault();
-
-            return new BatchedMatchPredictionInitiationResponse
+            catch (ValidationException ex)
             {
-                DonorResponses = allResponses
-            };
+                allResponses.Add(new DonorResponse
+                {
+                    DonorId = GetDonorId(input),
+                    ValidationErrors = ex.Errors.ToList()
+                });
+            }
         }
 
-        private static async Task<IdentifiedMatchPredictionRequest> ValidateAndConvertToRequest(SingleDonorMatchProbabilityInput input)
+        await requestPublisher.BatchPublish(validRequests);
+
+        // Not using `.Single` here on purpose as don't want to throw in case multiple IDs (of same phenotype) were submitted.
+        // Multiple IDs is an unlikely use case, and not worth fretting over.
+        static int? GetDonorId(SingleDonorMatchProbabilityInput input) => input.Donor?.DonorIds?.FirstOrDefault();
+
+        return new BatchedMatchPredictionInitiationResponse
         {
-            await new MatchProbabilityInputValidator().ValidateAndThrowAsync(input);
+            DonorResponses = allResponses
+        };
+    }
 
-            var requestId = Guid.NewGuid().ToString();
-            return new IdentifiedMatchPredictionRequest
-            {
-                SingleDonorMatchProbabilityInput = input,
-                Id = requestId
-            };
-        }
+    private static async Task<IdentifiedMatchPredictionRequest> ValidateAndConvertToRequest(SingleDonorMatchProbabilityInput input)
+    {
+        await new MatchProbabilityInputValidator().ValidateAndThrowAsync(input);
+
+        var requestId = Guid.NewGuid().ToString();
+        return new IdentifiedMatchPredictionRequest
+        {
+            SingleDonorMatchProbabilityInput = input,
+            Id = requestId
+        };
     }
 }

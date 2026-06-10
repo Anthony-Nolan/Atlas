@@ -6,35 +6,34 @@ using Atlas.DonorImport.Services;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.DonorImport.Test.Services
+namespace Atlas.DonorImport.Test.Services;
+
+[TestFixture]
+internal class DonorImportFailuresCleanerTests
 {
-    [TestFixture]
-    internal class DonorImportFailuresCleanerTests
+    private IDonorImportFailureRepository _repository;
+
+    [SetUp]
+    public void Setup()
     {
-        private IDonorImportFailureRepository _repository;
+        _repository = Substitute.For<IDonorImportFailureRepository>();
+    }
 
-        [SetUp]
-        public void Setup()
-        {
-            _repository = Substitute.For<IDonorImportFailureRepository>();
-        }
+    [Test]
+    public async Task DeleteExpiredDonorImportFailures_DeletesFailuresByExpectedCutOffDate()
+    {
+        const int expiryInDays = 10;
+        var cleaner = BuildCleaner(expiryInDays);
 
-        [Test]
-        public async Task DeleteExpiredDonorImportFailures_DeletesFailuresByExpectedCutOffDate()
-        {
-            const int expiryInDays = 10;
-            var cleaner = BuildCleaner(expiryInDays);
+        await cleaner.DeleteExpiredDonorImportFailures();
 
-            await cleaner.DeleteExpiredDonorImportFailures();
+        await _repository.Received()
+            .DeleteDonorImportFailuresBefore(Arg.Is<DateTimeOffset>(d => DateTimeOffset.Now.Subtract(d).Days == expiryInDays));
+    }
 
-            await _repository.Received()
-                .DeleteDonorImportFailuresBefore(Arg.Is<DateTimeOffset>(d => DateTimeOffset.Now.Subtract(d).Days == expiryInDays));
-        }
-
-        private IDonorImportFailuresCleaner BuildCleaner(int expiryInDays)
-        {
-            var failureLogsSettings = new FailureLogsSettings { ExpiryInDays = expiryInDays };
-            return new DonorImportFailuresCleaner(_repository, failureLogsSettings);
-        }
+    private IDonorImportFailuresCleaner BuildCleaner(int expiryInDays)
+    {
+        var failureLogsSettings = new FailureLogsSettings { ExpiryInDays = expiryInDays };
+        return new DonorImportFailuresCleaner(_repository, failureLogsSettings);
     }
 }

@@ -1,17 +1,16 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Atlas.Client.Models.Common.Results
+namespace Atlas.Client.Models.Common.Results;
+
+/// <summary>
+///     Values for the confidence of a given match. Ordered to allow for selecting the best confidence from a list
+/// </summary>
+[JsonConverter(typeof(StringEnumConverter))]
+public enum MatchConfidence
 {
-    /// <summary>
-    ///     Values for the confidence of a given match. Ordered to allow for selecting the best confidence from a list
-    /// </summary>
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum MatchConfidence
-    {
-        Mismatch = 0,
-        Potential = 1,
-        Exact = 2,
-        Definite = 3
-    }
+    Mismatch = 0,
+    Potential = 1,
+    Exact = 2,
+    Definite = 3
 }

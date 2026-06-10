@@ -18,196 +18,195 @@ using Atlas.DonorImport.Services.DonorChecker;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
+namespace Atlas.DonorImport.ExternalInterface.DependencyInjection;
+
+public static class ServiceConfiguration
 {
-    public static class ServiceConfiguration
+    public static void RegisterDonorImport(
+        this IServiceCollection services,
+        Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+        Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+        Func<IServiceProvider, NotificationConfigurationSettings> fetchNotificationConfigurationSettings,
+        Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
+        Func<IServiceProvider, DonorImportSettings> fetchStalledFileSettings,
+        Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings,
+        Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+        Func<IServiceProvider, FailureLogsSettings> fetchFailureLogsSettings,
+        Func<IServiceProvider, string> fetchSqlConnectionString)
     {
-        public static void RegisterDonorImport(
-            this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
-            Func<IServiceProvider, NotificationConfigurationSettings> fetchNotificationConfigurationSettings,
-            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
-            Func<IServiceProvider, DonorImportSettings> fetchStalledFileSettings,
-            Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, FailureLogsSettings> fetchFailureLogsSettings,
-            Func<IServiceProvider, string> fetchSqlConnectionString)
-        {
-            // Perform static Dapper set up that should be performed once before any SQL requests are made.
-            Initialise.InitaliseDapper();
+        // Perform static Dapper set up that should be performed once before any SQL requests are made.
+        Initialise.InitaliseDapper();
 
-            RegisterDonorImportLogger(services);
+        RegisterDonorImportLogger(services);
 
-            services.RegisterSettings(
-                fetchNotificationConfigurationSettings, fetchStalledFileSettings, fetchPublishDonorUpdatesSettings, fetchAzureStorageSettings, fetchMessagingServiceBusSettings, fetchFailureLogsSettings);
-            services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
-            services.RegisterServices(fetchMessagingServiceBusSettings, fetchAzureStorageSettings);
-            services.RegisterDebugServices(fetchMessagingServiceBusSettings, fetchAzureStorageSettings);
-            services.RegisterImportDatabaseTypes(fetchSqlConnectionString);
-        }
+        services.RegisterSettings(
+            fetchNotificationConfigurationSettings, fetchStalledFileSettings, fetchPublishDonorUpdatesSettings, fetchAzureStorageSettings, fetchMessagingServiceBusSettings, fetchFailureLogsSettings);
+        services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
+        services.RegisterServices(fetchMessagingServiceBusSettings, fetchAzureStorageSettings);
+        services.RegisterDebugServices(fetchMessagingServiceBusSettings, fetchAzureStorageSettings);
+        services.RegisterImportDatabaseTypes(fetchSqlConnectionString);
+    }
 
-        public static void RegisterImportDatabaseTypes(
+    public static void RegisterImportDatabaseTypes(
         this IServiceCollection services,
         Func<IServiceProvider, string> fetchDonorImportDatabaseConnectionString)
+    {
+        services.AddScoped<IDonorImportRepository>(sp => new DonorImportRepository(fetchDonorImportDatabaseConnectionString(sp)));
+        services.AddScoped<IDonorReadRepository>(sp => new DonorReadRepository(fetchDonorImportDatabaseConnectionString(sp)));
+        services.AddScoped<IDonorImportHistoryRepository>(sp => new DonorImportHistoryRepository(fetchDonorImportDatabaseConnectionString(sp)));
+        services.AddScoped<IDonorImportLogRepository>(sp => new DonorImportLogRepository(fetchDonorImportDatabaseConnectionString(sp)));
+        services.AddScoped<IPublishableDonorUpdatesRepository>(sp => new PublishableDonorUpdatesRepository(fetchDonorImportDatabaseConnectionString(sp)
+            ,sp.GetRequiredService<IAtlasLogger>()));
+        services.AddScoped<IDonorImportFailureRepository>(sp => new DonorImportFailureRepository(fetchDonorImportDatabaseConnectionString(sp)));
+    }
+
+    public static void RegisterDonorUpdateServices(
+        this IServiceCollection services,
+        Func<IServiceProvider, string> fetchDonorImportDatabaseConnectionString)
+    {
+        services.AddScoped<IDonorUpdatesSaver, DonorUpdatesSaver>();
+        services.AddScoped<IPublishableDonorUpdatesRepository>(sp => new PublishableDonorUpdatesRepository(fetchDonorImportDatabaseConnectionString(sp)
+            ,sp.GetRequiredService<IAtlasLogger>()));
+    }
+
+    public static void RegisterDonorReader(
+        this IServiceCollection services,
+        Func<IServiceProvider, string> fetchDonorImportDatabaseConnectionString)
+    {
+        services.RegisterDonorReaderServices();
+
+        services.AddScoped<IDonorReadRepository>(sp =>
+            new DonorReadRepository(fetchDonorImportDatabaseConnectionString(sp))
+        );
+    }
+
+    private static void RegisterSettings(
+        this IServiceCollection services,
+        Func<IServiceProvider, NotificationConfigurationSettings> fetchNotificationConfigurationSettings,
+        Func<IServiceProvider, DonorImportSettings> fetchStalledFileSettings,
+        Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings,
+        Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+        Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+        Func<IServiceProvider, FailureLogsSettings> fetchFailureLogsSettings)
+    {
+        services.MakeSettingsAvailableForUse(fetchStalledFileSettings);
+        services.MakeSettingsAvailableForUse(fetchNotificationConfigurationSettings);
+        services.MakeSettingsAvailableForUse(fetchPublishDonorUpdatesSettings);
+        services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
+        services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
+        services.MakeSettingsAvailableForUse(fetchFailureLogsSettings);
+    }
+
+    private static void RegisterServices(
+        this IServiceCollection services,
+        Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+        Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
+    {
+        services.AddScoped<IDonorFileImporter, DonorFileImporter>();
+        services.AddScoped<IDonorImportFileParser, DonorImportFileParser>();
+        services.AddScoped<IDonorRecordChangeApplier, DonorRecordChangeApplier>();
+        services.RegisterCommonGeneticServices();
+        services.AddScoped<IImportedLocusInterpreter, ImportedLocusInterpreter>();
+        services.AddScoped<IDonorImportFileHistoryService, DonorImportFileHistoryService>();
+        services.AddScoped<IDonorImportLogService, DonorImportLogService>();
+        services.AddScoped<IDonorUpdateCategoriser, DonorUpdateCategoriser>();
+
+        services.AddScoped<IDonorUpdatesSaver, DonorUpdatesSaver>();
+        services.AddScoped<IDonorUpdatesPublisher, DonorUpdatesPublisher>();
+        services.AddScoped<IMessageBatchPublisher<SearchableDonorUpdate>, MessageBatchPublisher<SearchableDonorUpdate>>(sp =>
         {
-            services.AddScoped<IDonorImportRepository>(sp => new DonorImportRepository(fetchDonorImportDatabaseConnectionString(sp)));
-            services.AddScoped<IDonorReadRepository>(sp => new DonorReadRepository(fetchDonorImportDatabaseConnectionString(sp)));
-            services.AddScoped<IDonorImportHistoryRepository>(sp => new DonorImportHistoryRepository(fetchDonorImportDatabaseConnectionString(sp)));
-            services.AddScoped<IDonorImportLogRepository>(sp => new DonorImportLogRepository(fetchDonorImportDatabaseConnectionString(sp)));
-            services.AddScoped<IPublishableDonorUpdatesRepository>(sp => new PublishableDonorUpdatesRepository(fetchDonorImportDatabaseConnectionString(sp)
-                ,sp.GetRequiredService<IAtlasLogger>()));
-            services.AddScoped<IDonorImportFailureRepository>(sp => new DonorImportFailureRepository(fetchDonorImportDatabaseConnectionString(sp)));
-        }
+            var serviceBusSettings = fetchMessagingServiceBusSettings(sp);
+            var logger = sp.GetService<IAtlasLogger>();
+            var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
+            return new MessageBatchPublisher<SearchableDonorUpdate>(topicClientFactory, serviceBusSettings.UpdatedSearchableDonorsTopic,
+                serviceBusSettings.SendRetryCount, serviceBusSettings.SendRetryCooldownSeconds, logger);
+        });
+        services.AddScoped<IDonorUpdatesCleaner, DonorUpdatesCleaner>();
 
-        public static void RegisterDonorUpdateServices(
-             this IServiceCollection services,
-             Func<IServiceProvider, string> fetchDonorImportDatabaseConnectionString)
+        services.AddScoped<IDonorIdChecker, DonorIdChecker>();
+        services.AddScoped<IDonorIdCheckerFileParser, DonorIdCheckerFileParser>();
+        services.AddScoped<IDonorInfoCheckerMessageSender, DonorCheckerMessageSender>(sp =>
         {
-            services.AddScoped<IDonorUpdatesSaver, DonorUpdatesSaver>();
-            services.AddScoped<IPublishableDonorUpdatesRepository>(sp => new PublishableDonorUpdatesRepository(fetchDonorImportDatabaseConnectionString(sp)
-                ,sp.GetRequiredService<IAtlasLogger>()));
-        }
-
-        public static void RegisterDonorReader(
-            this IServiceCollection services,
-            Func<IServiceProvider, string> fetchDonorImportDatabaseConnectionString)
+            var messagingServiceBusSettings = fetchMessagingServiceBusSettings(sp);
+            var logger = sp.GetService<IAtlasLogger>();
+            var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
+            return new DonorCheckerMessageSender(logger, topicClientFactory, messagingServiceBusSettings.DonorInfoCheckerResultsTopic);
+        });
+        services.AddScoped<IDonorIdCheckerMessageSender, DonorCheckerMessageSender>(sp =>
         {
-            services.RegisterDonorReaderServices();
+            var messagingServiceBusSettings = fetchMessagingServiceBusSettings(sp);
+            var logger = sp.GetService<IAtlasLogger>();
+            var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
+            return new DonorCheckerMessageSender(logger, topicClientFactory, messagingServiceBusSettings.DonorIdCheckerResultsTopic);
+        });
 
-            services.AddScoped<IDonorReadRepository>(sp =>
-                new DonorReadRepository(fetchDonorImportDatabaseConnectionString(sp))
-            );
-        }
-
-        private static void RegisterSettings(
-            this IServiceCollection services,
-            Func<IServiceProvider, NotificationConfigurationSettings> fetchNotificationConfigurationSettings,
-            Func<IServiceProvider, DonorImportSettings> fetchStalledFileSettings,
-            Func<IServiceProvider, PublishDonorUpdatesSettings> fetchPublishDonorUpdatesSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
-            Func<IServiceProvider, FailureLogsSettings> fetchFailureLogsSettings)
+        services.AddScoped<IDonorIdCheckerBlobStorageClient, DonorCheckerBlobStorageClient>(sp =>
         {
-            services.MakeSettingsAvailableForUse(fetchStalledFileSettings);
-            services.MakeSettingsAvailableForUse(fetchNotificationConfigurationSettings);
-            services.MakeSettingsAvailableForUse(fetchPublishDonorUpdatesSettings);
-            services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
-            services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
-            services.MakeSettingsAvailableForUse(fetchFailureLogsSettings);
-        }
-
-        private static void RegisterServices(
-            this IServiceCollection services,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
+            var storageSettings = fetchAzureStorageSettings(sp);
+            var logger = sp.GetService<IAtlasLogger>();
+            return new DonorCheckerBlobStorageClient(logger, storageSettings.ConnectionString, storageSettings.DonorFileBlobContainer,
+                storageSettings.DonorIdCheckerResultsBlobContainer);
+        });
+        services.AddScoped<IDonorInfoCheckerBlobStorageClient, DonorCheckerBlobStorageClient>(sp =>
         {
-            services.AddScoped<IDonorFileImporter, DonorFileImporter>();
-            services.AddScoped<IDonorImportFileParser, DonorImportFileParser>();
-            services.AddScoped<IDonorRecordChangeApplier, DonorRecordChangeApplier>();
-            services.RegisterCommonGeneticServices();
-            services.AddScoped<IImportedLocusInterpreter, ImportedLocusInterpreter>();
-            services.AddScoped<IDonorImportFileHistoryService, DonorImportFileHistoryService>();
-            services.AddScoped<IDonorImportLogService, DonorImportLogService>();
-            services.AddScoped<IDonorUpdateCategoriser, DonorUpdateCategoriser>();
+            var storageSettings = fetchAzureStorageSettings(sp);
+            var logger = sp.GetService<IAtlasLogger>();
+            return new DonorCheckerBlobStorageClient(logger, storageSettings.ConnectionString, storageSettings.DonorFileBlobContainer,
+                storageSettings.DonorInfoCheckerResultsBlobContainer);
+        });
 
-            services.AddScoped<IDonorUpdatesSaver, DonorUpdatesSaver>();
-            services.AddScoped<IDonorUpdatesPublisher, DonorUpdatesPublisher>();
-            services.AddScoped<IMessageBatchPublisher<SearchableDonorUpdate>, MessageBatchPublisher<SearchableDonorUpdate>>(sp =>
-            {
-                var serviceBusSettings = fetchMessagingServiceBusSettings(sp);
-                var logger = sp.GetService<IAtlasLogger>();
-                var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
-                return new MessageBatchPublisher<SearchableDonorUpdate>(topicClientFactory, serviceBusSettings.UpdatedSearchableDonorsTopic,
-                    serviceBusSettings.SendRetryCount, serviceBusSettings.SendRetryCooldownSeconds, logger);
-            });
-            services.AddScoped<IDonorUpdatesCleaner, DonorUpdatesCleaner>();
+        services.AddScoped<IDonorInfoChecker, DonorInfoChecker>();
+        services.AddScoped<IDonorUpdateMapper, DonorUpdateMapper>();
+        services.AddScoped<IDonorImportMessageSender, DonorImportMessageSender>();
+        services.AddScoped<IDonorImportFailuresCleaner, DonorImportFailuresCleaner>();
+    }
 
-            services.AddScoped<IDonorIdChecker, DonorIdChecker>();
-            services.AddScoped<IDonorIdCheckerFileParser, DonorIdCheckerFileParser>();
-            services.AddScoped<IDonorInfoCheckerMessageSender, DonorCheckerMessageSender>(sp =>
-            {
-                var messagingServiceBusSettings = fetchMessagingServiceBusSettings(sp);
-                var logger = sp.GetService<IAtlasLogger>();
-                var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
-                return new DonorCheckerMessageSender(logger, topicClientFactory, messagingServiceBusSettings.DonorInfoCheckerResultsTopic);
-            });
-            services.AddScoped<IDonorIdCheckerMessageSender, DonorCheckerMessageSender>(sp =>
-            {
-                var messagingServiceBusSettings = fetchMessagingServiceBusSettings(sp);
-                var logger = sp.GetService<IAtlasLogger>();
-                var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
-                return new DonorCheckerMessageSender(logger, topicClientFactory, messagingServiceBusSettings.DonorIdCheckerResultsTopic);
-            });
+    private static void RegisterDebugServices(
+        this IServiceCollection services,
+        Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+        Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings
+    )
+    {
+        var serviceKey = typeof(MessagingServiceBusSettings);
+        services.RegisterServiceBusAsKeyedServices(
+            serviceKey,
+            sp => fetchMessagingServiceBusSettings(sp).ConnectionString
+        );
 
-            services.AddScoped<IDonorIdCheckerBlobStorageClient, DonorCheckerBlobStorageClient>(sp =>
-            {
-                var storageSettings = fetchAzureStorageSettings(sp);
-                var logger = sp.GetService<IAtlasLogger>();
-                return new DonorCheckerBlobStorageClient(logger, storageSettings.ConnectionString, storageSettings.DonorFileBlobContainer,
-                    storageSettings.DonorIdCheckerResultsBlobContainer);
-            });
-            services.AddScoped<IDonorInfoCheckerBlobStorageClient, DonorCheckerBlobStorageClient>(sp =>
-            {
-                var storageSettings = fetchAzureStorageSettings(sp);
-                var logger = sp.GetService<IAtlasLogger>();
-                return new DonorCheckerBlobStorageClient(logger, storageSettings.ConnectionString, storageSettings.DonorFileBlobContainer,
-                    storageSettings.DonorInfoCheckerResultsBlobContainer);
-            });
-
-            services.AddScoped<IDonorInfoChecker, DonorInfoChecker>();
-            services.AddScoped<IDonorUpdateMapper, DonorUpdateMapper>();
-            services.AddScoped<IDonorImportMessageSender, DonorImportMessageSender>();
-            services.AddScoped<IDonorImportFailuresCleaner, DonorImportFailuresCleaner>();
-        }
-
-        private static void RegisterDebugServices(
-            this IServiceCollection services,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings
-            )
+        services.AddScoped<IDonorImportResultsPeeker, DonorImportResultsPeeker>(sp =>
         {
-            var serviceKey = typeof(MessagingServiceBusSettings);
-            services.RegisterServiceBusAsKeyedServices(
-                serviceKey,
-                sp => fetchMessagingServiceBusSettings(sp).ConnectionString
-                );
+            var settings = fetchMessagingServiceBusSettings(sp);
+            return new DonorImportResultsPeeker(
+                sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey),
+                settings.DonorImportResultsTopic,
+                settings.DonorImportResultsDebugSubscription);
+        });
 
-            services.AddScoped<IDonorImportResultsPeeker, DonorImportResultsPeeker>(sp =>
-            {
-                var settings = fetchMessagingServiceBusSettings(sp);
-                return new DonorImportResultsPeeker(
-                    sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey),
-                    settings.DonorImportResultsTopic,
-                    settings.DonorImportResultsDebugSubscription);
-            });
-
-            services.AddScoped<IDonorImportBlobStorageClient, DonorImportBlobStorageClient>(sp =>
-            {
-                var storageSettings = fetchAzureStorageSettings(sp);
-                var logger = sp.GetService<IAtlasLogger>();
-                return new DonorImportBlobStorageClient(logger, storageSettings.ConnectionString, storageSettings.DonorFileBlobContainer);
-            });
-        }
-
-        private static void RegisterDonorReaderServices(this IServiceCollection services)
+        services.AddScoped<IDonorImportBlobStorageClient, DonorImportBlobStorageClient>(sp =>
         {
-            services.AddScoped<IDonorReader, DonorReader>();
-        }
+            var storageSettings = fetchAzureStorageSettings(sp);
+            var logger = sp.GetService<IAtlasLogger>();
+            return new DonorImportBlobStorageClient(logger, storageSettings.ConnectionString, storageSettings.DonorFileBlobContainer);
+        });
+    }
 
-        private static void RegisterClients(
-            this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings)
-        {
-            services.RegisterNotificationSender(fetchNotificationsServiceBusSettings, fetchApplicationInsightsSettings);
-        }
+    private static void RegisterDonorReaderServices(this IServiceCollection services)
+    {
+        services.AddScoped<IDonorReader, DonorReader>();
+    }
 
-        private static void RegisterDonorImportLogger(IServiceCollection services)
-        {
-            services.AddApplicationInsightsTelemetryWorkerService();
-            services.AddScoped<DonorImportLoggingContext>();
-            services.AddScoped(typeof(IDonorImportLogger<>), typeof(DonorImportLogger<>));
-        }
+    private static void RegisterClients(
+        this IServiceCollection services,
+        Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+        Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings)
+    {
+        services.RegisterNotificationSender(fetchNotificationsServiceBusSettings, fetchApplicationInsightsSettings);
+    }
+
+    private static void RegisterDonorImportLogger(IServiceCollection services)
+    {
+        services.AddApplicationInsightsTelemetryWorkerService();
+        services.AddScoped<DonorImportLoggingContext>();
+        services.AddScoped(typeof(IDonorImportLogger<>), typeof(DonorImportLogger<>));
     }
 }

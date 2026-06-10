@@ -1,10 +1,9 @@
 using System;
 
-namespace Atlas.Functions.Models
+namespace Atlas.Functions.Models;
+
+public struct OrchestrationStatus
 {
-    public struct OrchestrationStatus
-    {
-        public string LastCompletedStage { get; set; }
-        public TimeSpan? ElapsedTimeOfStage { get; set; }
-    } 
+    public string LastCompletedStage { get; set; }
+    public TimeSpan? ElapsedTimeOfStage { get; set; }
 }

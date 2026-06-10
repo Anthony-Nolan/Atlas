@@ -1,44 +1,43 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 
-namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
+namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
+
+public interface IHomeworkDeletionRepository
 {
-    public interface IHomeworkDeletionRepository
+    Task DeleteAll();
+}
+
+public class HomeworkDeletionRepository : IHomeworkDeletionRepository
+{
+    private readonly string connectionString;
+
+    public HomeworkDeletionRepository(string connectionString)
     {
-        Task DeleteAll();
+        this.connectionString = connectionString;
     }
 
-    public class HomeworkDeletionRepository : IHomeworkDeletionRepository
+    /// <inheritdoc />
+    public async Task DeleteAll()
     {
-        private readonly string connectionString;
+        const string deleteGenotypes = "DELETE FROM MatchingGenotypes";
+        const string deleteImputationSummaries = "DELETE FROM ImputationSummaries";
+        const string deleteAllPairs = "DELETE FROM PatientDonorPairs";
+        const string deleteAllSets = "DELETE FROM HomeworkSets";
 
-        public HomeworkDeletionRepository(string connectionString)
+        var sqlCollection = new[]
         {
-            this.connectionString = connectionString;
-        }
+            deleteGenotypes,
+            deleteImputationSummaries,
+            deleteAllPairs, 
+            deleteAllSets
+        };
 
-        /// <inheritdoc />
-        public async Task DeleteAll()
+        await using (var connection = new SqlConnection(connectionString))
         {
-            const string deleteGenotypes = "DELETE FROM MatchingGenotypes";
-            const string deleteImputationSummaries = "DELETE FROM ImputationSummaries";
-            const string deleteAllPairs = "DELETE FROM PatientDonorPairs";
-            const string deleteAllSets = "DELETE FROM HomeworkSets";
-
-            var sqlCollection = new[]
+            foreach (var sql in sqlCollection)
             {
-                deleteGenotypes,
-                deleteImputationSummaries,
-                deleteAllPairs, 
-                deleteAllSets
-            };
-
-            await using (var connection = new SqlConnection(connectionString))
-            {
-                foreach (var sql in sqlCollection)
-                {
-                    await connection.ExecuteAsync(sql);
-                }
+                await connection.ExecuteAsync(sql);
             }
         }
     }

@@ -5,28 +5,27 @@ using Atlas.Common.Debugging;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.ManualTesting.Models;
 
-namespace Atlas.ManualTesting.Services
+namespace Atlas.ManualTesting.Services;
+
+public interface ISearchableDonorUpdatesPeeker
 {
-    public interface ISearchableDonorUpdatesPeeker
+    Task<IEnumerable<SearchableDonorUpdate>> GetMessagesByAtlasDonorId(PeekByAtlasDonorIdsRequest peekRequest);
+}
+
+internal class SearchableDonorUpdatesPeeker : ISearchableDonorUpdatesPeeker
+{
+    private readonly IMessagesPeeker<SearchableDonorUpdate> messagesReceiver;
+
+    public SearchableDonorUpdatesPeeker(IMessagesPeeker<SearchableDonorUpdate> messagesReceiver)
     {
-        Task<IEnumerable<SearchableDonorUpdate>> GetMessagesByAtlasDonorId(PeekByAtlasDonorIdsRequest peekRequest);
+        this.messagesReceiver = messagesReceiver;
     }
 
-    internal class SearchableDonorUpdatesPeeker : ISearchableDonorUpdatesPeeker
+    public async Task<IEnumerable<SearchableDonorUpdate>> GetMessagesByAtlasDonorId(
+        PeekByAtlasDonorIdsRequest peekRequest)
     {
-        private readonly IMessagesPeeker<SearchableDonorUpdate> messagesReceiver;
+        var notifications = await messagesReceiver.Peek(peekRequest);
 
-        public SearchableDonorUpdatesPeeker(IMessagesPeeker<SearchableDonorUpdate> messagesReceiver)
-        {
-            this.messagesReceiver = messagesReceiver;
-        }
-
-        public async Task<IEnumerable<SearchableDonorUpdate>> GetMessagesByAtlasDonorId(
-            PeekByAtlasDonorIdsRequest peekRequest)
-        {
-            var notifications = await messagesReceiver.Peek(peekRequest);
-
-            return notifications.PeekedMessages.Where(n => peekRequest.AtlasDonorIds.Contains(n.DonorId));
-        }
+        return notifications.PeekedMessages.Where(n => peekRequest.AtlasDonorIds.Contains(n.DonorId));
     }
 }

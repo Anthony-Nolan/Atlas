@@ -11,118 +11,117 @@ using Newtonsoft.Json;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Atlas.DonorImport.Services
+namespace Atlas.DonorImport.Services;
+
+public interface IDonorImportMessageSender
 {
-    public interface IDonorImportMessageSender
+    Task SendSuccessMessage(string fileName, int importedDonorCount, IReadOnlyCollection<SearchableDonorValidationResult> failedDonors);
+    Task SendFailureMessage(string fileName, ImportFailureReason failureReason, string failureReasonDescription);
+}
+internal sealed class DonorImportMessageSender : IDonorImportMessageSender, IAsyncDisposable
+{
+    private readonly ITopicClient topicClient;
+    private readonly IAtlasLogger logger;
+    private readonly int sendRetryCount;
+    private readonly int sendRetryCooldownSeconds;
+
+    public DonorImportMessageSender(IAtlasLogger logger, [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings)
     {
-        Task SendSuccessMessage(string fileName, int importedDonorCount, IReadOnlyCollection<SearchableDonorValidationResult> failedDonors);
-        Task SendFailureMessage(string fileName, ImportFailureReason failureReason, string failureReasonDescription);
+        this.logger = logger;
+        topicClient = topicClientFactory.BuildTopicClient(messagingServiceBusSettings.DonorImportResultsTopic);
+        sendRetryCount = messagingServiceBusSettings.SendRetryCount;
+        sendRetryCooldownSeconds = messagingServiceBusSettings.SendRetryCooldownSeconds;
     }
-    internal sealed class DonorImportMessageSender : IDonorImportMessageSender, IAsyncDisposable
+
+
+    public async Task SendSuccessMessage(string fileName, int importedDonorCount, IReadOnlyCollection<SearchableDonorValidationResult> failedDonors)
     {
-        private readonly ITopicClient topicClient;
-        private readonly IAtlasLogger logger;
-        private readonly int sendRetryCount;
-        private readonly int sendRetryCooldownSeconds;
-
-        public DonorImportMessageSender(IAtlasLogger logger, [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory, MessagingServiceBusSettings messagingServiceBusSettings)
-        {
-            this.logger = logger;
-            topicClient = topicClientFactory.BuildTopicClient(messagingServiceBusSettings.DonorImportResultsTopic);
-            sendRetryCount = messagingServiceBusSettings.SendRetryCount;
-            sendRetryCooldownSeconds = messagingServiceBusSettings.SendRetryCooldownSeconds;
-        }
-
-
-        public async Task SendSuccessMessage(string fileName, int importedDonorCount, IReadOnlyCollection<SearchableDonorValidationResult> failedDonors)
-        {
-            var failedSummary = failedDonors.SelectMany(d => d.Errors)
-                .GroupBy(e => e.ErrorMessage)
-                .Select(g => new FailureSummary
-                {
-                    Reason = g.Key,
-                    Count = g.Count()
-                })
-                .ToList();
-
-            var donorImportMessage = new DonorImportMessage
+        var failedSummary = failedDonors.SelectMany(d => d.Errors)
+            .GroupBy(e => e.ErrorMessage)
+            .Select(g => new FailureSummary
             {
-                FileName = fileName,
-                WasSuccessful = true,
-                SuccessfulImportInfo = new SuccessfulImportInfo
-                {
-                    ImportedDonorCount = importedDonorCount,
-                    FailedDonorCount = failedDonors.Count,
-                    FailedDonorSummary = failedSummary
-                },
-                // TODO: stop setting these obsolete properties in Atlas v.1.8.0
+                Reason = g.Key,
+                Count = g.Count()
+            })
+            .ToList();
+
+        var donorImportMessage = new DonorImportMessage
+        {
+            FileName = fileName,
+            WasSuccessful = true,
+            SuccessfulImportInfo = new SuccessfulImportInfo
+            {
                 ImportedDonorCount = importedDonorCount,
                 FailedDonorCount = failedDonors.Count,
                 FailedDonorSummary = failedSummary
-            };
+            },
+            // TODO: stop setting these obsolete properties in Atlas v.1.8.0
+            ImportedDonorCount = importedDonorCount,
+            FailedDonorCount = failedDonors.Count,
+            FailedDonorSummary = failedSummary
+        };
 
-            await Send(donorImportMessage, LogMessage);
-        }
-
-        public async Task SendFailureMessage(string fileName, ImportFailureReason failureReason, string failureReasonDescription)
-        {
-            var donorImportMessage = new DonorImportMessage
-            {
-                FileName = fileName,
-                WasSuccessful = false,
-                FailedImportInfo = new FailedImportInfo
-                {
-                    FileFailureReason = failureReason,
-                    FileFailureDescription = failureReasonDescription
-                },
-                // TODO: stop setting these obsolete properties in Atlas v.1.8.0
-                FailureReason = failureReason,
-                FailureReasonDescription = failureReasonDescription
-            };
-
-            await Send(donorImportMessage, LogMessage);
-        }
-
-        private async Task Send<T>(T donorImportMessage, Action<T> logMessage) where T : DonorImportMessage
-        {
-            var stringMessage = JsonConvert.SerializeObject(donorImportMessage);
-
-            try
-            {
-                logMessage(donorImportMessage);
-
-                var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(stringMessage))
-                {
-                    ApplicationProperties =
-                    {
-                        { nameof(DonorImportMessage.WasSuccessful), donorImportMessage.WasSuccessful },
-                        { nameof(DonorImportMessage.FileName), donorImportMessage.FileName }
-                    }
-                };
-
-                await topicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
-                    (exception, retryNumber) => logger.SendTrace($"Could not send donor import message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
-            }
-            catch (Exception e)
-            {
-                logger.SendException(e, LogLevel.Warn, new Dictionary<string, string>
-                {
-                    { "Message", stringMessage }
-                });
-            }
-        }
-
-        private void LogMessage(DonorImportMessage donorImportMessage) =>
-            logger.SendTrace($"{nameof(DonorImportMessage)} send.", LogLevel.Info, new Dictionary<string, string>
-            {
-                { nameof(donorImportMessage.FileName), donorImportMessage.FileName },
-                { nameof(donorImportMessage.WasSuccessful), donorImportMessage.WasSuccessful.ToString() },
-                { nameof(donorImportMessage.SuccessfulImportInfo.ImportedDonorCount), donorImportMessage.SuccessfulImportInfo?.ImportedDonorCount.ToString() },
-                { nameof(donorImportMessage.SuccessfulImportInfo.FailedDonorCount), donorImportMessage.SuccessfulImportInfo?.FailedDonorCount.ToString() },
-                { nameof(donorImportMessage.FailedImportInfo.FileFailureReason), donorImportMessage.FailedImportInfo?.FileFailureReason.ToString() },
-                { nameof(donorImportMessage.FailedImportInfo.FileFailureDescription), donorImportMessage.FailedImportInfo?.FileFailureDescription }
-            });
-
-        public ValueTask DisposeAsync() => topicClient.DisposeAsync();
+        await Send(donorImportMessage, LogMessage);
     }
+
+    public async Task SendFailureMessage(string fileName, ImportFailureReason failureReason, string failureReasonDescription)
+    {
+        var donorImportMessage = new DonorImportMessage
+        {
+            FileName = fileName,
+            WasSuccessful = false,
+            FailedImportInfo = new FailedImportInfo
+            {
+                FileFailureReason = failureReason,
+                FileFailureDescription = failureReasonDescription
+            },
+            // TODO: stop setting these obsolete properties in Atlas v.1.8.0
+            FailureReason = failureReason,
+            FailureReasonDescription = failureReasonDescription
+        };
+
+        await Send(donorImportMessage, LogMessage);
+    }
+
+    private async Task Send<T>(T donorImportMessage, Action<T> logMessage) where T : DonorImportMessage
+    {
+        var stringMessage = JsonConvert.SerializeObject(donorImportMessage);
+
+        try
+        {
+            logMessage(donorImportMessage);
+
+            var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(stringMessage))
+            {
+                ApplicationProperties =
+                {
+                    { nameof(DonorImportMessage.WasSuccessful), donorImportMessage.WasSuccessful },
+                    { nameof(DonorImportMessage.FileName), donorImportMessage.FileName }
+                }
+            };
+
+            await topicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+                (exception, retryNumber) => logger.SendTrace($"Could not send donor import message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
+        }
+        catch (Exception e)
+        {
+            logger.SendException(e, LogLevel.Warn, new Dictionary<string, string>
+            {
+                { "Message", stringMessage }
+            });
+        }
+    }
+
+    private void LogMessage(DonorImportMessage donorImportMessage) =>
+        logger.SendTrace($"{nameof(DonorImportMessage)} send.", LogLevel.Info, new Dictionary<string, string>
+        {
+            { nameof(donorImportMessage.FileName), donorImportMessage.FileName },
+            { nameof(donorImportMessage.WasSuccessful), donorImportMessage.WasSuccessful.ToString() },
+            { nameof(donorImportMessage.SuccessfulImportInfo.ImportedDonorCount), donorImportMessage.SuccessfulImportInfo?.ImportedDonorCount.ToString() },
+            { nameof(donorImportMessage.SuccessfulImportInfo.FailedDonorCount), donorImportMessage.SuccessfulImportInfo?.FailedDonorCount.ToString() },
+            { nameof(donorImportMessage.FailedImportInfo.FileFailureReason), donorImportMessage.FailedImportInfo?.FileFailureReason.ToString() },
+            { nameof(donorImportMessage.FailedImportInfo.FileFailureDescription), donorImportMessage.FailedImportInfo?.FileFailureDescription }
+        });
+
+    public ValueTask DisposeAsync() => topicClient.DisposeAsync();
 }

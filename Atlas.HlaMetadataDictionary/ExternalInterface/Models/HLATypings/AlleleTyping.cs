@@ -6,93 +6,92 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.HlaTypingInfo;
 using Atlas.HlaMetadataDictionary.Services;
 
-namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings
+namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+
+public class AlleleTyping : HlaTyping
 {
-    public class AlleleTyping : HlaTyping
+    public IEnumerable<string> Fields { get; }
+    public string ExpressionSuffix { get; }
+    public bool IsNullExpresser { get; }
+    public string TwoFieldNameIncludingExpressionSuffix { get; }
+    public string TwoFieldNameExcludingExpressionSuffix { get; }
+    public string FirstField { get; }
+    public IEnumerable<string> NameVariantsTruncatedByFieldAndOrExpressionSuffix { get; }
+    public AlleleTypingStatus Status { get; }
+
+    private const char FieldDelimiter = ':';
+
+    internal AlleleTyping(string typingLocus, string name, AlleleTypingStatus status, bool isDeleted = false)
+        : base(TypingMethod.Molecular, typingLocus, name, isDeleted)
     {
-        public IEnumerable<string> Fields { get; }
-        public string ExpressionSuffix { get; }
-        public bool IsNullExpresser { get; }
-        public string TwoFieldNameIncludingExpressionSuffix { get; }
-        public string TwoFieldNameExcludingExpressionSuffix { get; }
-        public string FirstField { get; }
-        public IEnumerable<string> NameVariantsTruncatedByFieldAndOrExpressionSuffix { get; }
-        public AlleleTypingStatus Status { get; }
+        Status = status;
+        ExpressionSuffix = ExpressionSuffixParser.GetExpressionSuffix(name);
+        IsNullExpresser = ExpressionSuffixParser.IsAlleleNull(name);
+        Fields = GetFields();
+        TwoFieldNameIncludingExpressionSuffix = BuildAlleleNameAndAddExpressionSuffix(2);
+        TwoFieldNameExcludingExpressionSuffix = BuildAlleleNameWithoutExpressionSuffix(2);
+        FirstField = Fields.First();
+        NameVariantsTruncatedByFieldAndOrExpressionSuffix = GetTruncatedVariantsOfAlleleName();
+    }
 
-        private const char FieldDelimiter = ':';
+    internal AlleleTyping(Locus locus, string name, AlleleTypingStatus status = null)
+        : this(locus.ToMolecularLocusIfExists(), name, status ?? AlleleTypingStatus.GetDefaultStatus())
+    {
+    }
 
-        internal AlleleTyping(string typingLocus, string name, AlleleTypingStatus status, bool isDeleted = false)
-                : base(TypingMethod.Molecular, typingLocus, name, isDeleted)
+    public bool TryGetThreeFieldName(out string threeFieldName)
+    {
+        threeFieldName = null;
+
+        if (Fields.Count() < 3)
         {
-            Status = status;
-            ExpressionSuffix = ExpressionSuffixParser.GetExpressionSuffix(name);
-            IsNullExpresser = ExpressionSuffixParser.IsAlleleNull(name);
-            Fields = GetFields();
-            TwoFieldNameIncludingExpressionSuffix = BuildAlleleNameAndAddExpressionSuffix(2);
-            TwoFieldNameExcludingExpressionSuffix = BuildAlleleNameWithoutExpressionSuffix(2);
-            FirstField = Fields.First();
-            NameVariantsTruncatedByFieldAndOrExpressionSuffix = GetTruncatedVariantsOfAlleleName();
+            return false;
         }
 
-        internal AlleleTyping(Locus locus, string name, AlleleTypingStatus status = null)
-            : this(locus.ToMolecularLocusIfExists(), name, status ?? AlleleTypingStatus.GetDefaultStatus())
+        threeFieldName = BuildAlleleNameWithoutExpressionSuffix(3);
+        return true;
+    }
+
+    private IEnumerable<string> GetFields()
+    {
+        var trimmedName = Name.TrimEnd(ExpressionSuffix.ToCharArray());
+        return trimmedName.Split(FieldDelimiter);
+    }
+
+    private IEnumerable<string> GetTruncatedVariantsOfAlleleName()
+    {
+        var alleleNameFieldCounts = new[] { 2, 3, 4 };
+
+        return alleleNameFieldCounts
+            .SelectMany(GetAlleleNameVariantsOfSpecifiedFieldCount)
+            .Where(variant => !variant.Equals(Name))
+            .Distinct();
+    }
+
+    private IEnumerable<string> GetAlleleNameVariantsOfSpecifiedFieldCount(int truncatedFieldCount)
+    {
+        if (Fields.Count() < truncatedFieldCount ||
+            (Fields.Count() == truncatedFieldCount && string.IsNullOrEmpty(ExpressionSuffix)))
         {
+            return new List<string>();
         }
 
-        public bool TryGetThreeFieldName(out string threeFieldName)
+        var variants = new List<string>
         {
-            threeFieldName = null;
+            BuildAlleleNameWithoutExpressionSuffix(truncatedFieldCount),
+            BuildAlleleNameAndAddExpressionSuffix(truncatedFieldCount)
+        };
 
-            if (Fields.Count() < 3)
-            {
-                return false;
-            }
+        return variants.Distinct();
+    }
 
-            threeFieldName = BuildAlleleNameWithoutExpressionSuffix(3);
-            return true;
-        }
+    private string BuildAlleleNameAndAddExpressionSuffix(int fieldCount)
+    {
+        return BuildAlleleNameWithoutExpressionSuffix(fieldCount) + ExpressionSuffix;
+    }
 
-        private IEnumerable<string> GetFields()
-        {
-            var trimmedName = Name.TrimEnd(ExpressionSuffix.ToCharArray());
-            return trimmedName.Split(FieldDelimiter);
-        }
-
-        private IEnumerable<string> GetTruncatedVariantsOfAlleleName()
-        {
-            var alleleNameFieldCounts = new[] { 2, 3, 4 };
-
-            return alleleNameFieldCounts
-                .SelectMany(GetAlleleNameVariantsOfSpecifiedFieldCount)
-                .Where(variant => !variant.Equals(Name))
-                .Distinct();
-        }
-
-        private IEnumerable<string> GetAlleleNameVariantsOfSpecifiedFieldCount(int truncatedFieldCount)
-        {
-            if (Fields.Count() < truncatedFieldCount ||
-                (Fields.Count() == truncatedFieldCount && string.IsNullOrEmpty(ExpressionSuffix)))
-            {
-                return new List<string>();
-            }
-
-            var variants = new List<string>
-            {
-                BuildAlleleNameWithoutExpressionSuffix(truncatedFieldCount),
-                BuildAlleleNameAndAddExpressionSuffix(truncatedFieldCount)
-            };
-
-            return variants.Distinct();
-        }
-
-        private string BuildAlleleNameAndAddExpressionSuffix(int fieldCount)
-        {
-            return BuildAlleleNameWithoutExpressionSuffix(fieldCount) + ExpressionSuffix;
-        }
-
-        private string BuildAlleleNameWithoutExpressionSuffix(int fieldCount)
-        {
-            return Fields.Take(fieldCount).StringJoin(FieldDelimiter);
-        }
+    private string BuildAlleleNameWithoutExpressionSuffix(int fieldCount)
+    {
+        return Fields.Take(fieldCount).StringJoin(FieldDelimiter);
     }
 }

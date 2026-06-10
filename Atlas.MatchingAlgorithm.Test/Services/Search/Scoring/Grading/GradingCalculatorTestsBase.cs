@@ -4,30 +4,29 @@ using NUnit.Framework;
 using System;
 using Atlas.Common.Public.Models.GeneticData;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
+namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading;
+
+public abstract class GradingCalculatorTestsBase
 {
-    public abstract class GradingCalculatorTestsBase
+    protected IGradingCalculator GradingCalculator;
+
+    [SetUp]
+    public abstract void SetUpGradingCalculator();
+
+    [Test]
+    public void CalculateGrade_MatchLociAreNotEqual_ThrowsException()
     {
-        protected IGradingCalculator GradingCalculator;
-
-        [SetUp]
-        public abstract void SetUpGradingCalculator();
-
-        [Test]
-        public void CalculateGrade_MatchLociAreNotEqual_ThrowsException()
-        {
-            Assert.Throws<ArgumentException>(() =>
-                GradingCalculator.CalculateGrade(
-                    new HlaScoringMetadataBuilder()
-                        .AtLocus(Locus.A)
-                        .Build(),
-                    new HlaScoringMetadataBuilder()
-                        .AtLocus(Locus.B)
-                        .Build()));
-        }
-
-        public abstract void CalculateGrade_OneOrBothScoringInfosAreNotOfPermittedTypes_ThrowsException(
-            Type patientScoringInfoType,
-            Type donorScoringInfoType);
+        Assert.Throws<ArgumentException>(() =>
+            GradingCalculator.CalculateGrade(
+                new HlaScoringMetadataBuilder()
+                    .AtLocus(Locus.A)
+                    .Build(),
+                new HlaScoringMetadataBuilder()
+                    .AtLocus(Locus.B)
+                    .Build()));
     }
+
+    public abstract void CalculateGrade_OneOrBothScoringInfosAreNotOfPermittedTypes_ThrowsException(
+        Type patientScoringInfoType,
+        Type donorScoringInfoType);
 }

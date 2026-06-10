@@ -2,24 +2,23 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Atlas.Common.AzureStorage.Blob
+namespace Atlas.Common.AzureStorage.Blob;
+
+public interface IBlobStreamer
 {
-    public interface IBlobStreamer
+    Task<Stream> GetBlobContents(string containerName, string blobName);
+}
+
+public class BlobStreamer : AzureStorageBlobClient, IBlobStreamer
+{
+    public BlobStreamer(string azureStorageConnectionString, IAtlasLogger logger) : base(azureStorageConnectionString, logger, "Stream")
     {
-        Task<Stream> GetBlobContents(string containerName, string blobName);
     }
 
-    public class BlobStreamer : AzureStorageBlobClient, IBlobStreamer
+    public async Task<Stream> GetBlobContents(string containerName, string blobName)
     {
-        public BlobStreamer(string azureStorageConnectionString, IAtlasLogger logger) : base(azureStorageConnectionString, logger, "Stream")
-        {
-        }
-
-        public async Task<Stream> GetBlobContents(string containerName, string blobName)
-        {
-            var container = GetBlobContainer(containerName);
-            var blob = container.GetBlobClient(blobName);
-            return await blob.OpenReadAsync();
-        }
+        var container = GetBlobContainer(containerName);
+        var blob = container.GetBlobClient(blobName);
+        return await blob.OpenReadAsync();
     }
 }

@@ -2,39 +2,38 @@
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
-namespace Atlas.MatchingAlgorithm.Services.Donors
+namespace Atlas.MatchingAlgorithm.Services.Donors;
+
+public interface IDonorHlaExpanderFactory
 {
-    public interface IDonorHlaExpanderFactory
+    IDonorHlaExpander BuildForSpecifiedHlaNomenclatureVersion(string hlaNomenclatureVersion);
+    IDonorHlaExpander BuildForActiveHlaNomenclatureVersion();
+}
+
+public class DonorHlaExpanderFactory : IDonorHlaExpanderFactory
+{
+    private readonly IHlaMetadataDictionaryFactory dictionaryFactory;
+    private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
+    private readonly IMatchingAlgorithmImportLogger logger;
+
+    public DonorHlaExpanderFactory(
+        IHlaMetadataDictionaryFactory dictionaryFactory,
+        IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
+        IMatchingAlgorithmImportLogger logger)
     {
-        IDonorHlaExpander BuildForSpecifiedHlaNomenclatureVersion(string hlaNomenclatureVersion);
-        IDonorHlaExpander BuildForActiveHlaNomenclatureVersion();
+        this.dictionaryFactory = dictionaryFactory;
+        this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
+        this.logger = logger;
     }
 
-    public class DonorHlaExpanderFactory : IDonorHlaExpanderFactory
+    public IDonorHlaExpander BuildForActiveHlaNomenclatureVersion()
     {
-        private readonly IHlaMetadataDictionaryFactory dictionaryFactory;
-        private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
-        private readonly IMatchingAlgorithmImportLogger logger;
+        return BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
+    }
 
-        public DonorHlaExpanderFactory(
-            IHlaMetadataDictionaryFactory dictionaryFactory,
-            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
-            IMatchingAlgorithmImportLogger logger)
-        {
-            this.dictionaryFactory = dictionaryFactory;
-            this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
-            this.logger = logger;
-        }
-
-        public IDonorHlaExpander BuildForActiveHlaNomenclatureVersion()
-        {
-            return BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
-        }
-
-        public IDonorHlaExpander BuildForSpecifiedHlaNomenclatureVersion(string hlaNomenclatureVersion)
-        {
-            var specifiedVersionDictionary = dictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
-            return new DonorHlaExpander(specifiedVersionDictionary, logger);
-        }
+    public IDonorHlaExpander BuildForSpecifiedHlaNomenclatureVersion(string hlaNomenclatureVersion)
+    {
+        var specifiedVersionDictionary = dictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
+        return new DonorHlaExpander(specifiedVersionDictionary, logger);
     }
 }

@@ -1,9 +1,8 @@
-﻿namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models
+﻿namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
+
+public enum MatchOrientation
 {
-    public enum MatchOrientation
-    {
-        Direct,
-        Cross,
-        Arbitrary
-    }
+    Direct,
+    Cross,
+    Arbitrary
 }

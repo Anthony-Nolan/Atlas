@@ -1,7 +1,6 @@
-﻿namespace Atlas.SearchTracking.Common.Config
+﻿namespace Atlas.SearchTracking.Common.Config;
+
+public static class SearchTrackingConstants
 {
-    public static class SearchTrackingConstants
-    {
-        public const string EventType = "EventType";
-    }
+    public const string EventType = "EventType";
 }

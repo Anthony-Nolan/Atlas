@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
+
+public class DonorNotFoundException : Exception
 {
-    public class DonorNotFoundException : Exception
+    public DonorNotFoundException(string message) : base(message)
     {
-        public DonorNotFoundException(string message) : base(message)
-        {
-        }
     }
 }

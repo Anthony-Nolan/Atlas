@@ -1,8 +1,7 @@
-﻿namespace Atlas.ManualTesting.Settings
+﻿namespace Atlas.ManualTesting.Settings;
+
+internal class SearchSettings
 {
-    internal class SearchSettings
-    {
-        public string ResultsTopic { get; set; }
-        public string ResultsSubscription { get; set; }
-    }
+    public string ResultsTopic { get; set; }
+    public string ResultsSubscription { get; set; }
 }

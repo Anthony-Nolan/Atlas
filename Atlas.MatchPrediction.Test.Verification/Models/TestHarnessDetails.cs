@@ -1,7 +1,6 @@
-﻿namespace Atlas.MatchPrediction.Test.Verification.Models
+﻿namespace Atlas.MatchPrediction.Test.Verification.Models;
+
+internal class TestHarnessDetails
 {
-    internal class TestHarnessDetails
-    {
-        public int TestHarnessId { get; set; }
-    }
+    public int TestHarnessId { get; set; }
 }

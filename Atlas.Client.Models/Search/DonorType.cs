@@ -4,12 +4,11 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Atlas.Client.Models.Search
+namespace Atlas.Client.Models.Search;
+
+[JsonConverter(typeof(StringEnumConverter))]
+public enum DonorType
 {
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum DonorType
-    {
-        Adult = 1,
-        Cord = 2
-    }
+    Adult = 1,
+    Cord = 2
 }

@@ -13,173 +13,172 @@ using Atlas.Common.Caching;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+
+/// <summary>
+/// Lookup scoring info for each typing that maps to the submitted HLA name.
+/// The relationship of info-to-typing is preserved within the result
+/// for typing categories that require it; else the data is consolidated.
+/// </summary>
+internal interface IHlaScoringMetadataService : ISearchRelatedMetadataService<IHlaScoringMetadata>
 {
-    /// <summary>
-    /// Lookup scoring info for each typing that maps to the submitted HLA name.
-    /// The relationship of info-to-typing is preserved within the result
-    /// for typing categories that require it; else the data is consolidated.
-    /// </summary>
-    internal interface IHlaScoringMetadataService : ISearchRelatedMetadataService<IHlaScoringMetadata>
+    Task<IDictionary<Locus, List<string>>> GetAllGGroups(string hlaNomenclatureVersion);
+}
+
+internal class HlaScoringMetadataService :
+    SearchRelatedMetadataServiceBase<IHlaScoringMetadata>,
+    IHlaScoringMetadataService
+{
+    private const string CacheKey = nameof(HlaScoringMetadataService);
+    private readonly IHlaScoringMetadataRepository hlaScoringMetadataRepository;
+
+    public HlaScoringMetadataService(
+        IHlaScoringMetadataRepository hlaScoringMetadataRepository,
+        IAlleleNamesMetadataService alleleNamesMetadataService,
+        IHlaCategorisationService hlaCategorisationService,
+        IAlleleNamesExtractor alleleNamesExtractor,
+        IMacDictionary macDictionary,
+        IAlleleGroupExpander alleleGroupExpander,
+        IPersistentCacheProvider cacheProvider,
+        HlaMetadataDictionarySettings options
+    ) : base(
+        hlaScoringMetadataRepository,
+        alleleNamesMetadataService,
+        hlaCategorisationService,
+        alleleNamesExtractor,
+        macDictionary,
+        alleleGroupExpander,
+        CacheKey,
+        cacheProvider,
+        options)
     {
-        Task<IDictionary<Locus, List<string>>> GetAllGGroups(string hlaNomenclatureVersion);
+        this.hlaScoringMetadataRepository = hlaScoringMetadataRepository;
+    }
+        
+    public async Task<IDictionary<Locus, List<string>>> GetAllGGroups(string hlaNomenclatureVersion)
+    {
+        return await hlaScoringMetadataRepository.GetAllGGroups(hlaNomenclatureVersion);
     }
 
-    internal class HlaScoringMetadataService :
-        SearchRelatedMetadataServiceBase<IHlaScoringMetadata>,
-        IHlaScoringMetadataService
+    protected override IEnumerable<IHlaScoringMetadata> ConvertMetadataRowsToMetadata(IEnumerable<HlaMetadataTableRow> rows)
     {
-        private const string CacheKey = nameof(HlaScoringMetadataService);
-        private readonly IHlaScoringMetadataRepository hlaScoringMetadataRepository;
+        return rows.Select(row => row.ToHlaScoringMetadata());
+    }
 
-        public HlaScoringMetadataService(
-            IHlaScoringMetadataRepository hlaScoringMetadataRepository,
-            IAlleleNamesMetadataService alleleNamesMetadataService,
-            IHlaCategorisationService hlaCategorisationService,
-            IAlleleNamesExtractor alleleNamesExtractor,
-            IMacDictionary macDictionary,
-            IAlleleGroupExpander alleleGroupExpander,
-            IPersistentCacheProvider cacheProvider,
-            HlaMetadataDictionarySettings options
-            ) : base(
-                hlaScoringMetadataRepository,
-                alleleNamesMetadataService,
-                hlaCategorisationService,
-                alleleNamesExtractor,
-                macDictionary,
-                alleleGroupExpander,
-                CacheKey,
-                cacheProvider,
-                options)
+    protected override IHlaScoringMetadata ConsolidateHlaMetadata(
+        Locus locus,
+        string lookupName,
+        List<IHlaScoringMetadata> metadata)
+    {
+        var hlaTypingCategory = HlaCategorisationService.GetHlaTypingCategory(lookupName);
+        var scoringInfos = metadata.Select(result => result.HlaScoringInfo).ToList();
+
+        switch (hlaTypingCategory)
         {
-            this.hlaScoringMetadataRepository = hlaScoringMetadataRepository;
+            case HlaTypingCategory.Allele:
+                return metadata.Count == 1
+                    ? metadata.Single()
+                    : GetMultipleAlleleMetadata(locus, lookupName, scoringInfos);
+
+            // TODO: ATLAS-454 - Confirm lookup strategy for scoring of P/G/small g group HLA.
+            // I.e., return each allele's metadata or consolidated metadata.
+
+            case HlaTypingCategory.PGroup:
+            case HlaTypingCategory.GGroup:
+            case HlaTypingCategory.SmallGGroup:
+            case HlaTypingCategory.AlleleStringOfNames:
+            case HlaTypingCategory.AlleleStringOfSubtypes:
+            case HlaTypingCategory.NmdpCode:
+                return GetConsolidatedMolecularMetadata(locus, lookupName, scoringInfos);
+
+            case HlaTypingCategory.XxCode:
+            case HlaTypingCategory.Serology:
+                return metadata.Single();
+
+            default:
+                throw new ArgumentOutOfRangeException();
         }
-        
-        public async Task<IDictionary<Locus, List<string>>> GetAllGGroups(string hlaNomenclatureVersion)
-        {
-            return await hlaScoringMetadataRepository.GetAllGGroups(hlaNomenclatureVersion);
-        }
+    }
 
-        protected override IEnumerable<IHlaScoringMetadata> ConvertMetadataRowsToMetadata(IEnumerable<HlaMetadataTableRow> rows)
-        {
-            return rows.Select(row => row.ToHlaScoringMetadata());
-        }
+    private static IHlaScoringMetadata GetMultipleAlleleMetadata(
+        Locus locus,
+        string lookupName,
+        IReadOnlyCollection<IHlaScoringInfo> scoringInfos)
+    {
+        var alleleScoringInfos = GetSingleAlleleScoringInfos(scoringInfos).ToList();
+        var matchingSerologies = GetMatchingSerologies(scoringInfos);
 
-        protected override IHlaScoringMetadata ConsolidateHlaMetadata(
-            Locus locus,
-            string lookupName,
-            List<IHlaScoringMetadata> metadata)
-        {
-            var hlaTypingCategory = HlaCategorisationService.GetHlaTypingCategory(lookupName);
-            var scoringInfos = metadata.Select(result => result.HlaScoringInfo).ToList();
+        var multipleAlleleScoringInfo = new MultipleAlleleScoringInfo(
+            alleleScoringInfos,
+            matchingSerologies);
 
-            switch (hlaTypingCategory)
-            {
-                case HlaTypingCategory.Allele:
-                    return metadata.Count == 1
-                        ? metadata.Single()
-                        : GetMultipleAlleleMetadata(locus, lookupName, scoringInfos);
+        return new HlaScoringMetadata(
+            locus,
+            lookupName,
+            multipleAlleleScoringInfo,
+            TypingMethod.Molecular
+        );
+    }
 
-                // TODO: ATLAS-454 - Confirm lookup strategy for scoring of P/G/small g group HLA.
-                // I.e., return each allele's metadata or consolidated metadata.
+    private static IHlaScoringMetadata GetConsolidatedMolecularMetadata(
+        Locus locus,
+        string lookupName,
+        IReadOnlyCollection<IHlaScoringInfo> scoringInfos)
+    {
+        var singleAlleleScoringInfos = GetSingleAlleleScoringInfos(scoringInfos).ToList();
 
-                case HlaTypingCategory.PGroup:
-                case HlaTypingCategory.GGroup:
-                case HlaTypingCategory.SmallGGroup:
-                case HlaTypingCategory.AlleleStringOfNames:
-                case HlaTypingCategory.AlleleStringOfSubtypes:
-                case HlaTypingCategory.NmdpCode:
-                    return GetConsolidatedMolecularMetadata(locus, lookupName, scoringInfos);
+        var matchingPGroups = GetMatchingPGroups(singleAlleleScoringInfos);
+        var matchingGGroups = GetMatchingGGroups(singleAlleleScoringInfos);
+        var matchingSerologies = GetMatchingSerologies(scoringInfos);
 
-                case HlaTypingCategory.XxCode:
-                case HlaTypingCategory.Serology:
-                    return metadata.Single();
+        var consolidatedMolecularScoringInfo = new ConsolidatedMolecularScoringInfo(
+            matchingPGroups,
+            matchingGGroups,
+            matchingSerologies);
 
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
+        return new HlaScoringMetadata(
+            locus,
+            lookupName,
+            consolidatedMolecularScoringInfo,
+            TypingMethod.Molecular
+        );
+    }
 
-        private static IHlaScoringMetadata GetMultipleAlleleMetadata(
-            Locus locus,
-            string lookupName,
-            IReadOnlyCollection<IHlaScoringInfo> scoringInfos)
-        {
-            var alleleScoringInfos = GetSingleAlleleScoringInfos(scoringInfos).ToList();
-            var matchingSerologies = GetMatchingSerologies(scoringInfos);
+    private static IEnumerable<SingleAlleleScoringInfo> GetSingleAlleleScoringInfos(IEnumerable<IHlaScoringInfo> scoringInfos)
+    {
+        var infos = scoringInfos.ToList();
 
-            var multipleAlleleScoringInfo = new MultipleAlleleScoringInfo(
-                alleleScoringInfos,
-                matchingSerologies);
+        var allSingleAlleleInfos = infos.OfType<SingleAlleleScoringInfo>()
+            .Union(infos.OfType<MultipleAlleleScoringInfo>().SelectMany(multiple => multiple.AlleleScoringInfos))
+            .ToList();
 
-            return new HlaScoringMetadata(
-                locus,
-                lookupName,
-                multipleAlleleScoringInfo,
-                TypingMethod.Molecular
-            );
-        }
+        var singleInfosWithoutNullAlleles = MultipleAlleleNullFilter.Filter(allSingleAlleleInfos).ToList();
 
-        private static IHlaScoringMetadata GetConsolidatedMolecularMetadata(
-            Locus locus,
-            string lookupName,
-            IReadOnlyCollection<IHlaScoringInfo> scoringInfos)
-        {
-            var singleAlleleScoringInfos = GetSingleAlleleScoringInfos(scoringInfos).ToList();
+        // If all single alleles infos are for null alleles, then return the unfiltered list to ensure data is consolidated correctly.
+        return singleInfosWithoutNullAlleles.Any() ? singleInfosWithoutNullAlleles : allSingleAlleleInfos;
+    }
 
-            var matchingPGroups = GetMatchingPGroups(singleAlleleScoringInfos);
-            var matchingGGroups = GetMatchingGGroups(singleAlleleScoringInfos);
-            var matchingSerologies = GetMatchingSerologies(scoringInfos);
+    private static IEnumerable<string> GetMatchingPGroups(IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
+    {
+        return singleAlleleScoringInfos
+            .Select(single => single.MatchingPGroup)
+            .Where(x => x != null)
+            .Distinct();
+    }
 
-            var consolidatedMolecularScoringInfo = new ConsolidatedMolecularScoringInfo(
-                matchingPGroups,
-                matchingGGroups,
-                matchingSerologies);
+    private static IEnumerable<string> GetMatchingGGroups(IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
+    {
+        return singleAlleleScoringInfos
+            .Select(single => single.MatchingGGroup)
+            .Where(x => x != null)
+            .Distinct();
+    }
 
-            return new HlaScoringMetadata(
-                locus,
-                lookupName,
-                consolidatedMolecularScoringInfo,
-                TypingMethod.Molecular
-            );
-        }
-
-        private static IEnumerable<SingleAlleleScoringInfo> GetSingleAlleleScoringInfos(IEnumerable<IHlaScoringInfo> scoringInfos)
-        {
-            var infos = scoringInfos.ToList();
-
-            var allSingleAlleleInfos = infos.OfType<SingleAlleleScoringInfo>()
-                .Union(infos.OfType<MultipleAlleleScoringInfo>().SelectMany(multiple => multiple.AlleleScoringInfos))
-                .ToList();
-
-            var singleInfosWithoutNullAlleles = MultipleAlleleNullFilter.Filter(allSingleAlleleInfos).ToList();
-
-            // If all single alleles infos are for null alleles, then return the unfiltered list to ensure data is consolidated correctly.
-            return singleInfosWithoutNullAlleles.Any() ? singleInfosWithoutNullAlleles : allSingleAlleleInfos;
-        }
-
-        private static IEnumerable<string> GetMatchingPGroups(IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
-        {
-            return singleAlleleScoringInfos
-                .Select(single => single.MatchingPGroup)
-                .Where(x => x != null)
-                .Distinct();
-        }
-
-        private static IEnumerable<string> GetMatchingGGroups(IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
-        {
-            return singleAlleleScoringInfos
-                .Select(single => single.MatchingGGroup)
-                .Where(x => x != null)
-                .Distinct();
-        }
-
-        private static IEnumerable<SerologyEntry> GetMatchingSerologies(IEnumerable<IHlaScoringInfo> scoringInfos)
-        {
-            return scoringInfos
-                .SelectMany(info => info.MatchingSerologies)
-                .Where(x => x != null)
-                .Distinct();
-        }
+    private static IEnumerable<SerologyEntry> GetMatchingSerologies(IEnumerable<IHlaScoringInfo> scoringInfos)
+    {
+        return scoringInfos
+            .SelectMany(info => info.MatchingSerologies)
+            .Where(x => x != null)
+            .Distinct();
     }
 }

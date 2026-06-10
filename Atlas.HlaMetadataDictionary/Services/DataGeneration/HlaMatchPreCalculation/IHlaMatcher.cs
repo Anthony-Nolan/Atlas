@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation;
+
+internal interface IHlaMatcher
 {
-    internal interface IHlaMatcher
-    {
-        IEnumerable<IMatchedHla> PreCalculateMatchedHla(HlaInfoForMatching hlaInfo);
-    }
+    IEnumerable<IMatchedHla> PreCalculateMatchedHla(HlaInfoForMatching hlaInfo);
 }

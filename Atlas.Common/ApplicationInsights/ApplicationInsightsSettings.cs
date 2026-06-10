@@ -1,7 +1,6 @@
-namespace Atlas.Common.ApplicationInsights
+namespace Atlas.Common.ApplicationInsights;
+
+public class ApplicationInsightsSettings
 {
-    public class ApplicationInsightsSettings
-    {
-        public string LogLevel { get; set; }
-    }
+    public string LogLevel { get; set; }
 }

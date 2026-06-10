@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace Atlas.Debug.Client.Models.SearchTracking
-{
-    public class SearchTrackingTimingInfo
-    {
-        public DateTime? StartTimeUtc { get; set; }
+namespace Atlas.Debug.Client.Models.SearchTracking;
 
-        public DateTime? EndTimeUtc { get; set; }
-    }
+public class SearchTrackingTimingInfo
+{
+    public DateTime? StartTimeUtc { get; set; }
+
+    public DateTime? EndTimeUtc { get; set; }
 }

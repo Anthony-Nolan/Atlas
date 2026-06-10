@@ -2,28 +2,27 @@
 using Atlas.SearchTracking.Data.Repositories;
 using AutoMapper;
 
-namespace Atlas.SearchTracking.Services
+namespace Atlas.SearchTracking.Services;
+
+public interface ISearchTrackingDebugService
 {
-    public interface ISearchTrackingDebugService
+    Task<SearchTrackingSearchRequest> GetSearchRequestByIdentifier(Guid searchIdentifier);
+}
+
+public class SearchTrackingDebugService : ISearchTrackingDebugService
+{
+    private readonly ISearchRequestRepository searchRequestRepository;
+    private readonly IMapper mapper;
+
+    public SearchTrackingDebugService(ISearchRequestRepository searchRequestRepository, IMapper mapper)
     {
-        Task<SearchTrackingSearchRequest> GetSearchRequestByIdentifier(Guid searchIdentifier);
+        this.searchRequestRepository = searchRequestRepository;
+        this.mapper = mapper;
     }
 
-    public class SearchTrackingDebugService : ISearchTrackingDebugService
+    public async Task<SearchTrackingSearchRequest> GetSearchRequestByIdentifier(Guid searchIdentifier)
     {
-        private readonly ISearchRequestRepository searchRequestRepository;
-        private readonly IMapper mapper;
-
-        public SearchTrackingDebugService(ISearchRequestRepository searchRequestRepository, IMapper mapper)
-        {
-            this.searchRequestRepository = searchRequestRepository;
-            this.mapper = mapper;
-        }
-
-        public async Task<SearchTrackingSearchRequest> GetSearchRequestByIdentifier(Guid searchIdentifier)
-        {
-            var searchRequest = await searchRequestRepository.GetSearchRequestWithLinkedEntitiesByIdentifier(searchIdentifier);
-            return mapper.Map<SearchTrackingSearchRequest>(searchRequest);
-        }
+        var searchRequest = await searchRequestRepository.GetSearchRequestWithLinkedEntitiesByIdentifier(searchIdentifier);
+        return mapper.Map<SearchTrackingSearchRequest>(searchRequest);
     }
 }

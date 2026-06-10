@@ -10,131 +10,130 @@ using MoreLinq;
 using Azure;
 using Atlas.Common.Utils.Extensions;
 
-namespace Atlas.Common.AzureStorage.Blob
+namespace Atlas.Common.AzureStorage.Blob;
+
+public interface IBlobDownloader
 {
-    public interface IBlobDownloader
-    {
-        /// <summary>
-        /// Downloads a single file with the name <paramref name="filename"/> from blob container <paramref name="container"/>
-        /// </summary>
-        /// <typeparam name="T">Type of the entry stored in the file</typeparam>
-        /// <param name="container">Blob container</param>
-        /// <param name="filename">Name of the file to download</param>
-        /// <returns>A single object of type <typeparamref name="T"></returns>
-        Task<T> Download<T>(string container, string filename);
+    /// <summary>
+    /// Downloads a single file with the name <paramref name="filename"/> from blob container <paramref name="container"/>
+    /// </summary>
+    /// <typeparam name="T">Type of the entry stored in the file</typeparam>
+    /// <param name="container">Blob container</param>
+    /// <param name="filename">Name of the file to download</param>
+    /// <returns>A single object of type <typeparamref name="T"></returns>
+    Task<T> Download<T>(string container, string filename);
 
-        /// <summary>
-        /// Downloads all files within the folder <paramref name="folderName"/> from blob container <paramref name="container"/>
-        /// </summary>
-        /// <typeparam name="T">Type of the entries stored in the file</typeparam>
-        /// <param name="container">Blob container</param>
-        /// <param name="folderName">Name of the folder to download files from</param>
-        /// <returns>A collection of objects of type <typeparamref name="T"></returns>
-        Task<IEnumerable<T>> DownloadFolderContents<T>(string container, string folderName);
+    /// <summary>
+    /// Downloads all files within the folder <paramref name="folderName"/> from blob container <paramref name="container"/>
+    /// </summary>
+    /// <typeparam name="T">Type of the entries stored in the file</typeparam>
+    /// <param name="container">Blob container</param>
+    /// <param name="folderName">Name of the folder to download files from</param>
+    /// <returns>A collection of objects of type <typeparamref name="T"></returns>
+    Task<IEnumerable<T>> DownloadFolderContents<T>(string container, string folderName);
 
-        /// <summary>
-        /// Dowload files from all the locations specified in <paramref name="locations"/> from blob container <paramref name="container"/>
-        /// </summary>
-        /// <typeparam name="T">Type of the entries stored in the file</typeparam>
-        /// <param name="container">Blob container</param>
-        /// <param name="locations">A dictionary where Key is an id of the entry and Value is a file name where this entry is stored</param>
-        /// <param name="batchSize">Batch size</param>
-        /// <returns>A dictionary where Key is an id of the entry and Value is an object of type <typeparamref name="T"></returns>
-        Task<Dictionary<int, T>> DownloadMultipleBlobs<T>(string container, IReadOnlyDictionary<int, string> locations, int batchSize);
+    /// <summary>
+    /// Dowload files from all the locations specified in <paramref name="locations"/> from blob container <paramref name="container"/>
+    /// </summary>
+    /// <typeparam name="T">Type of the entries stored in the file</typeparam>
+    /// <param name="container">Blob container</param>
+    /// <param name="locations">A dictionary where Key is an id of the entry and Value is a file name where this entry is stored</param>
+    /// <param name="batchSize">Batch size</param>
+    /// <returns>A dictionary where Key is an id of the entry and Value is an object of type <typeparamref name="T"></returns>
+    Task<Dictionary<int, T>> DownloadMultipleBlobs<T>(string container, IReadOnlyDictionary<int, string> locations, int batchSize);
 
-        /// <summary>
-        /// Downloads all files within the folder <paramref name="folderName"/> from blob container <paramref name="container"/> file by file (i.e. it deserializes and keeps in memory data from one file only)
-        /// </summary>
-        /// <typeparam name="T">Type of the entries stored in the file</typeparam>
-        /// <param name="container">Blob container</param>
-        /// <param name="folderName">Name of the folder to download files from</param>
-        /// <returns>An enumerator with collection of objects of type <typeparamref name="T"></returns>
-        IAsyncEnumerable<IEnumerable<T>> DownloadFolderContentsFileByFile<T>(string container, string folderName);
-    }
+    /// <summary>
+    /// Downloads all files within the folder <paramref name="folderName"/> from blob container <paramref name="container"/> file by file (i.e. it deserializes and keeps in memory data from one file only)
+    /// </summary>
+    /// <typeparam name="T">Type of the entries stored in the file</typeparam>
+    /// <param name="container">Blob container</param>
+    /// <param name="folderName">Name of the folder to download files from</param>
+    /// <returns>An enumerator with collection of objects of type <typeparamref name="T"></returns>
+    IAsyncEnumerable<IEnumerable<T>> DownloadFolderContentsFileByFile<T>(string container, string folderName);
+}
     
-    public class BlobDownloader : AzureStorageBlobClient, IBlobDownloader
+public class BlobDownloader : AzureStorageBlobClient, IBlobDownloader
+{
+    private readonly JsonSerializer serializer;
+
+    public BlobDownloader(string azureStorageConnectionString, IAtlasLogger logger) : base(azureStorageConnectionString, logger, "Download")
     {
-        private readonly JsonSerializer serializer;
+        serializer = new JsonSerializer();
+    }
 
-        public BlobDownloader(string azureStorageConnectionString, IAtlasLogger logger) : base(azureStorageConnectionString, logger, "Download")
+    public async Task<T> Download<T>(string container, string filename)
+    {
+        return await TimedCommunication(filename, container, async () =>
         {
-            serializer = new JsonSerializer();
-        }
+            var containerClient = GetBlobContainer(container);
+            return await GetBlobData<T>(containerClient, filename);
+        });
+    }
 
-        public async Task<T> Download<T>(string container, string filename)
+    public async Task<IEnumerable<T>> DownloadFolderContents<T>(string container, string folderName)
+    {
+        return await TimedCommunication(folderName, container, async () =>
         {
-            return await TimedCommunication(filename, container, async () =>
-            {
-                var containerClient = GetBlobContainer(container);
-                return await GetBlobData<T>(containerClient, filename);
-            });
-        }
-
-        public async Task<IEnumerable<T>> DownloadFolderContents<T>(string container, string folderName)
-        {
-            return await TimedCommunication(folderName, container, async () =>
-            {
-                var data = new List<T>();
-                var containerClient = GetBlobContainer(container);
-                var blobs = containerClient.GetBlobsAsync(traits: BlobTraits.None, states: BlobStates.None, prefix: $"{folderName}/", cancellationToken: default);
-                await foreach (var blob in blobs)
-                {
-                    data.AddRange(await GetBlobData<IEnumerable<T>>(containerClient, blob.Name));
-                }
-                return (IEnumerable<T>)data;
-            });
-        }
-
-        public async Task<Dictionary<int, T>> DownloadMultipleBlobs<T>(string container, IReadOnlyDictionary<int, string> locations, int batchSize)
-        {
-            return await TimedCommunication(container, container, async () =>
-            {
-                var data = new Dictionary<int, T>();
-                var containerClient = GetBlobContainer(container);
-                foreach (var locationBatch in locations.Batch(batchSize))
-                {
-                    var getBlobDataTasksDictionary = Enumerable.ToDictionary(locationBatch, location => location.Key,
-                        location => Task.Run(() => GetBlobData<T>(containerClient, location.Value)));
-                    await Task.WhenAll(getBlobDataTasksDictionary.Values);
-                    locationBatch.ForEach(location => { data[location.Key] = getBlobDataTasksDictionary[location.Key].Result; });
-                }
-                return data;
-            });
-        }
-
-        public async IAsyncEnumerable<IEnumerable<T>> DownloadFolderContentsFileByFile<T>(string container, string folderName)
-        {
-            var sw = Stopwatch.StartNew();
+            var data = new List<T>();
             var containerClient = GetBlobContainer(container);
             var blobs = containerClient.GetBlobsAsync(traits: BlobTraits.None, states: BlobStates.None, prefix: $"{folderName}/", cancellationToken: default);
-
             await foreach (var blob in blobs)
             {
-                yield return await GetBlobData<IEnumerable<T>>(containerClient, blob.Name);
+                data.AddRange(await GetBlobData<IEnumerable<T>>(containerClient, blob.Name));
             }
+            return (IEnumerable<T>)data;
+        });
+    }
 
-            sw.Stop();
-            SendAzureStorageEvent(folderName, container, sw.ElapsedMilliseconds);
+    public async Task<Dictionary<int, T>> DownloadMultipleBlobs<T>(string container, IReadOnlyDictionary<int, string> locations, int batchSize)
+    {
+        return await TimedCommunication(container, container, async () =>
+        {
+            var data = new Dictionary<int, T>();
+            var containerClient = GetBlobContainer(container);
+            foreach (var locationBatch in locations.Batch(batchSize))
+            {
+                var getBlobDataTasksDictionary = Enumerable.ToDictionary(locationBatch, location => location.Key,
+                    location => Task.Run(() => GetBlobData<T>(containerClient, location.Value)));
+                await Task.WhenAll(getBlobDataTasksDictionary.Values);
+                locationBatch.ForEach(location => { data[location.Key] = getBlobDataTasksDictionary[location.Key].Result; });
+            }
+            return data;
+        });
+    }
+
+    public async IAsyncEnumerable<IEnumerable<T>> DownloadFolderContentsFileByFile<T>(string container, string folderName)
+    {
+        var sw = Stopwatch.StartNew();
+        var containerClient = GetBlobContainer(container);
+        var blobs = containerClient.GetBlobsAsync(traits: BlobTraits.None, states: BlobStates.None, prefix: $"{folderName}/", cancellationToken: default);
+
+        await foreach (var blob in blobs)
+        {
+            yield return await GetBlobData<IEnumerable<T>>(containerClient, blob.Name);
         }
 
-        private async Task<T> GetBlobData<T>(BlobContainerClient containerClient, string filename)
-        {
-            try
-            {
-                var blobClient = containerClient.GetBlobClient(filename);
-                var downloadedBlob = await blobClient.DownloadContentAsync();
-                if (downloadedBlob is not { HasValue: true })
-                {
-                    throw new BlobNotFoundException(containerClient.Name, filename);
-                }
+        sw.Stop();
+        SendAzureStorageEvent(folderName, container, sw.ElapsedMilliseconds);
+    }
 
-                using var contentStream = downloadedBlob.Value.Content.ToStream();
-                return serializer.DeserializeFromStream<T>(contentStream);
-            }
-            catch (RequestFailedException ex) when(ex.ErrorCode == "BlobNotFound")
+    private async Task<T> GetBlobData<T>(BlobContainerClient containerClient, string filename)
+    {
+        try
+        {
+            var blobClient = containerClient.GetBlobClient(filename);
+            var downloadedBlob = await blobClient.DownloadContentAsync();
+            if (downloadedBlob is not { HasValue: true })
             {
                 throw new BlobNotFoundException(containerClient.Name, filename);
             }
+
+            using var contentStream = downloadedBlob.Value.Content.ToStream();
+            return serializer.DeserializeFromStream<T>(contentStream);
+        }
+        catch (RequestFailedException ex) when(ex.ErrorCode == "BlobNotFound")
+        {
+            throw new BlobNotFoundException(containerClient.Name, filename);
         }
     }
 }

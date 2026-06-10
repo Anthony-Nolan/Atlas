@@ -4,74 +4,73 @@ using Atlas.HlaMetadataDictionary.InternalModels;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using Azure.Data.Tables;
 
-namespace Atlas.HlaMetadataDictionary.Repositories
+namespace Atlas.HlaMetadataDictionary.Repositories;
+
+/// <summary>
+/// Holds the current table reference of various data tables.
+/// Some of our tables have their contents entirely regenerated from time to time.
+/// Since deleting a table in azure is not immediate or even synchronous, we instead
+/// hold a reference via this repository to the "current" version of the table,
+/// generate a new table from scratch, then update the reference when done.
+/// </summary>
+internal interface ITableReferenceRepository
 {
-    /// <summary>
-    /// Holds the current table reference of various data tables.
-    /// Some of our tables have their contents entirely regenerated from time to time.
-    /// Since deleting a table in azure is not immediate or even synchronous, we instead
-    /// hold a reference via this repository to the "current" version of the table,
-    /// generate a new table from scratch, then update the reference when done.
-    /// </summary>
-    internal interface ITableReferenceRepository
+    Task<string> GetCurrentTableReference(string tablePrefix);
+    string GetNewTableReference(string tablePrefix);
+    Task UpdateTableReference(string tablePrefix, string tableReference);
+}
+
+internal class TableReferenceRepository : ITableReferenceRepository
+{
+    private readonly ITableClientFactory factory;
+    private const string CloudTableReference = "TableReferences";
+    private TableClient tableClient;
+
+    public TableReferenceRepository(ITableClientFactory factory)
     {
-        Task<string> GetCurrentTableReference(string tablePrefix);
-        string GetNewTableReference(string tablePrefix);
-        Task UpdateTableReference(string tablePrefix, string tableReference);
+        this.factory = factory;
+    }
+        
+    public async Task<string> GetCurrentTableReference(string tablePrefix)
+    {
+        var tableReferenceRow = await GetExistingTableReferenceRow(tablePrefix);
+
+        return tableReferenceRow != null 
+            ? tableReferenceRow.TableReference
+            : await InsertAndReturnNewTableReference(tablePrefix);
     }
 
-    internal class TableReferenceRepository : ITableReferenceRepository
+    public string GetNewTableReference(string tablePrefix)
     {
-        private readonly ITableClientFactory factory;
-        private const string CloudTableReference = "TableReferences";
-        private TableClient tableClient;
+        var timeStamp = $"{DateTime.Now:yyyyMMddhhmmssfff}";
+        return tablePrefix + timeStamp;
+    }
 
-        public TableReferenceRepository(ITableClientFactory factory)
-        {
-            this.factory = factory;
-        }
-        
-        public async Task<string> GetCurrentTableReference(string tablePrefix)
-        {
-            var tableReferenceRow = await GetExistingTableReferenceRow(tablePrefix);
+    public async Task UpdateTableReference(string tablePrefix, string tableReference)
+    {
+        var tableClient = await GetTableClient();
+        await tableClient.UpsertEntityAsync<TableReferenceRow>(new TableReferenceRow(tablePrefix, tableReference), TableUpdateMode.Replace);
+    }
 
-            return tableReferenceRow != null 
-                ? tableReferenceRow.TableReference
-                : await InsertAndReturnNewTableReference(tablePrefix);
-        }
+    private async Task<TableClient> GetTableClient()
+    {
+        return tableClient ??= await factory.GetTable(CloudTableReference);
+    }
 
-        public string GetNewTableReference(string tablePrefix)
-        {
-            var timeStamp = $"{DateTime.Now:yyyyMMddhhmmssfff}";
-            return tablePrefix + timeStamp;
-        }
+    private async Task<TableReferenceRow> GetExistingTableReferenceRow(string tablePrefix)
+    {
+        var client = await GetTableClient();
+        var partition = TableReferenceRow.GetPartition();
+        var rowKey = tablePrefix;
 
-        public async Task UpdateTableReference(string tablePrefix, string tableReference)
-        {
-            var tableClient = await GetTableClient();
-            await tableClient.UpsertEntityAsync<TableReferenceRow>(new TableReferenceRow(tablePrefix, tableReference), TableUpdateMode.Replace);
-        }
+        var response = await client.GetEntityIfExistsAsync<TableReferenceRow>(partition, rowKey); 
+        return response.HasValue ? response.Value : default;
+    }
 
-        private async Task<TableClient> GetTableClient()
-        {
-            return tableClient ??= await factory.GetTable(CloudTableReference);
-        }
-
-        private async Task<TableReferenceRow> GetExistingTableReferenceRow(string tablePrefix)
-        {
-            var client = await GetTableClient();
-            var partition = TableReferenceRow.GetPartition();
-            var rowKey = tablePrefix;
-
-            var response = await client.GetEntityIfExistsAsync<TableReferenceRow>(partition, rowKey); 
-            return response.HasValue ? response.Value : default;
-        }
-
-        private async Task<string> InsertAndReturnNewTableReference(string tablePrefix)
-        {           
-            var newReference = GetNewTableReference(tablePrefix);
-            await UpdateTableReference(tablePrefix, newReference);
-            return newReference;
-        }
+    private async Task<string> InsertAndReturnNewTableReference(string tablePrefix)
+    {           
+        var newReference = GetNewTableReference(tablePrefix);
+        await UpdateTableReference(tablePrefix, newReference);
+        return newReference;
     }
 }

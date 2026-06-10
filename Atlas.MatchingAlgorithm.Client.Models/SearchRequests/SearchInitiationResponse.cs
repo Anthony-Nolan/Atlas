@@ -1,7 +1,6 @@
-namespace Atlas.MatchingAlgorithm.Client.Models.SearchRequests
+namespace Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
+
+public class SearchInitiationResponse
 {
-    public class SearchInitiationResponse
-    {
-        public string SearchIdentifier { get; set; }
-    }
+    public string SearchIdentifier { get; set; }
 }

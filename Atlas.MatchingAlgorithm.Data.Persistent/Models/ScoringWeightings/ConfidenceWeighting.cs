@@ -1,7 +1,6 @@
-﻿namespace Atlas.MatchingAlgorithm.Data.Persistent.Models.ScoringWeightings
+﻿namespace Atlas.MatchingAlgorithm.Data.Persistent.Models.ScoringWeightings;
+
+public class ConfidenceWeighting: ScoringWeighting
 {
-    public class ConfidenceWeighting: ScoringWeighting
-    {
         
-    }
 }

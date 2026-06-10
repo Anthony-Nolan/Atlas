@@ -2,15 +2,14 @@
 using Atlas.Common.Debugging;
 using Atlas.Common.ServiceBus;
 
-namespace Atlas.MatchingAlgorithm.Services.Debug
+namespace Atlas.MatchingAlgorithm.Services.Debug;
+
+internal class MatchingResultNotificationsPeeker : ServiceBusPeeker<MatchingResultsNotification>
 {
-    internal class MatchingResultNotificationsPeeker : ServiceBusPeeker<MatchingResultsNotification>
+    public MatchingResultNotificationsPeeker(
+        IMessageReceiverFactory factory,
+        string topicName,
+        string subscriptionName) : base(factory, topicName, subscriptionName)
     {
-        public MatchingResultNotificationsPeeker(
-            IMessageReceiverFactory factory,
-            string topicName,
-            string subscriptionName) : base(factory, topicName, subscriptionName)
-        {
-        }
     }
 }

@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace Atlas.MatchingAlgorithm.Exceptions
+namespace Atlas.MatchingAlgorithm.Exceptions;
+
+public class DonorInfoException : Exception
 {
-    public class DonorInfoException : Exception
+    public DonorInfoException(string message) : base(message)
     {
-        public DonorInfoException(string message) : base(message)
-        {
-        }
     }
 }

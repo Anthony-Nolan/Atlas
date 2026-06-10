@@ -1,14 +1,13 @@
 ﻿using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 
-namespace Atlas.HlaMetadataDictionary.HlaTypingInfo
+namespace Atlas.HlaMetadataDictionary.HlaTypingInfo;
+
+internal static class UnexpectedAlleleToSerologyMappings
 {
-    internal static class UnexpectedAlleleToSerologyMappings
+    public static HlaTyping[] PermittedExceptions =
     {
-        public static HlaTyping[] PermittedExceptions =
-        {
-            new HlaTyping(TypingMethod.Serology, "B", "15"),
-            new HlaTyping(TypingMethod.Serology, "B", "70")
-        };
-    }
+        new HlaTyping(TypingMethod.Serology, "B", "15"),
+        new HlaTyping(TypingMethod.Serology, "B", "70")
+    };
 }

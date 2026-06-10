@@ -3,28 +3,27 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.DonorImport.FileSchema.Models;
 
-namespace Atlas.DonorImport.Services.Debug
+namespace Atlas.DonorImport.Services.Debug;
+
+public interface IDonorImportBlobStorageClient
 {
-    public interface IDonorImportBlobStorageClient
+    Task UploadFile(DonorImportFileSchema fileContents, string fileName);
+}
+
+internal class DonorImportBlobStorageClient : BlobUploader, IDonorImportBlobStorageClient
+{
+    private readonly string donorBlobContainer;
+
+    public DonorImportBlobStorageClient(
+        IAtlasLogger logger,
+        string connectionString,
+        string donorBlobContainer) : base(connectionString, logger)
     {
-        Task UploadFile(DonorImportFileSchema fileContents, string fileName);
+        this.donorBlobContainer = donorBlobContainer;
     }
 
-    internal class DonorImportBlobStorageClient : BlobUploader, IDonorImportBlobStorageClient
+    public async Task UploadFile(DonorImportFileSchema fileContents, string fileName)
     {
-        private readonly string donorBlobContainer;
-
-        public DonorImportBlobStorageClient(
-            IAtlasLogger logger,
-            string connectionString,
-            string donorBlobContainer) : base(connectionString, logger)
-        {
-            this.donorBlobContainer = donorBlobContainer;
-        }
-
-        public async Task UploadFile(DonorImportFileSchema fileContents, string fileName)
-        {
-            await Upload(donorBlobContainer, fileName, fileContents);
-        }
+        await Upload(donorBlobContainer, fileName, fileContents);
     }
 }

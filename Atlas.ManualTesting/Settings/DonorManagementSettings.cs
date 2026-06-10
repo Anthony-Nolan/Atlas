@@ -1,8 +1,7 @@
-﻿namespace Atlas.ManualTesting.Settings
+﻿namespace Atlas.ManualTesting.Settings;
+
+internal class DonorManagementSettings
 {
-    internal class DonorManagementSettings
-    {
-        public string Topic { get; set; }
-        public string Subscription { get; set; }
-    }
+    public string Topic { get; set; }
+    public string Subscription { get; set; }
 }

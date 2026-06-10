@@ -8,38 +8,37 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
+namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests;
+
+[TestFixture]
+public class NullAlleleLookupTests
 {
-    [TestFixture]
-    public class NullAlleleLookupTests
+    private const Locus DefaultLocus = Locus.A;
+    private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
+
+    private IHlaMatchingMetadataService metadataService;
+
+    [OneTimeSetUp]
+    public void OneTimeSetUp()
     {
-        private const Locus DefaultLocus = Locus.A;
-        private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
-
-        private IHlaMatchingMetadataService metadataService;
-
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
+        TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
-            {
-                metadataService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMatchingMetadataService>();
-            });
-        }
+            metadataService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMatchingMetadataService>();
+        });
+    }
 
-        [Test]
-        public async Task GetHlaMetadata_ForCombinedNullAlleleAndExpressingAllele_ReturnsNullAlleleData()
-        {
-            const string expressingAllele = "01:01";
-            const string nullAllele = "01:01N";
-            var hlaName = NullAlleleHandling.CombineAlleleNames(nullAllele, expressingAllele);
+    [Test]
+    public async Task GetHlaMetadata_ForCombinedNullAlleleAndExpressingAllele_ReturnsNullAlleleData()
+    {
+        const string expressingAllele = "01:01";
+        const string nullAllele = "01:01N";
+        var hlaName = NullAlleleHandling.CombineAlleleNames(nullAllele, expressingAllele);
 
-            var combinedResult = await metadataService.GetHlaMetadata(DefaultLocus, hlaName, HlaVersion);
-            var nullOnlyResult = await metadataService.GetHlaMetadata(DefaultLocus, nullAllele, HlaVersion);
+        var combinedResult = await metadataService.GetHlaMetadata(DefaultLocus, hlaName, HlaVersion);
+        var nullOnlyResult = await metadataService.GetHlaMetadata(DefaultLocus, nullAllele, HlaVersion);
 
-            combinedResult.MatchingPGroups.Should().BeEmpty();
-            nullOnlyResult.MatchingPGroups.Should().BeEmpty();
-            combinedResult.Should().BeEquivalentTo(nullOnlyResult);
-        }
+        combinedResult.MatchingPGroups.Should().BeEmpty();
+        nullOnlyResult.MatchingPGroups.Should().BeEmpty();
+        combinedResult.Should().BeEquivalentTo(nullOnlyResult);
     }
 }

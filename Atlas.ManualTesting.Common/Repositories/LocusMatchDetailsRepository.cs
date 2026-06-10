@@ -4,33 +4,32 @@ using Atlas.ManualTesting.Common.Models.Entities;
 using Dapper;
 using Microsoft.Data.SqlClient;
 
-namespace Atlas.ManualTesting.Common.Repositories
+namespace Atlas.ManualTesting.Common.Repositories;
+
+public class LocusMatchDetailsRepository : 
+    BulkInsertRepository<LocusMatchDetails>,
+    IProcessedResultsRepository<LocusMatchDetails>
 {
-    public class LocusMatchDetailsRepository : 
-        BulkInsertRepository<LocusMatchDetails>,
-        IProcessedResultsRepository<LocusMatchDetails>
+    private const string TableName = nameof(ISearchData<SearchRequestRecord>.LocusMatchDetails);
+    private readonly string connectionString;
+
+    public LocusMatchDetailsRepository(string connectionString) : base(connectionString, TableName)
     {
-        private const string TableName = nameof(ISearchData<SearchRequestRecord>.LocusMatchDetails);
-        private readonly string connectionString;
+        this.connectionString = connectionString;
+    }
 
-        public LocusMatchDetailsRepository(string connectionString) : base(connectionString, TableName)
-        {
-            this.connectionString = connectionString;
-        }
-
-        public async Task DeleteResults(int searchRequestRecordId)
-        {
-            const string sql = $@"
+    public async Task DeleteResults(int searchRequestRecordId)
+    {
+        const string sql = $@"
                 DELETE FROM LocusMatchDetails
                 FROM LocusMatchDetails c
                 JOIN MatchedDonors d
                 ON c.MatchedDonor_Id = d.Id
                 WHERE d.SearchRequestRecord_Id = @{nameof(searchRequestRecordId)}";
 
-            await using (var connection = new SqlConnection(connectionString))
-            {
-                await connection.ExecuteAsync(sql, new { searchRequestRecordId }, commandTimeout: 600);
-            }
+        await using (var connection = new SqlConnection(connectionString))
+        {
+            await connection.ExecuteAsync(sql, new { searchRequestRecordId }, commandTimeout: 600);
         }
     }
 }

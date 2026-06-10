@@ -11,61 +11,60 @@ using Atlas.SearchTracking.Common.Models;
 using Newtonsoft.Json;
 using Atlas.MatchingAlgorithm.Helpers;
 
-namespace Atlas.RepeatSearch.Services.Search
-{
-    public interface IRepeatSearchDispatcher
-    {
-        Task<string> DispatchSearch(RepeatSearchRequest matchingRequest);
+namespace Atlas.RepeatSearch.Services.Search;
 
-        Task DispatchSearchTrackingEvent(RepeatSearchRequest repeatSearchRequest, string id);
+public interface IRepeatSearchDispatcher
+{
+    Task<string> DispatchSearch(RepeatSearchRequest matchingRequest);
+
+    Task DispatchSearchTrackingEvent(RepeatSearchRequest repeatSearchRequest, string id);
+}
+
+public class RepeatSearchDispatcher : IRepeatSearchDispatcher
+{
+    private readonly IRepeatSearchServiceBusClient repeatSearchServiceBusClient;
+    private readonly ISearchTrackingServiceBusClient searchTrackingServiceBusClient;
+
+    public RepeatSearchDispatcher(IRepeatSearchServiceBusClient repeatSearchServiceBusClient, ISearchTrackingServiceBusClient searchTrackingServiceBusClient)
+    {
+        this.repeatSearchServiceBusClient = repeatSearchServiceBusClient;
+        this.searchTrackingServiceBusClient = searchTrackingServiceBusClient;
     }
 
-    public class RepeatSearchDispatcher : IRepeatSearchDispatcher
+    /// <returns>A unique identifier for the dispatched search request</returns>
+    public async Task<string> DispatchSearch(RepeatSearchRequest matchingRequest)
     {
-        private readonly IRepeatSearchServiceBusClient repeatSearchServiceBusClient;
-        private readonly ISearchTrackingServiceBusClient searchTrackingServiceBusClient;
+        await new RepeatSearchRequestValidator().ValidateAndThrowAsync(matchingRequest);
+        var repeatSearchRequestId = Guid.NewGuid().ToString();
 
-        public RepeatSearchDispatcher(IRepeatSearchServiceBusClient repeatSearchServiceBusClient, ISearchTrackingServiceBusClient searchTrackingServiceBusClient)
+        var identifiedRepeatSearchRequest = new IdentifiedRepeatSearchRequest
         {
-            this.repeatSearchServiceBusClient = repeatSearchServiceBusClient;
-            this.searchTrackingServiceBusClient = searchTrackingServiceBusClient;
-        }
+            OriginalSearchId = matchingRequest.OriginalSearchId,
+            RepeatSearchRequest = matchingRequest,
+            RepeatSearchId = repeatSearchRequestId
+        };
+        await repeatSearchServiceBusClient.PublishToRepeatSearchRequestsTopic(identifiedRepeatSearchRequest);
 
-        /// <returns>A unique identifier for the dispatched search request</returns>
-        public async Task<string> DispatchSearch(RepeatSearchRequest matchingRequest)
+        return repeatSearchRequestId;
+    }
+
+    public async Task DispatchSearchTrackingEvent(RepeatSearchRequest repeatSearchRequest, string id)
+    {
+        var searchRequestedEvent = new SearchRequestedEvent
         {
-            await new RepeatSearchRequestValidator().ValidateAndThrowAsync(matchingRequest);
-            var repeatSearchRequestId = Guid.NewGuid().ToString();
+            SearchIdentifier = new Guid(id),
+            IsRepeatSearch = true,
+            OriginalSearchIdentifier = new Guid(repeatSearchRequest.OriginalSearchId),
+            RepeatSearchCutOffDate = repeatSearchRequest.SearchCutoffDate.Value.UtcDateTime,
+            RequestJson = JsonConvert.SerializeObject(repeatSearchRequest),
+            SearchCriteria = SearchTrackingEventHelper.GetSearchCriteria(repeatSearchRequest.SearchRequest),
+            DonorType = repeatSearchRequest.SearchRequest.SearchDonorType.ToString(),
+            RequestTimeUtc = DateTime.UtcNow,
+            IsMatchPredictionRun = repeatSearchRequest.SearchRequest.RunMatchPrediction,
+            AreBetterMatchesIncluded = repeatSearchRequest.SearchRequest.MatchCriteria.IncludeBetterMatches,
+            DonorRegistryCodes = repeatSearchRequest.SearchRequest.DonorRegistryCodes
+        };
 
-            var identifiedRepeatSearchRequest = new IdentifiedRepeatSearchRequest
-            {
-                OriginalSearchId = matchingRequest.OriginalSearchId,
-                RepeatSearchRequest = matchingRequest,
-                RepeatSearchId = repeatSearchRequestId
-            };
-            await repeatSearchServiceBusClient.PublishToRepeatSearchRequestsTopic(identifiedRepeatSearchRequest);
-
-            return repeatSearchRequestId;
-        }
-
-        public async Task DispatchSearchTrackingEvent(RepeatSearchRequest repeatSearchRequest, string id)
-        {
-            var searchRequestedEvent = new SearchRequestedEvent
-            {
-                SearchIdentifier = new Guid(id),
-                IsRepeatSearch = true,
-                OriginalSearchIdentifier = new Guid(repeatSearchRequest.OriginalSearchId),
-                RepeatSearchCutOffDate = repeatSearchRequest.SearchCutoffDate.Value.UtcDateTime,
-                RequestJson = JsonConvert.SerializeObject(repeatSearchRequest),
-                SearchCriteria = SearchTrackingEventHelper.GetSearchCriteria(repeatSearchRequest.SearchRequest),
-                DonorType = repeatSearchRequest.SearchRequest.SearchDonorType.ToString(),
-                RequestTimeUtc = DateTime.UtcNow,
-                IsMatchPredictionRun = repeatSearchRequest.SearchRequest.RunMatchPrediction,
-                AreBetterMatchesIncluded = repeatSearchRequest.SearchRequest.MatchCriteria.IncludeBetterMatches,
-                DonorRegistryCodes = repeatSearchRequest.SearchRequest.DonorRegistryCodes
-            };
-
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(searchRequestedEvent, SearchTrackingEventType.SearchRequested);
-        }
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(searchRequestedEvent, SearchTrackingEventType.SearchRequested);
     }
 }

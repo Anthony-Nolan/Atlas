@@ -6,47 +6,46 @@ using Atlas.MatchingAlgorithm.Data.Exceptions;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 
-namespace Atlas.MatchingAlgorithm.Data.Repositories
+namespace Atlas.MatchingAlgorithm.Data.Repositories;
+
+public class SqlDonorBatchQueryAsync : IBatchQueryAsync<DonorInfo>
 {
-    public class SqlDonorBatchQueryAsync : IBatchQueryAsync<DonorInfo>
+    private readonly IEnumerator<Donor> enumerator;
+    private const int DefaultBatchSize = 1000;
+
+    private readonly int batchSize;
+
+    // Note that giving this class an IQueryable rather than IEnumerable will leave an open db connection through EF
+    // No other IO can be performed by Entity Framework while this is the case - do not change to IQueryable
+    public SqlDonorBatchQueryAsync(IEnumerable<Donor> donors, int batchSize = DefaultBatchSize)
     {
-        private readonly IEnumerator<Donor> enumerator;
-        private const int DefaultBatchSize = 1000;
+        this.batchSize = batchSize;
+        enumerator = donors.GetEnumerator();
+        HasMoreResults = enumerator.MoveNext();
+    }
 
-        private readonly int batchSize;
+    public bool HasMoreResults { get; private set; }
 
-        // Note that giving this class an IQueryable rather than IEnumerable will leave an open db connection through EF
-        // No other IO can be performed by Entity Framework while this is the case - do not change to IQueryable
-        public SqlDonorBatchQueryAsync(IEnumerable<Donor> donors, int batchSize = DefaultBatchSize)
+    public Task<IEnumerable<DonorInfo>> RequestNextAsync()
+    {
+        if (!HasMoreResults)
         {
-            this.batchSize = batchSize;
-            enumerator = donors.GetEnumerator();
-            HasMoreResults = enumerator.MoveNext();
+            throw new DataHttpException("More donors were requested even though no more results are available. Check HasMoreResults before calling RequestNextAsync.");
         }
 
-        public bool HasMoreResults { get; private set; }
-
-        public Task<IEnumerable<DonorInfo>> RequestNextAsync()
+        return Task.Run(() =>
         {
-            if (!HasMoreResults)
+            var donors = new List<DonorInfo>();
+            for (var i = 0; i < batchSize; i++)
             {
-                throw new DataHttpException("More donors were requested even though no more results are available. Check HasMoreResults before calling RequestNextAsync.");
+                if (HasMoreResults)
+                {
+                    donors.Add(enumerator.Current.ToDonorInfo());
+                    HasMoreResults = enumerator.MoveNext();
+                }
             }
 
-            return Task.Run(() =>
-            {
-                var donors = new List<DonorInfo>();
-                for (var i = 0; i < batchSize; i++)
-                {
-                    if (HasMoreResults)
-                    {
-                        donors.Add(enumerator.Current.ToDonorInfo());
-                        HasMoreResults = enumerator.MoveNext();
-                    }
-                }
-
-                return donors.AsEnumerable();
-            });
-        }
+            return donors.AsEnumerable();
+        });
     }
 }

@@ -1,19 +1,18 @@
 ﻿using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 
-namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders.ScoringInfoBuilders
+namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders.ScoringInfoBuilders;
+
+public class NewAlleleScoringInfoBuilder
 {
-    public class NewAlleleScoringInfoBuilder
+    private NewAlleleScoringInfo scoringInfo;
+
+    public NewAlleleScoringInfoBuilder()
     {
-        private NewAlleleScoringInfo scoringInfo;
+        scoringInfo = new NewAlleleScoringInfo();
+    }
 
-        public NewAlleleScoringInfoBuilder()
-        {
-            scoringInfo = new NewAlleleScoringInfo();
-        }
-
-        public NewAlleleScoringInfo Build()
-        {
-            return scoringInfo;
-        }
+    public NewAlleleScoringInfo Build()
+    {
+        return scoringInfo;
     }
 }

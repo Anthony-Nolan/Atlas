@@ -10,67 +10,66 @@ using FluentValidation;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.RepeatSearch.Test.Services.Search
+namespace Atlas.RepeatSearch.Test.Services.Search;
+
+[TestFixture]
+public class RepeatSearchValidatorTests
 {
-    [TestFixture]
-    public class RepeatSearchValidatorTests
+    private ICanonicalResultSetRepository canonicalResultSetRepository;
+
+    private IRepeatSearchValidator repeatSearchValidator;
+
+    [SetUp]
+    public void SetUp()
     {
-        private ICanonicalResultSetRepository canonicalResultSetRepository;
+        canonicalResultSetRepository = Substitute.For<ICanonicalResultSetRepository>();
 
-        private IRepeatSearchValidator repeatSearchValidator;
-
-        [SetUp]
-        public void SetUp()
-        {
-            canonicalResultSetRepository = Substitute.For<ICanonicalResultSetRepository>();
-
-            canonicalResultSetRepository.GetCanonicalResultSetSummary(default).ReturnsForAnyArgs(new CanonicalResultSet());
+        canonicalResultSetRepository.GetCanonicalResultSetSummary(default).ReturnsForAnyArgs(new CanonicalResultSet());
             
-            repeatSearchValidator = new RepeatSearchValidator(canonicalResultSetRepository);
-        }
+        repeatSearchValidator = new RepeatSearchValidator(canonicalResultSetRepository);
+    }
 
-        [Test]
-        public async Task ValidateRepeatSearchRequest_WhenRequiredDataMissing_ThrowsException()
+    [Test]
+    public async Task ValidateRepeatSearchRequest_WhenRequiredDataMissing_ThrowsException()
+    {
+        var repeatSearch = new RepeatSearchRequest();
+
+        await repeatSearchValidator
+            .Invoking(v => v.ValidateRepeatSearchAndThrow(repeatSearch))
+            .Should().ThrowAsync<ValidationException>();
+    }
+
+    [Test]
+    public async Task ValidateRepeatSearchRequest_ForValidRequest_DoesNotThrowException()
+    {
+        var repeatSearch = new RepeatSearchRequest
         {
-            var repeatSearch = new RepeatSearchRequest();
+            SearchRequest = new SearchRequestBuilder().Build(),
+            OriginalSearchId = "123",
+            SearchCutoffDate = DateTimeOffset.Now
+        };
 
-            await repeatSearchValidator
-                .Invoking(v => v.ValidateRepeatSearchAndThrow(repeatSearch))
-                .Should().ThrowAsync<ValidationException>();
-        }
+        await repeatSearchValidator
+            .Invoking(async v => await v.ValidateRepeatSearchAndThrow(repeatSearch))
+            .Should().NotThrowAsync();
+    }
 
-        [Test]
-        public async Task ValidateRepeatSearchRequest_ForValidRequest_DoesNotThrowException()
-        {
-            var repeatSearch = new RepeatSearchRequest
-            {
-                SearchRequest = new SearchRequestBuilder().Build(),
-                OriginalSearchId = "123",
-                SearchCutoffDate = DateTimeOffset.Now
-            };
-
-            await repeatSearchValidator
-                .Invoking(async v => await v.ValidateRepeatSearchAndThrow(repeatSearch))
-                .Should().NotThrowAsync();
-        }
-
-        [Test]
-        public async Task ValidateRepeatSearchRequest_WithUnrecognisedSearchId_ThrowsException()
-        {
-            const string searchId = "invalid-search-request";
+    [Test]
+    public async Task ValidateRepeatSearchRequest_WithUnrecognisedSearchId_ThrowsException()
+    {
+        const string searchId = "invalid-search-request";
             
-            var repeatSearch = new RepeatSearchRequest
-            {
-                SearchRequest = new SearchRequestBuilder().Build(),
-                OriginalSearchId = searchId,
-                SearchCutoffDate = DateTimeOffset.Now
-            };
+        var repeatSearch = new RepeatSearchRequest
+        {
+            SearchRequest = new SearchRequestBuilder().Build(),
+            OriginalSearchId = searchId,
+            SearchCutoffDate = DateTimeOffset.Now
+        };
 
-            canonicalResultSetRepository.GetCanonicalResultSetSummary(searchId).Returns(null as CanonicalResultSet);
+        canonicalResultSetRepository.GetCanonicalResultSetSummary(searchId).Returns(null as CanonicalResultSet);
 
-            await repeatSearchValidator
-                .Invoking(v => v.ValidateRepeatSearchAndThrow(repeatSearch))
-                .Should().ThrowAsync<ValidationException>();
-        }
+        await repeatSearchValidator
+            .Invoking(v => v.ValidateRepeatSearchAndThrow(repeatSearch))
+            .Should().ThrowAsync<ValidationException>();
     }
 }

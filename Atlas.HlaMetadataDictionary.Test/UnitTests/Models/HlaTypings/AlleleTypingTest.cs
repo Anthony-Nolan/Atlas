@@ -5,98 +5,97 @@ using Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatc
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Models.HlaTypings
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Models.HlaTypings;
+
+[TestFixture]
+public class AlleleTypingTest
 {
-    [TestFixture]
-    public class AlleleTypingTest
+    [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.AlleleTypingsToTest))]
+    public void AlleleTyping_WhenNew_TypingMethodIsMolecular(AlleleTestCase alleleTestCaseToTest)
     {
-        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.AlleleTypingsToTest))]
-        public void AlleleTyping_WhenNew_TypingMethodIsMolecular(AlleleTestCase alleleTestCaseToTest)
-        {
-            var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
+        var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
 
-            actualAlleleTyping.TypingMethod.Should().Be(TypingMethod.Molecular);
-        }
+        actualAlleleTyping.TypingMethod.Should().Be(TypingMethod.Molecular);
+    }
 
-        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.AlleleTypingsToTest))]
-        public void AlleleTyping_WhenIsDeletedValueNotSupplied_IsDeletedSetToFalse(AlleleTestCase alleleTestCaseToTest)
-        {
-            var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
+    [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.AlleleTypingsToTest))]
+    public void AlleleTyping_WhenIsDeletedValueNotSupplied_IsDeletedSetToFalse(AlleleTestCase alleleTestCaseToTest)
+    {
+        var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
 
-            actualAlleleTyping.IsDeleted.Should().Be(false);
-        }
+        actualAlleleTyping.IsDeleted.Should().Be(false);
+    }
 
-        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.AlleleTypingsToTest))]
-        public void AlleleTyping_WhenAlleleStatusNotSupplied_AlleleStatusSetToUnknown(AlleleTestCase alleleTestCaseToTest)
-        {
-            var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
+    [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.AlleleTypingsToTest))]
+    public void AlleleTyping_WhenAlleleStatusNotSupplied_AlleleStatusSetToUnknown(AlleleTestCase alleleTestCaseToTest)
+    {
+        var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
             
-            actualAlleleTyping.Status.SequenceStatus.Should().Be(SequenceStatus.Unknown);
-            actualAlleleTyping.Status.DnaCategory.Should().Be(DnaCategory.Unknown);
-        }
+        actualAlleleTyping.Status.SequenceStatus.Should().Be(SequenceStatus.Unknown);
+        actualAlleleTyping.Status.DnaCategory.Should().Be(DnaCategory.Unknown);
+    }
 
-        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedMolecularLocus))]
-        public void AlleleTyping_WhenNew_LocusConvertedToTypingLocusName(AlleleTestCase alleleTestCaseToTest, string expectedTypingLocus)
-        {
-            var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
+    [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedMolecularLocus))]
+    public void AlleleTyping_WhenNew_LocusConvertedToTypingLocusName(AlleleTestCase alleleTestCaseToTest, string expectedTypingLocus)
+    {
+        var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
 
-            actualAlleleTyping.TypingLocus.Should().Be(expectedTypingLocus);
-        }
+        actualAlleleTyping.TypingLocus.Should().Be(expectedTypingLocus);
+    }
 
-        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedExpressionSuffixes))]
-        public void AlleleTyping_WhenNew_ExpressionSuffixSetCorrectly(AlleleTestCase alleleTestCaseToTest, string expectedExpressionSuffix)
-        {
-            var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
+    [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedExpressionSuffixes))]
+    public void AlleleTyping_WhenNew_ExpressionSuffixSetCorrectly(AlleleTestCase alleleTestCaseToTest, string expectedExpressionSuffix)
+    {
+        var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
 
-            actualAlleleTyping.ExpressionSuffix.Should().Be(expectedExpressionSuffix);
-        }
+        actualAlleleTyping.ExpressionSuffix.Should().Be(expectedExpressionSuffix);
+    }
 
-        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedIsNullExpresser))]
-        public void AlleleTyping_WhenNew_IsNullExpresserSetCorrectly(AlleleTestCase alleleTestCaseToTest, bool expectedIsNullExpresser)
-        {
-            var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
+    [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedIsNullExpresser))]
+    public void AlleleTyping_WhenNew_IsNullExpresserSetCorrectly(AlleleTestCase alleleTestCaseToTest, bool expectedIsNullExpresser)
+    {
+        var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
 
-            actualAlleleTyping.IsNullExpresser.Should().Be(expectedIsNullExpresser);
-        }
+        actualAlleleTyping.IsNullExpresser.Should().Be(expectedIsNullExpresser);
+    }
 
-        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedFields))]
-        public void AlleleTyping_WhenNew_FieldsSetCorrectly(AlleleTestCase alleleTestCaseToTest, IEnumerable<string> expectedFields)
-        {
-            var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
+    [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedFields))]
+    public void AlleleTyping_WhenNew_FieldsSetCorrectly(AlleleTestCase alleleTestCaseToTest, IEnumerable<string> expectedFields)
+    {
+        var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
 
-            actualAlleleTyping.Fields.Should().BeEquivalentTo(expectedFields);
-        }
+        actualAlleleTyping.Fields.Should().BeEquivalentTo(expectedFields);
+    }
 
-        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedTwoFieldIncludingExpressionSuffixNames))]
-        public void AlleleTyping_WhenNew_TwoFieldNameIncludingExpressionSuffixSetCorrectly(AlleleTestCase alleleTestCaseToTest, string expectedTwoFieldName)
-        {
-            var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
+    [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedTwoFieldIncludingExpressionSuffixNames))]
+    public void AlleleTyping_WhenNew_TwoFieldNameIncludingExpressionSuffixSetCorrectly(AlleleTestCase alleleTestCaseToTest, string expectedTwoFieldName)
+    {
+        var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
 
-            actualAlleleTyping.TwoFieldNameIncludingExpressionSuffix.Should().Be(expectedTwoFieldName);
-        }
+        actualAlleleTyping.TwoFieldNameIncludingExpressionSuffix.Should().Be(expectedTwoFieldName);
+    }
 
-        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedTwoFieldExcludingExpressionSuffixNames))]
-        public void AlleleTyping_WhenNew_TwoFieldNameExcludingExpressionSuffixSetCorrectly(AlleleTestCase alleleTestCaseToTest, string expectedTwoFieldName)
-        {
-            var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
+    [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedTwoFieldExcludingExpressionSuffixNames))]
+    public void AlleleTyping_WhenNew_TwoFieldNameExcludingExpressionSuffixSetCorrectly(AlleleTestCase alleleTestCaseToTest, string expectedTwoFieldName)
+    {
+        var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
 
-            actualAlleleTyping.TwoFieldNameExcludingExpressionSuffix.Should().Be(expectedTwoFieldName);
-        }
+        actualAlleleTyping.TwoFieldNameExcludingExpressionSuffix.Should().Be(expectedTwoFieldName);
+    }
 
-        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedFirstField))]
-        public void AlleleTyping_WhenNew_FirstFieldSetCorrectly(AlleleTestCase alleleTestCaseToTest, string expectedFirstField)
-        {
-            var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
+    [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedFirstField))]
+    public void AlleleTyping_WhenNew_FirstFieldSetCorrectly(AlleleTestCase alleleTestCaseToTest, string expectedFirstField)
+    {
+        var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
 
-            actualAlleleTyping.FirstField.Should().Be(expectedFirstField);
-        }
+        actualAlleleTyping.FirstField.Should().Be(expectedFirstField);
+    }
 
-        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedAlleleNameVariants))]
-        public void AlleleTyping_WhenNew_AlleleNameVariantsSetCorrectly(AlleleTestCase alleleTestCaseToTest, IEnumerable<string> expectedAlleleNameVariants)
-        {
-            var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
+    [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedAlleleNameVariants))]
+    public void AlleleTyping_WhenNew_AlleleNameVariantsSetCorrectly(AlleleTestCase alleleTestCaseToTest, IEnumerable<string> expectedAlleleNameVariants)
+    {
+        var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
 
-            actualAlleleTyping.NameVariantsTruncatedByFieldAndOrExpressionSuffix.Should().BeEquivalentTo(expectedAlleleNameVariants);
-        }
+        actualAlleleTyping.NameVariantsTruncatedByFieldAndOrExpressionSuffix.Should().BeEquivalentTo(expectedAlleleNameVariants);
     }
 }

@@ -1,12 +1,11 @@
 ﻿using System;
 
-namespace Atlas.DonorImport.Exceptions
+namespace Atlas.DonorImport.Exceptions;
+
+internal class EmptyDonorFileException : Exception
 {
-    internal class EmptyDonorFileException : Exception
+    private const string ErrorMessage = "Donor file did not have any contents";
+    public EmptyDonorFileException() : base(ErrorMessage)
     {
-        private const string ErrorMessage = "Donor file did not have any contents";
-        public EmptyDonorFileException() : base(ErrorMessage)
-        {
-        }
     }
 }

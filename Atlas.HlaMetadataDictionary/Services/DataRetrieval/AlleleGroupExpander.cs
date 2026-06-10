@@ -8,57 +8,56 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+
+internal interface IAlleleGroupExpander
 {
-    internal interface IAlleleGroupExpander
+    /// <returns>All alleles represented by the provided P- or G-group.</returns>
+    Task<IEnumerable<string>> ExpandAlleleGroup(Locus locus, string alleleGroup, string hlaNomenclatureVersion);
+}
+
+internal class AlleleGroupExpander : MetadataServiceBase<IEnumerable<string>>, IAlleleGroupExpander
+{
+    private const string CacheKey = nameof(AlleleGroupExpander);
+
+    private readonly IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository;
+    private readonly IHlaCategorisationService hlaCategorisationService;
+
+    public AlleleGroupExpander(
+        IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository,
+        IHlaCategorisationService hlaCategorisationService,
+        IPersistentCacheProvider cacheProvider)
+        : base(CacheKey, cacheProvider)
     {
-        /// <returns>All alleles represented by the provided P- or G-group.</returns>
-        Task<IEnumerable<string>> ExpandAlleleGroup(Locus locus, string alleleGroup, string hlaNomenclatureVersion);
+        this.alleleGroupsMetadataRepository = alleleGroupsMetadataRepository;
+        this.hlaCategorisationService = hlaCategorisationService;
     }
 
-    internal class AlleleGroupExpander : MetadataServiceBase<IEnumerable<string>>, IAlleleGroupExpander
+    public async Task<IEnumerable<string>> ExpandAlleleGroup(Locus locus, string alleleGroup, string hlaNomenclatureVersion)
     {
-        private const string CacheKey = nameof(AlleleGroupExpander);
+        return await GetMetadata(locus, alleleGroup, hlaNomenclatureVersion);
+    }
 
-        private readonly IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository;
-        private readonly IHlaCategorisationService hlaCategorisationService;
+    protected override bool LookupNameIsValid(string lookupName)
+    {
+        return !string.IsNullOrEmpty(lookupName) && IsAlleleGroup(lookupName);
+    }
 
-        public AlleleGroupExpander(
-            IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository,
-            IHlaCategorisationService hlaCategorisationService,
-            IPersistentCacheProvider cacheProvider)
-        : base(CacheKey, cacheProvider)
+    protected override async Task<IEnumerable<string>> PerformLookup(Locus locus, string lookupName, string hlaNomenclatureVersion)
+    {
+        var metadata = await alleleGroupsMetadataRepository.GetAlleleGroupIfExists(locus, lookupName, hlaNomenclatureVersion);
+
+        if (metadata == null)
         {
-            this.alleleGroupsMetadataRepository = alleleGroupsMetadataRepository;
-            this.hlaCategorisationService = hlaCategorisationService;
+            throw new InvalidHlaException(locus, lookupName);
         }
 
-        public async Task<IEnumerable<string>> ExpandAlleleGroup(Locus locus, string alleleGroup, string hlaNomenclatureVersion)
-        {
-            return await GetMetadata(locus, alleleGroup, hlaNomenclatureVersion);
-        }
+        return metadata.AllelesInGroup.ToList();
+    }
 
-        protected override bool LookupNameIsValid(string lookupName)
-        {
-            return !string.IsNullOrEmpty(lookupName) && IsAlleleGroup(lookupName);
-        }
-
-        protected override async Task<IEnumerable<string>> PerformLookup(Locus locus, string lookupName, string hlaNomenclatureVersion)
-        {
-            var metadata = await alleleGroupsMetadataRepository.GetAlleleGroupIfExists(locus, lookupName, hlaNomenclatureVersion);
-
-            if (metadata == null)
-            {
-                throw new InvalidHlaException(locus, lookupName);
-            }
-
-            return metadata.AllelesInGroup.ToList();
-        }
-
-        private bool IsAlleleGroup(string lookupName)
-        {
-            var category = hlaCategorisationService.GetHlaTypingCategory(lookupName);
-            return new[]{HlaTypingCategory.GGroup, HlaTypingCategory.PGroup, HlaTypingCategory.SmallGGroup}.Contains(category);
-        }
+    private bool IsAlleleGroup(string lookupName)
+    {
+        var category = hlaCategorisationService.GetHlaTypingCategory(lookupName);
+        return new[]{HlaTypingCategory.GGroup, HlaTypingCategory.PGroup, HlaTypingCategory.SmallGGroup}.Contains(category);
     }
 }

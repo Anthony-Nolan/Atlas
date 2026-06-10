@@ -1,7 +1,6 @@
-namespace Atlas.MatchingAlgorithm.Data.Services
+namespace Atlas.MatchingAlgorithm.Data.Services;
+
+public interface IConnectionStringProvider
 {
-    public interface IConnectionStringProvider
-    {
-        string GetConnectionString();
-    }
+    string GetConnectionString();
 }

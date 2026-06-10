@@ -3,26 +3,25 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 
-namespace Atlas.SearchTracking.Functions.Functions
+namespace Atlas.SearchTracking.Functions.Functions;
+
+public class SearchTrackingDebugFunctions
 {
-    public class SearchTrackingDebugFunctions
+    private readonly ISearchTrackingDebugService searchTrackingDebugService;
+
+    public SearchTrackingDebugFunctions(ISearchTrackingDebugService searchTrackingDebugService)
     {
-        private readonly ISearchTrackingDebugService searchTrackingDebugService;
+        this.searchTrackingDebugService = searchTrackingDebugService;
+    }
 
-        public SearchTrackingDebugFunctions(ISearchTrackingDebugService searchTrackingDebugService)
-        {
-            this.searchTrackingDebugService = searchTrackingDebugService;
-        }
+    [Function(nameof(GetSearchRequestByIdentifier))]
+    public async Task<IActionResult> GetSearchRequestByIdentifier(
+        [HttpTrigger(AuthorizationLevel.Function, "get")]
+        HttpRequest request)
+    {
+        var searchIdentifier = Guid.Parse(request.Query["searchIdentifier"]);
+        var searchRequest = await searchTrackingDebugService.GetSearchRequestByIdentifier(searchIdentifier);
 
-        [Function(nameof(GetSearchRequestByIdentifier))]
-        public async Task<IActionResult> GetSearchRequestByIdentifier(
-            [HttpTrigger(AuthorizationLevel.Function, "get")]
-            HttpRequest request)
-        {
-            var searchIdentifier = Guid.Parse(request.Query["searchIdentifier"]);
-            var searchRequest = await searchTrackingDebugService.GetSearchRequestByIdentifier(searchIdentifier);
-
-            return new JsonResult(searchRequest);
-        }
+        return new JsonResult(searchRequest);
     }
 }

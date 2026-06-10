@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Net;
 
-namespace Atlas.Common.Utils.Http
+namespace Atlas.Common.Utils.Http;
+
+public class AtlasHttpException : Exception
 {
-    public class AtlasHttpException : Exception
+    public AtlasHttpException(HttpStatusCode statusCode, string message) : base(message)
     {
-        public AtlasHttpException(HttpStatusCode statusCode, string message) : base(message)
-        {
-            StatusCode = statusCode;
-        }
-
-        public AtlasHttpException(HttpStatusCode statusCode, string message, Exception innerException) : base(message, innerException)
-        {
-            StatusCode = statusCode;
-        }
-
-        private HttpStatusCode StatusCode { get; }
+        StatusCode = statusCode;
     }
+
+    public AtlasHttpException(HttpStatusCode statusCode, string message, Exception innerException) : base(message, innerException)
+    {
+        StatusCode = statusCode;
+    }
+
+    private HttpStatusCode StatusCode { get; }
 }

@@ -7,72 +7,71 @@ using Atlas.Debug.Client.Models.ServiceBus;
 using Azure.Messaging.ServiceBus;
 using Newtonsoft.Json;
 
-namespace Atlas.Common.Debugging
+namespace Atlas.Common.Debugging;
+
+public interface IMessagesPeeker<T> : IServiceBusPeeker<T>
 {
-    public interface IMessagesPeeker<T> : IServiceBusPeeker<T>
+}
+
+public class MessagesPeeker<T> : ServiceBusPeeker<T>, IMessagesPeeker<T>
+{
+    public MessagesPeeker(IMessageReceiverFactory factory, string topicName, string subscriptionName)
+        : base(factory, topicName, subscriptionName)
     {
     }
+}
 
-    public class MessagesPeeker<T> : ServiceBusPeeker<T>, IMessagesPeeker<T>
+public interface IServiceBusPeeker<T>
+{
+    Task<PeekServiceBusMessagesResponse<T>> Peek(PeekServiceBusMessagesRequest peekRequest);
+}
+
+public abstract class ServiceBusPeeker<T> : IServiceBusPeeker<T>
+{
+    private readonly IMessageReceiver messageReceiver;
+
+    protected ServiceBusPeeker(
+        IMessageReceiverFactory factory,
+        string topicName,
+        string subscriptionName)
     {
-        public MessagesPeeker(IMessageReceiverFactory factory, string topicName, string subscriptionName)
-            : base(factory, topicName, subscriptionName)
-        {
-        }
+        messageReceiver = factory.GetMessageReceiver(topicName, subscriptionName);
     }
 
-    public interface IServiceBusPeeker<T>
+    public async Task<PeekServiceBusMessagesResponse<T>> Peek(PeekServiceBusMessagesRequest peekRequest)
     {
-        Task<PeekServiceBusMessagesResponse<T>> Peek(PeekServiceBusMessagesRequest peekRequest);
-    }
+        var messages = new List<T>();
+        long? lastSequenceNumber = null;
+        var fromSequenceNumber = peekRequest.FromSequenceNumber;
 
-    public abstract class ServiceBusPeeker<T> : IServiceBusPeeker<T>
-    {
-        private readonly IMessageReceiver messageReceiver;
-
-        protected ServiceBusPeeker(
-            IMessageReceiverFactory factory,
-            string topicName,
-            string subscriptionName)
+        // The message receiver Peek method has an undocumented upper message count limit
+        // So, keep fetching until desired total message count reached or no new messages returned
+        while (messages.Count < peekRequest.MessageCount)
         {
-            messageReceiver = factory.GetMessageReceiver(topicName, subscriptionName);
-        }
+            var messageCount = peekRequest.MessageCount - messages.Count;
 
-        public async Task<PeekServiceBusMessagesResponse<T>> Peek(PeekServiceBusMessagesRequest peekRequest)
-        {
-            var messages = new List<T>();
-            long? lastSequenceNumber = null;
-            var fromSequenceNumber = peekRequest.FromSequenceNumber;
+            var batch = await messageReceiver.PeekMessagesAsync(maxMessages: messageCount, fromSequenceNumber: fromSequenceNumber);
 
-            // The message receiver Peek method has an undocumented upper message count limit
-            // So, keep fetching until desired total message count reached or no new messages returned
-            while (messages.Count < peekRequest.MessageCount)
+            if (!batch.Any())
             {
-                var messageCount = peekRequest.MessageCount - messages.Count;
-
-                var batch = await messageReceiver.PeekMessagesAsync(maxMessages: messageCount, fromSequenceNumber: fromSequenceNumber);
-
-                if (!batch.Any())
-                {
-                    break;
-                }
-
-                messages.AddRange(batch.Select(GetServiceBusMessage));
-                lastSequenceNumber = batch.Select(m => m.SequenceNumber).MaxBy(i => i);
-                fromSequenceNumber = (long)(lastSequenceNumber + 1);
+                break;
             }
 
-            return new PeekServiceBusMessagesResponse<T>
-            {
-                MessageCount = messages.Count,
-                PeekedMessages = messages,
-                LastSequenceNumber = lastSequenceNumber
-            };
+            messages.AddRange(batch.Select(GetServiceBusMessage));
+            lastSequenceNumber = batch.Select(m => m.SequenceNumber).MaxBy(i => i);
+            fromSequenceNumber = (long)(lastSequenceNumber + 1);
         }
 
-        private static T GetServiceBusMessage(ServiceBusReceivedMessage message)
+        return new PeekServiceBusMessagesResponse<T>
         {
-            return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(message.Body));
-        }
+            MessageCount = messages.Count,
+            PeekedMessages = messages,
+            LastSequenceNumber = lastSequenceNumber
+        };
+    }
+
+    private static T GetServiceBusMessage(ServiceBusReceivedMessage message)
+    {
+        return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(message.Body));
     }
 }

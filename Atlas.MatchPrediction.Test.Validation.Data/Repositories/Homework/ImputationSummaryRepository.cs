@@ -3,40 +3,40 @@ using Atlas.MatchPrediction.Test.Validation.Data.Models.Homework;
 using Dapper;
 using Microsoft.Data.SqlClient;
 
-namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
+namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
+
+public interface IImputationSummaryRepository
 {
-    public interface IImputationSummaryRepository
+    Task<int?> Get(string externalSubjectId);
+    Task<int> Add(ImputationSummary imputationSummary);
+}
+
+public class ImputationSummaryRepository : IImputationSummaryRepository
+{
+    private readonly string connectionString;
+
+    public ImputationSummaryRepository(string connectionString)
     {
-        Task<int?> Get(string externalSubjectId);
-        Task<int> Add(ImputationSummary imputationSummary);
+        this.connectionString = connectionString;
     }
 
-    public class ImputationSummaryRepository : IImputationSummaryRepository
+    /// <inheritdoc />
+    public async Task<int?> Get(string externalSubjectId)
     {
-        private readonly string connectionString;
-
-        public ImputationSummaryRepository(string connectionString)
-        {
-            this.connectionString = connectionString;
-        }
-
-        /// <inheritdoc />
-        public async Task<int?> Get(string externalSubjectId)
-        {
-            const string sql = $@"
+        const string sql = $@"
                 SELECT Id
                 FROM {nameof(MatchPredictionValidationContext.ImputationSummaries)}
                 WHERE ExternalSubjectId = @{nameof(externalSubjectId)}";
 
-            await using (var connection = new SqlConnection(connectionString))
-            {
-                return await connection.QuerySingleOrDefaultAsync<int?>(sql, new { externalSubjectId });
-            }
-        }
-
-        public async Task<int> Add(ImputationSummary imputationSummary)
+        await using (var connection = new SqlConnection(connectionString))
         {
-            const string sql = $@"
+            return await connection.QuerySingleOrDefaultAsync<int?>(sql, new { externalSubjectId });
+        }
+    }
+
+    public async Task<int> Add(ImputationSummary imputationSummary)
+    {
+        const string sql = $@"
                 INSERT INTO {nameof(MatchPredictionValidationContext.ImputationSummaries)} (
                     ExternalSubjectId,
                     HfSetPopulationId,
@@ -51,17 +51,16 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
                 @{nameof(ImputationSummary.SumOfLikelihoods)});
                 SELECT CAST(SCOPE_IDENTITY() as int);";
 
-            await using (var connection = new SqlConnection(connectionString))
+        await using (var connection = new SqlConnection(connectionString))
+        {
+            return (await connection.QueryAsync<int>(sql, new
             {
-                return (await connection.QueryAsync<int>(sql, new
-                {
-                    imputationSummary.ExternalSubjectId,
-                    imputationSummary.HfSetPopulationId,
-                    imputationSummary.WasRepresented,
-                    imputationSummary.GenotypeCount,
-                    imputationSummary.SumOfLikelihoods
-                })).Single();
-            }
+                imputationSummary.ExternalSubjectId,
+                imputationSummary.HfSetPopulationId,
+                imputationSummary.WasRepresented,
+                imputationSummary.GenotypeCount,
+                imputationSummary.SumOfLikelihoods
+            })).Single();
         }
     }
 }

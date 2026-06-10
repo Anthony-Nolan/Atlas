@@ -3,18 +3,17 @@ using Atlas.MatchPrediction.Test.Verification.Config;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using System;
 
-namespace Atlas.MatchPrediction.Test.Verification.Models
+namespace Atlas.MatchPrediction.Test.Verification.Models;
+
+internal static class DonorTypeExtensions
 {
-    internal static class DonorTypeExtensions
+    public static DonorType ToDonorType(this SimulatedHlaTypingCategory category)
     {
-        public static DonorType ToDonorType(this SimulatedHlaTypingCategory category)
+        return category switch
         {
-            return category switch
-            {
-                SimulatedHlaTypingCategory.Genotype => VerificationConstants.GenotypeSearchDonorType,
-                SimulatedHlaTypingCategory.Masked => VerificationConstants.MaskedSearchDonorType,
-                _ => throw new ArgumentOutOfRangeException(nameof(category), category, null)
-            };
-        }
+            SimulatedHlaTypingCategory.Genotype => VerificationConstants.GenotypeSearchDonorType,
+            SimulatedHlaTypingCategory.Masked => VerificationConstants.MaskedSearchDonorType,
+            _ => throw new ArgumentOutOfRangeException(nameof(category), category, null)
+        };
     }
 }

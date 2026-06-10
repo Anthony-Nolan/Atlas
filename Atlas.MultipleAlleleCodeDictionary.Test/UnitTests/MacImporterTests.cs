@@ -14,74 +14,73 @@ using System.Threading.Tasks;
 using Atlas.Common.Notifications;
 using NSubstitute.ExceptionExtensions;
 
-namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
+namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests;
+
+[TestFixture]
+internal class MacImporterTests
 {
-    [TestFixture]
-    internal class MacImporterTests
+    private IMacImporter macImporter;
+    private IMacFetcher mockFetcher;
+    private IMacRepository mockRepository;
+    private IAtlasLogger mockLogger;
+    private INotificationSender mockNotificationSender;
+
+    [SetUp]
+    public void Setup()
     {
-        private IMacImporter macImporter;
-        private IMacFetcher mockFetcher;
-        private IMacRepository mockRepository;
-        private IAtlasLogger mockLogger;
-        private INotificationSender mockNotificationSender;
-
-        [SetUp]
-        public void Setup()
+        TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
-            {
-                mockFetcher = Substitute.For<IMacFetcher>();
-                mockRepository = Substitute.For<IMacRepository>();
-                mockLogger = Substitute.For<IAtlasLogger>();
-                mockNotificationSender = Substitute.For<INotificationSender>();
-                macImporter = new MacImporter(mockRepository, mockFetcher, mockLogger, mockNotificationSender);
-            });
-        }
+            mockFetcher = Substitute.For<IMacFetcher>();
+            mockRepository = Substitute.For<IMacRepository>();
+            mockLogger = Substitute.For<IAtlasLogger>();
+            mockNotificationSender = Substitute.For<INotificationSender>();
+            macImporter = new MacImporter(mockRepository, mockFetcher, mockLogger, mockNotificationSender);
+        });
+    }
 
-        [Test]
-        public async Task ImportMacs_FetchesLatestMacs()
-        {
-            const string lastOldMac = "ZZZ";
-            mockRepository.GetLastMacEntry().Returns(lastOldMac);
+    [Test]
+    public async Task ImportMacs_FetchesLatestMacs()
+    {
+        const string lastOldMac = "ZZZ";
+        mockRepository.GetLastMacEntry().Returns(lastOldMac);
 
-            await macImporter.ImportLatestMacs();
+        await macImporter.ImportLatestMacs();
 
 #pragma warning disable 4014
-            // disabled warning as the method is async, but not awaitable
+        // disabled warning as the method is async, but not awaitable
 
-            mockFetcher.Received().FetchAndLazilyParseMacsSince(lastOldMac);
+        mockFetcher.Received().FetchAndLazilyParseMacsSince(lastOldMac);
 
 #pragma warning restore 4014
-        }
+    }
 
-        [Test]
-        public async Task ImportMacs_OnlyStoresLatestMacs()
+    [Test]
+    public async Task ImportMacs_OnlyStoresLatestMacs()
+    {
+        const string lastOldMac = "ZZZ";
+        mockRepository.GetLastMacEntry().Returns(lastOldMac);
+
+        const int numberOfNewMacs = 50;
+        var newMacs = Enumerable.Range(0, numberOfNewMacs).Select(i => MacBuilder.New.Build()).ToList();
+        mockFetcher.FetchAndLazilyParseMacsSince(default).ReturnsForAnyArgs(newMacs.ToAsyncEnumerable());
+
+        await macImporter.ImportLatestMacs();
+
+        await mockRepository.Received().InsertMacs(Arg.Is<IEnumerable<Mac>>(x => x.Count() == numberOfNewMacs));
+    }
+
+    [Test]
+    public async Task ImportMacs_OnFailure_SendsAlert()
+    {
+        mockRepository.InsertMacs(default).ThrowsForAnyArgs(new Exception());
+
+        try
         {
-            const string lastOldMac = "ZZZ";
-            mockRepository.GetLastMacEntry().Returns(lastOldMac);
-
-            const int numberOfNewMacs = 50;
-            var newMacs = Enumerable.Range(0, numberOfNewMacs).Select(i => MacBuilder.New.Build()).ToList();
-            mockFetcher.FetchAndLazilyParseMacsSince(default).ReturnsForAnyArgs(newMacs.ToAsyncEnumerable());
-
             await macImporter.ImportLatestMacs();
-
-            await mockRepository.Received().InsertMacs(Arg.Is<IEnumerable<Mac>>(x => x.Count() == numberOfNewMacs));
         }
-
-        [Test]
-        public async Task ImportMacs_OnFailure_SendsAlert()
+        catch (Exception)
         {
-            mockRepository.InsertMacs(default).ThrowsForAnyArgs(new Exception());
-
-            try
-            {
-                await macImporter.ImportLatestMacs();
-            }
-            catch (Exception)
-            {
-                await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
-            }
+            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
         }
     }
 }

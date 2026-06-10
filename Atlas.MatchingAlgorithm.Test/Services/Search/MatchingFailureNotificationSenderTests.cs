@@ -8,44 +8,43 @@ using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.Search
+namespace Atlas.MatchingAlgorithm.Test.Services.Search;
+
+[TestFixture]
+public class MatchingFailureNotificationSenderTests
 {
-    [TestFixture]
-    public class MatchingFailureNotificationSenderTests
+    private ISearchServiceBusClient searchServiceBusClient;
+
+    private IMatchingFailureNotificationSender matchingFailureNotificationSender;
+
+    [SetUp]
+    public void SetUp()
     {
-        private ISearchServiceBusClient searchServiceBusClient;
+        searchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
+        var hlaNomenclatureVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
 
-        private IMatchingFailureNotificationSender matchingFailureNotificationSender;
+        matchingFailureNotificationSender = new MatchingFailureNotificationSender(searchServiceBusClient, hlaNomenclatureVersionAccessor);
+    }
 
-        [SetUp]
-        public void SetUp()
-        {
-            searchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
-            var hlaNomenclatureVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
+    [Test]
+    public async Task SendFailureNotification_PublishesFailureNotification()
+    {
+        const string searchRequestId = "search_id";
+        const string validationError = "error message";
+        const int attemptNumber = 7;
+        const int remainingRetriesCount = 3;
 
-            matchingFailureNotificationSender = new MatchingFailureNotificationSender(searchServiceBusClient, hlaNomenclatureVersionAccessor);
-        }
+        var searchRequest = new IdentifiedSearchRequest { Id = searchRequestId, SearchRequest = new SearchRequestBuilder().Build() };
 
-        [Test]
-        public async Task SendFailureNotification_PublishesFailureNotification()
-        {
-            const string searchRequestId = "search_id";
-            const string validationError = "error message";
-            const int attemptNumber = 7;
-            const int remainingRetriesCount = 3;
+        await matchingFailureNotificationSender.SendFailureNotification(searchRequest, attemptNumber, remainingRetriesCount, validationError);
 
-            var searchRequest = new IdentifiedSearchRequest { Id = searchRequestId, SearchRequest = new SearchRequestBuilder().Build() };
-
-            await matchingFailureNotificationSender.SendFailureNotification(searchRequest, attemptNumber, remainingRetriesCount, validationError);
-
-            await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
-                !r.WasSuccessful
-                && r.SearchRequestId.Equals(searchRequestId)
-                && r.SearchRequest != null
-                && r.ValidationError.Equals(validationError)
-                && r.FailureInfo.AttemptNumber == attemptNumber
-                && r.FailureInfo.RemainingRetriesCount == remainingRetriesCount
-            ));
-        }
+        await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
+            !r.WasSuccessful
+         && r.SearchRequestId.Equals(searchRequestId)
+         && r.SearchRequest != null
+         && r.ValidationError.Equals(validationError)
+         && r.FailureInfo.AttemptNumber == attemptNumber
+         && r.FailureInfo.RemainingRetriesCount == remainingRetriesCount
+        ));
     }
 }

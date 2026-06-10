@@ -2,18 +2,17 @@
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests
+namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests;
+
+[SetUpFixture]
+public class IntegrationTestSetUp
 {
-    [SetUpFixture]
-    public class IntegrationTestSetUp
+    [OneTimeSetUp]
+    public void Setup()
     {
-        [OneTimeSetUp]
-        public void Setup()
+        TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
-            {
-                DependencyInjection.DependencyInjection.Provider = ServiceConfiguration.CreateProvider();
-            });
-        }
+            DependencyInjection.DependencyInjection.Provider = ServiceConfiguration.CreateProvider();
+        });
     }
 }

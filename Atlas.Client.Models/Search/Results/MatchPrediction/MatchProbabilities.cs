@@ -1,42 +1,41 @@
 ﻿using Atlas.Common.Public.Models.MatchPrediction;
 using Newtonsoft.Json;
 
-namespace Atlas.Client.Models.Search.Results.MatchPrediction
+namespace Atlas.Client.Models.Search.Results.MatchPrediction;
+
+public class MatchProbabilities
 {
-    public class MatchProbabilities
+    public Probability ZeroMismatchProbability { get; set; }
+    public Probability OneMismatchProbability { get; set; }
+    public Probability TwoMismatchProbability { get; set; }
+
+    [JsonIgnore]
+    public PredictiveMatchCategory? MatchCategory => ZeroMismatchProbability?.Percentage switch
     {
-        public Probability ZeroMismatchProbability { get; set; }
-        public Probability OneMismatchProbability { get; set; }
-        public Probability TwoMismatchProbability { get; set; }
+        100 => PredictiveMatchCategory.Exact,
+        0 => PredictiveMatchCategory.Mismatch,
+        null => null,
+        _ => PredictiveMatchCategory.Potential
+    };
 
-        [JsonIgnore]
-        public PredictiveMatchCategory? MatchCategory => ZeroMismatchProbability?.Percentage switch
+    public MatchProbabilities()
+    {
+    }
+
+    public MatchProbabilities(Probability sharedProbability)
+    {
+        ZeroMismatchProbability = sharedProbability;
+        OneMismatchProbability = sharedProbability;
+        TwoMismatchProbability = sharedProbability;
+    }
+
+    public MatchProbabilities Round(int decimalPlaces)
+    {
+        return new MatchProbabilities
         {
-            100 => PredictiveMatchCategory.Exact,
-            0 => PredictiveMatchCategory.Mismatch,
-            null => null,
-            _ => PredictiveMatchCategory.Potential
+            ZeroMismatchProbability = ZeroMismatchProbability?.Round(decimalPlaces),
+            OneMismatchProbability = OneMismatchProbability?.Round(decimalPlaces),
+            TwoMismatchProbability = TwoMismatchProbability?.Round(decimalPlaces)
         };
-
-        public MatchProbabilities()
-        {
-        }
-
-        public MatchProbabilities(Probability sharedProbability)
-        {
-            ZeroMismatchProbability = sharedProbability;
-            OneMismatchProbability = sharedProbability;
-            TwoMismatchProbability = sharedProbability;
-        }
-
-        public MatchProbabilities Round(int decimalPlaces)
-        {
-            return new MatchProbabilities
-            {
-                ZeroMismatchProbability = ZeroMismatchProbability?.Round(decimalPlaces),
-                OneMismatchProbability = OneMismatchProbability?.Round(decimalPlaces),
-                TwoMismatchProbability = TwoMismatchProbability?.Round(decimalPlaces)
-            };
-        }
     }
 }

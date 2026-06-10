@@ -13,57 +13,56 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace Atlas.MatchPrediction.Test.Verification.Functions
+namespace Atlas.MatchPrediction.Test.Verification.Functions;
+
+public class TestHarnessFunctions
 {
-    public class TestHarnessFunctions
+    private readonly IMacExpander macExpander;
+    private readonly ITestHarnessGenerator testHarnessGenerator;
+
+    public TestHarnessFunctions(ITestHarnessGenerator testHarnessGenerator, IMacExpander macExpander)
     {
-        private readonly IMacExpander macExpander;
-        private readonly ITestHarnessGenerator testHarnessGenerator;
+        this.testHarnessGenerator = testHarnessGenerator;
+        this.macExpander = macExpander;
+    }
 
-        public TestHarnessFunctions(ITestHarnessGenerator testHarnessGenerator, IMacExpander macExpander)
+    [Function(nameof(ExpandGenericMacs))]
+    public async Task ExpandGenericMacs([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request)
+    {
+        try
         {
-            this.testHarnessGenerator = testHarnessGenerator;
-            this.macExpander = macExpander;
+            await macExpander.ExpandAndStoreLatestGenericMacs();
+
         }
-
-        [Function(nameof(ExpandGenericMacs))]
-        public async Task ExpandGenericMacs([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request)
+        catch (Exception ex)
         {
-            try
-            {
-                await macExpander.ExpandAndStoreLatestGenericMacs();
-
-            }
-            catch (Exception ex)
-            {
-                throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failed to complete latest MAC expansion.", ex);
-            }
+            throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failed to complete latest MAC expansion.", ex);
         }
+    }
 
-        [Function(nameof(GenerateTestHarness))]
-        public async Task<IActionResult> GenerateTestHarness(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(GenerateTestHarnessRequest), nameof(GenerateTestHarnessRequest))]
-            HttpRequest request)
+    [Function(nameof(GenerateTestHarness))]
+    public async Task<IActionResult> GenerateTestHarness(
+        [HttpTrigger(AuthorizationLevel.Function, "post")]
+        [RequestBodyType(typeof(GenerateTestHarnessRequest), nameof(GenerateTestHarnessRequest))]
+        HttpRequest request)
+    {
+        try
         {
-            try
-            {
-                var harnessRequest = JsonConvert.DeserializeObject<GenerateTestHarnessRequest>(
-                    await new StreamReader(request.Body).ReadToEndAsync());
+            var harnessRequest = JsonConvert.DeserializeObject<GenerateTestHarnessRequest>(
+                await new StreamReader(request.Body).ReadToEndAsync());
 
-                new GenerateTestHarnessRequestValidator().ValidateAndThrow(harnessRequest);
-                var testHarnessId = await testHarnessGenerator.GenerateTestHarness(harnessRequest);
+            new GenerateTestHarnessRequestValidator().ValidateAndThrow(harnessRequest);
+            var testHarnessId = await testHarnessGenerator.GenerateTestHarness(harnessRequest);
 
-                return new JsonResult(testHarnessId);
-            }
-            catch (ValidationException ex)
-            {
-                throw new AtlasHttpException(HttpStatusCode.BadRequest, "Invalid test harness generation request.", ex);
-            }
-            catch (Exception ex)
-            {
-                throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failed to complete Test Harness generation.", ex);
-            }
+            return new JsonResult(testHarnessId);
+        }
+        catch (ValidationException ex)
+        {
+            throw new AtlasHttpException(HttpStatusCode.BadRequest, "Invalid test harness generation request.", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failed to complete Test Harness generation.", ex);
         }
     }
 }

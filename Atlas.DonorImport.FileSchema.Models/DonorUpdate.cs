@@ -1,26 +1,25 @@
 using Newtonsoft.Json;
 
-namespace Atlas.DonorImport.FileSchema.Models
-{
-    public class DonorUpdate
-    {
-        public string RecordId { get; set; }
-        
-        [JsonProperty(Required = Required.Always)]
-        public ImportDonorChangeType ChangeType { get; set; }
-        
-        [JsonProperty(Required = Required.Always)]
-        public ImportDonorType DonorType { get; set; }
+namespace Atlas.DonorImport.FileSchema.Models;
 
-        [JsonProperty(PropertyName = "donPool")]
-        public string RegistryCode { get; set; }
+public class DonorUpdate
+{
+    public string RecordId { get; set; }
         
-        // ReSharper disable once StringLiteralTypo
-        [JsonProperty(PropertyName = "ethn")]
-        public string Ethnicity { get; set; }
+    [JsonProperty(Required = Required.Always)]
+    public ImportDonorChangeType ChangeType { get; set; }
         
-        public ImportedHla Hla {get;set;}
+    [JsonProperty(Required = Required.Always)]
+    public ImportDonorType DonorType { get; set; }
+
+    [JsonProperty(PropertyName = "donPool")]
+    public string RegistryCode { get; set; }
         
-        public UpdateMode UpdateMode { get; set; }
-    }
+    // ReSharper disable once StringLiteralTypo
+    [JsonProperty(PropertyName = "ethn")]
+    public string Ethnicity { get; set; }
+        
+    public ImportedHla Hla {get;set;}
+        
+    public UpdateMode UpdateMode { get; set; }
 }

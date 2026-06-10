@@ -25,255 +25,254 @@ using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
 using MatchingAlgorithmFailureInfo = Atlas.SearchTracking.Common.Models.MatchingAlgorithmFailureInfo;
 
-namespace Atlas.RepeatSearch.Services.Search
+namespace Atlas.RepeatSearch.Services.Search;
+
+public interface IRepeatSearchRunner
 {
-    public interface IRepeatSearchRunner
+    Task RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber, DateTimeOffset enqueuedTimeUtc);
+}
+
+public class RepeatSearchRunner : IRepeatSearchRunner
+{
+    private readonly IRepeatSearchServiceBusClient repeatSearchServiceBusClient;
+    private readonly ISearchService searchService;
+    private readonly ISearchResultsBlobStorageClient repeatResultsBlobStorageClient;
+    private readonly IAtlasLogger repeatSearchLogger;
+    private readonly MatchingAlgorithmSearchLoggingContext repeatSearchLoggingContext;
+    private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
+    private readonly IRepeatSearchHistoryRepository repeatSearchHistoryRepository;
+    private readonly IRepeatSearchValidator repeatSearchValidator;
+    private readonly IRepeatSearchDifferentialCalculator repeatSearchDifferentialCalculator;
+    private readonly IOriginalSearchResultSetTracker originalSearchResultSetTracker;
+    private readonly AzureStorageSettings azureStorageSettings;
+    private readonly int searchRequestMaxRetryCount;
+    private readonly IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender;
+    private readonly MatchingAlgorithmSearchTrackingContext matchingAlgorithmSearchTrackingContext;
+    private readonly ISearchTrackingEventPublisher searchTrackingEventPublisher;
+
+    public RepeatSearchRunner(
+        IRepeatSearchServiceBusClient repeatSearchServiceBusClient,
+        ISearchService searchService,
+        ISearchResultsBlobStorageClient repeatResultsBlobStorageClient,
+        IMatchingAlgorithmSearchLogger repeatSearchLogger,
+        MatchingAlgorithmSearchLoggingContext repeatSearchLoggingContext,
+        IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
+        IRepeatSearchHistoryRepository repeatSearchHistoryRepository,
+        IRepeatSearchValidator repeatSearchValidator,
+        IRepeatSearchDifferentialCalculator repeatSearchDifferentialCalculator,
+        IOriginalSearchResultSetTracker originalSearchResultSetTracker,
+        AzureStorageSettings azureStorageSettings,
+        MessagingServiceBusSettings messagingServiceBusSettings,
+        IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender,
+        MatchingAlgorithmSearchTrackingContext matchingAlgorithmSearchTrackingContext,
+        ISearchTrackingEventPublisher searchTrackingEventPublisher)
     {
-        Task RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber, DateTimeOffset enqueuedTimeUtc);
+        this.repeatSearchServiceBusClient = repeatSearchServiceBusClient;
+        this.searchService = searchService;
+        this.repeatResultsBlobStorageClient = repeatResultsBlobStorageClient;
+        this.repeatSearchLogger = repeatSearchLogger;
+        this.repeatSearchLoggingContext = repeatSearchLoggingContext;
+        this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
+        this.repeatSearchHistoryRepository = repeatSearchHistoryRepository;
+        this.repeatSearchValidator = repeatSearchValidator;
+        this.repeatSearchDifferentialCalculator = repeatSearchDifferentialCalculator;
+        this.originalSearchResultSetTracker = originalSearchResultSetTracker;
+        this.azureStorageSettings = azureStorageSettings;
+        searchRequestMaxRetryCount = messagingServiceBusSettings.RepeatSearchRequestsMaxDeliveryCount;
+        this.repeatSearchMatchingFailureNotificationSender = repeatSearchMatchingFailureNotificationSender;
+        this.matchingAlgorithmSearchTrackingContext = matchingAlgorithmSearchTrackingContext;
+        this.searchTrackingEventPublisher = searchTrackingEventPublisher;
     }
 
-    public class RepeatSearchRunner : IRepeatSearchRunner
+    public async Task RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber, DateTimeOffset enqueuedTimeUtc)
     {
-        private readonly IRepeatSearchServiceBusClient repeatSearchServiceBusClient;
-        private readonly ISearchService searchService;
-        private readonly ISearchResultsBlobStorageClient repeatResultsBlobStorageClient;
-        private readonly IAtlasLogger repeatSearchLogger;
-        private readonly MatchingAlgorithmSearchLoggingContext repeatSearchLoggingContext;
-        private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
-        private readonly IRepeatSearchHistoryRepository repeatSearchHistoryRepository;
-        private readonly IRepeatSearchValidator repeatSearchValidator;
-        private readonly IRepeatSearchDifferentialCalculator repeatSearchDifferentialCalculator;
-        private readonly IOriginalSearchResultSetTracker originalSearchResultSetTracker;
-        private readonly AzureStorageSettings azureStorageSettings;
-        private readonly int searchRequestMaxRetryCount;
-        private readonly IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender;
-        private readonly MatchingAlgorithmSearchTrackingContext matchingAlgorithmSearchTrackingContext;
-        private readonly ISearchTrackingEventPublisher searchTrackingEventPublisher;
+        var searchStartTime = DateTimeOffset.UtcNow;
+        var originalSearchRequestId = identifiedRepeatSearchRequest.OriginalSearchId;
+        var repeatSearchId = identifiedRepeatSearchRequest.RepeatSearchId;
+        var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+        var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
+        SearchResultDifferential diff = null;
+        var resultsSentTime = new DateTime();
+        int? numberOfResults = null;
+        MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = null;
 
-        public RepeatSearchRunner(
-            IRepeatSearchServiceBusClient repeatSearchServiceBusClient,
-            ISearchService searchService,
-            ISearchResultsBlobStorageClient repeatResultsBlobStorageClient,
-            IMatchingAlgorithmSearchLogger repeatSearchLogger,
-            MatchingAlgorithmSearchLoggingContext repeatSearchLoggingContext,
-            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
-            IRepeatSearchHistoryRepository repeatSearchHistoryRepository,
-            IRepeatSearchValidator repeatSearchValidator,
-            IRepeatSearchDifferentialCalculator repeatSearchDifferentialCalculator,
-            IOriginalSearchResultSetTracker originalSearchResultSetTracker,
-            AzureStorageSettings azureStorageSettings,
-            MessagingServiceBusSettings messagingServiceBusSettings,
-            IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender,
-            MatchingAlgorithmSearchTrackingContext matchingAlgorithmSearchTrackingContext,
-            ISearchTrackingEventPublisher searchTrackingEventPublisher)
+        repeatSearchLoggingContext.SearchRequestId = originalSearchRequestId;
+        repeatSearchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
+
+        matchingAlgorithmSearchTrackingContext.SearchIdentifier = new Guid(repeatSearchId);
+        matchingAlgorithmSearchTrackingContext.OriginalSearchIdentifier = new Guid(originalSearchRequestId);
+        matchingAlgorithmSearchTrackingContext.AttemptNumber = (byte)attemptNumber;
+
+        try
         {
-            this.repeatSearchServiceBusClient = repeatSearchServiceBusClient;
-            this.searchService = searchService;
-            this.repeatResultsBlobStorageClient = repeatResultsBlobStorageClient;
-            this.repeatSearchLogger = repeatSearchLogger;
-            this.repeatSearchLoggingContext = repeatSearchLoggingContext;
-            this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
-            this.repeatSearchHistoryRepository = repeatSearchHistoryRepository;
-            this.repeatSearchValidator = repeatSearchValidator;
-            this.repeatSearchDifferentialCalculator = repeatSearchDifferentialCalculator;
-            this.originalSearchResultSetTracker = originalSearchResultSetTracker;
-            this.azureStorageSettings = azureStorageSettings;
-            searchRequestMaxRetryCount = messagingServiceBusSettings.RepeatSearchRequestsMaxDeliveryCount;
-            this.repeatSearchMatchingFailureNotificationSender = repeatSearchMatchingFailureNotificationSender;
-            this.matchingAlgorithmSearchTrackingContext = matchingAlgorithmSearchTrackingContext;
-            this.searchTrackingEventPublisher = searchTrackingEventPublisher;
-        }
+            await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
 
-        public async Task RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber, DateTimeOffset enqueuedTimeUtc)
-        {
-            var searchStartTime = DateTimeOffset.UtcNow;
-            var originalSearchRequestId = identifiedRepeatSearchRequest.OriginalSearchId;
-            var repeatSearchId = identifiedRepeatSearchRequest.RepeatSearchId;
-            var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
-            var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
-            SearchResultDifferential diff = null;
-            var resultsSentTime = new DateTime();
-            int? numberOfResults = null;
-            MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = null;
+            await searchTrackingEventPublisher.ProcessInitiation(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
 
-            repeatSearchLoggingContext.SearchRequestId = originalSearchRequestId;
-            repeatSearchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
+            // ReSharper disable once PossibleInvalidOperationException - validation has ensured this is not null.
+            var searchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value;
 
-            matchingAlgorithmSearchTrackingContext.SearchIdentifier = new Guid(repeatSearchId);
-            matchingAlgorithmSearchTrackingContext.OriginalSearchIdentifier = new Guid(originalSearchRequestId);
-            matchingAlgorithmSearchTrackingContext.AttemptNumber = (byte)attemptNumber;
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            var results = (await searchService.Search(identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest, searchCutoffDate))
+                .ToList();
+            numberOfResults = results.Count;
 
-            try
+            diff = await CalculateAndStoreResultsDiff(originalSearchRequestId, results, searchCutoffDate);
+
+            await RecordRepeatSearch(identifiedRepeatSearchRequest, diff);
+
+            stopwatch.Stop();
+
+            var searchResultSet = new RepeatMatchingAlgorithmResultSet
             {
-                await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
-
-                await searchTrackingEventPublisher.ProcessInitiation(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
-
-                // ReSharper disable once PossibleInvalidOperationException - validation has ensured this is not null.
-                var searchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value;
-
-                var stopwatch = new Stopwatch();
-                stopwatch.Start();
-                var results = (await searchService.Search(identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest, searchCutoffDate))
-                    .ToList();
-                numberOfResults = results.Count;
-
-                diff = await CalculateAndStoreResultsDiff(originalSearchRequestId, results, searchCutoffDate);
-
-                await RecordRepeatSearch(identifiedRepeatSearchRequest, diff);
-
-                stopwatch.Stop();
-
-                var searchResultSet = new RepeatMatchingAlgorithmResultSet
-                {
-                    SearchRequest = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest,
-                    SearchRequestId = originalSearchRequestId,
-                    RepeatSearchId = repeatSearchId,
-                    Results = results,
-                    TotalResults = results.Count,
-                    MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
-                    BlobStorageContainerName = azureStorageSettings.MatchingResultsBlobContainer,
-                    NoLongerMatchingDonors = diff.RemovedResults.ToList(),
-                    BatchedResult = azureStorageSettings.ShouldBatchResults,
-                    MatchingStartTime = searchStartTime
-                };
-
-                await searchTrackingEventPublisher.ProcessPersistingResultsStarted();
-                await repeatResultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,
-                    $"{originalSearchRequestId}/{repeatSearchId}");
-                await searchTrackingEventPublisher.ProcessPersistingResultsEnded();
-                resultsSentTime = DateTime.UtcNow;
-
-                var notification = new MatchingResultsNotification
-                {
-                    SearchRequest = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest,
-                    RepeatSearchRequestId = identifiedRepeatSearchRequest.RepeatSearchId,
-                    SearchRequestId = originalSearchRequestId,
-                    MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
-                    MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
-                    WasSuccessful = true,
-                    NumberOfResults = results.Count,
-                    BlobStorageContainerName = azureStorageSettings.MatchingResultsBlobContainer,
-                    ResultsFileName = searchResultSet.ResultsFileName,
-                    ElapsedTime = stopwatch.Elapsed,
-                    ResultsBatched = azureStorageSettings.ShouldBatchResults,
-                    BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? $"{originalSearchRequestId}/{repeatSearchId}" : null
-                };
-                await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
-            }
-
-            #region Expected Exceptions
-
-            // Invalid requests are treated as an "Expected error" pathways.
-            // They are not be re-thrown to prevent retries.
-            // Only a single failure notification is sent out and the request message will be completed, not dead-lettered.
-
-            catch (FluentValidation.ValidationException validationException)
-            {
-                await HandleValidationExceptionWithoutRethrow(validationException);
-
-                matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
-                {
-                    Type = MatchingAlgorithmFailureType.ValidationError,
-                    Message = validationException.Message,
-                    ExceptionStacktrace = validationException.ToString()
-                };
-            }
-            catch (HlaMetadataDictionaryException hmdException)
-            {
-                await HandleValidationExceptionWithoutRethrow(hmdException);
-
-                matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
-                {
-                    Type = MatchingAlgorithmFailureType.HlaMetadataDictionaryError,
-                    Message = hmdException.Message,
-                    ExceptionStacktrace = hmdException.ToString()
-                };
-            }
-
-            #endregion
-
-            // "Unexpected" exceptions will be re-thrown to ensure that the request will be retried or dead-lettered, as appropriate.
-            catch (Exception e)
-            {
-                repeatSearchLogger.SendTrace(
-                    $"Failed to run search with repeat search id: {repeatSearchId} (search id: {originalSearchRequestId}). Exception: {e}",
-                    LogLevel.Error);
-                await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(identifiedRepeatSearchRequest, attemptNumber,
-                    searchRequestMaxRetryCount - attemptNumber);
-
-                matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
-                {
-                    Type = MatchingAlgorithmFailureType.UnexpectedError,
-                    Message = e.Message,
-                    ExceptionStacktrace = e.ToString()
-                };
-
-                throw;
-            }
-            finally
-            {
-                await searchTrackingEventPublisher.ProcessCompleted((
-                    HlaNomenclatureVersion: hlaNomenclatureVersion,
-                    ResultsSentTimeUtc: resultsSentTime,
-                    NumberOfResults: numberOfResults,
-                    FailureInfo: matchingAlgorithmFailureInfo,
-                    RepeatSearchResultsDetails: new MatchingAlgorithmRepeatSearchResultsDetails
-                    {
-                        AddedResultCount = diff?.NewResults.Count,
-                        RemovedResultCount = diff?.RemovedResults.Count,
-                        UpdatedResultCount = diff?.UpdatedResults.Count
-                    },
-                    NumberOfMatching: numberOfResults
-                ));
-            }
-
-            async Task HandleValidationExceptionWithoutRethrow(Exception ex)
-            {
-                repeatSearchLogger.SendTrace(
-                    $"Validation failed for repeat search id: {repeatSearchId} (search id: {originalSearchRequestId}). Exception: {ex}",
-                    LogLevel.Error);
-
-                await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(
-                    identifiedRepeatSearchRequest, attemptNumber, 0, ex.Message);
-            }
-        }
-
-        private async Task<SearchResultDifferential> CalculateAndStoreResultsDiff(
-            string searchRequestId,
-            List<MatchingAlgorithmResult> results,
-            DateTimeOffset searchCutoffDate)
-        {
-            using (repeatSearchLogger.RunTimed("Calculate and apply result diff to canonical result set"))
-            {
-                var diff = await repeatSearchDifferentialCalculator.CalculateDifferential(searchRequestId, results, searchCutoffDate);
-                await originalSearchResultSetTracker.ApplySearchResultDiff(searchRequestId, diff);
-
-                repeatSearchLogger.SendTrace(
-                    $"Donor Result Diff Calculated. {diff.NewResults.Count} new results. {diff.UpdatedResults.Count} updated results. {diff.RemovedResults.Count} removed results."
-                );
-
-                return diff;
-            }
-        }
-
-        private async Task RecordRepeatSearch(
-            IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest,
-            SearchResultDifferential searchResultDifferential)
-        {
-            var historyRecord = new RepeatSearchHistoryRecord
-            {
-                DateCreated = DateTimeOffset.UtcNow,
-                // ReSharper disable once PossibleInvalidOperationException - validation should have caught nulls by now
-                SearchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value,
-                OriginalSearchRequestId = identifiedRepeatSearchRequest.OriginalSearchId,
-                RepeatSearchRequestId = identifiedRepeatSearchRequest.RepeatSearchId,
-                AddedResultCount = searchResultDifferential.NewResults.Count,
-                UpdatedResultCount = searchResultDifferential.UpdatedResults.Count,
-                RemovedResultCount = searchResultDifferential.RemovedResults.Count,
+                SearchRequest = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest,
+                SearchRequestId = originalSearchRequestId,
+                RepeatSearchId = repeatSearchId,
+                Results = results,
+                TotalResults = results.Count,
+                MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
+                BlobStorageContainerName = azureStorageSettings.MatchingResultsBlobContainer,
+                NoLongerMatchingDonors = diff.RemovedResults.ToList(),
+                BatchedResult = azureStorageSettings.ShouldBatchResults,
+                MatchingStartTime = searchStartTime
             };
 
-            await repeatSearchHistoryRepository.RecordRepeatSearchRequest(historyRecord);
+            await searchTrackingEventPublisher.ProcessPersistingResultsStarted();
+            await repeatResultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,
+                $"{originalSearchRequestId}/{repeatSearchId}");
+            await searchTrackingEventPublisher.ProcessPersistingResultsEnded();
+            resultsSentTime = DateTime.UtcNow;
+
+            var notification = new MatchingResultsNotification
+            {
+                SearchRequest = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest,
+                RepeatSearchRequestId = identifiedRepeatSearchRequest.RepeatSearchId,
+                SearchRequestId = originalSearchRequestId,
+                MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
+                MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
+                WasSuccessful = true,
+                NumberOfResults = results.Count,
+                BlobStorageContainerName = azureStorageSettings.MatchingResultsBlobContainer,
+                ResultsFileName = searchResultSet.ResultsFileName,
+                ElapsedTime = stopwatch.Elapsed,
+                ResultsBatched = azureStorageSettings.ShouldBatchResults,
+                BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? $"{originalSearchRequestId}/{repeatSearchId}" : null
+            };
+            await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
         }
+
+        #region Expected Exceptions
+
+        // Invalid requests are treated as an "Expected error" pathways.
+        // They are not be re-thrown to prevent retries.
+        // Only a single failure notification is sent out and the request message will be completed, not dead-lettered.
+
+        catch (FluentValidation.ValidationException validationException)
+        {
+            await HandleValidationExceptionWithoutRethrow(validationException);
+
+            matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
+            {
+                Type = MatchingAlgorithmFailureType.ValidationError,
+                Message = validationException.Message,
+                ExceptionStacktrace = validationException.ToString()
+            };
+        }
+        catch (HlaMetadataDictionaryException hmdException)
+        {
+            await HandleValidationExceptionWithoutRethrow(hmdException);
+
+            matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
+            {
+                Type = MatchingAlgorithmFailureType.HlaMetadataDictionaryError,
+                Message = hmdException.Message,
+                ExceptionStacktrace = hmdException.ToString()
+            };
+        }
+
+        #endregion
+
+        // "Unexpected" exceptions will be re-thrown to ensure that the request will be retried or dead-lettered, as appropriate.
+        catch (Exception e)
+        {
+            repeatSearchLogger.SendTrace(
+                $"Failed to run search with repeat search id: {repeatSearchId} (search id: {originalSearchRequestId}). Exception: {e}",
+                LogLevel.Error);
+            await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(identifiedRepeatSearchRequest, attemptNumber,
+                searchRequestMaxRetryCount - attemptNumber);
+
+            matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
+            {
+                Type = MatchingAlgorithmFailureType.UnexpectedError,
+                Message = e.Message,
+                ExceptionStacktrace = e.ToString()
+            };
+
+            throw;
+        }
+        finally
+        {
+            await searchTrackingEventPublisher.ProcessCompleted((
+                HlaNomenclatureVersion: hlaNomenclatureVersion,
+                ResultsSentTimeUtc: resultsSentTime,
+                NumberOfResults: numberOfResults,
+                FailureInfo: matchingAlgorithmFailureInfo,
+                RepeatSearchResultsDetails: new MatchingAlgorithmRepeatSearchResultsDetails
+                {
+                    AddedResultCount = diff?.NewResults.Count,
+                    RemovedResultCount = diff?.RemovedResults.Count,
+                    UpdatedResultCount = diff?.UpdatedResults.Count
+                },
+                NumberOfMatching: numberOfResults
+            ));
+        }
+
+        async Task HandleValidationExceptionWithoutRethrow(Exception ex)
+        {
+            repeatSearchLogger.SendTrace(
+                $"Validation failed for repeat search id: {repeatSearchId} (search id: {originalSearchRequestId}). Exception: {ex}",
+                LogLevel.Error);
+
+            await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(
+                identifiedRepeatSearchRequest, attemptNumber, 0, ex.Message);
+        }
+    }
+
+    private async Task<SearchResultDifferential> CalculateAndStoreResultsDiff(
+        string searchRequestId,
+        List<MatchingAlgorithmResult> results,
+        DateTimeOffset searchCutoffDate)
+    {
+        using (repeatSearchLogger.RunTimed("Calculate and apply result diff to canonical result set"))
+        {
+            var diff = await repeatSearchDifferentialCalculator.CalculateDifferential(searchRequestId, results, searchCutoffDate);
+            await originalSearchResultSetTracker.ApplySearchResultDiff(searchRequestId, diff);
+
+            repeatSearchLogger.SendTrace(
+                $"Donor Result Diff Calculated. {diff.NewResults.Count} new results. {diff.UpdatedResults.Count} updated results. {diff.RemovedResults.Count} removed results."
+            );
+
+            return diff;
+        }
+    }
+
+    private async Task RecordRepeatSearch(
+        IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest,
+        SearchResultDifferential searchResultDifferential)
+    {
+        var historyRecord = new RepeatSearchHistoryRecord
+        {
+            DateCreated = DateTimeOffset.UtcNow,
+            // ReSharper disable once PossibleInvalidOperationException - validation should have caught nulls by now
+            SearchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value,
+            OriginalSearchRequestId = identifiedRepeatSearchRequest.OriginalSearchId,
+            RepeatSearchRequestId = identifiedRepeatSearchRequest.RepeatSearchId,
+            AddedResultCount = searchResultDifferential.NewResults.Count,
+            UpdatedResultCount = searchResultDifferential.UpdatedResults.Count,
+            RemovedResultCount = searchResultDifferential.RemovedResults.Count,
+        };
+
+        await repeatSearchHistoryRepository.RecordRepeatSearchRequest(historyRecord);
     }
 }

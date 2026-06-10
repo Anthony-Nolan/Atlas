@@ -4,34 +4,33 @@ using LazyCache;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
+namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers;
+
+internal interface IExpandedMacCache
 {
-    internal interface IExpandedMacCache
+    Task<IEnumerable<string>> GetSecondFieldsByCode(string mac);
+    Task<IEnumerable<string>> GetCodesBySecondField(string secondField);
+}
+
+internal class ExpandedMacCache : IExpandedMacCache
+{
+    private readonly IAppCache cache;
+    private readonly IExpandedMacsRepository macsRepository;
+
+    // ReSharper disable once SuggestBaseTypeForParameter
+    public ExpandedMacCache(ITransientCacheProvider cacheProvider, IExpandedMacsRepository macsRepository)
     {
-        Task<IEnumerable<string>> GetSecondFieldsByCode(string mac);
-        Task<IEnumerable<string>> GetCodesBySecondField(string secondField);
+        cache = cacheProvider.Cache;
+        this.macsRepository = macsRepository;
     }
 
-    internal class ExpandedMacCache : IExpandedMacCache
+    public async Task<IEnumerable<string>> GetSecondFieldsByCode(string mac)
     {
-        private readonly IAppCache cache;
-        private readonly IExpandedMacsRepository macsRepository;
+        return await cache.GetOrAddAsync(mac, () => macsRepository.SelectSecondFieldsByCode(mac));
+    }
 
-        // ReSharper disable once SuggestBaseTypeForParameter
-        public ExpandedMacCache(ITransientCacheProvider cacheProvider, IExpandedMacsRepository macsRepository)
-        {
-            cache = cacheProvider.Cache;
-            this.macsRepository = macsRepository;
-        }
-
-        public async Task<IEnumerable<string>> GetSecondFieldsByCode(string mac)
-        {
-            return await cache.GetOrAddAsync(mac, () => macsRepository.SelectSecondFieldsByCode(mac));
-        }
-
-        public async Task<IEnumerable<string>> GetCodesBySecondField(string secondField)
-        {
-            return await cache.GetOrAddAsync(secondField, () => macsRepository.SelectCodesBySecondField(secondField));
-        }
+    public async Task<IEnumerable<string>> GetCodesBySecondField(string secondField)
+    {
+        return await cache.GetOrAddAsync(secondField, () => macsRepository.SelectCodesBySecondField(secondField));
     }
 }

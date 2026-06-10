@@ -13,167 +13,166 @@ using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Logger;
 using MoreLinq;
 
-namespace Atlas.DonorImport.Services
+namespace Atlas.DonorImport.Services;
+
+public interface IDonorFileImporter
 {
-    public interface IDonorFileImporter
+    Task ImportDonorFile(DonorImportFile file);
+}
+
+internal class DonorFileImporter : IDonorFileImporter
+{
+    private const int BatchSize = 10000;
+    private readonly IDonorImportFileParser fileParser;
+    private readonly IDonorRecordChangeApplier donorRecordChangeApplier;
+    private readonly IDonorImportFileHistoryService donorImportFileHistoryService;
+    private readonly INotificationSender notificationSender;
+    private readonly IDonorImportLogService donorLogService;
+    private readonly IDonorUpdateCategoriser donorUpdateCategoriser;
+    private readonly DonorImportLoggingContext loggingContext;
+    private readonly IAtlasLogger logger;
+    private readonly IDonorImportMessageSender donorImportMessageSender;
+    private readonly DonorImportSettings settings;
+
+    public DonorFileImporter(
+        IDonorImportFileParser fileParser,
+        IDonorRecordChangeApplier donorRecordChangeApplier,
+        IDonorImportFileHistoryService donorImportFileHistoryService,
+        INotificationSender notificationSender,
+        IDonorImportLogService donorLogService,
+        IDonorUpdateCategoriser donorUpdateCategoriser,
+        DonorImportLoggingContext loggingContext,
+        IDonorImportLogger<DonorImportLoggingContext> logger,
+        IDonorImportMessageSender donorImportMessageSender,
+        DonorImportSettings settings)
     {
-        Task ImportDonorFile(DonorImportFile file);
+        this.fileParser = fileParser;
+        this.donorRecordChangeApplier = donorRecordChangeApplier;
+        this.donorImportFileHistoryService = donorImportFileHistoryService;
+        this.notificationSender = notificationSender;
+        this.donorLogService = donorLogService;
+        this.donorUpdateCategoriser = donorUpdateCategoriser;
+        this.loggingContext = loggingContext;
+        this.logger = logger;
+        this.donorImportMessageSender = donorImportMessageSender;
+        this.settings = settings;
     }
 
-    internal class DonorFileImporter : IDonorFileImporter
+    public async Task ImportDonorFile(DonorImportFile file)
     {
-        private const int BatchSize = 10000;
-        private readonly IDonorImportFileParser fileParser;
-        private readonly IDonorRecordChangeApplier donorRecordChangeApplier;
-        private readonly IDonorImportFileHistoryService donorImportFileHistoryService;
-        private readonly INotificationSender notificationSender;
-        private readonly IDonorImportLogService donorLogService;
-        private readonly IDonorUpdateCategoriser donorUpdateCategoriser;
-        private readonly DonorImportLoggingContext loggingContext;
-        private readonly IAtlasLogger logger;
-        private readonly IDonorImportMessageSender donorImportMessageSender;
-        private readonly DonorImportSettings settings;
+        loggingContext.Filename = file.FileLocation;
+        logger.SendTrace($"Beginning Donor Import for file '{file.FileLocation}'.");
 
-        public DonorFileImporter(
-            IDonorImportFileParser fileParser,
-            IDonorRecordChangeApplier donorRecordChangeApplier,
-            IDonorImportFileHistoryService donorImportFileHistoryService,
-            INotificationSender notificationSender,
-            IDonorImportLogService donorLogService,
-            IDonorUpdateCategoriser donorUpdateCategoriser,
-            DonorImportLoggingContext loggingContext,
-            IDonorImportLogger<DonorImportLoggingContext> logger,
-            IDonorImportMessageSender donorImportMessageSender,
-            DonorImportSettings settings)
+        var importedDonorCount = 0;
+        var invalidDonors = new List<SearchableDonorValidationResult>();
+        int donorUpdatesToSkip = 0;
+        using var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents);
+
+        try
         {
-            this.fileParser = fileParser;
-            this.donorRecordChangeApplier = donorRecordChangeApplier;
-            this.donorImportFileHistoryService = donorImportFileHistoryService;
-            this.notificationSender = notificationSender;
-            this.donorLogService = donorLogService;
-            this.donorUpdateCategoriser = donorUpdateCategoriser;
-            this.loggingContext = loggingContext;
-            this.logger = logger;
-            this.donorImportMessageSender = donorImportMessageSender;
-            this.settings = settings;
-        }
+            var importRecord = await donorImportFileHistoryService.RegisterStartOfDonorImport(file);
+            donorUpdatesToSkip = importRecord?.ImportedDonorsCount ?? 0;
 
-        public async Task ImportDonorFile(DonorImportFile file)
-        {
-            loggingContext.Filename = file.FileLocation;
-            logger.SendTrace($"Beginning Donor Import for file '{file.FileLocation}'.");
-
-            var importedDonorCount = 0;
-            var invalidDonors = new List<SearchableDonorValidationResult>();
-            int donorUpdatesToSkip = 0;
-            using var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents);
-
-            try
+            if (donorUpdatesToSkip > 0)
             {
-                var importRecord = await donorImportFileHistoryService.RegisterStartOfDonorImport(file);
-                donorUpdatesToSkip = importRecord?.ImportedDonorsCount ?? 0;
+                logger.SendTrace($"Donor Import: {donorUpdatesToSkip} donors have already been imported from this file and will be skipped.",
+                    props: new Dictionary<string, string>
+                    {
+                        { "FileLocation", file.FileLocation }
+                    });
+            }
 
-                if (donorUpdatesToSkip > 0)
-                {
-                    logger.SendTrace($"Donor Import: {donorUpdatesToSkip} donors have already been imported from this file and will be skipped.",
-                        props: new Dictionary<string, string>
-                        {
-                            { "FileLocation", file.FileLocation }
-                        });
-                }
+            var updateMode = lazyFile.ReadUpdateMode();
+            if (updateMode == UpdateMode.Full && !settings.AllowFullModeImport)
+            {
+                const string message = "Importing donors with Full mode is not allowed when allowFullModeImport is false.";
+                await FailImportAndNotify(file, message, $"Donor file: {file.FileLocation}");
+                return;
+            }
 
-                var updateMode = lazyFile.ReadUpdateMode();
-                if (updateMode == UpdateMode.Full && !settings.AllowFullModeImport)
-                {
-                    const string message = "Importing donors with Full mode is not allowed when allowFullModeImport is false.";
-                    await FailImportAndNotify(file, message, $"Donor file: {file.FileLocation}");
-                    return;
-                }
+            var donorUpdates = lazyFile.ReadLazyDonorUpdates();
 
-                var donorUpdates = lazyFile.ReadLazyDonorUpdates();
+            foreach (var donorUpdateBatch in donorUpdates.Skip(donorUpdatesToSkip).Batch(BatchSize))
+            {
+                var categoriserResults = await donorUpdateCategoriser.Categorise(donorUpdateBatch, file.FileLocation);
+                var donorUpdatesToApply = donorLogService.FilterDonorUpdatesBasedOnUpdateTime(categoriserResults.ValidDonors, file.UploadTime);
 
-                foreach (var donorUpdateBatch in donorUpdates.Skip(donorUpdatesToSkip).Batch(BatchSize))
-                {
-                    var categoriserResults = await donorUpdateCategoriser.Categorise(donorUpdateBatch, file.FileLocation);
-                    var donorUpdatesToApply = donorLogService.FilterDonorUpdatesBasedOnUpdateTime(categoriserResults.ValidDonors, file.UploadTime);
+                var reifiedDonorBatch = await donorUpdatesToApply.ToListAsync();
+                await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file, categoriserResults.InvalidDonors.Count);
 
-                    var reifiedDonorBatch = await donorUpdatesToApply.ToListAsync();
-                    await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file, categoriserResults.InvalidDonors.Count);
+                invalidDonors.AddRange(categoriserResults.InvalidDonors);
+                importedDonorCount += reifiedDonorBatch.Count;
+                logger.SendTrace($"Batch complete - imported {reifiedDonorBatch.Count} donors this batch. Cumulatively {importedDonorCount} donors. ");
+            }
 
-                    invalidDonors.AddRange(categoriserResults.InvalidDonors);
-                    importedDonorCount += reifiedDonorBatch.Count;
-                    logger.SendTrace($"Batch complete - imported {reifiedDonorBatch.Count} donors this batch. Cumulatively {importedDonorCount} donors. ");
-                }
+            await donorImportFileHistoryService.RegisterSuccessfulDonorImport(file);
 
-                await donorImportFileHistoryService.RegisterSuccessfulDonorImport(file);
-
-                logger.SendTrace(
-                    $"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s). Failed to import {invalidDonors.Count} donor(s).",
-                    LogLevel.Info,
-                    invalidDonors.Count == 0
-                        ? null
-                        : new Dictionary<string, string> { { "FailedDonorIds", $"[{invalidDonors.Select(d => d.DonorUpdate.RecordId).StringJoin(", ")}]" } });
+            logger.SendTrace(
+                $"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s). Failed to import {invalidDonors.Count} donor(s).",
+                LogLevel.Info,
+                invalidDonors.Count == 0
+                    ? null
+                    : new Dictionary<string, string> { { "FailedDonorIds", $"[{invalidDonors.Select(d => d.DonorUpdate.RecordId).StringJoin(", ")}]" } });
                 
-                await donorImportMessageSender.SendSuccessMessage(file.FileLocation, importedDonorCount, invalidDonors);
-            }
-            catch (EmptyDonorFileException e)
-            {
-                const string summary = "Donor file was present but it was empty.";
-                await FailImportAndNotify(file, summary, $"Donor file: {file.FileLocation}");
-            }
-            catch (MalformedDonorFileException e)
-            {
-                await FailImportAndNotify(file, e.Message, e.StackTrace);
-            }
-            catch (DonorFormatException e)
-            {
-                await FailImportAndNotify(file, e.Message, e.InnerException?.Message);
-            }
-            catch (DuplicateDonorFileImportException e)
-            {
-                // Not failing the import, as it is already performed and there's already
-                // a record for this file
-                await SendFailedImportMessage(file.FileLocation, e.Message);
-            }
-            catch (DuplicateDonorException e)
-            {
-                await FailImportAndNotify(file, e.Message, e.InnerException?.Message);
-            }
-            catch (DonorNotFoundException e)
-            {
-                await FailImportAndNotify(file, e.Message, e.InnerException?.Message); 
-            }
-            catch (Exception e)
-            {
-                await donorImportFileHistoryService.RegisterUnexpectedDonorImportError(file);
-                await SendFailedImportMessage(file.FileLocation, e.Message);
-
-                logger.SendException(e, LogLevel.Warn, new Dictionary<string, string>
-                {
-                    { nameof(file.FileLocation), file.FileLocation },
-                    { "ImportedDonorCount", importedDonorCount.ToString() },
-                    { "ParsedDonorCount", lazyFile?.ParsedDonorCount.ToString() },
-                    { "LastDonorCodeParsed", lazyFile?.LastSuccessfullyParsedDonorCode }
-                });
-
-                throw;
-            }
+            await donorImportMessageSender.SendSuccessMessage(file.FileLocation, importedDonorCount, invalidDonors);
         }
-
-        private async Task FailImportAndNotify(DonorImportFile file, string message, string description)
+        catch (EmptyDonorFileException e)
         {
-            await SendFailedImportMessage(file.FileLocation, message);
-            await RegisterImportAsPermenantlyFailed(file, message, description);
+            const string summary = "Donor file was present but it was empty.";
+            await FailImportAndNotify(file, summary, $"Donor file: {file.FileLocation}");
         }
-
-        private async Task RegisterImportAsPermenantlyFailed(DonorImportFile file, string message, string description)
+        catch (MalformedDonorFileException e)
         {
-            await donorImportFileHistoryService.RegisterFailedDonorImportWithPermanentError(file);
-            logger.SendTrace(message, LogLevel.Warn);
-            await notificationSender.SendAlert(message, description, Priority.Medium, nameof(ImportDonorFile));
+            await FailImportAndNotify(file, e.Message, e.StackTrace);
         }
+        catch (DonorFormatException e)
+        {
+            await FailImportAndNotify(file, e.Message, e.InnerException?.Message);
+        }
+        catch (DuplicateDonorFileImportException e)
+        {
+            // Not failing the import, as it is already performed and there's already
+            // a record for this file
+            await SendFailedImportMessage(file.FileLocation, e.Message);
+        }
+        catch (DuplicateDonorException e)
+        {
+            await FailImportAndNotify(file, e.Message, e.InnerException?.Message);
+        }
+        catch (DonorNotFoundException e)
+        {
+            await FailImportAndNotify(file, e.Message, e.InnerException?.Message); 
+        }
+        catch (Exception e)
+        {
+            await donorImportFileHistoryService.RegisterUnexpectedDonorImportError(file);
+            await SendFailedImportMessage(file.FileLocation, e.Message);
 
-        private async Task SendFailedImportMessage(string fileName, string failureReasonDescription) =>
-            await donorImportMessageSender.SendFailureMessage(fileName, ImportFailureReason.ErrorDuringImport, failureReasonDescription);
+            logger.SendException(e, LogLevel.Warn, new Dictionary<string, string>
+            {
+                { nameof(file.FileLocation), file.FileLocation },
+                { "ImportedDonorCount", importedDonorCount.ToString() },
+                { "ParsedDonorCount", lazyFile?.ParsedDonorCount.ToString() },
+                { "LastDonorCodeParsed", lazyFile?.LastSuccessfullyParsedDonorCode }
+            });
+
+            throw;
+        }
     }
+
+    private async Task FailImportAndNotify(DonorImportFile file, string message, string description)
+    {
+        await SendFailedImportMessage(file.FileLocation, message);
+        await RegisterImportAsPermenantlyFailed(file, message, description);
+    }
+
+    private async Task RegisterImportAsPermenantlyFailed(DonorImportFile file, string message, string description)
+    {
+        await donorImportFileHistoryService.RegisterFailedDonorImportWithPermanentError(file);
+        logger.SendTrace(message, LogLevel.Warn);
+        await notificationSender.SendAlert(message, description, Priority.Medium, nameof(ImportDonorFile));
+    }
+
+    private async Task SendFailedImportMessage(string fileName, string failureReasonDescription) =>
+        await donorImportMessageSender.SendFailureMessage(fileName, ImportFailureReason.ErrorDuringImport, failureReasonDescription);
 }

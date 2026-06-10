@@ -7,36 +7,35 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
+namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
+
+internal interface IAlleleNamesMetadataRepository : IHlaMetadataRepository
 {
-    internal interface IAlleleNamesMetadataRepository : IHlaMetadataRepository
+    Task<IAlleleNameMetadata> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion);
+}
+
+internal class AlleleNamesMetadataRepository :
+    HlaMetadataRepositoryBase,
+    IAlleleNamesMetadataRepository
+{
+    private const string DataTableReferencePrefix = "AlleleNamesData";
+    private const string CacheKeyAlleleNames = "AlleleNames";
+
+    public AlleleNamesMetadataRepository(
+        ITableClientFactory factory,
+        ITableReferenceRepository tableReferenceRepository,
+        IPersistentCacheProvider cacheProvider,
+        IAtlasLogger logger)
+        : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKeyAlleleNames, logger)
     {
-        Task<IAlleleNameMetadata> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion);
     }
 
-    internal class AlleleNamesMetadataRepository :
-        HlaMetadataRepositoryBase,
-        IAlleleNamesMetadataRepository
+    public async Task<IAlleleNameMetadata> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
     {
-        private const string DataTableReferencePrefix = "AlleleNamesData";
-        private const string CacheKeyAlleleNames = "AlleleNames";
+        var row = await GetHlaMetadataRowIfExists(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
 
-        public AlleleNamesMetadataRepository(
-            ITableClientFactory factory,
-            ITableReferenceRepository tableReferenceRepository,
-            IPersistentCacheProvider cacheProvider,
-            IAtlasLogger logger)
-            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKeyAlleleNames, logger)
-        {
-        }
-
-        public async Task<IAlleleNameMetadata> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
-        {
-            var row = await GetHlaMetadataRowIfExists(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
-
-            return row == null
-                ? null
-                : new AlleleNameMetadata(row.Locus, row.LookupName, row.GetHlaInfo<List<string>>());
-        }
+        return row == null
+            ? null
+            : new AlleleNameMetadata(row.Locus, row.LookupName, row.GetHlaInfo<List<string>>());
     }
 }

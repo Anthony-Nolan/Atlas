@@ -9,70 +9,69 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval;
+
+[TestFixture]
+public class MultipleAlleleNullFilterTests
 {
-    [TestFixture]
-    public class MultipleAlleleNullFilterTests
+    private const string ExpressingAlleleName = "01:01";
+    private const string NullAlleleName = "01:01N";
+
+    private IHlaMetadataSource<AlleleTyping> nullSource;
+    private IHlaMetadataSource<AlleleTyping> expressingSource;
+    private SingleAlleleScoringInfo nullScoringInfo;
+    private SingleAlleleScoringInfo expressingScoringInfo;
+
+    [SetUp]
+    public void SetUp()
     {
-        private const string ExpressingAlleleName = "01:01";
-        private const string NullAlleleName = "01:01N";
+        nullSource = Substitute.For<IHlaMetadataSource<AlleleTyping>>();
+        expressingSource = Substitute.For<IHlaMetadataSource<AlleleTyping>>();
 
-        private IHlaMetadataSource<AlleleTyping> nullSource;
-        private IHlaMetadataSource<AlleleTyping> expressingSource;
-        private SingleAlleleScoringInfo nullScoringInfo;
-        private SingleAlleleScoringInfo expressingScoringInfo;
+        nullScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(NullAlleleName).Build();
+        expressingScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(ExpressingAlleleName).Build();
 
-        [SetUp]
-        public void SetUp()
-        {
-            nullSource = Substitute.For<IHlaMetadataSource<AlleleTyping>>();
-            expressingSource = Substitute.For<IHlaMetadataSource<AlleleTyping>>();
+        nullSource.TypingForHlaMetadata.Returns(new AlleleTyping(Locus.A, NullAlleleName));
+        expressingSource.TypingForHlaMetadata.Returns(new AlleleTyping(Locus.A, ExpressingAlleleName));
+    }
 
-            nullScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(NullAlleleName).Build();
-            expressingScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(ExpressingAlleleName).Build();
+    [Test]
+    public void Filter_RemovesNullAllelesFromAlleleSource()
+    {
+        var sources = new[] {nullSource, expressingSource};
 
-            nullSource.TypingForHlaMetadata.Returns(new AlleleTyping(Locus.A, NullAlleleName));
-            expressingSource.TypingForHlaMetadata.Returns(new AlleleTyping(Locus.A, ExpressingAlleleName));
-        }
+        var filteredSources = MultipleAlleleNullFilter.Filter(sources).ToList();
 
-        [Test]
-        public void Filter_RemovesNullAllelesFromAlleleSource()
-        {
-            var sources = new[] {nullSource, expressingSource};
+        filteredSources.Should().BeEquivalentTo(new[] {expressingSource});
+    }
 
-            var filteredSources = MultipleAlleleNullFilter.Filter(sources).ToList();
+    [Test]
+    public void Filter_DoesNotRemoveExpressingAllelesFromAlleleSource()
+    {
+        var sources = new[] {expressingSource};
 
-            filteredSources.Should().BeEquivalentTo(new[] {expressingSource});
-        }
+        var filteredSources = MultipleAlleleNullFilter.Filter(sources).ToList();
 
-        [Test]
-        public void Filter_DoesNotRemoveExpressingAllelesFromAlleleSource()
-        {
-            var sources = new[] {expressingSource};
+        filteredSources.Should().BeEquivalentTo(new[] {expressingSource});
+    }
 
-            var filteredSources = MultipleAlleleNullFilter.Filter(sources).ToList();
+    [Test]
+    public void Filter_RemovesNullSingleAlleleScoringInfos()
+    {
+        var sources = new[] {nullScoringInfo, expressingScoringInfo};
 
-            filteredSources.Should().BeEquivalentTo(new[] {expressingSource});
-        }
+        var filteredSources = MultipleAlleleNullFilter.Filter(sources).ToList();
 
-        [Test]
-        public void Filter_RemovesNullSingleAlleleScoringInfos()
-        {
-            var sources = new[] {nullScoringInfo, expressingScoringInfo};
+        filteredSources.Should().BeEquivalentTo(new[] {expressingScoringInfo});
+    }
 
-            var filteredSources = MultipleAlleleNullFilter.Filter(sources).ToList();
+    [Test]
+    public void Filter_DoesNotRemoveExpressingSingleAlleleScoringInfo()
+    {
+        var sources = new[] {expressingScoringInfo};
 
-            filteredSources.Should().BeEquivalentTo(new[] {expressingScoringInfo});
-        }
+        var filteredSources = MultipleAlleleNullFilter.Filter(sources).ToList();
 
-        [Test]
-        public void Filter_DoesNotRemoveExpressingSingleAlleleScoringInfo()
-        {
-            var sources = new[] {expressingScoringInfo};
-
-            var filteredSources = MultipleAlleleNullFilter.Filter(sources).ToList();
-
-            filteredSources.Should().BeEquivalentTo(new[] {expressingScoringInfo});
-        }
+        filteredSources.Should().BeEquivalentTo(new[] {expressingScoringInfo});
     }
 }

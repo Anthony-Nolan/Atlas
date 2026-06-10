@@ -5,30 +5,29 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 
-namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs
+namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
+
+internal class FileBackedSmallGGroupToPGroupMetadataRepository :
+    FileBackedHlaMetadataRepositoryBase<IMolecularTypingToPGroupMetadata>,
+    ISmallGGroupToPGroupMetadataRepository
 {
-    internal class FileBackedSmallGGroupToPGroupMetadataRepository :
-        FileBackedHlaMetadataRepositoryBase<IMolecularTypingToPGroupMetadata>,
-        ISmallGGroupToPGroupMetadataRepository
+    protected override IEnumerable<IMolecularTypingToPGroupMetadata> GetHlaMetadata(FileBackedHlaMetadataCollection metadataCollection)
     {
-        protected override IEnumerable<IMolecularTypingToPGroupMetadata> GetHlaMetadata(FileBackedHlaMetadataCollection metadataCollection)
-        {
-            return metadataCollection.SmallGGroupToPGroupMetadata;
-        }
+        return metadataCollection.SmallGGroupToPGroupMetadata;
+    }
 
-        /// <inheritdoc />
-        public Task<IDictionary<Locus, ISet<string>>> GetAllSmallGGroups(string hlaNomenclatureVersion)
-        {
-            var groups = HlaMetadata[hlaNomenclatureVersion].Values
-                .GroupBy(x => x.Locus)
-                .ToDictionary(x => x.Key, x => x.Select(x => x.LookupName).ToHashSet() as ISet<string>);
+    /// <inheritdoc />
+    public Task<IDictionary<Locus, ISet<string>>> GetAllSmallGGroups(string hlaNomenclatureVersion)
+    {
+        var groups = HlaMetadata[hlaNomenclatureVersion].Values
+            .GroupBy(x => x.Locus)
+            .ToDictionary(x => x.Key, x => x.Select(x => x.LookupName).ToHashSet() as ISet<string>);
 
-            return Task.FromResult((IDictionary<Locus, ISet<string>>) groups);
-        }
+        return Task.FromResult((IDictionary<Locus, ISet<string>>) groups);
+    }
 
-        public Task<IMolecularTypingToPGroupMetadata> GetPGroupBySmallGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
-        {
-            return LookupMetadata(locus, lookupName, hlaNomenclatureVersion);
-        }
+    public Task<IMolecularTypingToPGroupMetadata> GetPGroupBySmallGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
+    {
+        return LookupMetadata(locus, lookupName, hlaNomenclatureVersion);
     }
 }

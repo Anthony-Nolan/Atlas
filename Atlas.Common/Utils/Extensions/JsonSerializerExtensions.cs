@@ -1,22 +1,21 @@
 ﻿using Newtonsoft.Json;
 using System.IO;
 
-namespace Atlas.Common.Utils.Extensions
+namespace Atlas.Common.Utils.Extensions;
+
+internal static class JsonSerializerExtensions
 {
-    internal static class JsonSerializerExtensions
+    public static T DeserializeFromStream<T>(this JsonSerializer serializer, Stream stream)
     {
-        public static T DeserializeFromStream<T>(this JsonSerializer serializer, Stream stream)
-        {
-            using var reader = new StreamReader(stream);
+        using var reader = new StreamReader(stream);
 
-            return (T)serializer.Deserialize(reader, typeof(T));
-        }
+        return (T)serializer.Deserialize(reader, typeof(T));
+    }
 
-        public static void SerializeToStream(this JsonSerializer serializer, object data, Stream stream)
-        {
-            using var writer = new StreamWriter(stream, leaveOpen: true);
+    public static void SerializeToStream(this JsonSerializer serializer, object data, Stream stream)
+    {
+        using var writer = new StreamWriter(stream, leaveOpen: true);
 
-            serializer.Serialize(writer, data);
-        }
+        serializer.Serialize(writer, data);
     }
 }

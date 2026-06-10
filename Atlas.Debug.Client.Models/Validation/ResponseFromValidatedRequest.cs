@@ -1,44 +1,43 @@
 ﻿using System.Collections.Generic;
 
-namespace Atlas.Debug.Client.Models.Validation
+namespace Atlas.Debug.Client.Models.Validation;
+
+/// <summary>
+/// Represents a response from a function that has undergone validation.
+/// </summary>
+public class ResponseFromValidatedRequest<TResponse>
 {
     /// <summary>
-    /// Represents a response from a function that has undergone validation.
+    /// Was the request successful.
     /// </summary>
-    public class ResponseFromValidatedRequest<TResponse>
+    public bool WasSuccess { get; set; }
+
+    /// <summary>
+    /// The response if <see cref="WasSuccess"/> is true.
+    /// </summary>
+    public TResponse ResponseOnSuccess { get; }
+
+    /// <summary>
+    /// Validation failures if <see cref="WasSuccess"/> is false due to invalid request.
+    /// </summary>
+    public IEnumerable<RequestValidationFailure> ValidationFailures { get; }
+
+    /// <summary>
+    /// Use for successful requests.
+    /// </summary>
+    public ResponseFromValidatedRequest(TResponse responseOnSuccess)
     {
-        /// <summary>
-        /// Was the request successful.
-        /// </summary>
-        public bool WasSuccess { get; set; }
+        WasSuccess = true;
+        ResponseOnSuccess = responseOnSuccess;
+    }
 
-        /// <summary>
-        /// The response if <see cref="WasSuccess"/> is true.
-        /// </summary>
-        public TResponse ResponseOnSuccess { get; }
-
-        /// <summary>
-        /// Validation failures if <see cref="WasSuccess"/> is false due to invalid request.
-        /// </summary>
-        public IEnumerable<RequestValidationFailure> ValidationFailures { get; }
-
-        /// <summary>
-        /// Use for successful requests.
-        /// </summary>
-        public ResponseFromValidatedRequest(TResponse responseOnSuccess)
-        {
-            WasSuccess = true;
-            ResponseOnSuccess = responseOnSuccess;
-        }
-
-        /// <summary>
-        /// Use for invalid requests.
-        /// </summary>
-        /// <param name="validationFailures"></param>
-        public ResponseFromValidatedRequest(IEnumerable<RequestValidationFailure> validationFailures)
-        {
-            WasSuccess = false;
-            ValidationFailures = validationFailures;
-        }
+    /// <summary>
+    /// Use for invalid requests.
+    /// </summary>
+    /// <param name="validationFailures"></param>
+    public ResponseFromValidatedRequest(IEnumerable<RequestValidationFailure> validationFailures)
+    {
+        WasSuccess = false;
+        ValidationFailures = validationFailures;
     }
 }

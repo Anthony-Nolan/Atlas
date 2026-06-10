@@ -1,18 +1,17 @@
-﻿namespace Atlas.RepeatSearch.Settings.ServiceBus
-{
-    public class MessagingServiceBusSettings
-    {
-        public string ConnectionString { get; set; }
-        public string RepeatSearchRequestsTopic { get; set; }
-        public string RepeatSearchRequestsSubscription { get; set; }
-        public string RepeatSearchMatchingResultsTopic { get; set; }
-        public int RepeatSearchRequestsMaxDeliveryCount { get; set; }
-        public int SendRetryCount { get; set; }
-        public int SendRetryCooldownSeconds { get; set; }
+﻿namespace Atlas.RepeatSearch.Settings.ServiceBus;
 
-        /// <summary>
-        /// Subscription for matching notifications used by debug endpoint.
-        /// </summary>
-        public string RepeatSearchResultsDebugSubscription { get; set; }
-    }
+public class MessagingServiceBusSettings
+{
+    public string ConnectionString { get; set; }
+    public string RepeatSearchRequestsTopic { get; set; }
+    public string RepeatSearchRequestsSubscription { get; set; }
+    public string RepeatSearchMatchingResultsTopic { get; set; }
+    public int RepeatSearchRequestsMaxDeliveryCount { get; set; }
+    public int SendRetryCount { get; set; }
+    public int SendRetryCooldownSeconds { get; set; }
+
+    /// <summary>
+    /// Subscription for matching notifications used by debug endpoint.
+    /// </summary>
+    public string RepeatSearchResultsDebugSubscription { get; set; }
 }

@@ -1,13 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Atlas.Common.Matching.Services
+namespace Atlas.Common.Matching.Services;
+
+public static class MatchingServicesRegistration
 {
-    public static class MatchingServicesRegistration
+    public static void RegisterCommonMatchingServices(this IServiceCollection services)
     {
-        public static void RegisterCommonMatchingServices(this IServiceCollection services)
-        {
-            services.AddScoped<ILocusMatchCalculator, LocusMatchCalculator>();
-            services.AddScoped<IStringBasedLocusMatchCalculator, StringBasedLocusMatchCalculator>();
-        }
+        services.AddScoped<ILocusMatchCalculator, LocusMatchCalculator>();
+        services.AddScoped<IStringBasedLocusMatchCalculator, StringBasedLocusMatchCalculator>();
     }
 }

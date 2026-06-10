@@ -8,164 +8,163 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversion;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.MatchedHlaConversion
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.MatchedHlaConversion;
+
+[TestFixture]
+internal class HlaToScoringMetaDataConverterTests :
+    MatchedHlaToMetaDataConverterTestBase<HlaToScoringMetaDataConverter>
 {
-    [TestFixture]
-    internal class HlaToScoringMetaDataConverterTests :
-        MatchedHlaToMetaDataConverterTestBase<HlaToScoringMetaDataConverter>
+    private static readonly List<SerologyEntry> SerologyEntries =
+        new List<SerologyEntry> { new SerologyEntry(SerologyName, SeroSubtype, IsDirectMapping) };
+
+    [TestCase("999:999", "999:XX")]
+    [TestCase("999:999Q", "999:XX")]
+    public override void ConvertToHlaMetadata_WhenTwoFieldExpressingAllele_GeneratesMetadata_ForOriginalNameAndXxCode(
+        string alleleName, string xxCodeLookupName)
     {
-        private static readonly List<SerologyEntry> SerologyEntries =
-            new List<SerologyEntry> { new SerologyEntry(SerologyName, SeroSubtype, IsDirectMapping) };
+        var matchedAllele = BuildMatchedAllele(alleleName);
+        var actualMetadata = MetadataConverter.ConvertToHlaMetadata(new[] { matchedAllele });
 
-        [TestCase("999:999", "999:XX")]
-        [TestCase("999:999Q", "999:XX")]
-        public override void ConvertToHlaMetadata_WhenTwoFieldExpressingAllele_GeneratesMetadata_ForOriginalNameAndXxCode(
-            string alleleName, string xxCodeLookupName)
+        var expectedMetadata = new List<IHlaMetadata>
         {
-            var matchedAllele = BuildMatchedAllele(alleleName);
-            var actualMetadata = MetadataConverter.ConvertToHlaMetadata(new[] { matchedAllele });
+            BuildSingleAlleleMetadata(alleleName),
+            BuildXxCodeMetadata(new[] {alleleName}, xxCodeLookupName)
+        };
 
-            var expectedMetadata = new List<IHlaMetadata>
-            {
-                BuildSingleAlleleMetadata(alleleName),
-                BuildXxCodeMetadata(new[] {alleleName}, xxCodeLookupName)
-            };
+        actualMetadata.Should().BeEquivalentTo(expectedMetadata);
+    }
 
-            actualMetadata.Should().BeEquivalentTo(expectedMetadata);
+    [TestCase("999:999:999", "", "999:999", "999:XX")]
+    [TestCase("999:999:999:999", "", "999:999", "999:XX")]
+    [TestCase("999:999:999L", "L", "999:999", "999:XX")]
+    public override void ConvertToHlaMetadata_WhenThreeOrFourFieldExpressingAllele_GeneratesMetadata_ForOriginalNameAndNmdpCodeAndXxCode(
+        string alleleName, string expressionSuffix, string nmdpCodeLookupName, string xxCodeLookupName)
+    {
+        var matchedAllele = BuildMatchedAllele(alleleName);
+        var actualMetadata = MetadataConverter.ConvertToHlaMetadata(new[] { matchedAllele });
+
+        var expectedMetadata = new List<IHlaMetadata>
+        {
+            BuildSingleAlleleMetadata(alleleName),
+            BuildMultipleAlleleMetadata(nmdpCodeLookupName, new []{alleleName}),
+            BuildXxCodeMetadata(new []{alleleName}, xxCodeLookupName)
+        };
+
+        if (!string.IsNullOrEmpty(expressionSuffix))
+        {
+            expectedMetadata.Add(
+                BuildMultipleAlleleMetadata(nmdpCodeLookupName + expressionSuffix, new[] { alleleName }));
         }
 
-        [TestCase("999:999:999", "", "999:999", "999:XX")]
-        [TestCase("999:999:999:999", "", "999:999", "999:XX")]
-        [TestCase("999:999:999L", "L", "999:999", "999:XX")]
-        public override void ConvertToHlaMetadata_WhenThreeOrFourFieldExpressingAllele_GeneratesMetadata_ForOriginalNameAndNmdpCodeAndXxCode(
-            string alleleName, string expressionSuffix, string nmdpCodeLookupName, string xxCodeLookupName)
+        actualMetadata.Should().BeEquivalentTo(expectedMetadata);
+    }
+
+    [TestCase("999:999N")]
+    [TestCase("999:999:999N")]
+    [TestCase("999:999:999:999N")]
+    public override void ConvertToHlaMetadata_WhenNullAllele_GeneratesMetadata_ForOriginalNameOnly(
+        string alleleName)
+    {
+        var matchedAllele = BuildMatchedAllele(alleleName);
+        var actualMetadata = MetadataConverter.ConvertToHlaMetadata(new[] { matchedAllele });
+
+        var expectedMetadata = new List<IHlaMetadata>
         {
-            var matchedAllele = BuildMatchedAllele(alleleName);
-            var actualMetadata = MetadataConverter.ConvertToHlaMetadata(new[] { matchedAllele });
+            BuildSingleAlleleMetadata(alleleName)
+        };
 
-            var expectedMetadata = new List<IHlaMetadata>
-            {
-                BuildSingleAlleleMetadata(alleleName),
-                BuildMultipleAlleleMetadata(nmdpCodeLookupName, new []{alleleName}),
-                BuildXxCodeMetadata(new []{alleleName}, xxCodeLookupName)
-            };
+        actualMetadata.Should().BeEquivalentTo(expectedMetadata);
+    }
 
-            if (!string.IsNullOrEmpty(expressionSuffix))
-            {
-                expectedMetadata.Add(
-                    BuildMultipleAlleleMetadata(nmdpCodeLookupName + expressionSuffix, new[] { alleleName }));
-            }
+    [Test]
+    public override void ConvertToHlaMetadata_WhenAllelesHaveSameTruncatedNameVariant_GeneratesMetadata_ForEachUniqueLookupName()
+    {
+        string[] alleles = { "999:999:998", "999:999:999:01", "999:999:999:02" };
+        const string nmdpCodeLookupName = "999:999";
+        const string xxCodeLookupName = "999:XX";
 
-            actualMetadata.Should().BeEquivalentTo(expectedMetadata);
-        }
+        var matchedAlleles = alleles.Select(BuildMatchedAllele).ToList();
+        var actualMetadata = MetadataConverter.ConvertToHlaMetadata(matchedAlleles);
 
-        [TestCase("999:999N")]
-        [TestCase("999:999:999N")]
-        [TestCase("999:999:999:999N")]
-        public override void ConvertToHlaMetadata_WhenNullAllele_GeneratesMetadata_ForOriginalNameOnly(
-            string alleleName)
+        var expectedMetadata = new List<IHlaMetadata>
         {
-            var matchedAllele = BuildMatchedAllele(alleleName);
-            var actualMetadata = MetadataConverter.ConvertToHlaMetadata(new[] { matchedAllele });
+            BuildSingleAlleleMetadata(alleles[0]),
+            BuildSingleAlleleMetadata(alleles[1]),
+            BuildSingleAlleleMetadata(alleles[2]),
+            BuildMultipleAlleleMetadata(nmdpCodeLookupName, new[]{ alleles[0], alleles[1], alleles[2]}),
+            BuildXxCodeMetadata(alleles, xxCodeLookupName)
+        };
 
-            var expectedMetadata = new List<IHlaMetadata>
-            {
-                BuildSingleAlleleMetadata(alleleName)
-            };
+        actualMetadata.Should().BeEquivalentTo(expectedMetadata);
+    }
 
-            actualMetadata.Should().BeEquivalentTo(expectedMetadata);
-        }
+    protected override IHlaMetadata BuildSerologyHlaMetadata()
+    {
+        var scoringInfo = new SerologyScoringInfo(
+            SerologyEntries,
+            new[] { GGroupName },
+            new[] { PGroupName });
 
-        [Test]
-        public override void ConvertToHlaMetadata_WhenAllelesHaveSameTruncatedNameVariant_GeneratesMetadata_ForEachUniqueLookupName()
-        {
-            string[] alleles = { "999:999:998", "999:999:999:01", "999:999:999:02" };
-            const string nmdpCodeLookupName = "999:999";
-            const string xxCodeLookupName = "999:XX";
+        return new HlaScoringMetadata(
+            MatchedLocus,
+            SerologyName,
+            scoringInfo,
+            TypingMethod.Serology
+        );
+    }
 
-            var matchedAlleles = alleles.Select(BuildMatchedAllele).ToList();
-            var actualMetadata = MetadataConverter.ConvertToHlaMetadata(matchedAlleles);
+    private static IHlaMetadata BuildSingleAlleleMetadata(string alleleName)
+    {
+        return new HlaScoringMetadata(
+            MatchedLocus,
+            alleleName,
+            BuildSingleAlleleScoringInfoWithMatchingSerologies(alleleName),
+            TypingMethod.Molecular
+        );
+    }
 
-            var expectedMetadata = new List<IHlaMetadata>
-            {
-                BuildSingleAlleleMetadata(alleles[0]),
-                BuildSingleAlleleMetadata(alleles[1]),
-                BuildSingleAlleleMetadata(alleles[2]),
-                BuildMultipleAlleleMetadata(nmdpCodeLookupName, new[]{ alleles[0], alleles[1], alleles[2]}),
-                BuildXxCodeMetadata(alleles, xxCodeLookupName)
-            };
+    private static IHlaMetadata BuildMultipleAlleleMetadata(string lookupName, IEnumerable<string> alleleNames)
+    {
+        return new HlaScoringMetadata(
+            MatchedLocus,
+            lookupName,
+            new MultipleAlleleScoringInfo(
+                alleleNames.Select(BuildSingleAlleleScoringInfoExcludingMatchingSerologies),
+                SerologyEntries),
+            TypingMethod.Molecular
+        );
+    }
 
-            actualMetadata.Should().BeEquivalentTo(expectedMetadata);
-        }
+    private static IHlaMetadata BuildXxCodeMetadata(IEnumerable<string> alleleNames, string xxCodeLookupName)
+    {
+        var alleleNamesCollection = alleleNames.ToList();
 
-        protected override IHlaMetadata BuildSerologyHlaMetadata()
-        {
-            var scoringInfo = new SerologyScoringInfo(
-                SerologyEntries,
-                new[] { GGroupName },
-                new[] { PGroupName });
+        return new HlaScoringMetadata(
+            MatchedLocus,
+            xxCodeLookupName,
+            new ConsolidatedMolecularScoringInfo(alleleNamesCollection, alleleNamesCollection, SerologyEntries),
+            TypingMethod.Molecular
+        );
+    }
 
-            return new HlaScoringMetadata(
-                MatchedLocus,
-                SerologyName,
-                scoringInfo,
-                TypingMethod.Serology
-            );
-        }
+    private static SingleAlleleScoringInfo BuildSingleAlleleScoringInfoWithMatchingSerologies(string alleleName)
+    {
+        return new SingleAlleleScoringInfo(
+            alleleName,
+            AlleleTypingStatus.GetDefaultStatus(),
+            alleleName,
+            alleleName,
+            SerologyEntries
+        );
+    }
 
-        private static IHlaMetadata BuildSingleAlleleMetadata(string alleleName)
-        {
-            return new HlaScoringMetadata(
-                MatchedLocus,
-                alleleName,
-                BuildSingleAlleleScoringInfoWithMatchingSerologies(alleleName),
-                TypingMethod.Molecular
-            );
-        }
-
-        private static IHlaMetadata BuildMultipleAlleleMetadata(string lookupName, IEnumerable<string> alleleNames)
-        {
-            return new HlaScoringMetadata(
-                MatchedLocus,
-                lookupName,
-                new MultipleAlleleScoringInfo(
-                    alleleNames.Select(BuildSingleAlleleScoringInfoExcludingMatchingSerologies),
-                    SerologyEntries),
-                TypingMethod.Molecular
-            );
-        }
-
-        private static IHlaMetadata BuildXxCodeMetadata(IEnumerable<string> alleleNames, string xxCodeLookupName)
-        {
-            var alleleNamesCollection = alleleNames.ToList();
-
-            return new HlaScoringMetadata(
-                MatchedLocus,
-                xxCodeLookupName,
-                new ConsolidatedMolecularScoringInfo(alleleNamesCollection, alleleNamesCollection, SerologyEntries),
-                TypingMethod.Molecular
-            );
-        }
-
-        private static SingleAlleleScoringInfo BuildSingleAlleleScoringInfoWithMatchingSerologies(string alleleName)
-        {
-            return new SingleAlleleScoringInfo(
-                alleleName,
-                AlleleTypingStatus.GetDefaultStatus(),
-                alleleName,
-                alleleName,
-                SerologyEntries
-                );
-        }
-
-        private static SingleAlleleScoringInfo BuildSingleAlleleScoringInfoExcludingMatchingSerologies(string alleleName)
-        {
-            return new SingleAlleleScoringInfo(
-                alleleName,
-                AlleleTypingStatus.GetDefaultStatus(),
-                alleleName,
-                alleleName
-            );
-        }
+    private static SingleAlleleScoringInfo BuildSingleAlleleScoringInfoExcludingMatchingSerologies(string alleleName)
+    {
+        return new SingleAlleleScoringInfo(
+            alleleName,
+            AlleleTypingStatus.GetDefaultStatus(),
+            alleleName,
+            alleleName
+        );
     }
 }

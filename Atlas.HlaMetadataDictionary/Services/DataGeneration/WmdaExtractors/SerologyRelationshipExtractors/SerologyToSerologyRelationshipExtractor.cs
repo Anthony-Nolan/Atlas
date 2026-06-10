@@ -1,30 +1,29 @@
 ﻿using System.Text.RegularExpressions;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.SerologyRelationshipExtractors
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.SerologyRelationshipExtractors;
+
+internal class SerologyToSerologyRelationshipExtractor : WmdaDataExtractor<RelSerSer>
 {
-    internal class SerologyToSerologyRelationshipExtractor : WmdaDataExtractor<RelSerSer>
+    private const string FileName = WmdaFilePathPrefixPre2026 + "rel_ser_ser.txt";
+    private readonly Regex regex = new Regex(@"(\w+)\;(\d*)\;([\d\/]*)\;([\d\/]*)", RegexOptions.Compiled);
+
+    public SerologyToSerologyRelationshipExtractor() : base(FileName)
     {
-        private const string FileName = WmdaFilePathPrefixPre2026 + "rel_ser_ser.txt";
-        private readonly Regex regex = new Regex(@"(\w+)\;(\d*)\;([\d\/]*)\;([\d\/]*)", RegexOptions.Compiled);
+    }
 
-        public SerologyToSerologyRelationshipExtractor() : base(FileName)
-        {
-        }
+    protected override RelSerSer MapLineOfFileContentsToWmdaHlaTyping(string line)
+    {
+        if (!regex.IsMatch(line))
+            return null;
 
-        protected override RelSerSer MapLineOfFileContentsToWmdaHlaTyping(string line)
-        {
-            if (!regex.IsMatch(line))
-                return null;
+        var extractedData = regex.Match(line).Groups;
 
-            var extractedData = regex.Match(line).Groups;
-
-            return new RelSerSer(
-                extractedData[1].Value,
-                extractedData[2].Value,
-                !extractedData[3].Value.Equals("") ? extractedData[3].Value.Split('/') : new string[] { },
-                !extractedData[4].Value.Equals("") ? extractedData[4].Value.Split('/') : new string[] { }
-            );
-        }
+        return new RelSerSer(
+            extractedData[1].Value,
+            extractedData[2].Value,
+            !extractedData[3].Value.Equals("") ? extractedData[3].Value.Split('/') : new string[] { },
+            !extractedData[4].Value.Equals("") ? extractedData[4].Value.Split('/') : new string[] { }
+        );
     }
 }

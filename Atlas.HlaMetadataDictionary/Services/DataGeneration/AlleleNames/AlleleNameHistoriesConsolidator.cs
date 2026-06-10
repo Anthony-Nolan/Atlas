@@ -4,67 +4,66 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
+
+internal interface IAlleleNameHistoriesConsolidator
 {
-    internal interface IAlleleNameHistoriesConsolidator
+    IEnumerable<AlleleNameHistory> GetConsolidatedAlleleNameHistories(string hlaNomenclatureVersion);
+}
+
+internal class AlleleNameHistoriesConsolidator : IAlleleNameHistoriesConsolidator
+{
+    private readonly IWmdaDataRepository dataRepository;
+
+    public AlleleNameHistoriesConsolidator(IWmdaDataRepository dataRepository)
     {
-        IEnumerable<AlleleNameHistory> GetConsolidatedAlleleNameHistories(string hlaNomenclatureVersion);
+        this.dataRepository = dataRepository;
     }
 
-    internal class AlleleNameHistoriesConsolidator : IAlleleNameHistoriesConsolidator
+    public IEnumerable<AlleleNameHistory> GetConsolidatedAlleleNameHistories(string hlaNomenclatureVersion)
     {
-        private readonly IWmdaDataRepository dataRepository;
+        var alleleNameHistories = dataRepository.GetWmdaDataset(hlaNomenclatureVersion).AlleleNameHistories;
+        return ConsolidateAlleleNameHistories(alleleNameHistories);
+    }
 
-        public AlleleNameHistoriesConsolidator(IWmdaDataRepository dataRepository)
+    private static IEnumerable<AlleleNameHistory> ConsolidateAlleleNameHistories(IEnumerable<AlleleNameHistory> alleleNameHistories)
+    {
+        var alleleNameHistoriesList = alleleNameHistories.ToList();
+        var alleleNamesListedInMultipleHistories = GetAlleleNamesListedInMultipleHistories(alleleNameHistoriesList).ToList();
+        alleleNamesListedInMultipleHistories.ForEach(allele =>
         {
-            this.dataRepository = dataRepository;
-        }
+            var currentHistory = GetFirstHistoryWhereCurrentNameIsNotNull(allele, alleleNameHistoriesList);
 
-        public IEnumerable<AlleleNameHistory> GetConsolidatedAlleleNameHistories(string hlaNomenclatureVersion)
-        {
-            var alleleNameHistories = dataRepository.GetWmdaDataset(hlaNomenclatureVersion).AlleleNameHistories;
-            return ConsolidateAlleleNameHistories(alleleNameHistories);
-        }
-
-        private static IEnumerable<AlleleNameHistory> ConsolidateAlleleNameHistories(IEnumerable<AlleleNameHistory> alleleNameHistories)
-        {
-            var alleleNameHistoriesList = alleleNameHistories.ToList();
-            var alleleNamesListedInMultipleHistories = GetAlleleNamesListedInMultipleHistories(alleleNameHistoriesList).ToList();
-            alleleNamesListedInMultipleHistories.ForEach(allele =>
+            if (currentHistory != null)
             {
-                var currentHistory = GetFirstHistoryWhereCurrentNameIsNotNull(allele, alleleNameHistoriesList);
+                alleleNameHistoriesList.RemoveAll(history => history.DistinctAlleleNamesContain(allele));
+                alleleNameHistoriesList.Add(currentHistory);
+            }
+        });
 
-                if (currentHistory != null)
-                {
-                    alleleNameHistoriesList.RemoveAll(history => history.DistinctAlleleNamesContain(allele));
-                    alleleNameHistoriesList.Add(currentHistory);
-                }
-            });
+        return alleleNameHistoriesList;
+    }
 
-            return alleleNameHistoriesList;
-        }
+    private static IEnumerable<IWmdaHlaTyping> GetAlleleNamesListedInMultipleHistories(IEnumerable<AlleleNameHistory> alleleNameHistories)
+    {
+        var alleleNamesListedMoreThanOnce = alleleNameHistories
+            .SelectMany(
+                history => history.DistinctAlleleNames,
+                (history, alleleName) => new {Locus = history.TypingLocus, HlaId = history.Name, AlleleName = alleleName})
+            .GroupBy(name => new HlaNom(TypingMethod.Molecular, name.Locus, name.AlleleName))
+            .Where(grouped => grouped.Count() > 1)
+            .Select(grouped => grouped.Key)
+            .Distinct();
 
-        private static IEnumerable<IWmdaHlaTyping> GetAlleleNamesListedInMultipleHistories(IEnumerable<AlleleNameHistory> alleleNameHistories)
-        {
-            var alleleNamesListedMoreThanOnce = alleleNameHistories
-                .SelectMany(
-                    history => history.DistinctAlleleNames,
-                    (history, alleleName) => new {Locus = history.TypingLocus, HlaId = history.Name, AlleleName = alleleName})
-                .GroupBy(name => new HlaNom(TypingMethod.Molecular, name.Locus, name.AlleleName))
-                .Where(grouped => grouped.Count() > 1)
-                .Select(grouped => grouped.Key)
-                .Distinct();
+        return alleleNamesListedMoreThanOnce;
+    }
 
-            return alleleNamesListedMoreThanOnce;
-        }
-
-        private static AlleleNameHistory GetFirstHistoryWhereCurrentNameIsNotNull(
-            IWmdaHlaTyping alleleTyping,
-            IEnumerable<AlleleNameHistory> alleleNameHistories)
-        {
-            return alleleNameHistories.FirstOrDefault(history =>
-                history.DistinctAlleleNamesContain(alleleTyping) && !string.IsNullOrEmpty(history.CurrentAlleleName)
-            );
-        }
+    private static AlleleNameHistory GetFirstHistoryWhereCurrentNameIsNotNull(
+        IWmdaHlaTyping alleleTyping,
+        IEnumerable<AlleleNameHistory> alleleNameHistories)
+    {
+        return alleleNameHistories.FirstOrDefault(history =>
+            history.DistinctAlleleNamesContain(alleleTyping) && !string.IsNullOrEmpty(history.CurrentAlleleName)
+        );
     }
 }

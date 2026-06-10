@@ -8,28 +8,27 @@ using Newtonsoft.Json;
 
 #pragma warning disable 1998
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers
-{
-    internal class MatchingResultDonorStorer : ResultsStorer<MatchingAlgorithmResult, MatchedDonor>
-    {
-        public MatchingResultDonorStorer(IProcessedResultsRepository<MatchedDonor> resultsRepository)
-            : base(resultsRepository)
-        {
-        }
+namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing.Storers;
 
-        protected override async Task<IEnumerable<MatchedDonor>> ProcessSingleSearchResult(int searchRequestRecordId,
-            MatchingAlgorithmResult result)
-        {
-            return new[]{
-                new MatchedDonor
-                {
-                    SearchRequestRecord_Id = searchRequestRecordId,
-                    DonorCode = result.DonorCode,
-                    TotalMatchCount = result.MatchingResult.TotalMatchCount,
-                    TypedLociCount = result.MatchingResult.TypedLociCount ?? 0,
-                    MatchingResult = JsonConvert.SerializeObject(result)
-                }
-            };
-        }
+internal class MatchingResultDonorStorer : ResultsStorer<MatchingAlgorithmResult, MatchedDonor>
+{
+    public MatchingResultDonorStorer(IProcessedResultsRepository<MatchedDonor> resultsRepository)
+        : base(resultsRepository)
+    {
+    }
+
+    protected override async Task<IEnumerable<MatchedDonor>> ProcessSingleSearchResult(int searchRequestRecordId,
+        MatchingAlgorithmResult result)
+    {
+        return new[]{
+            new MatchedDonor
+            {
+                SearchRequestRecord_Id = searchRequestRecordId,
+                DonorCode = result.DonorCode,
+                TotalMatchCount = result.MatchingResult.TotalMatchCount,
+                TypedLociCount = result.MatchingResult.TypedLociCount ?? 0,
+                MatchingResult = JsonConvert.SerializeObject(result)
+            }
+        };
     }
 }

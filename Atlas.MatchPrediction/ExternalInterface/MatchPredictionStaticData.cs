@@ -2,13 +2,12 @@
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchPrediction.Config;
 
-namespace Atlas.MatchPrediction.ExternalInterface
+namespace Atlas.MatchPrediction.ExternalInterface;
+
+/// <summary>
+/// Provides access to pertinent, static information related to match prediction.
+/// </summary>
+public static class MatchPredictionStaticData
 {
-    /// <summary>
-    /// Provides access to pertinent, static information related to match prediction.
-    /// </summary>
-    public static class MatchPredictionStaticData
-    {
-        public static IEnumerable<Locus> MatchPredictionLoci => LocusSettings.MatchPredictionLoci;
-    }
+    public static IEnumerable<Locus> MatchPredictionLoci => LocusSettings.MatchPredictionLoci;
 }

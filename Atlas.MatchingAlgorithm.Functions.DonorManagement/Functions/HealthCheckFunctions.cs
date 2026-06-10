@@ -5,22 +5,21 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Azure.Functions.Worker;
 
-namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
+namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions;
+
+public class HealthCheckFunctions
 {
-    public class HealthCheckFunctions
+    private readonly HealthCheckService healthCheckService;
+
+    public HealthCheckFunctions(HealthCheckService healthCheckService)
     {
-        private readonly HealthCheckService healthCheckService;
+        this.healthCheckService = healthCheckService;
+    }
 
-        public HealthCheckFunctions(HealthCheckService healthCheckService)
-        {
-            this.healthCheckService = healthCheckService;
-        }
-
-        [Function(nameof(HealthCheck))]
-        public async Task<IActionResult> HealthCheck([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest request)
-        {
-            var healthStatus = await healthCheckService.CheckHealthAsync();
-            return new JsonResult(Enum.GetName(typeof(HealthStatus), healthStatus.Status));
-        }
+    [Function(nameof(HealthCheck))]
+    public async Task<IActionResult> HealthCheck([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest request)
+    {
+        var healthStatus = await healthCheckService.CheckHealthAsync();
+        return new JsonResult(Enum.GetName(typeof(HealthStatus), healthStatus.Status));
     }
 }

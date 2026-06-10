@@ -1,7 +1,6 @@
-﻿namespace Atlas.RepeatSearch.Data.Settings
+﻿namespace Atlas.RepeatSearch.Data.Settings;
+
+public class ConnectionStrings
 {
-    public class ConnectionStrings
-    {
-        public string RepeatSearchSqlConnectionString { get; set; }
-    }
+    public string RepeatSearchSqlConnectionString { get; set; }
 }

@@ -1,37 +1,36 @@
 using System.Collections.Generic;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.StaticDataSelection
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.StaticDataSelection;
+
+public interface IStaticDataProvider
 {
-    public interface IStaticDataProvider
-    {
-        void SetExpectedDonorIds(IEnumerable<int> donorIds);
-        void SetPatientHla(PhenotypeInfo<string> hla);
-    }
+    void SetExpectedDonorIds(IEnumerable<int> donorIds);
+    void SetPatientHla(PhenotypeInfo<string> hla);
+}
     
-    public class StaticDataProvider: IStaticDataProvider, IExpectedDonorProvider, IPatientDataProvider
+public class StaticDataProvider: IStaticDataProvider, IExpectedDonorProvider, IPatientDataProvider
+{
+    private IEnumerable<int> expectedDonorIds;
+    private PhenotypeInfo<string> patientHla;
+
+    public void SetExpectedDonorIds(IEnumerable<int> donorIds)
     {
-        private IEnumerable<int> expectedDonorIds;
-        private PhenotypeInfo<string> patientHla;
+        expectedDonorIds = donorIds;
+    }
 
-        public void SetExpectedDonorIds(IEnumerable<int> donorIds)
-        {
-            expectedDonorIds = donorIds;
-        }
+    public void SetPatientHla(PhenotypeInfo<string> hla)
+    {
+        patientHla = hla;
+    }
 
-        public void SetPatientHla(PhenotypeInfo<string> hla)
-        {
-            patientHla = hla;
-        }
+    public PhenotypeInfo<string> GetPatientHla()
+    {
+        return patientHla;
+    }
 
-        public PhenotypeInfo<string> GetPatientHla()
-        {
-            return patientHla;
-        }
-
-        public IEnumerable<int> GetExpectedMatchingDonorIds()
-        {
-            return expectedDonorIds;
-        }
+    public IEnumerable<int> GetExpectedMatchingDonorIds()
+    {
+        return expectedDonorIds;
     }
 }

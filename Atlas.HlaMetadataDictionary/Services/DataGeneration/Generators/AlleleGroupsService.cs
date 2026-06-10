@@ -7,54 +7,53 @@ using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators;
+
+internal interface IAlleleGroupsService
 {
-    internal interface IAlleleGroupsService
+    /// <summary>
+    /// Retrieves metadata for P, G and small g groups from the HLA nomenclature repository.
+    /// Note: Excludes single alleles that do not map to an allele group.
+    /// </summary>
+    IEnumerable<IAlleleGroupMetadata> GetAlleleGroupsMetadata(string hlaNomenclatureVersion);
+}
+
+internal class AlleleGroupsService : IAlleleGroupsService
+{
+    private readonly IWmdaDataRepository wmdaDataRepository;
+    private readonly ISmallGGroupsBuilder smallGGroupsBuilder;
+    private readonly IHlaCategorisationService hlaCategorisationService;
+
+    public AlleleGroupsService(
+        IWmdaDataRepository wmdaDataRepository,
+        ISmallGGroupsBuilder smallGGroupsBuilder,
+        IHlaCategorisationService hlaCategorisationService)
     {
-        /// <summary>
-        /// Retrieves metadata for P, G and small g groups from the HLA nomenclature repository.
-        /// Note: Excludes single alleles that do not map to an allele group.
-        /// </summary>
-        IEnumerable<IAlleleGroupMetadata> GetAlleleGroupsMetadata(string hlaNomenclatureVersion);
+        this.wmdaDataRepository = wmdaDataRepository;
+        this.smallGGroupsBuilder = smallGGroupsBuilder;
+        this.hlaCategorisationService = hlaCategorisationService;
     }
 
-    internal class AlleleGroupsService : IAlleleGroupsService
+    public IEnumerable<IAlleleGroupMetadata> GetAlleleGroupsMetadata(string hlaNomenclatureVersion)
     {
-        private readonly IWmdaDataRepository wmdaDataRepository;
-        private readonly ISmallGGroupsBuilder smallGGroupsBuilder;
-        private readonly IHlaCategorisationService hlaCategorisationService;
+        var dataset = wmdaDataRepository.GetWmdaDataset(hlaNomenclatureVersion);
+        var pGroups = dataset.PGroups.Select(GetMetadataFromAlleleGroup);
+        var gGroups = dataset.GGroups.Select(GetMetadataFromAlleleGroup);
+        var smallGGroups = smallGGroupsBuilder.BuildSmallGGroups(hlaNomenclatureVersion)
+            .Select(g => new AlleleGroupMetadata(g.Locus, g.Name, g.Alleles));
 
-        public AlleleGroupsService(
-            IWmdaDataRepository wmdaDataRepository,
-            ISmallGGroupsBuilder smallGGroupsBuilder,
-            IHlaCategorisationService hlaCategorisationService)
-        {
-            this.wmdaDataRepository = wmdaDataRepository;
-            this.smallGGroupsBuilder = smallGGroupsBuilder;
-            this.hlaCategorisationService = hlaCategorisationService;
-        }
+        return pGroups.Concat(gGroups).Concat(smallGGroups).Where(IsAlleleGroup);
+    }
 
-        public IEnumerable<IAlleleGroupMetadata> GetAlleleGroupsMetadata(string hlaNomenclatureVersion)
-        {
-            var dataset = wmdaDataRepository.GetWmdaDataset(hlaNomenclatureVersion);
-            var pGroups = dataset.PGroups.Select(GetMetadataFromAlleleGroup);
-            var gGroups = dataset.GGroups.Select(GetMetadataFromAlleleGroup);
-            var smallGGroups = smallGGroupsBuilder.BuildSmallGGroups(hlaNomenclatureVersion)
-                .Select(g => new AlleleGroupMetadata(g.Locus, g.Name, g.Alleles));
+    private static IAlleleGroupMetadata GetMetadataFromAlleleGroup(IWmdaAlleleGroup alleleGroup)
+    {
+        var locus = HlaMetadataDictionaryLoci.GetLocusFromTypingLocusNameIfExists(TypingMethod.Molecular, alleleGroup.TypingLocus);
+        return new AlleleGroupMetadata(locus, alleleGroup.Name, alleleGroup.Alleles);
+    }
 
-            return pGroups.Concat(gGroups).Concat(smallGGroups).Where(IsAlleleGroup);
-        }
-
-        private static IAlleleGroupMetadata GetMetadataFromAlleleGroup(IWmdaAlleleGroup alleleGroup)
-        {
-            var locus = HlaMetadataDictionaryLoci.GetLocusFromTypingLocusNameIfExists(TypingMethod.Molecular, alleleGroup.TypingLocus);
-            return new AlleleGroupMetadata(locus, alleleGroup.Name, alleleGroup.Alleles);
-        }
-
-        private bool IsAlleleGroup(IAlleleGroupMetadata metadata)
-        {
-            var category = hlaCategorisationService.GetHlaTypingCategory(metadata.LookupName);
-            return new[]{HlaTypingCategory.GGroup, HlaTypingCategory.PGroup, HlaTypingCategory.SmallGGroup}.Contains(category);
-        }
+    private bool IsAlleleGroup(IAlleleGroupMetadata metadata)
+    {
+        var category = hlaCategorisationService.GetHlaTypingCategory(metadata.LookupName);
+        return new[]{HlaTypingCategory.GGroup, HlaTypingCategory.PGroup, HlaTypingCategory.SmallGGroup}.Contains(category);
     }
 }

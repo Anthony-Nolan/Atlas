@@ -1,10 +1,9 @@
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 
-namespace Atlas.MatchPrediction.ExternalInterface.Models
+namespace Atlas.MatchPrediction.ExternalInterface.Models;
+
+public class IdentifiedMatchPredictionRequest
 {
-    public class IdentifiedMatchPredictionRequest
-    {
-        public SingleDonorMatchProbabilityInput SingleDonorMatchProbabilityInput { get; set; }
-        public string Id { get; set; }
-    }
+    public SingleDonorMatchProbabilityInput SingleDonorMatchProbabilityInput { get; set; }
+    public string Id { get; set; }
 }

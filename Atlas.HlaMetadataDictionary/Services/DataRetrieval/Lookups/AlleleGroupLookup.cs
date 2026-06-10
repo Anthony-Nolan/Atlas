@@ -4,24 +4,23 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups;
+
+internal class AlleleGroupLookup : AlleleNamesLookupBase
 {
-    internal class AlleleGroupLookup : AlleleNamesLookupBase
+    private readonly IAlleleGroupExpander alleleGroupExpander;
+
+    public AlleleGroupLookup(
+        IHlaMetadataRepository hlaMetadataRepository,
+        IAlleleNamesMetadataService alleleNamesMetadataService,
+        IAlleleGroupExpander alleleGroupExpander)
+        : base(hlaMetadataRepository, alleleNamesMetadataService)
     {
-        private readonly IAlleleGroupExpander alleleGroupExpander;
+        this.alleleGroupExpander = alleleGroupExpander;
+    }
 
-        public AlleleGroupLookup(
-            IHlaMetadataRepository hlaMetadataRepository,
-            IAlleleNamesMetadataService alleleNamesMetadataService,
-            IAlleleGroupExpander alleleGroupExpander)
-            : base(hlaMetadataRepository, alleleNamesMetadataService)
-        {
-            this.alleleGroupExpander = alleleGroupExpander;
-        }
-
-        protected override async Task<List<string>> GetAlleleLookupNames(Locus locus, string lookupName, string hlaNomenclatureVersion)
-        {
-            return (await alleleGroupExpander.ExpandAlleleGroup(locus, lookupName, hlaNomenclatureVersion)).ToList();
-        }
+    protected override async Task<List<string>> GetAlleleLookupNames(Locus locus, string lookupName, string hlaNomenclatureVersion)
+    {
+        return (await alleleGroupExpander.ExpandAlleleGroup(locus, lookupName, hlaNomenclatureVersion)).ToList();
     }
 }

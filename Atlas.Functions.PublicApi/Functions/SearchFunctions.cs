@@ -16,90 +16,89 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
-namespace Atlas.Functions.PublicApi.Functions
+namespace Atlas.Functions.PublicApi.Functions;
+
+public class SearchFunctions
 {
-    public class SearchFunctions
+    private readonly ISearchDispatcher searchDispatcher;
+    private readonly IRepeatSearchDispatcher repeatSearchDispatcher;
+    private readonly IMatchPredictionValidator matchPredictionValidator;
+    private readonly bool defaultParallelMatchPrediction;
+
+    public SearchFunctions(
+        ISearchDispatcher searchDispatcher,
+        IRepeatSearchDispatcher repeatSearchDispatcher,
+        IMatchPredictionValidator matchPredictionValidator,
+        IOptions<SearchFunctionSettings> searchFunctionSettings)
     {
-        private readonly ISearchDispatcher searchDispatcher;
-        private readonly IRepeatSearchDispatcher repeatSearchDispatcher;
-        private readonly IMatchPredictionValidator matchPredictionValidator;
-        private readonly bool defaultParallelMatchPrediction;
-
-        public SearchFunctions(
-            ISearchDispatcher searchDispatcher,
-            IRepeatSearchDispatcher repeatSearchDispatcher,
-            IMatchPredictionValidator matchPredictionValidator,
-            IOptions<SearchFunctionSettings> searchFunctionSettings)
-        {
-            this.searchDispatcher = searchDispatcher;
-            this.repeatSearchDispatcher = repeatSearchDispatcher;
-            this.matchPredictionValidator = matchPredictionValidator;
-            defaultParallelMatchPrediction = searchFunctionSettings.Value.DefaultParallelMatchPrediction;
-        }
-
-        [Function(nameof(Search))]
-        public async Task<IActionResult> Search(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(SearchRequest), nameof(SearchRequest))]
-            HttpRequest request)
-        {
-            var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
-
-            var matchingValidationResult = await new SearchRequestValidator().ValidateAsync(searchRequest);
-            if (!matchingValidationResult.IsValid)
-            {
-                return BuildValidationResponse(matchingValidationResult);
-            }
-
-            var probabilityRequestToValidate = searchRequest.ToPartialMatchProbabilitySearchRequest();
-            var probabilityValidationResult = matchPredictionValidator.ValidateMatchProbabilityNonDonorInput(probabilityRequestToValidate);
-            if (!probabilityValidationResult.IsValid)
-            {
-                return BuildValidationResponse(probabilityValidationResult);
-            }
-
-            searchRequest.ParallelMatchPrediction ??= defaultParallelMatchPrediction;
-
-            var id = await searchDispatcher.DispatchSearch(searchRequest);
-            await searchDispatcher.DispatchSearchTrackingEvent(searchRequest, id);
-
-            return new JsonResult(new SearchInitiationResponse {SearchIdentifier = id});
-        }
-
-        [Function(nameof(RepeatSearch))]
-        public async Task<IActionResult> RepeatSearch(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(RepeatSearchRequest), nameof(RepeatSearchRequest))]
-            HttpRequest request)
-        {
-            var repeatSearchRequest = JsonConvert.DeserializeObject<RepeatSearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
-
-            var matchingValidationResult = await new RepeatSearchRequestValidator().ValidateAsync(repeatSearchRequest);
-            if (!matchingValidationResult.IsValid)
-            {
-                return BuildValidationResponse(matchingValidationResult);
-            }
-
-            var probabilityRequestToValidate = repeatSearchRequest.SearchRequest.ToPartialMatchProbabilitySearchRequest();
-            var probabilityValidationResult = matchPredictionValidator.ValidateMatchProbabilityNonDonorInput(probabilityRequestToValidate);
-            if (!probabilityValidationResult.IsValid)
-            {
-                return BuildValidationResponse(probabilityValidationResult);
-            }
-
-            repeatSearchRequest.SearchRequest.ParallelMatchPrediction ??= defaultParallelMatchPrediction;
-
-            var repeatSearchId = await repeatSearchDispatcher.DispatchSearch(repeatSearchRequest);
-            await repeatSearchDispatcher.DispatchSearchTrackingEvent(repeatSearchRequest, repeatSearchId);
-
-            return new JsonResult(new SearchInitiationResponse
-            {
-                SearchIdentifier = repeatSearchRequest.OriginalSearchId,
-                RepeatSearchIdentifier = repeatSearchId
-            });
-        }
-
-        private static IActionResult BuildValidationResponse(ValidationResult validationResult) =>
-            new BadRequestObjectResult(validationResult.Errors);
+        this.searchDispatcher = searchDispatcher;
+        this.repeatSearchDispatcher = repeatSearchDispatcher;
+        this.matchPredictionValidator = matchPredictionValidator;
+        defaultParallelMatchPrediction = searchFunctionSettings.Value.DefaultParallelMatchPrediction;
     }
+
+    [Function(nameof(Search))]
+    public async Task<IActionResult> Search(
+        [HttpTrigger(AuthorizationLevel.Function, "post")]
+        [RequestBodyType(typeof(SearchRequest), nameof(SearchRequest))]
+        HttpRequest request)
+    {
+        var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+
+        var matchingValidationResult = await new SearchRequestValidator().ValidateAsync(searchRequest);
+        if (!matchingValidationResult.IsValid)
+        {
+            return BuildValidationResponse(matchingValidationResult);
+        }
+
+        var probabilityRequestToValidate = searchRequest.ToPartialMatchProbabilitySearchRequest();
+        var probabilityValidationResult = matchPredictionValidator.ValidateMatchProbabilityNonDonorInput(probabilityRequestToValidate);
+        if (!probabilityValidationResult.IsValid)
+        {
+            return BuildValidationResponse(probabilityValidationResult);
+        }
+
+        searchRequest.ParallelMatchPrediction ??= defaultParallelMatchPrediction;
+
+        var id = await searchDispatcher.DispatchSearch(searchRequest);
+        await searchDispatcher.DispatchSearchTrackingEvent(searchRequest, id);
+
+        return new JsonResult(new SearchInitiationResponse {SearchIdentifier = id});
+    }
+
+    [Function(nameof(RepeatSearch))]
+    public async Task<IActionResult> RepeatSearch(
+        [HttpTrigger(AuthorizationLevel.Function, "post")]
+        [RequestBodyType(typeof(RepeatSearchRequest), nameof(RepeatSearchRequest))]
+        HttpRequest request)
+    {
+        var repeatSearchRequest = JsonConvert.DeserializeObject<RepeatSearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+
+        var matchingValidationResult = await new RepeatSearchRequestValidator().ValidateAsync(repeatSearchRequest);
+        if (!matchingValidationResult.IsValid)
+        {
+            return BuildValidationResponse(matchingValidationResult);
+        }
+
+        var probabilityRequestToValidate = repeatSearchRequest.SearchRequest.ToPartialMatchProbabilitySearchRequest();
+        var probabilityValidationResult = matchPredictionValidator.ValidateMatchProbabilityNonDonorInput(probabilityRequestToValidate);
+        if (!probabilityValidationResult.IsValid)
+        {
+            return BuildValidationResponse(probabilityValidationResult);
+        }
+
+        repeatSearchRequest.SearchRequest.ParallelMatchPrediction ??= defaultParallelMatchPrediction;
+
+        var repeatSearchId = await repeatSearchDispatcher.DispatchSearch(repeatSearchRequest);
+        await repeatSearchDispatcher.DispatchSearchTrackingEvent(repeatSearchRequest, repeatSearchId);
+
+        return new JsonResult(new SearchInitiationResponse
+        {
+            SearchIdentifier = repeatSearchRequest.OriginalSearchId,
+            RepeatSearchIdentifier = repeatSearchId
+        });
+    }
+
+    private static IActionResult BuildValidationResponse(ValidationResult validationResult) =>
+        new BadRequestObjectResult(validationResult.Errors);
 }

@@ -1,8 +1,7 @@
-﻿namespace Atlas.MatchingAlgorithm.Test.Performance.Models
+﻿namespace Atlas.MatchingAlgorithm.Test.Performance.Models;
+
+public class SearchMetrics
 {
-    public class SearchMetrics
-    {
-        public long ElapsedMilliseconds { get; set; }
-        public int DonorsReturned { get; set; }
-    }
+    public long ElapsedMilliseconds { get; set; }
+    public int DonorsReturned { get; set; }
 }

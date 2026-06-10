@@ -11,63 +11,62 @@ using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
+namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests;
+
+[TestFixture]
+public class SmallGGroupToPGroupMetadataServiceTests
 {
-    [TestFixture]
-    public class SmallGGroupToPGroupMetadataServiceTests
+    private const string CacheKey = nameof(SmallGGroupToPGroupMetadataRepository);
+    private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
+
+    private ISmallGGroupToPGroupMetadataService metadataService;
+    private IAppCache appCache;
+
+    [OneTimeSetUp]
+    public void OneTimeSetUp()
     {
-        private const string CacheKey = nameof(SmallGGroupToPGroupMetadataRepository);
-        private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
-
-        private ISmallGGroupToPGroupMetadataService metadataService;
-        private IAppCache appCache;
-
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
+        TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
-            {
-                metadataService = DependencyInjection.DependencyInjection.Provider.GetService<ISmallGGroupToPGroupMetadataService>();
-                appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
-            });
-        }
+            metadataService = DependencyInjection.DependencyInjection.Provider.GetService<ISmallGGroupToPGroupMetadataService>();
+            appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
+        });
+    }
 
-        [TearDown]
-        public void TearDown()
-        {
-            appCache.Remove(CacheKey);
-        }
+    [TearDown]
+    public void TearDown()
+    {
+        appCache.Remove(CacheKey);
+    }
 
-        [TestCase(Locus.A, "01:01g", "01:01P")]
-        [TestCase(Locus.B, "08:01g", "08:01P")]
-        [TestCase(Locus.C, "07:01g", "07:01P")]
-        [TestCase(Locus.Dqb1, "02:01g", "02:01P")]
-        [TestCase(Locus.Drb1, "03:01g", "03:01P")]
-        public async Task ConvertSmallGGroupToPGroup_WithMatchingPGroup_ReturnsPGroup(Locus locus, string smallGGroup, string expectedPGroup)
-        {
-            var pGroup = await metadataService.ConvertSmallGGroupToPGroup(locus, smallGGroup, HlaVersion);
+    [TestCase(Locus.A, "01:01g", "01:01P")]
+    [TestCase(Locus.B, "08:01g", "08:01P")]
+    [TestCase(Locus.C, "07:01g", "07:01P")]
+    [TestCase(Locus.Dqb1, "02:01g", "02:01P")]
+    [TestCase(Locus.Drb1, "03:01g", "03:01P")]
+    public async Task ConvertSmallGGroupToPGroup_WithMatchingPGroup_ReturnsPGroup(Locus locus, string smallGGroup, string expectedPGroup)
+    {
+        var pGroup = await metadataService.ConvertSmallGGroupToPGroup(locus, smallGGroup, HlaVersion);
 
-            pGroup.Should().Be(expectedPGroup);
-        }
+        pGroup.Should().Be(expectedPGroup);
+    }
 
-        [TestCase(Locus.A, "01:52")]
-        [TestCase(Locus.B, "35:173")]
-        [TestCase(Locus.C, "07:491")]
-        [TestCase(Locus.Dqb1, "02:20N")]
-        [TestCase(Locus.Drb1, "08:78N")]
-        public async Task ConvertSmallGGroupToPGroup_WithNoMatchingPGroup_ReturnsNull(Locus locus, string smallGGroup)
-        {
-            var pGroup = await metadataService.ConvertSmallGGroupToPGroup(locus, smallGGroup, HlaVersion);
+    [TestCase(Locus.A, "01:52")]
+    [TestCase(Locus.B, "35:173")]
+    [TestCase(Locus.C, "07:491")]
+    [TestCase(Locus.Dqb1, "02:20N")]
+    [TestCase(Locus.Drb1, "08:78N")]
+    public async Task ConvertSmallGGroupToPGroup_WithNoMatchingPGroup_ReturnsNull(Locus locus, string smallGGroup)
+    {
+        var pGroup = await metadataService.ConvertSmallGGroupToPGroup(locus, smallGGroup, HlaVersion);
 
-            pGroup.Should().Be(null);
-        }
+        pGroup.Should().Be(null);
+    }
 
-        [Test]
-        public async Task ConvertSmallGGroupToPGroup_ForInvalidSmallGGroup_ThrowsException()
-        {
-            await metadataService.Invoking(service =>
-                 service.ConvertSmallGGroupToPGroup(Locus.A, "not-a-valid-small-g-group", HlaVersion)
-                ).Should().ThrowAsync<HlaMetadataDictionaryException>();
-        }
+    [Test]
+    public async Task ConvertSmallGGroupToPGroup_ForInvalidSmallGGroup_ThrowsException()
+    {
+        await metadataService.Invoking(service =>
+            service.ConvertSmallGGroupToPGroup(Locus.A, "not-a-valid-small-g-group", HlaVersion)
+        ).Should().ThrowAsync<HlaMetadataDictionaryException>();
     }
 }

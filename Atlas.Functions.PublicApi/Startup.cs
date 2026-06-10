@@ -10,52 +10,51 @@ using Atlas.SearchTracking.Common.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
-namespace Atlas.Functions.PublicApi
+namespace Atlas.Functions.PublicApi;
+
+internal static class Startup
 {
-    internal static class Startup
+    public static void Configure(IServiceCollection services)
     {
-        public static void Configure(IServiceCollection services)
-        {
-            RegisterSettings(services);
+        RegisterSettings(services);
 
-            services.AddHealthChecks();
+        services.AddHealthChecks();
 
-            services.RegisterMatchingAlgorithmOrchestration(
-                OptionsReaderFor<MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings>(),
-                OptionsReaderFor<SearchTrackingServiceBusSettings>(),
-                OptionsReaderFor<ApplicationInsightsSettings>());
+        services.RegisterMatchingAlgorithmOrchestration(
+            OptionsReaderFor<MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings>(),
+            OptionsReaderFor<SearchTrackingServiceBusSettings>(),
+            OptionsReaderFor<ApplicationInsightsSettings>());
 
-            services.RegisterRepeatSearchOrchestration(OptionsReaderFor<RepeatSearch.Settings.ServiceBus.MessagingServiceBusSettings>(),
-                OptionsReaderFor<SearchTrackingServiceBusSettings>(),
-                OptionsReaderFor<ApplicationInsightsSettings>());
+        services.RegisterRepeatSearchOrchestration(OptionsReaderFor<RepeatSearch.Settings.ServiceBus.MessagingServiceBusSettings>(),
+            OptionsReaderFor<SearchTrackingServiceBusSettings>(),
+            OptionsReaderFor<ApplicationInsightsSettings>());
 
-            services.RegisterMatchPredictionValidator();
+        services.RegisterMatchPredictionValidator();
 
-            services.RegisterClients(OptionsReaderFor<MatchingAlgorithmFunctionSettings>());
-        }
+        services.RegisterClients(OptionsReaderFor<MatchingAlgorithmFunctionSettings>());
+    }
 
-        private static void RegisterSettings(IServiceCollection services)
-        {
-            // Shared settings
-            services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
+    private static void RegisterSettings(IServiceCollection services)
+    {
+        // Shared settings
+        services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
+        services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
 
-            // Matching Algorithm - initiation services only
-            services.RegisterAsOptions<MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings>("Matching:MessagingServiceBus");
+        // Matching Algorithm - initiation services only
+        services.RegisterAsOptions<MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings>("Matching:MessagingServiceBus");
 
-            // Repeat Search - initiation services only
-            services.RegisterAsOptions<RepeatSearch.Settings.ServiceBus.MessagingServiceBusSettings>("RepeatSearch:MessagingServiceBus");
+        // Repeat Search - initiation services only
+        services.RegisterAsOptions<RepeatSearch.Settings.ServiceBus.MessagingServiceBusSettings>("RepeatSearch:MessagingServiceBus");
 
-            // Matching Algorithm Scoring
-            services.RegisterAsOptions<MatchingAlgorithmFunctionSettings>("MatchingAlgorithmFunction");
+        // Matching Algorithm Scoring
+        services.RegisterAsOptions<MatchingAlgorithmFunctionSettings>("MatchingAlgorithmFunction");
 
-            // Search function settings
-            services.RegisterAsOptions<SearchFunctionSettings>("AtlasFunction:Search");
+        // Search function settings
+        services.RegisterAsOptions<SearchFunctionSettings>("AtlasFunction:Search");
 
-            // Search Tracking
-            services.RegisterAsOptions<SearchTrackingServiceBusSettings>("SearchTracking:SearchTrackingServiceBus");
+        // Search Tracking
+        services.RegisterAsOptions<SearchTrackingServiceBusSettings>("SearchTracking:SearchTrackingServiceBus");
 
-            services.AddSingleton(sp => AutoMapperConfig.CreateMapper());
-        }
+        services.AddSingleton(sp => AutoMapperConfig.CreateMapper());
     }
 }

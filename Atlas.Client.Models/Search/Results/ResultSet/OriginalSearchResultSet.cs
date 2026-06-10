@@ -1,9 +1,8 @@
-﻿namespace Atlas.Client.Models.Search.Results.ResultSet
+﻿namespace Atlas.Client.Models.Search.Results.ResultSet;
+
+public class OriginalSearchResultSet : SearchResultSet
 {
-    public class OriginalSearchResultSet : SearchResultSet
-    {
-        public override bool IsRepeatSearchSet => false;
+    public override bool IsRepeatSearchSet => false;
       
-        public override string ResultsFileName => $"{SearchRequestId}.json";
-    }
+    public override string ResultsFileName => $"{SearchRequestId}.json";
 }

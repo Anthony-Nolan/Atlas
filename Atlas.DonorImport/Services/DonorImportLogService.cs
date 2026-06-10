@@ -8,60 +8,59 @@ using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.FileSchema.Models;
 using MoreLinq;
 
-namespace Atlas.DonorImport.Services
+namespace Atlas.DonorImport.Services;
+
+internal interface IDonorImportLogService
 {
-    internal interface IDonorImportLogService
+    public IAsyncEnumerable<DonorUpdate> FilterDonorUpdatesBasedOnUpdateTime(IEnumerable<DonorUpdate> donorUpdates, DateTime uploadTime);
+    public Task SetLastUpdated(IReadOnlyCollection<DonorUpdate> updates, DateTime lastUpdated);
+}
+
+internal class DonorImportLogService : IDonorImportLogService
+{
+    // Parameterisation limit for SQL queries is 2100, so anything larger than this will need to be batched in the repository layer anyway.
+    private const int UpdateFilterBatchSize = 2000;
+    private readonly IDonorImportLogRepository repository;
+
+    public DonorImportLogService(IDonorImportLogRepository repository)
     {
-        public IAsyncEnumerable<DonorUpdate> FilterDonorUpdatesBasedOnUpdateTime(IEnumerable<DonorUpdate> donorUpdates, DateTime uploadTime);
-        public Task SetLastUpdated(IReadOnlyCollection<DonorUpdate> updates, DateTime lastUpdated);
+        this.repository = repository;
     }
 
-    internal class DonorImportLogService : IDonorImportLogService
+    public async IAsyncEnumerable<DonorUpdate> FilterDonorUpdatesBasedOnUpdateTime(IEnumerable<DonorUpdate> donorUpdates, DateTime uploadTime)
     {
-        // Parameterisation limit for SQL queries is 2100, so anything larger than this will need to be batched in the repository layer anyway.
-        private const int UpdateFilterBatchSize = 2000;
-        private readonly IDonorImportLogRepository repository;
-
-        public DonorImportLogService(IDonorImportLogRepository repository)
+        foreach (var updateBatch in donorUpdates.Batch(UpdateFilterBatchSize))
         {
-            this.repository = repository;
-        }
+            var reifiedDonorBatch = updateBatch.ToList();
+            var updateDates = await repository.GetLastUpdatedTimes(reifiedDonorBatch.Select(u => u.RecordId).ToList());
 
-        public async IAsyncEnumerable<DonorUpdate> FilterDonorUpdatesBasedOnUpdateTime(IEnumerable<DonorUpdate> donorUpdates, DateTime uploadTime)
-        {
-            foreach (var updateBatch in donorUpdates.Batch(UpdateFilterBatchSize))
+            foreach (var update in reifiedDonorBatch)
             {
-                var reifiedDonorBatch = updateBatch.ToList();
-                var updateDates = await repository.GetLastUpdatedTimes(reifiedDonorBatch.Select(u => u.RecordId).ToList());
-
-                foreach (var update in reifiedDonorBatch)
+                var externalDonorCode = update.RecordId;
+                var donorExists = updateDates.ContainsKey(externalDonorCode);
+                if (donorExists && update.ChangeType == ImportDonorChangeType.Create && update.UpdateMode != UpdateMode.Full)
                 {
-                    var externalDonorCode = update.RecordId;
-                    var donorExists = updateDates.ContainsKey(externalDonorCode);
-                    if (donorExists && update.ChangeType == ImportDonorChangeType.Create && update.UpdateMode != UpdateMode.Full)
-                    {
-                        throw new DuplicateDonorException($"Attempted to create a donor that already existed. External Donor Code: {externalDonorCode}");
-                    }
-
-                    if (updateDates.TryGetValue(externalDonorCode, out var lastUpdateTime))
-                    {
-                        if (lastUpdateTime >= uploadTime)
-                        {
-                            yield break;
-                        }
-                    }
-
-                    yield return update;
+                    throw new DuplicateDonorException($"Attempted to create a donor that already existed. External Donor Code: {externalDonorCode}");
                 }
+
+                if (updateDates.TryGetValue(externalDonorCode, out var lastUpdateTime))
+                {
+                    if (lastUpdateTime >= uploadTime)
+                    {
+                        yield break;
+                    }
+                }
+
+                yield return update;
             }
         }
+    }
 
-        public async Task SetLastUpdated(IReadOnlyCollection<DonorUpdate> updates, DateTime lastUpdated)
-        {
-            var (deletions, upserts) = updates.ReifyAndSplit(u => u.ChangeType == ImportDonorChangeType.Delete);
+    public async Task SetLastUpdated(IReadOnlyCollection<DonorUpdate> updates, DateTime lastUpdated)
+    {
+        var (deletions, upserts) = updates.ReifyAndSplit(u => u.ChangeType == ImportDonorChangeType.Delete);
 
-            await repository.DeleteDonorLogBatch(deletions.Select(u => u.RecordId).ToList());
-            await repository.SetLastUpdatedBatch(upserts.Select(u => u.RecordId), lastUpdated);
-        }
+        await repository.DeleteDonorLogBatch(deletions.Select(u => u.RecordId).ToList());
+        await repository.SetLastUpdatedBatch(upserts.Select(u => u.RecordId), lastUpdated);
     }
 }

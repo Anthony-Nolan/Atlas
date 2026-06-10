@@ -1,9 +1,8 @@
-﻿namespace Atlas.ManualTesting.Models
+﻿namespace Atlas.ManualTesting.Models;
+
+public class FailedSearch
 {
-    public class FailedSearch
-    {
-        public string SearchRequestId { get; set; }
-        public string FailureInfo { get; set; }
-        public bool WillRetry { get; set; }
-    }
+    public string SearchRequestId { get; set; }
+    public string FailureInfo { get; set; }
+    public bool WillRetry { get; set; }
 }

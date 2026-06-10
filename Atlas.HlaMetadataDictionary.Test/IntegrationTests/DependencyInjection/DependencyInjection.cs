@@ -1,22 +1,21 @@
 using System;
 
-namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
-{
-    public static class DependencyInjection
-    {
-        private static IServiceProvider _provider;
+namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 
-        public static IServiceProvider Provider
+public static class DependencyInjection
+{
+    private static IServiceProvider _provider;
+
+    public static IServiceProvider Provider
+    {
+        get
         {
-            get
+            if (_provider == null)
             {
-                if (_provider == null)
-                {
-                    throw new Exception("Provider has not been set up");
-                }
-                return _provider;
+                throw new Exception("Provider has not been set up");
             }
-            set => _provider = value;
+            return _provider;
         }
+        set => _provider = value;
     }
 }

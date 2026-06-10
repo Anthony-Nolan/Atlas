@@ -6,110 +6,110 @@ using Atlas.MatchPrediction.Data.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
 
-namespace Atlas.MatchPrediction.Data.Repositories
+namespace Atlas.MatchPrediction.Data.Repositories;
+
+public interface IHaplotypeFrequenciesRepository
 {
-    public interface IHaplotypeFrequenciesRepository
+    Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies);
+
+    Task<List<LightweightHaplotypeFrequencyRecord>> GetAllHaplotypeFrequencies(int setId);
+
+    Task RemoveHaplotypeFrequencies(int setId);
+}
+
+public class HaplotypeFrequenciesRepository : IHaplotypeFrequenciesRepository
+{
+    private readonly string connectionString;
+
+    public HaplotypeFrequenciesRepository(string connectionString)
     {
-        Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies);
-
-        Task<List<LightweightHaplotypeFrequencyRecord>> GetAllHaplotypeFrequencies(int setId);
-
-        Task RemoveHaplotypeFrequencies(int setId);
+        this.connectionString = connectionString;
     }
 
-    public class HaplotypeFrequenciesRepository : IHaplotypeFrequenciesRepository
+    public async Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
     {
-        private readonly string connectionString;
-
-        public HaplotypeFrequenciesRepository(string connectionString)
+        haplotypeFrequencies = haplotypeFrequencies.ToList();
+        if (!haplotypeFrequencies.Any())
         {
-            this.connectionString = connectionString;
+            return;
         }
 
-        public async Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
+        var dataTable = BuildFrequencyInsertDataTable(haplotypeFrequencySetId, haplotypeFrequencies);
+
+        try
         {
-            haplotypeFrequencies = haplotypeFrequencies.ToList();
-            if (!haplotypeFrequencies.Any())
-            {
-                return;
-            }
+            using var sqlBulk = BuildFrequencySqlBulkCopy();
+            await sqlBulk.WriteToServerAsync(dataTable);
+        }
+        catch
+        {
+            await RemoveHaplotypeFrequencies(haplotypeFrequencySetId);
+            throw;
+        }
+    }
 
-            var dataTable = BuildFrequencyInsertDataTable(haplotypeFrequencySetId, haplotypeFrequencies);
+    public async Task RemoveHaplotypeFrequencies(int setId)
+    {
+        var sql = $"DELETE FROM {HaplotypeFrequency.QualifiedTableName} WHERE Set_Id = @{nameof(setId)}";
+        await using (var conn = new SqlConnection(connectionString))
+        {
+            await conn.ExecuteAsync(sql, new { setId });
+        }
+    }
 
-            try
-            {
-                using var sqlBulk = BuildFrequencySqlBulkCopy();
-                await sqlBulk.WriteToServerAsync(dataTable);
-            }
-            catch
-            {
-                await RemoveHaplotypeFrequencies(haplotypeFrequencySetId);
-                throw;
-            }
+    private SqlBulkCopy BuildFrequencySqlBulkCopy()
+    {
+        var sqlBulk = new SqlBulkCopy(connectionString)
+            {BulkCopyTimeout = 3600, BatchSize = 10000, DestinationTableName = HaplotypeFrequency.QualifiedTableName};
+
+        sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.Id), nameof(HaplotypeFrequency.Id));
+        sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.Frequency), nameof(HaplotypeFrequency.Frequency));
+        sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.A), nameof(HaplotypeFrequency.A));
+        sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.B), nameof(HaplotypeFrequency.B));
+        sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.C), nameof(HaplotypeFrequency.C));
+        sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.DQB1), nameof(HaplotypeFrequency.DQB1));
+        sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.DRB1), nameof(HaplotypeFrequency.DRB1));
+        sqlBulk.ColumnMappings.Add(HaplotypeFrequency.SetIdColumnName, HaplotypeFrequency.SetIdColumnName);
+        sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.TypingCategory), nameof(HaplotypeFrequency.TypingCategory));
+
+        return sqlBulk;
+    }
+
+    private static DataTable BuildFrequencyInsertDataTable(int setId, IEnumerable<HaplotypeFrequency> frequencies)
+    {
+        var dataTable = new DataTable();
+        dataTable.Columns.Add(nameof(HaplotypeFrequency.Id));
+        dataTable.Columns.Add(nameof(HaplotypeFrequency.Frequency));
+        dataTable.Columns.Add(nameof(HaplotypeFrequency.A));
+        dataTable.Columns.Add(nameof(HaplotypeFrequency.B));
+        dataTable.Columns.Add(nameof(HaplotypeFrequency.C));
+        dataTable.Columns.Add(nameof(HaplotypeFrequency.DQB1));
+        dataTable.Columns.Add(nameof(HaplotypeFrequency.DRB1));
+        dataTable.Columns.Add(HaplotypeFrequency.SetIdColumnName);
+        dataTable.Columns.Add(nameof(HaplotypeFrequency.TypingCategory));
+
+        foreach (var frequency in frequencies)
+        {
+            dataTable.Rows.Add(
+                0,
+                frequency.Frequency,
+                frequency.A,
+                frequency.B,
+                frequency.C,
+                frequency.DQB1,
+                frequency.DRB1,
+                setId,
+                (int) frequency.TypingCategory
+            );
         }
 
-        public async Task RemoveHaplotypeFrequencies(int setId)
-        {
-            var sql = $"DELETE FROM {HaplotypeFrequency.QualifiedTableName} WHERE Set_Id = @{nameof(setId)}";
-            await using (var conn = new SqlConnection(connectionString))
-            {
-                await conn.ExecuteAsync(sql, new { setId });
-            }
-        }
+        return dataTable;
+    }
 
-        private SqlBulkCopy BuildFrequencySqlBulkCopy()
-        {
-            var sqlBulk = new SqlBulkCopy(connectionString)
-                {BulkCopyTimeout = 3600, BatchSize = 10000, DestinationTableName = HaplotypeFrequency.QualifiedTableName};
-
-            sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.Id), nameof(HaplotypeFrequency.Id));
-            sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.Frequency), nameof(HaplotypeFrequency.Frequency));
-            sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.A), nameof(HaplotypeFrequency.A));
-            sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.B), nameof(HaplotypeFrequency.B));
-            sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.C), nameof(HaplotypeFrequency.C));
-            sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.DQB1), nameof(HaplotypeFrequency.DQB1));
-            sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.DRB1), nameof(HaplotypeFrequency.DRB1));
-            sqlBulk.ColumnMappings.Add(HaplotypeFrequency.SetIdColumnName, HaplotypeFrequency.SetIdColumnName);
-            sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.TypingCategory), nameof(HaplotypeFrequency.TypingCategory));
-
-            return sqlBulk;
-        }
-
-        private static DataTable BuildFrequencyInsertDataTable(int setId, IEnumerable<HaplotypeFrequency> frequencies)
-        {
-            var dataTable = new DataTable();
-            dataTable.Columns.Add(nameof(HaplotypeFrequency.Id));
-            dataTable.Columns.Add(nameof(HaplotypeFrequency.Frequency));
-            dataTable.Columns.Add(nameof(HaplotypeFrequency.A));
-            dataTable.Columns.Add(nameof(HaplotypeFrequency.B));
-            dataTable.Columns.Add(nameof(HaplotypeFrequency.C));
-            dataTable.Columns.Add(nameof(HaplotypeFrequency.DQB1));
-            dataTable.Columns.Add(nameof(HaplotypeFrequency.DRB1));
-            dataTable.Columns.Add(HaplotypeFrequency.SetIdColumnName);
-            dataTable.Columns.Add(nameof(HaplotypeFrequency.TypingCategory));
-
-            foreach (var frequency in frequencies)
-            {
-                dataTable.Rows.Add(
-                    0,
-                    frequency.Frequency,
-                    frequency.A,
-                    frequency.B,
-                    frequency.C,
-                    frequency.DQB1,
-                    frequency.DRB1,
-                    setId,
-                    (int) frequency.TypingCategory
-                );
-            }
-
-            return dataTable;
-        }
-
-        /// <inheritdoc />
-        public async Task<List<LightweightHaplotypeFrequencyRecord>> GetAllHaplotypeFrequencies(int setId)
-        {
-            var sql = @$"
+    /// <inheritdoc />
+    public async Task<List<LightweightHaplotypeFrequencyRecord>> GetAllHaplotypeFrequencies(int setId)
+    {
+        var sql = @$"
 SELECT {nameof(HaplotypeFrequency.A)},
 {nameof(HaplotypeFrequency.B)},
 {nameof(HaplotypeFrequency.C)},
@@ -121,14 +121,13 @@ SELECT {nameof(HaplotypeFrequency.A)},
 FROM {HaplotypeFrequency.QualifiedTableName}
 WHERE {HaplotypeFrequency.SetIdColumnName} = @setId";
 
-            return await RetryConfig.AsyncRetryPolicy.ExecuteAsync(async () =>
+        return await RetryConfig.AsyncRetryPolicy.ExecuteAsync(async () =>
+        {
+            await using (var conn = new SqlConnection(connectionString))
             {
-                await using (var conn = new SqlConnection(connectionString))
-                {
-                    var frequencyModels = await conn.QueryAsync<LightweightHaplotypeFrequencyRecord>(sql, new {setId}, commandTimeout: 600);
-                    return frequencyModels.ToList();
-                }
-            });
-        }
+                var frequencyModels = await conn.QueryAsync<LightweightHaplotypeFrequencyRecord>(sql, new {setId}, commandTimeout: 600);
+                return frequencyModels.ToList();
+            }
+        });
     }
 }

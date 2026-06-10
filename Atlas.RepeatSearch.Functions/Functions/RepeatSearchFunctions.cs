@@ -14,88 +14,87 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Atlas.RepeatSearch.Functions.Functions
+namespace Atlas.RepeatSearch.Functions.Functions;
+
+public class RepeatSearchFunctions
 {
-    public class RepeatSearchFunctions
+    private readonly IRepeatSearchDispatcher repeatSearchDispatcher;
+    private readonly IRepeatSearchRunner repeatSearchRunner;
+    private readonly IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender;
+    private readonly ILogger<RepeatSearchFunctions> logger;
+
+    public RepeatSearchFunctions(IRepeatSearchDispatcher repeatSearchDispatcher, IRepeatSearchRunner repeatSearchRunner,
+        IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender, ILogger<RepeatSearchFunctions> logger)
     {
-        private readonly IRepeatSearchDispatcher repeatSearchDispatcher;
-        private readonly IRepeatSearchRunner repeatSearchRunner;
-        private readonly IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender;
-        private readonly ILogger<RepeatSearchFunctions> logger;
+        this.repeatSearchDispatcher = repeatSearchDispatcher;
+        this.repeatSearchRunner = repeatSearchRunner;
+        this.repeatSearchMatchingFailureNotificationSender = repeatSearchMatchingFailureNotificationSender;
+        this.logger = logger;
+    }
 
-        public RepeatSearchFunctions(IRepeatSearchDispatcher repeatSearchDispatcher, IRepeatSearchRunner repeatSearchRunner,
-            IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender, ILogger<RepeatSearchFunctions> logger)
+    [Function(nameof(InitiateRepeatSearch))]
+    public async Task<IActionResult> InitiateRepeatSearch(
+        [HttpTrigger(AuthorizationLevel.Function, "post")]
+        [RequestBodyType(typeof(RepeatSearchRequest), nameof(RepeatSearchRequest))]
+        HttpRequest request)
+    {
+        var repeatSearchRequest = JsonConvert.DeserializeObject<RepeatSearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+        try
         {
-            this.repeatSearchDispatcher = repeatSearchDispatcher;
-            this.repeatSearchRunner = repeatSearchRunner;
-            this.repeatSearchMatchingFailureNotificationSender = repeatSearchMatchingFailureNotificationSender;
-            this.logger = logger;
+            var id = await repeatSearchDispatcher.DispatchSearch(repeatSearchRequest);
+            return new JsonResult(new SearchInitiationResponse { SearchIdentifier = id });
         }
-
-        [Function(nameof(InitiateRepeatSearch))]
-        public async Task<IActionResult> InitiateRepeatSearch(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(RepeatSearchRequest), nameof(RepeatSearchRequest))]
-            HttpRequest request)
+        catch (ValidationException e)
         {
-            var repeatSearchRequest = JsonConvert.DeserializeObject<RepeatSearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
-            try
-            {
-                var id = await repeatSearchDispatcher.DispatchSearch(repeatSearchRequest);
-                return new JsonResult(new SearchInitiationResponse { SearchIdentifier = id });
-            }
-            catch (ValidationException e)
-            {
-                return new BadRequestObjectResult(e.ToValidationErrorsModel());
-            }
+            return new BadRequestObjectResult(e.ToValidationErrorsModel());
         }
+    }
 
-        [Function(nameof(RunRepeatSearch))]
-        public async Task RunRepeatSearch(
-            [ServiceBusTrigger(
-                "%MessagingServiceBus:RepeatSearchRequestsTopic%",
-                "%MessagingServiceBus:RepeatSearchRequestsSubscription%",
-                Connection = "MessagingServiceBus:ConnectionString")]
-            IdentifiedRepeatSearchRequest request,
-            int deliveryCount,
-            DateTime enqueuedTimeUtc,
-            CancellationToken cancellationToken)
+    [Function(nameof(RunRepeatSearch))]
+    public async Task RunRepeatSearch(
+        [ServiceBusTrigger(
+            "%MessagingServiceBus:RepeatSearchRequestsTopic%",
+            "%MessagingServiceBus:RepeatSearchRequestsSubscription%",
+            Connection = "MessagingServiceBus:ConnectionString")]
+        IdentifiedRepeatSearchRequest request,
+        int deliveryCount,
+        DateTime enqueuedTimeUtc,
+        CancellationToken cancellationToken)
+    {
+        try
         {
-            try
-            {
-                logger.LogInformation("Function {FunctionName} executing; Search Id: {SearchId}; Repeat Search Id: {RepeatSearchId}",
-                    nameof(RunRepeatSearch), request.OriginalSearchId, request.RepeatSearchId);
+            logger.LogInformation("Function {FunctionName} executing; Search Id: {SearchId}; Repeat Search Id: {RepeatSearchId}",
+                nameof(RunRepeatSearch), request.OriginalSearchId, request.RepeatSearchId);
 
-                enqueuedTimeUtc = DateTime.SpecifyKind(enqueuedTimeUtc, DateTimeKind.Utc);
-                await repeatSearchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc).WaitAsync(cancellationToken);
+            enqueuedTimeUtc = DateTime.SpecifyKind(enqueuedTimeUtc, DateTimeKind.Utc);
+            await repeatSearchRunner.RunSearch(request, deliveryCount, enqueuedTimeUtc).WaitAsync(cancellationToken);
 
-                logger.LogInformation("Function {FunctionName} executed; Search Id: {SearchId}; Repeat Search Id: {RepeatSearchId}",
-                    nameof(RunRepeatSearch), request.OriginalSearchId, request.RepeatSearchId);
-            }
-            catch (OperationCanceledException ex)
-            {
-                var message = $"Function {nameof(RunRepeatSearch)} has been cancelled; " +
-                              $"Search Id: {request.OriginalSearchId}; " +
-                              $"Repeat Search Id: {request.RepeatSearchId}";
-
-                var wrappedException = new OperationCanceledException(message, ex, cancellationToken);
-
-                logger.LogError(wrappedException, message);
-
-                throw wrappedException;
-            }
+            logger.LogInformation("Function {FunctionName} executed; Search Id: {SearchId}; Repeat Search Id: {RepeatSearchId}",
+                nameof(RunRepeatSearch), request.OriginalSearchId, request.RepeatSearchId);
         }
-
-        [Function(nameof(RepeatSearchMatchingRequestsDeadLetterQueueListener))]
-        public async Task RepeatSearchMatchingRequestsDeadLetterQueueListener(
-            [ServiceBusTrigger(
-                "%MessagingServiceBus:RepeatSearchRequestsTopic%/Subscriptions/%MessagingServiceBus:RepeatSearchRequestsSubscription%/$DeadLetterQueue",
-                "%MessagingServiceBus:RepeatSearchRequestsSubscription%",
-                Connection = "MessagingServiceBus:ConnectionString")]
-            IdentifiedRepeatSearchRequest request,
-            int deliveryCount)
+        catch (OperationCanceledException ex)
         {
-            await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(request, deliveryCount, 0);
+            var message = $"Function {nameof(RunRepeatSearch)} has been cancelled; " +
+                          $"Search Id: {request.OriginalSearchId}; " +
+                          $"Repeat Search Id: {request.RepeatSearchId}";
+
+            var wrappedException = new OperationCanceledException(message, ex, cancellationToken);
+
+            logger.LogError(wrappedException, message);
+
+            throw wrappedException;
         }
+    }
+
+    [Function(nameof(RepeatSearchMatchingRequestsDeadLetterQueueListener))]
+    public async Task RepeatSearchMatchingRequestsDeadLetterQueueListener(
+        [ServiceBusTrigger(
+            "%MessagingServiceBus:RepeatSearchRequestsTopic%/Subscriptions/%MessagingServiceBus:RepeatSearchRequestsSubscription%/$DeadLetterQueue",
+            "%MessagingServiceBus:RepeatSearchRequestsSubscription%",
+            Connection = "MessagingServiceBus:ConnectionString")]
+        IdentifiedRepeatSearchRequest request,
+        int deliveryCount)
+    {
+        await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(request, deliveryCount, 0);
     }
 }

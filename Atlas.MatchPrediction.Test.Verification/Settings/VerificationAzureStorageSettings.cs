@@ -1,8 +1,7 @@
-﻿namespace Atlas.MatchPrediction.Test.Verification.Settings
+﻿namespace Atlas.MatchPrediction.Test.Verification.Settings;
+
+internal class VerificationAzureStorageSettings
 {
-    internal class VerificationAzureStorageSettings
-    {
-        public string ConnectionString { get; set; }
-        public string HaplotypeFrequencySetBlobContainer { get; set; }
-    }
+    public string ConnectionString { get; set; }
+    public string HaplotypeFrequencySetBlobContainer { get; set; }
 }

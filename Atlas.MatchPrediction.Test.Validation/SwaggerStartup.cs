@@ -2,17 +2,16 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Atlas.MatchPrediction.Test.Validation
+namespace Atlas.MatchPrediction.Test.Validation;
+
+internal static class SwashBuckleStartup
 {
-    internal static class SwashBuckleStartup
+    public static void Configure(IServiceCollection services)
     {
-        public static void Configure(IServiceCollection services)
-        {
-            services.AddSwashBuckle(opts =>
+        services.AddSwashBuckle(opts =>
             {
                 opts.RoutePrefix = "api";
             },
-                executingAssembly: Assembly.GetExecutingAssembly());
-        }
+            executingAssembly: Assembly.GetExecutingAssembly());
     }
 }

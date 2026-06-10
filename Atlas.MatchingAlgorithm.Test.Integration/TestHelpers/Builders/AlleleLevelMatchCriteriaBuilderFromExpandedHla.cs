@@ -5,65 +5,64 @@ using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
+namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
+
+public class AlleleLevelMatchCriteriaFromExpandedHla
 {
-    public class AlleleLevelMatchCriteriaFromExpandedHla
+    private readonly Locus locusUnderTest;
+    private readonly DonorType donorType;
+
+    public AlleleLevelMatchCriteriaFromExpandedHla(
+        Locus locusUnderTest,
+        DonorType donorType)
     {
-        private readonly Locus locusUnderTest;
-        private readonly DonorType donorType;
+        this.locusUnderTest = locusUnderTest;
+        this.donorType = donorType;
+    }
 
-        public AlleleLevelMatchCriteriaFromExpandedHla(
-            Locus locusUnderTest,
-            DonorType donorType)
+    /// <summary>
+    /// Uses AlleleLevelMatchCriteriaBuilder to build criteria with 
+    /// the specified number of mismatches at the locus under test.
+    /// </summary>
+    public AlleleLevelMatchCriteria GetAlleleLevelMatchCriteria(
+        PhenotypeInfo<INullHandledHlaMatchingMetadata> phenotype,
+        int mismatchCount = 0)
+    {
+        var builder = GetDefaultBuilder(phenotype);
+
+        if (mismatchCount > 0)
         {
-            this.locusUnderTest = locusUnderTest;
-            this.donorType = donorType;
+            var locusUnderTestCriteria = GetLocusMatchCriteria(locusUnderTest, mismatchCount, phenotype);
+
+            builder
+                .WithDonorMismatchCount(mismatchCount)
+                .WithLocusMatchCriteria(locusUnderTest, locusUnderTestCriteria);
         }
-
-        /// <summary>
-        /// Uses AlleleLevelMatchCriteriaBuilder to build criteria with 
-        /// the specified number of mismatches at the locus under test.
-        /// </summary>
-        public AlleleLevelMatchCriteria GetAlleleLevelMatchCriteria(
-            PhenotypeInfo<INullHandledHlaMatchingMetadata> phenotype,
-            int mismatchCount = 0)
-        {
-            var builder = GetDefaultBuilder(phenotype);
-
-            if (mismatchCount > 0)
-            {
-                var locusUnderTestCriteria = GetLocusMatchCriteria(locusUnderTest, mismatchCount, phenotype);
-
-                builder
-                    .WithDonorMismatchCount(mismatchCount)
-                    .WithLocusMatchCriteria(locusUnderTest, locusUnderTestCriteria);
-            }
                               
-            return builder.Build();
-        }
+        return builder.Build();
+    }
 
-        private AlleleLevelMatchCriteriaBuilder GetDefaultBuilder(PhenotypeInfo<INullHandledHlaMatchingMetadata> phenotype)
-        {
-            const int zeroMismatchCount = 0;
-            return new AlleleLevelMatchCriteriaBuilder()
-                .WithSearchType(donorType)
-                .WithLocusMatchCriteria(Locus.A, GetLocusMatchCriteria(Locus.A, zeroMismatchCount, phenotype))
-                .WithLocusMatchCriteria(Locus.B, GetLocusMatchCriteria(Locus.B, zeroMismatchCount, phenotype))
-                .WithLocusMatchCriteria(Locus.Drb1, GetLocusMatchCriteria(Locus.Drb1, zeroMismatchCount, phenotype))
-                .WithDonorMismatchCount(zeroMismatchCount);
-        }
+    private AlleleLevelMatchCriteriaBuilder GetDefaultBuilder(PhenotypeInfo<INullHandledHlaMatchingMetadata> phenotype)
+    {
+        const int zeroMismatchCount = 0;
+        return new AlleleLevelMatchCriteriaBuilder()
+            .WithSearchType(donorType)
+            .WithLocusMatchCriteria(Locus.A, GetLocusMatchCriteria(Locus.A, zeroMismatchCount, phenotype))
+            .WithLocusMatchCriteria(Locus.B, GetLocusMatchCriteria(Locus.B, zeroMismatchCount, phenotype))
+            .WithLocusMatchCriteria(Locus.Drb1, GetLocusMatchCriteria(Locus.Drb1, zeroMismatchCount, phenotype))
+            .WithDonorMismatchCount(zeroMismatchCount);
+    }
 
-        private static AlleleLevelLocusMatchCriteria GetLocusMatchCriteria(
-            Locus locus,
-            int mismatchCount,
-            PhenotypeInfo<INullHandledHlaMatchingMetadata> phenotype)
+    private static AlleleLevelLocusMatchCriteria GetLocusMatchCriteria(
+        Locus locus,
+        int mismatchCount,
+        PhenotypeInfo<INullHandledHlaMatchingMetadata> phenotype)
+    {
+        return new AlleleLevelLocusMatchCriteria
         {
-            return new AlleleLevelLocusMatchCriteria
-            {
-                MismatchCount = mismatchCount,
-                PGroupsToMatchInPositionOne = phenotype.GetPosition(locus, LocusPosition.One).MatchingPGroups,
-                PGroupsToMatchInPositionTwo = phenotype.GetPosition(locus, LocusPosition.Two).MatchingPGroups
-            };
-        }
+            MismatchCount = mismatchCount,
+            PGroupsToMatchInPositionOne = phenotype.GetPosition(locus, LocusPosition.One).MatchingPGroups,
+            PGroupsToMatchInPositionTwo = phenotype.GetPosition(locus, LocusPosition.Two).MatchingPGroups
+        };
     }
 }

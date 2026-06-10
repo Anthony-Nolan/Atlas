@@ -1,25 +1,24 @@
 using Atlas.Common.AzureStorage;
 
-namespace Atlas.HlaMetadataDictionary.InternalModels
+namespace Atlas.HlaMetadataDictionary.InternalModels;
+
+internal class TableReferenceRow : AtlasTableEntityBase
 {
-    internal class TableReferenceRow : AtlasTableEntityBase
+    public string TableReference { get; set; }
+
+    private const string PartitionValue = "TableNames";
+
+    public TableReferenceRow() { }
+
+    public TableReferenceRow(string tablePrefix, string tableReference)
     {
-        public string TableReference { get; set; }
+        TableReference = tableReference;
+        RowKey = tablePrefix;
+        PartitionKey = GetPartition();
+    }
 
-        private const string PartitionValue = "TableNames";
-
-        public TableReferenceRow() { }
-
-        public TableReferenceRow(string tablePrefix, string tableReference)
-        {
-            TableReference = tableReference;
-            RowKey = tablePrefix;
-            PartitionKey = GetPartition();
-        }
-
-        public static string GetPartition()
-        {
-            return PartitionValue;
-        }
+    public static string GetPartition()
+    {
+        return PartitionValue;
     }
 }

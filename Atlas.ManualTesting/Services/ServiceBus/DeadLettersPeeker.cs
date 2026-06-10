@@ -1,17 +1,16 @@
 ﻿using Atlas.Common.Debugging;
 
-namespace Atlas.ManualTesting.Services.ServiceBus
-{
-    internal interface IDeadLettersPeeker<T> : IServiceBusPeeker<T>
-    {
-    }
+namespace Atlas.ManualTesting.Services.ServiceBus;
 
-    internal class DeadLettersPeeker<T> : ServiceBusPeeker<T>, IDeadLettersPeeker<T>
+internal interface IDeadLettersPeeker<T> : IServiceBusPeeker<T>
+{
+}
+
+internal class DeadLettersPeeker<T> : ServiceBusPeeker<T>, IDeadLettersPeeker<T>
+{
+    // ReSharper disable once SuggestBaseTypeForParameter
+    public DeadLettersPeeker(IDeadLetterReceiverFactory factory, string topicName, string subscriptionName)
+        : base(factory, topicName, subscriptionName)
     {
-        // ReSharper disable once SuggestBaseTypeForParameter
-        public DeadLettersPeeker(IDeadLetterReceiverFactory factory, string topicName, string subscriptionName)
-            : base(factory, topicName, subscriptionName)
-        {
-        }
     }
 }

@@ -1,17 +1,16 @@
 ﻿// ReSharper disable InconsistentNaming
 using System;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
+
+public static class DonorIdGenerator
 {
-    public static class DonorIdGenerator
+    private static int nextId = 0;
+
+    public static int NextId()
     {
-        private static int nextId = 0;
-
-        public static int NextId()
-        {
-            return ++nextId;
-        }
-
-        public static string NewExternalCode => Guid.NewGuid().ToString();
+        return ++nextId;
     }
+
+    public static string NewExternalCode => Guid.NewGuid().ToString();
 }

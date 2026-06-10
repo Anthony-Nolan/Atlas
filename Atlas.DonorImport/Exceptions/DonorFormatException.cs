@@ -1,12 +1,11 @@
 ﻿using System;
 
-namespace Atlas.DonorImport.Exceptions
+namespace Atlas.DonorImport.Exceptions;
+
+internal class DonorFormatException : Exception
 {
-    internal class DonorFormatException : Exception
+    private const string ErrorMessage = "Error parsing Donor Format";
+    public DonorFormatException(Exception e): base(ErrorMessage, e)
     {
-        private const string ErrorMessage = "Error parsing Donor Format";
-        public DonorFormatException(Exception e): base(ErrorMessage, e)
-        {
-        }
     }
 }

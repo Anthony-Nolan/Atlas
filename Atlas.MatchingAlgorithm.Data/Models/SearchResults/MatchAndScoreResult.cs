@@ -1,30 +1,29 @@
 ﻿using System.Linq;
 using Atlas.Common.Public.Models.GeneticData;
 
-namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
+namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults;
+
+public class MatchAndScoreResult
 {
-    public class MatchAndScoreResult
+    public MatchResult MatchResult { get; set; }
+
+    public ScoreResult ScoreResult { get; set; }
+
+    /// <summary>
+    /// Total count of Potential matches at those loci covered by both matching *and* scoring.
+    /// TODO - ATLAS-539 - Confirm how potential matches should be calculated
+    /// </summary>
+    public int PotentialMatchCount => MatchResult.MatchedLoci.Select(GetPotentialMatchCountAtLocus).Sum();
+
+    private int GetPotentialMatchCountAtLocus(Locus locus)
     {
-        public MatchResult MatchResult { get; set; }
+        var matchDetailsAtLocus = MatchResult.MatchDetailsForLocus(locus);
 
-        public ScoreResult ScoreResult { get; set; }
-
-        /// <summary>
-        /// Total count of Potential matches at those loci covered by both matching *and* scoring.
-        /// TODO - ATLAS-539 - Confirm how potential matches should be calculated
-        /// </summary>
-        public int PotentialMatchCount => MatchResult.MatchedLoci.Select(GetPotentialMatchCountAtLocus).Sum();
-
-        private int GetPotentialMatchCountAtLocus(Locus locus)
+        if (matchDetailsAtLocus == null)
         {
-            var matchDetailsAtLocus = MatchResult.MatchDetailsForLocus(locus);
-
-            if (matchDetailsAtLocus == null)
-            {
-                return 0;
-            }
-
-            return ScoreResult?.ScoreDetailsForLocus(locus)?.PotentialMatchCount() ?? 0;
+            return 0;
         }
+
+        return ScoreResult?.ScoreDetailsForLocus(locus)?.PotentialMatchCount() ?? 0;
     }
 }

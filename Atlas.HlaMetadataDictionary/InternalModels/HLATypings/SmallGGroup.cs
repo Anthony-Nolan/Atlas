@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.Public.Models.GeneticData;
 
-namespace Atlas.HlaMetadataDictionary.InternalModels.HLATypings
+namespace Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
+
+internal class SmallGGroup
 {
-    internal class SmallGGroup
-    {
-        public Locus Locus { get; set; }
-        public string Name { get; set; }
-        public IReadOnlyCollection<string> Alleles { get; set; }
-        public string PGroup { get; set; }
-    }
+    public Locus Locus { get; set; }
+    public string Name { get; set; }
+    public IReadOnlyCollection<string> Alleles { get; set; }
+    public string PGroup { get; set; }
 }

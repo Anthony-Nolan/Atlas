@@ -3,35 +3,34 @@ using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using System.Threading.Tasks;
 
-namespace Atlas.Common.AzureStorage.Blob
+namespace Atlas.Common.AzureStorage.Blob;
+
+public interface ISearchResultsBlobStorageClient
 {
-    public interface ISearchResultsBlobStorageClient
+    Task UploadResults<T>(ResultSet<T> searchResultSet, int searchResultsBatchSize, string batchFolder) where T : Result;
+    Task UploadResults<T>(T results, string blobContainerName, string fileName);
+}
+
+public class SearchResultsBlobStorageClient : BlobUploader, ISearchResultsBlobStorageClient
+{
+    public SearchResultsBlobStorageClient(string connectionString, IAtlasLogger logger)
+        : base(connectionString, logger)
     {
-        Task UploadResults<T>(ResultSet<T> searchResultSet, int searchResultsBatchSize, string batchFolder) where T : Result;
-        Task UploadResults<T>(T results, string blobContainerName, string fileName);
     }
 
-    public class SearchResultsBlobStorageClient : BlobUploader, ISearchResultsBlobStorageClient
+    public async Task UploadResults<T>(ResultSet<T> searchResultSet, int searchResultsBatchSize, string batchFolder) where T : Result
     {
-        public SearchResultsBlobStorageClient(string connectionString, IAtlasLogger logger)
-            : base(connectionString, logger)
-        {
-        }
+        await UploadResults(searchResultSet, searchResultSet.BlobStorageContainerName, searchResultSet.ResultsFileName);
 
-        public async Task UploadResults<T>(ResultSet<T> searchResultSet, int searchResultsBatchSize, string batchFolder) where T : Result
+        if (searchResultSet.BatchedResult)
         {
-            await UploadResults(searchResultSet, searchResultSet.BlobStorageContainerName, searchResultSet.ResultsFileName);
-
-            if (searchResultSet.BatchedResult)
-            {
-                await ChunkAndUpload(searchResultSet.Results, searchResultsBatchSize, searchResultSet.BlobStorageContainerName, batchFolder);
-            }
+            await ChunkAndUpload(searchResultSet.Results, searchResultsBatchSize, searchResultSet.BlobStorageContainerName, batchFolder);
         }
+    }
 
-        public async Task UploadResults<T>(T results, string blobContainerName, string fileName)
-        {
-            // Results will not be serialised if results are being batched
-            await Upload(blobContainerName, fileName, results);
-        }
+    public async Task UploadResults<T>(T results, string blobContainerName, string fileName)
+    {
+        // Results will not be serialised if results are being batched
+        await Upload(blobContainerName, fileName, results);
     }
 }

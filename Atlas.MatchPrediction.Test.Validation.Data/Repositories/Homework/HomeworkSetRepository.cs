@@ -2,26 +2,26 @@
 using Dapper;
 using Microsoft.Data.SqlClient;
 
-namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
+namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
+
+public interface IHomeworkSetRepository
 {
-    public interface IHomeworkSetRepository
+    Task<int> Add(string setName, string matchLoci, string hlaNomenclatureVersion);
+    Task<HomeworkSet> Get(int setId);
+}
+
+public class HomeworkSetRepository : IHomeworkSetRepository
+{
+    private readonly string connectionString;
+
+    public HomeworkSetRepository(string connectionString)
     {
-        Task<int> Add(string setName, string matchLoci, string hlaNomenclatureVersion);
-        Task<HomeworkSet> Get(int setId);
+        this.connectionString = connectionString;
     }
 
-    public class HomeworkSetRepository : IHomeworkSetRepository
+    public async Task<int> Add(string setName, string matchLoci, string hlaNomenclatureVersion)
     {
-        private readonly string connectionString;
-
-        public HomeworkSetRepository(string connectionString)
-        {
-            this.connectionString = connectionString;
-        }
-
-        public async Task<int> Add(string setName, string matchLoci, string hlaNomenclatureVersion)
-        {
-            const string sql = $@"
+        const string sql = $@"
                 INSERT INTO HomeworkSets(
                     {nameof(HomeworkSet.SetName)},
                     {nameof(HomeworkSet.MatchLoci)},
@@ -33,20 +33,19 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework
                 );
                 SELECT CAST(SCOPE_IDENTITY() as int);";
 
-            await using (var connection = new SqlConnection(connectionString))
-            {
-                return (await connection.QueryAsync<int>(sql, new { setName, matchLoci, hlaNomenclatureVersion })).Single();
-            }
-        }
-
-        public async Task<HomeworkSet> Get(int setId)
+        await using (var connection = new SqlConnection(connectionString))
         {
-            const string sql = $@" SELECT * FROM HomeworkSets WHERE Id = @{nameof(setId)}";
+            return (await connection.QueryAsync<int>(sql, new { setName, matchLoci, hlaNomenclatureVersion })).Single();
+        }
+    }
 
-            await using (var connection = new SqlConnection(connectionString))
-            {
-                return connection.QuerySingleOrDefault<HomeworkSet>(sql, new { setId });
-            }
+    public async Task<HomeworkSet> Get(int setId)
+    {
+        const string sql = $@" SELECT * FROM HomeworkSets WHERE Id = @{nameof(setId)}";
+
+        await using (var connection = new SqlConnection(connectionString))
+        {
+            return connection.QuerySingleOrDefault<HomeworkSet>(sql, new { setId });
         }
     }
 }

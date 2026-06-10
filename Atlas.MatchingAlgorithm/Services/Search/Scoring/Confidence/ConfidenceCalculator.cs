@@ -5,110 +5,109 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 
-namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
+namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence;
+
+public interface IConfidenceCalculator
 {
-    public interface IConfidenceCalculator
-    {
-        MatchConfidence CalculateConfidence(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata);
-    }
+    MatchConfidence CalculateConfidence(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata);
+}
 
-    public class ConfidenceCalculator : IConfidenceCalculator
-    {
-        private const string newAllele = "NEW";
+public class ConfidenceCalculator : IConfidenceCalculator
+{
+    private const string newAllele = "NEW";
 
-        public MatchConfidence CalculateConfidence(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
+    public MatchConfidence CalculateConfidence(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
+    {
+        if (patientMetadata?.LookupName == newAllele && donorMetadata?.LookupName == newAllele)
         {
-            if (patientMetadata?.LookupName == newAllele && donorMetadata?.LookupName == newAllele)
-            {
-                return MatchConfidence.Mismatch;
-            }
+            return MatchConfidence.Mismatch;
+        }
 
-            // If either patient or donor is untyped, the match is potential
-            if (patientMetadata == null || donorMetadata == null)
-            {
-                return MatchConfidence.Potential;
-            }
- 
-            if (IsMismatched(patientMetadata, donorMetadata))
-            {
-                return MatchConfidence.Mismatch;
-            }
-
-            if (IsDefiniteMatch(patientMetadata, donorMetadata))
-            {
-                return MatchConfidence.Definite;
-            }
-
-            if (IsExactMatch(patientMetadata, donorMetadata))
-            {
-                return MatchConfidence.Exact;
-            }
-
+        // If either patient or donor is untyped, the match is potential
+        if (patientMetadata == null || donorMetadata == null)
+        {
             return MatchConfidence.Potential;
         }
-
-        private static bool IsMismatched(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
+ 
+        if (IsMismatched(patientMetadata, donorMetadata))
         {
-            if (patientMetadata.HlaScoringInfo is SerologyScoringInfo ||
-                donorMetadata.HlaScoringInfo is SerologyScoringInfo)
-            {
-                return !IsSerologyMatch(patientMetadata, donorMetadata);
-            }
-
-            return !IsPotentiallyAMolecularMatch(patientMetadata, donorMetadata);
+            return MatchConfidence.Mismatch;
         }
 
-        private static bool IsPotentiallyAMolecularMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
+        if (IsDefiniteMatch(patientMetadata, donorMetadata))
         {
-            var patientPGroups = patientMetadata.HlaScoringInfo.MatchingPGroups.ToList();
-            var donorPGroups = donorMetadata.HlaScoringInfo.MatchingPGroups.ToList();
-
-            return 
-                // potential non-expressing match
-                patientPGroups.IsNullOrEmpty() && donorPGroups.IsNullOrEmpty() ||
-                // check for expressing match
-                patientPGroups.Intersect(donorPGroups).Any();
+            return MatchConfidence.Definite;
         }
 
-        private static bool IsSerologyMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
+        if (IsExactMatch(patientMetadata, donorMetadata))
         {
-            var patientSerologies = patientMetadata.HlaScoringInfo.MatchingSerologies.ToList();
-            var donorSerologies = donorMetadata.HlaScoringInfo.MatchingSerologies.ToList();
-
-            var isDirectMatch = AreSerologiesMatched(patientSerologies, true, donorSerologies, true);
-            var isDonorIndirectMatch = AreSerologiesMatched(patientSerologies, true, donorSerologies, false);
-            var isPatientIndirectMatch = AreSerologiesMatched(patientSerologies, false, donorSerologies, true);
-
-            return isDirectMatch || isDonorIndirectMatch || isPatientIndirectMatch;
+            return MatchConfidence.Exact;
         }
 
-        /// <summary>
-        /// Determines if two sets of serologies are matched by their respective direct or indirect mappings.
-        /// </summary>
-        private static bool AreSerologiesMatched(
-            IEnumerable<SerologyEntry> patientSerologies,
-            bool usePatientDirectMapping,
-            IEnumerable<SerologyEntry> donorSerologies,
-            bool useDonorDirectMapping)
+        return MatchConfidence.Potential;
+    }
+
+    private static bool IsMismatched(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
+    {
+        if (patientMetadata.HlaScoringInfo is SerologyScoringInfo ||
+            donorMetadata.HlaScoringInfo is SerologyScoringInfo)
         {
-            return
-                patientSerologies.Where(s => s.IsDirectMapping == usePatientDirectMapping).Select(s => s.Name)
-                    .Intersect(donorSerologies.Where(s => s.IsDirectMapping == useDonorDirectMapping).Select(s => s.Name))
-                    .Any();
+            return !IsSerologyMatch(patientMetadata, donorMetadata);
         }
 
-        private static bool IsDefiniteMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
-        {
-            return patientMetadata.HlaScoringInfo is SingleAlleleScoringInfo
-                   && donorMetadata.HlaScoringInfo is SingleAlleleScoringInfo;
-        }
+        return !IsPotentiallyAMolecularMatch(patientMetadata, donorMetadata);
+    }
 
-        private static bool IsExactMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
-        {
-            return !(patientMetadata.HlaScoringInfo is SerologyScoringInfo)
-                   && !(donorMetadata.HlaScoringInfo is SerologyScoringInfo)
-                   && patientMetadata.HlaScoringInfo.MatchingPGroups.Count() == 1
-                   && donorMetadata.HlaScoringInfo.MatchingPGroups.Count() == 1;
-        }
+    private static bool IsPotentiallyAMolecularMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
+    {
+        var patientPGroups = patientMetadata.HlaScoringInfo.MatchingPGroups.ToList();
+        var donorPGroups = donorMetadata.HlaScoringInfo.MatchingPGroups.ToList();
+
+        return 
+            // potential non-expressing match
+            patientPGroups.IsNullOrEmpty() && donorPGroups.IsNullOrEmpty() ||
+            // check for expressing match
+            patientPGroups.Intersect(donorPGroups).Any();
+    }
+
+    private static bool IsSerologyMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
+    {
+        var patientSerologies = patientMetadata.HlaScoringInfo.MatchingSerologies.ToList();
+        var donorSerologies = donorMetadata.HlaScoringInfo.MatchingSerologies.ToList();
+
+        var isDirectMatch = AreSerologiesMatched(patientSerologies, true, donorSerologies, true);
+        var isDonorIndirectMatch = AreSerologiesMatched(patientSerologies, true, donorSerologies, false);
+        var isPatientIndirectMatch = AreSerologiesMatched(patientSerologies, false, donorSerologies, true);
+
+        return isDirectMatch || isDonorIndirectMatch || isPatientIndirectMatch;
+    }
+
+    /// <summary>
+    /// Determines if two sets of serologies are matched by their respective direct or indirect mappings.
+    /// </summary>
+    private static bool AreSerologiesMatched(
+        IEnumerable<SerologyEntry> patientSerologies,
+        bool usePatientDirectMapping,
+        IEnumerable<SerologyEntry> donorSerologies,
+        bool useDonorDirectMapping)
+    {
+        return
+            patientSerologies.Where(s => s.IsDirectMapping == usePatientDirectMapping).Select(s => s.Name)
+                .Intersect(donorSerologies.Where(s => s.IsDirectMapping == useDonorDirectMapping).Select(s => s.Name))
+                .Any();
+    }
+
+    private static bool IsDefiniteMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
+    {
+        return patientMetadata.HlaScoringInfo is SingleAlleleScoringInfo
+            && donorMetadata.HlaScoringInfo is SingleAlleleScoringInfo;
+    }
+
+    private static bool IsExactMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
+    {
+        return !(patientMetadata.HlaScoringInfo is SerologyScoringInfo)
+            && !(donorMetadata.HlaScoringInfo is SerologyScoringInfo)
+            && patientMetadata.HlaScoringInfo.MatchingPGroups.Count() == 1
+            && donorMetadata.HlaScoringInfo.MatchingPGroups.Count() == 1;
     }
 }

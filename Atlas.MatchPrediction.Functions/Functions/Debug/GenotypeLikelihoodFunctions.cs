@@ -11,32 +11,31 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
-namespace Atlas.MatchPrediction.Functions.Functions.Debug
+namespace Atlas.MatchPrediction.Functions.Functions.Debug;
+
+public class GenotypeLikelihoodFunctions
 {
-    public class GenotypeLikelihoodFunctions
+    private readonly IGenotypeLikelihoodService genotypeLikelihoodService;
+    private readonly IHaplotypeFrequencyService frequencyService;
+
+    public GenotypeLikelihoodFunctions(IGenotypeLikelihoodService genotypeLikelihoodService, IHaplotypeFrequencyService frequencyService)
     {
-        private readonly IGenotypeLikelihoodService genotypeLikelihoodService;
-        private readonly IHaplotypeFrequencyService frequencyService;
+        this.genotypeLikelihoodService = genotypeLikelihoodService;
+        this.frequencyService = frequencyService;
+    }
 
-        public GenotypeLikelihoodFunctions(IGenotypeLikelihoodService genotypeLikelihoodService, IHaplotypeFrequencyService frequencyService)
-        {
-            this.genotypeLikelihoodService = genotypeLikelihoodService;
-            this.frequencyService = frequencyService;
-        }
+    [Function(nameof(CalculateGenotypeLikelihood))]
+    public async Task<IActionResult> CalculateGenotypeLikelihood(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(CalculateGenotypeLikelihood)}")]
+        [RequestBodyType(typeof(GenotypeLikelihoodInput), nameof(GenotypeLikelihoodInput))]
+        HttpRequest request)
+    {
+        var genotypeLikelihood = JsonConvert.DeserializeObject<GenotypeLikelihoodInput>(await new StreamReader(request.Body).ReadToEndAsync());
+        genotypeLikelihood.FrequencySetMetaData ??= new FrequencySetMetadata();
 
-        [Function(nameof(CalculateGenotypeLikelihood))]
-        public async Task<IActionResult> CalculateGenotypeLikelihood(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(CalculateGenotypeLikelihood)}")]
-            [RequestBodyType(typeof(GenotypeLikelihoodInput), nameof(GenotypeLikelihoodInput))]
-            HttpRequest request)
-        {
-            var genotypeLikelihood = JsonConvert.DeserializeObject<GenotypeLikelihoodInput>(await new StreamReader(request.Body).ReadToEndAsync());
-            genotypeLikelihood.FrequencySetMetaData ??= new FrequencySetMetadata();
+        var frequencySet = await frequencyService.GetSingleHaplotypeFrequencySet(genotypeLikelihood.FrequencySetMetaData);
 
-            var frequencySet = await frequencyService.GetSingleHaplotypeFrequencySet(genotypeLikelihood.FrequencySetMetaData);
-
-            var likelihood = await genotypeLikelihoodService.CalculateLikelihoodForGenotype(genotypeLikelihood.Genotype, frequencySet, genotypeLikelihood.AllowedLoci);
-            return new JsonResult(new GenotypeLikelihoodResponse { Likelihood = likelihood });
-        }
+        var likelihood = await genotypeLikelihoodService.CalculateLikelihoodForGenotype(genotypeLikelihood.Genotype, frequencySet, genotypeLikelihood.AllowedLoci);
+        return new JsonResult(new GenotypeLikelihoodResponse { Likelihood = likelihood });
     }
 }

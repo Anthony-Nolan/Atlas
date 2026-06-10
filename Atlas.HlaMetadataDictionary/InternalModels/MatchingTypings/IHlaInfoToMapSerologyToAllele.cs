@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
-namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
+namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
+
+internal interface IHlaInfoToMapSerologyToAllele
 {
-    internal interface IHlaInfoToMapSerologyToAllele
-    {
-        List<AlleleInfoForMatching> AlleleInfoForMatching { get; }
-        List<RelDnaSer> AlleleToSerologyRelationships { get; }
-    }
+    List<AlleleInfoForMatching> AlleleInfoForMatching { get; }
+    List<RelDnaSer> AlleleToSerologyRelationships { get; }
 }

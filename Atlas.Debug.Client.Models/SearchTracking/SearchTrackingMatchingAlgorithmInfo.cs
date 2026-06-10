@@ -1,23 +1,22 @@
 ﻿using System;
 
-namespace Atlas.Debug.Client.Models.SearchTracking
+namespace Atlas.Debug.Client.Models.SearchTracking;
+
+public class SearchTrackingMatchingAlgorithmInfo
 {
-    public class SearchTrackingMatchingAlgorithmInfo
-    {
-        public bool IsSuccessful { get; set; }
+    public bool IsSuccessful { get; set; }
 
-        public SearchTrackingMatchingAlgorithmFailureInfo FailureInfo { get; set; }
+    public SearchTrackingMatchingAlgorithmFailureInfo FailureInfo { get; set; }
 
-        public byte? TotalAttemptsNumber { get; set; }
+    public byte? TotalAttemptsNumber { get; set; }
 
-        public int? NumberOfResults { get; set; }
+    public int? NumberOfResults { get; set; }
 
-        public SearchTrackingRepeatSearchMatchingAlgorithmDetails RepeatDetails { get; set; }
+    public SearchTrackingRepeatSearchMatchingAlgorithmDetails RepeatDetails { get; set; }
 
-        public string? HlaNomenclatureVersion { get; set; }
+    public string? HlaNomenclatureVersion { get; set; }
 
-        public bool? ResultsSent { get; set; }
+    public bool? ResultsSent { get; set; }
 
-        public DateTime? ResultsSentTimeUtc { get; set; }
-    }
+    public DateTime? ResultsSentTimeUtc { get; set; }
 }

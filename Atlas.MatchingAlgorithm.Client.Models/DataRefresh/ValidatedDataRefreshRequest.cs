@@ -1,7 +1,6 @@
-﻿namespace Atlas.MatchingAlgorithm.Client.Models.DataRefresh
+﻿namespace Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
+
+public class ValidatedDataRefreshRequest
 {
-    public class ValidatedDataRefreshRequest
-    {
-        public int DataRefreshRecordId { get; set; }
-    }
+    public int DataRefreshRecordId { get; set; }
 }

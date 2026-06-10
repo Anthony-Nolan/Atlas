@@ -5,22 +5,21 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace Atlas.RepeatSearch.Functions.Functions
+namespace Atlas.RepeatSearch.Functions.Functions;
+
+public class HealthCheckFunctions
 {
-    public class HealthCheckFunctions
+    private readonly HealthCheckService healthCheckService;
+
+    public HealthCheckFunctions(HealthCheckService healthCheckService)
     {
-        private readonly HealthCheckService healthCheckService;
+        this.healthCheckService = healthCheckService;
+    }
 
-        public HealthCheckFunctions(HealthCheckService healthCheckService)
-        {
-            this.healthCheckService = healthCheckService;
-        }
-
-        [Function(nameof(HealthCheck))]
-        public async Task<IActionResult> HealthCheck([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest request)
-        {
-            var healthStatus = await healthCheckService.CheckHealthAsync();
-            return new JsonResult(Enum.GetName(typeof(HealthStatus), healthStatus.Status));
-        }
+    [Function(nameof(HealthCheck))]
+    public async Task<IActionResult> HealthCheck([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest request)
+    {
+        var healthStatus = await healthCheckService.CheckHealthAsync();
+        return new JsonResult(Enum.GetName(typeof(HealthStatus), healthStatus.Status));
     }
 }

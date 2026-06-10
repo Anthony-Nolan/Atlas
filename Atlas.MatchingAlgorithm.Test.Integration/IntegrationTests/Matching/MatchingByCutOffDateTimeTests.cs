@@ -20,199 +20,198 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
+namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching;
+
+public class MatchingByCutOffDateTimeTests
 {
-    public class MatchingByCutOffDateTimeTests
-    {
-        private const DonorType DefaultDonorType = DonorType.Adult;
-        private static readonly DateTimeOffset CutOffDateTime = new DateTimeOffset(2020, 1, 1, 1, 1, 1, TimeSpan.Zero);
-        private static readonly PhenotypeInfo<string> MatchingDonorHla = new SampleTestHlas.HeterozygousSet1().ThreeLocus_SingleExpressingAlleles;
-        private static readonly PhenotypeInfo<string> NonMatchingDonorHla = new SampleTestHlas.HeterozygousSet2().ThreeLocus_SingleExpressingAlleles;
+    private const DonorType DefaultDonorType = DonorType.Adult;
+    private static readonly DateTimeOffset CutOffDateTime = new DateTimeOffset(2020, 1, 1, 1, 1, 1, TimeSpan.Zero);
+    private static readonly PhenotypeInfo<string> MatchingDonorHla = new SampleTestHlas.HeterozygousSet1().ThreeLocus_SingleExpressingAlleles;
+    private static readonly PhenotypeInfo<string> NonMatchingDonorHla = new SampleTestHlas.HeterozygousSet2().ThreeLocus_SingleExpressingAlleles;
         
-        private TransientDatabase activeDb;
-        private string hlaVersion;
+    private TransientDatabase activeDb;
+    private string hlaVersion;
 
-        private IDonorManagementService donorManagementService;
-        private IMatchingService matchingService;
+    private IDonorManagementService donorManagementService;
+    private IMatchingService matchingService;
 
-        [SetUp]
-        public void SetUp()
+    [SetUp]
+    public void SetUp()
+    {
+        matchingService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchingService>();
+    }
+
+    [OneTimeSetUp]
+    public void OneTimeSetUp()
+    {
+        TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
         {
-            matchingService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchingService>();
-        }
+            donorManagementService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorManagementService>();
 
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
+            var dbProvider = DependencyInjection.DependencyInjection.Provider.GetService<IActiveDatabaseProvider>();
+            activeDb = dbProvider.GetActiveDatabase();
+
+            var versionProvider = DependencyInjection.DependencyInjection.Provider.GetService<IActiveHlaNomenclatureVersionAccessor>();
+            hlaVersion = versionProvider.GetActiveHlaNomenclatureVersion();
+        });
+    }
+
+    [OneTimeTearDown]
+    public void TearDown()
+    {
+        TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(DatabaseManager.ClearTransientDatabases);
+    }
+
+    [Test]
+    public async Task GetMatches_MatchingDonorUpdatedAtMatchingCutOffDateTime_ReturnsDonor()
+    {
+        var donorId = await CreateDonorInActiveDatabase(MatchingDonorHla, CutOffDateTime);
+        var matchCriteria = await GetSixOutOfSixMatchCriteria();
+
+        var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
+        matches.ShouldContainDonor(donorId);
+    }
+
+    [TestCase(0, 0, 0, 1)]
+    [TestCase(0, 0, 1, 0)]
+    [TestCase(0, 1, 0, 0)]
+    [TestCase(1, 0, 0, 0)]
+    public async Task GetMatches_MatchingDonorUpdatedAfterMatchingCutOffDateTime_ReturnsDonor(
+        int daysIncrement,
+        int hoursIncrement,
+        int minutesIncrement,
+        int secondsIncrement)
+    {
+        var donorModifiedDateTime = CutOffDateTime.Add(new TimeSpan(daysIncrement, hoursIncrement, minutesIncrement, secondsIncrement));
+        var donorId = await CreateDonorInActiveDatabase(MatchingDonorHla, donorModifiedDateTime);
+        var matchCriteria = await GetSixOutOfSixMatchCriteria();
+
+        var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
+        matches.ShouldContainDonor(donorId);
+    }
+
+    [TestCase(0, 0, 0, 1)]
+    [TestCase(0, 0, 1, 0)]
+    [TestCase(0, 1, 0, 0)]
+    [TestCase(1, 0, 0, 0)]
+    public async Task GetMatches_MatchingDonorUpdatedBeforeMatchingCutOffDateTime_DoesNotReturnDonor(
+        int daysDecrement,
+        int hoursDecrement,
+        int minutesDecrement,
+        int secondsDecrement)
+    {
+        var donorModifiedDateTime = CutOffDateTime.Subtract(new TimeSpan(daysDecrement, hoursDecrement, minutesDecrement, secondsDecrement));
+        var donorId = await CreateDonorInActiveDatabase(MatchingDonorHla, donorModifiedDateTime);
+        var matchCriteria = await GetSixOutOfSixMatchCriteria();
+
+        var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
+        matches.ShouldNotContainDonor(donorId);
+    }
+
+    [Test]
+    public async Task GetMatches_NoCutOffDate_ReturnsMatchingDonor()
+    {
+        var donorId = await CreateDonorInActiveDatabase(MatchingDonorHla, CutOffDateTime);
+        var matchCriteria = await GetSixOutOfSixMatchCriteria();
+
+        var matches = await matchingService.GetMatches(matchCriteria, null).ToListAsync();
+        matches.ShouldContainDonor(donorId);
+    }
+
+    [Test]
+    public async Task GetMatches_NonMatchingDonorUpdatedAtMatchingCutOffDateTime_DoesNotReturnDonor()
+    {
+        var donorId = await CreateDonorInActiveDatabase(NonMatchingDonorHla, CutOffDateTime);
+        var matchCriteria = await GetSixOutOfSixMatchCriteria();
+
+        var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
+        matches.ShouldNotContainDonor(donorId);
+    }
+
+    [TestCase(0, 0, 0, 1)]
+    [TestCase(0, 0, 1, 0)]
+    [TestCase(0, 1, 0, 0)]
+    [TestCase(1, 0, 0, 0)]
+    public async Task GetMatches_NonMatchingDonorUpdatedAfterMatchingCutOffDateTime_DoesNotReturnDonor(
+        int daysIncrement,
+        int hoursIncrement,
+        int minutesIncrement,
+        int secondsIncrement)
+    {
+        var donorModifiedDateTime = CutOffDateTime.Add(new TimeSpan(daysIncrement, hoursIncrement, minutesIncrement, secondsIncrement));
+        var donorId = await CreateDonorInActiveDatabase(NonMatchingDonorHla, donorModifiedDateTime);
+        var matchCriteria = await GetSixOutOfSixMatchCriteria();
+
+        var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
+        matches.ShouldNotContainDonor(donorId);
+    }
+
+    [TestCase(0, 0, 0, 1)]
+    [TestCase(0, 0, 1, 0)]
+    [TestCase(0, 1, 0, 0)]
+    [TestCase(1, 0, 0, 0)]
+    public async Task GetMatches_NonMatchingDonorUpdatedBeforeMatchingCutOffDateTime_DoesNotReturnDonor(
+        int daysDecrement,
+        int hoursDecrement,
+        int minutesDecrement,
+        int secondsDecrement)
+    {
+        var donorModifiedDateTime = CutOffDateTime.Subtract(new TimeSpan(daysDecrement, hoursDecrement, minutesDecrement, secondsDecrement));
+        var donorId = await CreateDonorInActiveDatabase(NonMatchingDonorHla, donorModifiedDateTime);
+        var matchCriteria = await GetSixOutOfSixMatchCriteria();
+
+        var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
+        matches.ShouldNotContainDonor(donorId);
+    }
+
+    [Test]
+    public async Task GetMatches_NoCutOffDate_DoesNotReturnNonMatchingDonor()
+    {
+        var donorId = await CreateDonorInActiveDatabase(NonMatchingDonorHla, CutOffDateTime);
+        var matchCriteria = await GetSixOutOfSixMatchCriteria();
+
+        var matches = await matchingService.GetMatches(matchCriteria, null).ToListAsync();
+        matches.ShouldNotContainDonor(donorId);
+    }
+
+    private async Task<int> CreateDonorInActiveDatabase(PhenotypeInfo<string> donorHla, DateTimeOffset updateDateTime)
+    {
+        var donorId = DonorIdGenerator.NextId();
+        var update = BuildUpdate(donorId, donorHla, updateDateTime);
+        await donorManagementService.ApplyDonorUpdatesToDatabase(
+            new[] { update }, activeDb, hlaVersion, false);
+
+        return donorId;
+    }
+
+    private static DonorAvailabilityUpdate BuildUpdate(int donorId, PhenotypeInfo<string> donorHla, DateTimeOffset updatedDateTime)
+    {
+        var donorInfo = new DonorInfo
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
-            {
-                donorManagementService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorManagementService>();
+            DonorId = donorId,
+            DonorType = DefaultDonorType,
+            ExternalDonorCode = DonorIdGenerator.NewExternalCode,
+            HlaNames = donorHla
+        };
 
-                var dbProvider = DependencyInjection.DependencyInjection.Provider.GetService<IActiveDatabaseProvider>();
-                activeDb = dbProvider.GetActiveDatabase();
-
-                var versionProvider = DependencyInjection.DependencyInjection.Provider.GetService<IActiveHlaNomenclatureVersionAccessor>();
-                hlaVersion = versionProvider.GetActiveHlaNomenclatureVersion();
-            });
-        }
-
-        [OneTimeTearDown]
-        public void TearDown()
+        return new DonorAvailabilityUpdate
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(DatabaseManager.ClearTransientDatabases);
-        }
+            UpdateSequenceNumber = 12345,
+            UpdateDateTime = updatedDateTime,
+            DonorId = donorId,
+            DonorInfo = donorInfo,
+            IsAvailableForSearch = true
+        };
+    }
 
-        [Test]
-        public async Task GetMatches_MatchingDonorUpdatedAtMatchingCutOffDateTime_ReturnsDonor()
+    private async Task<MatchCriteria> GetSixOutOfSixMatchCriteria()
+    {
+        var matchCriteriaMapper = DependencyInjection.DependencyInjection.Provider.GetService<IMatchCriteriaMapper>();
+        var searchRequest = new SearchRequestFromHlasBuilder(MatchingDonorHla).SixOutOfSix().Build();
+        return new MatchCriteria
         {
-            var donorId = await CreateDonorInActiveDatabase(MatchingDonorHla, CutOffDateTime);
-            var matchCriteria = await GetSixOutOfSixMatchCriteria();
-
-            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
-            matches.ShouldContainDonor(donorId);
-        }
-
-        [TestCase(0, 0, 0, 1)]
-        [TestCase(0, 0, 1, 0)]
-        [TestCase(0, 1, 0, 0)]
-        [TestCase(1, 0, 0, 0)]
-        public async Task GetMatches_MatchingDonorUpdatedAfterMatchingCutOffDateTime_ReturnsDonor(
-            int daysIncrement,
-            int hoursIncrement,
-            int minutesIncrement,
-            int secondsIncrement)
-        {
-            var donorModifiedDateTime = CutOffDateTime.Add(new TimeSpan(daysIncrement, hoursIncrement, minutesIncrement, secondsIncrement));
-            var donorId = await CreateDonorInActiveDatabase(MatchingDonorHla, donorModifiedDateTime);
-            var matchCriteria = await GetSixOutOfSixMatchCriteria();
-
-            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
-            matches.ShouldContainDonor(donorId);
-        }
-
-        [TestCase(0, 0, 0, 1)]
-        [TestCase(0, 0, 1, 0)]
-        [TestCase(0, 1, 0, 0)]
-        [TestCase(1, 0, 0, 0)]
-        public async Task GetMatches_MatchingDonorUpdatedBeforeMatchingCutOffDateTime_DoesNotReturnDonor(
-            int daysDecrement,
-            int hoursDecrement,
-            int minutesDecrement,
-            int secondsDecrement)
-        {
-            var donorModifiedDateTime = CutOffDateTime.Subtract(new TimeSpan(daysDecrement, hoursDecrement, minutesDecrement, secondsDecrement));
-            var donorId = await CreateDonorInActiveDatabase(MatchingDonorHla, donorModifiedDateTime);
-            var matchCriteria = await GetSixOutOfSixMatchCriteria();
-
-            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
-            matches.ShouldNotContainDonor(donorId);
-        }
-
-        [Test]
-        public async Task GetMatches_NoCutOffDate_ReturnsMatchingDonor()
-        {
-            var donorId = await CreateDonorInActiveDatabase(MatchingDonorHla, CutOffDateTime);
-            var matchCriteria = await GetSixOutOfSixMatchCriteria();
-
-            var matches = await matchingService.GetMatches(matchCriteria, null).ToListAsync();
-            matches.ShouldContainDonor(donorId);
-        }
-
-        [Test]
-        public async Task GetMatches_NonMatchingDonorUpdatedAtMatchingCutOffDateTime_DoesNotReturnDonor()
-        {
-            var donorId = await CreateDonorInActiveDatabase(NonMatchingDonorHla, CutOffDateTime);
-            var matchCriteria = await GetSixOutOfSixMatchCriteria();
-
-            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
-            matches.ShouldNotContainDonor(donorId);
-        }
-
-        [TestCase(0, 0, 0, 1)]
-        [TestCase(0, 0, 1, 0)]
-        [TestCase(0, 1, 0, 0)]
-        [TestCase(1, 0, 0, 0)]
-        public async Task GetMatches_NonMatchingDonorUpdatedAfterMatchingCutOffDateTime_DoesNotReturnDonor(
-            int daysIncrement,
-            int hoursIncrement,
-            int minutesIncrement,
-            int secondsIncrement)
-        {
-            var donorModifiedDateTime = CutOffDateTime.Add(new TimeSpan(daysIncrement, hoursIncrement, minutesIncrement, secondsIncrement));
-            var donorId = await CreateDonorInActiveDatabase(NonMatchingDonorHla, donorModifiedDateTime);
-            var matchCriteria = await GetSixOutOfSixMatchCriteria();
-
-            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
-            matches.ShouldNotContainDonor(donorId);
-        }
-
-        [TestCase(0, 0, 0, 1)]
-        [TestCase(0, 0, 1, 0)]
-        [TestCase(0, 1, 0, 0)]
-        [TestCase(1, 0, 0, 0)]
-        public async Task GetMatches_NonMatchingDonorUpdatedBeforeMatchingCutOffDateTime_DoesNotReturnDonor(
-            int daysDecrement,
-            int hoursDecrement,
-            int minutesDecrement,
-            int secondsDecrement)
-        {
-            var donorModifiedDateTime = CutOffDateTime.Subtract(new TimeSpan(daysDecrement, hoursDecrement, minutesDecrement, secondsDecrement));
-            var donorId = await CreateDonorInActiveDatabase(NonMatchingDonorHla, donorModifiedDateTime);
-            var matchCriteria = await GetSixOutOfSixMatchCriteria();
-
-            var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime).ToListAsync();
-            matches.ShouldNotContainDonor(donorId);
-        }
-
-        [Test]
-        public async Task GetMatches_NoCutOffDate_DoesNotReturnNonMatchingDonor()
-        {
-            var donorId = await CreateDonorInActiveDatabase(NonMatchingDonorHla, CutOffDateTime);
-            var matchCriteria = await GetSixOutOfSixMatchCriteria();
-
-            var matches = await matchingService.GetMatches(matchCriteria, null).ToListAsync();
-            matches.ShouldNotContainDonor(donorId);
-        }
-
-        private async Task<int> CreateDonorInActiveDatabase(PhenotypeInfo<string> donorHla, DateTimeOffset updateDateTime)
-        {
-            var donorId = DonorIdGenerator.NextId();
-            var update = BuildUpdate(donorId, donorHla, updateDateTime);
-            await donorManagementService.ApplyDonorUpdatesToDatabase(
-                new[] { update }, activeDb, hlaVersion, false);
-
-            return donorId;
-        }
-
-        private static DonorAvailabilityUpdate BuildUpdate(int donorId, PhenotypeInfo<string> donorHla, DateTimeOffset updatedDateTime)
-        {
-            var donorInfo = new DonorInfo
-            {
-                DonorId = donorId,
-                DonorType = DefaultDonorType,
-                ExternalDonorCode = DonorIdGenerator.NewExternalCode,
-                HlaNames = donorHla
-            };
-
-            return new DonorAvailabilityUpdate
-            {
-                UpdateSequenceNumber = 12345,
-                UpdateDateTime = updatedDateTime,
-                DonorId = donorId,
-                DonorInfo = donorInfo,
-                IsAvailableForSearch = true
-            };
-        }
-
-        private async Task<MatchCriteria> GetSixOutOfSixMatchCriteria()
-        {
-            var matchCriteriaMapper = DependencyInjection.DependencyInjection.Provider.GetService<IMatchCriteriaMapper>();
-            var searchRequest = new SearchRequestFromHlasBuilder(MatchingDonorHla).SixOutOfSix().Build();
-            return new MatchCriteria
-            {
-                AlleleLevelMatchCriteria = await matchCriteriaMapper.MapRequestToAlleleLevelMatchCriteria(searchRequest),
-                NonHlaFilteringCriteria = new NonHlaFilteringCriteria()
-            };
-        }
+            AlleleLevelMatchCriteria = await matchCriteriaMapper.MapRequestToAlleleLevelMatchCriteria(searchRequest),
+            NonHlaFilteringCriteria = new NonHlaFilteringCriteria()
+        };
     }
 }

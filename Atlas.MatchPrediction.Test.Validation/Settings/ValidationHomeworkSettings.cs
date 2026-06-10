@@ -1,8 +1,7 @@
-﻿namespace Atlas.MatchPrediction.Test.Validation.Settings
+﻿namespace Atlas.MatchPrediction.Test.Validation.Settings;
+
+internal class ValidationHomeworkSettings
 {
-    internal class ValidationHomeworkSettings
-    {
-        public string ImputationRequestUrl { get; set; }
-        public string MatchingGenotypesRequestUrl { get; set; }
-    }
+    public string ImputationRequestUrl { get; set; }
+    public string MatchingGenotypesRequestUrl { get; set; }
 }

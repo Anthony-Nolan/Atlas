@@ -8,65 +8,64 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 
-namespace Atlas.Functions.Functions
+namespace Atlas.Functions.Functions;
+
+internal class MacDictionaryFunctions
 {
-    internal class MacDictionaryFunctions
+    private readonly IMacDictionary macDictionary;
+    private readonly IMacImporter macImporter;
+
+    public MacDictionaryFunctions(IMacDictionary macDictionary, IMacImporter macImporter)
     {
-        private readonly IMacDictionary macDictionary;
-        private readonly IMacImporter macImporter;
-
-        public MacDictionaryFunctions(IMacDictionary macDictionary, IMacImporter macImporter)
-        {
-            this.macDictionary = macDictionary;
-            this.macImporter = macImporter;
-        }
-
-        [Function(nameof(ImportMacs))]
-        public async Task ImportMacs([TimerTrigger("%MacDictionary:Import:CronSchedule%")] TimerInfo timer)
-        {
-            await macImporter.ImportLatestMacs();
-        }
-
-        [Function(nameof(ManuallyImportMacs))]
-        public async Task ManuallyImportMacs(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            HttpRequestMessage request)
-        {
-            await macImporter.ImportLatestMacs();
-        }
-
-        // This is useful for local dev, but it would be fairly risky to exist on Prod.
-        // TODO: ATLAS-489. Review of Suitability of this endpoint existing all the time.
-        //[FunctionName(nameof(RecreateMacTable))]
-        //public async Task RecreateMacTable(
-        //    [HttpTrigger(AuthorizationLevel.Function, "post")]
-        //    HttpRequestMessage request)
-        //{
-        //    await macImporter.RecreateMacTable();
-        //}
-
-        [QueryStringParameter("macCode", "macCode", DataType = typeof(string))]
-        [Function(nameof(GetMac))]
-        [ProducesResponseType(typeof(Mac), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetMac(
-            [HttpTrigger(AuthorizationLevel.Function, "get")]
-            HttpRequest request)
-        {
-            var macCode = request.Query["macCode"];
-            return new JsonResult(await macDictionary.GetMac(macCode));
-        }
-
-        [QueryStringParameter("macCode", "macCode", DataType = typeof(string))]
-        [QueryStringParameter("firstField", "firstField", DataType = typeof(string))]
-        [Function(nameof(GetHlaFromMac))]
-        public async Task<IActionResult> GetHlaFromMac(
-            [HttpTrigger(AuthorizationLevel.Function, "get")]
-            HttpRequest request)
-        {
-            var macCode = request.Query["macCode"];
-            var firstField = request.Query["firstField"];
-            return new OkObjectResult(await macDictionary.GetHlaFromMac(firstField, macCode));
-        }
-        
+        this.macDictionary = macDictionary;
+        this.macImporter = macImporter;
     }
+
+    [Function(nameof(ImportMacs))]
+    public async Task ImportMacs([TimerTrigger("%MacDictionary:Import:CronSchedule%")] TimerInfo timer)
+    {
+        await macImporter.ImportLatestMacs();
+    }
+
+    [Function(nameof(ManuallyImportMacs))]
+    public async Task ManuallyImportMacs(
+        [HttpTrigger(AuthorizationLevel.Function, "post")]
+        HttpRequestMessage request)
+    {
+        await macImporter.ImportLatestMacs();
+    }
+
+    // This is useful for local dev, but it would be fairly risky to exist on Prod.
+    // TODO: ATLAS-489. Review of Suitability of this endpoint existing all the time.
+    //[FunctionName(nameof(RecreateMacTable))]
+    //public async Task RecreateMacTable(
+    //    [HttpTrigger(AuthorizationLevel.Function, "post")]
+    //    HttpRequestMessage request)
+    //{
+    //    await macImporter.RecreateMacTable();
+    //}
+
+    [QueryStringParameter("macCode", "macCode", DataType = typeof(string))]
+    [Function(nameof(GetMac))]
+    [ProducesResponseType(typeof(Mac), (int)HttpStatusCode.OK)]
+    public async Task<IActionResult> GetMac(
+        [HttpTrigger(AuthorizationLevel.Function, "get")]
+        HttpRequest request)
+    {
+        var macCode = request.Query["macCode"];
+        return new JsonResult(await macDictionary.GetMac(macCode));
+    }
+
+    [QueryStringParameter("macCode", "macCode", DataType = typeof(string))]
+    [QueryStringParameter("firstField", "firstField", DataType = typeof(string))]
+    [Function(nameof(GetHlaFromMac))]
+    public async Task<IActionResult> GetHlaFromMac(
+        [HttpTrigger(AuthorizationLevel.Function, "get")]
+        HttpRequest request)
+    {
+        var macCode = request.Query["macCode"];
+        var firstField = request.Query["firstField"];
+        return new OkObjectResult(await macDictionary.GetHlaFromMac(firstField, macCode));
+    }
+        
 }

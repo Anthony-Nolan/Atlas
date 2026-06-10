@@ -3,29 +3,28 @@ using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
 using Microsoft.Azure.Functions.Worker;
 
-namespace Atlas.RepeatSearch.Functions.Functions
-{
-    public class OriginalResultsListenerFunctions
-    {
-        private readonly IOriginalSearchResultSetTracker originalSearchResultSetTracker;
+namespace Atlas.RepeatSearch.Functions.Functions;
 
-        public OriginalResultsListenerFunctions(IOriginalSearchResultSetTracker originalSearchResultSetTracker)
-        {
-            this.originalSearchResultSetTracker = originalSearchResultSetTracker;
-        }
+public class OriginalResultsListenerFunctions
+{
+    private readonly IOriginalSearchResultSetTracker originalSearchResultSetTracker;
+
+    public OriginalResultsListenerFunctions(IOriginalSearchResultSetTracker originalSearchResultSetTracker)
+    {
+        this.originalSearchResultSetTracker = originalSearchResultSetTracker;
+    }
         
-        [Function(nameof(StoreOriginalSearchResults))]
-        public async Task StoreOriginalSearchResults(
-            [ServiceBusTrigger(
-                "%MessagingServiceBus:OriginalSearchRequestsTopic%",
-                "%MessagingServiceBus:OriginalSearchRequestsSubscription%",
-                Connection = "MessagingServiceBus:ConnectionString")]
-            MatchingResultsNotification resultsNotification)
+    [Function(nameof(StoreOriginalSearchResults))]
+    public async Task StoreOriginalSearchResults(
+        [ServiceBusTrigger(
+            "%MessagingServiceBus:OriginalSearchRequestsTopic%",
+            "%MessagingServiceBus:OriginalSearchRequestsSubscription%",
+            Connection = "MessagingServiceBus:ConnectionString")]
+        MatchingResultsNotification resultsNotification)
+    {
+        if (resultsNotification.WasSuccessful)
         {
-            if (resultsNotification.WasSuccessful)
-            {
-                await originalSearchResultSetTracker.StoreOriginalSearchResults(resultsNotification);
-            }
+            await originalSearchResultSetTracker.StoreOriginalSearchResults(resultsNotification);
         }
     }
 }

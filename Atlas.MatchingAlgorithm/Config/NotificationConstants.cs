@@ -1,7 +1,6 @@
-namespace Atlas.MatchingAlgorithm.Config
+namespace Atlas.MatchingAlgorithm.Config;
+
+public static class NotificationConstants
 {
-    public static class NotificationConstants
-    {
-        public const string OriginatorName = "Atlas.MatchingAlgorithm";
-    }
+    public const string OriginatorName = "Atlas.MatchingAlgorithm";
 }

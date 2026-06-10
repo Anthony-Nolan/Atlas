@@ -15,112 +15,111 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
+namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import;
+
+public class DonorImportTests
 {
-    public class DonorImportTests
+    private IDonorImporter donorImporter;
+    private IDonorInspectionRepository inspectionRepo;
+    private IDonorManagementLogRepository importLogRepository;
+
+    private IDonorReader MockDonorReader { get; set; }
+
+    private Builder<Donor> IncrementingDonorBuilder => DonorBuilder.New.With(d => d.AtlasDonorId, DonorIdGenerator.NextId());
+
+    [SetUp]
+    public void SetUp()
     {
-        private IDonorImporter donorImporter;
-        private IDonorInspectionRepository inspectionRepo;
-        private IDonorManagementLogRepository importLogRepository;
+        var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IDormantRepositoryFactory>();
 
-        private IDonorReader MockDonorReader { get; set; }
+        // We want to inspect the dormant database, as this is what the import will have run on
+        inspectionRepo = repositoryFactory.GetDonorInspectionRepository();
+        importLogRepository = repositoryFactory.GetDonorManagementLogRepository();
+        donorImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImporter>();
 
-        private Builder<Donor> IncrementingDonorBuilder => DonorBuilder.New.With(d => d.AtlasDonorId, DonorIdGenerator.NextId());
+        MockDonorReader = DependencyInjection.DependencyInjection.Provider.GetService<IDonorReader>();
 
-        [SetUp]
-        public void SetUp()
-        {
-            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IDormantRepositoryFactory>();
+        MockDonorReader.StreamAllDonors().Returns(new List<Donor>());
+    }
 
-            // We want to inspect the dormant database, as this is what the import will have run on
-            inspectionRepo = repositoryFactory.GetDonorInspectionRepository();
-            importLogRepository = repositoryFactory.GetDonorManagementLogRepository();
-            donorImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImporter>();
+    [Test]
+    public async Task DonorImport_AddsNewDonorsToDatabase()
+    {
+        var donorInfo = IncrementingDonorBuilder.Build();
 
-            MockDonorReader = DependencyInjection.DependencyInjection.Provider.GetService<IDonorReader>();
+        MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
 
-            MockDonorReader.StreamAllDonors().Returns(new List<Donor>());
-        }
+        await donorImporter.ImportDonors();
+        var donor = await inspectionRepo.GetDonor(donorInfo.AtlasDonorId);
 
-        [Test]
-        public async Task DonorImport_AddsNewDonorsToDatabase()
-        {
-            var donorInfo = IncrementingDonorBuilder.Build();
+        donor.Should().NotBeNull();
+    }
 
-            MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
+    [TestCase("")]
+    [TestCase(null)]
+    public async Task DonorImport_WhenDonorHasMissingRequiredHla_DoesNotImportDonor(string missingHla)
+    {
+        var donorInfo = IncrementingDonorBuilder
+            .With(x => x.A_1, missingHla)
+            .With(x => x.A_2, missingHla)
+            .With(x => x.B_1, missingHla)
+            .With(x => x.B_2, missingHla)
+            .With(x => x.DRB1_1, missingHla)
+            .With(x => x.DRB1_2, missingHla)
+            .Build();
 
-            await donorImporter.ImportDonors();
-            var donor = await inspectionRepo.GetDonor(donorInfo.AtlasDonorId);
+        MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
 
-            donor.Should().NotBeNull();
-        }
+        await donorImporter.ImportDonors();
+        var donor = await inspectionRepo.GetDonor(donorInfo.AtlasDonorId);
 
-        [TestCase("")]
-        [TestCase(null)]
-        public async Task DonorImport_WhenDonorHasMissingRequiredHla_DoesNotImportDonor(string missingHla)
-        {
-            var donorInfo = IncrementingDonorBuilder
-                .With(x => x.A_1, missingHla)
-                .With(x => x.A_2, missingHla)
-                .With(x => x.B_1, missingHla)
-                .With(x => x.B_2, missingHla)
-                .With(x => x.DRB1_1, missingHla)
-                .With(x => x.DRB1_2, missingHla)
-                .Build();
+        donor.Should().BeNull();
+    }
 
-            MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
+    [TestCase("")]
+    [TestCase(null)]
+    public async Task DonorImport_WhenDonorHasMissingOptionalHla_ImportsDonor(string missingHla)
+    {
+        var donorInfo = IncrementingDonorBuilder
+            .With(x => x.C_1, missingHla)
+            .With(x => x.C_2, missingHla)
+            .With(x => x.DPB1_1, missingHla)
+            .With(x => x.DPB1_2, missingHla)
+            .With(x => x.DQB1_1, missingHla)
+            .With(x => x.DQB1_2, missingHla)
+            .Build();
 
-            await donorImporter.ImportDonors();
-            var donor = await inspectionRepo.GetDonor(donorInfo.AtlasDonorId);
+        MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
 
-            donor.Should().BeNull();
-        }
+        await donorImporter.ImportDonors();
+        var donor = await inspectionRepo.GetDonor(donorInfo.AtlasDonorId);
 
-        [TestCase("")]
-        [TestCase(null)]
-        public async Task DonorImport_WhenDonorHasMissingOptionalHla_ImportsDonor(string missingHla)
-        {
-            var donorInfo = IncrementingDonorBuilder
-                .With(x => x.C_1, missingHla)
-                .With(x => x.C_2, missingHla)
-                .With(x => x.DPB1_1, missingHla)
-                .With(x => x.DPB1_2, missingHla)
-                .With(x => x.DQB1_1, missingHla)
-                .With(x => x.DQB1_2, missingHla)
-                .Build();
-
-            MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
-
-            await donorImporter.ImportDonors();
-            var donor = await inspectionRepo.GetDonor(donorInfo.AtlasDonorId);
-
-            donor.Should().NotBeNull();
-        }
+        donor.Should().NotBeNull();
+    }
         
-        [Test]
-        public async Task DonorImport_WhenDonorsShouldBeMarkedAsUpdated_AddsNewDonorLogsToDatabase()
-        {
-            var donorInfo = IncrementingDonorBuilder.Build();
+    [Test]
+    public async Task DonorImport_WhenDonorsShouldBeMarkedAsUpdated_AddsNewDonorLogsToDatabase()
+    {
+        var donorInfo = IncrementingDonorBuilder.Build();
 
-            MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
+        MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
 
-            await donorImporter.ImportDonors(true);
+        await donorImporter.ImportDonors(true);
 
-            var log = (await importLogRepository.GetDonorManagementLogBatch(new[] {donorInfo.AtlasDonorId})).SingleOrDefault();
-            log.Should().NotBeNull();
-        }
+        var log = (await importLogRepository.GetDonorManagementLogBatch(new[] {donorInfo.AtlasDonorId})).SingleOrDefault();
+        log.Should().NotBeNull();
+    }
         
-        [Test]
-        public async Task DonorImport_WhenDonorsShouldNotBeMarkedAsUpdated_DoesNotAddNewDonorLogsToDatabase()
-        {
-            var donorInfo = IncrementingDonorBuilder.Build();
+    [Test]
+    public async Task DonorImport_WhenDonorsShouldNotBeMarkedAsUpdated_DoesNotAddNewDonorLogsToDatabase()
+    {
+        var donorInfo = IncrementingDonorBuilder.Build();
 
-            MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
+        MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
 
-            await donorImporter.ImportDonors(false);
+        await donorImporter.ImportDonors(false);
 
-            var log = (await importLogRepository.GetDonorManagementLogBatch(new[] {donorInfo.AtlasDonorId})).SingleOrDefault();
-            log.Should().BeNull();
-        }
+        var log = (await importLogRepository.GetDonorManagementLogBatch(new[] {donorInfo.AtlasDonorId})).SingleOrDefault();
+        log.Should().BeNull();
     }
 }

@@ -1,7 +1,6 @@
-﻿namespace Atlas.Common.Utils.Http
+﻿namespace Atlas.Common.Utils.Http;
+
+public class ErrorsModel
 {
-    public class ErrorsModel
-    {
-        public string Error { get; set; }
-    }
+    public string Error { get; set; }
 }

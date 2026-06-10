@@ -9,106 +9,105 @@ using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 
-namespace Atlas.MatchingAlgorithm.Services.Search.Matching
+namespace Atlas.MatchingAlgorithm.Services.Search.Matching;
+
+internal interface IPerLocusDonorMatchingService
 {
-    internal interface IPerLocusDonorMatchingService
+    /// <summary>
+    /// Runs SQL matching for this locus, and consolidates all relations results by donor id, to return a <see cref="LocusMatchDetails"/> object for each donor.
+    ///
+    /// Only returns donors with *at least one match* at this locus, even if two mismatches are allowed (to do otherwise would be to return all donors!)
+    /// 
+    /// Returns a tuple of DonorId to LocusMatchDetails, to allow donor identification of the locus result.
+    /// <param name="locus">The locus to perform filtering on.</param>
+    /// <param name="criteria">Search criteria at this locus - covers p-groups to match, and number of allowed mismatches.</param>
+    /// <param name="searchType">Search donor type. May be used to filter donors - but this is not guaranteed, so donor type filtering should not be assumed from this class.</param>
+    /// <param name="donorIds">If provided, only donors contained in this list of ids will be returned.</param>
+    /// </summary>
+    IAsyncEnumerable<(int, LocusMatchDetails)> FindMatchesAtLocus(
+        Locus locus,
+        AlleleLevelLocusMatchCriteria criteria,
+        DonorType searchType,
+        DateTimeOffset? cutOffDate,
+        ICollection<int> donorIds = null,
+        ICollection<string> donorRegistryCodes = null
+    );
+}
+
+internal class PerLocusDonorMatchingService : IPerLocusDonorMatchingService
+{
+    private readonly IDonorSearchRepository donorSearchRepository;
+    private readonly IPGroupRepository pGroupRepository;
+
+    public PerLocusDonorMatchingService(IActiveRepositoryFactory repositoryFactory)
     {
-        /// <summary>
-        /// Runs SQL matching for this locus, and consolidates all relations results by donor id, to return a <see cref="LocusMatchDetails"/> object for each donor.
-        ///
-        /// Only returns donors with *at least one match* at this locus, even if two mismatches are allowed (to do otherwise would be to return all donors!)
-        /// 
-        /// Returns a tuple of DonorId to LocusMatchDetails, to allow donor identification of the locus result.
-        /// <param name="locus">The locus to perform filtering on.</param>
-        /// <param name="criteria">Search criteria at this locus - covers p-groups to match, and number of allowed mismatches.</param>
-        /// <param name="searchType">Search donor type. May be used to filter donors - but this is not guaranteed, so donor type filtering should not be assumed from this class.</param>
-        /// <param name="donorIds">If provided, only donors contained in this list of ids will be returned.</param>
-        /// </summary>
-        IAsyncEnumerable<(int, LocusMatchDetails)> FindMatchesAtLocus(
-            Locus locus,
-            AlleleLevelLocusMatchCriteria criteria,
-            DonorType searchType,
-            DateTimeOffset? cutOffDate,
-            ICollection<int> donorIds = null,
-            ICollection<string> donorRegistryCodes = null
-            );
+        donorSearchRepository = repositoryFactory.GetDonorSearchRepository();
+        pGroupRepository = repositoryFactory.GetPGroupRepository();
     }
 
-    internal class PerLocusDonorMatchingService : IPerLocusDonorMatchingService
+    /// <inheritdoc />
+    public async IAsyncEnumerable<(int, LocusMatchDetails)> FindMatchesAtLocus(
+        Locus locus,
+        AlleleLevelLocusMatchCriteria criteria,
+        DonorType searchType,
+        DateTimeOffset? cutOffDate,
+        ICollection<int> donorIds = null,
+        ICollection<string> donorRegistryCodes = null)
     {
-        private readonly IDonorSearchRepository donorSearchRepository;
-        private readonly IPGroupRepository pGroupRepository;
-
-        public PerLocusDonorMatchingService(IActiveRepositoryFactory repositoryFactory)
+        var repoCriteria = new LocusSearchCriteria
         {
-            donorSearchRepository = repositoryFactory.GetDonorSearchRepository();
-            pGroupRepository = repositoryFactory.GetPGroupRepository();
-        }
+            SearchDonorType = searchType,
+            PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
+            PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
+            MismatchCount = criteria.MismatchCount,
+        };
 
-        /// <inheritdoc />
-        public async IAsyncEnumerable<(int, LocusMatchDetails)> FindMatchesAtLocus(
-            Locus locus,
-            AlleleLevelLocusMatchCriteria criteria,
-            DonorType searchType,
-            DateTimeOffset? cutOffDate,
-            ICollection<int> donorIds = null,
-            ICollection<string> donorRegistryCodes = null)
+        var filteringOptions = new MatchingFilteringOptions
         {
-            var repoCriteria = new LocusSearchCriteria
+            DonorType = searchType,
+            DonorIds = donorIds,
+            RegistryCodes = donorRegistryCodes,
+        };
+
+        var donorMatchRelations = donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions, cutOffDate);
+
+        (int, LocusMatchDetails) aggregatedDonorRelations = default;
+
+        // Relies on repository returning donors in groups by donor id.
+        // Note that this is not semantic group objects, but groupings within a flat array of relations - e.g. (1, 1, 2, 4, 3, 3) is ok - (1, 1, 2, 3, 1) is not.  
+        await foreach (var relation in donorMatchRelations)
+        {
+            var positionPair = (relation.SearchTypePosition, relation.MatchingTypePosition);
+            if (aggregatedDonorRelations == default)
             {
-                SearchDonorType = searchType,
-                PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
-                PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
-                MismatchCount = criteria.MismatchCount,
-            };
-
-            var filteringOptions = new MatchingFilteringOptions
-            {
-                DonorType = searchType,
-                DonorIds = donorIds,
-                RegistryCodes = donorRegistryCodes,
-            };
-
-            var donorMatchRelations = donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions, cutOffDate);
-
-            (int, LocusMatchDetails) aggregatedDonorRelations = default;
-
-            // Relies on repository returning donors in groups by donor id.
-            // Note that this is not semantic group objects, but groupings within a flat array of relations - e.g. (1, 1, 2, 4, 3, 3) is ok - (1, 1, 2, 3, 1) is not.  
-            await foreach (var relation in donorMatchRelations)
-            {
-                var positionPair = (relation.SearchTypePosition, relation.MatchingTypePosition);
-                if (aggregatedDonorRelations == default)
+                aggregatedDonorRelations = (relation.DonorId, new LocusMatchDetails
                 {
-                    aggregatedDonorRelations = (relation.DonorId, new LocusMatchDetails
-                    {
-                        PositionPairs = new HashSet<(LocusPosition, LocusPosition)> {positionPair}
-                    });
-                    continue;
-                }
-
-                // current relation for same donor as previous, so we add to the current aggregate
-                if (aggregatedDonorRelations.Item1 == relation.DonorId)
-                {
-                    aggregatedDonorRelations.Item2.PositionPairs.Add(positionPair);
-                }
-                // current relation is for new donor - so previous donor is complete and can be returned
-                else
-                {
-                    yield return aggregatedDonorRelations;
-                    aggregatedDonorRelations = (relation.DonorId, new LocusMatchDetails
-                    {
-                        PositionPairs = new HashSet<(LocusPosition, LocusPosition)> {positionPair}
-                    });
-                }
+                    PositionPairs = new HashSet<(LocusPosition, LocusPosition)> {positionPair}
+                });
+                continue;
             }
 
-            // Will still be uninitialised if no results for locus, in which case we don't want to return null.
-            // If there are any results, this ensures that the final donor's results are returned.
-            if (aggregatedDonorRelations != default)
+            // current relation for same donor as previous, so we add to the current aggregate
+            if (aggregatedDonorRelations.Item1 == relation.DonorId)
+            {
+                aggregatedDonorRelations.Item2.PositionPairs.Add(positionPair);
+            }
+            // current relation is for new donor - so previous donor is complete and can be returned
+            else
             {
                 yield return aggregatedDonorRelations;
+                aggregatedDonorRelations = (relation.DonorId, new LocusMatchDetails
+                {
+                    PositionPairs = new HashSet<(LocusPosition, LocusPosition)> {positionPair}
+                });
             }
+        }
+
+        // Will still be uninitialised if no results for locus, in which case we don't want to return null.
+        // If there are any results, this ensures that the final donor's results are returned.
+        if (aggregatedDonorRelations != default)
+        {
+            yield return aggregatedDonorRelations;
         }
     }
 }

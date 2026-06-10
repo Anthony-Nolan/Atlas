@@ -6,34 +6,33 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
+namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
+
+internal interface IGGroupToPGroupMetadataRepository : IHlaMetadataRepository
 {
-    internal interface IGGroupToPGroupMetadataRepository : IHlaMetadataRepository
+    Task<IMolecularTypingToPGroupMetadata> GetPGroupByGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion);
+}
+
+internal class GGroupToPGroupMetadataRepository : HlaMetadataRepositoryBase, IGGroupToPGroupMetadataRepository
+{
+    private const string DataTableReferencePrefix = "GGroupToPGroupLookupData";
+    private const string CacheKey = nameof(GGroupToPGroupMetadataRepository);
+
+    public GGroupToPGroupMetadataRepository(
+        ITableClientFactory factory,
+        ITableReferenceRepository tableReferenceRepository,
+        IPersistentCacheProvider cacheProvider,
+        IAtlasLogger logger)
+        : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey, logger)
     {
-        Task<IMolecularTypingToPGroupMetadata> GetPGroupByGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion);
     }
 
-    internal class GGroupToPGroupMetadataRepository : HlaMetadataRepositoryBase, IGGroupToPGroupMetadataRepository
+    public async Task<IMolecularTypingToPGroupMetadata> GetPGroupByGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
     {
-        private const string DataTableReferencePrefix = "GGroupToPGroupLookupData";
-        private const string CacheKey = nameof(GGroupToPGroupMetadataRepository);
+        var row = await GetHlaMetadataRowIfExists(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
 
-        public GGroupToPGroupMetadataRepository(
-            ITableClientFactory factory,
-            ITableReferenceRepository tableReferenceRepository,
-            IPersistentCacheProvider cacheProvider,
-            IAtlasLogger logger)
-            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey, logger)
-        {
-        }
-
-        public async Task<IMolecularTypingToPGroupMetadata> GetPGroupByGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
-        {
-            var row = await GetHlaMetadataRowIfExists(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
-
-            return row == null
-                ? null
-                : new MolecularTypingToPGroupMetadata(row.Locus, row.LookupName, row.GetHlaInfo<string>());
-        }
+        return row == null
+            ? null
+            : new MolecularTypingToPGroupMetadata(row.Locus, row.LookupName, row.GetHlaInfo<string>());
     }
 }

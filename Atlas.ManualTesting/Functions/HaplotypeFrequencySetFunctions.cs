@@ -9,44 +9,43 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
-namespace Atlas.ManualTesting.Functions
+namespace Atlas.ManualTesting.Functions;
+
+public class HaplotypeFrequencySetFunctions
 {
-    public class HaplotypeFrequencySetFunctions
+    private readonly IFrequencyFileParser fileParser;
+    private readonly IHaplotypeFrequencySetTransformer setTransformer;
+    private readonly ITransformedSetWriter setWriter;
+
+    public HaplotypeFrequencySetFunctions(
+        IFrequencyFileParser fileParser,
+        IHaplotypeFrequencySetTransformer setTransformer,
+        ITransformedSetWriter setWriter)
     {
-        private readonly IFrequencyFileParser fileParser;
-        private readonly IHaplotypeFrequencySetTransformer setTransformer;
-        private readonly ITransformedSetWriter setWriter;
+        this.fileParser = fileParser;
+        this.setTransformer = setTransformer;
+        this.setWriter = setWriter;
+    }
 
-        public HaplotypeFrequencySetFunctions(
-            IFrequencyFileParser fileParser,
-            IHaplotypeFrequencySetTransformer setTransformer,
-            ITransformedSetWriter setWriter)
-        {
-            this.fileParser = fileParser;
-            this.setTransformer = setTransformer;
-            this.setWriter = setWriter;
-        }
+    [Function(nameof(TransformHaplotypeFrequencySet))]
+    public async Task TransformHaplotypeFrequencySet(
+        [RequestBodyType(typeof(TransformHaplotypeFrequencySetRequest), nameof(TransformHaplotypeFrequencySetRequest))]
+        [HttpTrigger(AuthorizationLevel.Function, "post")]
+        HttpRequest request)
+    {
+        var transformSetRequest = JsonConvert.DeserializeObject<TransformHaplotypeFrequencySetRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+        var set = await GetFrequencySet(transformSetRequest.HaplotypeFrequencySetFilePath);
+        var transformedSet = setTransformer.TransformHaplotypeFrequencySet(set, transformSetRequest.FindReplaceHlaNames);
+        await setWriter.WriteTransformedSet(transformSetRequest, transformedSet);
+    }
 
-        [Function(nameof(TransformHaplotypeFrequencySet))]
-        public async Task TransformHaplotypeFrequencySet(
-            [RequestBodyType(typeof(TransformHaplotypeFrequencySetRequest), nameof(TransformHaplotypeFrequencySetRequest))]
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            HttpRequest request)
+    private async Task<FrequencySetFileSchema> GetFrequencySet(string filePath)
+    {
+        if (!File.Exists(filePath))
         {
-            var transformSetRequest = JsonConvert.DeserializeObject<TransformHaplotypeFrequencySetRequest>(await new StreamReader(request.Body).ReadToEndAsync());
-            var set = await GetFrequencySet(transformSetRequest.HaplotypeFrequencySetFilePath);
-            var transformedSet = setTransformer.TransformHaplotypeFrequencySet(set, transformSetRequest.FindReplaceHlaNames);
-            await setWriter.WriteTransformedSet(transformSetRequest, transformedSet);
+            throw new FileNotFoundException($"{nameof(filePath)} not found");
         }
-
-        private async Task<FrequencySetFileSchema> GetFrequencySet(string filePath)
-        {
-            if (!File.Exists(filePath))
-            {
-                throw new FileNotFoundException($"{nameof(filePath)} not found");
-            }
-            await using var stream = File.OpenRead(filePath);
-            return fileParser.GetFrequencies(stream);
-        }
+        await using var stream = File.OpenRead(filePath);
+        return fileParser.GetFrequencies(stream);
     }
 }

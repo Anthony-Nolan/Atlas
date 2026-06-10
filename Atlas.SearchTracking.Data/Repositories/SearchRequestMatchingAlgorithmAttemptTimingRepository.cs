@@ -4,112 +4,111 @@ using Atlas.SearchTracking.Data.Context;
 using Atlas.SearchTracking.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Atlas.SearchTracking.Data.Repositories
+namespace Atlas.SearchTracking.Data.Repositories;
+
+public interface ISearchRequestMatchingAlgorithmAttemptsRepository
 {
-    public interface ISearchRequestMatchingAlgorithmAttemptsRepository
+    Task TrackStartedEvent(MatchingAlgorithmAttemptStartedEvent matchingAlgorithmStartedEvent);
+
+    Task TrackCompletedEvent(MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent);
+
+    Task TrackTimingEvent(MatchingAlgorithmAttemptTimingEvent matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType eventType);
+
+    Task<SearchRequestMatchingAlgorithmAttempts?> GetSearchRequestMatchingAlgorithmAttemptsById(int id);
+}
+
+public class SearchRequestMatchingAlgorithmAttemptsRepository : ISearchRequestMatchingAlgorithmAttemptsRepository
+{
+    private readonly ISearchTrackingContext context;
+
+    private DbSet<SearchRequestMatchingAlgorithmAttempts> MatchingAlgorithmAttempts => context.SearchRequestMatchingAlgorithmAttempts;
+    private DbSet<SearchRequest> SearchRequests => context.SearchRequests;
+
+    public SearchRequestMatchingAlgorithmAttemptsRepository(ISearchTrackingContext context)
     {
-       Task TrackStartedEvent(MatchingAlgorithmAttemptStartedEvent matchingAlgorithmStartedEvent);
-
-       Task TrackCompletedEvent(MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent);
-
-       Task TrackTimingEvent(MatchingAlgorithmAttemptTimingEvent matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType eventType);
-
-       Task<SearchRequestMatchingAlgorithmAttempts?> GetSearchRequestMatchingAlgorithmAttemptsById(int id);
+        this.context = context;
     }
 
-    public class SearchRequestMatchingAlgorithmAttemptsRepository : ISearchRequestMatchingAlgorithmAttemptsRepository
+    public async Task TrackStartedEvent(MatchingAlgorithmAttemptStartedEvent matchingAlgorithmStartedEvent)
     {
-        private readonly ISearchTrackingContext context;
+        var id = await GetSearchRequestIdByIdentifier(matchingAlgorithmStartedEvent.SearchIdentifier);
 
-        private DbSet<SearchRequestMatchingAlgorithmAttempts> MatchingAlgorithmAttempts => context.SearchRequestMatchingAlgorithmAttempts;
-        private DbSet<SearchRequest> SearchRequests => context.SearchRequests;
-
-        public SearchRequestMatchingAlgorithmAttemptsRepository(ISearchTrackingContext context)
+        var matchingAlgorithmAttempt = new SearchRequestMatchingAlgorithmAttempts
         {
-            this.context = context;
+            SearchRequestId = id,
+            AttemptNumber = matchingAlgorithmStartedEvent.AttemptNumber,
+            InitiationTimeUtc = matchingAlgorithmStartedEvent.InitiationTimeUtc,
+            StartTimeUtc = matchingAlgorithmStartedEvent.StartTimeUtc
+        };
+
+        MatchingAlgorithmAttempts.Add(matchingAlgorithmAttempt);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task TrackCompletedEvent(MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent)
+    {
+        var id = await GetSearchRequestIdByIdentifier(matchingAlgorithmCompletedEvent.SearchIdentifier);
+
+        var matchingAlgorithmAttempt = await GetRequiredMatchingAlgorithmAttemptTiming(id, matchingAlgorithmCompletedEvent.AttemptNumber);
+
+        matchingAlgorithmAttempt.CompletionTimeUtc = matchingAlgorithmCompletedEvent.CompletionTimeUtc;
+        matchingAlgorithmAttempt.IsSuccessful = matchingAlgorithmCompletedEvent.CompletionDetails.IsSuccessful;
+        matchingAlgorithmAttempt.FailureInfo_Type = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo?.Type;
+        matchingAlgorithmAttempt.FailureInfo_Message = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo?.Message;
+        matchingAlgorithmAttempt.FailureInfo_ExceptionStacktrace =
+            matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo?.ExceptionStacktrace;
+
+        await context.SaveChangesAsync();
+    }
+
+    public async Task TrackTimingEvent(MatchingAlgorithmAttemptTimingEvent matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType eventType)
+    {
+        var id = await GetSearchRequestIdByIdentifier(matchingAlgorithmAttemptTimingEvent.SearchIdentifier);
+
+        var matchingAlgorithmAttempt = await GetRequiredMatchingAlgorithmAttemptTiming(id, matchingAlgorithmAttemptTimingEvent.AttemptNumber);
+        var timingProperty = SearchTrackingConstants.MatchingAlgorithmColumnMappings[eventType];
+
+        matchingAlgorithmAttempt.GetType().GetProperty(timingProperty)?
+            .SetValue(matchingAlgorithmAttempt, matchingAlgorithmAttemptTimingEvent.TimeUtc);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task<SearchRequestMatchingAlgorithmAttempts> GetSearchRequestMatchingAlgorithmAttemptsById(int id)
+    {
+        var matchingAlgorithmAttempt = await MatchingAlgorithmAttempts
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (matchingAlgorithmAttempt == null)
+        {
+            throw new Exception($"Matching algorithm attempt timing with id {id} not found");
         }
 
-        public async Task TrackStartedEvent(MatchingAlgorithmAttemptStartedEvent matchingAlgorithmStartedEvent)
+        return matchingAlgorithmAttempt;
+    }
+
+    private async Task<SearchRequestMatchingAlgorithmAttempts> GetRequiredMatchingAlgorithmAttemptTiming(int searchRequestId, int attemptNumber)
+    {
+        var matchingAlgorithmAttempt = await MatchingAlgorithmAttempts
+            .OrderByDescending(x => x.Id)
+            .FirstOrDefaultAsync(x => x.SearchRequestId == searchRequestId && x.AttemptNumber == attemptNumber);
+
+        if (matchingAlgorithmAttempt == null)
         {
-            var id = await GetSearchRequestIdByIdentifier(matchingAlgorithmStartedEvent.SearchIdentifier);
-
-            var matchingAlgorithmAttempt = new SearchRequestMatchingAlgorithmAttempts
-            {
-                SearchRequestId = id,
-                AttemptNumber = matchingAlgorithmStartedEvent.AttemptNumber,
-                InitiationTimeUtc = matchingAlgorithmStartedEvent.InitiationTimeUtc,
-                StartTimeUtc = matchingAlgorithmStartedEvent.StartTimeUtc
-            };
-
-            MatchingAlgorithmAttempts.Add(matchingAlgorithmAttempt);
-            await context.SaveChangesAsync();
+            throw new Exception($"Matching algorithm attempt timing for search id {searchRequestId} and attempt number {attemptNumber} not found");
         }
 
-        public async Task TrackCompletedEvent(MatchingAlgorithmCompletedEvent matchingAlgorithmCompletedEvent)
+        return matchingAlgorithmAttempt;
+    }
+
+    private async Task<int> GetSearchRequestIdByIdentifier(Guid searchIdentifier)
+    {
+        var searchRequest = await SearchRequests.FirstOrDefaultAsync(x => x.SearchIdentifier == searchIdentifier);
+
+        if (searchRequest == null)
         {
-            var id = await GetSearchRequestIdByIdentifier(matchingAlgorithmCompletedEvent.SearchIdentifier);
-
-            var matchingAlgorithmAttempt = await GetRequiredMatchingAlgorithmAttemptTiming(id, matchingAlgorithmCompletedEvent.AttemptNumber);
-
-            matchingAlgorithmAttempt.CompletionTimeUtc = matchingAlgorithmCompletedEvent.CompletionTimeUtc;
-            matchingAlgorithmAttempt.IsSuccessful = matchingAlgorithmCompletedEvent.CompletionDetails.IsSuccessful;
-            matchingAlgorithmAttempt.FailureInfo_Type = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo?.Type;
-            matchingAlgorithmAttempt.FailureInfo_Message = matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo?.Message;
-            matchingAlgorithmAttempt.FailureInfo_ExceptionStacktrace =
-                matchingAlgorithmCompletedEvent.CompletionDetails.FailureInfo?.ExceptionStacktrace;
-
-            await context.SaveChangesAsync();
+            throw new Exception($"Search request with identifier {searchIdentifier} not found");
         }
 
-        public async Task TrackTimingEvent(MatchingAlgorithmAttemptTimingEvent matchingAlgorithmAttemptTimingEvent, SearchTrackingEventType eventType)
-        {
-            var id = await GetSearchRequestIdByIdentifier(matchingAlgorithmAttemptTimingEvent.SearchIdentifier);
-
-            var matchingAlgorithmAttempt = await GetRequiredMatchingAlgorithmAttemptTiming(id, matchingAlgorithmAttemptTimingEvent.AttemptNumber);
-            var timingProperty = SearchTrackingConstants.MatchingAlgorithmColumnMappings[eventType];
-
-            matchingAlgorithmAttempt.GetType().GetProperty(timingProperty)?
-                .SetValue(matchingAlgorithmAttempt, matchingAlgorithmAttemptTimingEvent.TimeUtc);
-            await context.SaveChangesAsync();
-        }
-
-        public async Task<SearchRequestMatchingAlgorithmAttempts> GetSearchRequestMatchingAlgorithmAttemptsById(int id)
-        {
-            var matchingAlgorithmAttempt = await MatchingAlgorithmAttempts
-                .FirstOrDefaultAsync(x => x.Id == id);
-
-            if (matchingAlgorithmAttempt == null)
-            {
-                throw new Exception($"Matching algorithm attempt timing with id {id} not found");
-            }
-
-            return matchingAlgorithmAttempt;
-        }
-
-        private async Task<SearchRequestMatchingAlgorithmAttempts> GetRequiredMatchingAlgorithmAttemptTiming(int searchRequestId, int attemptNumber)
-        {
-            var matchingAlgorithmAttempt = await MatchingAlgorithmAttempts
-                .OrderByDescending(x => x.Id)
-                .FirstOrDefaultAsync(x => x.SearchRequestId == searchRequestId && x.AttemptNumber == attemptNumber);
-
-            if (matchingAlgorithmAttempt == null)
-            {
-                throw new Exception($"Matching algorithm attempt timing for search id {searchRequestId} and attempt number {attemptNumber} not found");
-            }
-
-            return matchingAlgorithmAttempt;
-        }
-
-        private async Task<int> GetSearchRequestIdByIdentifier(Guid searchIdentifier)
-        {
-            var searchRequest = await SearchRequests.FirstOrDefaultAsync(x => x.SearchIdentifier == searchIdentifier);
-
-            if (searchRequest == null)
-            {
-                throw new Exception($"Search request with identifier {searchIdentifier} not found");
-            }
-
-            return searchRequest.Id;
-        }
+        return searchRequest.Id;
     }
 }

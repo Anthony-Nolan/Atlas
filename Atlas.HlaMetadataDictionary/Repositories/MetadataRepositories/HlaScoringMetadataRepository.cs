@@ -8,46 +8,45 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
+namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
+
+internal interface IHlaScoringMetadataRepository : IHlaMetadataRepository
 {
-    internal interface IHlaScoringMetadataRepository : IHlaMetadataRepository
+    Task<IDictionary<Locus, List<string>>> GetAllGGroups(string hlaNomenclatureVersion);
+}
+
+internal class HlaScoringMetadataRepository : HlaMetadataRepositoryBase, IHlaScoringMetadataRepository
+{
+    private const string DataTableReferencePrefix = "HlaScoringLookupData";
+    private const string CacheKey = nameof(HlaScoringMetadataRepository);
+
+    public HlaScoringMetadataRepository(
+        ITableClientFactory factory,
+        ITableReferenceRepository tableReferenceRepository,
+        IPersistentCacheProvider cacheProvider,
+        IAtlasLogger logger)
+        : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey, logger)
     {
-        Task<IDictionary<Locus, List<string>>> GetAllGGroups(string hlaNomenclatureVersion);
     }
 
-    internal class HlaScoringMetadataRepository : HlaMetadataRepositoryBase, IHlaScoringMetadataRepository
+    /// <inheritdoc />
+    public async Task<IDictionary<Locus, List<string>>> GetAllGGroups(string hlaNomenclatureVersion)
     {
-        private const string DataTableReferencePrefix = "HlaScoringLookupData";
-        private const string CacheKey = nameof(HlaScoringMetadataRepository);
+        return await Cache.GetOrAddAsync($"All-G-Groups:{hlaNomenclatureVersion}", async _ => await CalculateAllGGroups(hlaNomenclatureVersion));
+    }
 
-        public HlaScoringMetadataRepository(
-            ITableClientFactory factory,
-            ITableReferenceRepository tableReferenceRepository,
-            IPersistentCacheProvider cacheProvider,
-            IAtlasLogger logger)
-            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey, logger)
+    private async Task<IDictionary<Locus, List<string>>> CalculateAllGGroups(string hlaNomenclatureVersion)
+    {
+        var metadataDictionary = await TableData(hlaNomenclatureVersion);
+        using (AtlasLogger.RunTimed("Calculate all GGroups"))
         {
-        }
-
-        /// <inheritdoc />
-        public async Task<IDictionary<Locus, List<string>>> GetAllGGroups(string hlaNomenclatureVersion)
-        {
-            return await Cache.GetOrAddAsync($"All-G-Groups:{hlaNomenclatureVersion}", async _ => await CalculateAllGGroups(hlaNomenclatureVersion));
-        }
-
-        private async Task<IDictionary<Locus, List<string>>> CalculateAllGGroups(string hlaNomenclatureVersion)
-        {
-            var metadataDictionary = await TableData(hlaNomenclatureVersion);
-            using (AtlasLogger.RunTimed("Calculate all GGroups"))
-            {
-                var byLocus = metadataDictionary.Values.GroupBy(v => v.Locus);
-                return byLocus.ToDictionary(
-                    g => g.Key,
-                    g => new HashSet<string>(g.SelectMany(v => v.ToHlaScoringMetadata()?.HlaScoringInfo.MatchingGGroups))
-                        .Where(x => x != null)
-                        .ToList()
-                );
-            }
+            var byLocus = metadataDictionary.Values.GroupBy(v => v.Locus);
+            return byLocus.ToDictionary(
+                g => g.Key,
+                g => new HashSet<string>(g.SelectMany(v => v.ToHlaScoringMetadata()?.HlaScoringInfo.MatchingGGroups))
+                    .Where(x => x != null)
+                    .ToList()
+            );
         }
     }
 }

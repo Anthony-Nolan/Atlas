@@ -2,157 +2,156 @@ using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
 
-namespace Atlas.SearchTracking.Common.Dispatchers
+namespace Atlas.SearchTracking.Common.Dispatchers;
+
+public interface IMatchPredictionSearchTrackingDispatcher
 {
-    public interface IMatchPredictionSearchTrackingDispatcher
+    Task ProcessInitiation(Guid searchIdentifier, Guid? originalSearchIdentifier, DateTime initiationTime, bool isParallelMatchPrediction);
+
+    Task ProcessPrepareBatchesStarted(Guid searchIdentifier, Guid? originalSearchIdentifier);
+
+    Task ProcessPrepareBatchesEnded(Guid searchIdentifier, Guid? originalSearchIdentifier);
+
+    Task ProcessRunningBatchesStarted(Guid searchIdentifier, Guid? originalSearchIdentifier);
+
+    Task ProcessRunningBatchesEnded(Guid searchIdentifier, Guid? originalSearchIdentifier);
+
+    Task ProcessPersistingResultsStarted(Guid searchIdentifier, Guid? originalSearchIdentifier);
+
+    Task ProcessPersistingResultsEnded(Guid searchIdentifier, Guid? originalSearchIdentifier);
+
+    Task ProcessCompleted((Guid SearchIdentifier, Guid? OriginalSearchIdentifier, bool IsSuccessful, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)
+        eventDetails);
+
+    Task ProcessResultsSent(Guid searchIdentifier, Guid? originalSearchIdentifier);
+}
+
+public class MatchPredictionSearchTrackingDispatcher(ISearchTrackingServiceBusClient searchTrackingServiceBusClient)
+    : IMatchPredictionSearchTrackingDispatcher
+{
+    public async Task ProcessInitiation(Guid searchIdentifier, Guid? originalSearchIdentifier, DateTime initiationTime, bool isParallelMatchPrediction)
     {
-        Task ProcessInitiation(Guid searchIdentifier, Guid? originalSearchIdentifier, DateTime initiationTime, bool isParallelMatchPrediction);
+        var matchPredictionStartedEvent = new MatchPredictionStartedEvent
+        {
+            SearchIdentifier = searchIdentifier,
+            OriginalSearchIdentifier = originalSearchIdentifier,
+            InitiationTimeUtc = initiationTime,
+            StartTimeUtc = DateTime.UtcNow,
+            IsParallelMatchPrediction = isParallelMatchPrediction
+        };
 
-        Task ProcessPrepareBatchesStarted(Guid searchIdentifier, Guid? originalSearchIdentifier);
-
-        Task ProcessPrepareBatchesEnded(Guid searchIdentifier, Guid? originalSearchIdentifier);
-
-        Task ProcessRunningBatchesStarted(Guid searchIdentifier, Guid? originalSearchIdentifier);
-
-        Task ProcessRunningBatchesEnded(Guid searchIdentifier, Guid? originalSearchIdentifier);
-
-        Task ProcessPersistingResultsStarted(Guid searchIdentifier, Guid? originalSearchIdentifier);
-
-        Task ProcessPersistingResultsEnded(Guid searchIdentifier, Guid? originalSearchIdentifier);
-
-        Task ProcessCompleted((Guid SearchIdentifier, Guid? OriginalSearchIdentifier, bool IsSuccessful, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)
-            eventDetails);
-
-        Task ProcessResultsSent(Guid searchIdentifier, Guid? originalSearchIdentifier);
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            matchPredictionStartedEvent, SearchTrackingEventType.MatchPredictionStarted);
     }
 
-    public class MatchPredictionSearchTrackingDispatcher(ISearchTrackingServiceBusClient searchTrackingServiceBusClient)
-        : IMatchPredictionSearchTrackingDispatcher
+    public async Task ProcessPrepareBatchesStarted(Guid searchIdentifier, Guid? originalSearchIdentifier)
     {
-        public async Task ProcessInitiation(Guid searchIdentifier, Guid? originalSearchIdentifier, DateTime initiationTime, bool isParallelMatchPrediction)
+        var matchPredictionTimingEvent = new MatchPredictionTimingEvent
         {
-            var matchPredictionStartedEvent = new MatchPredictionStartedEvent
-            {
-                SearchIdentifier = searchIdentifier,
-                OriginalSearchIdentifier = originalSearchIdentifier,
-                InitiationTimeUtc = initiationTime,
-                StartTimeUtc = DateTime.UtcNow,
-                IsParallelMatchPrediction = isParallelMatchPrediction
-            };
+            SearchIdentifier = searchIdentifier,
+            OriginalSearchIdentifier = originalSearchIdentifier,
+            TimeUtc = DateTime.UtcNow
+        };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionStartedEvent, SearchTrackingEventType.MatchPredictionStarted);
-        }
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionBatchPreparationStarted);
+    }
 
-        public async Task ProcessPrepareBatchesStarted(Guid searchIdentifier, Guid? originalSearchIdentifier)
+    public async Task ProcessPrepareBatchesEnded(Guid searchIdentifier, Guid? originalSearchIdentifier)
+    {
+        var matchPredictionTimingEvent = new MatchPredictionTimingEvent
         {
-            var matchPredictionTimingEvent = new MatchPredictionTimingEvent
-            {
-                SearchIdentifier = searchIdentifier,
-                OriginalSearchIdentifier = originalSearchIdentifier,
-                TimeUtc = DateTime.UtcNow
-            };
+            SearchIdentifier = searchIdentifier,
+            OriginalSearchIdentifier = originalSearchIdentifier,
+            TimeUtc = DateTime.UtcNow
+        };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionBatchPreparationStarted);
-        }
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionBatchPreparationEnded);
+    }
 
-        public async Task ProcessPrepareBatchesEnded(Guid searchIdentifier, Guid? originalSearchIdentifier)
+    public async Task ProcessRunningBatchesStarted(Guid searchIdentifier, Guid? originalSearchIdentifier)
+    {
+        var matchPredictionTimingEvent = new MatchPredictionTimingEvent
         {
-            var matchPredictionTimingEvent = new MatchPredictionTimingEvent
-            {
-                SearchIdentifier = searchIdentifier,
-                OriginalSearchIdentifier = originalSearchIdentifier,
-                TimeUtc = DateTime.UtcNow
-            };
+            SearchIdentifier = searchIdentifier,
+            OriginalSearchIdentifier = originalSearchIdentifier,
+            TimeUtc = DateTime.UtcNow
+        };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionBatchPreparationEnded);
-        }
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionRunningBatchesStarted);
+    }
 
-        public async Task ProcessRunningBatchesStarted(Guid searchIdentifier, Guid? originalSearchIdentifier)
+    public async Task ProcessRunningBatchesEnded(Guid searchIdentifier, Guid? originalSearchIdentifier)
+    {
+        var matchPredictionTimingEvent = new MatchPredictionTimingEvent
         {
-            var matchPredictionTimingEvent = new MatchPredictionTimingEvent
-            {
-                SearchIdentifier = searchIdentifier,
-                OriginalSearchIdentifier = originalSearchIdentifier,
-                TimeUtc = DateTime.UtcNow
-            };
+            SearchIdentifier = searchIdentifier,
+            OriginalSearchIdentifier = originalSearchIdentifier,
+            TimeUtc = DateTime.UtcNow
+        };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionRunningBatchesStarted);
-        }
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionRunningBatchesEnded);
+    }
 
-        public async Task ProcessRunningBatchesEnded(Guid searchIdentifier, Guid? originalSearchIdentifier)
+    public async Task ProcessPersistingResultsStarted(Guid searchIdentifier, Guid? originalSearchIdentifier)
+    {
+        var matchPredictionTimingEvent = new MatchPredictionTimingEvent
         {
-            var matchPredictionTimingEvent = new MatchPredictionTimingEvent
-            {
-                SearchIdentifier = searchIdentifier,
-                OriginalSearchIdentifier = originalSearchIdentifier,
-                TimeUtc = DateTime.UtcNow
-            };
+            SearchIdentifier = searchIdentifier,
+            OriginalSearchIdentifier = originalSearchIdentifier,
+            TimeUtc = DateTime.UtcNow
+        };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionRunningBatchesEnded);
-        }
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionPersistingResultsStarted);
+    }
 
-        public async Task ProcessPersistingResultsStarted(Guid searchIdentifier, Guid? originalSearchIdentifier)
+    public async Task ProcessPersistingResultsEnded(Guid searchIdentifier, Guid? originalSearchIdentifier)
+    {
+        var matchPredictionTimingEvent = new MatchPredictionTimingEvent
         {
-            var matchPredictionTimingEvent = new MatchPredictionTimingEvent
-            {
-                SearchIdentifier = searchIdentifier,
-                OriginalSearchIdentifier = originalSearchIdentifier,
-                TimeUtc = DateTime.UtcNow
-            };
+            SearchIdentifier = searchIdentifier,
+            OriginalSearchIdentifier = originalSearchIdentifier,
+            TimeUtc = DateTime.UtcNow
+        };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionPersistingResultsStarted);
-        }
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionPersistingResultsEnded);
+    }
 
-        public async Task ProcessPersistingResultsEnded(Guid searchIdentifier, Guid? originalSearchIdentifier)
+    public async Task ProcessCompleted((Guid SearchIdentifier, Guid? OriginalSearchIdentifier, bool IsSuccessful, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) eventDetails)
+    {
+        var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
         {
-            var matchPredictionTimingEvent = new MatchPredictionTimingEvent
+            SearchIdentifier = eventDetails.SearchIdentifier,
+            OriginalSearchIdentifier = eventDetails.OriginalSearchIdentifier,
+            CompletionTimeUtc = DateTime.UtcNow,
+            CompletionDetails = new MatchPredictionCompletionDetails
             {
-                SearchIdentifier = searchIdentifier,
-                OriginalSearchIdentifier = originalSearchIdentifier,
-                TimeUtc = DateTime.UtcNow
-            };
+                IsSuccessful = eventDetails.IsSuccessful,
+                FailureInfo = eventDetails.FailureInfo,
+                DonorsPerBatch = eventDetails.DonorsPerBatch,
+                TotalNumberOfBatches = eventDetails.TotalNumberOfBatches,
+            }
+        };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionPersistingResultsEnded);
-        }
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            matchPredictionCompletedEvent, SearchTrackingEventType.MatchPredictionCompleted);
+    }
 
-        public async Task ProcessCompleted((Guid SearchIdentifier, Guid? OriginalSearchIdentifier, bool IsSuccessful, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) eventDetails)
+    public async Task ProcessResultsSent(Guid searchIdentifier, Guid? originalSearchIdentifier)
+    {
+        var matchPredictionTimingEvent = new MatchPredictionTimingEvent
         {
-            var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
-            {
-                SearchIdentifier = eventDetails.SearchIdentifier,
-                OriginalSearchIdentifier = eventDetails.OriginalSearchIdentifier,
-                CompletionTimeUtc = DateTime.UtcNow,
-                CompletionDetails = new MatchPredictionCompletionDetails
-                {
-                    IsSuccessful = eventDetails.IsSuccessful,
-                    FailureInfo = eventDetails.FailureInfo,
-                    DonorsPerBatch = eventDetails.DonorsPerBatch,
-                    TotalNumberOfBatches = eventDetails.TotalNumberOfBatches,
-                }
-            };
+            SearchIdentifier = searchIdentifier,
+            OriginalSearchIdentifier = originalSearchIdentifier,
+            TimeUtc = DateTime.UtcNow
+        };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionCompletedEvent, SearchTrackingEventType.MatchPredictionCompleted);
-        }
-
-        public async Task ProcessResultsSent(Guid searchIdentifier, Guid? originalSearchIdentifier)
-        {
-            var matchPredictionTimingEvent = new MatchPredictionTimingEvent
-            {
-                SearchIdentifier = searchIdentifier,
-                OriginalSearchIdentifier = originalSearchIdentifier,
-                TimeUtc = DateTime.UtcNow
-            };
-
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionResultsSent);
-        }
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionResultsSent);
     }
 }

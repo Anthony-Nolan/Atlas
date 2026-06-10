@@ -9,49 +9,48 @@ using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using Atlas.HlaMetadataDictionary.Services.AzureStorage;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
-{
-    internal interface IHlaMetadataRepository : IWarmableRepository
-    {
-        Task RecreateHlaMetadataTable(IEnumerable<ISerialisableHlaMetadata> metadata, string hlaNomenclatureVersion);
+namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 
-        Task<HlaMetadataTableRow> GetHlaMetadataRowIfExists(
-            Locus locus,
-            string lookupName,
-            TypingMethod typingMethod,
-            string hlaNomenclatureVersion);
+internal interface IHlaMetadataRepository : IWarmableRepository
+{
+    Task RecreateHlaMetadataTable(IEnumerable<ISerialisableHlaMetadata> metadata, string hlaNomenclatureVersion);
+
+    Task<HlaMetadataTableRow> GetHlaMetadataRowIfExists(
+        Locus locus,
+        string lookupName,
+        TypingMethod typingMethod,
+        string hlaNomenclatureVersion);
+}
+
+internal abstract class HlaMetadataRepositoryBase :
+    TableClientRepositoryBase<ISerialisableHlaMetadata, HlaMetadataTableRow>,
+    IHlaMetadataRepository
+{
+    protected HlaMetadataRepositoryBase(
+        ITableClientFactory factory,
+        ITableReferenceRepository tableReferenceRepository,
+        string dataFunctionalTableReferencePrefix,
+        IPersistentCacheProvider cacheProvider,
+        string cacheKey,
+        IAtlasLogger logger)
+        : base(factory, tableReferenceRepository, dataFunctionalTableReferencePrefix, cacheProvider, cacheKey, logger)
+    {
     }
 
-    internal abstract class HlaMetadataRepositoryBase :
-        TableClientRepositoryBase<ISerialisableHlaMetadata, HlaMetadataTableRow>,
-        IHlaMetadataRepository
+    public async Task RecreateHlaMetadataTable(IEnumerable<ISerialisableHlaMetadata> metadata, string hlaNomenclatureVersion)
     {
-        protected HlaMetadataRepositoryBase(
-            ITableClientFactory factory,
-            ITableReferenceRepository tableReferenceRepository,
-            string dataFunctionalTableReferencePrefix,
-            IPersistentCacheProvider cacheProvider,
-            string cacheKey,
-            IAtlasLogger logger)
-            : base(factory, tableReferenceRepository, dataFunctionalTableReferencePrefix, cacheProvider, cacheKey, logger)
-        {
-        }
+        await RecreateDataTable(metadata, hlaNomenclatureVersion);
+    }
 
-        public async Task RecreateHlaMetadataTable(IEnumerable<ISerialisableHlaMetadata> metadata, string hlaNomenclatureVersion)
-        {
-            await RecreateDataTable(metadata, hlaNomenclatureVersion);
-        }
+    public async Task<HlaMetadataTableRow> GetHlaMetadataRowIfExists(
+        Locus locus,
+        string lookupName,
+        TypingMethod typingMethod,
+        string hlaNomenclatureVersion)
+    {
+        var partition = HlaMetadataTableKeyManager.GetPartitionKey(locus);
+        var rowKey = HlaMetadataTableKeyManager.GetRowKey(lookupName, typingMethod);
 
-        public async Task<HlaMetadataTableRow> GetHlaMetadataRowIfExists(
-            Locus locus,
-            string lookupName,
-            TypingMethod typingMethod,
-            string hlaNomenclatureVersion)
-        {
-            var partition = HlaMetadataTableKeyManager.GetPartitionKey(locus);
-            var rowKey = HlaMetadataTableKeyManager.GetRowKey(lookupName, typingMethod);
-
-            return await GetDataRowIfExists(partition, rowKey, hlaNomenclatureVersion);
-        }
+        return await GetDataRowIfExists(partition, rowKey, hlaNomenclatureVersion);
     }
 }

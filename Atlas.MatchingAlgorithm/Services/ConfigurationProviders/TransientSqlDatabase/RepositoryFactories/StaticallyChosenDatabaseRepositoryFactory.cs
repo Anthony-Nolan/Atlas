@@ -9,87 +9,86 @@ using Atlas.MatchingAlgorithm.Data.Services;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 using static EnumStringValues.EnumExtensions;
 
-namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories
+namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+
+public interface IStaticallyChosenDatabaseRepositoryFactory
 {
-    public interface IStaticallyChosenDatabaseRepositoryFactory
+    IDonorManagementLogRepository GetDonorManagementLogRepositoryForDatabase(TransientDatabase targetDatabase);
+    IDonorInspectionRepository GetDonorInspectionRepositoryForDatabase(TransientDatabase targetDatabase);
+    IDonorUpdateRepository GetDonorUpdateRepositoryForDatabase(TransientDatabase targetDatabase);
+    IPGroupRepository GetPGroupRepositoryForDatabase(TransientDatabase targetDatabase);
+}
+
+public class StaticallyChosenDatabaseRepositoryFactory : IStaticallyChosenDatabaseRepositoryFactory
+{
+    private readonly StaticallyChosenTransientSqlConnectionStringProviderFactory connectionStringProviderFactory;
+    private readonly IMatchingAlgorithmImportLogger logger;
+
+    public StaticallyChosenDatabaseRepositoryFactory(
+        StaticallyChosenTransientSqlConnectionStringProviderFactory connectionStringProviderFactory,
+        IMatchingAlgorithmImportLogger logger
+    )
     {
-        IDonorManagementLogRepository GetDonorManagementLogRepositoryForDatabase(TransientDatabase targetDatabase);
-        IDonorInspectionRepository GetDonorInspectionRepositoryForDatabase(TransientDatabase targetDatabase);
-        IDonorUpdateRepository GetDonorUpdateRepositoryForDatabase(TransientDatabase targetDatabase);
-        IPGroupRepository GetPGroupRepositoryForDatabase(TransientDatabase targetDatabase);
+        this.connectionStringProviderFactory = connectionStringProviderFactory;
+        this.logger = logger;
     }
 
-    public class StaticallyChosenDatabaseRepositoryFactory : IStaticallyChosenDatabaseRepositoryFactory
+    private class AvailableRepositories
     {
-        private readonly StaticallyChosenTransientSqlConnectionStringProviderFactory connectionStringProviderFactory;
-        private readonly IMatchingAlgorithmImportLogger logger;
+        public IDonorManagementLogRepository DonorManagementLog { get; set; }
+        public IDonorInspectionRepository DonorInspection { get; set; }
+        public IPGroupRepository PGroup { get; set; }
+        public IHlaImportRepository HlaImport { get; set; }
+        public IDonorUpdateRepository DonorUpdate { get; set; }
+    }
 
-        public StaticallyChosenDatabaseRepositoryFactory(
-            StaticallyChosenTransientSqlConnectionStringProviderFactory connectionStringProviderFactory,
-            IMatchingAlgorithmImportLogger logger
-        )
-        {
-            this.connectionStringProviderFactory = connectionStringProviderFactory;
-            this.logger = logger;
-        }
+    readonly Dictionary<TransientDatabase, AvailableRepositories> cachedRepositories =
+        EnumerateValues<TransientDatabase>().ToDictionary(db => db, db => new AvailableRepositories());
 
-        private class AvailableRepositories
-        {
-            public IDonorManagementLogRepository DonorManagementLog { get; set; }
-            public IDonorInspectionRepository DonorInspection { get; set; }
-            public IPGroupRepository PGroup { get; set; }
-            public IHlaImportRepository HlaImport { get; set; }
-            public IDonorUpdateRepository DonorUpdate { get; set; }
-        }
+    /* **********************************************************
+     * ** All of this is working around the lack of            **
+     * ** Func<TArg, TDependency> support in MS DI.            **
+     * ** If we ever migrate to some other DI framework, which **
+     * ** DOES support that dependency declaration structure,  **
+     * ** then it can all go away :)                           **
+     * ********************************************************** */
 
-        readonly Dictionary<TransientDatabase, AvailableRepositories> cachedRepositories =
-            EnumerateValues<TransientDatabase>().ToDictionary(db => db, db => new AvailableRepositories());
+    private IConnectionStringProvider GetConnectionStringProvider(TransientDatabase targetDatabase) =>
+        connectionStringProviderFactory.GenerateConnectionStringProvider(targetDatabase);
 
-        /* **********************************************************
-         * ** All of this is working around the lack of            **
-         * ** Func<TArg, TDependency> support in MS DI.            **
-         * ** If we ever migrate to some other DI framework, which **
-         * ** DOES support that dependency declaration structure,  **
-         * ** then it can all go away :)                           **
-         * ********************************************************** */
+    public IDonorManagementLogRepository GetDonorManagementLogRepositoryForDatabase(TransientDatabase targetDatabase)
+    {
+        var available = cachedRepositories[targetDatabase];
+        return available.DonorManagementLog ??
+               (available.DonorManagementLog = new DonorManagementLogRepository(GetConnectionStringProvider(targetDatabase)));
+    }
 
-        private IConnectionStringProvider GetConnectionStringProvider(TransientDatabase targetDatabase) =>
-            connectionStringProviderFactory.GenerateConnectionStringProvider(targetDatabase);
+    public IDonorInspectionRepository GetDonorInspectionRepositoryForDatabase(TransientDatabase targetDatabase)
+    {
+        var available = cachedRepositories[targetDatabase];
+        return available.DonorInspection ??
+               (available.DonorInspection = new DonorInspectionRepository(GetConnectionStringProvider(targetDatabase)));
+    }
 
-        public IDonorManagementLogRepository GetDonorManagementLogRepositoryForDatabase(TransientDatabase targetDatabase)
-        {
-            var available = cachedRepositories[targetDatabase];
-            return available.DonorManagementLog ??
-                   (available.DonorManagementLog = new DonorManagementLogRepository(GetConnectionStringProvider(targetDatabase)));
-        }
+    public IPGroupRepository GetPGroupRepositoryForDatabase(TransientDatabase targetDatabase)
+    {
+        var available = cachedRepositories[targetDatabase];
+        return available.PGroup ?? (available.PGroup = new PGroupRepository(GetConnectionStringProvider(targetDatabase)));
+    }
 
-        public IDonorInspectionRepository GetDonorInspectionRepositoryForDatabase(TransientDatabase targetDatabase)
-        {
-            var available = cachedRepositories[targetDatabase];
-            return available.DonorInspection ??
-                   (available.DonorInspection = new DonorInspectionRepository(GetConnectionStringProvider(targetDatabase)));
-        }
+    public IHlaImportRepository GetHlaImportRepositoryForDatabase(TransientDatabase targetDatabase)
+    {
+        var available = cachedRepositories[targetDatabase];
+        return available.HlaImport ?? (available.HlaImport = new HlaImportRepository(
+            new HlaNamesRepository(GetConnectionStringProvider(targetDatabase)),
+            GetPGroupRepositoryForDatabase(targetDatabase),
+            GetConnectionStringProvider(targetDatabase)));
+    }
 
-        public IPGroupRepository GetPGroupRepositoryForDatabase(TransientDatabase targetDatabase)
-        {
-            var available = cachedRepositories[targetDatabase];
-            return available.PGroup ?? (available.PGroup = new PGroupRepository(GetConnectionStringProvider(targetDatabase)));
-        }
-
-        public IHlaImportRepository GetHlaImportRepositoryForDatabase(TransientDatabase targetDatabase)
-        {
-            var available = cachedRepositories[targetDatabase];
-            return available.HlaImport ?? (available.HlaImport = new HlaImportRepository(
-                new HlaNamesRepository(GetConnectionStringProvider(targetDatabase)),
-                GetPGroupRepositoryForDatabase(targetDatabase),
-                GetConnectionStringProvider(targetDatabase)));
-        }
-
-        public IDonorUpdateRepository GetDonorUpdateRepositoryForDatabase(TransientDatabase targetDatabase)
-        {
-            var available = cachedRepositories[targetDatabase];
-            return available.DonorUpdate ?? (available.DonorUpdate = new DonorUpdateRepository(GetHlaImportRepositoryForDatabase(targetDatabase),
-                GetConnectionStringProvider(targetDatabase), logger));
-        }
+    public IDonorUpdateRepository GetDonorUpdateRepositoryForDatabase(TransientDatabase targetDatabase)
+    {
+        var available = cachedRepositories[targetDatabase];
+        return available.DonorUpdate ?? (available.DonorUpdate = new DonorUpdateRepository(GetHlaImportRepositoryForDatabase(targetDatabase),
+            GetConnectionStringProvider(targetDatabase), logger));
     }
 }

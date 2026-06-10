@@ -1,11 +1,10 @@
-﻿namespace Atlas.SearchTracking.Common.Models
+﻿namespace Atlas.SearchTracking.Common.Models;
+
+public class MatchPredictionStartedEvent : ISearchTrackingEvent
 {
-    public class MatchPredictionStartedEvent : ISearchTrackingEvent
-    {
-        public Guid SearchIdentifier { get; set; }
-        public Guid? OriginalSearchIdentifier { get; set; }
-        public DateTime InitiationTimeUtc { get; set; }
-        public DateTime StartTimeUtc { get; set; }
-        public bool IsParallelMatchPrediction { get; set; }
-    }
+    public Guid SearchIdentifier { get; set; }
+    public Guid? OriginalSearchIdentifier { get; set; }
+    public DateTime InitiationTimeUtc { get; set; }
+    public DateTime StartTimeUtc { get; set; }
+    public bool IsParallelMatchPrediction { get; set; }
 }

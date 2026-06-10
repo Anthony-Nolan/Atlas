@@ -2,50 +2,49 @@
 using System.Collections.Generic;
 using Atlas.Common.ApplicationInsights;
 
-namespace Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging
+namespace Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
+
+public class MatchingAlgorithmSearchLoggingContext : LoggingContext
 {
-    public class MatchingAlgorithmSearchLoggingContext : LoggingContext
+    private string searchRequestId;
+    private string hlaNomenclatureVersion;
+
+    public string SearchRequestId
     {
-        private string searchRequestId;
-        private string hlaNomenclatureVersion;
-
-        public string SearchRequestId
+        get => searchRequestId;
+        set
         {
-            get => searchRequestId;
-            set
+            if (!string.IsNullOrEmpty(searchRequestId) && searchRequestId != value)
             {
-                if (!string.IsNullOrEmpty(searchRequestId) && searchRequestId != value)
-                {
-                    throw new InvalidOperationException(
-                        $"Cannot set {nameof(SearchRequestId)} to '{value}' as it is already set to '{searchRequestId}'.");
-                }
-
-                searchRequestId = value;
-                SearchRequestContext.SearchRequestId = value;
+                throw new InvalidOperationException(
+                    $"Cannot set {nameof(SearchRequestId)} to '{value}' as it is already set to '{searchRequestId}'.");
             }
+
+            searchRequestId = value;
+            SearchRequestContext.SearchRequestId = value;
         }
-
-        public string HlaNomenclatureVersion
-        {
-            get => hlaNomenclatureVersion;
-            set
-            {
-                if (!string.IsNullOrEmpty(hlaNomenclatureVersion))
-                {
-                    throw new InvalidOperationException(
-                        $"Cannot set {nameof(hlaNomenclatureVersion)} to '{value}' as it is already set to '{hlaNomenclatureVersion}'.");
-                }
-
-                hlaNomenclatureVersion = value;
-            }
-        }
-
-        /// <inheritdoc />
-        public override Dictionary<string, string> PropertiesToLog() =>
-            new Dictionary<string, string>
-            {
-                {nameof(SearchRequestId), SearchRequestId},
-                {nameof(HlaNomenclatureVersion), HlaNomenclatureVersion},
-            };
     }
+
+    public string HlaNomenclatureVersion
+    {
+        get => hlaNomenclatureVersion;
+        set
+        {
+            if (!string.IsNullOrEmpty(hlaNomenclatureVersion))
+            {
+                throw new InvalidOperationException(
+                    $"Cannot set {nameof(hlaNomenclatureVersion)} to '{value}' as it is already set to '{hlaNomenclatureVersion}'.");
+            }
+
+            hlaNomenclatureVersion = value;
+        }
+    }
+
+    /// <inheritdoc />
+    public override Dictionary<string, string> PropertiesToLog() =>
+        new Dictionary<string, string>
+        {
+            {nameof(SearchRequestId), SearchRequestId},
+            {nameof(HlaNomenclatureVersion), HlaNomenclatureVersion},
+        };
 }

@@ -4,46 +4,45 @@ using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Atlas.MatchPrediction.ExternalInterface
+namespace Atlas.MatchPrediction.ExternalInterface;
+
+public interface IHaplotypeFrequencySetReader
 {
-    public interface IHaplotypeFrequencySetReader
+    Task<HaplotypeFrequencySet> GetActiveGlobalHaplotypeFrequencySet();
+    Task<IEnumerable<HaplotypeFrequencySet>> GetActiveHaplotypeFrequencySetByPopulationId(int populationId);
+}
+
+internal class HaplotypeFrequencySetReader : IHaplotypeFrequencySetReader
+{
+    private readonly IHaplotypeFrequencySetReadRepository readRepository;
+
+    public HaplotypeFrequencySetReader(IHaplotypeFrequencySetReadRepository readRepository)
     {
-        Task<HaplotypeFrequencySet> GetActiveGlobalHaplotypeFrequencySet();
-        Task<IEnumerable<HaplotypeFrequencySet>> GetActiveHaplotypeFrequencySetByPopulationId(int populationId);
+        this.readRepository = readRepository;
     }
 
-    internal class HaplotypeFrequencySetReader : IHaplotypeFrequencySetReader
+    public async Task<HaplotypeFrequencySet> GetActiveGlobalHaplotypeFrequencySet()
     {
-        private readonly IHaplotypeFrequencySetReadRepository readRepository;
+        var set = await readRepository.GetActiveHaplotypeFrequencySet(null, null);
+        return ConvertToExternalModel(set);
+    }
 
-        public HaplotypeFrequencySetReader(IHaplotypeFrequencySetReadRepository readRepository)
-        {
-            this.readRepository = readRepository;
-        }
+    public async Task<IEnumerable<HaplotypeFrequencySet>> GetActiveHaplotypeFrequencySetByPopulationId(int populationId)
+    {
+        var sets = await readRepository.GetActiveHaplotypeFrequencySet(populationId);
+        return sets.Select(ConvertToExternalModel);
+    }
 
-        public async Task<HaplotypeFrequencySet> GetActiveGlobalHaplotypeFrequencySet()
+    private static HaplotypeFrequencySet ConvertToExternalModel(Data.Models.HaplotypeFrequencySet set)
+    {
+        return new HaplotypeFrequencySet
         {
-            var set = await readRepository.GetActiveHaplotypeFrequencySet(null, null);
-            return ConvertToExternalModel(set);
-        }
-
-        public async Task<IEnumerable<HaplotypeFrequencySet>> GetActiveHaplotypeFrequencySetByPopulationId(int populationId)
-        {
-            var sets = await readRepository.GetActiveHaplotypeFrequencySet(populationId);
-            return sets.Select(ConvertToExternalModel);
-        }
-
-        private static HaplotypeFrequencySet ConvertToExternalModel(Data.Models.HaplotypeFrequencySet set)
-        {
-            return new HaplotypeFrequencySet
-            {
-                Id = set.Id,
-                Name = set.Name,
-                RegistryCode = set.RegistryCode,
-                EthnicityCode = set.EthnicityCode,
-                PopulationId = set.PopulationId,
-                HlaNomenclatureVersion = set.HlaNomenclatureVersion
-            };
-        }
+            Id = set.Id,
+            Name = set.Name,
+            RegistryCode = set.RegistryCode,
+            EthnicityCode = set.EthnicityCode,
+            PopulationId = set.PopulationId,
+            HlaNomenclatureVersion = set.HlaNomenclatureVersion
+        };
     }
 }

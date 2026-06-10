@@ -9,43 +9,42 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker;
 
-namespace Atlas.DonorImport.Functions.Functions.Debug
+namespace Atlas.DonorImport.Functions.Functions.Debug;
+
+public class DonorUpdateFunctions
 {
-    public class DonorUpdateFunctions
+    private readonly IDonorImportFailureRepository donorImportFailureRepository;
+
+    public DonorUpdateFunctions(IDonorImportFailureRepository donorImportFailureRepository)
     {
-        private readonly IDonorImportFailureRepository donorImportFailureRepository;
+        this.donorImportFailureRepository = donorImportFailureRepository;
+    }
 
-        public DonorUpdateFunctions(IDonorImportFailureRepository donorImportFailureRepository)
+    /// <summary>
+    /// Retrieves donor import failures by file name.
+    /// File name must include the file extension, e.g., `.json`, but file path is optional.
+    /// </summary>
+    /// <param name="request">The HTTP request.</param>
+    /// <param name="fileName">The file name.</param>
+    /// <returns>Donor import failures found for the given <paramref name="fileName"/>.</returns>
+    [Function(nameof(GetDonorImportFailuresByFileName))]
+    [ProducesResponseType(typeof(DonorImportFailureInfo), (int)HttpStatusCode.OK)]
+    public async Task<IActionResult> GetDonorImportFailuresByFileName(
+        [HttpTrigger(
+            AuthorizationLevel.Function,
+            "get",
+            Route = $"{RouteConstants.DebugRoutePrefix}/donorUpdates/failures/"+"{fileName}")]
+        HttpRequest request,
+        string fileName)
+    {
+        var failures = await donorImportFailureRepository.GetDonorImportFailuresByFileName(fileName);
+        var failedUpdates = failures.Select(f => f.ToFailedDonorUpdate()).ToList();
+
+        return new JsonResult(new DonorImportFailureInfo
         {
-            this.donorImportFailureRepository = donorImportFailureRepository;
-        }
-
-        /// <summary>
-        /// Retrieves donor import failures by file name.
-        /// File name must include the file extension, e.g., `.json`, but file path is optional.
-        /// </summary>
-        /// <param name="request">The HTTP request.</param>
-        /// <param name="fileName">The file name.</param>
-        /// <returns>Donor import failures found for the given <paramref name="fileName"/>.</returns>
-        [Function(nameof(GetDonorImportFailuresByFileName))]
-        [ProducesResponseType(typeof(DonorImportFailureInfo), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetDonorImportFailuresByFileName(
-            [HttpTrigger(
-                AuthorizationLevel.Function,
-                "get",
-                Route = $"{RouteConstants.DebugRoutePrefix}/donorUpdates/failures/"+"{fileName}")]
-            HttpRequest request,
-            string fileName)
-        {
-            var failures = await donorImportFailureRepository.GetDonorImportFailuresByFileName(fileName);
-            var failedUpdates = failures.Select(f => f.ToFailedDonorUpdate()).ToList();
-
-            return new JsonResult(new DonorImportFailureInfo
-            {
-                FileName = fileName,
-                FailedUpdates = failedUpdates,
-                FailedUpdateCount = failedUpdates.Count
-            });
-        }
+            FileName = fileName,
+            FailedUpdates = failedUpdates,
+            FailedUpdateCount = failedUpdates.Count
+        });
     }
 }

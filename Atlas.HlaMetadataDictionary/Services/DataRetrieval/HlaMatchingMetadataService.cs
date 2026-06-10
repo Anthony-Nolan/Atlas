@@ -10,77 +10,76 @@ using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+
+/// <summary>
+///  Consolidates HLA info used in matching for all alleles that map to the hla name.
+/// </summary>
+internal interface IHlaMatchingMetadataService : ISearchRelatedMetadataService<IHlaMatchingMetadata>
 {
-    /// <summary>
-    ///  Consolidates HLA info used in matching for all alleles that map to the hla name.
-    /// </summary>
-    internal interface IHlaMatchingMetadataService : ISearchRelatedMetadataService<IHlaMatchingMetadata>
+    Task<IEnumerable<string>> GetAllPGroups(string hlaNomenclatureVersion);
+}
+
+internal class HlaMatchingMetadataService : 
+    SearchRelatedMetadataServiceBase<IHlaMatchingMetadata>, 
+    IHlaMatchingMetadataService
+{
+    private const string CacheKey = nameof(HlaMatchingMetadataService);
+    private readonly IHlaMatchingMetadataRepository typedMatchingRepository;
+
+    public HlaMatchingMetadataService(
+        IHlaMatchingMetadataRepository hlaMatchingMetadataRepository,
+        IAlleleNamesMetadataService alleleNamesMetadataService,
+        IHlaCategorisationService hlaCategorisationService,
+        IAlleleNamesExtractor alleleNamesExtractor,
+        IMacDictionary macDictionary,
+        IAlleleGroupExpander alleleGroupExpander,
+        IPersistentCacheProvider cacheProvider,
+        HlaMetadataDictionarySettings options)
+        : base(
+            hlaMatchingMetadataRepository,
+            alleleNamesMetadataService,
+            hlaCategorisationService,
+            alleleNamesExtractor,
+            macDictionary,
+            alleleGroupExpander,
+            CacheKey,
+            cacheProvider,
+            options
+        )
     {
-        Task<IEnumerable<string>> GetAllPGroups(string hlaNomenclatureVersion);
+        typedMatchingRepository = hlaMatchingMetadataRepository;
     }
 
-    internal class HlaMatchingMetadataService : 
-        SearchRelatedMetadataServiceBase<IHlaMatchingMetadata>, 
-        IHlaMatchingMetadataService
+    protected override IEnumerable<IHlaMatchingMetadata> ConvertMetadataRowsToMetadata(
+        IEnumerable<HlaMetadataTableRow> rows)
     {
-        private const string CacheKey = nameof(HlaMatchingMetadataService);
-        private readonly IHlaMatchingMetadataRepository typedMatchingRepository;
+        return rows.Select(row => row.ToHlaMatchingMetadata());
+    }
 
-        public HlaMatchingMetadataService(
-            IHlaMatchingMetadataRepository hlaMatchingMetadataRepository,
-            IAlleleNamesMetadataService alleleNamesMetadataService,
-            IHlaCategorisationService hlaCategorisationService,
-            IAlleleNamesExtractor alleleNamesExtractor,
-            IMacDictionary macDictionary,
-            IAlleleGroupExpander alleleGroupExpander,
-            IPersistentCacheProvider cacheProvider,
-            HlaMetadataDictionarySettings options)
-            : base(
-                hlaMatchingMetadataRepository,
-                alleleNamesMetadataService,
-                hlaCategorisationService,
-                alleleNamesExtractor,
-                macDictionary,
-                alleleGroupExpander,
-                CacheKey,
-                cacheProvider,
-                options
-                )
-        {
-            typedMatchingRepository = hlaMatchingMetadataRepository;
-        }
+    protected override IHlaMatchingMetadata ConsolidateHlaMetadata(
+        Locus locus,
+        string lookupName,
+        List<IHlaMatchingMetadata> metadata)
+    {
+        var typingMethod = metadata
+            .First()
+            .TypingMethod;
 
-        protected override IEnumerable<IHlaMatchingMetadata> ConvertMetadataRowsToMetadata(
-            IEnumerable<HlaMetadataTableRow> rows)
-        {
-            return rows.Select(row => row.ToHlaMatchingMetadata());
-        }
+        var pGroups = metadata
+            .SelectMany(data => data.MatchingPGroups)
+            .Distinct()
+            .ToList();
 
-        protected override IHlaMatchingMetadata ConsolidateHlaMetadata(
-            Locus locus,
-            string lookupName,
-            List<IHlaMatchingMetadata> metadata)
-        {
-            var typingMethod = metadata
-                .First()
-                .TypingMethod;
+        return new HlaMatchingMetadata(
+            locus,
+            lookupName,
+            typingMethod,
+            pGroups);
+    }
 
-            var pGroups = metadata
-                .SelectMany(data => data.MatchingPGroups)
-                .Distinct()
-                .ToList();
-
-            return new HlaMatchingMetadata(
-                locus,
-                lookupName,
-                typingMethod,
-                pGroups);
-        }
-
-        public async Task<IEnumerable<string>> GetAllPGroups(string hlaNomenclatureVersion)
-        {
-            return await typedMatchingRepository.GetAllPGroups(hlaNomenclatureVersion);
-        }
+    public async Task<IEnumerable<string>> GetAllPGroups(string hlaNomenclatureVersion)
+    {
+        return await typedMatchingRepository.GetAllPGroups(hlaNomenclatureVersion);
     }
 }

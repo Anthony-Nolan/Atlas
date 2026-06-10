@@ -11,89 +11,88 @@ using Newtonsoft.Json;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Atlas.MatchPrediction.Test.Verification.Functions
+namespace Atlas.MatchPrediction.Test.Verification.Functions;
+
+public class VerificationFunctions
 {
-    public class VerificationFunctions
+    private readonly IVerificationRunner verificationRunner;
+    private readonly IResultSetProcessor<MatchingResultsNotification> matchingGenotypesProcessor;
+    private readonly IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor;
+    private readonly IVerificationResultsWriter resultsWriter;
+
+    public VerificationFunctions(
+        IVerificationRunner verificationRunner,
+        IResultSetProcessor<MatchingResultsNotification> matchingGenotypesProcessor,
+        IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor,
+        IVerificationResultsWriter resultsWriter)
     {
-        private readonly IVerificationRunner verificationRunner;
-        private readonly IResultSetProcessor<MatchingResultsNotification> matchingGenotypesProcessor;
-        private readonly IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor;
-        private readonly IVerificationResultsWriter resultsWriter;
+        this.verificationRunner = verificationRunner;
+        this.matchingGenotypesProcessor = matchingGenotypesProcessor;
+        this.searchResultSetProcessor = searchResultSetProcessor;
+        this.resultsWriter = resultsWriter;
+    }
 
-        public VerificationFunctions(
-            IVerificationRunner verificationRunner,
-            IResultSetProcessor<MatchingResultsNotification> matchingGenotypesProcessor,
-            IResultSetProcessor<SearchResultsNotification> searchResultSetProcessor,
-            IVerificationResultsWriter resultsWriter)
+    [Function(nameof(SendVerificationSearchRequests))]
+    public async Task<IActionResult> SendVerificationSearchRequests(
+        [HttpTrigger(AuthorizationLevel.Function, "post")]
+        [RequestBodyType(typeof(TestHarnessDetails), nameof(TestHarnessDetails))]
+        HttpRequest request)
+    {
+        var testHarnessDetails = JsonConvert.DeserializeObject<TestHarnessDetails>(
+            await new StreamReader(request.Body).ReadToEndAsync());
+
+        var verificationRunId = await verificationRunner.SendVerificationSearchRequests(testHarnessDetails.TestHarnessId);
+
+        return new JsonResult(verificationRunId);
+    }
+
+    [Function(nameof(FetchMatchingResults))]
+    public async Task FetchMatchingResults(
+        [ServiceBusTrigger(
+            "%Matching:ResultsTopic%",
+            "%Matching:ResultsTopicSubscription%",
+            Connection = "MessagingServiceBus:ConnectionString")]
+        MatchingResultsNotification notification)
+    {
+        try
         {
-            this.verificationRunner = verificationRunner;
-            this.matchingGenotypesProcessor = matchingGenotypesProcessor;
-            this.searchResultSetProcessor = searchResultSetProcessor;
-            this.resultsWriter = resultsWriter;
+            await matchingGenotypesProcessor.ProcessAndStoreResultSet(notification);
         }
-
-        [Function(nameof(SendVerificationSearchRequests))]
-        public async Task<IActionResult> SendVerificationSearchRequests(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(TestHarnessDetails), nameof(TestHarnessDetails))]
-            HttpRequest request)
+        catch (System.Exception ex)
         {
-            var testHarnessDetails = JsonConvert.DeserializeObject<TestHarnessDetails>(
-                    await new StreamReader(request.Body).ReadToEndAsync());
-
-            var verificationRunId = await verificationRunner.SendVerificationSearchRequests(testHarnessDetails.TestHarnessId);
-
-            return new JsonResult(verificationRunId);
+            System.Diagnostics.Debug.WriteLine($"Error while downloading results for {notification.SearchRequestId}: {ex.GetBaseException()}");
+            throw;
         }
+    }
 
-        [Function(nameof(FetchMatchingResults))]
-        public async Task FetchMatchingResults(
-            [ServiceBusTrigger(
-                "%Matching:ResultsTopic%",
-                "%Matching:ResultsTopicSubscription%",
-                Connection = "MessagingServiceBus:ConnectionString")]
-            MatchingResultsNotification notification)
+    [Function(nameof(FetchSearchResults))]
+    public async Task FetchSearchResults(
+        [ServiceBusTrigger(
+            "%Search:ResultsTopic%",
+            "%Search:ResultsTopicSubscription%",
+            Connection = "MessagingServiceBus:ConnectionString")]
+        SearchResultsNotification notification)
+    {
+        try
         {
-            try
-            {
-                await matchingGenotypesProcessor.ProcessAndStoreResultSet(notification);
-            }
-            catch (System.Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error while downloading results for {notification.SearchRequestId}: {ex.GetBaseException()}");
-                throw;
-            }
+            await searchResultSetProcessor.ProcessAndStoreResultSet(notification);
         }
-
-        [Function(nameof(FetchSearchResults))]
-        public async Task FetchSearchResults(
-            [ServiceBusTrigger(
-                "%Search:ResultsTopic%",
-                "%Search:ResultsTopicSubscription%",
-                Connection = "MessagingServiceBus:ConnectionString")]
-            SearchResultsNotification notification)
+        catch (System.Exception ex)
         {
-            try
-            {
-                await searchResultSetProcessor.ProcessAndStoreResultSet(notification);
-            }
-            catch (System.Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error while downloading results for {notification.SearchRequestId}: {ex.GetBaseException()}");
-                throw;
-            }
+            System.Diagnostics.Debug.WriteLine($"Error while downloading results for {notification.SearchRequestId}: {ex.GetBaseException()}");
+            throw;
         }
+    }
 
-        [Function(nameof(WriteVerificationResultsToFile))]
-        public async Task WriteVerificationResultsToFile(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(VerificationResultsRequest), nameof(VerificationResultsRequest))]
-            HttpRequest request)
-        {
-            var resultsRequest = JsonConvert.DeserializeObject<VerificationResultsRequest>(
-                await new StreamReader(request.Body).ReadToEndAsync());
+    [Function(nameof(WriteVerificationResultsToFile))]
+    public async Task WriteVerificationResultsToFile(
+        [HttpTrigger(AuthorizationLevel.Function, "post")]
+        [RequestBodyType(typeof(VerificationResultsRequest), nameof(VerificationResultsRequest))]
+        HttpRequest request)
+    {
+        var resultsRequest = JsonConvert.DeserializeObject<VerificationResultsRequest>(
+            await new StreamReader(request.Body).ReadToEndAsync());
 
-            await resultsWriter.WriteVerificationResultsToFile(resultsRequest);
-        }
+        await resultsWriter.WriteVerificationResultsToFile(resultsRequest);
     }
 }

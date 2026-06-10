@@ -1,11 +1,10 @@
-﻿namespace Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData
+﻿namespace Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData;
+
+public enum TestHlaPhenotypeCategory
 {
-    public enum TestHlaPhenotypeCategory
-    {
-        ThreeLocusSingleExpressingAlleles,
-        SixLocusSingleExpressingAlleles,
-        SixLocusExpressingAllelesWithTruncatedNames,
-        SixLocusXxCodes,
-        FiveLocusSerologies
-    }
+    ThreeLocusSingleExpressingAlleles,
+    SixLocusSingleExpressingAlleles,
+    SixLocusExpressingAllelesWithTruncatedNames,
+    SixLocusXxCodes,
+    FiveLocusSerologies
 }

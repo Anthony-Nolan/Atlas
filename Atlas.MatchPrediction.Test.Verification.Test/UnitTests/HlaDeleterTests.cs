@@ -6,107 +6,106 @@ using Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
+namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests;
+
+[TestFixture]
+public class HlaDeleterTests
 {
-    [TestFixture]
-    public class HlaDeleterTests
+    private IHlaDeleter deleter;
+
+    [SetUp]
+    public void SetUp()
     {
-        private IHlaDeleter deleter;
+        deleter = new HlaDeleter();
+    }
 
-        [SetUp]
-        public void SetUp()
-        {
-            deleter = new HlaDeleter();
-        }
-
-        [Test]
-        public async Task DeleteRandomLocusHla_DeletesHla()
-        {
-            const int simulantCount = 1;
+    [Test]
+    public async Task DeleteRandomLocusHla_DeletesHla()
+    {
+        const int simulantCount = 1;
             
-            var typings = SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A).Build(simulantCount).ToList();
+        var typings = SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A).Build(simulantCount).ToList();
 
-            var request = new TransformationRequest
-            {
-                ProportionToTransform = 100,
-                TotalSimulantCount = simulantCount,
-                Typings = typings
-            };
-
-            var results = await deleter.DeleteRandomLocusHla(request);
-            var result = results.SelectedTypings.Single();
-
-            result.HlaTyping.Position1.Should().BeNull();
-            result.HlaTyping.Position2.Should().BeNull();
-        }
-
-        [Test]
-        public async Task DeleteRandomLocusHla_DeletesCorrectProportion([Values(0, 50, 100)] int proportion)
+        var request = new TransformationRequest
         {
-            const int simulantCount = 100;
+            ProportionToTransform = 100,
+            TotalSimulantCount = simulantCount,
+            Typings = typings
+        };
 
-            var typings = SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A).Build(simulantCount).ToList();
+        var results = await deleter.DeleteRandomLocusHla(request);
+        var result = results.SelectedTypings.Single();
 
-            var request = new TransformationRequest
-            {
-                ProportionToTransform = proportion,
-                TotalSimulantCount = simulantCount,
-                Typings = typings
-            };
+        result.HlaTyping.Position1.Should().BeNull();
+        result.HlaTyping.Position2.Should().BeNull();
+    }
 
-            var results = await deleter.DeleteRandomLocusHla(request);
+    [Test]
+    public async Task DeleteRandomLocusHla_DeletesCorrectProportion([Values(0, 50, 100)] int proportion)
+    {
+        const int simulantCount = 100;
 
-            // `proportion` value can be used directly as long as `simulantCount` is 100
-            results.SelectedTypings.Count.Should().Be(proportion);
-            results.RemainingTypings.Count.Should().Be(simulantCount - proportion);
-        }
+        var typings = SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A).Build(simulantCount).ToList();
 
-        [Test]
-        public async Task DeleteRandomLocusHla_NoOverlapBetweenSelectedAndRemainingTypings()
+        var request = new TransformationRequest
         {
-            const int simulantCount = 10;
+            ProportionToTransform = proportion,
+            TotalSimulantCount = simulantCount,
+            Typings = typings
+        };
 
-            var typings = SimulantLocusHlaBuilder.New
-                .WithTypingFromLocusName(Locus.A)
-                .WithIncrementingIds()
-                .Build(simulantCount)
-                .ToList();
+        var results = await deleter.DeleteRandomLocusHla(request);
 
-            var request = new TransformationRequest
-            {
-                ProportionToTransform = 50,
-                TotalSimulantCount = simulantCount,
-                Typings = typings
-            };
+        // `proportion` value can be used directly as long as `simulantCount` is 100
+        results.SelectedTypings.Count.Should().Be(proportion);
+        results.RemainingTypings.Count.Should().Be(simulantCount - proportion);
+    }
 
-            var results = await deleter.DeleteRandomLocusHla(request);
-            var selected = results.SelectedTypings.Select(x => x.GenotypeSimulantId);
-            var remaining = results.RemainingTypings.Select(x => x.GenotypeSimulantId);
+    [Test]
+    public async Task DeleteRandomLocusHla_NoOverlapBetweenSelectedAndRemainingTypings()
+    {
+        const int simulantCount = 10;
 
-            selected.Should().NotBeEquivalentTo(remaining);
-        }
+        var typings = SimulantLocusHlaBuilder.New
+            .WithTypingFromLocusName(Locus.A)
+            .WithIncrementingIds()
+            .Build(simulantCount)
+            .ToList();
 
-        [Test]
-        public async Task DeleteRandomLocusHla_DoesNotModifyMetadata()
+        var request = new TransformationRequest
         {
-            const Locus locus = Locus.B;
-            const int simulantCount = 1;
+            ProportionToTransform = 50,
+            TotalSimulantCount = simulantCount,
+            Typings = typings
+        };
 
-            var typings = SimulantLocusHlaBuilder.New.WithTypingFromLocusName(locus).Build(simulantCount).ToList();
-            var typing = typings.First();
+        var results = await deleter.DeleteRandomLocusHla(request);
+        var selected = results.SelectedTypings.Select(x => x.GenotypeSimulantId);
+        var remaining = results.RemainingTypings.Select(x => x.GenotypeSimulantId);
 
-            var request = new TransformationRequest
-            {
-                ProportionToTransform = 100,
-                TotalSimulantCount = simulantCount,
-                Typings = typings
-            };
+        selected.Should().NotBeEquivalentTo(remaining);
+    }
 
-            var results = await deleter.DeleteRandomLocusHla(request);
-            var result = results.SelectedTypings.Single();
+    [Test]
+    public async Task DeleteRandomLocusHla_DoesNotModifyMetadata()
+    {
+        const Locus locus = Locus.B;
+        const int simulantCount = 1;
 
-            result.Locus.Should().Be(locus);
-            result.GenotypeSimulantId.Should().Be(typing.GenotypeSimulantId);
-        }
+        var typings = SimulantLocusHlaBuilder.New.WithTypingFromLocusName(locus).Build(simulantCount).ToList();
+        var typing = typings.First();
+
+        var request = new TransformationRequest
+        {
+            ProportionToTransform = 100,
+            TotalSimulantCount = simulantCount,
+            Typings = typings
+        };
+
+        var results = await deleter.DeleteRandomLocusHla(request);
+        var result = results.SelectedTypings.Single();
+
+        result.Locus.Should().Be(locus);
+        result.GenotypeSimulantId.Should().Be(typing.GenotypeSimulantId);
     }
 }

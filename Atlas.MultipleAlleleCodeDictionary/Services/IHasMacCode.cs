@@ -1,7 +1,6 @@
-﻿namespace Atlas.MultipleAlleleCodeDictionary.Services
+﻿namespace Atlas.MultipleAlleleCodeDictionary.Services;
+
+internal interface IHasMacCode
 {
-    internal interface IHasMacCode
-    {
-        string Code { get; }
-    }
+    string Code { get; }
 }

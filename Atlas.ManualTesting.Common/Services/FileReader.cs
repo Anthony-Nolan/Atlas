@@ -1,68 +1,67 @@
 ﻿using CsvHelper;
 
-namespace Atlas.ManualTesting.Common.Services
+namespace Atlas.ManualTesting.Common.Services;
+
+public interface IFileReader<T>
 {
-    public interface IFileReader<T>
+    Task<IReadOnlyCollection<T>> ReadAllLines(string delimiter, string filePath, bool hasHeaderRecord = true);
+    IAsyncEnumerable<T> ReadAsync(string delimiter, string filePath);
+}
+
+public class FileReader<T> : IFileReader<T>
+{
+    public async Task<IReadOnlyCollection<T>> ReadAllLines(
+        string delimiter,
+        string filePath,
+        bool hasHeaderRecord = true)
     {
-        Task<IReadOnlyCollection<T>> ReadAllLines(string delimiter, string filePath, bool hasHeaderRecord = true);
-        IAsyncEnumerable<T> ReadAsync(string delimiter, string filePath);
+        FileChecks(filePath);
+
+        await using var stream = File.OpenRead(filePath);
+        using var reader = new StreamReader(stream);
+        using var csv = new CsvReader(reader);
+
+        csv.Configuration.Delimiter = delimiter;
+        csv.Configuration.HasHeaderRecord = hasHeaderRecord;
+        csv.Configuration.HeaderValidated = null;
+        csv.Configuration.MissingFieldFound = null;
+        csv.Configuration.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("");
+
+        return csv.GetRecords<T>().ToList();
     }
 
-    public class FileReader<T> : IFileReader<T>
+    public async IAsyncEnumerable<T> ReadAsync(string delimiter, string filePath)
     {
-        public async Task<IReadOnlyCollection<T>> ReadAllLines(
-            string delimiter,
-            string filePath,
-            bool hasHeaderRecord = true)
+        FileChecks(filePath);
+
+        await using var stream = File.OpenRead(filePath);
+        using var reader = new StreamReader(stream);
+        using var csv = new CsvReader(reader);
+
+        csv.Configuration.Delimiter = delimiter;
+        csv.Configuration.HeaderValidated = null;
+        csv.Configuration.MissingFieldFound = null;
+        csv.Configuration.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("");
+
+        await csv.ReadAsync();
+        csv.ReadHeader();
+
+        while (await csv.ReadAsync())
         {
-            FileChecks(filePath);
+            yield return csv.GetRecord<T>();
+        }
+    }
 
-            await using var stream = File.OpenRead(filePath);
-            using var reader = new StreamReader(stream);
-            using var csv = new CsvReader(reader);
-
-            csv.Configuration.Delimiter = delimiter;
-            csv.Configuration.HasHeaderRecord = hasHeaderRecord;
-            csv.Configuration.HeaderValidated = null;
-            csv.Configuration.MissingFieldFound = null;
-            csv.Configuration.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("");
-
-            return csv.GetRecords<T>().ToList();
+    private static void FileChecks(string filePath)
+    {
+        if (string.IsNullOrEmpty(filePath))
+        {
+            throw new ArgumentNullException(nameof(filePath));
         }
 
-        public async IAsyncEnumerable<T> ReadAsync(string delimiter, string filePath)
+        if (!File.Exists(filePath))
         {
-            FileChecks(filePath);
-
-            await using var stream = File.OpenRead(filePath);
-            using var reader = new StreamReader(stream);
-            using var csv = new CsvReader(reader);
-
-            csv.Configuration.Delimiter = delimiter;
-            csv.Configuration.HeaderValidated = null;
-            csv.Configuration.MissingFieldFound = null;
-            csv.Configuration.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("");
-
-            await csv.ReadAsync();
-            csv.ReadHeader();
-
-            while (await csv.ReadAsync())
-            {
-                yield return csv.GetRecord<T>();
-            }
-        }
-
-        private static void FileChecks(string filePath)
-        {
-            if (string.IsNullOrEmpty(filePath))
-            {
-                throw new ArgumentNullException(nameof(filePath));
-            }
-
-            if (!File.Exists(filePath))
-            {
-                throw new ArgumentException($"File not found at {filePath}.");
-            }
+            throw new ArgumentException($"File not found at {filePath}.");
         }
     }
 }

@@ -1,9 +1,8 @@
 using System;
 
-namespace Atlas.MatchingAlgorithm.Exceptions.Azure
+namespace Atlas.MatchingAlgorithm.Exceptions.Azure;
+
+public class AzureAuthorisationException : Exception
 {
-    public class AzureAuthorisationException : Exception
-    {
         
-    }
 }

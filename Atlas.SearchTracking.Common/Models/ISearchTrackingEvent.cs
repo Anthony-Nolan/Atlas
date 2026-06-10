@@ -1,9 +1,8 @@
-﻿namespace Atlas.SearchTracking.Common.Models
-{
-    public interface ISearchTrackingEvent
-    {
-        Guid SearchIdentifier { get; set; }
+﻿namespace Atlas.SearchTracking.Common.Models;
 
-        Guid? OriginalSearchIdentifier { get; set; }
-    }
+public interface ISearchTrackingEvent
+{
+    Guid SearchIdentifier { get; set; }
+
+    Guid? OriginalSearchIdentifier { get; set; }
 }

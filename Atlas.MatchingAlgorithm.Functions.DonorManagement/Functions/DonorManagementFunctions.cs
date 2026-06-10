@@ -10,93 +10,92 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
+namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions;
+
+public class DonorManagementFunctions
 {
-    public class DonorManagementFunctions
+    private const string ErrorMessagePrefix = "Error when running the donor management function. ";
+
+    private readonly IDonorUpdateProcessor donorUpdateProcessor;
+    private readonly IAtlasLogger logger;
+
+    public DonorManagementFunctions(IDonorUpdateProcessor donorUpdateProcessor, IAtlasLogger logger)
     {
-        private const string ErrorMessagePrefix = "Error when running the donor management function. ";
+        this.donorUpdateProcessor = donorUpdateProcessor;
+        this.logger = logger;
+    }
 
-        private readonly IDonorUpdateProcessor donorUpdateProcessor;
-        private readonly IAtlasLogger logger;
+    [Function(nameof(ProcessDifferentialDonorUpdatesForMatchingDbA))]
+    public async Task ProcessDifferentialDonorUpdatesForMatchingDbA(
+        [TimerTrigger("%MessagingServiceBus:DonorManagement:CronSchedule%")]
+        TimerInfo myTimer)
+    {
+        await ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase.DatabaseA);
+    }
 
-        public DonorManagementFunctions(IDonorUpdateProcessor donorUpdateProcessor, IAtlasLogger logger)
+    [Function(nameof(ProcessDifferentialDonorUpdatesForMatchingDbB))]
+    public async Task ProcessDifferentialDonorUpdatesForMatchingDbB(
+        [TimerTrigger("%MessagingServiceBus:DonorManagement:CronSchedule%")]
+        TimerInfo myTimer)
+    {
+        await ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase.DatabaseB);
+    }
+
+    [Function(nameof(ProcessDifferentialDonorUpdatesForMatchingDbADeadLetterQueueListener))]
+    public async Task ProcessDifferentialDonorUpdatesForMatchingDbADeadLetterQueueListener(
+        [ServiceBusTrigger(
+            "%MessagingServiceBus:DonorManagement:Topic%/Subscriptions/%MessagingServiceBus:DonorManagement:SubscriptionForDbA%/$DeadLetterQueue",
+            "%MessagingServiceBus:DonorManagement:SubscriptionForDbA%",
+            Connection = "MessagingServiceBus:ConnectionString",
+            IsBatched = true)]
+        SearchableDonorUpdate[] searchableDonorUpdates)
+    {
+        await donorUpdateProcessor.ProcessDeadLetterDifferentialDonorUpdates(searchableDonorUpdates);
+    }
+
+    [Function(nameof(ProcessDifferentialDonorUpdatesForMatchingDbBDeadLetterQueueListener))]
+    public async Task ProcessDifferentialDonorUpdatesForMatchingDbBDeadLetterQueueListener(
+        [ServiceBusTrigger(
+            "%MessagingServiceBus:DonorManagement:Topic%/Subscriptions/%MessagingServiceBus:DonorManagement:SubscriptionForDbB%/$DeadLetterQueue",
+            "%MessagingServiceBus:DonorManagement:SubscriptionForDbB%",
+            Connection = "MessagingServiceBus:ConnectionString",
+            IsBatched = true)]
+        SearchableDonorUpdate[] searchableDonorUpdates)
+    {
+        await donorUpdateProcessor.ProcessDeadLetterDifferentialDonorUpdates(searchableDonorUpdates);
+    }
+
+    private async Task ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase targetDatabase)
+    {
+        try
         {
-            this.donorUpdateProcessor = donorUpdateProcessor;
-            this.logger = logger;
+            await donorUpdateProcessor.ProcessDifferentialDonorUpdates(targetDatabase);
         }
-
-        [Function(nameof(ProcessDifferentialDonorUpdatesForMatchingDbA))]
-        public async Task ProcessDifferentialDonorUpdatesForMatchingDbA(
-            [TimerTrigger("%MessagingServiceBus:DonorManagement:CronSchedule%")]
-            TimerInfo myTimer)
+        catch (MessageBatchException<SearchableDonorUpdate> ex)
         {
-            await ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase.DatabaseA);
+            SendMessageBatchExceptionTrace(ex);
+            throw new DonorManagementException(ex);
         }
-
-        [Function(nameof(ProcessDifferentialDonorUpdatesForMatchingDbB))]
-        public async Task ProcessDifferentialDonorUpdatesForMatchingDbB(
-            [TimerTrigger("%MessagingServiceBus:DonorManagement:CronSchedule%")]
-            TimerInfo myTimer)
+        catch (Exception ex)
         {
-            await ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase.DatabaseB);
+            SendExceptionTrace(ex);
+            throw new DonorManagementException(ex);
         }
+    }
 
-        [Function(nameof(ProcessDifferentialDonorUpdatesForMatchingDbADeadLetterQueueListener))]
-        public async Task ProcessDifferentialDonorUpdatesForMatchingDbADeadLetterQueueListener(
-            [ServiceBusTrigger(
-                "%MessagingServiceBus:DonorManagement:Topic%/Subscriptions/%MessagingServiceBus:DonorManagement:SubscriptionForDbA%/$DeadLetterQueue",
-                "%MessagingServiceBus:DonorManagement:SubscriptionForDbA%",
-                Connection = "MessagingServiceBus:ConnectionString",
-                IsBatched = true)]
-            SearchableDonorUpdate[] searchableDonorUpdates)
-        {
-            await donorUpdateProcessor.ProcessDeadLetterDifferentialDonorUpdates(searchableDonorUpdates);
-        }
-
-        [Function(nameof(ProcessDifferentialDonorUpdatesForMatchingDbBDeadLetterQueueListener))]
-        public async Task ProcessDifferentialDonorUpdatesForMatchingDbBDeadLetterQueueListener(
-            [ServiceBusTrigger(
-                "%MessagingServiceBus:DonorManagement:Topic%/Subscriptions/%MessagingServiceBus:DonorManagement:SubscriptionForDbB%/$DeadLetterQueue",
-                "%MessagingServiceBus:DonorManagement:SubscriptionForDbB%",
-                Connection = "MessagingServiceBus:ConnectionString",
-                IsBatched = true)]
-            SearchableDonorUpdate[] searchableDonorUpdates)
-        {
-            await donorUpdateProcessor.ProcessDeadLetterDifferentialDonorUpdates(searchableDonorUpdates);
-        }
-
-        private async Task ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase targetDatabase)
-        {
-            try
+    private void SendMessageBatchExceptionTrace(MessageBatchException<SearchableDonorUpdate> ex)
+    {
+        logger.SendTrace(
+            ErrorMessagePrefix + ex.Message,
+            LogLevel.Error,
+            new Dictionary<string, string>
             {
-                await donorUpdateProcessor.ProcessDifferentialDonorUpdates(targetDatabase);
-            }
-            catch (MessageBatchException<SearchableDonorUpdate> ex)
-            {
-                SendMessageBatchExceptionTrace(ex);
-                throw new DonorManagementException(ex);
-            }
-            catch (Exception ex)
-            {
-                SendExceptionTrace(ex);
-                throw new DonorManagementException(ex);
-            }
-        }
+                {"SequenceNumbers", string.Join(",", ex.SequenceNumbers.Select(seqNo => seqNo))}
+            });
+    }
 
-        private void SendMessageBatchExceptionTrace(MessageBatchException<SearchableDonorUpdate> ex)
-        {
-            logger.SendTrace(
-                ErrorMessagePrefix + ex.Message,
-                LogLevel.Error,
-                new Dictionary<string, string>
-                {
-                    {"SequenceNumbers", string.Join(",", ex.SequenceNumbers.Select(seqNo => seqNo))}
-                });
-        }
-
-        private void SendExceptionTrace(Exception ex)
-        {
-            logger.SendTrace(ErrorMessagePrefix + ex.Message, LogLevel.Error);
-        }
+    private void SendExceptionTrace(Exception ex)
+    {
+        logger.SendTrace(ErrorMessagePrefix + ex.Message, LogLevel.Error);
     }
 }

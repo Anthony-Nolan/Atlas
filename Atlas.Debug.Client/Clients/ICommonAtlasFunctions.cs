@@ -1,15 +1,14 @@
 ﻿using System.Threading.Tasks;
 
-namespace Atlas.Debug.Client.Clients
+namespace Atlas.Debug.Client.Clients;
+
+/// <summary>
+/// Contains methods that are common to all Atlas function apps.
+/// </summary>
+public interface ICommonAtlasFunctions
 {
     /// <summary>
-    /// Contains methods that are common to all Atlas function apps.
+    /// Calls health check function.
     /// </summary>
-    public interface ICommonAtlasFunctions
-    {
-        /// <summary>
-        /// Calls health check function.
-        /// </summary>
-        Task<string> HealthCheck();
-    }
+    Task<string> HealthCheck();
 }

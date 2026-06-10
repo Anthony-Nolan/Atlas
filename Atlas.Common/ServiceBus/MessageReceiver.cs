@@ -3,59 +3,56 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Atlas.Common.ServiceBus
+namespace Atlas.Common.ServiceBus;
+
+public interface IMessageReceiver
 {
-    public interface IMessageReceiver
+    Task<IEnumerable<ServiceBusReceivedMessage>> PeekMessagesAsync(int maxMessages, long fromSequenceNumber);
+    Task AbandonMessageAsync(object lockToken);
+    Task CompleteMessageAsync(object lockToken);
+    Task RenewMessageLockAsync(object lockToken);
+    Task<IEnumerable<ServiceBusReceivedMessage>> ReceiveMessagesAsync(int batchSize);
+}
+
+public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
+{
+    private readonly ServiceBusReceiver receiver;
+
+    public MessageReceiver(ServiceBusReceiver receiver)
     {
-        Task<IEnumerable<ServiceBusReceivedMessage>> PeekMessagesAsync(int maxMessages, long fromSequenceNumber);
-        Task AbandonMessageAsync(object lockToken);
-        Task CompleteMessageAsync(object lockToken);
-        Task RenewMessageLockAsync(object lockToken);
-        Task<IEnumerable<ServiceBusReceivedMessage>> ReceiveMessagesAsync(int batchSize);
+        this.receiver = receiver;
     }
 
-    public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
+    public async Task<IEnumerable<ServiceBusReceivedMessage>> PeekMessagesAsync(int maxMessages, long fromSequenceNumber) =>
+        await receiver.PeekMessagesAsync(maxMessages, fromSequenceNumber);
+
+    public async Task<IEnumerable<ServiceBusReceivedMessage>> ReceiveMessagesAsync(int batchSize) =>
+        await receiver.ReceiveMessagesAsync(batchSize);
+
+    public async Task AbandonMessageAsync(object lockToken)
     {
-        private readonly ServiceBusReceiver receiver;
+        if (lockToken is not ServiceBusReceivedMessage msg)
+            throw new ArgumentException($"Invalid lock token", nameof(lockToken));
 
-        public MessageReceiver(ServiceBusReceiver receiver)
-        {
-            this.receiver = receiver;
-        }
-
-        public async Task<IEnumerable<ServiceBusReceivedMessage>> PeekMessagesAsync(int maxMessages, long fromSequenceNumber) =>
-            await receiver.PeekMessagesAsync(maxMessages, fromSequenceNumber);
-
-        public async Task<IEnumerable<ServiceBusReceivedMessage>> ReceiveMessagesAsync(int batchSize) =>
-            await receiver.ReceiveMessagesAsync(batchSize);
-
-        public async Task AbandonMessageAsync(object lockToken)
-        {
-            if (lockToken is not ServiceBusReceivedMessage msg)
-                throw new ArgumentException($"Invalid lock token", nameof(lockToken));
-
-            await receiver.AbandonMessageAsync(msg);
-        }
-
-        public async Task CompleteMessageAsync(object lockToken)
-        {
-            if (lockToken is not ServiceBusReceivedMessage msg)
-                throw new ArgumentException($"Invalid lock token", nameof(lockToken));
-
-            await receiver.CompleteMessageAsync(msg);
-        }
-
-        public async Task RenewMessageLockAsync(object lockToken)
-        {
-            if (lockToken is not ServiceBusReceivedMessage msg)
-                throw new ArgumentException($"Invalid lock token", nameof(lockToken));
-
-            await receiver.RenewMessageLockAsync(msg);
-        }
-
-        public ValueTask DisposeAsync() =>
-            receiver.DisposeAsync();
+        await receiver.AbandonMessageAsync(msg);
     }
 
+    public async Task CompleteMessageAsync(object lockToken)
+    {
+        if (lockToken is not ServiceBusReceivedMessage msg)
+            throw new ArgumentException($"Invalid lock token", nameof(lockToken));
 
+        await receiver.CompleteMessageAsync(msg);
+    }
+
+    public async Task RenewMessageLockAsync(object lockToken)
+    {
+        if (lockToken is not ServiceBusReceivedMessage msg)
+            throw new ArgumentException($"Invalid lock token", nameof(lockToken));
+
+        await receiver.RenewMessageLockAsync(msg);
+    }
+
+    public ValueTask DisposeAsync() =>
+        receiver.DisposeAsync();
 }

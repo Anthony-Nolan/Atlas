@@ -5,35 +5,34 @@ using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories;
 
-namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise3
+namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise3;
+
+public interface IMatchPredictionLocationSender
 {
-    public interface IMatchPredictionLocationSender
+    Task PublishLocationsForMatchPredictionRequestMissingResults();
+}
+
+internal class MatchPredictionLocationSender : MessageSender<MatchPredictionResultLocation>, IMatchPredictionLocationSender
+{
+    private readonly IValidationRepository validationRepository;
+
+    public MatchPredictionLocationSender(
+        IValidationRepository validationRepository,
+        IMessageBatchPublisher<MatchPredictionResultLocation> messagePublisher,
+        string resultsBlobContainerName) : base(messagePublisher, resultsBlobContainerName)
     {
-        Task PublishLocationsForMatchPredictionRequestMissingResults();
+        this.validationRepository = validationRepository;
     }
 
-    internal class MatchPredictionLocationSender : MessageSender<MatchPredictionResultLocation>, IMatchPredictionLocationSender
+    public async Task PublishLocationsForMatchPredictionRequestMissingResults()
     {
-        private readonly IValidationRepository validationRepository;
+        var ids = await validationRepository.GetAlgorithmIdsOfMatchPredictionRequestsMissingResults();
+        await BuildAndSendMessages(ids);
+    }
 
-        public MatchPredictionLocationSender(
-            IValidationRepository validationRepository,
-            IMessageBatchPublisher<MatchPredictionResultLocation> messagePublisher,
-            string resultsBlobContainerName) : base(messagePublisher, resultsBlobContainerName)
-        {
-            this.validationRepository = validationRepository;
-        }
-
-        public async Task PublishLocationsForMatchPredictionRequestMissingResults()
-        {
-            var ids = await validationRepository.GetAlgorithmIdsOfMatchPredictionRequestsMissingResults();
-            await BuildAndSendMessages(ids);
-        }
-
-        /// <inheritdoc />
-        protected override MatchPredictionResultLocation BuildMessage(string requestId, string resultsBlobContainerName)
-        {
-            return ResultLocationBuilder.BuildMatchPredictionRequestResultLocation(requestId, resultsBlobContainerName);
-        }
+    /// <inheritdoc />
+    protected override MatchPredictionResultLocation BuildMessage(string requestId, string resultsBlobContainerName)
+    {
+        return ResultLocationBuilder.BuildMatchPredictionRequestResultLocation(requestId, resultsBlobContainerName);
     }
 }

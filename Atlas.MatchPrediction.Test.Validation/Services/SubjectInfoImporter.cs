@@ -6,55 +6,54 @@ using Atlas.MatchPrediction.Test.Validation.Models;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Atlas.MatchPrediction.Test.Validation.Services
+namespace Atlas.MatchPrediction.Test.Validation.Services;
+
+public interface ISubjectInfoImporter
 {
-    public interface ISubjectInfoImporter
+    /// <summary>
+    /// Imports subject info from file paths declared in <see cref="ImportRequest"/>.
+    /// Note: Subjects not typed at the required loci will be ignored.
+    /// </summary>
+    Task Import(ImportRequest request);
+}
+
+internal class SubjectInfoImporter : ISubjectInfoImporter
+{
+    private const string FileDelimiter = ";";
+    private readonly IFileReader<ImportedSubject> fileReader;
+    private readonly IValidationRepository validationRepository;
+    private readonly ISubjectRepository subjectRepository;
+
+    public SubjectInfoImporter(IFileReader<ImportedSubject> fileReader, IValidationRepository validationRepository, ISubjectRepository subjectRepository)
     {
-        /// <summary>
-        /// Imports subject info from file paths declared in <see cref="ImportRequest"/>.
-        /// Note: Subjects not typed at the required loci will be ignored.
-        /// </summary>
-        Task Import(ImportRequest request);
+        this.fileReader = fileReader;
+        this.validationRepository = validationRepository;
+        this.subjectRepository = subjectRepository;
     }
 
-    internal class SubjectInfoImporter : ISubjectInfoImporter
+    public async Task Import(ImportRequest request)
     {
-        private const string FileDelimiter = ";";
-        private readonly IFileReader<ImportedSubject> fileReader;
-        private readonly IValidationRepository validationRepository;
-        private readonly ISubjectRepository subjectRepository;
+        await validationRepository.DeleteSubjectInfo();
 
-        public SubjectInfoImporter(IFileReader<ImportedSubject> fileReader, IValidationRepository validationRepository, ISubjectRepository subjectRepository)
-        {
-            this.fileReader = fileReader;
-            this.validationRepository = validationRepository;
-            this.subjectRepository = subjectRepository;
-        }
+        await ImportSubjects(request.PatientFilePath, SubjectType.Patient);
+        await ImportSubjects(request.DonorFilePath, SubjectType.Donor);
+    }
 
-        public async Task Import(ImportRequest request)
-        {
-            await validationRepository.DeleteSubjectInfo();
+    private async Task ImportSubjects(string filePath, SubjectType subjectType)
+    {
+        var importedSubjects = await fileReader.ReadAllLines(FileDelimiter, filePath);
 
-            await ImportSubjects(request.PatientFilePath, SubjectType.Patient);
-            await ImportSubjects(request.DonorFilePath, SubjectType.Donor);
-        }
-
-        private async Task ImportSubjects(string filePath, SubjectType subjectType)
-        {
-            var importedSubjects = await fileReader.ReadAllLines(FileDelimiter, filePath);
-
-            var filteredSubjects = importedSubjects
-                .Where(PositionOneOfMandatoryLociAreTyped)
-                .Select(s => s.ToSubjectInfo(subjectType)).ToList();
+        var filteredSubjects = importedSubjects
+            .Where(PositionOneOfMandatoryLociAreTyped)
+            .Select(s => s.ToSubjectInfo(subjectType)).ToList();
             
-            System.Diagnostics.Debug.WriteLine($"Imported {subjectType} count: {importedSubjects.Count}; count after filtering for required HLA: {filteredSubjects.Count}.");
+        System.Diagnostics.Debug.WriteLine($"Imported {subjectType} count: {importedSubjects.Count}; count after filtering for required HLA: {filteredSubjects.Count}.");
 
-            await subjectRepository.BulkInsert(filteredSubjects);
-        }
+        await subjectRepository.BulkInsert(filteredSubjects);
+    }
 
-        private static bool PositionOneOfMandatoryLociAreTyped(ImportedSubject subject)
-        {
-            return !string.IsNullOrEmpty(subject.A_1) && !string.IsNullOrEmpty(subject.B_1) && !string.IsNullOrEmpty(subject.DRB1_1);
-        }
+    private static bool PositionOneOfMandatoryLociAreTyped(ImportedSubject subject)
+    {
+        return !string.IsNullOrEmpty(subject.A_1) && !string.IsNullOrEmpty(subject.B_1) && !string.IsNullOrEmpty(subject.DRB1_1);
     }
 }

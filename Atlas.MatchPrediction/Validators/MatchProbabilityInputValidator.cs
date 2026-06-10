@@ -4,35 +4,34 @@ using Atlas.Common.Validation;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using FluentValidation;
 
-namespace Atlas.MatchPrediction.Validators
+namespace Atlas.MatchPrediction.Validators;
+
+internal class MatchProbabilityInputValidator : MatchProbabilityNonDonorValidator
 {
-    internal class MatchProbabilityInputValidator : MatchProbabilityNonDonorValidator
+    public MatchProbabilityInputValidator()
     {
-        public MatchProbabilityInputValidator()
-        {
-            RuleFor(i => i.Donor).NotNull().SetValidator(new MatchProbabilityDonorInputValidator());
-        }
+        RuleFor(i => i.Donor).NotNull().SetValidator(new MatchProbabilityDonorInputValidator());
     }
+}
 
-    internal class MatchProbabilityDonorInputValidator : AbstractValidator<DonorInput>
+internal class MatchProbabilityDonorInputValidator : AbstractValidator<DonorInput>
+{
+    public MatchProbabilityDonorInputValidator()
     {
-        public MatchProbabilityDonorInputValidator()
-        {
-            RuleFor(i => i.DonorIds).NotEmpty();
-            RuleFor(i => i.DonorHla).NotNull().SetValidator(new PhenotypeHlaNamesValidator());
-        }
+        RuleFor(i => i.DonorIds).NotEmpty();
+        RuleFor(i => i.DonorHla).NotNull().SetValidator(new PhenotypeHlaNamesValidator());
     }
+}
 
-    /// <summary>
-    /// This validator is used to validate a search request for the MPA before the matching algorithm has been run
-    /// </summary>
-    internal class MatchProbabilityNonDonorValidator : AbstractValidator<SingleDonorMatchProbabilityInput>
+/// <summary>
+/// This validator is used to validate a search request for the MPA before the matching algorithm has been run
+/// </summary>
+internal class MatchProbabilityNonDonorValidator : AbstractValidator<SingleDonorMatchProbabilityInput>
+{
+    private readonly List<Locus> requiredLoci = new List<Locus> {Locus.A, Locus.B, Locus.Drb1};
+    public MatchProbabilityNonDonorValidator()
     {
-        private readonly List<Locus> requiredLoci = new List<Locus> {Locus.A, Locus.B, Locus.Drb1};
-        public MatchProbabilityNonDonorValidator()
-        {
-            RuleFor(i => i.PatientHla).NotNull().SetValidator(new PhenotypeHlaNamesValidator());
-            RuleForEach(i => i.ExcludedLoci).Must(l => !requiredLoci.Contains(l));
-        }
+        RuleFor(i => i.PatientHla).NotNull().SetValidator(new PhenotypeHlaNamesValidator());
+        RuleForEach(i => i.ExcludedLoci).Must(l => !requiredLoci.Contains(l));
     }
 }

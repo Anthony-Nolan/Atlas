@@ -5,37 +5,36 @@ using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
+namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration;
+
+internal interface IGenotypeSimulantsGenerator
 {
-    internal interface IGenotypeSimulantsGenerator
+    /// <summary>
+    /// Generates and stores a set of simulated genotypes.
+    /// </summary>
+    Task GenerateSimulants(GenerateSimulantsRequest request, NormalisedHaplotypePool pool);
+}
+
+internal class GenotypeSimulantsGenerator : SimulantsGeneratorBase, IGenotypeSimulantsGenerator
+{
+    private readonly IGenotypeSimulator genotypeSimulator;
+
+    public GenotypeSimulantsGenerator(IGenotypeSimulator genotypeSimulator, ISimulantsRepository simulantsRepository) 
+        : base(simulantsRepository)
     {
-        /// <summary>
-        /// Generates and stores a set of simulated genotypes.
-        /// </summary>
-        Task GenerateSimulants(GenerateSimulantsRequest request, NormalisedHaplotypePool pool);
+        this.genotypeSimulator = genotypeSimulator;
     }
 
-    internal class GenotypeSimulantsGenerator : SimulantsGeneratorBase, IGenotypeSimulantsGenerator
+    public async Task GenerateSimulants(GenerateSimulantsRequest request, NormalisedHaplotypePool pool)
     {
-        private readonly IGenotypeSimulator genotypeSimulator;
+        System.Diagnostics.Debug.WriteLine($"Simulating {request.TestIndividualCategory} genotypes.");
 
-        public GenotypeSimulantsGenerator(IGenotypeSimulator genotypeSimulator, ISimulantsRepository simulantsRepository) 
-            : base(simulantsRepository)
-        {
-            this.genotypeSimulator = genotypeSimulator;
-        }
+        var genotypes = genotypeSimulator.SimulateGenotypes(request.SimulantCount, pool);
 
-        public async Task GenerateSimulants(GenerateSimulantsRequest request, NormalisedHaplotypePool pool)
-        {
-            System.Diagnostics.Debug.WriteLine($"Simulating {request.TestIndividualCategory} genotypes.");
+        var genotypeSimulants = genotypes
+            .Select(g => MapToSimulantDatabaseModel(request, SimulatedHlaTypingCategory.Genotype, g))
+            .ToList();
 
-            var genotypes = genotypeSimulator.SimulateGenotypes(request.SimulantCount, pool);
-
-            var genotypeSimulants = genotypes
-                .Select(g => MapToSimulantDatabaseModel(request, SimulatedHlaTypingCategory.Genotype, g))
-                .ToList();
-
-            await StoreSimulants(genotypeSimulants);
-        }
+        await StoreSimulants(genotypeSimulants);
     }
 }

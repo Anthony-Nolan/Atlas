@@ -13,65 +13,64 @@ using NSubstitute;
 using NUnit.Framework;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 
-namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
+namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood;
+
+public class GenotypeLikelihoodServiceTests
 {
-    public class GenotypeLikelihoodServiceTests
+    private IGenotypeLikelihoodService genotypeLikelihoodService;
+    private IUnambiguousGenotypeExpander unambiguousGenotypeExpander;
+    private IHaplotypeFrequencyService frequencyService;
+    private IGenotypeLikelihoodCalculator genotypeLikelihoodCalculator;
+    private IGenotypeAlleleTruncater alleleTruncater;
+
+    private readonly ISet<Locus> allLoci = LocusSettings.MatchPredictionLoci;
+
+    [SetUp]
+    public void SetUp()
     {
-        private IGenotypeLikelihoodService genotypeLikelihoodService;
-        private IUnambiguousGenotypeExpander unambiguousGenotypeExpander;
-        private IHaplotypeFrequencyService frequencyService;
-        private IGenotypeLikelihoodCalculator genotypeLikelihoodCalculator;
-        private IGenotypeAlleleTruncater alleleTruncater;
+        unambiguousGenotypeExpander = Substitute.For<IUnambiguousGenotypeExpander>();
+        frequencyService = Substitute.For<IHaplotypeFrequencyService>();
+        genotypeLikelihoodCalculator = Substitute.For<IGenotypeLikelihoodCalculator>();
+        alleleTruncater = Substitute.For<IGenotypeAlleleTruncater>();
 
-        private readonly ISet<Locus> allLoci = LocusSettings.MatchPredictionLoci;
+        alleleTruncater.TruncateGenotypeAlleles(Arg.Any<PhenotypeInfo<string>>())
+            .Returns(arg => arg[0]);
 
-        [SetUp]
-        public void SetUp()
-        {
-            unambiguousGenotypeExpander = Substitute.For<IUnambiguousGenotypeExpander>();
-            frequencyService = Substitute.For<IHaplotypeFrequencyService>();
-            genotypeLikelihoodCalculator = Substitute.For<IGenotypeLikelihoodCalculator>();
-            alleleTruncater = Substitute.For<IGenotypeAlleleTruncater>();
+        unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<ISet<Locus>>())
+            .Returns(new ExpandedGenotype {Diplotypes = new List<Diplotype> {new DiplotypeBuilder().Build()}});
 
-            alleleTruncater.TruncateGenotypeAlleles(Arg.Any<PhenotypeInfo<string>>())
-                .Returns(arg => arg[0]);
+        frequencyService.GetAllHaplotypeFrequencies(Arg.Any<int>())
+            .Returns(
+                new FrequencySetCacheEntry
+                {
+                    SetFrequencies = new Dictionary<HaplotypeKey, HaplotypeFrequencyValue>().ToFrozenDictionary(),
+                    Interner = new HaplotypeInterner()
+                }
+            );
 
-            unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<ISet<Locus>>())
-                .Returns(new ExpandedGenotype {Diplotypes = new List<Diplotype> {new DiplotypeBuilder().Build()}});
+        genotypeLikelihoodCalculator.CalculateLikelihood(Arg.Any<ExpandedGenotype>()).Returns(0);
 
-            frequencyService.GetAllHaplotypeFrequencies(Arg.Any<int>())
-                .Returns(
-                    new FrequencySetCacheEntry
-                    {
-                        SetFrequencies = new Dictionary<HaplotypeKey, HaplotypeFrequencyValue>().ToFrozenDictionary(),
-                        Interner = new HaplotypeInterner()
-                    }
-                );
+        genotypeLikelihoodService = new GenotypeLikelihoodService(unambiguousGenotypeExpander, genotypeLikelihoodCalculator, frequencyService);
+    }
 
-            genotypeLikelihoodCalculator.CalculateLikelihood(Arg.Any<ExpandedGenotype>()).Returns(0);
+    [Test]
+    public async Task CalculateLikelihood_FrequencyRepositoryIsCalledTwicePerDiplotype([Values(16, 8, 4, 2, 1)] int numberOfDiplotypes)
+    {
+        var diplotypes = Enumerable.Range(0, numberOfDiplotypes).Select(i => new DiplotypeBuilder().Build()).ToList();
 
-            genotypeLikelihoodService = new GenotypeLikelihoodService(unambiguousGenotypeExpander, genotypeLikelihoodCalculator, frequencyService);
-        }
+        unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<ISet<Locus>>())
+            .Returns(new ExpandedGenotype {Diplotypes = diplotypes});
 
-        [Test]
-        public async Task CalculateLikelihood_FrequencyRepositoryIsCalledTwicePerDiplotype([Values(16, 8, 4, 2, 1)] int numberOfDiplotypes)
-        {
-            var diplotypes = Enumerable.Range(0, numberOfDiplotypes).Select(i => new DiplotypeBuilder().Build()).ToList();
+        await genotypeLikelihoodService.CalculateLikelihoodForGenotype(new PhenotypeInfo<string>(), new HaplotypeFrequencySet(), allLoci);
 
-            unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<ISet<Locus>>())
-                .Returns(new ExpandedGenotype {Diplotypes = diplotypes});
+        await frequencyService.ReceivedWithAnyArgs(2 * numberOfDiplotypes).GetFrequencyForHla(default, default, default);
+    }
 
-            await genotypeLikelihoodService.CalculateLikelihoodForGenotype(new PhenotypeInfo<string>(), new HaplotypeFrequencySet(), allLoci);
+    [Test]
+    public async Task CalculateLikelihood_LikelihoodCalculatorIsCalledOnce()
+    {
+        await genotypeLikelihoodService.CalculateLikelihoodForGenotype(new PhenotypeInfo<string>(), new HaplotypeFrequencySet(), allLoci);
 
-            await frequencyService.ReceivedWithAnyArgs(2 * numberOfDiplotypes).GetFrequencyForHla(default, default, default);
-        }
-
-        [Test]
-        public async Task CalculateLikelihood_LikelihoodCalculatorIsCalledOnce()
-        {
-            await genotypeLikelihoodService.CalculateLikelihoodForGenotype(new PhenotypeInfo<string>(), new HaplotypeFrequencySet(), allLoci);
-
-            genotypeLikelihoodCalculator.Received(1).CalculateLikelihood(Arg.Any<ExpandedGenotype>());
-        }
+        genotypeLikelihoodCalculator.Received(1).CalculateLikelihood(Arg.Any<ExpandedGenotype>());
     }
 }

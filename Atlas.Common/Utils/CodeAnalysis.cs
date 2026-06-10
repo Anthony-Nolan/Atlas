@@ -1,8 +1,7 @@
-﻿namespace Atlas.Common.Utils
+﻿namespace Atlas.Common.Utils;
+
+public static class SuppressMessage
 {
-    public static class SuppressMessage
-    {
-        public const string UnusedParameter = "IDE0060";
-        public const string UsedByAzureTrigger = "The argument is in fact used, by Azure magic";
-    }
+    public const string UnusedParameter = "IDE0060";
+    public const string UsedByAzureTrigger = "The argument is in fact used, by Azure magic";
 }

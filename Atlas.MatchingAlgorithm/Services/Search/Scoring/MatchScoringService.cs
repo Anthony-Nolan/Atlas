@@ -17,121 +17,120 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
 
-namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
+namespace Atlas.MatchingAlgorithm.Services.Search.Scoring;
+
+internal interface IMatchScoringService
 {
-    internal interface IMatchScoringService
+    Task<IEnumerable<MatchAndScoreResult>> StreamScoring(StreamingMatchResultsScoringRequest request);
+    Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstPatientHla(MatchResultsScoringRequest request);
+}
+
+internal class MatchScoringService : DonorScoringService, IMatchScoringService
+{
+    private readonly IRankingService rankingService;
+    private readonly IMatchingAlgorithmSearchLogger searchLogger;
+    private readonly ISearchTrackingEventPublisher searchTrackingEventPublisher;
+
+    public MatchScoringService(
+        IHlaMetadataDictionaryFactory factory,
+        IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
+        IGradingService gradingService,
+        IConfidenceService confidenceService,
+        IAntigenMatchingService antigenMatchingService,
+        IRankingService rankingService,
+        IMatchScoreCalculator matchScoreCalculator,
+        IScoreResultAggregator scoreResultAggregator,
+        IMatchingAlgorithmSearchLogger searchLogger,
+        IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator,
+        IAtlasLogger logger,
+        ISearchTrackingEventPublisher searchTrackingEventPublisher)
+        : base(
+            factory,
+            hlaNomenclatureVersionAccessor,
+            gradingService,
+            confidenceService,
+            antigenMatchingService,
+            matchScoreCalculator,
+            scoreResultAggregator,
+            dpb1TceGroupMatchCalculator,
+            logger)
     {
-        Task<IEnumerable<MatchAndScoreResult>> StreamScoring(StreamingMatchResultsScoringRequest request);
-        Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstPatientHla(MatchResultsScoringRequest request);
+        this.rankingService = rankingService;
+        this.searchLogger = searchLogger;
+        this.searchTrackingEventPublisher = searchTrackingEventPublisher;
     }
 
-    internal class MatchScoringService : DonorScoringService, IMatchScoringService
+    /// <inheritdoc />
+    public async Task<IEnumerable<MatchAndScoreResult>> StreamScoring(StreamingMatchResultsScoringRequest request)
     {
-        private readonly IRankingService rankingService;
-        private readonly IMatchingAlgorithmSearchLogger searchLogger;
-        private readonly ISearchTrackingEventPublisher searchTrackingEventPublisher;
-
-        public MatchScoringService(
-            IHlaMetadataDictionaryFactory factory,
-            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
-            IGradingService gradingService,
-            IConfidenceService confidenceService,
-            IAntigenMatchingService antigenMatchingService,
-            IRankingService rankingService,
-            IMatchScoreCalculator matchScoreCalculator,
-            IScoreResultAggregator scoreResultAggregator,
-            IMatchingAlgorithmSearchLogger searchLogger,
-            IDpb1TceGroupMatchCalculator dpb1TceGroupMatchCalculator,
-            IAtlasLogger logger,
-            ISearchTrackingEventPublisher searchTrackingEventPublisher)
-            : base(
-                factory,
-                hlaNomenclatureVersionAccessor,
-                gradingService,
-                confidenceService,
-                antigenMatchingService,
-                matchScoreCalculator,
-                scoreResultAggregator,
-                dpb1TceGroupMatchCalculator,
-                logger)
+        using (searchLogger.RunTimed("Scoring"))
         {
-            this.rankingService = rankingService;
-            this.searchLogger = searchLogger;
-            this.searchTrackingEventPublisher = searchTrackingEventPublisher;
+            var scoredResults = StreamScoringUnranked(request);
+            var reifiedScoredResults = await scoredResults.ToListAsync();
+            return rankingService.RankSearchResults(reifiedScoredResults);
+        }
+    }
+
+    public async Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstPatientHla(MatchResultsScoringRequest request)
+    {
+        if (request.ScoringCriteria.LociToScore.IsNullOrEmpty())
+        {
+            return request.MatchResults.Select(m => new MatchAndScoreResult {MatchResult = m});
         }
 
-        /// <inheritdoc />
-        public async Task<IEnumerable<MatchAndScoreResult>> StreamScoring(StreamingMatchResultsScoringRequest request)
+        var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla.ToPhenotypeInfo(), request.ScoringCriteria.LociToScore);
+
+        var matchAndScoreResults = new List<MatchAndScoreResult>();
+        foreach (var matchResult in request.MatchResults)
         {
-            using (searchLogger.RunTimed("Scoring"))
+            matchAndScoreResults.Add(new MatchAndScoreResult
             {
-                var scoredResults = StreamScoringUnranked(request);
-                var reifiedScoredResults = await scoredResults.ToListAsync();
-                return rankingService.RankSearchResults(reifiedScoredResults);
-            }
+                MatchResult = matchResult,
+                ScoreResult = await ScoreDonorHlaAgainstPatientMetadata(matchResult.DonorInfo.HlaNames, request.ScoringCriteria, patientScoringMetadata)
+            });
         }
 
-        public async Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstPatientHla(MatchResultsScoringRequest request)
-        {
-            if (request.ScoringCriteria.LociToScore.IsNullOrEmpty())
-            {
-                return request.MatchResults.Select(m => new MatchAndScoreResult {MatchResult = m});
-            }
+        return rankingService.RankSearchResults(matchAndScoreResults);
+    }
 
+    private async IAsyncEnumerable<MatchAndScoreResult> StreamScoringUnranked(StreamingMatchResultsScoringRequest request)
+    {
+        if (request.ScoringCriteria.LociToScore.IsNullOrEmpty())
+        {
+            await foreach (var result in request.MatchResults.SelectAsync(m => new MatchAndScoreResult {MatchResult = m}))
+            {
+                yield return result;
+            }
+        }
+        else
+        {
             var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla.ToPhenotypeInfo(), request.ScoringCriteria.LociToScore);
-
-            var matchAndScoreResults = new List<MatchAndScoreResult>();
-            foreach (var matchResult in request.MatchResults)
+            var matchResultsCount = await request.MatchResults.CountAsync();
+            await foreach (var matchResult in request.MatchResults)
             {
-                matchAndScoreResults.Add(new MatchAndScoreResult
+                await searchTrackingEventPublisher.ProcessCoreScoringOneDonorStarted();
+
+                yield return new MatchAndScoreResult
                 {
                     MatchResult = matchResult,
                     ScoreResult = await ScoreDonorHlaAgainstPatientMetadata(matchResult.DonorInfo.HlaNames, request.ScoringCriteria, patientScoringMetadata)
-                });
+                };
             }
 
-            return rankingService.RankSearchResults(matchAndScoreResults);
-        }
-
-        private async IAsyncEnumerable<MatchAndScoreResult> StreamScoringUnranked(StreamingMatchResultsScoringRequest request)
-        {
-            if (request.ScoringCriteria.LociToScore.IsNullOrEmpty())
+            if (matchResultsCount > 0)
             {
-                await foreach (var result in request.MatchResults.SelectAsync(m => new MatchAndScoreResult {MatchResult = m}))
-                {
-                    yield return result;
-                }
-            }
-            else
-            {
-                var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla.ToPhenotypeInfo(), request.ScoringCriteria.LociToScore);
-                var matchResultsCount = await request.MatchResults.CountAsync();
-                await foreach (var matchResult in request.MatchResults)
-                {
-                    await searchTrackingEventPublisher.ProcessCoreScoringOneDonorStarted();
-
-                    yield return new MatchAndScoreResult
-                    {
-                        MatchResult = matchResult,
-                        ScoreResult = await ScoreDonorHlaAgainstPatientMetadata(matchResult.DonorInfo.HlaNames, request.ScoringCriteria, patientScoringMetadata)
-                    };
-                }
-
-                if (matchResultsCount > 0)
-                {
-                    await searchTrackingEventPublisher.ProcessCoreScoringAllDonorsEnded();
-                }
+                await searchTrackingEventPublisher.ProcessCoreScoringAllDonorsEnded();
             }
         }
     }
+}
 
-    internal class MatchResultsScoringRequest : ScoringRequest
-    {
-        public IEnumerable<MatchResult> MatchResults { get; set; }
-    }
+internal class MatchResultsScoringRequest : ScoringRequest
+{
+    public IEnumerable<MatchResult> MatchResults { get; set; }
+}
 
-    internal class StreamingMatchResultsScoringRequest : ScoringRequest
-    {
-        public IAsyncEnumerable<MatchResult> MatchResults { get; set; }
-    }
+internal class StreamingMatchResultsScoringRequest : ScoringRequest
+{
+    public IAsyncEnumerable<MatchResult> MatchResults { get; set; }
 }

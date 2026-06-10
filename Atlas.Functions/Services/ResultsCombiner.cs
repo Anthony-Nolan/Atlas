@@ -14,92 +14,91 @@ using Atlas.Functions.Services.MatchCategories;
 using Atlas.Functions.Settings;
 using Microsoft.Extensions.Options;
 
-namespace Atlas.Functions.Services
-{
-    public interface IResultsCombiner
-    {
-        Task<IEnumerable<SearchResult>> CombineResults(
-            string searchRequestId,
-            IEnumerable<MatchingAlgorithmResult> matchingAlgorithmResults,
-            IReadOnlyDictionary<int, string> matchPredictionResultLocations);
+namespace Atlas.Functions.Services;
 
-        SearchResultSet BuildResultsSummary(ResultSet<MatchingAlgorithmResult> matchingAlgorithmResultSet, TimeSpan matchPredictionTime, TimeSpan matchingTime);
+public interface IResultsCombiner
+{
+    Task<IEnumerable<SearchResult>> CombineResults(
+        string searchRequestId,
+        IEnumerable<MatchingAlgorithmResult> matchingAlgorithmResults,
+        IReadOnlyDictionary<int, string> matchPredictionResultLocations);
+
+    SearchResultSet BuildResultsSummary(ResultSet<MatchingAlgorithmResult> matchingAlgorithmResultSet, TimeSpan matchPredictionTime, TimeSpan matchingTime);
+}
+
+internal class ResultsCombiner : IResultsCombiner
+{
+    private readonly IAtlasLogger logger;
+    private readonly IBlobDownloader blobDownloader;
+    private readonly IPositionalMatchCategoryService matchCategoryService;
+    private readonly string resultsContainer;
+    private readonly string matchPredictionResultsContainer;
+    private readonly int matchPredictionDownloadBatchSize;
+
+    public ResultsCombiner(
+        IOptions<AzureStorageSettings> azureStorageSettings,
+        ISearchLogger<SearchLoggingContext> logger,
+        IBlobDownloader blobDownloader,
+        IPositionalMatchCategoryService matchCategoryService)
+    {
+        this.logger = logger;
+        this.blobDownloader = blobDownloader;
+        this.matchCategoryService = matchCategoryService;
+        resultsContainer = azureStorageSettings.Value.SearchResultsBlobContainer;
+        matchPredictionResultsContainer = azureStorageSettings.Value.MatchPredictionResultsBlobContainer;
+        matchPredictionDownloadBatchSize = azureStorageSettings.Value.MatchPredictionDownloadBatchSize;
     }
 
-    internal class ResultsCombiner : IResultsCombiner
+    public SearchResultSet BuildResultsSummary(ResultSet<MatchingAlgorithmResult> matchingAlgorithmResultSet, TimeSpan matchPredictionTime, TimeSpan matchingTime)
     {
-        private readonly IAtlasLogger logger;
-        private readonly IBlobDownloader blobDownloader;
-        private readonly IPositionalMatchCategoryService matchCategoryService;
-        private readonly string resultsContainer;
-        private readonly string matchPredictionResultsContainer;
-        private readonly int matchPredictionDownloadBatchSize;
-
-        public ResultsCombiner(
-            IOptions<AzureStorageSettings> azureStorageSettings,
-            ISearchLogger<SearchLoggingContext> logger,
-            IBlobDownloader blobDownloader,
-            IPositionalMatchCategoryService matchCategoryService)
+        using (logger.RunTimed($"Build results summary: {matchingAlgorithmResultSet.SearchRequestId}"))
         {
-            this.logger = logger;
-            this.blobDownloader = blobDownloader;
-            this.matchCategoryService = matchCategoryService;
-            resultsContainer = azureStorageSettings.Value.SearchResultsBlobContainer;
-            matchPredictionResultsContainer = azureStorageSettings.Value.MatchPredictionResultsBlobContainer;
-            matchPredictionDownloadBatchSize = azureStorageSettings.Value.MatchPredictionDownloadBatchSize;
-        }
-
-        public SearchResultSet BuildResultsSummary(ResultSet<MatchingAlgorithmResult> matchingAlgorithmResultSet, TimeSpan matchPredictionTime, TimeSpan matchingTime)
-        {
-            using (logger.RunTimed($"Build results summary: {matchingAlgorithmResultSet.SearchRequestId}"))
-            {
-                var resultSet = matchingAlgorithmResultSet is RepeatMatchingAlgorithmResultSet repeatSet
-                    ? new RepeatSearchResultSet
-                    {
-                        RepeatSearchId = repeatSet.RepeatSearchId,
-                        NoLongerMatchingDonorCodes = repeatSet.NoLongerMatchingDonors
-                    } as SearchResultSet
-                    : new OriginalSearchResultSet();
-
-                resultSet.TotalResults = matchingAlgorithmResultSet.TotalResults;
-                resultSet.MatchingAlgorithmHlaNomenclatureVersion = matchingAlgorithmResultSet.MatchingAlgorithmHlaNomenclatureVersion;
-                resultSet.SearchRequestId = matchingAlgorithmResultSet.SearchRequestId;
-                resultSet.BlobStorageContainerName = resultsContainer;
-                resultSet.MatchingAlgorithmTime = matchingTime;
-                resultSet.MatchPredictionTime = matchPredictionTime;
-                resultSet.SearchRequest = matchingAlgorithmResultSet.SearchRequest;
-                resultSet.MatchingStartTime = matchingAlgorithmResultSet.MatchingStartTime;
-
-                return resultSet;
-            }
-        }
-
-        /// <inheritdoc />
-        public async Task<IEnumerable<SearchResult>> CombineResults(
-            string searchRequestId,
-            IEnumerable<MatchingAlgorithmResult> matchingAlgorithmResults,
-            IReadOnlyDictionary<int, string> matchPredictionResultLocations)
-        {
-            using (logger.RunTimed($"Combine search results: {searchRequestId}"))
-            {
-                var matchPredictionResults = await DownloadMatchPredictionResults(matchPredictionResultLocations);
-                return matchingAlgorithmResults.Select(r => new SearchResult
+            var resultSet = matchingAlgorithmResultSet is RepeatMatchingAlgorithmResultSet repeatSet
+                ? new RepeatSearchResultSet
                 {
-                    DonorCode = r.MatchingDonorInfo.ExternalDonorCode,
-                    MatchingResult = r,
-                    MatchPredictionResult = matchCategoryService.ReOrientatePositionalMatchCategories(matchPredictionResults[r.AtlasDonorId], r.ScoringResult)
-                });
-            }
-        }
+                    RepeatSearchId = repeatSet.RepeatSearchId,
+                    NoLongerMatchingDonorCodes = repeatSet.NoLongerMatchingDonors
+                } as SearchResultSet
+                : new OriginalSearchResultSet();
 
-        private async Task<Dictionary<int, MatchProbabilityResponse>> DownloadMatchPredictionResults(
-            IReadOnlyDictionary<int, string> matchPredictionResultLocations)
+            resultSet.TotalResults = matchingAlgorithmResultSet.TotalResults;
+            resultSet.MatchingAlgorithmHlaNomenclatureVersion = matchingAlgorithmResultSet.MatchingAlgorithmHlaNomenclatureVersion;
+            resultSet.SearchRequestId = matchingAlgorithmResultSet.SearchRequestId;
+            resultSet.BlobStorageContainerName = resultsContainer;
+            resultSet.MatchingAlgorithmTime = matchingTime;
+            resultSet.MatchPredictionTime = matchPredictionTime;
+            resultSet.SearchRequest = matchingAlgorithmResultSet.SearchRequest;
+            resultSet.MatchingStartTime = matchingAlgorithmResultSet.MatchingStartTime;
+
+            return resultSet;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<SearchResult>> CombineResults(
+        string searchRequestId,
+        IEnumerable<MatchingAlgorithmResult> matchingAlgorithmResults,
+        IReadOnlyDictionary<int, string> matchPredictionResultLocations)
+    {
+        using (logger.RunTimed($"Combine search results: {searchRequestId}"))
         {
-            using (logger.RunTimed("Download match prediction algorithm results"))
+            var matchPredictionResults = await DownloadMatchPredictionResults(matchPredictionResultLocations);
+            return matchingAlgorithmResults.Select(r => new SearchResult
             {
-                logger.SendTrace($"{matchPredictionResultLocations.Count} donor results to download");
-                return await blobDownloader.DownloadMultipleBlobs<MatchProbabilityResponse>(matchPredictionResultsContainer, matchPredictionResultLocations, matchPredictionDownloadBatchSize);
-            }
+                DonorCode = r.MatchingDonorInfo.ExternalDonorCode,
+                MatchingResult = r,
+                MatchPredictionResult = matchCategoryService.ReOrientatePositionalMatchCategories(matchPredictionResults[r.AtlasDonorId], r.ScoringResult)
+            });
+        }
+    }
+
+    private async Task<Dictionary<int, MatchProbabilityResponse>> DownloadMatchPredictionResults(
+        IReadOnlyDictionary<int, string> matchPredictionResultLocations)
+    {
+        using (logger.RunTimed("Download match prediction algorithm results"))
+        {
+            logger.SendTrace($"{matchPredictionResultLocations.Count} donor results to download");
+            return await blobDownloader.DownloadMultipleBlobs<MatchProbabilityResponse>(matchPredictionResultsContainer, matchPredictionResultLocations, matchPredictionDownloadBatchSize);
         }
     }
 }

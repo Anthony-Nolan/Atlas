@@ -13,61 +13,60 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using System.Threading.Tasks;
 
-namespace Atlas.Functions.PublicApi.Functions
+namespace Atlas.Functions.PublicApi.Functions;
+
+public class ApiDocumentationFunctions
 {
-    public class ApiDocumentationFunctions
+    private readonly ISwashBuckleClient swashbuckleClient;
+
+    public ApiDocumentationFunctions(ISwashBuckleClient swashbuckleClient)
     {
-        private readonly ISwashBuckleClient swashbuckleClient;
+        this.swashbuckleClient = swashbuckleClient;
+    }
 
-        public ApiDocumentationFunctions(ISwashBuckleClient swashbuckleClient)
+    [SwaggerIgnore]
+    [Function(nameof(Swagger))]
+    public Task<HttpResponseData> Swagger(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "swagger/json")]
+        HttpRequestData req)
+    {
+        return swashbuckleClient.CreateSwaggerJsonDocumentResponse(req);
+    }
+
+    [SwaggerIgnore]
+    [Function(nameof(SwaggerUi))]
+    public Task<HttpResponseData> SwaggerUi(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "swagger/ui")]
+        HttpRequestData req)
+    {
+        return swashbuckleClient.CreateSwaggerUIResponse(req, "swagger/json");
+    }
+
+    [Function(nameof(GenerateJsonSchemaForResultSet))]
+    public string GenerateJsonSchemaForResultSet(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = RouteConstants.SchemaRoutePrefix + "/resultSet")]
+        [RequestBodyType(typeof(ResultSetSchemaGenerationRequest), nameof(ResultSetSchemaGenerationRequest))]
+        HttpRequest request)
+    {
+        var requestBody = JsonConvert.DeserializeObject<ResultSetSchemaGenerationRequest>(new StreamReader(request.Body).ReadToEnd());
+
+        if (!Enum.TryParse($"{requestBody.ResultSet}", out ResultSetOptions resultSetOption))
         {
-            this.swashbuckleClient = swashbuckleClient;
+            throw new BadHttpRequestException($"{requestBody} is not a member of {nameof(ResultSetOptions)}");
         }
 
-        [SwaggerIgnore]
-        [Function(nameof(Swagger))]
-        public Task<HttpResponseData> Swagger(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "swagger/json")]
-            HttpRequestData req)
+        return resultSetOption switch
         {
-            return swashbuckleClient.CreateSwaggerJsonDocumentResponse(req);
-        }
+            ResultSetOptions.OriginalSearch => GenerateJsonSchema<OriginalSearchResultSet>(),
+            ResultSetOptions.RepeatSearch => GenerateJsonSchema<RepeatSearchResultSet>(),
+            ResultSetOptions.OriginalMatchingAlgorithm => GenerateJsonSchema<OriginalMatchingAlgorithmResultSet>(),
+            ResultSetOptions.RepeatMatchingAlgorithm => GenerateJsonSchema<RepeatMatchingAlgorithmResultSet>(),
+            _ => throw new ArgumentOutOfRangeException(nameof(resultSetOption), resultSetOption, null)
+        };
+    }
 
-        [SwaggerIgnore]
-        [Function(nameof(SwaggerUi))]
-        public Task<HttpResponseData> SwaggerUi(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "swagger/ui")]
-            HttpRequestData req)
-        {
-            return swashbuckleClient.CreateSwaggerUIResponse(req, "swagger/json");
-        }
-
-        [Function(nameof(GenerateJsonSchemaForResultSet))]
-        public string GenerateJsonSchemaForResultSet(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = RouteConstants.SchemaRoutePrefix + "/resultSet")]
-            [RequestBodyType(typeof(ResultSetSchemaGenerationRequest), nameof(ResultSetSchemaGenerationRequest))]
-            HttpRequest request)
-        {
-            var requestBody = JsonConvert.DeserializeObject<ResultSetSchemaGenerationRequest>(new StreamReader(request.Body).ReadToEnd());
-
-            if (!Enum.TryParse($"{requestBody.ResultSet}", out ResultSetOptions resultSetOption))
-            {
-                throw new BadHttpRequestException($"{requestBody} is not a member of {nameof(ResultSetOptions)}");
-            }
-
-            return resultSetOption switch
-            {
-                ResultSetOptions.OriginalSearch => GenerateJsonSchema<OriginalSearchResultSet>(),
-                ResultSetOptions.RepeatSearch => GenerateJsonSchema<RepeatSearchResultSet>(),
-                ResultSetOptions.OriginalMatchingAlgorithm => GenerateJsonSchema<OriginalMatchingAlgorithmResultSet>(),
-                ResultSetOptions.RepeatMatchingAlgorithm => GenerateJsonSchema<RepeatMatchingAlgorithmResultSet>(),
-                _ => throw new ArgumentOutOfRangeException(nameof(resultSetOption), resultSetOption, null)
-            };
-        }
-
-        private static string GenerateJsonSchema<T>()
-        {
-            return JsonSchema.FromType<T>().ToJson();
-        }
+    private static string GenerateJsonSchema<T>()
+    {
+        return JsonSchema.FromType<T>().ToJson();
     }
 }

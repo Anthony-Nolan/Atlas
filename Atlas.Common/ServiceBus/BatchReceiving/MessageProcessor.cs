@@ -6,56 +6,55 @@ using Atlas.Common.Public.Models.ServiceBus;
 using Atlas.Common.ServiceBus.Exceptions;
 using Atlas.Common.Utils.Extensions;
 
-namespace Atlas.Common.ServiceBus.BatchReceiving
+namespace Atlas.Common.ServiceBus.BatchReceiving;
+
+public interface IMessageProcessor<T>
 {
-    public interface IMessageProcessor<T>
+    Task ProcessAllMessagesInBatches_Async(
+        Func<IEnumerable<DeserializedMessage<T>>, Task> processMessagesFuncAsync,
+        int batchSize);
+}
+
+public class MessageProcessor<T> : IMessageProcessor<T>
+{
+    private readonly IServiceBusMessageReceiver<T> messageReceiver;
+
+    public MessageProcessor(IServiceBusMessageReceiver<T> messageReceiver)
     {
-        Task ProcessAllMessagesInBatches_Async(
-            Func<IEnumerable<DeserializedMessage<T>>, Task> processMessagesFuncAsync,
-            int batchSize);
+        this.messageReceiver = messageReceiver;
     }
 
-    public class MessageProcessor<T> : IMessageProcessor<T>
+    /// <summary>
+    /// Locks a batch of service bus messages, and performs processing based on the passed delegate
+    /// </summary>
+    /// <param name="processMessagesFuncAsync">Function that will be run on the message batches</param>
+    /// <param name="batchSize">Maximum number of messages to fetch at once</param>
+    /// <param name="prefetchCount">Number of messages to fetch in advance of processing</param>
+    /// <exception cref="MessageBatchException{T}"></exception>
+    public async Task ProcessAllMessagesInBatches_Async(
+        Func<IEnumerable<DeserializedMessage<T>>, Task> processMessagesFuncAsync,
+        int batchSize)
     {
-        private readonly IServiceBusMessageReceiver<T> messageReceiver;
+        var messages = (await messageReceiver.ReceiveMessageBatchAsync(batchSize)).ToList();
 
-        public MessageProcessor(IServiceBusMessageReceiver<T> messageReceiver)
+        if (messages.IsNullOrEmpty())
         {
-            this.messageReceiver = messageReceiver;
+            return;
         }
 
-        /// <summary>
-        /// Locks a batch of service bus messages, and performs processing based on the passed delegate
-        /// </summary>
-        /// <param name="processMessagesFuncAsync">Function that will be run on the message batches</param>
-        /// <param name="batchSize">Maximum number of messages to fetch at once</param>
-        /// <param name="prefetchCount">Number of messages to fetch in advance of processing</param>
-        /// <exception cref="MessageBatchException{T}"></exception>
-        public async Task ProcessAllMessagesInBatches_Async(
-            Func<IEnumerable<DeserializedMessage<T>>, Task> processMessagesFuncAsync,
-            int batchSize)
+        using (var messageBatchLock = new MessageBatchLock<T>(messageReceiver, messages))
         {
-            var messages = (await messageReceiver.ReceiveMessageBatchAsync(batchSize)).ToList();
-
-            if (messages.IsNullOrEmpty())
+            try
             {
-                return;
+                await processMessagesFuncAsync(messages);
+            }
+            catch (Exception ex)
+            {
+                await messageBatchLock.AbandonBatchAsync();
+                throw new MessageBatchException<T>(nameof(ProcessAllMessagesInBatches_Async), messages, ex);
             }
 
-            using (var messageBatchLock = new MessageBatchLock<T>(messageReceiver, messages))
-            {
-                try
-                {
-                    await processMessagesFuncAsync(messages);
-                }
-                catch (Exception ex)
-                {
-                    await messageBatchLock.AbandonBatchAsync();
-                    throw new MessageBatchException<T>(nameof(ProcessAllMessagesInBatches_Async), messages, ex);
-                }
-
-                await messageBatchLock.CompleteBatchAsync();
-            }
+            await messageBatchLock.CompleteBatchAsync();
         }
     }
 }

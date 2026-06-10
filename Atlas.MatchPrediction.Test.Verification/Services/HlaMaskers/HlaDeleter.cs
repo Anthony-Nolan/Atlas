@@ -1,17 +1,16 @@
 ﻿using System.Threading.Tasks;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
-{
-    internal interface IHlaDeleter
-    {
-        Task<TransformationResult> DeleteRandomLocusHla(TransformationRequest request);
-    }
+namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers;
 
-    internal class HlaDeleter : HlaTransformerBase, IHlaDeleter
+internal interface IHlaDeleter
+{
+    Task<TransformationResult> DeleteRandomLocusHla(TransformationRequest request);
+}
+
+internal class HlaDeleter : HlaTransformerBase, IHlaDeleter
+{
+    public async Task<TransformationResult> DeleteRandomLocusHla(TransformationRequest request)
     {
-        public async Task<TransformationResult> DeleteRandomLocusHla(TransformationRequest request)
-        {
-            return await TransformRandomlySelectedTypings(request, _ => Task.FromResult((string)null));
-        }
+        return await TransformRandomlySelectedTypings(request, _ => Task.FromResult((string)null));
     }
 }

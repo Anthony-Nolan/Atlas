@@ -7,65 +7,64 @@ using Atlas.Common.AzureStorage.Blob;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Services.Search;
 
-namespace Atlas.RepeatSearch.Services.ResultSetTracking
+namespace Atlas.RepeatSearch.Services.ResultSetTracking;
+
+public interface IOriginalSearchResultSetTracker
 {
-    public interface IOriginalSearchResultSetTracker
+    Task StoreOriginalSearchResults(MatchingResultsNotification notification);
+    Task ApplySearchResultDiff(string searchRequestId, SearchResultDifferential searchResultDifferential);
+}
+
+internal class OriginalSearchResultSetTracker : IOriginalSearchResultSetTracker
+{
+    private readonly IBlobDownloader blobDownloader;
+    private readonly ICanonicalResultSetRepository canonicalResultSetRepository;
+
+    public OriginalSearchResultSetTracker(IBlobDownloader blobDownloader, ICanonicalResultSetRepository canonicalResultSetRepository)
     {
-        Task StoreOriginalSearchResults(MatchingResultsNotification notification);
-        Task ApplySearchResultDiff(string searchRequestId, SearchResultDifferential searchResultDifferential);
+        this.blobDownloader = blobDownloader;
+        this.canonicalResultSetRepository = canonicalResultSetRepository;
     }
 
-    internal class OriginalSearchResultSetTracker : IOriginalSearchResultSetTracker
+    public async Task StoreOriginalSearchResults(MatchingResultsNotification notification)
     {
-        private readonly IBlobDownloader blobDownloader;
-        private readonly ICanonicalResultSetRepository canonicalResultSetRepository;
+        var resultSet = await blobDownloader.Download<OriginalMatchingAlgorithmResultSet>(
+            notification.BlobStorageContainerName,
+            notification.ResultsFileName);
 
-        public OriginalSearchResultSetTracker(IBlobDownloader blobDownloader, ICanonicalResultSetRepository canonicalResultSetRepository)
+        var donorIds = new List<string>();
+
+        if (notification.NumberOfResults > 0)
         {
-            this.blobDownloader = blobDownloader;
-            this.canonicalResultSetRepository = canonicalResultSetRepository;
-        }
-
-        public async Task StoreOriginalSearchResults(MatchingResultsNotification notification)
-        {
-            var resultSet = await blobDownloader.Download<OriginalMatchingAlgorithmResultSet>(
-                notification.BlobStorageContainerName,
-                notification.ResultsFileName);
-
-            var donorIds = new List<string>();
-
-            if (notification.NumberOfResults > 0)
+            if (notification.ResultsBatched && !string.IsNullOrEmpty(notification.BatchFolderName))
             {
-                if (notification.ResultsBatched && !string.IsNullOrEmpty(notification.BatchFolderName))
+                var matchingAlgorithmResults = blobDownloader.DownloadFolderContentsFileByFile<MatchingAlgorithmResult>(notification.BlobStorageContainerName, notification.BatchFolderName);
+                await foreach (var resultsList in matchingAlgorithmResults)
                 {
-                    var matchingAlgorithmResults = blobDownloader.DownloadFolderContentsFileByFile<MatchingAlgorithmResult>(notification.BlobStorageContainerName, notification.BatchFolderName);
-                    await foreach (var resultsList in matchingAlgorithmResults)
-                    {
-                        donorIds.AddRange(resultsList.Select(r => r.DonorCode));
-                    }
-                }
-                else
-                {
-                    donorIds = resultSet.Results.Select(r => r.DonorCode).ToList();
+                    donorIds.AddRange(resultsList.Select(r => r.DonorCode));
                 }
             }
-
-            await canonicalResultSetRepository.CreateCanonicalResultSet(resultSet.SearchRequestId, donorIds);
+            else
+            {
+                donorIds = resultSet.Results.Select(r => r.DonorCode).ToList();
+            }
         }
 
-        public async Task ApplySearchResultDiff(string searchRequestId, SearchResultDifferential searchResultDifferential)
+        await canonicalResultSetRepository.CreateCanonicalResultSet(resultSet.SearchRequestId, donorIds);
+    }
+
+    public async Task ApplySearchResultDiff(string searchRequestId, SearchResultDifferential searchResultDifferential)
+    {
+        var donorCodesToAdd = searchResultDifferential.NewResults.Select(d => d.ExternalDonorCode).ToList();
+
+        if (donorCodesToAdd.Any())
         {
-            var donorCodesToAdd = searchResultDifferential.NewResults.Select(d => d.ExternalDonorCode).ToList();
+            await canonicalResultSetRepository.AddResultsToSet(searchRequestId, donorCodesToAdd);
+        }
 
-            if (donorCodesToAdd.Any())
-            {
-                await canonicalResultSetRepository.AddResultsToSet(searchRequestId, donorCodesToAdd);
-            }
-
-            if (searchResultDifferential.RemovedResults.Any())
-            {
-                await canonicalResultSetRepository.RemoveResultsFromSet(searchRequestId, searchResultDifferential.RemovedResults);
-            }
+        if (searchResultDifferential.RemovedResults.Any())
+        {
+            await canonicalResultSetRepository.RemoveResultsFromSet(searchRequestId, searchResultDifferential.RemovedResults);
         }
     }
 }

@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Atlas.Common.Utils
+namespace Atlas.Common.Utils;
+
+public interface IBatchQueryAsync<T>
 {
-    public interface IBatchQueryAsync<T>
-    {
-        bool HasMoreResults { get; }
-        Task<IEnumerable<T>> RequestNextAsync();
-    }
+    bool HasMoreResults { get; }
+    Task<IEnumerable<T>> RequestNextAsync();
 }

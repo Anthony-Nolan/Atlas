@@ -2,17 +2,16 @@
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 
-namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
-{
-    public class AlleleGradingInfo
-    {
-        public SingleAlleleScoringInfo ScoringInfo { get; }
-        public AlleleTyping Allele { get; }
+namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 
-        public AlleleGradingInfo(Locus locus, SingleAlleleScoringInfo scoringInfo)
-        {
-            ScoringInfo = scoringInfo;
-            Allele = scoringInfo.GenerateTypingAtLocus(locus);
-        }
+public class AlleleGradingInfo
+{
+    public SingleAlleleScoringInfo ScoringInfo { get; }
+    public AlleleTyping Allele { get; }
+
+    public AlleleGradingInfo(Locus locus, SingleAlleleScoringInfo scoringInfo)
+    {
+        ScoringInfo = scoringInfo;
+        Allele = scoringInfo.GenerateTypingAtLocus(locus);
     }
 }

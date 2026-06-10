@@ -11,146 +11,145 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversion;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration;
+
+/// <summary>
+/// Orchestrates the generation of the HLA Metadata dataset.
+/// The resulting data has not yet been persisted.
+/// </summary>
+internal interface IHlaMetadataGenerationOrchestrator
 {
-    /// <summary>
-    /// Orchestrates the generation of the HLA Metadata dataset.
-    /// The resulting data has not yet been persisted.
-    /// </summary>
-    internal interface IHlaMetadataGenerationOrchestrator
+    HlaMetadataCollection GenerateAllHlaMetadata(string hlaNomenclatureVersion);
+}
+
+internal class HlaMetadataGenerationOrchestrator : IHlaMetadataGenerationOrchestrator
+{
+    private readonly IHlaMatchPreCalculationService matchPreCalculationService;
+    private readonly IAlleleNamesService alleleNamesService;
+    private readonly IHlaToMatchingMetaDataConverter hlaToMatchingMetaDataConverter;
+    private readonly IHlaToScoringMetaDataConverter hlaToScoringMetaDataConverter;
+    private readonly IDpb1TceGroupsService dpb1TceGroupsService;
+    private readonly IAlleleGroupsService alleleGroupsService;
+    private readonly IGGroupToPGroupService gGroupToPGroupService;
+    private readonly ISmallGGroupsService smallGGroupsService;
+    private readonly IAtlasLogger logger;
+
+    public HlaMetadataGenerationOrchestrator(
+        IHlaMatchPreCalculationService matchPreCalculationService,
+        IAlleleNamesService alleleNamesService,
+        IHlaToMatchingMetaDataConverter hlaToMatchingMetaDataConverter,
+        IHlaToScoringMetaDataConverter hlaToScoringMetaDataConverter,
+        IDpb1TceGroupsService dpb1TceGroupsService,
+        IAlleleGroupsService alleleGroupsService,
+        IGGroupToPGroupService gGroupToPGroupService,
+        ISmallGGroupsService smallGGroupsService,
+        IAtlasLogger logger)
     {
-        HlaMetadataCollection GenerateAllHlaMetadata(string hlaNomenclatureVersion);
+        this.matchPreCalculationService = matchPreCalculationService;
+        this.alleleNamesService = alleleNamesService;
+        this.hlaToMatchingMetaDataConverter = hlaToMatchingMetaDataConverter;
+        this.hlaToScoringMetaDataConverter = hlaToScoringMetaDataConverter;
+        this.dpb1TceGroupsService = dpb1TceGroupsService;
+        this.alleleGroupsService = alleleGroupsService;
+        this.gGroupToPGroupService = gGroupToPGroupService;
+        this.smallGGroupsService = smallGGroupsService;
+        this.logger = logger;
     }
 
-    internal class HlaMetadataGenerationOrchestrator : IHlaMetadataGenerationOrchestrator
+    public HlaMetadataCollection GenerateAllHlaMetadata(string hlaNomenclatureVersion)
     {
-        private readonly IHlaMatchPreCalculationService matchPreCalculationService;
-        private readonly IAlleleNamesService alleleNamesService;
-        private readonly IHlaToMatchingMetaDataConverter hlaToMatchingMetaDataConverter;
-        private readonly IHlaToScoringMetaDataConverter hlaToScoringMetaDataConverter;
-        private readonly IDpb1TceGroupsService dpb1TceGroupsService;
-        private readonly IAlleleGroupsService alleleGroupsService;
-        private readonly IGGroupToPGroupService gGroupToPGroupService;
-        private readonly ISmallGGroupsService smallGGroupsService;
-        private readonly IAtlasLogger logger;
-
-        public HlaMetadataGenerationOrchestrator(
-            IHlaMatchPreCalculationService matchPreCalculationService,
-            IAlleleNamesService alleleNamesService,
-            IHlaToMatchingMetaDataConverter hlaToMatchingMetaDataConverter,
-            IHlaToScoringMetaDataConverter hlaToScoringMetaDataConverter,
-            IDpb1TceGroupsService dpb1TceGroupsService,
-            IAlleleGroupsService alleleGroupsService,
-            IGGroupToPGroupService gGroupToPGroupService,
-            ISmallGGroupsService smallGGroupsService,
-            IAtlasLogger logger)
+        try
         {
-            this.matchPreCalculationService = matchPreCalculationService;
-            this.alleleNamesService = alleleNamesService;
-            this.hlaToMatchingMetaDataConverter = hlaToMatchingMetaDataConverter;
-            this.hlaToScoringMetaDataConverter = hlaToScoringMetaDataConverter;
-            this.dpb1TceGroupsService = dpb1TceGroupsService;
-            this.alleleGroupsService = alleleGroupsService;
-            this.gGroupToPGroupService = gGroupToPGroupService;
-            this.smallGGroupsService = smallGGroupsService;
-            this.logger = logger;
-        }
-
-        public HlaMetadataCollection GenerateAllHlaMetadata(string hlaNomenclatureVersion)
-        {
-            try
-            {
-                logger.SendTrace("HlaMetadataDictionary: Processing Allele Names");
-                var alleleNameMetadata = GetAlleleNamesAndTheirVariants(hlaNomenclatureVersion).ToList();
+            logger.SendTrace("HlaMetadataDictionary: Processing Allele Names");
+            var alleleNameMetadata = GetAlleleNamesAndTheirVariants(hlaNomenclatureVersion).ToList();
                 
-                logger.SendTrace("HlaMetadataDictionary: Processing Pre-calculated match hla");
-                var preCalculatedMatchedHla = GetPreCalculatedMatchedHla(hlaNomenclatureVersion).ToList();
+            logger.SendTrace("HlaMetadataDictionary: Processing Pre-calculated match hla");
+            var preCalculatedMatchedHla = GetPreCalculatedMatchedHla(hlaNomenclatureVersion).ToList();
 
-                logger.SendTrace("HlaMetadataDictionary: Processing Matching metadata");
-                var matchingMetadata = GetMatchingMetadata(preCalculatedMatchedHla).ToList();
+            logger.SendTrace("HlaMetadataDictionary: Processing Matching metadata");
+            var matchingMetadata = GetMatchingMetadata(preCalculatedMatchedHla).ToList();
 
-                logger.SendTrace("HlaMetadataDictionary: Processing Scoring metadata");
-                var scoringMetadata = GetScoringMetadata(preCalculatedMatchedHla).ToList();
+            logger.SendTrace("HlaMetadataDictionary: Processing Scoring metadata");
+            var scoringMetadata = GetScoringMetadata(preCalculatedMatchedHla).ToList();
 
-                logger.SendTrace("HlaMetadataDictionary: Processing TCE groups");
-                var dpb1TceGroupMetadata = GetDpb1TceGroupMetadata(hlaNomenclatureVersion).ToList();
+            logger.SendTrace("HlaMetadataDictionary: Processing TCE groups");
+            var dpb1TceGroupMetadata = GetDpb1TceGroupMetadata(hlaNomenclatureVersion).ToList();
 
-                logger.SendTrace("HlaMetadataDictionary: Processing Allele Groups metadata");
-                var alleleGroupsMetadata = GetAlleleGroupsMetadata(hlaNomenclatureVersion).ToList();
+            logger.SendTrace("HlaMetadataDictionary: Processing Allele Groups metadata");
+            var alleleGroupsMetadata = GetAlleleGroupsMetadata(hlaNomenclatureVersion).ToList();
 
-                logger.SendTrace("HlaMetadataDictionary: GGroup to PGroup");
-                var gGroupToPGroupMetadata = GetGGroupToPGroupMetadata(hlaNomenclatureVersion).ToList();
+            logger.SendTrace("HlaMetadataDictionary: GGroup to PGroup");
+            var gGroupToPGroupMetadata = GetGGroupToPGroupMetadata(hlaNomenclatureVersion).ToList();
 
-                var matchedSerologies = preCalculatedMatchedHla.OfType<MatchedSerology>().ToList();
+            var matchedSerologies = preCalculatedMatchedHla.OfType<MatchedSerology>().ToList();
 
-                logger.SendTrace("HlaMetadataDictionary: Building small g groups");
-                var smallGGroupsMetadata = GetSmallGGroupsMetadata(hlaNomenclatureVersion, matchedSerologies).ToList();
-                var smallGToPGroupMetadata = GetSmallGGroupToPGroupMetadata(hlaNomenclatureVersion).ToList();
+            logger.SendTrace("HlaMetadataDictionary: Building small g groups");
+            var smallGGroupsMetadata = GetSmallGGroupsMetadata(hlaNomenclatureVersion, matchedSerologies).ToList();
+            var smallGToPGroupMetadata = GetSmallGGroupToPGroupMetadata(hlaNomenclatureVersion).ToList();
 
-                return new HlaMetadataCollection
-                {
-                    AlleleNameMetadata = alleleNameMetadata,
-                    HlaMatchingMetadata = matchingMetadata,
-                    HlaScoringMetadata = scoringMetadata,
-                    Dpb1TceGroupMetadata = dpb1TceGroupMetadata,
-                    AlleleGroupMetadata = alleleGroupsMetadata,
-                    GGroupToPGroupMetadata = gGroupToPGroupMetadata,
-                    SmallGGroupMetadata = smallGGroupsMetadata,
-                    SmallGGroupToPGroupMetadata = smallGToPGroupMetadata,
-                    SerologyToAllelesMetadata = matchedSerologies.Select(m => new SerologyToAllelesMetadata(m))
-                };
-            }
-            catch (Exception ex)
+            return new HlaMetadataCollection
             {
-                throw new HlaMetadataDictionaryHttpException("Could not get all HLA lookup results.", ex);
-            }
+                AlleleNameMetadata = alleleNameMetadata,
+                HlaMatchingMetadata = matchingMetadata,
+                HlaScoringMetadata = scoringMetadata,
+                Dpb1TceGroupMetadata = dpb1TceGroupMetadata,
+                AlleleGroupMetadata = alleleGroupsMetadata,
+                GGroupToPGroupMetadata = gGroupToPGroupMetadata,
+                SmallGGroupMetadata = smallGGroupsMetadata,
+                SmallGGroupToPGroupMetadata = smallGToPGroupMetadata,
+                SerologyToAllelesMetadata = matchedSerologies.Select(m => new SerologyToAllelesMetadata(m))
+            };
         }
-
-        private IEnumerable<IAlleleNameMetadata> GetAlleleNamesAndTheirVariants(string hlaNomenclatureVersion)
+        catch (Exception ex)
         {
-            return alleleNamesService.GetAlleleNamesAndTheirVariants(hlaNomenclatureVersion);
+            throw new HlaMetadataDictionaryHttpException("Could not get all HLA lookup results.", ex);
         }
+    }
 
-        private IEnumerable<IMatchedHla> GetPreCalculatedMatchedHla(string hlaNomenclatureVersion)
-        {
-            return matchPreCalculationService.GetMatchedHla(hlaNomenclatureVersion);
-        }
+    private IEnumerable<IAlleleNameMetadata> GetAlleleNamesAndTheirVariants(string hlaNomenclatureVersion)
+    {
+        return alleleNamesService.GetAlleleNamesAndTheirVariants(hlaNomenclatureVersion);
+    }
 
-        private IEnumerable<ISerialisableHlaMetadata> GetMatchingMetadata(IEnumerable<IMatchedHla> matchedHla)
-        {
-            return hlaToMatchingMetaDataConverter.ConvertToHlaMetadata(matchedHla);
-        }
+    private IEnumerable<IMatchedHla> GetPreCalculatedMatchedHla(string hlaNomenclatureVersion)
+    {
+        return matchPreCalculationService.GetMatchedHla(hlaNomenclatureVersion);
+    }
 
-        private IEnumerable<ISerialisableHlaMetadata> GetScoringMetadata(IEnumerable<IMatchedHla> matchedHla)
-        {
-            return hlaToScoringMetaDataConverter.ConvertToHlaMetadata(matchedHla);
-        }
+    private IEnumerable<ISerialisableHlaMetadata> GetMatchingMetadata(IEnumerable<IMatchedHla> matchedHla)
+    {
+        return hlaToMatchingMetaDataConverter.ConvertToHlaMetadata(matchedHla);
+    }
 
-        private IEnumerable<ISerialisableHlaMetadata> GetDpb1TceGroupMetadata(string hlaNomenclatureVersion)
-        {
-            return dpb1TceGroupsService.GetDpb1TceGroupMetadata(hlaNomenclatureVersion);
-        }
+    private IEnumerable<ISerialisableHlaMetadata> GetScoringMetadata(IEnumerable<IMatchedHla> matchedHla)
+    {
+        return hlaToScoringMetaDataConverter.ConvertToHlaMetadata(matchedHla);
+    }
 
-        private IEnumerable<ISerialisableHlaMetadata> GetAlleleGroupsMetadata(string hlaNomenclatureVersion)
-        {
-            return alleleGroupsService.GetAlleleGroupsMetadata(hlaNomenclatureVersion);
-        }
+    private IEnumerable<ISerialisableHlaMetadata> GetDpb1TceGroupMetadata(string hlaNomenclatureVersion)
+    {
+        return dpb1TceGroupsService.GetDpb1TceGroupMetadata(hlaNomenclatureVersion);
+    }
 
-        private IEnumerable<ISerialisableHlaMetadata> GetGGroupToPGroupMetadata(string hlaNomenclatureVersion)
-        {
-            return gGroupToPGroupService.GetGGroupToPGroupMetadata(hlaNomenclatureVersion);
-        }
+    private IEnumerable<ISerialisableHlaMetadata> GetAlleleGroupsMetadata(string hlaNomenclatureVersion)
+    {
+        return alleleGroupsService.GetAlleleGroupsMetadata(hlaNomenclatureVersion);
+    }
 
-        private IEnumerable<ISmallGGroupsMetadata> GetSmallGGroupsMetadata(
-            string hlaNomenclatureVersion,
-            IEnumerable<IHlaMetadataSource<SerologyTyping>> serologyTypings)
-        {
-            return smallGGroupsService.GetSmallGGroupsMetadata(hlaNomenclatureVersion, serologyTypings);
-        }
+    private IEnumerable<ISerialisableHlaMetadata> GetGGroupToPGroupMetadata(string hlaNomenclatureVersion)
+    {
+        return gGroupToPGroupService.GetGGroupToPGroupMetadata(hlaNomenclatureVersion);
+    }
 
-        private IEnumerable<IMolecularTypingToPGroupMetadata> GetSmallGGroupToPGroupMetadata(string hlaNomenclatureVersion)
-        {
-            return smallGGroupsService.GetSmallGGroupToPGroupMetadata(hlaNomenclatureVersion);
-        }
+    private IEnumerable<ISmallGGroupsMetadata> GetSmallGGroupsMetadata(
+        string hlaNomenclatureVersion,
+        IEnumerable<IHlaMetadataSource<SerologyTyping>> serologyTypings)
+    {
+        return smallGGroupsService.GetSmallGGroupsMetadata(hlaNomenclatureVersion, serologyTypings);
+    }
+
+    private IEnumerable<IMolecularTypingToPGroupMetadata> GetSmallGGroupToPGroupMetadata(string hlaNomenclatureVersion)
+    {
+        return smallGGroupsService.GetSmallGGroupToPGroupMetadata(hlaNomenclatureVersion);
     }
 }

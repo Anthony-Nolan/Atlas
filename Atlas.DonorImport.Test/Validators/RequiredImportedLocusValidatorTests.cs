@@ -6,85 +6,84 @@ using Atlas.DonorImport.Validators;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.DonorImport.Test.Validators
+namespace Atlas.DonorImport.Test.Validators;
+
+[TestFixture]
+internal class RequiredImportedLocusValidatorTests
 {
-    [TestFixture]
-    internal class RequiredImportedLocusValidatorTests
+    private const Locus TestLocus = Locus.A;
+
+    private RequiredImportedLocusValidator validator;
+
+    private static readonly IEnumerable<TwoFieldStringData> EmptyTwoFieldData = new[]
     {
-        private const Locus TestLocus = Locus.A;
+        null,
+        new TwoFieldStringData()
+    };
 
-        private RequiredImportedLocusValidator validator;
+    [SetUp]
+    public void SetUp()
+    {
+        validator = new RequiredImportedLocusValidator(TestLocus);
+    }
 
-        private static readonly IEnumerable<TwoFieldStringData> EmptyTwoFieldData = new[]
-        {
-            null,
-            new TwoFieldStringData()
-        };
+    [Test]
+    public void Validate_DnaIsNotNull_AndSerologyIsNotNull_ReturnsValid()
+    {
+        var locus = LocusBuilder.Default.Build();
 
-        [SetUp]
-        public void SetUp()
-        {
-            validator = new RequiredImportedLocusValidator(TestLocus);
-        }
+        var result = validator.Validate(locus);
 
-        [Test]
-        public void Validate_DnaIsNotNull_AndSerologyIsNotNull_ReturnsValid()
-        {
-            var locus = LocusBuilder.Default.Build();
+        result.IsValid.Should().BeTrue();
+    }
 
-            var result = validator.Validate(locus);
+    [TestCaseSource(nameof(EmptyTwoFieldData))]
+    public void Validate_DnaIsNotEmpty_AndSerologyIsEmpty_ReturnsValid(TwoFieldStringData emptyData)
+    {
+        var locus = LocusBuilder.Default
+            .WithSerology(emptyData)
+            .Build();
 
-            result.IsValid.Should().BeTrue();
-        }
+        var result = validator.Validate(locus);
 
-        [TestCaseSource(nameof(EmptyTwoFieldData))]
-        public void Validate_DnaIsNotEmpty_AndSerologyIsEmpty_ReturnsValid(TwoFieldStringData emptyData)
-        {
-            var locus = LocusBuilder.Default
-                .WithSerology(emptyData)
-                .Build();
+        result.IsValid.Should().BeTrue();
+    }
 
-            var result = validator.Validate(locus);
+    [TestCaseSource(nameof(EmptyTwoFieldData))]
+    public void Validate_DnaIsEmpty_AndSerologyIsNotEmpty_ReturnsValid(TwoFieldStringData emptyData)
+    {
+        var locus = LocusBuilder.Default
+            .WithDna(emptyData)
+            .Build();
 
-            result.IsValid.Should().BeTrue();
-        }
+        var result = validator.Validate(locus);
 
-        [TestCaseSource(nameof(EmptyTwoFieldData))]
-        public void Validate_DnaIsEmpty_AndSerologyIsNotEmpty_ReturnsValid(TwoFieldStringData emptyData)
-        {
-            var locus = LocusBuilder.Default
-                .WithDna(emptyData)
-                .Build();
+        result.IsValid.Should().BeTrue();
+    }
 
-            var result = validator.Validate(locus);
+    [TestCaseSource(nameof(EmptyTwoFieldData))]
+    public void Validate_DnaIsEmpty_AndSerologyIsEmpty_ReturnsInvalid(TwoFieldStringData emptyData)
+    {
+        var locus = LocusBuilder.Default
+            .WithDna(emptyData)
+            .WithSerology(emptyData)
+            .Build();
 
-            result.IsValid.Should().BeTrue();
-        }
+        var result = validator.Validate(locus);
 
-        [TestCaseSource(nameof(EmptyTwoFieldData))]
-        public void Validate_DnaIsEmpty_AndSerologyIsEmpty_ReturnsInvalid(TwoFieldStringData emptyData)
-        {
-            var locus = LocusBuilder.Default
-                .WithDna(emptyData)
-                .WithSerology(emptyData)
-                .Build();
+        string.Join(";", result.Errors).Should().StartWith($"Required locus {TestLocus}");
+    }
 
-            var result = validator.Validate(locus);
+    [TestCaseSource(nameof(EmptyTwoFieldData))]
+    public void Validate_DnaIsEmpty_AndSerologyIsEmpty_ReturnsErrorMessagePrefixedWithLocusName(TwoFieldStringData emptyData)
+    {
+        var locus = LocusBuilder.Default
+            .WithDna(emptyData)
+            .WithSerology(emptyData)
+            .Build();
 
-            string.Join(";", result.Errors).Should().StartWith($"Required locus {TestLocus}");
-        }
+        var result = validator.Validate(locus);
 
-        [TestCaseSource(nameof(EmptyTwoFieldData))]
-        public void Validate_DnaIsEmpty_AndSerologyIsEmpty_ReturnsErrorMessagePrefixedWithLocusName(TwoFieldStringData emptyData)
-        {
-            var locus = LocusBuilder.Default
-                .WithDna(emptyData)
-                .WithSerology(emptyData)
-                .Build();
-
-            var result = validator.Validate(locus);
-
-            string.Join(";", result.Errors).Should().StartWith($"Required locus {TestLocus}");
-        }
+        string.Join(";", result.Errors).Should().StartWith($"Required locus {TestLocus}");
     }
 }

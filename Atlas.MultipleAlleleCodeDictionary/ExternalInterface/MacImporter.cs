@@ -8,71 +8,70 @@ using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.AzureStorage.TableStorage;
 using Atlas.Common.Notifications;
 
-namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
+namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
+
+public interface IMacImporter
 {
-    public interface IMacImporter
+    public Task ImportLatestMacs();
+    public Task RecreateMacTable();
+}
+
+internal class MacImporter : IMacImporter
+{
+    private const string TracePrefix = "Mac Import: ";
+
+    private readonly IMacRepository macRepository;
+    private readonly IMacFetcher macFetcher;
+    private readonly IAtlasLogger logger;
+    private readonly INotificationSender notificationSender;
+
+    public MacImporter(IMacRepository macRepository, IMacFetcher macFetcher, IAtlasLogger logger, INotificationSender notificationSender)
     {
-        public Task ImportLatestMacs();
-        public Task RecreateMacTable();
+        this.macRepository = macRepository;
+        this.macFetcher = macFetcher;
+        this.logger = logger;
+        this.notificationSender = notificationSender;
     }
 
-    internal class MacImporter : IMacImporter
+    public async Task RecreateMacTable()
     {
-        private const string TracePrefix = "Mac Import: ";
+        await macRepository.TruncateMacTable();
+        await ImportLatestMacs();
+    }
 
-        private readonly IMacRepository macRepository;
-        private readonly IMacFetcher macFetcher;
-        private readonly IAtlasLogger logger;
-        private readonly INotificationSender notificationSender;
-
-        public MacImporter(IMacRepository macRepository, IMacFetcher macFetcher, IAtlasLogger logger, INotificationSender notificationSender)
+    public async Task ImportLatestMacs()
+    {
+        logger.SendTrace($"{TracePrefix}Mac Import started");
+        try
         {
-            this.macRepository = macRepository;
-            this.macFetcher = macFetcher;
-            this.logger = logger;
-            this.notificationSender = notificationSender;
+            var lastEntryBeforeInsert = await macRepository.GetLastMacEntry();
+            logger.SendTrace($"{TracePrefix}The last MAC entry found was: {lastEntryBeforeInsert}");
+
+            var newMacs = await macFetcher.FetchAndLazilyParseMacsSince(lastEntryBeforeInsert).ToListAsync();
+
+            logger.SendTrace($"{TracePrefix}Attempting to insert {newMacs.Count} new MACs");
+            await macRepository.InsertMacs(newMacs);
         }
-
-        public async Task RecreateMacTable()
+        catch (AzureTableBatchInsertException)
         {
-            await macRepository.TruncateMacTable();
-            await ImportLatestMacs();
-        }
-
-        public async Task ImportLatestMacs()
-        {
-            logger.SendTrace($"{TracePrefix}Mac Import started");
-            try
-            {
-                var lastEntryBeforeInsert = await macRepository.GetLastMacEntry();
-                logger.SendTrace($"{TracePrefix}The last MAC entry found was: {lastEntryBeforeInsert}");
-
-                var newMacs = await macFetcher.FetchAndLazilyParseMacsSince(lastEntryBeforeInsert).ToListAsync();
-
-                logger.SendTrace($"{TracePrefix}Attempting to insert {newMacs.Count} new MACs");
-                await macRepository.InsertMacs(newMacs);
-            }
-            catch (AzureTableBatchInsertException)
-            {
-                logger.SendTrace(
-                    $"{TracePrefix}Failed to insert MACs. Assuming this is due to de-synced metadata - re-syncing metadata (this may take some time)",
-                    LogLevel.Error);
+            logger.SendTrace(
+                $"{TracePrefix}Failed to insert MACs. Assuming this is due to de-synced metadata - re-syncing metadata (this may take some time)",
+                LogLevel.Error);
                 
-                var lastEntryBeforeInsert = await macRepository.GetLastMacEntry(true);
-                var newMacs = await macFetcher.FetchAndLazilyParseMacsSince(lastEntryBeforeInsert).ToListAsync();
+            var lastEntryBeforeInsert = await macRepository.GetLastMacEntry(true);
+            var newMacs = await macFetcher.FetchAndLazilyParseMacsSince(lastEntryBeforeInsert).ToListAsync();
                 
-                logger.SendTrace($"{TracePrefix}Attempting to insert {newMacs.Count} new MACs");
-                await macRepository.InsertMacs(newMacs);
-            }
-            catch (Exception e)
-            {
-                await notificationSender.SendAlert("MAC Import failed", "Failed to import MACs, check AI logs for error details.", Priority.High,
-                    nameof(MacImporter));
-                logger.SendException(e);
-                throw;
-            }
-
-            logger.SendTrace($"{TracePrefix}Successfully finished MAC Import");
+            logger.SendTrace($"{TracePrefix}Attempting to insert {newMacs.Count} new MACs");
+            await macRepository.InsertMacs(newMacs);
         }
+        catch (Exception e)
+        {
+            await notificationSender.SendAlert("MAC Import failed", "Failed to import MACs, check AI logs for error details.", Priority.High,
+                nameof(MacImporter));
+            logger.SendException(e);
+            throw;
+        }
+
+        logger.SendTrace($"{TracePrefix}Successfully finished MAC Import");
     }
 }

@@ -7,78 +7,77 @@ using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.RepeatSearch.Data.Repositories;
 
-namespace Atlas.RepeatSearch.Services.Search
+namespace Atlas.RepeatSearch.Services.Search;
+
+public class SearchResultDifferential
 {
-    public class SearchResultDifferential
+    public List<DonorIdPair> NewResults { get; set; }
+
+    public List<DonorIdPair> UpdatedResults { get; set; }
+
+    /// <summary>
+    /// Returns External Donor IDs only.
+    /// Atlas ID will not be needed for Match Prediction for removed donors, and in the case of deleted donors, the code will no longer have an associated Atlas donor id!  
+    /// </summary>
+    public List<string> RemovedResults { get; set; }
+}
+
+public interface IRepeatSearchDifferentialCalculator
+{
+    Task<SearchResultDifferential> CalculateDifferential(
+        string originalSearchRequestId,
+        List<MatchingAlgorithmResult> results,
+        DateTimeOffset searchCutoffDate);
+}
+
+internal class RepeatSearchDifferentialCalculator : IRepeatSearchDifferentialCalculator
+{
+    private readonly IDonorReader donorReader;
+    private readonly ICanonicalResultSetRepository canonicalResultSetRepository;
+
+    public RepeatSearchDifferentialCalculator(
+        IDonorReader donorReader,
+        ICanonicalResultSetRepository canonicalResultSetRepository)
     {
-        public List<DonorIdPair> NewResults { get; set; }
-
-        public List<DonorIdPair> UpdatedResults { get; set; }
-
-        /// <summary>
-        /// Returns External Donor IDs only.
-        /// Atlas ID will not be needed for Match Prediction for removed donors, and in the case of deleted donors, the code will no longer have an associated Atlas donor id!  
-        /// </summary>
-        public List<string> RemovedResults { get; set; }
+        this.donorReader = donorReader;
+        this.canonicalResultSetRepository = canonicalResultSetRepository;
     }
 
-    public interface IRepeatSearchDifferentialCalculator
+    public async Task<SearchResultDifferential> CalculateDifferential(
+        string originalSearchRequestId,
+        List<MatchingAlgorithmResult> results,
+        DateTimeOffset searchCutoffDate)
     {
-        Task<SearchResultDifferential> CalculateDifferential(
-            string originalSearchRequestId,
-            List<MatchingAlgorithmResult> results,
-            DateTimeOffset searchCutoffDate);
+        var returnedDonorCodes = results.Select(r => r.DonorCode).ToList();
+
+        var allDonorsUpdatedSinceCutoff = await donorReader.GetDonorIdsUpdatedSince(searchCutoffDate);
+
+        var nonMatchingDonors = allDonorsUpdatedSinceCutoff.Keys.Except(returnedDonorCodes);
+
+        var previousCanonicalDonors = (await canonicalResultSetRepository.GetCanonicalResults(originalSearchRequestId))
+            .Select(r => r.ExternalDonorCode).ToList();
+
+        var newDonors = returnedDonorCodes.Except(previousCanonicalDonors).ToList();
+        var updatedDonors = returnedDonorCodes.Except(newDonors).ToList();
+        var noLongerMatchingDonors = previousCanonicalDonors.Intersect(nonMatchingDonors).ToList();
+
+        var previousCanonicalDonorsInDonorStore = await donorReader.GetDonorsByExternalDonorCodes(previousCanonicalDonors);
+        var deletedDonors = previousCanonicalDonors.Where(d => !previousCanonicalDonorsInDonorStore.ContainsKey(d)).ToList();
+
+        return new SearchResultDifferential
+        {
+            NewResults = newDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, results)).ToList(),
+            UpdatedResults = updatedDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, results)).ToList(),
+            RemovedResults = noLongerMatchingDonors.Concat(deletedDonors).ToList()
+        };
     }
 
-    internal class RepeatSearchDifferentialCalculator : IRepeatSearchDifferentialCalculator
+    private static DonorIdPair LookupDonorIdFromCode(string externalDonorCode, List<MatchingAlgorithmResult> results)
     {
-        private readonly IDonorReader donorReader;
-        private readonly ICanonicalResultSetRepository canonicalResultSetRepository;
-
-        public RepeatSearchDifferentialCalculator(
-            IDonorReader donorReader,
-            ICanonicalResultSetRepository canonicalResultSetRepository)
+        return new DonorIdPair
         {
-            this.donorReader = donorReader;
-            this.canonicalResultSetRepository = canonicalResultSetRepository;
-        }
-
-        public async Task<SearchResultDifferential> CalculateDifferential(
-            string originalSearchRequestId,
-            List<MatchingAlgorithmResult> results,
-            DateTimeOffset searchCutoffDate)
-        {
-            var returnedDonorCodes = results.Select(r => r.DonorCode).ToList();
-
-            var allDonorsUpdatedSinceCutoff = await donorReader.GetDonorIdsUpdatedSince(searchCutoffDate);
-
-            var nonMatchingDonors = allDonorsUpdatedSinceCutoff.Keys.Except(returnedDonorCodes);
-
-            var previousCanonicalDonors = (await canonicalResultSetRepository.GetCanonicalResults(originalSearchRequestId))
-                .Select(r => r.ExternalDonorCode).ToList();
-
-            var newDonors = returnedDonorCodes.Except(previousCanonicalDonors).ToList();
-            var updatedDonors = returnedDonorCodes.Except(newDonors).ToList();
-            var noLongerMatchingDonors = previousCanonicalDonors.Intersect(nonMatchingDonors).ToList();
-
-            var previousCanonicalDonorsInDonorStore = await donorReader.GetDonorsByExternalDonorCodes(previousCanonicalDonors);
-            var deletedDonors = previousCanonicalDonors.Where(d => !previousCanonicalDonorsInDonorStore.ContainsKey(d)).ToList();
-
-            return new SearchResultDifferential
-            {
-                NewResults = newDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, results)).ToList(),
-                UpdatedResults = updatedDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, results)).ToList(),
-                RemovedResults = noLongerMatchingDonors.Concat(deletedDonors).ToList()
-            };
-        }
-
-        private static DonorIdPair LookupDonorIdFromCode(string externalDonorCode, List<MatchingAlgorithmResult> results)
-        {
-            return new DonorIdPair
-            {
-                ExternalDonorCode = externalDonorCode,
-                AtlasId = results.First(r => r.DonorCode == externalDonorCode).AtlasDonorId
-            };
-        }
+            ExternalDonorCode = externalDonorCode,
+            AtlasId = results.First(r => r.DonorCode == externalDonorCode).AtlasDonorId
+        };
     }
 }

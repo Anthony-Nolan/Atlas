@@ -1,7 +1,6 @@
-﻿namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.GenotypeLikelihood
+﻿namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.GenotypeLikelihood;
+
+public class GenotypeLikelihoodResponse
 {
-    public class GenotypeLikelihoodResponse
-    {
-        public decimal Likelihood { get; set; }
-    }
+    public decimal Likelihood { get; set; }
 }

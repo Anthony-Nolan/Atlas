@@ -2,24 +2,23 @@
 using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
+namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
+
+internal interface ISerologyToAllelesMetadataRepository : IHlaMetadataRepository
 {
-    internal interface ISerologyToAllelesMetadataRepository : IHlaMetadataRepository
-    {
-    }
+}
 
-    internal class SerologyToAllelesMetadataRepository : HlaMetadataRepositoryBase, ISerologyToAllelesMetadataRepository
-    {
-        private const string DataTableReferencePrefix = "SerologyToAllelesLookupData";
-        private const string CacheKey = nameof(SerologyToAllelesMetadataRepository);
+internal class SerologyToAllelesMetadataRepository : HlaMetadataRepositoryBase, ISerologyToAllelesMetadataRepository
+{
+    private const string DataTableReferencePrefix = "SerologyToAllelesLookupData";
+    private const string CacheKey = nameof(SerologyToAllelesMetadataRepository);
 
-        public SerologyToAllelesMetadataRepository(
-            ITableClientFactory factory,
-            ITableReferenceRepository tableReferenceRepository,
-            IPersistentCacheProvider cacheProvider,
-            IAtlasLogger logger)
-            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey, logger)
-        {
-        }
+    public SerologyToAllelesMetadataRepository(
+        ITableClientFactory factory,
+        ITableReferenceRepository tableReferenceRepository,
+        IPersistentCacheProvider cacheProvider,
+        IAtlasLogger logger)
+        : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey, logger)
+    {
     }
 }

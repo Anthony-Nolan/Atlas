@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace Atlas.DonorImport.Exceptions
+namespace Atlas.DonorImport.Exceptions;
+
+public class DonorNotFoundException : Exception
 {
-    public class DonorNotFoundException : Exception
+    public DonorNotFoundException(string message) : base(message)
     {
-        public DonorNotFoundException(string message) : base(message)
-        {
-        }
     }
 }

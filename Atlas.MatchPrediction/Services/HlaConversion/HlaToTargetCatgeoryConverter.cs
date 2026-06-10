@@ -6,29 +6,28 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 
-namespace Atlas.MatchPrediction.Services.HlaConversion
+namespace Atlas.MatchPrediction.Services.HlaConversion;
+
+internal interface IHlaToTargetCategoryConverter : IHlaConverter
 {
-    internal interface IHlaToTargetCategoryConverter : IHlaConverter
+}
+
+internal class HlaToTargetCategoryConverter : HlaConverterBase, IHlaToTargetCategoryConverter
+{
+    public HlaToTargetCategoryConverter(
+        // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+        IMatchPredictionLogger<MatchProbabilityLoggingContext> logger) : base(logger)
     {
     }
 
-    internal class HlaToTargetCategoryConverter : HlaConverterBase, IHlaToTargetCategoryConverter
+    protected override async Task<IEnumerable<string>> ConvertHla(
+        TargetHlaCategory? targetHlaCategory, Locus locus, string hla, IHlaMetadataDictionary hmd)
     {
-        public HlaToTargetCategoryConverter(
-            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
-            IMatchPredictionLogger<MatchProbabilityLoggingContext> logger) : base(logger)
+        if (targetHlaCategory == null)
         {
+            throw new ArgumentNullException(nameof(targetHlaCategory));
         }
 
-        protected override async Task<IEnumerable<string>> ConvertHla(
-            TargetHlaCategory? targetHlaCategory, Locus locus, string hla, IHlaMetadataDictionary hmd)
-        {
-            if (targetHlaCategory == null)
-            {
-                throw new ArgumentNullException(nameof(targetHlaCategory));
-            }
-
-            return await hmd.ConvertHla(locus, hla, targetHlaCategory.Value);
-        }
+        return await hmd.ConvertHla(locus, hla, targetHlaCategory.Value);
     }
 }

@@ -9,35 +9,34 @@ using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Atlas.MatchingAlgorithm.Api.Controllers
+namespace Atlas.MatchingAlgorithm.Api.Controllers;
+
+public class SearchController : ControllerBase
 {
-    public class SearchController : ControllerBase
+    private readonly ISearchService searchService;
+
+    public SearchController(ISearchService searchService)
     {
-        private readonly ISearchService searchService;
-
-        public SearchController(ISearchService searchService)
-        {
-            this.searchService = searchService;
-        }
+        this.searchService = searchService;
+    }
     
-        [HttpPost]
-        [Route("search")]
-        public async Task<ResultSet<MatchingAlgorithmResult>> Search([FromBody] SearchRequest searchRequest)
+    [HttpPost]
+    [Route("search")]
+    public async Task<ResultSet<MatchingAlgorithmResult>> Search([FromBody] SearchRequest searchRequest)
+    {
+        try
         {
-            try
-            {
-                var results = (await searchService.Search(searchRequest, null)).ToList();
+            var results = (await searchService.Search(searchRequest, null)).ToList();
 
-                return new OriginalMatchingAlgorithmResultSet
-                {
-                    TotalResults = results.Count,
-                    Results = results
-                };
-            }
-            catch (Exception e)
+            return new OriginalMatchingAlgorithmResultSet
             {
-                throw new SearchHttpException("There was a problem while executing a search", e);
-            }
+                TotalResults = results.Count,
+                Results = results
+            };
+        }
+        catch (Exception e)
+        {
+            throw new SearchHttpException("There was a problem while executing a search", e);
         }
     }
 }

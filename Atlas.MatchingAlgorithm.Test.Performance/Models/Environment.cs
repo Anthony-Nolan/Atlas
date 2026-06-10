@@ -1,10 +1,9 @@
-﻿namespace Atlas.MatchingAlgorithm.Test.Performance.Models
+﻿namespace Atlas.MatchingAlgorithm.Test.Performance.Models;
+
+public enum Environment
 {
-    public enum Environment
-    {
-        Local, 
-        Dev,
-        Uat,
-        Live
-    }
+    Local, 
+    Dev,
+    Uat,
+    Live
 }

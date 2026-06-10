@@ -2,36 +2,34 @@
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 
-namespace Atlas.Common.ApplicationInsights
+namespace Atlas.Common.ApplicationInsights;
+
+/// <summary>
+/// Stamps SearchRequestId on all telemetry items (traces, dependencies, requests, exceptions)
+/// enabling Application Insights end-to-end transaction correlation without manual property stamping.
+///
+/// This initializer reads from <see cref="SearchRequestContext"/> (AsyncLocal-backed) so it works
+/// correctly in Azure Functions isolated worker where there is no HttpContext.
+/// </summary>
+public class SearchRequestTelemetryInitializer : ITelemetryInitializer
 {
-    /// <summary>
-    /// Stamps SearchRequestId on all telemetry items (traces, dependencies, requests, exceptions)
-    /// enabling Application Insights end-to-end transaction correlation without manual property stamping.
-    ///
-    /// This initializer reads from <see cref="SearchRequestContext"/> (AsyncLocal-backed) so it works
-    /// correctly in Azure Functions isolated worker where there is no HttpContext.
-    /// </summary>
-    public class SearchRequestTelemetryInitializer : ITelemetryInitializer
+    private const string PropertyName = "SearchRequestId";
+
+    public void Initialize(ITelemetry telemetry)
     {
-        private const string PropertyName = "SearchRequestId";
+        var searchRequestId = SearchRequestContext.SearchRequestId;
 
-        public void Initialize(ITelemetry telemetry)
+        if (string.IsNullOrEmpty(searchRequestId))
         {
-            var searchRequestId = SearchRequestContext.SearchRequestId;
+            return;
+        }
 
-            if (string.IsNullOrEmpty(searchRequestId))
+        if (telemetry is ISupportProperties supportProperties)
+        {
+            if (!supportProperties.Properties.ContainsKey(PropertyName))
             {
-                return;
-            }
-
-            if (telemetry is ISupportProperties supportProperties)
-            {
-                if (!supportProperties.Properties.ContainsKey(PropertyName))
-                {
-                    supportProperties.Properties[PropertyName] = searchRequestId;
-                }
+                supportProperties.Properties[PropertyName] = searchRequestId;
             }
         }
     }
 }
-

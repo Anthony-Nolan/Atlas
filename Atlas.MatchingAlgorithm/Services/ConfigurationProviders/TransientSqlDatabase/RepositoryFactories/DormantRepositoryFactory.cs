@@ -3,40 +3,39 @@ using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 
-namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories
+namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+
+public interface IDormantRepositoryFactory : ITransientRepositoryFactory
 {
-    public interface IDormantRepositoryFactory : ITransientRepositoryFactory
+    IDonorImportRepository GetDonorImportRepository();
+    IDataRefreshRepository GetDataRefreshRepository();
+    IDonorManagementLogRepository GetDonorManagementLogRepository();
+}
+
+public class DormantRepositoryFactory : TransientRepositoryFactoryBase, IDormantRepositoryFactory
+{
+    // ReSharper disable once SuggestBaseTypeForParameter
+    public DormantRepositoryFactory(
+        DormantTransientSqlConnectionStringProvider dormantConnectionStringProvider,
+        IMatchingAlgorithmImportLogger logger
+    )
+        : base(dormantConnectionStringProvider, logger)
     {
-        IDonorImportRepository GetDonorImportRepository();
-        IDataRefreshRepository GetDataRefreshRepository();
-        IDonorManagementLogRepository GetDonorManagementLogRepository();
     }
 
-    public class DormantRepositoryFactory : TransientRepositoryFactoryBase, IDormantRepositoryFactory
+    public IDonorImportRepository GetDonorImportRepository()
     {
-        // ReSharper disable once SuggestBaseTypeForParameter
-        public DormantRepositoryFactory(
-            DormantTransientSqlConnectionStringProvider dormantConnectionStringProvider,
-            IMatchingAlgorithmImportLogger logger
-            )
-            : base(dormantConnectionStringProvider, logger)
-        {
-        }
+        return new DonorImportRepository(GetHlaNamesRepository(), ConnectionStringProvider, logger);
+    }
 
-        public IDonorImportRepository GetDonorImportRepository()
-        {
-            return new DonorImportRepository(GetHlaNamesRepository(), ConnectionStringProvider, logger);
-        }
+    public IDataRefreshRepository GetDataRefreshRepository()
+    {
+        return new DataRefreshRepository(ConnectionStringProvider);
+    }
 
-        public IDataRefreshRepository GetDataRefreshRepository()
-        {
-            return new DataRefreshRepository(ConnectionStringProvider);
-        }
-
-        /// <inheritdoc />
-        public IDonorManagementLogRepository GetDonorManagementLogRepository()
-        {
-            return new DonorManagementLogRepository(ConnectionStringProvider);
-        }
+    /// <inheritdoc />
+    public IDonorManagementLogRepository GetDonorManagementLogRepository()
+    {
+        return new DonorManagementLogRepository(ConnectionStringProvider);
     }
 }

@@ -2,30 +2,29 @@ using System;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Settings;
 
-namespace Atlas.MatchingAlgorithm.Services.DataRefresh
+namespace Atlas.MatchingAlgorithm.Services.DataRefresh;
+
+public interface IAzureDatabaseNameProvider
 {
-    public interface IAzureDatabaseNameProvider
-    {
-        string GetDatabaseName(TransientDatabase databaseType);
-    }
+    string GetDatabaseName(TransientDatabase databaseType);
+}
     
-    public class AzureDatabaseNameProvider : IAzureDatabaseNameProvider
+public class AzureDatabaseNameProvider : IAzureDatabaseNameProvider
+{
+    private readonly DataRefreshSettings dataRefreshSettings;
+
+    public AzureDatabaseNameProvider(DataRefreshSettings dataRefreshSettings)
     {
-        private readonly DataRefreshSettings dataRefreshSettings;
+        this.dataRefreshSettings = dataRefreshSettings;
+    }
 
-        public AzureDatabaseNameProvider(DataRefreshSettings dataRefreshSettings)
+    public string GetDatabaseName(TransientDatabase databaseType)
+    {
+        return databaseType switch
         {
-            this.dataRefreshSettings = dataRefreshSettings;
-        }
-
-        public string GetDatabaseName(TransientDatabase databaseType)
-        {
-            return databaseType switch
-            {
-                TransientDatabase.DatabaseA => dataRefreshSettings.DatabaseAName,
-                TransientDatabase.DatabaseB => dataRefreshSettings.DatabaseBName,
-                _ => throw new ArgumentOutOfRangeException(nameof(databaseType), databaseType, null)
-            };
-        }
+            TransientDatabase.DatabaseA => dataRefreshSettings.DatabaseAName,
+            TransientDatabase.DatabaseB => dataRefreshSettings.DatabaseBName,
+            _ => throw new ArgumentOutOfRangeException(nameof(databaseType), databaseType, null)
+        };
     }
 }

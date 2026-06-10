@@ -17,130 +17,129 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
+namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search;
+
+public class DonorFilteringTests
 {
-    public class DonorFilteringTests
+    private ISearchService searchService;
+
+    private DonorInfoWithExpandedHla donorAtRegistryA;
+    private DonorInfoWithExpandedHla donorAtRegistryB;
+
+    private const string RegistryCodeA = "registry-a";
+    private const string RegistryCodeB = "registry-b";
+
+
+    // A selection of valid hla data for the single donor to have
+    private readonly PhenotypeInfo<string> donorHlas = new PhenotypeInfo<string>(
+        valueA: new LocusInfo<string>("01:02", "01:02"),
+        valueB: new LocusInfo<string>("14:53", "14:47"),
+        valueDrb1: new LocusInfo<string>("13:03:01", "13:02:01:03"),
+        valueC: new LocusInfo<string>("02:02", "02:02")
+    );
+
+    [OneTimeSetUp]
+    public void OneTimeSetUp()
     {
-        private ISearchService searchService;
-
-        private DonorInfoWithExpandedHla donorAtRegistryA;
-        private DonorInfoWithExpandedHla donorAtRegistryB;
-
-        private const string RegistryCodeA = "registry-a";
-        private const string RegistryCodeB = "registry-b";
-
-
-        // A selection of valid hla data for the single donor to have
-        private readonly PhenotypeInfo<string> donorHlas = new PhenotypeInfo<string>(
-            valueA: new LocusInfo<string>("01:02", "01:02"),
-            valueB: new LocusInfo<string>("14:53", "14:47"),
-            valueDrb1: new LocusInfo<string>("13:03:01", "13:02:01:03"),
-            valueC: new LocusInfo<string>("02:02", "02:02")
-        );
-
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
+        TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            var donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>()
+                .BuildForActiveHlaNomenclatureVersion();
+            var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = donorHlas }).Result.MatchingHla;
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
+            var donorRepository = repositoryFactory.GetDonorUpdateRepository();
+
+            donorAtRegistryA = new DonorInfoWithExpandedHla
             {
-                var donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>()
-                    .BuildForActiveHlaNomenclatureVersion();
-                var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = donorHlas }).Result.MatchingHla;
-                var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
-                var donorRepository = repositoryFactory.GetDonorUpdateRepository();
+                DonorType = DonorType.Adult,
+                ExternalDonorCode = DonorIdGenerator.NewExternalCode,
+                RegistryCode = RegistryCodeA,
+                DonorId = DonorIdGenerator.NextId(),
+                HlaNames = donorHlas,
+                MatchingHla = matchingHlaPhenotype
+            };
+            donorAtRegistryB = new DonorInfoWithExpandedHla
+            {
+                DonorType = DonorType.Adult,
+                ExternalDonorCode = DonorIdGenerator.NewExternalCode,
+                RegistryCode = RegistryCodeB,
+                DonorId = DonorIdGenerator.NextId(),
+                HlaNames = donorHlas,
+                MatchingHla = matchingHlaPhenotype
+            };
+            donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donorAtRegistryA, donorAtRegistryB }, false).Wait();
 
-                donorAtRegistryA = new DonorInfoWithExpandedHla
+            ServiceConfiguration.MockDonorReader.GetDonors(Arg.Is<IEnumerable<int>>(ids =>
+                    ids.ToHashSet().SetEquals(new HashSet<int> { donorAtRegistryA.DonorId, donorAtRegistryB.DonorId })
+                ))
+                .Returns(new Dictionary<int, Donor>
                 {
-                    DonorType = DonorType.Adult,
-                    ExternalDonorCode = DonorIdGenerator.NewExternalCode,
-                    RegistryCode = RegistryCodeA,
-                    DonorId = DonorIdGenerator.NextId(),
-                    HlaNames = donorHlas,
-                    MatchingHla = matchingHlaPhenotype
-                };
-                donorAtRegistryB = new DonorInfoWithExpandedHla
-                {
-                    DonorType = DonorType.Adult,
-                    ExternalDonorCode = DonorIdGenerator.NewExternalCode,
-                    RegistryCode = RegistryCodeB,
-                    DonorId = DonorIdGenerator.NextId(),
-                    HlaNames = donorHlas,
-                    MatchingHla = matchingHlaPhenotype
-                };
-                donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donorAtRegistryA, donorAtRegistryB }, false).Wait();
-
-                ServiceConfiguration.MockDonorReader.GetDonors(Arg.Is<IEnumerable<int>>(ids =>
-                        ids.ToHashSet().SetEquals(new HashSet<int> { donorAtRegistryA.DonorId, donorAtRegistryB.DonorId })
-                    ))
-                    .Returns(new Dictionary<int, Donor>
                     {
+                        donorAtRegistryA.DonorId,
+                        new Donor
                         {
-                            donorAtRegistryA.DonorId,
-                            new Donor
-                            {
-                                AtlasDonorId = donorAtRegistryA.DonorId, ExternalDonorCode = donorAtRegistryA.DonorId.ToString(),
-                                RegistryCode = RegistryCodeA
-                            }
-                        },
+                            AtlasDonorId = donorAtRegistryA.DonorId, ExternalDonorCode = donorAtRegistryA.DonorId.ToString(),
+                            RegistryCode = RegistryCodeA
+                        }
+                    },
+                    {
+                        donorAtRegistryB.DonorId,
+                        new Donor
                         {
-                            donorAtRegistryB.DonorId,
-                            new Donor
-                            {
-                                AtlasDonorId = donorAtRegistryA.DonorId, ExternalDonorCode = donorAtRegistryA.DonorId.ToString(),
-                                RegistryCode = RegistryCodeB
-                            }
-                        },
-                    });
-            });
-        }
+                            AtlasDonorId = donorAtRegistryA.DonorId, ExternalDonorCode = donorAtRegistryA.DonorId.ToString(),
+                            RegistryCode = RegistryCodeB
+                        }
+                    },
+                });
+        });
+    }
 
-        [SetUp]
-        public void SetUp()
-        {
-            searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
-        }
+    [SetUp]
+    public void SetUp()
+    {
+        searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
+    }
 
-        [Test]
-        public async Task Search_WithIncludedRegistry_ReturnsOnlyDonorFromThatRegistry()
-        {
-            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas).WithDonorRegistryCodes(new List<string> { RegistryCodeA }).Build();
+    [Test]
+    public async Task Search_WithIncludedRegistry_ReturnsOnlyDonorFromThatRegistry()
+    {
+        var searchRequest = new SearchRequestFromHlasBuilder(donorHlas).WithDonorRegistryCodes(new List<string> { RegistryCodeA }).Build();
 
-            var results = (await searchService.Search(searchRequest)).ToList();
+        var results = (await searchService.Search(searchRequest)).ToList();
 
-            results.Should().Contain(d => d.AtlasDonorId == donorAtRegistryA.DonorId);
-            results.Should().NotContain(d => d.AtlasDonorId == donorAtRegistryB.DonorId);
-        }
+        results.Should().Contain(d => d.AtlasDonorId == donorAtRegistryA.DonorId);
+        results.Should().NotContain(d => d.AtlasDonorId == donorAtRegistryB.DonorId);
+    }
 
-        [Test]
-        public async Task Search_WithIncludedRegistry_AndDonorExistsWithMatchingRegistryInDifferentCase_DonorIsReturned()
-        {
-            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas).WithDonorRegistryCodes(new List<string> { RegistryCodeA.ToUpper() })
-                .Build();
+    [Test]
+    public async Task Search_WithIncludedRegistry_AndDonorExistsWithMatchingRegistryInDifferentCase_DonorIsReturned()
+    {
+        var searchRequest = new SearchRequestFromHlasBuilder(donorHlas).WithDonorRegistryCodes(new List<string> { RegistryCodeA.ToUpper() })
+            .Build();
 
-            var results = (await searchService.Search(searchRequest)).ToList();
+        var results = (await searchService.Search(searchRequest)).ToList();
 
-            results.Should().Contain(d => d.AtlasDonorId == donorAtRegistryA.DonorId);
-        }
+        results.Should().Contain(d => d.AtlasDonorId == donorAtRegistryA.DonorId);
+    }
 
-        [Test]
-        public async Task Search_WithNoSpecifiedRegistries_DoesNotReturnAnyDonors()
-        {
-            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas).WithDonorRegistryCodes(new List<string>()).Build();
+    [Test]
+    public async Task Search_WithNoSpecifiedRegistries_DoesNotReturnAnyDonors()
+    {
+        var searchRequest = new SearchRequestFromHlasBuilder(donorHlas).WithDonorRegistryCodes(new List<string>()).Build();
 
-            var results = (await searchService.Search(searchRequest)).ToList();
+        var results = (await searchService.Search(searchRequest)).ToList();
 
-            results.Count.Should().Be(0);
-        }
+        results.Count.Should().Be(0);
+    }
 
-        [Test]
-        public async Task Search_ForMatchingDonor_WithNullSpecifiedRegistries_ReturnsAllDonors()
-        {
-            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas).WithDonorRegistryCodes(null).Build();
+    [Test]
+    public async Task Search_ForMatchingDonor_WithNullSpecifiedRegistries_ReturnsAllDonors()
+    {
+        var searchRequest = new SearchRequestFromHlasBuilder(donorHlas).WithDonorRegistryCodes(null).Build();
 
-            var results = (await searchService.Search(searchRequest)).ToList();
+        var results = (await searchService.Search(searchRequest)).ToList();
 
-            results.Should().Contain(d => d.AtlasDonorId == donorAtRegistryA.DonorId);
-            results.Should().Contain(d => d.AtlasDonorId == donorAtRegistryB.DonorId);
-        }
+        results.Should().Contain(d => d.AtlasDonorId == donorAtRegistryA.DonorId);
+        results.Should().Contain(d => d.AtlasDonorId == donorAtRegistryB.DonorId);
     }
 }

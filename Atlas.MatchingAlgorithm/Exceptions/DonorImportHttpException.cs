@@ -2,12 +2,11 @@
 using System.Net;
 using Atlas.Common.Utils.Http;
 
-namespace Atlas.MatchingAlgorithm.Exceptions
+namespace Atlas.MatchingAlgorithm.Exceptions;
+
+public class DonorImportHttpException : AtlasHttpException
 {
-    public class DonorImportHttpException : AtlasHttpException
+    public DonorImportHttpException(string message, Exception inner) : base(HttpStatusCode.InternalServerError, message, inner)
     {
-        public DonorImportHttpException(string message, Exception inner) : base(HttpStatusCode.InternalServerError, message, inner)
-        {
-        }
     }
 }

@@ -1,47 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace LoggingStopwatch
+namespace LoggingStopwatch;
+
+public class LongStopwatchCollection
 {
-    public class LongStopwatchCollection
+    private readonly Dictionary<string, ILongOperationLoggingStopwatch> watches = new Dictionary<string, ILongOperationLoggingStopwatch>();
+
+    private readonly Action<string, long?> defaultLoggingAction;
+    private readonly LongLoggingSettings defaultLoggingSettings;
+
+    public LongStopwatchCollection(Action<string, long?> defaultLoggingAction = null, LongLoggingSettings defaultLoggingSettings = null)
     {
-        private readonly Dictionary<string, ILongOperationLoggingStopwatch> watches = new Dictionary<string, ILongOperationLoggingStopwatch>();
+        this.defaultLoggingAction = defaultLoggingAction;
+        this.defaultLoggingSettings = defaultLoggingSettings;
+    }
 
-        private readonly Action<string, long?> defaultLoggingAction;
-        private readonly LongLoggingSettings defaultLoggingSettings;
+    public IDisposable InitialiseDisabledStopwatch(string watchKey, string watchDescription = null, Action<string> loggingAction = null, LongLoggingSettings loggingSettings = null)
+    {
+        var fakeStopwatch = new FastFakeLongOperationLoggingStopwatch();
+        watches.Add(watchKey, fakeStopwatch);
+        return fakeStopwatch;
+    }
 
-        public LongStopwatchCollection(Action<string, long?> defaultLoggingAction = null, LongLoggingSettings defaultLoggingSettings = null)
-        {
-            this.defaultLoggingAction = defaultLoggingAction;
-            this.defaultLoggingSettings = defaultLoggingSettings;
-        }
-
-        public IDisposable InitialiseDisabledStopwatch(string watchKey, string watchDescription = null, Action<string> loggingAction = null, LongLoggingSettings loggingSettings = null)
-        {
-            var fakeStopwatch = new FastFakeLongOperationLoggingStopwatch();
-            watches.Add(watchKey, fakeStopwatch);
-            return fakeStopwatch;
-        }
-
-        public IDisposable InitialiseStopwatch(string watchKey, string watchDescription = null, Action<string, long?> loggingAction = null, LongLoggingSettings loggingSettings = null)
-        {
-            var initialisedStopwatch = new LongOperationLoggingStopwatch(
-                watchDescription ?? watchKey,
-                loggingAction ?? defaultLoggingAction,
-                loggingSettings ?? defaultLoggingSettings);
+    public IDisposable InitialiseStopwatch(string watchKey, string watchDescription = null, Action<string, long?> loggingAction = null, LongLoggingSettings loggingSettings = null)
+    {
+        var initialisedStopwatch = new LongOperationLoggingStopwatch(
+            watchDescription ?? watchKey,
+            loggingAction ?? defaultLoggingAction,
+            loggingSettings ?? defaultLoggingSettings);
             
-            watches.Add(watchKey, initialisedStopwatch);
-            return initialisedStopwatch;
-        }
+        watches.Add(watchKey, initialisedStopwatch);
+        return initialisedStopwatch;
+    }
 
-        public IDisposable TimeInnerOperation(string watchKey)
-        {
-            return watches[watchKey].TimeInnerOperation();
-        }
+    public IDisposable TimeInnerOperation(string watchKey)
+    {
+        return watches[watchKey].TimeInnerOperation();
+    }
 
-        public ILongOperationLoggingStopwatch GetStopwatch(string watchKey)
-        {
-            return watches[watchKey];
-        }
+    public ILongOperationLoggingStopwatch GetStopwatch(string watchKey)
+    {
+        return watches[watchKey];
     }
 }

@@ -5,28 +5,27 @@ using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 
-namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
+namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
+
+internal interface ISearchDonorResultUploader
 {
-    internal interface ISearchDonorResultUploader
+    /// <summary>
+    /// Uploads match probability result calculated for a Atlas donor found via a search request.
+    /// </summary>
+    /// <returns>List of filenames of results files</returns>
+    Task<Dictionary<int, string>> UploadSearchDonorResults(string searchRequestId, IEnumerable<int> atlasDonorIds, MatchProbabilityResponse matchProbabilityResponse);
+}
+
+internal class SearchDonorResultUploader : MatchProbabilityResultUploader, ISearchDonorResultUploader
+{
+    public SearchDonorResultUploader(AzureStorageSettings azureStorageSettings, IAtlasLogger logger) : base(azureStorageSettings, logger)
     {
-        /// <summary>
-        /// Uploads match probability result calculated for a Atlas donor found via a search request.
-        /// </summary>
-        /// <returns>List of filenames of results files</returns>
-        Task<Dictionary<int, string>> UploadSearchDonorResults(string searchRequestId, IEnumerable<int> atlasDonorIds, MatchProbabilityResponse matchProbabilityResponse);
     }
 
-    internal class SearchDonorResultUploader : MatchProbabilityResultUploader, ISearchDonorResultUploader
+    public async Task<Dictionary<int, string>> UploadSearchDonorResults(string searchRequestId, IEnumerable<int> atlasDonorIds, MatchProbabilityResponse matchProbabilityResponse)
     {
-        public SearchDonorResultUploader(AzureStorageSettings azureStorageSettings, IAtlasLogger logger) : base(azureStorageSettings, logger)
-        {
-        }
-
-        public async Task<Dictionary<int, string>> UploadSearchDonorResults(string searchRequestId, IEnumerable<int> atlasDonorIds, MatchProbabilityResponse matchProbabilityResponse)
-        {
-            var fileNames = atlasDonorIds.Select(id => new KeyValuePair<int, string> (id, $"{searchRequestId}/{id}.json") ).ToDictionary();
-            await UploadResults(fileNames.Select(f => f.Value), matchProbabilityResponse);
-            return fileNames;
-        }
+        var fileNames = atlasDonorIds.Select(id => new KeyValuePair<int, string> (id, $"{searchRequestId}/{id}.json") ).ToDictionary();
+        await UploadResults(fileNames.Select(f => f.Value), matchProbabilityResponse);
+        return fileNames;
     }
 }

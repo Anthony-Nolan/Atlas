@@ -13,79 +13,78 @@ using LazyCache;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.AlleleNames
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.AlleleNames;
+
+[TestFixture]
+public class AlleleNamesMetadataServiceTests
 {
-    [TestFixture]
-    public class AlleleNamesMetadataServiceTests
+    private IAlleleNamesMetadataService metadataService;
+    private IAlleleNamesMetadataRepository metadataRepository;
+    private IHlaCategorisationService hlaCategorisationService;
+    private IAppCache cache;
+    private const Locus MatchedLocus = Locus.A;
+
+    [SetUp]
+    public void Setup()
     {
-        private IAlleleNamesMetadataService metadataService;
-        private IAlleleNamesMetadataRepository metadataRepository;
-        private IHlaCategorisationService hlaCategorisationService;
-        private IAppCache cache;
-        private const Locus MatchedLocus = Locus.A;
+        metadataRepository = Substitute.For<IAlleleNamesMetadataRepository>();
+        hlaCategorisationService = Substitute.For<IHlaCategorisationService>();
 
-        [SetUp]
-        public void Setup()
-        {
-            metadataRepository = Substitute.For<IAlleleNamesMetadataRepository>();
-            hlaCategorisationService = Substitute.For<IHlaCategorisationService>();
+        cache = AppCacheBuilder.NewDefaultCache();
+        var cacheProvider = Substitute.For<IPersistentCacheProvider>();
+        cacheProvider.Cache.Returns(cache);
 
-            cache = AppCacheBuilder.NewDefaultCache();
-            var cacheProvider = Substitute.For<IPersistentCacheProvider>();
-            cacheProvider.Cache.Returns(cache);
-
-            metadataService = new AlleleNamesMetadataService(metadataRepository, hlaCategorisationService, cacheProvider);
+        metadataService = new AlleleNamesMetadataService(metadataRepository, hlaCategorisationService, cacheProvider);
             
-            metadataRepository
-                .GetAlleleNameIfExists(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
-                .Returns(new AlleleNameMetadata(MatchedLocus, "FAKE-ALLELE-TO-PREVENT-INVALID-HLA-EXCEPTION", new List<string>()));
-        }
+        metadataRepository
+            .GetAlleleNameIfExists(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
+            .Returns(new AlleleNameMetadata(MatchedLocus, "FAKE-ALLELE-TO-PREVENT-INVALID-HLA-EXCEPTION", new List<string>()));
+    }
         
-        [TestCase(null)]
-        [TestCase("")]
-        public void GetCurrentAlleleNames_WhenStringNullOrEmpty_ThrowsException(string nullOrEmptyString)
-        {
-            Assert.ThrowsAsync<HlaMetadataDictionaryException>(
-                async () => await metadataService.GetCurrentAlleleNames(MatchedLocus, nullOrEmptyString, "hla-db-version"));
-        }
+    [TestCase(null)]
+    [TestCase("")]
+    public void GetCurrentAlleleNames_WhenStringNullOrEmpty_ThrowsException(string nullOrEmptyString)
+    {
+        Assert.ThrowsAsync<HlaMetadataDictionaryException>(
+            async () => await metadataService.GetCurrentAlleleNames(MatchedLocus, nullOrEmptyString, "hla-db-version"));
+    }
 
-        [Test]
-        public void GetCurrentAlleleNames_WhenNotAlleleTyping_ThrowsException()
-        {
-            const string notAlleleName = "NOT-AN-ALLELE";
-            const HlaTypingCategory notAlleleTypingCategory = HlaTypingCategory.Serology;
+    [Test]
+    public void GetCurrentAlleleNames_WhenNotAlleleTyping_ThrowsException()
+    {
+        const string notAlleleName = "NOT-AN-ALLELE";
+        const HlaTypingCategory notAlleleTypingCategory = HlaTypingCategory.Serology;
 
-            hlaCategorisationService.GetHlaTypingCategory(notAlleleName).Returns(notAlleleTypingCategory);
+        hlaCategorisationService.GetHlaTypingCategory(notAlleleName).Returns(notAlleleTypingCategory);
 
-            Assert.ThrowsAsync<HlaMetadataDictionaryException>(
-                async () => await metadataService.GetCurrentAlleleNames(MatchedLocus, notAlleleName, "hla-db-version"));
-        }
+        Assert.ThrowsAsync<HlaMetadataDictionaryException>(
+            async () => await metadataService.GetCurrentAlleleNames(MatchedLocus, notAlleleName, "hla-db-version"));
+    }
 
-        [Test]
-        public async Task GetCurrentAlleleNames_WhenAlleleTyping_LooksUpAlleleName()
-        {
-            const string lookupName = "allele";
+    [Test]
+    public async Task GetCurrentAlleleNames_WhenAlleleTyping_LooksUpAlleleName()
+    {
+        const string lookupName = "allele";
 
-            hlaCategorisationService.GetHlaTypingCategory(Arg.Any<string>()).Returns(HlaTypingCategory.Allele);
+        hlaCategorisationService.GetHlaTypingCategory(Arg.Any<string>()).Returns(HlaTypingCategory.Allele);
 
-            const string hlaNomenclatureVersion = "3333";
-            await metadataService.GetCurrentAlleleNames(MatchedLocus, lookupName, hlaNomenclatureVersion);
+        const string hlaNomenclatureVersion = "3333";
+        await metadataService.GetCurrentAlleleNames(MatchedLocus, lookupName, hlaNomenclatureVersion);
 
-            await metadataRepository.Received().GetAlleleNameIfExists(MatchedLocus, lookupName, hlaNomenclatureVersion);
-        }
+        await metadataRepository.Received().GetAlleleNameIfExists(MatchedLocus, lookupName, hlaNomenclatureVersion);
+    }
 
-        [Test]
-        public async Task GetCurrentAlleleNames_WhenAlleleTyping_TrimsAlleleNameBeforeLookUp()
-        {
-            const string submittedLookupName = "*name";
-            const string trimmedLookupName = "name";
+    [Test]
+    public async Task GetCurrentAlleleNames_WhenAlleleTyping_TrimsAlleleNameBeforeLookUp()
+    {
+        const string submittedLookupName = "*name";
+        const string trimmedLookupName = "name";
 
-            hlaCategorisationService.GetHlaTypingCategory(Arg.Any<string>()).Returns(HlaTypingCategory.Allele);
+        hlaCategorisationService.GetHlaTypingCategory(Arg.Any<string>()).Returns(HlaTypingCategory.Allele);
 
-            const string hlaNomenclatureVersion = "3333";
-            await metadataService.GetCurrentAlleleNames(MatchedLocus, submittedLookupName, hlaNomenclatureVersion);
+        const string hlaNomenclatureVersion = "3333";
+        await metadataService.GetCurrentAlleleNames(MatchedLocus, submittedLookupName, hlaNomenclatureVersion);
 
-            await metadataRepository.Received().GetAlleleNameIfExists(MatchedLocus, trimmedLookupName, hlaNomenclatureVersion);
-        }
+        await metadataRepository.Received().GetAlleleNameIfExists(MatchedLocus, trimmedLookupName, hlaNomenclatureVersion);
     }
 }

@@ -7,99 +7,98 @@ using Atlas.Common.Debugging;
 using Atlas.Debug.Client.Models.ServiceBus;
 using Atlas.ManualTesting.Models;
 
-namespace Atlas.ManualTesting.Services
+namespace Atlas.ManualTesting.Services;
+
+public interface ISearchResultNotificationsPeeker
 {
-    public interface ISearchResultNotificationsPeeker
+    Task<IEnumerable<string>> GetIdsOfFailedSearches(PeekServiceBusMessagesRequest peekRequest);
+    Task<PeekedSearchResultsNotifications> GetSearchResultsNotifications(PeekServiceBusMessagesRequest peekRequest);
+    Task<PeekedSearchResultsNotifications> GetNotificationsBySearchRequestId(PeekBySearchRequestIdRequest peekRequest);
+}
+
+internal class SearchResultNotificationsPeeker : ISearchResultNotificationsPeeker
+{
+    private readonly IMessagesPeeker<SearchResultsNotification> messagesReceiver;
+
+    public SearchResultNotificationsPeeker(IMessagesPeeker<SearchResultsNotification> messagesReceiver)
     {
-        Task<IEnumerable<string>> GetIdsOfFailedSearches(PeekServiceBusMessagesRequest peekRequest);
-        Task<PeekedSearchResultsNotifications> GetSearchResultsNotifications(PeekServiceBusMessagesRequest peekRequest);
-        Task<PeekedSearchResultsNotifications> GetNotificationsBySearchRequestId(PeekBySearchRequestIdRequest peekRequest);
+        this.messagesReceiver = messagesReceiver;
     }
 
-    internal class SearchResultNotificationsPeeker : ISearchResultNotificationsPeeker
+    public async Task<IEnumerable<string>> GetIdsOfFailedSearches(PeekServiceBusMessagesRequest peekRequest)
     {
-        private readonly IMessagesPeeker<SearchResultsNotification> messagesReceiver;
+        var notifications = await messagesReceiver.Peek(peekRequest);
 
-        public SearchResultNotificationsPeeker(IMessagesPeeker<SearchResultsNotification> messagesReceiver)
+        return notifications.PeekedMessages
+            .Where(n => !n.WasSuccessful)
+            .Select(n => n.SearchRequestId)
+            .Distinct();
+    }
+
+    public async Task<PeekedSearchResultsNotifications> GetSearchResultsNotifications(PeekServiceBusMessagesRequest peekRequest)
+    {
+        var notifications = await PeekNotifications(peekRequest);
+
+        return BuildResponse(notifications);
+    }
+
+    public async Task<PeekedSearchResultsNotifications> GetNotificationsBySearchRequestId(PeekBySearchRequestIdRequest peekRequest)
+    {
+        var notifications = (await PeekNotifications(peekRequest))
+            .Where(n => string.Equals(n.SearchRequestId,  peekRequest.SearchRequestId))
+            .ToList();
+
+        return BuildResponse(notifications);
+    }
+
+    private async Task<IReadOnlyCollection<SearchResultsNotification>> PeekNotifications(PeekServiceBusMessagesRequest peekRequest)
+    {
+        return (await messagesReceiver.Peek(peekRequest)).PeekedMessages.ToList();
+    }
+
+    private static PeekedSearchResultsNotifications BuildResponse(IReadOnlyCollection<SearchResultsNotification> notifications)
+    {
+        return new PeekedSearchResultsNotifications
         {
-            this.messagesReceiver = messagesReceiver;
-        }
-
-        public async Task<IEnumerable<string>> GetIdsOfFailedSearches(PeekServiceBusMessagesRequest peekRequest)
-        {
-            var notifications = await messagesReceiver.Peek(peekRequest);
-
-            return notifications.PeekedMessages
+            TotalNotificationCount = notifications.Count,
+            WasSuccessfulCount = notifications.Count(n => n.WasSuccessful),
+            FailureInfo = notifications
                 .Where(n => !n.WasSuccessful)
-                .Select(n => n.SearchRequestId)
-                .Distinct();
-        }
+                .GroupBy(n => n.FailureInfo?.Summary)
+                .ToDictionary(grp => grp.Key, grp => grp.Count()),
+            UniqueSearchRequestIdCount = notifications.Select(n => n.SearchRequestId).Distinct().Count(),
+            SearchTimesInSeconds = ExtractSearchTimes(notifications),
+            PeekedNotifications = notifications
+        };
+    }
 
-        public async Task<PeekedSearchResultsNotifications> GetSearchResultsNotifications(PeekServiceBusMessagesRequest peekRequest)
+    private static SearchTimes ExtractSearchTimes(IReadOnlyCollection<SearchResultsNotification> notifications)
+    {
+        return new SearchTimes
         {
-            var notifications = await PeekNotifications(peekRequest);
+            MatchingAlgorithm = CalculateSearchTimesInSeconds(notifications, n => n.MatchingAlgorithmTime),
+            MatchPrediction = CalculateSearchTimesInSeconds(notifications,n => n.MatchPredictionTime),
+            Overall = CalculateSearchTimesInSeconds(notifications, n => n.OverallSearchTime)
+        };
+    }
 
-            return BuildResponse(notifications);
-        }
+    private static SearchTimesInSeconds CalculateSearchTimesInSeconds(IReadOnlyCollection<SearchResultsNotification> notifications,
+        Func<SearchResultsNotification, TimeSpan> getTiming)
+    {
+        var timings = notifications.Select(getTiming)
+            .Select(t => t.TotalSeconds)
+            .OrderBy(s => s)
+            .ToList();
 
-        public async Task<PeekedSearchResultsNotifications> GetNotificationsBySearchRequestId(PeekBySearchRequestIdRequest peekRequest)
+        var midPoint = timings.Count/2;
+
+        return new SearchTimesInSeconds
         {
-            var notifications = (await PeekNotifications(peekRequest))
-                .Where(n => string.Equals(n.SearchRequestId,  peekRequest.SearchRequestId))
-                .ToList();
-
-            return BuildResponse(notifications);
-        }
-
-        private async Task<IReadOnlyCollection<SearchResultsNotification>> PeekNotifications(PeekServiceBusMessagesRequest peekRequest)
-        {
-            return (await messagesReceiver.Peek(peekRequest)).PeekedMessages.ToList();
-        }
-
-        private static PeekedSearchResultsNotifications BuildResponse(IReadOnlyCollection<SearchResultsNotification> notifications)
-        {
-            return new PeekedSearchResultsNotifications
-            {
-                TotalNotificationCount = notifications.Count,
-                WasSuccessfulCount = notifications.Count(n => n.WasSuccessful),
-                FailureInfo = notifications
-                    .Where(n => !n.WasSuccessful)
-                    .GroupBy(n => n.FailureInfo?.Summary)
-                    .ToDictionary(grp => grp.Key, grp => grp.Count()),
-                UniqueSearchRequestIdCount = notifications.Select(n => n.SearchRequestId).Distinct().Count(),
-                SearchTimesInSeconds = ExtractSearchTimes(notifications),
-                PeekedNotifications = notifications
-            };
-        }
-
-        private static SearchTimes ExtractSearchTimes(IReadOnlyCollection<SearchResultsNotification> notifications)
-        {
-            return new SearchTimes
-            {
-                MatchingAlgorithm = CalculateSearchTimesInSeconds(notifications, n => n.MatchingAlgorithmTime),
-                MatchPrediction = CalculateSearchTimesInSeconds(notifications,n => n.MatchPredictionTime),
-                Overall = CalculateSearchTimesInSeconds(notifications, n => n.OverallSearchTime)
-            };
-        }
-
-        private static SearchTimesInSeconds CalculateSearchTimesInSeconds(IReadOnlyCollection<SearchResultsNotification> notifications,
-            Func<SearchResultsNotification, TimeSpan> getTiming)
-        {
-            var timings = notifications.Select(getTiming)
-                .Select(t => t.TotalSeconds)
-                .OrderBy(s => s)
-                .ToList();
-
-            var midPoint = timings.Count/2;
-
-            return new SearchTimesInSeconds
-            {
-                AllTimings = timings,
-                Mean = timings.Average(),
-                Min = timings.Min(),
-                Median = timings.Count%2 == 0 ? (timings[midPoint-1] + timings[midPoint+1])/2 : timings[midPoint],
-                Max = timings.Max()
-            };
-        }
+            AllTimings = timings,
+            Mean = timings.Average(),
+            Min = timings.Min(),
+            Median = timings.Count%2 == 0 ? (timings[midPoint-1] + timings[midPoint+1])/2 : timings[midPoint],
+            Max = timings.Max()
+        };
     }
 }

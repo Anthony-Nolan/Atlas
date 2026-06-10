@@ -1,44 +1,43 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
+namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection;
+
+public static class DependencyInjection
 {
-    public static class DependencyInjection
+    private static IServiceProvider backingProvider;
+
+    private static IServiceScope scope;
+
+    internal static IServiceProvider BackingProvider
     {
-        private static IServiceProvider backingProvider;
-
-        private static IServiceScope scope;
-
-        internal static IServiceProvider BackingProvider
+        get
         {
-            get
+            if (backingProvider == null)
             {
-                if (backingProvider == null)
-                {
-                    throw new Exception("Provider has not been set up");
-                }
-                return backingProvider;
+                throw new Exception("Provider has not been set up");
             }
-            set
-            {
-                backingProvider = value;
-                NewScope();
-            }
+            return backingProvider;
         }
-
-        /// <summary>
-        /// Creates a new DI scope, to prevent all tests in the suite sharing any dependencies registered with "AddScoped".
-        /// If a previous scope existed, disposes it before creating the new one.
-        ///
-        /// Usage:
-        /// In the "SetUp" (or "OneTimeSetUp") of a test that needs to run on an independent scope, call this method. 
-        /// </summary>
-        internal static void NewScope()
+        set
         {
-            scope?.Dispose();
-            scope = BackingProvider.CreateScope();
+            backingProvider = value;
+            NewScope();
         }
-
-        internal static IServiceProvider Provider => scope.ServiceProvider;
     }
+
+    /// <summary>
+    /// Creates a new DI scope, to prevent all tests in the suite sharing any dependencies registered with "AddScoped".
+    /// If a previous scope existed, disposes it before creating the new one.
+    ///
+    /// Usage:
+    /// In the "SetUp" (or "OneTimeSetUp") of a test that needs to run on an independent scope, call this method. 
+    /// </summary>
+    internal static void NewScope()
+    {
+        scope?.Dispose();
+        scope = BackingProvider.CreateScope();
+    }
+
+    internal static IServiceProvider Provider => scope.ServiceProvider;
 }

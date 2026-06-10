@@ -1,47 +1,46 @@
 ﻿using System;
 using Atlas.Common.GeneticData.Hla.Models;
 
-namespace Atlas.HlaMetadataDictionary.WmdaDataAccess.Models
+namespace Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
+
+internal class ConfidentialAllele : IWmdaHlaTyping, IEquatable<IWmdaHlaTyping>
 {
-    internal class ConfidentialAllele : IWmdaHlaTyping, IEquatable<IWmdaHlaTyping>
+    public TypingMethod TypingMethod => TypingMethod.Molecular;
+    public string TypingLocus { get; set; }
+    public string Name { get; set; }
+
+    public ConfidentialAllele(string locus, string name)
     {
-        public TypingMethod TypingMethod => TypingMethod.Molecular;
-        public string TypingLocus { get; set; }
-        public string Name { get; set; }
+        TypingLocus = locus;
+        Name = name;
+    }
 
-        public ConfidentialAllele(string locus, string name)
-        {
-            TypingLocus = locus;
-            Name = name;
-        }
+    public override string ToString()
+    {
+        return $"locus: {TypingLocus}, name: {Name}";
+    }
 
-        public override string ToString()
-        {
-            return $"locus: {TypingLocus}, name: {Name}";
-        }
+    public bool Equals(IWmdaHlaTyping other)
+    {
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return 
+            string.Equals(TypingLocus, other.TypingLocus) 
+         && string.Equals(Name, other.Name);
+    }
 
-        public bool Equals(IWmdaHlaTyping other)
-        {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return 
-                string.Equals(TypingLocus, other.TypingLocus) 
-                && string.Equals(Name, other.Name);
-        }
+    public override bool Equals(object obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        return obj is IWmdaHlaTyping other && Equals(other);
+    }
 
-        public override bool Equals(object obj)
+    public override int GetHashCode()
+    {
+        unchecked
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            return obj is IWmdaHlaTyping other && Equals(other);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return (TypingLocus.GetHashCode() * 397) ^ Name.GetHashCode();
-            }
+            return (TypingLocus.GetHashCode() * 397) ^ Name.GetHashCode();
         }
     }
 }

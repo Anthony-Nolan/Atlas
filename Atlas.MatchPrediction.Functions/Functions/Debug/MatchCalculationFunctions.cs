@@ -14,62 +14,61 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
-namespace Atlas.MatchPrediction.Functions.Functions.Debug
+namespace Atlas.MatchPrediction.Functions.Functions.Debug;
+
+public class MatchCalculationFunctions
 {
-    public class MatchCalculationFunctions
+    private readonly IHaplotypeFrequencyService frequencyService;
+    private readonly IGenotypeMatcher genotypeMatcher;
+
+    public MatchCalculationFunctions(
+        IHaplotypeFrequencyService frequencyService,
+        IGenotypeMatcher genotypeMatcher)
     {
-        private readonly IHaplotypeFrequencyService frequencyService;
-        private readonly IGenotypeMatcher genotypeMatcher;
+        this.frequencyService = frequencyService;
+        this.genotypeMatcher = genotypeMatcher;
+    }
 
-        public MatchCalculationFunctions(
-            IHaplotypeFrequencyService frequencyService,
-            IGenotypeMatcher genotypeMatcher)
+    [Function(nameof(MatchPatientDonorGenotypes))]
+    public async Task<IActionResult> MatchPatientDonorGenotypes(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(MatchPatientDonorGenotypes)}")]
+        [RequestBodyType(typeof(GenotypeMatcherRequest), nameof(GenotypeMatcherRequest))]
+        HttpRequest request)
+    {
+        var input = JsonConvert.DeserializeObject<GenotypeMatcherRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+
+        var frequencySet = await frequencyService.GetHaplotypeFrequencySets(
+            input.Donor.FrequencySetMetadata,
+            input.Patient.FrequencySetMetadata);
+
+        var result = await genotypeMatcher.MatchPatientDonorGenotypes(new GenotypeMatcherInput
         {
-            this.frequencyService = frequencyService;
-            this.genotypeMatcher = genotypeMatcher;
-        }
+            PatientData = new SubjectData(input.Patient.HlaTyping.ToPhenotypeInfo(), new SubjectFrequencySet(frequencySet.PatientSet, "debug-patient")),
+            DonorData = new SubjectData(input.Donor.HlaTyping.ToPhenotypeInfo(), new SubjectFrequencySet(frequencySet.DonorSet, "debug-donor")),
+            MatchPredictionParameters = input.MatchPredictionParameters
+        });
 
-        [Function(nameof(MatchPatientDonorGenotypes))]
-        public async Task<IActionResult> MatchPatientDonorGenotypes(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = $"{RouteConstants.DebugRoutePrefix}/{nameof(MatchPatientDonorGenotypes)}")]
-            [RequestBodyType(typeof(GenotypeMatcherRequest), nameof(GenotypeMatcherRequest))]
-            HttpRequest request)
+        var matcherResponse = new GenotypeMatcherResponse
         {
-            var input = JsonConvert.DeserializeObject<GenotypeMatcherRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+            MatchPredictionParameters = input.MatchPredictionParameters,
+            PatientInfo = BuildSubjectResult(result.PatientResult, frequencySet.PatientSet, input.Patient),
+            DonorInfo = BuildSubjectResult(result.DonorResult, frequencySet.DonorSet, input.Donor),
+            MatchedGenotypePairs = result.GenotypeMatchDetails.ToFormattedStrings(),
+        };
 
-            var frequencySet = await frequencyService.GetHaplotypeFrequencySets(
-                input.Donor.FrequencySetMetadata,
-                input.Patient.FrequencySetMetadata);
+        return new JsonResult(matcherResponse);
+    }
 
-            var result = await genotypeMatcher.MatchPatientDonorGenotypes(new GenotypeMatcherInput
-            {
-                PatientData = new SubjectData(input.Patient.HlaTyping.ToPhenotypeInfo(), new SubjectFrequencySet(frequencySet.PatientSet, "debug-patient")),
-                DonorData = new SubjectData(input.Donor.HlaTyping.ToPhenotypeInfo(), new SubjectFrequencySet(frequencySet.DonorSet, "debug-donor")),
-                MatchPredictionParameters = input.MatchPredictionParameters
-            });
-
-            var matcherResponse = new GenotypeMatcherResponse
-            {
-                MatchPredictionParameters = input.MatchPredictionParameters,
-                PatientInfo = BuildSubjectResult(result.PatientResult, frequencySet.PatientSet, input.Patient),
-                DonorInfo = BuildSubjectResult(result.DonorResult, frequencySet.DonorSet, input.Donor),
-                MatchedGenotypePairs = result.GenotypeMatchDetails.ToFormattedStrings(),
-            };
-
-            return new JsonResult(matcherResponse);
-        }
-
-        private static SubjectResult BuildSubjectResult(
-            GenotypeMatcherResult.SubjectResult subjectResult, 
-            HaplotypeFrequencySet set, 
-            SubjectInfo subjectInfo)
-        {
-            return new SubjectResult(
-                subjectResult.IsUnrepresented,
-                subjectResult.GenotypeCount,
-                subjectResult.SumOfLikelihoods,
-                set.ToClientHaplotypeFrequencySet(), 
-                subjectInfo.HlaTyping.ToPhenotypeInfo().PrettyPrint());
-        }
+    private static SubjectResult BuildSubjectResult(
+        GenotypeMatcherResult.SubjectResult subjectResult, 
+        HaplotypeFrequencySet set, 
+        SubjectInfo subjectInfo)
+    {
+        return new SubjectResult(
+            subjectResult.IsUnrepresented,
+            subjectResult.GenotypeCount,
+            subjectResult.SumOfLikelihoods,
+            set.ToClientHaplotypeFrequencySet(), 
+            subjectInfo.HlaTyping.ToPhenotypeInfo().PrettyPrint());
     }
 }

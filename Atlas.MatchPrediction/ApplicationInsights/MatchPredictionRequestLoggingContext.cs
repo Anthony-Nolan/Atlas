@@ -1,26 +1,25 @@
 using System.Collections.Generic;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 
-namespace Atlas.MatchPrediction.ApplicationInsights
+namespace Atlas.MatchPrediction.ApplicationInsights;
+
+public class MatchPredictionRequestLoggingContext : MatchProbabilityLoggingContext
 {
-    public class MatchPredictionRequestLoggingContext : MatchProbabilityLoggingContext
+    public string MatchPredictionRequestId { get; set; }
+
+    public void Initialise(IdentifiedMatchPredictionRequest request)
     {
-        public string MatchPredictionRequestId { get; set; }
+        MatchPredictionRequestId = request.Id;
+        Initialise(request.SingleDonorMatchProbabilityInput);
+    }
 
-        public void Initialise(IdentifiedMatchPredictionRequest request)
+    public override Dictionary<string, string> PropertiesToLog()
+    {
+        var props = new Dictionary<string, string>(base.PropertiesToLog())
         {
-            MatchPredictionRequestId = request.Id;
-            Initialise(request.SingleDonorMatchProbabilityInput);
-        }
+            {nameof(MatchPredictionRequestId), MatchPredictionRequestId}
+        };
 
-        public override Dictionary<string, string> PropertiesToLog()
-        {
-            var props = new Dictionary<string, string>(base.PropertiesToLog())
-            {
-                {nameof(MatchPredictionRequestId), MatchPredictionRequestId}
-            };
-
-            return props;
-        }
+        return props;
     }
 }

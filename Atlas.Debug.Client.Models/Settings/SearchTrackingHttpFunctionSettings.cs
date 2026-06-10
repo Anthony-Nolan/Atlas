@@ -1,6 +1,5 @@
-﻿namespace Atlas.Debug.Client.Models.Settings
+﻿namespace Atlas.Debug.Client.Models.Settings;
+
+public class SearchTrackingHttpFunctionSettings : HttpFunctionSettings
 {
-    public class SearchTrackingHttpFunctionSettings : HttpFunctionSettings
-    {
-    }
 }

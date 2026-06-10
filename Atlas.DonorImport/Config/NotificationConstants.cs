@@ -1,7 +1,6 @@
-namespace Atlas.DonorImport.Config
+namespace Atlas.DonorImport.Config;
+
+internal static class NotificationConstants
 {
-    internal static class NotificationConstants
-    {
-        public const string OriginatorName = "Atlas.DonorImport";
-    }
+    public const string OriginatorName = "Atlas.DonorImport";
 }

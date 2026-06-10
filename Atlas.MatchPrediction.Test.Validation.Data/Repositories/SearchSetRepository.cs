@@ -2,26 +2,26 @@
 using Atlas.MatchPrediction.Test.Validation.Data.Models;
 using Dapper;
 
-namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories
+namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories;
+
+public interface ISearchSetRepository
 {
-    public interface ISearchSetRepository
+    Task<int> Add(int testDonorExportId, string donorType, int mismatchCount, string matchLoci);
+    Task MarkSearchSetAsComplete(int searchSetId);
+}
+
+public class SearchSetRepository : ISearchSetRepository
+{
+    private readonly string connectionString;
+
+    public SearchSetRepository(string connectionString)
     {
-        Task<int> Add(int testDonorExportId, string donorType, int mismatchCount, string matchLoci);
-        Task MarkSearchSetAsComplete(int searchSetId);
+        this.connectionString = connectionString;
     }
 
-    public class SearchSetRepository : ISearchSetRepository
+    public async Task<int> Add(int testDonorExportId, string donorType, int mismatchCount, string matchLoci)
     {
-        private readonly string connectionString;
-
-        public SearchSetRepository(string connectionString)
-        {
-            this.connectionString = connectionString;
-        }
-
-        public async Task<int> Add(int testDonorExportId, string donorType, int mismatchCount, string matchLoci)
-        {
-            const string sql = $@"
+        const string sql = $@"
                 INSERT INTO SearchSets(
                     {nameof(SearchSet.TestDonorExportRecord_Id)},
                     {nameof(SearchSet.DonorType)},
@@ -35,25 +35,24 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories
                 );
                 SELECT CAST(SCOPE_IDENTITY() as int);";
 
-            await using (var connection = new SqlConnection(connectionString))
-            {
-                return (await connection.QueryAsync<int>(sql, new { testDonorExportId, donorType, mismatchCount, matchLoci })).Single();
-            }
-        }
-
-        public async Task MarkSearchSetAsComplete(int searchSetId)
+        await using (var connection = new SqlConnection(connectionString))
         {
-            const string sql = $@"
+            return (await connection.QueryAsync<int>(sql, new { testDonorExportId, donorType, mismatchCount, matchLoci })).Single();
+        }
+    }
+
+    public async Task MarkSearchSetAsComplete(int searchSetId)
+    {
+        const string sql = $@"
                 UPDATE SearchSets
                 SET
                     {nameof(SearchSet.SearchRequestsSubmitted)} = 1
                 WHERE
                     {nameof(SearchSet.Id)} = @{nameof(searchSetId)}";
 
-            await using (var connection = new SqlConnection(connectionString))
-            {
-                await connection.ExecuteAsync(sql, new { searchSetId });
-            }
+        await using (var connection = new SqlConnection(connectionString))
+        {
+            await connection.ExecuteAsync(sql, new { searchSetId });
         }
     }
 }

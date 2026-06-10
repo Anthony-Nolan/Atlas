@@ -5,17 +5,16 @@ using Atlas.Common.Public.Models.GeneticData;
 using LochNessBuilder;
 using static EnumStringValues.EnumExtensions;
 
-namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
-{
-    [Builder]
-    internal static class ScoringCriteriaBuilder
-    {
-        public static Builder<ScoringCriteria> New =>
-            Builder<ScoringCriteria>.New
-                .With(x => x.LociToScore, new List<Locus>())
-                .With(x => x.LociToExcludeFromAggregateScore, new List<Locus>());
+namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 
-        public static Builder<ScoringCriteria> ScoreAllLoci =>
-            New.With(x => x.LociToScore, EnumerateValues<Locus>().ToList());
-    }
+[Builder]
+internal static class ScoringCriteriaBuilder
+{
+    public static Builder<ScoringCriteria> New =>
+        Builder<ScoringCriteria>.New
+            .With(x => x.LociToScore, new List<Locus>())
+            .With(x => x.LociToExcludeFromAggregateScore, new List<Locus>());
+
+    public static Builder<ScoringCriteria> ScoreAllLoci =>
+        New.With(x => x.LociToScore, EnumerateValues<Locus>().ToList());
 }

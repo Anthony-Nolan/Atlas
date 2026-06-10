@@ -1,7 +1,6 @@
-﻿namespace Atlas.SearchTracking.Common.Models
+﻿namespace Atlas.SearchTracking.Common.Models;
+
+public interface ISearchTrackingMatchingAttemptEvent : ISearchTrackingEvent
 {
-    public interface ISearchTrackingMatchingAttemptEvent : ISearchTrackingEvent
-    {
-        byte AttemptNumber { get; set; }
-    }
+    byte AttemptNumber { get; set; }
 }

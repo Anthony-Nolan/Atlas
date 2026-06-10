@@ -11,60 +11,59 @@ using Atlas.SearchTracking.Common.Models;
 using FluentValidation;
 using Newtonsoft.Json;
 
-namespace Atlas.MatchingAlgorithm.Services.Search
-{
-    public interface ISearchDispatcher
-    {
-        Task<string> DispatchSearch(SearchRequest matchingRequest);
+namespace Atlas.MatchingAlgorithm.Services.Search;
 
-        Task DispatchSearchTrackingEvent(SearchRequest searchRequest, string id);
+public interface ISearchDispatcher
+{
+    Task<string> DispatchSearch(SearchRequest matchingRequest);
+
+    Task DispatchSearchTrackingEvent(SearchRequest searchRequest, string id);
+}
+
+public class SearchDispatcher : ISearchDispatcher
+{
+    private readonly ISearchServiceBusClient searchServiceBusClient;
+    private readonly ISearchTrackingServiceBusClient searchTrackingServiceBusClient;
+
+    public SearchDispatcher(ISearchServiceBusClient searchServiceBusClient, ISearchTrackingServiceBusClient searchTrackingServiceBusClient)
+    {
+        this.searchServiceBusClient = searchServiceBusClient;
+        this.searchTrackingServiceBusClient = searchTrackingServiceBusClient;
     }
 
-    public class SearchDispatcher : ISearchDispatcher
+    /// <returns>A unique identifier for the dispatched search request</returns>
+    public async Task<string> DispatchSearch(SearchRequest matchingRequest)
     {
-        private readonly ISearchServiceBusClient searchServiceBusClient;
-        private readonly ISearchTrackingServiceBusClient searchTrackingServiceBusClient;
+        await new SearchRequestValidator().ValidateAndThrowAsync(matchingRequest);
+        var searchRequestId = Guid.NewGuid().ToString();
 
-        public SearchDispatcher(ISearchServiceBusClient searchServiceBusClient, ISearchTrackingServiceBusClient searchTrackingServiceBusClient)
+        var identifiedSearchRequest = new IdentifiedSearchRequest
         {
-            this.searchServiceBusClient = searchServiceBusClient;
-            this.searchTrackingServiceBusClient = searchTrackingServiceBusClient;
-        }
+            SearchRequest = matchingRequest,
+            Id = searchRequestId
+        };
+        await searchServiceBusClient.PublishToSearchRequestsTopic(identifiedSearchRequest);
 
-        /// <returns>A unique identifier for the dispatched search request</returns>
-        public async Task<string> DispatchSearch(SearchRequest matchingRequest)
+        return searchRequestId;
+    }
+
+    public async Task DispatchSearchTrackingEvent(SearchRequest searchRequest, string id)
+    {
+        var searchRequestedEvent = new SearchRequestedEvent
         {
-            await new SearchRequestValidator().ValidateAndThrowAsync(matchingRequest);
-            var searchRequestId = Guid.NewGuid().ToString();
+            SearchIdentifier = new Guid(id),
+            IsRepeatSearch = false,
+            OriginalSearchIdentifier = null,
+            RepeatSearchCutOffDate = null,
+            RequestJson = JsonConvert.SerializeObject(searchRequest),
+            SearchCriteria = SearchTrackingEventHelper.GetSearchCriteria(searchRequest),
+            DonorType = searchRequest.SearchDonorType.ToString(),
+            RequestTimeUtc = DateTime.UtcNow,
+            IsMatchPredictionRun = searchRequest.RunMatchPrediction,
+            AreBetterMatchesIncluded = searchRequest.MatchCriteria.IncludeBetterMatches,
+            DonorRegistryCodes = searchRequest.DonorRegistryCodes
+        };
 
-            var identifiedSearchRequest = new IdentifiedSearchRequest
-            {
-                SearchRequest = matchingRequest,
-                Id = searchRequestId
-            };
-            await searchServiceBusClient.PublishToSearchRequestsTopic(identifiedSearchRequest);
-
-            return searchRequestId;
-        }
-
-        public async Task DispatchSearchTrackingEvent(SearchRequest searchRequest, string id)
-        {
-            var searchRequestedEvent = new SearchRequestedEvent
-            {
-                SearchIdentifier = new Guid(id),
-                IsRepeatSearch = false,
-                OriginalSearchIdentifier = null,
-                RepeatSearchCutOffDate = null,
-                RequestJson = JsonConvert.SerializeObject(searchRequest),
-                SearchCriteria = SearchTrackingEventHelper.GetSearchCriteria(searchRequest),
-                DonorType = searchRequest.SearchDonorType.ToString(),
-                RequestTimeUtc = DateTime.UtcNow,
-                IsMatchPredictionRun = searchRequest.RunMatchPrediction,
-                AreBetterMatchesIncluded = searchRequest.MatchCriteria.IncludeBetterMatches,
-                DonorRegistryCodes = searchRequest.DonorRegistryCodes
-            };
-
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(searchRequestedEvent, SearchTrackingEventType.SearchRequested);
-        }
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(searchRequestedEvent, SearchTrackingEventType.SearchRequested);
     }
 }

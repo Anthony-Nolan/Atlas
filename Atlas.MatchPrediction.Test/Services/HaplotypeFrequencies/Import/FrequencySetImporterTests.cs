@@ -12,62 +12,61 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies.Import
+namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies.Import;
+
+[TestFixture]
+public class FrequencySetImporterTests
 {
-    [TestFixture]
-    public class FrequencySetImporterTests
+    private IFrequencyFileParser frequencyFileParser;
+    private IHaplotypeFrequencySetRepository setRepository;
+    private IHaplotypeFrequenciesRepository frequenciesRepository;
+    private IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
+    private IFrequencySetValidator frequencySetValidator;
+    private IAtlasLogger logger;
+
+    private IFrequencySetImporter frequencySetImporter;
+
+    [SetUp]
+    public void SetUp()
     {
-        private IFrequencyFileParser frequencyFileParser;
-        private IHaplotypeFrequencySetRepository setRepository;
-        private IHaplotypeFrequenciesRepository frequenciesRepository;
-        private IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
-        private IFrequencySetValidator frequencySetValidator;
-        private IAtlasLogger logger;
+        frequencyFileParser = Substitute.For<IFrequencyFileParser>();
+        frequencyFileParser.GetFrequencies(default).ReturnsForAnyArgs(new FrequencySetFileSchema 
+        { 
+            TypingCategory = ImportTypingCategory.LargeGGroup,
+            Frequencies = new List<FrequencyRecord> { new FrequencyRecord() }
+        });
 
-        private IFrequencySetImporter frequencySetImporter;
+        setRepository = Substitute.For<IHaplotypeFrequencySetRepository>();
+        setRepository.AddSet(default).ReturnsForAnyArgs(new Data.Models.HaplotypeFrequencySet { Id = 1 });
+        setRepository.ActivateSet(default).ThrowsForAnyArgs(new Exception());
 
-        [SetUp]
-        public void SetUp()
+        frequenciesRepository = Substitute.For<IHaplotypeFrequenciesRepository>();
+        hlaMetadataDictionaryFactory = Substitute.For<IHlaMetadataDictionaryFactory>();
+        frequencySetValidator = Substitute.For<IFrequencySetValidator>();
+        logger = Substitute.For<IAtlasLogger>();
+
+        frequencySetImporter = new FrequencySetImporter(frequencyFileParser, setRepository, frequenciesRepository, hlaMetadataDictionaryFactory, frequencySetValidator, logger);
+    }
+
+    [Test]
+    public async Task Import_ExceptionDuringFrequencySetActivation_ShouldRemoveInsertedHaplotypeFrequencies()
+    {
+        // Arrange
+        var file = new FrequencySetFile
         {
-            frequencyFileParser = Substitute.For<IFrequencyFileParser>();
-            frequencyFileParser.GetFrequencies(default).ReturnsForAnyArgs(new FrequencySetFileSchema 
-            { 
-                TypingCategory = ImportTypingCategory.LargeGGroup,
-                Frequencies = new List<FrequencyRecord> { new FrequencyRecord() }
-            });
+            Contents = new System.IO.MemoryStream()
+        };
 
-            setRepository = Substitute.For<IHaplotypeFrequencySetRepository>();
-            setRepository.AddSet(default).ReturnsForAnyArgs(new Data.Models.HaplotypeFrequencySet { Id = 1 });
-            setRepository.ActivateSet(default).ThrowsForAnyArgs(new Exception());
-
-            frequenciesRepository = Substitute.For<IHaplotypeFrequenciesRepository>();
-            hlaMetadataDictionaryFactory = Substitute.For<IHlaMetadataDictionaryFactory>();
-            frequencySetValidator = Substitute.For<IFrequencySetValidator>();
-            logger = Substitute.For<IAtlasLogger>();
-
-            frequencySetImporter = new FrequencySetImporter(frequencyFileParser, setRepository, frequenciesRepository, hlaMetadataDictionaryFactory, frequencySetValidator, logger);
-        }
-
-        [Test]
-        public async Task Import_ExceptionDuringFrequencySetActivation_ShouldRemoveInsertedHaplotypeFrequencies()
+        var importBehavior = new FrequencySetImportBehaviour
         {
-            // Arrange
-            var file = new FrequencySetFile
-            {
-                Contents = new System.IO.MemoryStream()
-            };
+            ShouldBypassHlaValidation = true
+        };
 
-            var importBehavior = new FrequencySetImportBehaviour
-            {
-                ShouldBypassHlaValidation = true
-            };
+        // Act
+        await frequencySetImporter.Invoking(i => i.Import(file, importBehavior)).Should().ThrowAsync<Exception>();
 
-            // Act
-            await frequencySetImporter.Invoking(i => i.Import(file, importBehavior)).Should().ThrowAsync<Exception>();
-
-            // Assert
-            await setRepository.Received(1).ActivateSet(Arg.Any<int>());
-            await frequenciesRepository.Received(1).RemoveHaplotypeFrequencies(Arg.Any<int>());
-        }
+        // Assert
+        await setRepository.Received(1).ActivateSet(Arg.Any<int>());
+        await frequenciesRepository.Received(1).RemoveHaplotypeFrequencies(Arg.Any<int>());
     }
 }

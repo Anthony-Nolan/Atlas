@@ -2,63 +2,62 @@ using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using FluentValidation;
 
-namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
+namespace Atlas.MatchingAlgorithm.Validators.SearchRequest;
+
+internal class MismatchCriteriaValidator : AbstractValidator<MismatchCriteria>
 {
-    internal class MismatchCriteriaValidator : AbstractValidator<MismatchCriteria>
+    private const int MinimumMismatchCount = 0;
+
+    // TODO ATLAS-865: make this configurable
+    private const int MaximumTotalMismatchCount = 5;
+
+    public MismatchCriteriaValidator()
     {
-        private const int MinimumMismatchCount = 0;
+        RuleFor(x => x.LocusMismatchCriteria)
+            .NotNull()
+            .SetValidator(new LocusMismatchCriteriaValidator());
 
-        // TODO ATLAS-865: make this configurable
-        private const int MaximumTotalMismatchCount = 5;
-
-        public MismatchCriteriaValidator()
-        {
-            RuleFor(x => x.LocusMismatchCriteria)
-                .NotNull()
-                .SetValidator(new LocusMismatchCriteriaValidator());
-
-            RuleFor(x => x.DonorMismatchCount)
-                .NotNull()
-                .GreaterThanOrEqualTo(MinimumMismatchCount)
-                .LessThanOrEqualTo(MaximumTotalMismatchCount);
-        }
+        RuleFor(x => x.DonorMismatchCount)
+            .NotNull()
+            .GreaterThanOrEqualTo(MinimumMismatchCount)
+            .LessThanOrEqualTo(MaximumTotalMismatchCount);
     }
+}
 
-    internal class LocusMismatchCriteriaValidator : AbstractValidator<LociInfoTransfer<int?>>
+internal class LocusMismatchCriteriaValidator : AbstractValidator<LociInfoTransfer<int?>>
+{
+    private const int MinimumMismatchCount = 0;
+    private const int MaximumLocusMismatchCount = 2;
+
+    public LocusMismatchCriteriaValidator()
     {
-        private const int MinimumMismatchCount = 0;
-        private const int MaximumLocusMismatchCount = 2;
+        RuleFor(x => x.A)
+            .NotNull()
+            .GreaterThanOrEqualTo(MinimumMismatchCount)
+            .LessThanOrEqualTo(MaximumLocusMismatchCount);
 
-        public LocusMismatchCriteriaValidator()
-        {
-            RuleFor(x => x.A)
-                .NotNull()
-                .GreaterThanOrEqualTo(MinimumMismatchCount)
-                .LessThanOrEqualTo(MaximumLocusMismatchCount);
+        RuleFor(x => x.B)
+            .NotNull()
+            .GreaterThanOrEqualTo(MinimumMismatchCount)
+            .LessThanOrEqualTo(MaximumLocusMismatchCount);
 
-            RuleFor(x => x.B)
-                .NotNull()
-                .GreaterThanOrEqualTo(MinimumMismatchCount)
-                .LessThanOrEqualTo(MaximumLocusMismatchCount);
+        RuleFor(x => x.Drb1)
+            .NotNull()
+            .GreaterThanOrEqualTo(MinimumMismatchCount)
+            .LessThanOrEqualTo(MaximumLocusMismatchCount);
 
-            RuleFor(x => x.Drb1)
-                .NotNull()
-                .GreaterThanOrEqualTo(MinimumMismatchCount)
-                .LessThanOrEqualTo(MaximumLocusMismatchCount);
+        RuleFor(x => x.C)
+            .NotNull()
+            .When(x => x.C != null)
+            .GreaterThanOrEqualTo(MinimumMismatchCount)
+            .LessThanOrEqualTo(MaximumLocusMismatchCount);
 
-            RuleFor(x => x.C)
-                .NotNull()
-                .When(x => x.C != null)
-                .GreaterThanOrEqualTo(MinimumMismatchCount)
-                .LessThanOrEqualTo(MaximumLocusMismatchCount);
+        RuleFor(x => x.Dqb1)
+            .NotNull()
+            .When(x => x.Dqb1 != null)
+            .GreaterThanOrEqualTo(MinimumMismatchCount)
+            .LessThanOrEqualTo(MaximumLocusMismatchCount);
 
-            RuleFor(x => x.Dqb1)
-                .NotNull()
-                .When(x => x.Dqb1 != null)
-                .GreaterThanOrEqualTo(MinimumMismatchCount)
-                .LessThanOrEqualTo(MaximumLocusMismatchCount);
-
-            RuleFor(x => x.Dpb1).Null();
-        }
+        RuleFor(x => x.Dpb1).Null();
     }
 }

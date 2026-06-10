@@ -5,106 +5,104 @@ using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
+namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
+
+public class AlleleLevelMatchCriteriaBuilder
 {
-    public class AlleleLevelMatchCriteriaBuilder
+    private readonly AlleleLevelMatchCriteria criteria;
+
+    public AlleleLevelMatchCriteriaBuilder()
     {
-        private readonly AlleleLevelMatchCriteria criteria;
-
-        public AlleleLevelMatchCriteriaBuilder()
+        criteria = new AlleleLevelMatchCriteria
         {
-            criteria = new AlleleLevelMatchCriteria
-            {
-                LocusCriteria = new LociInfo<AlleleLevelLocusMatchCriteria>(),
-                SearchType = DonorType.Adult
-            };
-        }
-
-        public AlleleLevelMatchCriteriaBuilder WithDonorMismatchCount(int mismatchCount)
-        {
-            criteria.DonorMismatchCount = mismatchCount;
-            return this;
-        }
-
-        public AlleleLevelMatchCriteriaBuilder WithRequiredLociMatchCriteria(int mismatchCount)
-        {
-            criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(Locus.A, new AlleleLevelLocusMatchCriteria {MismatchCount = mismatchCount});
-            criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(Locus.B, new AlleleLevelLocusMatchCriteria {MismatchCount = mismatchCount});
-            criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(Locus.Drb1, new AlleleLevelLocusMatchCriteria {MismatchCount = mismatchCount});
-            return this;
-        }
-
-        public AlleleLevelMatchCriteriaBuilder WithLocusMatchCriteria(Locus locus, AlleleLevelLocusMatchCriteria locusMatchCriteria)
-        {
-            criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(locus, locusMatchCriteria);
-            return this;
-        }
-
-        public AlleleLevelMatchCriteriaBuilder WithLocusMismatchCount(Locus locus, int mismatchCount)
-        {
-            var locusCriteria = criteria.LocusCriteria.GetLocus(locus) ?? new AlleleLevelLocusMatchCriteria();
-            locusCriteria.MismatchCount = mismatchCount;
-            return WithLocusMatchCriteria(locus, locusCriteria);
-        }
-
-        // Populates all null required match criteria (A, B, DRB) with given value
-        public AlleleLevelMatchCriteriaBuilder WithDefaultLocusMatchCriteria(AlleleLevelLocusMatchCriteria locusMatchCriteria)
-        {
-            var requiredLoci = new[] {Locus.A, Locus.B, Locus.Drb1};
-            criteria.LocusCriteria = criteria.LocusCriteria.Map((l, v) => requiredLoci.Contains(l) ? v ?? locusMatchCriteria : v);
-            return this;
-        }
-
-        public AlleleLevelMatchCriteriaBuilder WithSearchType(DonorType searchType)
-        {
-            criteria.SearchType = searchType;
-            return this;
-        }
-
-        public AlleleLevelMatchCriteriaBuilder WithShouldIncludeBetterMatches(bool shouldIncludeBetterMatches)
-        {
-            criteria.ShouldIncludeBetterMatches = shouldIncludeBetterMatches;
-            return this;
-        }
-
-        public AlleleLevelMatchCriteria Build()
-        {
-            return criteria;
-        }
+            LocusCriteria = new LociInfo<AlleleLevelLocusMatchCriteria>(),
+            SearchType = DonorType.Adult
+        };
     }
 
-    public class MatchCriteriaBuilder 
+    public AlleleLevelMatchCriteriaBuilder WithDonorMismatchCount(int mismatchCount)
     {
-        private readonly AlleleLevelMatchCriteriaBuilder inner;
-        private string[] registryCodes;
-
-        public MatchCriteriaBuilder(AlleleLevelMatchCriteriaBuilder alleleLevelMatchCriteriaBuilder)
-        {
-            inner = alleleLevelMatchCriteriaBuilder;
-        }
-        public MatchCriteriaBuilder()
-        {
-        }
-
-        public MatchCriteriaBuilder WithAlleleLevelMatchCriteriaBuilder(AlleleLevelMatchCriteriaBuilder builder)
-        {
-            return new MatchCriteriaBuilder(builder);
-        }
-
-        public MatchCriteriaBuilder WithRegistryCodesFilter(string[] codes)
-        {
-            registryCodes = codes;
-            return this;
-        }
-
-        public MatchCriteria Build()
-        {
-            return new MatchCriteria
-            {
-                NonHlaFilteringCriteria = new NonHlaFilteringCriteria() { RegistryCodes = registryCodes?.ToList()},
-                AlleleLevelMatchCriteria = inner.Build()
-            };
-        }
+        criteria.DonorMismatchCount = mismatchCount;
+        return this;
     }
 
+    public AlleleLevelMatchCriteriaBuilder WithRequiredLociMatchCriteria(int mismatchCount)
+    {
+        criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(Locus.A, new AlleleLevelLocusMatchCriteria {MismatchCount = mismatchCount});
+        criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(Locus.B, new AlleleLevelLocusMatchCriteria {MismatchCount = mismatchCount});
+        criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(Locus.Drb1, new AlleleLevelLocusMatchCriteria {MismatchCount = mismatchCount});
+        return this;
+    }
+
+    public AlleleLevelMatchCriteriaBuilder WithLocusMatchCriteria(Locus locus, AlleleLevelLocusMatchCriteria locusMatchCriteria)
+    {
+        criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(locus, locusMatchCriteria);
+        return this;
+    }
+
+    public AlleleLevelMatchCriteriaBuilder WithLocusMismatchCount(Locus locus, int mismatchCount)
+    {
+        var locusCriteria = criteria.LocusCriteria.GetLocus(locus) ?? new AlleleLevelLocusMatchCriteria();
+        locusCriteria.MismatchCount = mismatchCount;
+        return WithLocusMatchCriteria(locus, locusCriteria);
+    }
+
+    // Populates all null required match criteria (A, B, DRB) with given value
+    public AlleleLevelMatchCriteriaBuilder WithDefaultLocusMatchCriteria(AlleleLevelLocusMatchCriteria locusMatchCriteria)
+    {
+        var requiredLoci = new[] {Locus.A, Locus.B, Locus.Drb1};
+        criteria.LocusCriteria = criteria.LocusCriteria.Map((l, v) => requiredLoci.Contains(l) ? v ?? locusMatchCriteria : v);
+        return this;
+    }
+
+    public AlleleLevelMatchCriteriaBuilder WithSearchType(DonorType searchType)
+    {
+        criteria.SearchType = searchType;
+        return this;
+    }
+
+    public AlleleLevelMatchCriteriaBuilder WithShouldIncludeBetterMatches(bool shouldIncludeBetterMatches)
+    {
+        criteria.ShouldIncludeBetterMatches = shouldIncludeBetterMatches;
+        return this;
+    }
+
+    public AlleleLevelMatchCriteria Build()
+    {
+        return criteria;
+    }
+}
+
+public class MatchCriteriaBuilder 
+{
+    private readonly AlleleLevelMatchCriteriaBuilder inner;
+    private string[] registryCodes;
+
+    public MatchCriteriaBuilder(AlleleLevelMatchCriteriaBuilder alleleLevelMatchCriteriaBuilder)
+    {
+        inner = alleleLevelMatchCriteriaBuilder;
+    }
+    public MatchCriteriaBuilder()
+    {
+    }
+
+    public MatchCriteriaBuilder WithAlleleLevelMatchCriteriaBuilder(AlleleLevelMatchCriteriaBuilder builder)
+    {
+        return new MatchCriteriaBuilder(builder);
+    }
+
+    public MatchCriteriaBuilder WithRegistryCodesFilter(string[] codes)
+    {
+        registryCodes = codes;
+        return this;
+    }
+
+    public MatchCriteria Build()
+    {
+        return new MatchCriteria
+        {
+            NonHlaFilteringCriteria = new NonHlaFilteringCriteria() { RegistryCodes = registryCodes?.ToList()},
+            AlleleLevelMatchCriteria = inner.Build()
+        };
+    }
 }

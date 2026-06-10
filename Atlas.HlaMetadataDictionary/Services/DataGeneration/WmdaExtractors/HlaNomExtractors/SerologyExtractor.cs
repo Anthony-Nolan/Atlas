@@ -1,11 +1,10 @@
 ﻿using Atlas.Common.GeneticData.Hla.Models;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.HlaNomExtractors
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.HlaNomExtractors;
+
+internal class SerologyExtractor : HlaNomExtractorBase
 {
-    internal class SerologyExtractor : HlaNomExtractorBase
+    public SerologyExtractor() : base(TypingMethod.Serology)
     {
-        public SerologyExtractor() : base(TypingMethod.Serology)
-        {
-        }
     }
 }

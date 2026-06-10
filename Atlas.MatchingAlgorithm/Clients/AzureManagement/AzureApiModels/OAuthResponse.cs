@@ -1,11 +1,10 @@
 using Newtonsoft.Json;
 
-namespace Atlas.MatchingAlgorithm.Clients.AzureManagement.AzureApiModels
+namespace Atlas.MatchingAlgorithm.Clients.AzureManagement.AzureApiModels;
+
+// ReSharper disable once ClassNeverInstantiated.Global
+internal class OAuthResponse
 {
-    // ReSharper disable once ClassNeverInstantiated.Global
-    internal class OAuthResponse
-    {
-        [JsonProperty("access_token")]
-        public string AccessToken { get; set; }
-    }
+    [JsonProperty("access_token")]
+    public string AccessToken { get; set; }
 }

@@ -15,221 +15,220 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
+namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search;
+
+public class SingleDonorSearchTests
 {
-    public class SingleDonorSearchTests
+    private ISearchService searchService;
+
+    private DonorInfoWithExpandedHla donor;
+
+    // A selection of valid hla data for the single donor to have
+    private readonly PhenotypeInfo<string> donorHlas = new PhenotypeInfo<string>
+    (
+        valueA: new LocusInfo<string>("01:02", "01:02"),
+        valueB: new LocusInfo<string>("14:53", "14:47"),
+        valueDrb1: new LocusInfo<string>("13:03:01", "13:02:01:03"),
+        valueC: new LocusInfo<string>("02:02", "02:02")
+    );
+
+    // A selection of valid hla strings that do not match the donor's
+    private readonly PhenotypeInfo<string> nonMatchingHlas = new PhenotypeInfo<string>
+    (
+        valueA: new LocusInfo<string>("02:01:01:01", "02:01:01:01"),
+        valueB: new LocusInfo<string>("07:02:01:01", "07:02:13"),
+        valueDrb1: new LocusInfo<string>("14:190", "14:190"),
+        valueC: new LocusInfo<string>("07:01", "07:01")
+    );
+
+    [OneTimeSetUp]
+    public void OneTimeSetUp()
     {
-        private ISearchService searchService;
-
-        private DonorInfoWithExpandedHla donor;
-
-        // A selection of valid hla data for the single donor to have
-        private readonly PhenotypeInfo<string> donorHlas = new PhenotypeInfo<string>
-        (
-            valueA: new LocusInfo<string>("01:02", "01:02"),
-            valueB: new LocusInfo<string>("14:53", "14:47"),
-            valueDrb1: new LocusInfo<string>("13:03:01", "13:02:01:03"),
-            valueC: new LocusInfo<string>("02:02", "02:02")
-        );
-
-        // A selection of valid hla strings that do not match the donor's
-        private readonly PhenotypeInfo<string> nonMatchingHlas = new PhenotypeInfo<string>
-        (
-            valueA: new LocusInfo<string>("02:01:01:01", "02:01:01:01"),
-            valueB: new LocusInfo<string>("07:02:01:01", "07:02:13"),
-            valueDrb1: new LocusInfo<string>("14:190", "14:190"),
-            valueC: new LocusInfo<string>("07:01", "07:01")
-        );
-
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
+        TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            var donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>()
+                .BuildForActiveHlaNomenclatureVersion();
+            var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo {HlaNames = donorHlas}).Result.MatchingHla;
+            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
+            var donorRepository = repositoryFactory.GetDonorUpdateRepository();
+
+            donor = new DonorInfoWithExpandedHla
             {
-                var donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>()
-                    .BuildForActiveHlaNomenclatureVersion();
-                var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo {HlaNames = donorHlas}).Result.MatchingHla;
-                var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
-                var donorRepository = repositoryFactory.GetDonorUpdateRepository();
-
-                donor = new DonorInfoWithExpandedHla
-                {
-                    DonorType = DonorType.Adult,
-                    ExternalDonorCode = DonorIdGenerator.NewExternalCode,
-                    DonorId = DonorIdGenerator.NextId(),
-                    HlaNames = donorHlas,
-                    MatchingHla = matchingHlaPhenotype, 
-                    EthnicityCode = "EthnicityCode#0",
-                    RegistryCode = "RegistryCode#0"
-                };
-                donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor}, false).Wait();
-            });
-        }
-
-        [SetUp]
-        public void SetUp()
-        {
-            searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_ExactMatch_ReturnsDonor()
-        {
-            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
-                .SixOutOfSix()
-                .Build();
-
-            var results = await searchService.Search(searchRequest);
-
-            results.Should().Contain(d => d.AtlasDonorId == donor.DonorId);
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_SingleMismatchAtLocusA_DoesNotReturnDonor()
-        {
-            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
-                .SixOutOfSix()
-                .WithPositionOneOfSearchHlaMismatchedAt(Locus.A)
-                .Build();
-
-            var results = await searchService.Search(searchRequest);
-
-            results.Should().BeEmpty();
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_SingleMismatchAtLocusB_DoesNotReturnDonor()
-        {
-            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
-                .SixOutOfSix()
-                .WithPositionOneOfSearchHlaMismatchedAt(Locus.B)
-                .Build();
-
-            var results = await searchService.Search(searchRequest);
-
-            results.Should().BeEmpty();
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_SingleMismatchAtLocusDrb1_DoesNotReturnDonor()
-        {
-            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
-                .SixOutOfSix()
-                .WithPositionOneOfSearchHlaMismatchedAt(Locus.Drb1)
-                .Build();
-
-            var results = await searchService.Search(searchRequest);
-
-            results.Should().BeEmpty();
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_MismatchAtMultipleLoci_DoesNotReturnDonor()
-        {
-            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
-                .SixOutOfSix()
-                .WithPositionOneOfSearchHlaMismatchedAt(Locus.A)
-                .WithPositionOneOfSearchHlaMismatchedAt(Locus.B)
-                .WithPositionOneOfSearchHlaMismatchedAt(Locus.Drb1)
-                .Build();
-
-            var results = await searchService.Search(searchRequest);
-
-            results.Should().BeEmpty();
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_LociExcludedFromMatchingButIncludedInScoring_ReturnsMatchCounts()
-        {
-            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
-                .SixOutOfSix()
-                .WithLociToScore(new List<Locus> {Locus.C, Locus.Dqb1})
-                .Build();
-
-            var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
-
-            result?.ScoringResult.ScoringResultsByLocus.C.MatchCount.Should().Be(2);
-            result?.ScoringResult.ScoringResultsByLocus.Dqb1.MatchCount.Should().Be(2);
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_LociExcludedFromMatchingButIncludedInScoring_MatchingResultTotalMatchCountOnlyConsidersMatchingLoci()
-        {
-            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
-                .SixOutOfSix()
-                .WithLociToScore(new List<Locus> {Locus.C, Locus.Dqb1})
-                .Build();
-
-            var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
-
-            // 3 match loci (A, B, DRB1) x 2
-            result?.MatchingResult.TotalMatchCount.Should().Be(6);
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_TypedLociExcludedFromMatchingButIncludedInScoring_ReturnsIsLocusTypedAsTrue()
-        {
-            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
-                .SixOutOfSix()
-                .WithLociToScore(new List<Locus> {Locus.C})
-                .Build();
-
-            var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
-
-            // C is typed but not included in matching
-            result?.ScoringResult.ScoringResultsByLocus.C.IsLocusTyped.Should().BeTrue();
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_TypedLociIncludedInBothMatchingAndScoring_ReturnsIsLocusTypedAsTrue()
-        {
-            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
-                .SixOutOfSix()
-                .WithLociToScore(new List<Locus> {Locus.A})
-                .Build();
-
-            var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
-
-            // A is typed and included in search
-            result?.ScoringResult.ScoringResultsByLocus.A.IsLocusTyped.Should().BeTrue();
-        }
-
-        [Test]
-        public async Task Search_SixOutOfSix_UntypedLociExcludedFromMatchingButIncludedInScoring_ReturnsIsLocusTypedAsFalse()
-        {
-            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
-                .SixOutOfSix()
-                .WithLociToScore(new List<Locus> {Locus.Dqb1})
-                .Build();
-
-            var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
-
-            // DQB1 is not typed and not included in search
-            result?.ScoringResult.ScoringResultsByLocus.Dqb1.IsLocusTyped.Should().BeFalse();
-        }
-
-        [Test]
-        public async Task Search_Result_Has_ExternalDonorCode_EthnicityCode_RegistryCode_Props_Populated()
-        {
-            var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
-                .SixOutOfSix()
-                .WithLociToScore(new List<Locus> { Locus.C, Locus.Dqb1 })
-                .Build();
-
-            var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
-
-            result.Should().NotBeNull();
-            result.MatchingDonorInfo.Should().NotBeNull();
-            result.MatchingDonorInfo.ExternalDonorCode.Should().BeEquivalentTo(donor.ExternalDonorCode);
-            result.MatchingDonorInfo.EthnicityCode.Should().BeEquivalentTo(donor.EthnicityCode);
-            result.MatchingDonorInfo.RegistryCode.Should().BeEquivalentTo(donor.RegistryCode);
-        }
-
+                DonorType = DonorType.Adult,
+                ExternalDonorCode = DonorIdGenerator.NewExternalCode,
+                DonorId = DonorIdGenerator.NextId(),
+                HlaNames = donorHlas,
+                MatchingHla = matchingHlaPhenotype, 
+                EthnicityCode = "EthnicityCode#0",
+                RegistryCode = "RegistryCode#0"
+            };
+            donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor}, false).Wait();
+        });
     }
+
+    [SetUp]
+    public void SetUp()
+    {
+        searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
+    }
+
+    [Test]
+    public async Task Search_SixOutOfSix_ExactMatch_ReturnsDonor()
+    {
+        var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
+            .SixOutOfSix()
+            .Build();
+
+        var results = await searchService.Search(searchRequest);
+
+        results.Should().Contain(d => d.AtlasDonorId == donor.DonorId);
+    }
+
+    [Test]
+    public async Task Search_SixOutOfSix_SingleMismatchAtLocusA_DoesNotReturnDonor()
+    {
+        var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
+            .SixOutOfSix()
+            .WithPositionOneOfSearchHlaMismatchedAt(Locus.A)
+            .Build();
+
+        var results = await searchService.Search(searchRequest);
+
+        results.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task Search_SixOutOfSix_SingleMismatchAtLocusB_DoesNotReturnDonor()
+    {
+        var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
+            .SixOutOfSix()
+            .WithPositionOneOfSearchHlaMismatchedAt(Locus.B)
+            .Build();
+
+        var results = await searchService.Search(searchRequest);
+
+        results.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task Search_SixOutOfSix_SingleMismatchAtLocusDrb1_DoesNotReturnDonor()
+    {
+        var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
+            .SixOutOfSix()
+            .WithPositionOneOfSearchHlaMismatchedAt(Locus.Drb1)
+            .Build();
+
+        var results = await searchService.Search(searchRequest);
+
+        results.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task Search_SixOutOfSix_MismatchAtMultipleLoci_DoesNotReturnDonor()
+    {
+        var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
+            .SixOutOfSix()
+            .WithPositionOneOfSearchHlaMismatchedAt(Locus.A)
+            .WithPositionOneOfSearchHlaMismatchedAt(Locus.B)
+            .WithPositionOneOfSearchHlaMismatchedAt(Locus.Drb1)
+            .Build();
+
+        var results = await searchService.Search(searchRequest);
+
+        results.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task Search_SixOutOfSix_LociExcludedFromMatchingButIncludedInScoring_ReturnsMatchCounts()
+    {
+        var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
+            .SixOutOfSix()
+            .WithLociToScore(new List<Locus> {Locus.C, Locus.Dqb1})
+            .Build();
+
+        var results = await searchService.Search(searchRequest);
+        var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
+
+        result?.ScoringResult.ScoringResultsByLocus.C.MatchCount.Should().Be(2);
+        result?.ScoringResult.ScoringResultsByLocus.Dqb1.MatchCount.Should().Be(2);
+    }
+
+    [Test]
+    public async Task Search_SixOutOfSix_LociExcludedFromMatchingButIncludedInScoring_MatchingResultTotalMatchCountOnlyConsidersMatchingLoci()
+    {
+        var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
+            .SixOutOfSix()
+            .WithLociToScore(new List<Locus> {Locus.C, Locus.Dqb1})
+            .Build();
+
+        var results = await searchService.Search(searchRequest);
+        var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
+
+        // 3 match loci (A, B, DRB1) x 2
+        result?.MatchingResult.TotalMatchCount.Should().Be(6);
+    }
+
+    [Test]
+    public async Task Search_SixOutOfSix_TypedLociExcludedFromMatchingButIncludedInScoring_ReturnsIsLocusTypedAsTrue()
+    {
+        var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
+            .SixOutOfSix()
+            .WithLociToScore(new List<Locus> {Locus.C})
+            .Build();
+
+        var results = await searchService.Search(searchRequest);
+        var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
+
+        // C is typed but not included in matching
+        result?.ScoringResult.ScoringResultsByLocus.C.IsLocusTyped.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task Search_SixOutOfSix_TypedLociIncludedInBothMatchingAndScoring_ReturnsIsLocusTypedAsTrue()
+    {
+        var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
+            .SixOutOfSix()
+            .WithLociToScore(new List<Locus> {Locus.A})
+            .Build();
+
+        var results = await searchService.Search(searchRequest);
+        var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
+
+        // A is typed and included in search
+        result?.ScoringResult.ScoringResultsByLocus.A.IsLocusTyped.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task Search_SixOutOfSix_UntypedLociExcludedFromMatchingButIncludedInScoring_ReturnsIsLocusTypedAsFalse()
+    {
+        var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
+            .SixOutOfSix()
+            .WithLociToScore(new List<Locus> {Locus.Dqb1})
+            .Build();
+
+        var results = await searchService.Search(searchRequest);
+        var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
+
+        // DQB1 is not typed and not included in search
+        result?.ScoringResult.ScoringResultsByLocus.Dqb1.IsLocusTyped.Should().BeFalse();
+    }
+
+    [Test]
+    public async Task Search_Result_Has_ExternalDonorCode_EthnicityCode_RegistryCode_Props_Populated()
+    {
+        var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
+            .SixOutOfSix()
+            .WithLociToScore(new List<Locus> { Locus.C, Locus.Dqb1 })
+            .Build();
+
+        var results = await searchService.Search(searchRequest);
+        var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
+
+        result.Should().NotBeNull();
+        result.MatchingDonorInfo.Should().NotBeNull();
+        result.MatchingDonorInfo.ExternalDonorCode.Should().BeEquivalentTo(donor.ExternalDonorCode);
+        result.MatchingDonorInfo.EthnicityCode.Should().BeEquivalentTo(donor.EthnicityCode);
+        result.MatchingDonorInfo.RegistryCode.Should().BeEquivalentTo(donor.RegistryCode);
+    }
+
 }

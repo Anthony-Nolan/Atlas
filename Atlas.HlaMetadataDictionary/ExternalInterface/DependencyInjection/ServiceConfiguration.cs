@@ -20,85 +20,84 @@ using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
+namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
+
+public static class ServiceConfiguration
 {
-    public static class ServiceConfiguration
+    public static void RegisterHlaMetadataDictionary(
+        this IServiceCollection services,
+        Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
+        Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+        Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings)
     {
-        public static void RegisterHlaMetadataDictionary(
-            this IServiceCollection services,
-            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings)
-        {
-            services.MakeSettingsAvailableForUse(fetchHlaMetadataDictionarySettings);
+        services.MakeSettingsAvailableForUse(fetchHlaMetadataDictionarySettings);
 
-            services.RegisterServices();
-            services.RegisterLifeTimeScopedCacheTypes();
-            services.RegisterCommonGeneticServices();
-            services.AddScoped<IHlaMetadataDictionaryFactory, HlaMetadataDictionaryFactory>();
-            services.RegisterStorageTypes();
-            services.RegisterTypesRelatedToDictionaryRecreation();
-            services.RegisterServices();
-            services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
-            services.RegisterMacDictionary(fetchApplicationInsightsSettings, fetchMacDictionarySettings);
-        }
+        services.RegisterServices();
+        services.RegisterLifeTimeScopedCacheTypes();
+        services.RegisterCommonGeneticServices();
+        services.AddScoped<IHlaMetadataDictionaryFactory, HlaMetadataDictionaryFactory>();
+        services.RegisterStorageTypes();
+        services.RegisterTypesRelatedToDictionaryRecreation();
+        services.RegisterServices();
+        services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
+        services.RegisterMacDictionary(fetchApplicationInsightsSettings, fetchMacDictionarySettings);
+    }
 
-        private static void RegisterStorageTypes(this IServiceCollection services)
-        {
-            services.AddSingleton<ITableClientFactory, TableClientFactory>();
-            services.AddSingleton<ITableReferenceRepository, TableReferenceRepository>();
+    private static void RegisterStorageTypes(this IServiceCollection services)
+    {
+        services.AddSingleton<ITableClientFactory, TableClientFactory>();
+        services.AddSingleton<ITableReferenceRepository, TableReferenceRepository>();
 
-            services.AddScoped<IGGroupToPGroupMetadataRepository, GGroupToPGroupMetadataRepository>();
-            services.AddScoped<IHlaMatchingMetadataRepository, HlaMatchingMetadataRepository>();
-            services.AddScoped<IHlaScoringMetadataRepository, HlaScoringMetadataRepository>();
-            services.AddScoped<IAlleleNamesMetadataRepository, AlleleNamesMetadataRepository>();
-            services.AddScoped<IDpb1TceGroupsMetadataRepository, Dpb1TceGroupsMetadataRepository>();
-            services.AddScoped<IAlleleGroupsMetadataRepository, AlleleGroupsMetadataRepository>();
-            services.AddScoped<IHlaNameToSmallGGroupLookupRepository, HlaNameToSmallGGroupLookupRepository>();
-            services.AddScoped<ISmallGGroupToPGroupMetadataRepository, SmallGGroupToPGroupMetadataRepository>();
-            services.AddScoped<ISerologyToAllelesMetadataRepository, SerologyToAllelesMetadataRepository>();
-        }
+        services.AddScoped<IGGroupToPGroupMetadataRepository, GGroupToPGroupMetadataRepository>();
+        services.AddScoped<IHlaMatchingMetadataRepository, HlaMatchingMetadataRepository>();
+        services.AddScoped<IHlaScoringMetadataRepository, HlaScoringMetadataRepository>();
+        services.AddScoped<IAlleleNamesMetadataRepository, AlleleNamesMetadataRepository>();
+        services.AddScoped<IDpb1TceGroupsMetadataRepository, Dpb1TceGroupsMetadataRepository>();
+        services.AddScoped<IAlleleGroupsMetadataRepository, AlleleGroupsMetadataRepository>();
+        services.AddScoped<IHlaNameToSmallGGroupLookupRepository, HlaNameToSmallGGroupLookupRepository>();
+        services.AddScoped<ISmallGGroupToPGroupMetadataRepository, SmallGGroupToPGroupMetadataRepository>();
+        services.AddScoped<ISerologyToAllelesMetadataRepository, SerologyToAllelesMetadataRepository>();
+    }
 
-        private static void RegisterTypesRelatedToDictionaryRecreation(this IServiceCollection services)
-        {
-            services.AddScoped<IWmdaDataRepository, WmdaDataRepository>();
-            services.AddScoped<IWmdaFileReader, WmdaFileDownloader>();
-            services.AddScoped<IWmdaHlaNomenclatureVersionAccessor, WmdaHlaNomenclatureVersionAccessor>();
+    private static void RegisterTypesRelatedToDictionaryRecreation(this IServiceCollection services)
+    {
+        services.AddScoped<IWmdaDataRepository, WmdaDataRepository>();
+        services.AddScoped<IWmdaFileReader, WmdaFileDownloader>();
+        services.AddScoped<IWmdaHlaNomenclatureVersionAccessor, WmdaHlaNomenclatureVersionAccessor>();
 
-            services.AddScoped<IAlleleNameHistoriesConsolidator, AlleleNameHistoriesConsolidator>();
-            services.AddScoped<IAlleleNamesFromHistoriesExtractor, AlleleNamesFromHistoriesExtractor>();
-            services.AddScoped<IAlleleNameVariantsExtractor, AlleleNameVariantsExtractor>();
-            services.AddScoped<IReservedAlleleNamesExtractor, ReservedAlleleNamesExtractor>();
+        services.AddScoped<IAlleleNameHistoriesConsolidator, AlleleNameHistoriesConsolidator>();
+        services.AddScoped<IAlleleNamesFromHistoriesExtractor, AlleleNamesFromHistoriesExtractor>();
+        services.AddScoped<IAlleleNameVariantsExtractor, AlleleNameVariantsExtractor>();
+        services.AddScoped<IReservedAlleleNamesExtractor, ReservedAlleleNamesExtractor>();
 
-            services.AddScoped<IGGroupToPGroupService, GGroupToPGroupService>();
-            services.AddScoped<IAlleleNamesService, AlleleNamesService>();
-            services.AddScoped<IHlaMatchPreCalculationService, HlaMatchPreCalculationService>();
-            services.AddScoped<IDpb1TceGroupsService, Dpb1TceGroupsService>();
-            services.AddScoped<IAlleleGroupsService, AlleleGroupsService>();
-            services.AddScoped<ISmallGGroupsBuilder, SmallGGroupsBuilder>();
-            services.AddScoped<ISmallGGroupsService, SmallGGroupsService>();
-            services.AddScoped<IHlaToMatchingMetaDataConverter, HlaToMatchingMetaDataConverter>();
-            services.AddScoped<IHlaToScoringMetaDataConverter, HlaToScoringMetaDataConverter>();
+        services.AddScoped<IGGroupToPGroupService, GGroupToPGroupService>();
+        services.AddScoped<IAlleleNamesService, AlleleNamesService>();
+        services.AddScoped<IHlaMatchPreCalculationService, HlaMatchPreCalculationService>();
+        services.AddScoped<IDpb1TceGroupsService, Dpb1TceGroupsService>();
+        services.AddScoped<IAlleleGroupsService, AlleleGroupsService>();
+        services.AddScoped<ISmallGGroupsBuilder, SmallGGroupsBuilder>();
+        services.AddScoped<ISmallGGroupsService, SmallGGroupsService>();
+        services.AddScoped<IHlaToMatchingMetaDataConverter, HlaToMatchingMetaDataConverter>();
+        services.AddScoped<IHlaToScoringMetaDataConverter, HlaToScoringMetaDataConverter>();
 
-            services.AddScoped<IRecreateHlaMetadataService, RecreateHlaMetadataService>();
-        }
+        services.AddScoped<IRecreateHlaMetadataService, RecreateHlaMetadataService>();
+    }
 
-        private static void RegisterServices(this IServiceCollection services)
-        {
-            services.AddScoped<IHlaConverter, HlaConverter>();
-            services.AddScoped<IHlaValidator, HlaValidator>();
-            services.AddScoped<IHlaNameToTwoFieldAlleleConverter, HlaNameToTwoFieldAlleleConverter>();
-            services.AddScoped<IGGroupToPGroupMetadataService, GGroupToPGroupMetadataService>();
-            services.AddScoped<IAlleleNamesMetadataService, AlleleNamesMetadataService>();
-            services.AddScoped<IAlleleGroupExpander, AlleleGroupExpander>();
-            services.AddScoped<IHlaMetadataGenerationOrchestrator, HlaMetadataGenerationOrchestrator>();
-            services.AddScoped<ILocusHlaMatchingMetadataService, LocusHlaMatchingMetadataService>();
-            services.AddScoped<IHlaMatchingMetadataService, HlaMatchingMetadataService>();
-            services.AddScoped<IHlaScoringMetadataService, HlaScoringMetadataService>();
-            services.AddScoped<IDpb1TceGroupMetadataService, Dpb1TceGroupMetadataService>();
-            services.AddScoped<ISmallGGroupMetadataService, SmallGGroupMetadataService>();
-            services.AddScoped<ISerologyToAllelesMetadataService, SerologyToAllelesMetadataService>();
-            services.AddScoped<ISmallGGroupToPGroupMetadataService, SmallGGroupToPGroupMetadataService>();
-        }
+    private static void RegisterServices(this IServiceCollection services)
+    {
+        services.AddScoped<IHlaConverter, HlaConverter>();
+        services.AddScoped<IHlaValidator, HlaValidator>();
+        services.AddScoped<IHlaNameToTwoFieldAlleleConverter, HlaNameToTwoFieldAlleleConverter>();
+        services.AddScoped<IGGroupToPGroupMetadataService, GGroupToPGroupMetadataService>();
+        services.AddScoped<IAlleleNamesMetadataService, AlleleNamesMetadataService>();
+        services.AddScoped<IAlleleGroupExpander, AlleleGroupExpander>();
+        services.AddScoped<IHlaMetadataGenerationOrchestrator, HlaMetadataGenerationOrchestrator>();
+        services.AddScoped<ILocusHlaMatchingMetadataService, LocusHlaMatchingMetadataService>();
+        services.AddScoped<IHlaMatchingMetadataService, HlaMatchingMetadataService>();
+        services.AddScoped<IHlaScoringMetadataService, HlaScoringMetadataService>();
+        services.AddScoped<IDpb1TceGroupMetadataService, Dpb1TceGroupMetadataService>();
+        services.AddScoped<ISmallGGroupMetadataService, SmallGGroupMetadataService>();
+        services.AddScoped<ISerologyToAllelesMetadataService, SerologyToAllelesMetadataService>();
+        services.AddScoped<ISmallGGroupToPGroupMetadataService, SmallGGroupToPGroupMetadataService>();
     }
 }

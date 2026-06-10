@@ -1,10 +1,9 @@
 ﻿using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
-namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.MatchCalculation
+namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.MatchCalculation;
+
+public class MatchCalculationResponse
 {
-    public class MatchCalculationResponse
-    {
-        public LociInfo<int?> MatchCounts { get; set; }
-        public bool IsTenOutOfTenMatch { get; set; }
-    }
+    public LociInfo<int?> MatchCounts { get; set; }
+    public bool IsTenOutOfTenMatch { get; set; }
 }

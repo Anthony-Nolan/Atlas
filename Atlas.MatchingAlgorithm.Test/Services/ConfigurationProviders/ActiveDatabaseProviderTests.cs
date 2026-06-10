@@ -7,102 +7,101 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
+namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders;
+
+[TestFixture]
+public class ActiveDatabaseProviderTests
 {
-    [TestFixture]
-    public class ActiveDatabaseProviderTests
+    private IDataRefreshHistoryRepository historyRepository;
+    private IActiveDatabaseProvider activeDatabaseProvider;
+
+    [SetUp]
+    public void SetUp()
     {
-        private IDataRefreshHistoryRepository historyRepository;
-        private IActiveDatabaseProvider activeDatabaseProvider;
-
-        [SetUp]
-        public void SetUp()
-        {
-            historyRepository = Substitute.For<IDataRefreshHistoryRepository>();
-            var cache = AppCacheBuilder.NewDefaultCache();
-            var cacheProvider = new TransientCacheProvider(cache);
+        historyRepository = Substitute.For<IDataRefreshHistoryRepository>();
+        var cache = AppCacheBuilder.NewDefaultCache();
+        var cacheProvider = new TransientCacheProvider(cache);
             
-            activeDatabaseProvider = new ActiveDatabaseProvider(historyRepository, cacheProvider);
-        }
+        activeDatabaseProvider = new ActiveDatabaseProvider(historyRepository, cacheProvider);
+    }
 
-        [Test]
-        public void GetActiveDatabase_WhenNoHistoryFound_DefaultsToDatabaseA()
-        {
-            var database = activeDatabaseProvider.GetActiveDatabase();
+    [Test]
+    public void GetActiveDatabase_WhenNoHistoryFound_DefaultsToDatabaseA()
+    {
+        var database = activeDatabaseProvider.GetActiveDatabase();
 
-            database.Should().Be(TransientDatabase.DatabaseA);
-        }
+        database.Should().Be(TransientDatabase.DatabaseA);
+    }
 
-        [Test]
-        public void GetActiveDatabase_WhenLastDataMigrationWasAgainstDatabaseA_ReturnsDatabaseA()
-        {
-            historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
+    [Test]
+    public void GetActiveDatabase_WhenLastDataMigrationWasAgainstDatabaseA_ReturnsDatabaseA()
+    {
+        historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
 
-            var database = activeDatabaseProvider.GetActiveDatabase();
+        var database = activeDatabaseProvider.GetActiveDatabase();
 
-            database.Should().Be(TransientDatabase.DatabaseA);
-        }
+        database.Should().Be(TransientDatabase.DatabaseA);
+    }
 
-        [Test]
-        public void GetActiveDatabase_WhenLastDataMigrationWasAgainstDatabaseB_ReturnsDatabaseB()
-        {
-            historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
+    [Test]
+    public void GetActiveDatabase_WhenLastDataMigrationWasAgainstDatabaseB_ReturnsDatabaseB()
+    {
+        historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
 
-            var database = activeDatabaseProvider.GetActiveDatabase();
+        var database = activeDatabaseProvider.GetActiveDatabase();
 
-            database.Should().Be(TransientDatabase.DatabaseB);
-        }
+        database.Should().Be(TransientDatabase.DatabaseB);
+    }
 
-        [Test]
-        public void GetActiveDatabase_CachesDatabaseValue()
-        {
-            historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA, TransientDatabase.DatabaseB);
+    [Test]
+    public void GetActiveDatabase_CachesDatabaseValue()
+    {
+        historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA, TransientDatabase.DatabaseB);
 
-            var database1 = activeDatabaseProvider.GetActiveDatabase();
-            var database2 = activeDatabaseProvider.GetActiveDatabase();
+        var database1 = activeDatabaseProvider.GetActiveDatabase();
+        var database2 = activeDatabaseProvider.GetActiveDatabase();
 
-            database1.Should().Be(TransientDatabase.DatabaseA);
-            database2.Should().Be(TransientDatabase.DatabaseA);
-        }
+        database1.Should().Be(TransientDatabase.DatabaseA);
+        database2.Should().Be(TransientDatabase.DatabaseA);
+    }
 
-        [Test]
-        public void GetDormantDatabase_WhenNoHistoryFound_DefaultsToDatabaseB()
-        {
-            var database = activeDatabaseProvider.GetDormantDatabase();
+    [Test]
+    public void GetDormantDatabase_WhenNoHistoryFound_DefaultsToDatabaseB()
+    {
+        var database = activeDatabaseProvider.GetDormantDatabase();
 
-            database.Should().Be(TransientDatabase.DatabaseB);
-        }
+        database.Should().Be(TransientDatabase.DatabaseB);
+    }
 
-        [Test]
-        public void GetDormantDatabase_WhenLastDataMigrationWasAgainstDatabaseA_ReturnsDatabaseB()
-        {
-            historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
+    [Test]
+    public void GetDormantDatabase_WhenLastDataMigrationWasAgainstDatabaseA_ReturnsDatabaseB()
+    {
+        historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
 
-            var database = activeDatabaseProvider.GetDormantDatabase();
+        var database = activeDatabaseProvider.GetDormantDatabase();
 
-            database.Should().Be(TransientDatabase.DatabaseB);
-        }
+        database.Should().Be(TransientDatabase.DatabaseB);
+    }
 
-        [Test]
-        public void GetDormantDatabase_WhenLastDataMigrationWasAgainstDatabaseB_ReturnsDatabaseA()
-        {
-            historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
+    [Test]
+    public void GetDormantDatabase_WhenLastDataMigrationWasAgainstDatabaseB_ReturnsDatabaseA()
+    {
+        historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
 
-            var database = activeDatabaseProvider.GetDormantDatabase();
+        var database = activeDatabaseProvider.GetDormantDatabase();
 
-            database.Should().Be(TransientDatabase.DatabaseA);
-        }
+        database.Should().Be(TransientDatabase.DatabaseA);
+    }
 
-        [Test]
-        public void GetDormantDatabase_CachesDatabaseValue()
-        {
-            historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA, TransientDatabase.DatabaseB);
+    [Test]
+    public void GetDormantDatabase_CachesDatabaseValue()
+    {
+        historyRepository.GetActiveDatabase().Returns(TransientDatabase.DatabaseA, TransientDatabase.DatabaseB);
 
-            var database1 = activeDatabaseProvider.GetDormantDatabase();
-            var database2 = activeDatabaseProvider.GetDormantDatabase();
+        var database1 = activeDatabaseProvider.GetDormantDatabase();
+        var database2 = activeDatabaseProvider.GetDormantDatabase();
 
-            database1.Should().Be(TransientDatabase.DatabaseB);
-            database2.Should().Be(TransientDatabase.DatabaseB);
-        }
+        database1.Should().Be(TransientDatabase.DatabaseB);
+        database2.Should().Be(TransientDatabase.DatabaseB);
     }
 }

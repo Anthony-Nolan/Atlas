@@ -14,103 +14,102 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
+namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests;
+
+public static class AlgorithmTestingService
 {
-    public static class AlgorithmTestingService
+    private const string ApiKeyHeader = "X-Samples-ApiKey";
+    private const string ApiKey = "test-key";
+
+    private static TestServer server;
+
+    public static void StartServer()
     {
-        private const string ApiKeyHeader = "X-Samples-ApiKey";
-        private const string ApiKey = "test-key";
 
-        private static TestServer server;
-
-        public static void StartServer()
-        {
-
-            var builder = new WebHostBuilder()
-                .UseContentRoot(Environment.CurrentDirectory)
-                .ConfigureAppConfiguration((context, config) =>
-                {
-                    config.AddJsonFile("appsettings.json", true, true);
-                    config.AddUserSecrets(Assembly.GetExecutingAssembly());
-
-                    AddFeatureManagement(config);
-                })
-                .UseStartup<Startup>();
-            server = new TestServer(builder);
-        }
-
-        /// <summary>
-        /// Feature management, leave it configured even if there is no active feature flags in use
-        /// </summary>
-        /// <param name="configBuilder">Configuration builder</param>
-        private static void AddFeatureManagement(IConfigurationBuilder configBuilder)
-        {
-            var configuration = configBuilder.Build();
-            var azureConfigurationConnectionString = configuration.GetValue<string>("AzureAppConfiguration:ConnectionString");
-            configBuilder.AddAzureAppConfiguration(options =>
+        var builder = new WebHostBuilder()
+            .UseContentRoot(Environment.CurrentDirectory)
+            .ConfigureAppConfiguration((context, config) =>
             {
-                options.Connect(azureConfigurationConnectionString)
-                    .Select("_")
-                    .UseFeatureFlags();
-            });
-        }
+                config.AddJsonFile("appsettings.json", true, true);
+                config.AddUserSecrets(Assembly.GetExecutingAssembly());
 
-        public static void StopServer()
+                AddFeatureManagement(config);
+            })
+            .UseStartup<Startup>();
+        server = new TestServer(builder);
+    }
+
+    /// <summary>
+    /// Feature management, leave it configured even if there is no active feature flags in use
+    /// </summary>
+    /// <param name="configBuilder">Configuration builder</param>
+    private static void AddFeatureManagement(IConfigurationBuilder configBuilder)
+    {
+        var configuration = configBuilder.Build();
+        var azureConfigurationConnectionString = configuration.GetValue<string>("AzureAppConfiguration:ConnectionString");
+        configBuilder.AddAzureAppConfiguration(options =>
         {
-            server.Dispose();
-        }
+            options.Connect(azureConfigurationConnectionString)
+                .Select("_")
+                .UseFeatureFlags();
+        });
+    }
 
-        public static async Task<SearchAlgorithmApiResult> Search(SearchRequest matchingRequest)
+    public static void StopServer()
+    {
+        server.Dispose();
+    }
+
+    public static async Task<SearchAlgorithmApiResult> Search(SearchRequest matchingRequest)
+    {
+        var result = await server.CreateRequest("/search")
+            .AddHeader(ApiKeyHeader, ApiKey)
+            .And(request => request.Content = SerialiseToJson(matchingRequest))
+            .PostAsync();
+
+        var content = await result.Content.ReadAsStringAsync();
+        var deserializedContent = JsonConvert.DeserializeObject<OriginalMatchingAlgorithmResultSet>(content);
+        return new SearchAlgorithmApiResult
         {
-            var result = await server.CreateRequest("/search")
-                .AddHeader(ApiKeyHeader, ApiKey)
-                .And(request => request.Content = SerialiseToJson(matchingRequest))
-                .PostAsync();
+            IsSuccess = result.IsSuccessStatusCode,
+            StatusCode = result.StatusCode,
+            ErrorMessage = result.IsSuccessStatusCode ? null : content,
+            Results = result.IsSuccessStatusCode ? deserializedContent : null,
+        };
+    }
 
-            var content = await result.Content.ReadAsStringAsync();
-            var deserializedContent = JsonConvert.DeserializeObject<OriginalMatchingAlgorithmResultSet>(content);
-            return new SearchAlgorithmApiResult
-            {
-                IsSuccess = result.IsSuccessStatusCode,
-                StatusCode = result.StatusCode,
-                ErrorMessage = result.IsSuccessStatusCode ? null : content,
-                Results = result.IsSuccessStatusCode ? deserializedContent : null,
-            };
-        }
-
-        public static async Task AddDonors(IEnumerable<DonorInfo> donors)
+    public static async Task AddDonors(IEnumerable<DonorInfo> donors)
+    {
+        var batch = new DonorInfoBatch
         {
-            var batch = new DonorInfoBatch
-            {
-                Donors = donors
-            };
+            Donors = donors
+        };
 
-            var result = await server.CreateRequest("/donor/batch")
-                .AddHeader(ApiKeyHeader, ApiKey)
-                .And(request => request.Content = SerialiseToJson(batch))
-                .SendAsync("PUT");
+        var result = await server.CreateRequest("/donor/batch")
+            .AddHeader(ApiKeyHeader, ApiKey)
+            .And(request => request.Content = SerialiseToJson(batch))
+            .SendAsync("PUT");
 
-            if (!result.IsSuccessStatusCode)
-            {
-                throw new Exception("Request to add donors failed");
-            }
-        }
-
-        public static async Task RunHlaRefresh()
+        if (!result.IsSuccessStatusCode)
         {
-            var response = await server.CreateRequest("/trigger-donor-hla-update")
-                .AddHeader(ApiKeyHeader, ApiKey)
-                .PostAsync();
+            throw new Exception("Request to add donors failed");
+        }
+    }
+
+    public static async Task RunHlaRefresh()
+    {
+        var response = await server.CreateRequest("/trigger-donor-hla-update")
+            .AddHeader(ApiKeyHeader, ApiKey)
+            .PostAsync();
             
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception("Donor HLA Refresh Failed");
-            }
-        }
-
-        private static StringContent SerialiseToJson(object obj)
+        if (!response.IsSuccessStatusCode)
         {
-            return new StringContent(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json");
+            throw new Exception("Donor HLA Refresh Failed");
         }
+    }
+
+    private static StringContent SerialiseToJson(object obj)
+    {
+        return new StringContent(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json");
     }
 }

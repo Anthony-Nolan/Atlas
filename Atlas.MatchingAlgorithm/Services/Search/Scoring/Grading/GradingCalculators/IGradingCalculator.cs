@@ -1,12 +1,11 @@
 ﻿using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 
-namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators
+namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
+
+public interface IGradingCalculator
 {
-    public interface IGradingCalculator
-    {
-        MatchGrade CalculateGrade(
-            IHlaScoringMetadata patientMetadata,
-            IHlaScoringMetadata donorMetadata);
-    }
+    MatchGrade CalculateGrade(
+        IHlaScoringMetadata patientMetadata,
+        IHlaScoringMetadata donorMetadata);
 }

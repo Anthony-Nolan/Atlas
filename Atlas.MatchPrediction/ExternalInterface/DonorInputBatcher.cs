@@ -5,43 +5,42 @@ using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using MoreLinq.Extensions;
 
-namespace Atlas.MatchPrediction.ExternalInterface
+namespace Atlas.MatchPrediction.ExternalInterface;
+
+public interface IDonorInputBatcher
 {
-    public interface IDonorInputBatcher
-    {
-        IEnumerable<MultipleDonorMatchProbabilityInput> BatchDonorInputs(
-            IdentifiedMatchProbabilityRequest request,
-            IEnumerable<DonorInput> donorInputs,
-            int batchSize
-        );
-    }
+    IEnumerable<MultipleDonorMatchProbabilityInput> BatchDonorInputs(
+        IdentifiedMatchProbabilityRequest request,
+        IEnumerable<DonorInput> donorInputs,
+        int batchSize
+    );
+}
 
-    internal class DonorInputBatcher : IDonorInputBatcher
+internal class DonorInputBatcher : IDonorInputBatcher
+{
+    public IEnumerable<MultipleDonorMatchProbabilityInput> BatchDonorInputs(
+        IdentifiedMatchProbabilityRequest request,
+        IEnumerable<DonorInput> donorInputs,
+        int batchSize = 10)
     {
-        public IEnumerable<MultipleDonorMatchProbabilityInput> BatchDonorInputs(
-            IdentifiedMatchProbabilityRequest request,
-            IEnumerable<DonorInput> donorInputs,
-            int batchSize = 10)
-        {
-            var consolidatedDonorInputs = donorInputs
-                .GroupBy(d => new
-                {
-                    // Convert to non-transfer PhenotypeInfo to ensure we use custom equality operators when grouping
-                    Hla = d.DonorHla.ToPhenotypeInfo(),
-                    d.DonorFrequencySetMetadata
-                })
-                .Select(group => new DonorInput
-                {
-                    DonorHla = group.Key.Hla.ToPhenotypeInfoTransfer(),
-                    DonorFrequencySetMetadata = group.Key.DonorFrequencySetMetadata,
-                    DonorIds = group.SelectMany(d => d.DonorIds).ToList()
-                });
-
-            return consolidatedDonorInputs.Batch(batchSize).Select(donorBatch => new MultipleDonorMatchProbabilityInput(request)
+        var consolidatedDonorInputs = donorInputs
+            .GroupBy(d => new
             {
-                MatchProbabilityRequestId = Guid.NewGuid().ToString(),
-                Donors = donorBatch.ToList()
+                // Convert to non-transfer PhenotypeInfo to ensure we use custom equality operators when grouping
+                Hla = d.DonorHla.ToPhenotypeInfo(),
+                d.DonorFrequencySetMetadata
+            })
+            .Select(group => new DonorInput
+            {
+                DonorHla = group.Key.Hla.ToPhenotypeInfoTransfer(),
+                DonorFrequencySetMetadata = group.Key.DonorFrequencySetMetadata,
+                DonorIds = group.SelectMany(d => d.DonorIds).ToList()
             });
-        }
+
+        return consolidatedDonorInputs.Batch(batchSize).Select(donorBatch => new MultipleDonorMatchProbabilityInput(request)
+        {
+            MatchProbabilityRequestId = Guid.NewGuid().ToString(),
+            Donors = donorBatch.ToList()
+        });
     }
 }

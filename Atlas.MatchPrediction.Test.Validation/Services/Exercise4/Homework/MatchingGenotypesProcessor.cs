@@ -7,113 +7,113 @@ using System.Threading.Tasks;
 using Atlas.Debug.Client.Models.MatchPrediction;
 using SubjectInfo = Atlas.MatchPrediction.Test.Validation.Data.Models.SubjectInfo;
 
-namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
+namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework;
+
+internal interface IMatchingGenotypesProcessor
 {
-    internal interface IMatchingGenotypesProcessor
+    /// <returns>`false` if request failed; else `true`.</returns>
+    Task<bool> RequestAndSaveMatchingGenotypes(
+        SubjectInfo patientInfo,
+        SubjectInfo donorInfo,
+        string matchLoci,
+        string hlaVersion);
+}
+
+internal class MatchingGenotypesProcessor : IMatchingGenotypesProcessor
+{
+    private readonly IMatchingGenotypesRequester matchingRequester;
+    private readonly IImputationSummaryRepository summaryRepo;
+    private readonly IMatchingGenotypesRepository matchingRepo;
+
+    public MatchingGenotypesProcessor(
+        IMatchingGenotypesRequester matchingRequester,
+        IImputationSummaryRepository summaryRepo,
+        IMatchingGenotypesRepository matchingRepo)
     {
-        /// <returns>`false` if request failed; else `true`.</returns>
-        Task<bool> RequestAndSaveMatchingGenotypes(
-            SubjectInfo patientInfo,
-            SubjectInfo donorInfo,
-            string matchLoci,
-            string hlaVersion);
+        this.matchingRequester = matchingRequester;
+        this.summaryRepo = summaryRepo;
+        this.matchingRepo = matchingRepo;
     }
 
-    internal class MatchingGenotypesProcessor : IMatchingGenotypesProcessor
+    public async Task<bool> RequestAndSaveMatchingGenotypes(
+        SubjectInfo patientInfo,
+        SubjectInfo donorInfo,
+        string matchLoci,
+        string hlaVersion)
     {
-        private readonly IMatchingGenotypesRequester matchingRequester;
-        private readonly IImputationSummaryRepository summaryRepo;
-        private readonly IMatchingGenotypesRepository matchingRepo;
+        var response = await matchingRequester.Request(
+            BuildRequest(patientInfo, donorInfo, matchLoci, hlaVersion));
 
-        public MatchingGenotypesProcessor(
-            IMatchingGenotypesRequester matchingRequester,
-            IImputationSummaryRepository summaryRepo,
-            IMatchingGenotypesRepository matchingRepo)
+        if (response is not { WasSuccess: true })
         {
-            this.matchingRequester = matchingRequester;
-            this.summaryRepo = summaryRepo;
-            this.matchingRepo = matchingRepo;
+            System.Diagnostics.Debug.WriteLine($"Matching genotypes request for {patientInfo.ExternalId}:{donorInfo.ExternalId} was not successful.");
+            return false;
         }
 
-        public async Task<bool> RequestAndSaveMatchingGenotypes(
-            SubjectInfo patientInfo,
-            SubjectInfo donorInfo,
-            string matchLoci,
-            string hlaVersion)
+        var patientSummaryId = await GetOrAddImputationSummary(patientInfo.ExternalId, response.Result!.PatientInfo);
+        var donorSummaryId = await GetOrAddImputationSummary(donorInfo.ExternalId, response.Result!.DonorInfo);
+        var genotypes = SplitIntoMatchingGenotypes(
+            response.Result!.MatchedGenotypePairs, patientSummaryId, donorSummaryId);
+        await matchingRepo.BulkInsert(genotypes);
+        return true;
+    }
+
+    private static MatchingGenotypesRequest BuildRequest(
+        SubjectInfo patientInfo,
+        SubjectInfo donorInfo,
+        string matchLoci,
+        string hlaVersion)
+    {
+        return new MatchingGenotypesRequest
         {
-            var response = await matchingRequester.Request(
-                BuildRequest(patientInfo, donorInfo, matchLoci, hlaVersion));
-
-            if (response is not { WasSuccess: true })
+            Patient = new MatchingGenotypesRequest.SubjectRequest
             {
-                System.Diagnostics.Debug.WriteLine($"Matching genotypes request for {patientInfo.ExternalId}:{donorInfo.ExternalId} was not successful.");
-                return false;
-            }
+                SubjectHla = patientInfo.ToPhenotypeInfo(),
+                ExternalHfSetId = patientInfo.ExternalHfSetId ?? 0,
+            },
+            Donor = new MatchingGenotypesRequest.SubjectRequest
+            {
+                SubjectHla = donorInfo.ToPhenotypeInfo(),
+                ExternalHfSetId = donorInfo.ExternalHfSetId ?? 0,
+            },
+            MatchLoci = matchLoci,
+            HlaVersion = hlaVersion
+        };
+    }
 
-            var patientSummaryId = await GetOrAddImputationSummary(patientInfo.ExternalId, response.Result!.PatientInfo);
-            var donorSummaryId = await GetOrAddImputationSummary(donorInfo.ExternalId, response.Result!.DonorInfo);
-            var genotypes = SplitIntoMatchingGenotypes(
-                response.Result!.MatchedGenotypePairs, patientSummaryId, donorSummaryId);
-            await matchingRepo.BulkInsert(genotypes);
-            return true;
+    private async Task<int> GetOrAddImputationSummary(
+        string externalSubjectId,
+        SubjectResult subjectResult)
+    {
+        var summaryId = await summaryRepo.Get(externalSubjectId);
+
+        if (summaryId != null)
+        {
+            return summaryId.Value;
         }
 
-        private static MatchingGenotypesRequest BuildRequest(
-            SubjectInfo patientInfo,
-            SubjectInfo donorInfo,
-            string matchLoci,
-            string hlaVersion)
+        var summary = new ImputationSummary
         {
-            return new MatchingGenotypesRequest
-            {
-                Patient = new MatchingGenotypesRequest.SubjectRequest
-                {
-                    SubjectHla = patientInfo.ToPhenotypeInfo(),
-                    ExternalHfSetId = patientInfo.ExternalHfSetId ?? 0,
-                },
-                Donor = new MatchingGenotypesRequest.SubjectRequest
-                {
-                    SubjectHla = donorInfo.ToPhenotypeInfo(),
-                    ExternalHfSetId = donorInfo.ExternalHfSetId ?? 0,
-                },
-                MatchLoci = matchLoci,
-                HlaVersion = hlaVersion
-            };
-        }
+            ExternalSubjectId = externalSubjectId,
+            HfSetPopulationId = subjectResult.HaplotypeFrequencySet.PopulationId,
+            WasRepresented = !subjectResult.IsUnrepresented,
+            GenotypeCount = subjectResult.GenotypeCount,
+            SumOfLikelihoods = subjectResult.SumOfLikelihoods
+        };
 
-        private async Task<int> GetOrAddImputationSummary(
-            string externalSubjectId,
-            SubjectResult subjectResult)
-        {
-            var summaryId = await summaryRepo.Get(externalSubjectId);
+        return await summaryRepo.Add(summary);
+    }
 
-            if (summaryId != null)
-            {
-                return summaryId.Value;
-            }
-
-            var summary = new ImputationSummary
-            {
-                ExternalSubjectId = externalSubjectId,
-                HfSetPopulationId = subjectResult.HaplotypeFrequencySet.PopulationId,
-                WasRepresented = !subjectResult.IsUnrepresented,
-                GenotypeCount = subjectResult.GenotypeCount,
-                SumOfLikelihoods = subjectResult.SumOfLikelihoods
-            };
-
-            return await summaryRepo.Add(summary);
-        }
-
-        private static IEnumerable<MatchingGenotypes> SplitIntoMatchingGenotypes(
-            IEnumerable<string> matchingGenotypePairs,
-            int patientSummaryId,
-            int donorSummaryId)
-        {
-            // first line contains header so will be skipped
-            return matchingGenotypePairs
-                .Skip(1)
-                .Select(pair => pair.Split(","))
-                .Select(pairParts => new MatchingGenotypes
+    private static IEnumerable<MatchingGenotypes> SplitIntoMatchingGenotypes(
+        IEnumerable<string> matchingGenotypePairs,
+        int patientSummaryId,
+        int donorSummaryId)
+    {
+        // first line contains header so will be skipped
+        return matchingGenotypePairs
+            .Skip(1)
+            .Select(pair => pair.Split(","))
+            .Select(pairParts => new MatchingGenotypes
             {
                 TotalCount = int.Parse(pairParts[0]),
                 A_Count = int.Parse(pairParts[1]),
@@ -149,6 +149,5 @@ namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
                 Patient_ImputationSummary_Id = patientSummaryId,
                 Donor_ImputationSummary_Id = donorSummaryId
             });
-        }
     }
 }

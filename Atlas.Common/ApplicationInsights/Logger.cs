@@ -3,82 +3,81 @@ using System.Collections.Generic;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 
-namespace Atlas.Common.ApplicationInsights
+namespace Atlas.Common.ApplicationInsights;
+
+public interface IAtlasLogger
 {
-    public interface IAtlasLogger
+    void SendEvent(string name, LogLevel level = LogLevel.Info, Dictionary<string, string> props = null, Dictionary<string, double> metrics = null);
+    void SendTrace(string message, LogLevel messageLogLevel = LogLevel.Info, Dictionary<string, string> props = null);
+    void SendException(Exception exception, LogLevel messageLogLevel = LogLevel.Error, Dictionary<string, string> props = null);
+}
+
+public class AtlasLogger : IAtlasLogger
+{
+    private readonly TelemetryClient client;
+    private readonly LogLevel configuredLogLevel;
+
+    public AtlasLogger(TelemetryClient client, ApplicationInsightsSettings applicationInsightsSettings)
     {
-        void SendEvent(string name, LogLevel level = LogLevel.Info, Dictionary<string, string> props = null, Dictionary<string, double> metrics = null);
-        void SendTrace(string message, LogLevel messageLogLevel = LogLevel.Info, Dictionary<string, string> props = null);
-        void SendException(Exception exception, LogLevel messageLogLevel = LogLevel.Error, Dictionary<string, string> props = null);
+        this.client = client;
+        configuredLogLevel = applicationInsightsSettings.LogLevel.ToLogLevel();
     }
 
-    public class AtlasLogger : IAtlasLogger
+    public virtual void SendEvent(string name, LogLevel level = LogLevel.Info, Dictionary<string, string> props = null, Dictionary<string, double> metrics = null)
     {
-        private readonly TelemetryClient client;
-        private readonly LogLevel configuredLogLevel;
-
-        public AtlasLogger(TelemetryClient client, ApplicationInsightsSettings applicationInsightsSettings)
+        if (level >= configuredLogLevel)
         {
-            this.client = client;
-            configuredLogLevel = applicationInsightsSettings.LogLevel.ToLogLevel();
+            props ??= new Dictionary<string, string>();
+            props["LogLevel"] = $"{level}";
+            client.TrackEvent(name, props, metrics);
         }
+    }
 
-        public virtual void SendEvent(string name, LogLevel level = LogLevel.Info, Dictionary<string, string> props = null, Dictionary<string, double> metrics = null)
+    public virtual void SendTrace(string message, LogLevel messageLogLevel, Dictionary<string, string> props)
+    {
+        if (messageLogLevel >= configuredLogLevel)
         {
-            if (level >= configuredLogLevel)
-            {
-                props ??= new Dictionary<string, string>();
-                props["LogLevel"] = $"{level}";
-                client.TrackEvent(name, props, metrics);
-            }
+            client.TrackTrace(message, GetSeverityLevel(messageLogLevel), props);
         }
+    }
 
-        public virtual void SendTrace(string message, LogLevel messageLogLevel, Dictionary<string, string> props)
+    public virtual void SendException(Exception exception, LogLevel messageLogLevel, Dictionary<string, string> props)
+    {
+        if (messageLogLevel >= configuredLogLevel)
         {
-            if (messageLogLevel >= configuredLogLevel)
+            var telemetry = new ExceptionTelemetry(exception)
             {
-                client.TrackTrace(message, GetSeverityLevel(messageLogLevel), props);
-            }
-        }
+                SeverityLevel = GetSeverityLevel(messageLogLevel)
+            };
 
-        public virtual void SendException(Exception exception, LogLevel messageLogLevel, Dictionary<string, string> props)
-        {
-            if (messageLogLevel >= configuredLogLevel)
+            if (props != null)
             {
-                var telemetry = new ExceptionTelemetry(exception)
+                foreach (var (key, value) in props)
                 {
-                    SeverityLevel = GetSeverityLevel(messageLogLevel)
-                };
-
-                if (props != null)
-                {
-                    foreach (var (key, value) in props)
-                    {
-                        telemetry.Properties[key] = value;
-                    }
+                    telemetry.Properties[key] = value;
                 }
-
-                client.TrackException(telemetry);
             }
+
+            client.TrackException(telemetry);
         }
+    }
 
-        private static SeverityLevel GetSeverityLevel(LogLevel logLevel)
+    private static SeverityLevel GetSeverityLevel(LogLevel logLevel)
+    {
+        switch (logLevel)
         {
-            switch (logLevel)
-            {
-                case LogLevel.Verbose:
-                    return SeverityLevel.Verbose;
-                case LogLevel.Info:
-                    return SeverityLevel.Information;
-                case LogLevel.Warn:
-                    return SeverityLevel.Warning;
-                case LogLevel.Error:
-                    return SeverityLevel.Error;
-                case LogLevel.Critical:
-                    return SeverityLevel.Critical;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, null);
-            }
+            case LogLevel.Verbose:
+                return SeverityLevel.Verbose;
+            case LogLevel.Info:
+                return SeverityLevel.Information;
+            case LogLevel.Warn:
+                return SeverityLevel.Warning;
+            case LogLevel.Error:
+                return SeverityLevel.Error;
+            case LogLevel.Critical:
+                return SeverityLevel.Critical;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, null);
         }
     }
 }

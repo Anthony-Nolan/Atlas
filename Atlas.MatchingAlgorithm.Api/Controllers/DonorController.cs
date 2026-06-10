@@ -9,68 +9,67 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Atlas.MatchingAlgorithm.Api.Controllers
+namespace Atlas.MatchingAlgorithm.Api.Controllers;
+
+[Route("donor")]
+public class DonorController : ControllerBase
 {
-    [Route("donor")]
-    public class DonorController : ControllerBase
+    private readonly IDonorService donorService;
+    private readonly IActiveDatabaseProvider activeDatabaseProvider;
+    private readonly IActiveHlaNomenclatureVersionAccessor hlaVersionAccessor;
+
+    public DonorController(
+        IDonorService donorService,
+        IActiveDatabaseProvider activeDatabaseProvider,
+        IActiveHlaNomenclatureVersionAccessor hlaVersionAccessor)
     {
-        private readonly IDonorService donorService;
-        private readonly IActiveDatabaseProvider activeDatabaseProvider;
-        private readonly IActiveHlaNomenclatureVersionAccessor hlaVersionAccessor;
-
-        public DonorController(
-            IDonorService donorService,
-            IActiveDatabaseProvider activeDatabaseProvider,
-            IActiveHlaNomenclatureVersionAccessor hlaVersionAccessor)
-        {
-            this.donorService = donorService;
-            this.activeDatabaseProvider = activeDatabaseProvider;
-            this.hlaVersionAccessor = hlaVersionAccessor;
-        }
-
-        [HttpPut]
-        [Route("batch")]
-        public async Task CreateOrUpdateDonorBatch([FromBody] DonorInfoBatchTransfer donorBatch)
-        {
-            await donorService.CreateOrUpdateDonorBatch(
-                donorBatch.Donors.Select(d => d.ToDonorInfo()),
-                activeDatabaseProvider.GetActiveDatabase(),
-                hlaVersionAccessor.GetActiveHlaNomenclatureVersion(),
-                true);
-        }
+        this.donorService = donorService;
+        this.activeDatabaseProvider = activeDatabaseProvider;
+        this.hlaVersionAccessor = hlaVersionAccessor;
     }
 
-    // Need to use a transfer model rather than exposing database model directly, as it contains a PhenotypeInfo, which is immutable and cannot be serialised.
-    public class DonorInfoBatchTransfer
+    [HttpPut]
+    [Route("batch")]
+    public async Task CreateOrUpdateDonorBatch([FromBody] DonorInfoBatchTransfer donorBatch)
     {
-        public IEnumerable<DonorInfoTransfer> Donors { get; set; }
+        await donorService.CreateOrUpdateDonorBatch(
+            donorBatch.Donors.Select(d => d.ToDonorInfo()),
+            activeDatabaseProvider.GetActiveDatabase(),
+            hlaVersionAccessor.GetActiveHlaNomenclatureVersion(),
+            true);
     }
+}
 
-    public class DonorInfoTransfer
-    {
-        public int DonorId { get; set; }
-        public DonorType DonorType { get; set; }
-        public string ExternalDonorCode { get; set; }
-        public string EthnicityCode { get; set; }
-        public string RegistryCode { get; set; }
-        public PhenotypeInfoTransfer<string> HlaNames { get; set; }
-        public bool IsAvailableForSearch { get; set; } = true;
-    }
+// Need to use a transfer model rather than exposing database model directly, as it contains a PhenotypeInfo, which is immutable and cannot be serialised.
+public class DonorInfoBatchTransfer
+{
+    public IEnumerable<DonorInfoTransfer> Donors { get; set; }
+}
 
-    public static class DonorInfoTransferMapping
+public class DonorInfoTransfer
+{
+    public int DonorId { get; set; }
+    public DonorType DonorType { get; set; }
+    public string ExternalDonorCode { get; set; }
+    public string EthnicityCode { get; set; }
+    public string RegistryCode { get; set; }
+    public PhenotypeInfoTransfer<string> HlaNames { get; set; }
+    public bool IsAvailableForSearch { get; set; } = true;
+}
+
+public static class DonorInfoTransferMapping
+{
+    public static DonorInfo ToDonorInfo(this DonorInfoTransfer donorInfoTransfer)
     {
-        public static DonorInfo ToDonorInfo(this DonorInfoTransfer donorInfoTransfer)
+        return new DonorInfo
         {
-            return new DonorInfo
-            {
-                DonorId = donorInfoTransfer.DonorId,
-                DonorType = donorInfoTransfer.DonorType,
-                ExternalDonorCode = donorInfoTransfer.ExternalDonorCode,
-                EthnicityCode = donorInfoTransfer.EthnicityCode,
-                RegistryCode = donorInfoTransfer.RegistryCode,
-                HlaNames = donorInfoTransfer.HlaNames.ToPhenotypeInfo(),
-                IsAvailableForSearch = donorInfoTransfer.IsAvailableForSearch
-            };
-        }
+            DonorId = donorInfoTransfer.DonorId,
+            DonorType = donorInfoTransfer.DonorType,
+            ExternalDonorCode = donorInfoTransfer.ExternalDonorCode,
+            EthnicityCode = donorInfoTransfer.EthnicityCode,
+            RegistryCode = donorInfoTransfer.RegistryCode,
+            HlaNames = donorInfoTransfer.HlaNames.ToPhenotypeInfo(),
+            IsAvailableForSearch = donorInfoTransfer.IsAvailableForSearch
+        };
     }
 }

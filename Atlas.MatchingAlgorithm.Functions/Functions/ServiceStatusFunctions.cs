@@ -5,23 +5,22 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using ServiceStatusModel = Atlas.Common.Utils.Models.ServiceStatus;
 
-namespace Atlas.MatchingAlgorithm.Functions.Functions
-{
-    public class ServiceStatusFunctions
-    {
-        [Function(nameof(ServiceStatus))]
-        [ProducesResponseType(typeof(ServiceStatusModel), (int)HttpStatusCode.OK)]
-        public IActionResult ServiceStatus([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest request)
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            var name = assembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title;
-            var version = assembly.GetName().Version?.ToString();
+namespace Atlas.MatchingAlgorithm.Functions.Functions;
 
-            return new JsonResult(new ServiceStatusModel
-            {
-                Name = name,
-                Version = version
-            });
-        }
+public class ServiceStatusFunctions
+{
+    [Function(nameof(ServiceStatus))]
+    [ProducesResponseType(typeof(ServiceStatusModel), (int)HttpStatusCode.OK)]
+    public IActionResult ServiceStatus([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest request)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var name = assembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title;
+        var version = assembly.GetName().Version?.ToString();
+
+        return new JsonResult(new ServiceStatusModel
+        {
+            Name = name,
+            Version = version
+        });
     }
 }

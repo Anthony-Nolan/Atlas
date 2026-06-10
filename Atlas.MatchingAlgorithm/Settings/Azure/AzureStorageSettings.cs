@@ -1,10 +1,9 @@
 using Atlas.Common.AzureStorage.Blob;
 
-namespace Atlas.MatchingAlgorithm.Settings.Azure
+namespace Atlas.MatchingAlgorithm.Settings.Azure;
+
+public class AzureStorageSettings : SearchResultsUploadSettings
 {
-    public class AzureStorageSettings : SearchResultsUploadSettings
-    {
-        public string ConnectionString { get; set; }
-        public string SearchResultsBlobContainer { get; set; }
-    }
+    public string ConnectionString { get; set; }
+    public string SearchResultsBlobContainer { get; set; }
 }

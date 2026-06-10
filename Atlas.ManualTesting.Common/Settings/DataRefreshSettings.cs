@@ -1,7 +1,6 @@
-﻿namespace Atlas.ManualTesting.Common.Settings
+﻿namespace Atlas.ManualTesting.Common.Settings;
+
+public class DataRefreshSettings
 {
-    public class DataRefreshSettings
-    {
-        public string RequestUrl { get; set; }
-    }
+    public string RequestUrl { get; set; }
 }

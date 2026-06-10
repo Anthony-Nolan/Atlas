@@ -2,16 +2,15 @@ using Atlas.ManualTesting.DependencyInjection;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Atlas.ManualTesting
-{
-    internal static class Startup
-    {
-        public static void Configure(IServiceCollection services)
-        {
-            // Stops the Visual Studio debug window from being flooded with not-very-helpful AI telemetry messages!
-            TelemetryDebugWriter.IsTracingDisabled = true;
+namespace Atlas.ManualTesting;
 
-            services.RegisterServices();
-        }
+internal static class Startup
+{
+    public static void Configure(IServiceCollection services)
+    {
+        // Stops the Visual Studio debug window from being flooded with not-very-helpful AI telemetry messages!
+        TelemetryDebugWriter.IsTracingDisabled = true;
+
+        services.RegisterServices();
     }
 }

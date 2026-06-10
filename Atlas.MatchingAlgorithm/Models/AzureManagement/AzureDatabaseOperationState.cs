@@ -1,12 +1,11 @@
-namespace Atlas.MatchingAlgorithm.Models.AzureManagement
+namespace Atlas.MatchingAlgorithm.Models.AzureManagement;
+
+public enum AzureDatabaseOperationState
 {
-    public enum AzureDatabaseOperationState
-    {
-        CancelInProgress,
-        Cancelled,
-        Failed,
-        InProgress,
-        Pending,
-        Succeeded,
-    }
+    CancelInProgress,
+    Cancelled,
+    Failed,
+    InProgress,
+    Pending,
+    Succeeded,
 }

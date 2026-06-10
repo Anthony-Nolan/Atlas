@@ -8,75 +8,74 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
+namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement;
+
+[TestFixture]
+public class SearchableDonorUpdateConverterTests
 {
-    [TestFixture]
-    public class SearchableDonorUpdateConverterTests
+    private ISearchableDonorUpdateConverter converter;
+    private IMatchingAlgorithmImportLogger logger;
+
+    [SetUp]
+    public void SetUp()
     {
-        private ISearchableDonorUpdateConverter converter;
-        private IMatchingAlgorithmImportLogger logger;
+        logger = Substitute.For<IMatchingAlgorithmImportLogger>();
+        converter = new SearchableDonorUpdateConverter(logger);
+    }
 
-        [SetUp]
-        public void SetUp()
+    [Test]
+    public async Task ConvertSearchableDonorUpdatesAsync_ValidUpdate_ReturnsUpdate()
+    {
+        const int donorId = 123;
+
+        var result = await converter.ConvertSearchableDonorUpdatesAsync(new List<DeserializedMessage<SearchableDonorUpdate>>()
         {
-            logger = Substitute.For<IMatchingAlgorithmImportLogger>();
-            converter = new SearchableDonorUpdateConverter(logger);
-        }
-
-        [Test]
-        public async Task ConvertSearchableDonorUpdatesAsync_ValidUpdate_ReturnsUpdate()
-        {
-            const int donorId = 123;
-
-            var result = await converter.ConvertSearchableDonorUpdatesAsync(new List<DeserializedMessage<SearchableDonorUpdate>>()
+            new DeserializedMessage<SearchableDonorUpdate>
             {
-                new DeserializedMessage<SearchableDonorUpdate>
+                LockToken = "token",
+                DeserializedBody = new SearchableDonorUpdate
                 {
-                    LockToken = "token",
-                    DeserializedBody = new SearchableDonorUpdate
-                    {
-                        DonorId = donorId,
-                        IsAvailableForSearch = false
-                    }
+                    DonorId = donorId,
+                    IsAvailableForSearch = false
                 }
-            });
+            }
+        });
 
-            result.ProcessingResults.Should().OnlyContain(d => d.DonorId == donorId);
-        }
+        result.ProcessingResults.Should().OnlyContain(d => d.DonorId == donorId);
+    }
 
-        [Test]
-        public void ConvertSearchableDonorUpdatesAsync_InvalidUpdate_DoesNotThrowException()
+    [Test]
+    public void ConvertSearchableDonorUpdatesAsync_InvalidUpdate_DoesNotThrowException()
+    {
+        Assert.DoesNotThrowAsync(async () =>
         {
-            Assert.DoesNotThrowAsync(async () =>
-            {
-                await converter.ConvertSearchableDonorUpdatesAsync(
-                    new List<DeserializedMessage<SearchableDonorUpdate>>
-                    {
-                        new DeserializedMessage<SearchableDonorUpdate>()
-                    });
-            });
-        }
-
-        [Test]
-        public async Task ConvertSearchableDonorUpdatesAsync_InvalidUpdate_ReturnsFailedDonorInfo()
-        {
-            const int donorId = -1;
-
-            var result = await converter.ConvertSearchableDonorUpdatesAsync(new List<DeserializedMessage<SearchableDonorUpdate>>()
-            {
-                new DeserializedMessage<SearchableDonorUpdate>
+            await converter.ConvertSearchableDonorUpdatesAsync(
+                new List<DeserializedMessage<SearchableDonorUpdate>>
                 {
-                    LockToken = "token",
-                    DeserializedBody = new SearchableDonorUpdate
-                    {
-                        DonorId = donorId,
-                        IsAvailableForSearch = true,
-                        SearchableDonorInformation = null
-                    }
-                }
-            });
+                    new DeserializedMessage<SearchableDonorUpdate>()
+                });
+        });
+    }
 
-            result.FailedDonors.Should().OnlyContain(d => d.AtlasDonorId == donorId);
-        }
+    [Test]
+    public async Task ConvertSearchableDonorUpdatesAsync_InvalidUpdate_ReturnsFailedDonorInfo()
+    {
+        const int donorId = -1;
+
+        var result = await converter.ConvertSearchableDonorUpdatesAsync(new List<DeserializedMessage<SearchableDonorUpdate>>()
+        {
+            new DeserializedMessage<SearchableDonorUpdate>
+            {
+                LockToken = "token",
+                DeserializedBody = new SearchableDonorUpdate
+                {
+                    DonorId = donorId,
+                    IsAvailableForSearch = true,
+                    SearchableDonorInformation = null
+                }
+            }
+        });
+
+        result.FailedDonors.Should().OnlyContain(d => d.AtlasDonorId == donorId);
     }
 }

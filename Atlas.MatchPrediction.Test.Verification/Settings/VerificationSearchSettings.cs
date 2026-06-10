@@ -1,7 +1,6 @@
-﻿namespace Atlas.MatchPrediction.Test.Verification.Settings
+﻿namespace Atlas.MatchPrediction.Test.Verification.Settings;
+
+internal class VerificationSearchSettings
 {
-    internal class VerificationSearchSettings
-    {
-        public string RequestUrl { get; set; }
-    }
+    public string RequestUrl { get; set; }
 }

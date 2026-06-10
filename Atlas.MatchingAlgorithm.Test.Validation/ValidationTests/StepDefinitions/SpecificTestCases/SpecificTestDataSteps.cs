@@ -11,54 +11,53 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelec
 using TechTalk.SpecFlow;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.SpecificTestCases
+namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.SpecificTestCases;
+
+internal static class SpecificTestDataSteps
 {
-    internal static class SpecificTestDataSteps
+    public static async Task GivenDonorHla(PhenotypeInfo<string> donorHla, ScenarioContext scenarioContext)
     {
-        public static async Task GivenDonorHla(PhenotypeInfo<string> donorHla, ScenarioContext scenarioContext)
+        var staticDataProvider = scenarioContext.Get<IStaticDataProvider>();
+        var donorInfo = new DonorInfo
         {
-            var staticDataProvider = scenarioContext.Get<IStaticDataProvider>();
-            var donorInfo = new DonorInfo
-            {
-                DonorId = DonorIdGenerator.NextId(),
-                ExternalDonorCode = DonorIdGenerator.NewExternalCode,
-                HlaNames = donorHla,
-                DonorType = DonorType.Adult
-            };
+            DonorId = DonorIdGenerator.NextId(),
+            ExternalDonorCode = DonorIdGenerator.NewExternalCode,
+            HlaNames = donorHla,
+            DonorType = DonorType.Adult
+        };
 
-            await AddDonors(new[] {donorInfo});
+        await AddDonors(new[] {donorInfo});
 
-            staticDataProvider.SetExpectedDonorIds(new[] {donorInfo.DonorId});
+        staticDataProvider.SetExpectedDonorIds(new[] {donorInfo.DonorId});
 
-            scenarioContext.Set(staticDataProvider);
-            scenarioContext.Set((IExpectedDonorProvider) staticDataProvider);
-        }
+        scenarioContext.Set(staticDataProvider);
+        scenarioContext.Set((IExpectedDonorProvider) staticDataProvider);
+    }
 
-        private static async Task AddDonors(IReadOnlyCollection<DonorInfo> donors)
-        {
-            await AlgorithmTestingService.AddDonors(donors);
+    private static async Task AddDonors(IReadOnlyCollection<DonorInfo> donors)
+    {
+        await AlgorithmTestingService.AddDonors(donors);
 
-            var testDataRepo = ServiceConfiguration.Provider.GetService<ITestDataRepository>();
-            testDataRepo.AddDonorsToAtlasDonorStore(donors.Select(d => d.DonorId));
-        }
+        var testDataRepo = ServiceConfiguration.Provider.GetService<ITestDataRepository>();
+        testDataRepo.AddDonorsToAtlasDonorStore(donors.Select(d => d.DonorId));
+    }
 
-        public static async Task GivenDonorAndPatientHla(
-            PhenotypeInfo<string> donorHla,
-            PhenotypeInfo<string> patientHla,
-            ScenarioContext scenarioContext)
-        {
-            await GivenDonorHla(donorHla, scenarioContext);
-            GivenPatientHla(patientHla, scenarioContext);
-        }
+    public static async Task GivenDonorAndPatientHla(
+        PhenotypeInfo<string> donorHla,
+        PhenotypeInfo<string> patientHla,
+        ScenarioContext scenarioContext)
+    {
+        await GivenDonorHla(donorHla, scenarioContext);
+        GivenPatientHla(patientHla, scenarioContext);
+    }
 
-        public static void GivenPatientHla(PhenotypeInfo<string> patientHla, ScenarioContext scenarioContext)
-        {
-            var staticDataProvider = scenarioContext.Get<IStaticDataProvider>();
+    public static void GivenPatientHla(PhenotypeInfo<string> patientHla, ScenarioContext scenarioContext)
+    {
+        var staticDataProvider = scenarioContext.Get<IStaticDataProvider>();
 
-            staticDataProvider.SetPatientHla(patientHla);
+        staticDataProvider.SetPatientHla(patientHla);
 
-            scenarioContext.Set(staticDataProvider);
-            scenarioContext.Set((IPatientDataProvider) staticDataProvider);
-        }
+        scenarioContext.Set(staticDataProvider);
+        scenarioContext.Set((IPatientDataProvider) staticDataProvider);
     }
 }

@@ -7,40 +7,39 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 
-namespace Atlas.ManualTesting.Functions
+namespace Atlas.ManualTesting.Functions;
+
+public class DonorFunctions
 {
-    public class DonorFunctions
+    private readonly ISearchableDonorUpdatesPeeker searchableDonorUpdatesPeeker;
+    private readonly IDonorStoresInspector donorStoresInspector;
+
+    public DonorFunctions(ISearchableDonorUpdatesPeeker searchableDonorUpdatesPeeker, IDonorStoresInspector donorStoresInspector)
     {
-        private readonly ISearchableDonorUpdatesPeeker searchableDonorUpdatesPeeker;
-        private readonly IDonorStoresInspector donorStoresInspector;
+        this.searchableDonorUpdatesPeeker = searchableDonorUpdatesPeeker;
+        this.donorStoresInspector = donorStoresInspector;
+    }
 
-        public DonorFunctions(ISearchableDonorUpdatesPeeker searchableDonorUpdatesPeeker, IDonorStoresInspector donorStoresInspector)
-        {
-            this.searchableDonorUpdatesPeeker = searchableDonorUpdatesPeeker;
-            this.donorStoresInspector = donorStoresInspector;
-        }
+    [Function(nameof(FilterSearchableDonorUpdatesByAtlasDonorIds))]
+    public async Task<IActionResult> FilterSearchableDonorUpdatesByAtlasDonorIds(
+        [HttpTrigger(AuthorizationLevel.Function, "post")]
+        [RequestBodyType(typeof(PeekByAtlasDonorIdsRequest), nameof(PeekByAtlasDonorIdsRequest))]
+        HttpRequest request)
+    {
+        var peekRequest = await request.DeserialiseRequestBody<PeekByAtlasDonorIdsRequest>();
 
-        [Function(nameof(FilterSearchableDonorUpdatesByAtlasDonorIds))]
-        public async Task<IActionResult> FilterSearchableDonorUpdatesByAtlasDonorIds(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(PeekByAtlasDonorIdsRequest), nameof(PeekByAtlasDonorIdsRequest))]
-            HttpRequest request)
-        {
-            var peekRequest = await request.DeserialiseRequestBody<PeekByAtlasDonorIdsRequest>();
+        var resultsNotifications = await searchableDonorUpdatesPeeker.GetMessagesByAtlasDonorId(peekRequest);
 
-            var resultsNotifications = await searchableDonorUpdatesPeeker.GetMessagesByAtlasDonorId(peekRequest);
+        return new JsonResult(resultsNotifications);
+    }
 
-            return new JsonResult(resultsNotifications);
-        }
+    [Function(nameof(GetDonorsMissingFromActiveMatchingDatabase))]
+    public async Task<IActionResult> GetDonorsMissingFromActiveMatchingDatabase(
+        [HttpTrigger(AuthorizationLevel.Function, "get")]
+        HttpRequest request)
+    {
+        var missingIds = await donorStoresInspector.GetDonorsMissingFromActiveMatchingDatabase();
 
-        [Function(nameof(GetDonorsMissingFromActiveMatchingDatabase))]
-        public async Task<IActionResult> GetDonorsMissingFromActiveMatchingDatabase(
-            [HttpTrigger(AuthorizationLevel.Function, "get")]
-            HttpRequest request)
-        {
-            var missingIds = await donorStoresInspector.GetDonorsMissingFromActiveMatchingDatabase();
-
-            return new JsonResult(missingIds);
-        }
+        return new JsonResult(missingIds);
     }
 }

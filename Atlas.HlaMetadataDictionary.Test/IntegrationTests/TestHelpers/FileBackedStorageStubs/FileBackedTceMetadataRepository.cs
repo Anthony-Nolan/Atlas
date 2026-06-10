@@ -2,15 +2,14 @@
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 
-namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs
+namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
+
+internal class FileBackedTceMetadataRepository :
+    FileBackedHlaMetadataRepositoryBase<IDpb1TceGroupsMetadata>,
+    IDpb1TceGroupsMetadataRepository
 {
-    internal class FileBackedTceMetadataRepository :
-        FileBackedHlaMetadataRepositoryBase<IDpb1TceGroupsMetadata>,
-        IDpb1TceGroupsMetadataRepository
+    protected override IEnumerable<IDpb1TceGroupsMetadata> GetHlaMetadata(FileBackedHlaMetadataCollection metadataCollection)
     {
-        protected override IEnumerable<IDpb1TceGroupsMetadata> GetHlaMetadata(FileBackedHlaMetadataCollection metadataCollection)
-        {
-            return metadataCollection.Dpb1TceGroupMetadata;
-        }
+        return metadataCollection.Dpb1TceGroupMetadata;
     }
 }

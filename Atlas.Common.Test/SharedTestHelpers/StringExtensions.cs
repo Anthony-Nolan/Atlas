@@ -1,13 +1,12 @@
 using System.IO;
 using System.Text;
 
-namespace Atlas.Common.Test.SharedTestHelpers
+namespace Atlas.Common.Test.SharedTestHelpers;
+
+public static class StringExtensions
 {
-    public static class StringExtensions
+    public static Stream ToStream(this string s)
     {
-        public static Stream ToStream(this string s)
-        {
-            return new MemoryStream(Encoding.Default.GetBytes(s));
-        }
+        return new MemoryStream(Encoding.Default.GetBytes(s));
     }
 }

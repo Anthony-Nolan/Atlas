@@ -14,231 +14,230 @@ using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.Services.HlaValidation;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 
-namespace Atlas.HlaMetadataDictionary.ExternalInterface
+namespace Atlas.HlaMetadataDictionary.ExternalInterface;
+
+public interface IHlaMetadataDictionary
 {
-    public interface IHlaMetadataDictionary
+    Task<string> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour);
+    Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory);
+
+    /// <summary>
+    /// Validate whether HLA is a type of the the target HLA category.
+    /// </summary>
+    /// <param name="locus">Locus hla is present at.</param>
+    /// <param name="hlaName">The hla you want to validate the type of.</param>
+    /// <param name="targetHlaCategory">The hla category you want to see if the hla is a part of.</param>
+    /// <returns></returns>
+    Task<bool> ValidateHla(Locus locus, string hlaName, HlaValidationCategory targetHlaCategory);
+
+    /// <summary>
+    /// Functionally the same as calling ConvertHla on GGroup typed hla, with a target type of PGroup.
+    /// As GGroups are guaranteed to correspond to exactly 0 or 1 PGroups, this method makes this specific conversion much faster.  
+    /// </summary>
+    public Task<string> ConvertGGroupToPGroup(Locus locus, string gGroup);
+
+    /// <summary>
+    /// Functionally the same as calling ConvertHla on small g group typed hla, with a target type of P group.
+    /// As small g groups are guaranteed to correspond to exactly 0 or 1 PGroups, this method makes this specific conversion much faster.  
+    /// </summary>
+    public Task<string> ConvertSmallGGroupToPGroup(Locus locus, string smallGGroup);
+
+    Task<LocusInfo<INullHandledHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
+    Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
+    Task<string> GetDpb1TceGroup(string dpb1HlaName);
+    Task<IEnumerable<SerologyToAlleleMappingSummary>> GetSerologyToAlleleMappings(Locus locus, string serologyName);
+    Task<IEnumerable<string>> GetAllPGroups();
+    Task<IDictionary<Locus, List<string>>> GetAllGGroups();
+
+    /// <summary>
+    /// This is not the intended entry point for consumption of the metadata;
+    /// the only expected use case is for manual recreation of the test HLA metadata dictionary.
+    /// </summary>
+    HlaMetadataCollection GenerateAllHlaMetadata(string version);
+
+    /// <summary>
+    /// Indicates whether there's a discrepancy between the version of the HLA Nomenclature that we would use from WMDA,
+    /// and the version of the HLA Nomenclature that was used to pre-process the current Donor data.
+    /// </summary>
+    /// <returns>True if the versions are different, otherwise false.</returns>
+    bool IsActiveVersionDifferentFromLatestVersion();
+
+    string HlaNomenclatureVersion { get; }
+}
+
+internal class HlaMetadataDictionary : IHlaMetadataDictionary
+{
+    private const string newAllele = "NEW";
+
+    /// <summary>
+    /// The HLA Nomenclature version represented by this dictionary, or <see cref="HlaMetadataDictionaryConstants.NoActiveVersionValue"/> in the case when no refresh has been run.
+    /// </summary>
+    private readonly string hlaNomenclatureVersionOrDefault;
+        
+    private readonly IRecreateHlaMetadataService recreateMetadataService;
+    private readonly IHlaConverter hlaConverter;
+    private readonly IHlaValidator hlaValidator;
+    private readonly IHlaMatchingMetadataService hlaMatchingMetadataService;
+    private readonly ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
+    private readonly IHlaScoringMetadataService hlaScoringMetadataService;
+    private readonly IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
+    private readonly IGGroupToPGroupMetadataService gGroupToPGroupMetadataService;
+    private readonly ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService;
+    private readonly ISerologyToAllelesMetadataService serologyToAllelesMetadataService;
+    private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
+    private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
+    private readonly IAtlasLogger logger;
+
+    public HlaMetadataDictionary(
+        string hlaNomenclatureVersionOrDefault,
+        IRecreateHlaMetadataService recreateMetadataService,
+        IHlaConverter hlaConverter,
+        IHlaValidator hlaValidator,
+        IHlaMatchingMetadataService hlaMatchingMetadataService,
+        ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService,
+        IHlaScoringMetadataService hlaScoringMetadataService,
+        IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
+        IGGroupToPGroupMetadataService gGroupToPGroupMetadataService,
+        ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService,
+        ISerologyToAllelesMetadataService serologyToAllelesMetadataService,
+        IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
+        IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
+        IAtlasLogger logger)
     {
-        Task<string> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour);
-        Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory);
-
-        /// <summary>
-        /// Validate whether HLA is a type of the the target HLA category.
-        /// </summary>
-        /// <param name="locus">Locus hla is present at.</param>
-        /// <param name="hlaName">The hla you want to validate the type of.</param>
-        /// <param name="targetHlaCategory">The hla category you want to see if the hla is a part of.</param>
-        /// <returns></returns>
-        Task<bool> ValidateHla(Locus locus, string hlaName, HlaValidationCategory targetHlaCategory);
-
-        /// <summary>
-        /// Functionally the same as calling ConvertHla on GGroup typed hla, with a target type of PGroup.
-        /// As GGroups are guaranteed to correspond to exactly 0 or 1 PGroups, this method makes this specific conversion much faster.  
-        /// </summary>
-        public Task<string> ConvertGGroupToPGroup(Locus locus, string gGroup);
-
-        /// <summary>
-        /// Functionally the same as calling ConvertHla on small g group typed hla, with a target type of P group.
-        /// As small g groups are guaranteed to correspond to exactly 0 or 1 PGroups, this method makes this specific conversion much faster.  
-        /// </summary>
-        public Task<string> ConvertSmallGGroupToPGroup(Locus locus, string smallGGroup);
-
-        Task<LocusInfo<INullHandledHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
-        Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
-        Task<string> GetDpb1TceGroup(string dpb1HlaName);
-        Task<IEnumerable<SerologyToAlleleMappingSummary>> GetSerologyToAlleleMappings(Locus locus, string serologyName);
-        Task<IEnumerable<string>> GetAllPGroups();
-        Task<IDictionary<Locus, List<string>>> GetAllGGroups();
-
-        /// <summary>
-        /// This is not the intended entry point for consumption of the metadata;
-        /// the only expected use case is for manual recreation of the test HLA metadata dictionary.
-        /// </summary>
-        HlaMetadataCollection GenerateAllHlaMetadata(string version);
-
-        /// <summary>
-        /// Indicates whether there's a discrepancy between the version of the HLA Nomenclature that we would use from WMDA,
-        /// and the version of the HLA Nomenclature that was used to pre-process the current Donor data.
-        /// </summary>
-        /// <returns>True if the versions are different, otherwise false.</returns>
-        bool IsActiveVersionDifferentFromLatestVersion();
-
-        string HlaNomenclatureVersion { get; }
+        this.hlaNomenclatureVersionOrDefault = hlaNomenclatureVersionOrDefault;
+        this.recreateMetadataService = recreateMetadataService;
+        this.hlaConverter = hlaConverter;
+        this.hlaValidator = hlaValidator;
+        this.hlaMatchingMetadataService = hlaMatchingMetadataService;
+        this.locusHlaMatchingMetadataService = locusHlaMatchingMetadataService;
+        this.hlaScoringMetadataService = hlaScoringMetadataService;
+        this.dpb1TceGroupMetadataService = dpb1TceGroupMetadataService;
+        this.gGroupToPGroupMetadataService = gGroupToPGroupMetadataService;
+        this.smallGGroupToPGroupMetadataService = smallGGroupToPGroupMetadataService;
+        this.serologyToAllelesMetadataService = serologyToAllelesMetadataService;
+        this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
+        this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
+        this.logger = logger;
     }
 
-    internal class HlaMetadataDictionary : IHlaMetadataDictionary
+    public string HlaNomenclatureVersion => hlaNomenclatureVersionOrDefault == HlaMetadataDictionaryConstants.NoActiveVersionValue
+        ? throw new Exception(
+            "HLA Metadata Dictionary with no HLA nomenclature version cannot be used for anything but regenerating a new dictionary.")
+        : hlaNomenclatureVersionOrDefault;
+
+    public bool IsActiveVersionDifferentFromLatestVersion()
     {
-        private const string newAllele = "NEW";
+        var active = hlaNomenclatureVersionOrDefault;
+        var latest = wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion();
+        return active != latest;
+    }
 
-        /// <summary>
-        /// The HLA Nomenclature version represented by this dictionary, or <see cref="HlaMetadataDictionaryConstants.NoActiveVersionValue"/> in the case when no refresh has been run.
-        /// </summary>
-        private readonly string hlaNomenclatureVersionOrDefault;
-        
-        private readonly IRecreateHlaMetadataService recreateMetadataService;
-        private readonly IHlaConverter hlaConverter;
-        private readonly IHlaValidator hlaValidator;
-        private readonly IHlaMatchingMetadataService hlaMatchingMetadataService;
-        private readonly ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
-        private readonly IHlaScoringMetadataService hlaScoringMetadataService;
-        private readonly IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
-        private readonly IGGroupToPGroupMetadataService gGroupToPGroupMetadataService;
-        private readonly ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService;
-        private readonly ISerologyToAllelesMetadataService serologyToAllelesMetadataService;
-        private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
-        private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
-        private readonly IAtlasLogger logger;
+    public async Task<string> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour)
+    {
+        var version = IdentifyVersionToRecreate(recreationBehaviour);
 
-        public HlaMetadataDictionary(
-            string hlaNomenclatureVersionOrDefault,
-            IRecreateHlaMetadataService recreateMetadataService,
-            IHlaConverter hlaConverter,
-            IHlaValidator hlaValidator,
-            IHlaMatchingMetadataService hlaMatchingMetadataService,
-            ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService,
-            IHlaScoringMetadataService hlaScoringMetadataService,
-            IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
-            IGGroupToPGroupMetadataService gGroupToPGroupMetadataService,
-            ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService,
-            ISerologyToAllelesMetadataService serologyToAllelesMetadataService,
-            IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
-            IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
-            IAtlasLogger logger)
+        if (ShouldRecreate(recreationBehaviour))
         {
-            this.hlaNomenclatureVersionOrDefault = hlaNomenclatureVersionOrDefault;
-            this.recreateMetadataService = recreateMetadataService;
-            this.hlaConverter = hlaConverter;
-            this.hlaValidator = hlaValidator;
-            this.hlaMatchingMetadataService = hlaMatchingMetadataService;
-            this.locusHlaMatchingMetadataService = locusHlaMatchingMetadataService;
-            this.hlaScoringMetadataService = hlaScoringMetadataService;
-            this.dpb1TceGroupMetadataService = dpb1TceGroupMetadataService;
-            this.gGroupToPGroupMetadataService = gGroupToPGroupMetadataService;
-            this.smallGGroupToPGroupMetadataService = smallGGroupToPGroupMetadataService;
-            this.serologyToAllelesMetadataService = serologyToAllelesMetadataService;
-            this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
-            this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
-            this.logger = logger;
+            logger.SendTrace($"HLA-METADATA-DICTIONARY REFRESH: Recreating HLA Metadata dictionary for desired HLA Nomenclature version.");
+            await recreateMetadataService.RefreshAllHlaMetadata(version);
+            logger.SendTrace($"HLA-METADATA-DICTIONARY REFRESH: HLA Metadata dictionary recreated at HLA Nomenclature version: {version}");
+        }
+        else
+        {
+            logger.SendTrace(
+                $"HLA-METADATA-DICTIONARY REFRESH: HLA Metadata dictionary was already using the desired HLA Nomenclature version, so did not update.");
         }
 
-        public string HlaNomenclatureVersion => hlaNomenclatureVersionOrDefault == HlaMetadataDictionaryConstants.NoActiveVersionValue
-            ? throw new Exception(
-                "HLA Metadata Dictionary with no HLA nomenclature version cannot be used for anything but regenerating a new dictionary.")
-            : hlaNomenclatureVersionOrDefault;
+        return version;
+    }
 
-        public bool IsActiveVersionDifferentFromLatestVersion()
+    public async Task<bool> ValidateHla(Locus locus, string hlaName, HlaValidationCategory targetHlaCategory)
+    {
+        return await hlaValidator.ValidateHla(locus, hlaName, new HlaValidationBehaviour
         {
-            var active = hlaNomenclatureVersionOrDefault;
-            var latest = wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion();
-            return active != latest;
+            HlaNomenclatureVersion = HlaNomenclatureVersion,
+            TargetHlaCategory = targetHlaCategory
+        });
+    }
+
+    private bool ShouldRecreate(CreationBehaviour creationConfig)
+    {
+        return creationConfig.CreationMode switch
+        {
+            CreationBehaviour.Mode.Latest => IsActiveVersionDifferentFromLatestVersion() || creationConfig.ShouldForce,
+            CreationBehaviour.Mode.Active => creationConfig.ShouldForce ? true : throw new NotImplementedException(),
+            CreationBehaviour.Mode.Specific => creationConfig.ShouldForce ? true : throw new NotImplementedException(),
+            _ => throw new ArgumentOutOfRangeException(nameof(creationConfig.CreationMode), creationConfig.CreationMode, "Unexpected enum value")
+        };
+    }
+
+    private string IdentifyVersionToRecreate(CreationBehaviour creationConfig)
+    {
+        return creationConfig.CreationMode switch
+        {
+            CreationBehaviour.Mode.Specific => creationConfig.SpecificVersion,
+            CreationBehaviour.Mode.Active => HlaNomenclatureVersion,
+            CreationBehaviour.Mode.Latest => wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion(),
+            _ => throw new ArgumentOutOfRangeException(nameof(creationConfig.CreationMode), creationConfig.CreationMode, "Unexpected enum value")
+        };
+    }
+
+    public async Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory)
+    {
+        return await hlaConverter.ConvertHla(locus, hlaName, new HlaConversionBehaviour
+        {
+            HlaNomenclatureVersion = HlaNomenclatureVersion,
+            TargetHlaCategory = targetHlaCategory
+        });
+    }
+
+    public async Task<LocusInfo<INullHandledHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping)
+    {
+        return await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(locus, locusTyping, HlaNomenclatureVersion);
+    }
+
+    public async Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName)
+    {
+        if (hlaName == newAllele)
+        {
+            return new HlaScoringMetadata(locus, hlaName,  new NewAlleleScoringInfo(), TypingMethod.Molecular);
         }
 
-        public async Task<string> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour)
-        {
-            var version = IdentifyVersionToRecreate(recreationBehaviour);
+        return await hlaScoringMetadataService.GetHlaMetadata(locus, hlaName, HlaNomenclatureVersion);
+    }
 
-            if (ShouldRecreate(recreationBehaviour))
-            {
-                logger.SendTrace($"HLA-METADATA-DICTIONARY REFRESH: Recreating HLA Metadata dictionary for desired HLA Nomenclature version.");
-                await recreateMetadataService.RefreshAllHlaMetadata(version);
-                logger.SendTrace($"HLA-METADATA-DICTIONARY REFRESH: HLA Metadata dictionary recreated at HLA Nomenclature version: {version}");
-            }
-            else
-            {
-                logger.SendTrace(
-                    $"HLA-METADATA-DICTIONARY REFRESH: HLA Metadata dictionary was already using the desired HLA Nomenclature version, so did not update.");
-            }
+    public async Task<string> GetDpb1TceGroup(string dpb1HlaName)
+    {
+        return await dpb1TceGroupMetadataService.GetDpb1TceGroup(dpb1HlaName, HlaNomenclatureVersion);
+    }
 
-            return version;
-        }
+    public async Task<string> ConvertGGroupToPGroup(Locus locus, string gGroup)
+    {
+        return await gGroupToPGroupMetadataService.ConvertGGroupToPGroup(locus, gGroup, HlaNomenclatureVersion);
+    }
 
-        public async Task<bool> ValidateHla(Locus locus, string hlaName, HlaValidationCategory targetHlaCategory)
-        {
-            return await hlaValidator.ValidateHla(locus, hlaName, new HlaValidationBehaviour
-            {
-                HlaNomenclatureVersion = HlaNomenclatureVersion,
-                TargetHlaCategory = targetHlaCategory
-            });
-        }
+    public async Task<string> ConvertSmallGGroupToPGroup(Locus locus, string smallGGroup)
+    {
+        return await smallGGroupToPGroupMetadataService.ConvertSmallGGroupToPGroup(locus, smallGGroup, HlaNomenclatureVersion);
+    }
 
-        private bool ShouldRecreate(CreationBehaviour creationConfig)
-        {
-            return creationConfig.CreationMode switch
-            {
-                CreationBehaviour.Mode.Latest => IsActiveVersionDifferentFromLatestVersion() || creationConfig.ShouldForce,
-                CreationBehaviour.Mode.Active => creationConfig.ShouldForce ? true : throw new NotImplementedException(),
-                CreationBehaviour.Mode.Specific => creationConfig.ShouldForce ? true : throw new NotImplementedException(),
-                _ => throw new ArgumentOutOfRangeException(nameof(creationConfig.CreationMode), creationConfig.CreationMode, "Unexpected enum value")
-            };
-        }
+    public async Task<IEnumerable<SerologyToAlleleMappingSummary>> GetSerologyToAlleleMappings(Locus locus, string serologyName)
+    {
+        return await serologyToAllelesMetadataService.GetSerologyToAlleleMappings(locus, serologyName, HlaNomenclatureVersion);
+    }
 
-        private string IdentifyVersionToRecreate(CreationBehaviour creationConfig)
-        {
-            return creationConfig.CreationMode switch
-            {
-                CreationBehaviour.Mode.Specific => creationConfig.SpecificVersion,
-                CreationBehaviour.Mode.Active => HlaNomenclatureVersion,
-                CreationBehaviour.Mode.Latest => wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion(),
-                _ => throw new ArgumentOutOfRangeException(nameof(creationConfig.CreationMode), creationConfig.CreationMode, "Unexpected enum value")
-            };
-        }
+    public async Task<IEnumerable<string>> GetAllPGroups()
+    {
+        return await hlaMatchingMetadataService.GetAllPGroups(HlaNomenclatureVersion);
+    }
 
-        public async Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory)
-        {
-            return await hlaConverter.ConvertHla(locus, hlaName, new HlaConversionBehaviour
-            {
-                HlaNomenclatureVersion = HlaNomenclatureVersion,
-                TargetHlaCategory = targetHlaCategory
-            });
-        }
+    public async Task<IDictionary<Locus, List<string>>> GetAllGGroups()
+    {
+        return await hlaScoringMetadataService.GetAllGGroups(HlaNomenclatureVersion);
+    }
 
-        public async Task<LocusInfo<INullHandledHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping)
-        {
-            return await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(locus, locusTyping, HlaNomenclatureVersion);
-        }
-
-        public async Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName)
-        {
-            if (hlaName == newAllele)
-            {
-                return new HlaScoringMetadata(locus, hlaName,  new NewAlleleScoringInfo(), TypingMethod.Molecular);
-            }
-
-            return await hlaScoringMetadataService.GetHlaMetadata(locus, hlaName, HlaNomenclatureVersion);
-        }
-
-        public async Task<string> GetDpb1TceGroup(string dpb1HlaName)
-        {
-            return await dpb1TceGroupMetadataService.GetDpb1TceGroup(dpb1HlaName, HlaNomenclatureVersion);
-        }
-
-        public async Task<string> ConvertGGroupToPGroup(Locus locus, string gGroup)
-        {
-            return await gGroupToPGroupMetadataService.ConvertGGroupToPGroup(locus, gGroup, HlaNomenclatureVersion);
-        }
-
-        public async Task<string> ConvertSmallGGroupToPGroup(Locus locus, string smallGGroup)
-        {
-            return await smallGGroupToPGroupMetadataService.ConvertSmallGGroupToPGroup(locus, smallGGroup, HlaNomenclatureVersion);
-        }
-
-        public async Task<IEnumerable<SerologyToAlleleMappingSummary>> GetSerologyToAlleleMappings(Locus locus, string serologyName)
-        {
-            return await serologyToAllelesMetadataService.GetSerologyToAlleleMappings(locus, serologyName, HlaNomenclatureVersion);
-        }
-
-        public async Task<IEnumerable<string>> GetAllPGroups()
-        {
-            return await hlaMatchingMetadataService.GetAllPGroups(HlaNomenclatureVersion);
-        }
-
-        public async Task<IDictionary<Locus, List<string>>> GetAllGGroups()
-        {
-            return await hlaScoringMetadataService.GetAllGGroups(HlaNomenclatureVersion);
-        }
-
-        public HlaMetadataCollection GenerateAllHlaMetadata(string version)
-        {
-            return hlaMetadataGenerationOrchestrator.GenerateAllHlaMetadata(version);
-        }
+    public HlaMetadataCollection GenerateAllHlaMetadata(string version)
+    {
+        return hlaMetadataGenerationOrchestrator.GenerateAllHlaMetadata(version);
     }
 }

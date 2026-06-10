@@ -1,6 +1,5 @@
-﻿namespace Atlas.DonorImport.ExternalInterface.Models
+﻿namespace Atlas.DonorImport.ExternalInterface.Models;
+
+public class DonorIdCheckFile : BlobImportFile
 {
-    public class DonorIdCheckFile : BlobImportFile
-    {
-    }
 }

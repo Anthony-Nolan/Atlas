@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 
-namespace Atlas.Common.ApplicationInsights
+namespace Atlas.Common.ApplicationInsights;
+
+public abstract class LoggingContext
 {
-    public abstract class LoggingContext
-    {
-        public abstract Dictionary<string, string> PropertiesToLog();
-    }
+    public abstract Dictionary<string, string> PropertiesToLog();
 }

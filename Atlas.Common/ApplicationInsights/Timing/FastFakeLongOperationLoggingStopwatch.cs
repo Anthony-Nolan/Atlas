@@ -6,19 +6,18 @@
 
 using System;
 
-namespace LoggingStopwatch
-{
-    /// <summary>
-    /// Defined in case you ever want something that looks like a ILongOperationLoggingStopwatch but does nothing, and has no overhead.
-    /// </summary>
-    public class FastFakeLongOperationLoggingStopwatch : FakeDisposable, ILongOperationLoggingStopwatch
-    {
-        private readonly IDisposable inner = new FakeDisposable();
-        public IDisposable TimeInnerOperation() => inner;
-    }
+namespace LoggingStopwatch;
 
-    public class FakeDisposable : IDisposable
-    {
-        public void Dispose() { /*Do Nothing*/ }
-    }
+/// <summary>
+/// Defined in case you ever want something that looks like a ILongOperationLoggingStopwatch but does nothing, and has no overhead.
+/// </summary>
+public class FastFakeLongOperationLoggingStopwatch : FakeDisposable, ILongOperationLoggingStopwatch
+{
+    private readonly IDisposable inner = new FakeDisposable();
+    public IDisposable TimeInnerOperation() => inner;
+}
+
+public class FakeDisposable : IDisposable
+{
+    public void Dispose() { /*Do Nothing*/ }
 }

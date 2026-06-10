@@ -2,32 +2,31 @@
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 
-namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders.ScoringInfoBuilders
+namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders.ScoringInfoBuilders;
+
+public class SerologyScoringInfoBuilder
 {
-    public class SerologyScoringInfoBuilder
+    private SerologyScoringInfo scoringInfo;
+
+    public SerologyScoringInfoBuilder()
     {
-        private SerologyScoringInfo scoringInfo;
-
-        public SerologyScoringInfoBuilder()
-        {
-            scoringInfo = new SerologyScoringInfo(
-                new List<SerologyEntry>(),
-                new List<string>(),
-                new List<string>()
-                );
-        }
+        scoringInfo = new SerologyScoringInfo(
+            new List<SerologyEntry>(),
+            new List<string>(),
+            new List<string>()
+        );
+    }
         
-        public SerologyScoringInfoBuilder WithMatchingSerologies(IEnumerable<SerologyEntry> serologyEntries)
-        {
-            var newScoringInfo = new SerologyScoringInfo(serologyEntries, scoringInfo.MatchingGGroups, scoringInfo.MatchingPGroups);
-            scoringInfo = newScoringInfo;
+    public SerologyScoringInfoBuilder WithMatchingSerologies(IEnumerable<SerologyEntry> serologyEntries)
+    {
+        var newScoringInfo = new SerologyScoringInfo(serologyEntries, scoringInfo.MatchingGGroups, scoringInfo.MatchingPGroups);
+        scoringInfo = newScoringInfo;
 
-            return this;
-        }
+        return this;
+    }
 
-        public SerologyScoringInfo Build()
-        {
-            return scoringInfo;
-        }
+    public SerologyScoringInfo Build()
+    {
+        return scoringInfo;
     }
 }

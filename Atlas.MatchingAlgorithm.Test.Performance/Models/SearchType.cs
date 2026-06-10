@@ -1,11 +1,10 @@
-﻿namespace Atlas.MatchingAlgorithm.Test.Performance.Models
+﻿namespace Atlas.MatchingAlgorithm.Test.Performance.Models;
+
+public enum SearchType
 {
-    public enum SearchType
-    {
-        SixOutOfSix,
-        AMismatchThreeLocus,
-        BMismatchThreeLocus,
-        Drb1MismatchThreeLocus,
-        TenOutOfTen
-    }
+    SixOutOfSix,
+    AMismatchThreeLocus,
+    BMismatchThreeLocus,
+    Drb1MismatchThreeLocus,
+    TenOutOfTen
 }

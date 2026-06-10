@@ -15,73 +15,72 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
-namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
+namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection;
+
+internal static class ServiceConfiguration
 {
-    internal static class ServiceConfiguration
+    private const string MatchPredictionSqlConnectionString = "MatchPredictionSql";
+
+    public static IServiceProvider CreateProvider()
     {
-        private const string MatchPredictionSqlConnectionString = "MatchPredictionSql";
+        var services = new ServiceCollection();
 
-        public static IServiceProvider CreateProvider()
-        {
-            var services = new ServiceCollection();
+        services.SetUpConfiguration();
+        services.RegisterMatchPredictionAlgorithm(
+            ApplicationInsightsSettingsReader,
+            _ => new HlaMetadataDictionarySettings(),
+            MacDictionarySettingsReader,
+            _ => new NotificationsServiceBusSettings(),
+            AzureStorageSettingsReader,
+            ConnectionStringReader(MatchPredictionSqlConnectionString)
+        );
+        services.RegisterIntegrationTestServices();
+        services.SetUpMockServices();
 
-            services.SetUpConfiguration();
-            services.RegisterMatchPredictionAlgorithm(
-                ApplicationInsightsSettingsReader,
-                _ => new HlaMetadataDictionarySettings(),
-                MacDictionarySettingsReader,
-                _ => new NotificationsServiceBusSettings(),
-                AzureStorageSettingsReader,
-                ConnectionStringReader(MatchPredictionSqlConnectionString)
-            );
-            services.RegisterIntegrationTestServices();
-            services.SetUpMockServices();
+        // This call must be made after `RegisterMatchPredictionAlgorithm()`, as it overrides the non-mock dictionary set up in that method
+        services.RegisterFileBasedHlaMetadataDictionaryForTesting(ApplicationInsightsSettingsReader, _ => new MacDictionarySettings());
+        services.SetUpMacDictionaryWithFileBackedRepository(
+            ApplicationInsightsSettingsReader,
+            MacDictionarySettingsReader);
 
-            // This call must be made after `RegisterMatchPredictionAlgorithm()`, as it overrides the non-mock dictionary set up in that method
-            services.RegisterFileBasedHlaMetadataDictionaryForTesting(ApplicationInsightsSettingsReader, _ => new MacDictionarySettings());
-            services.SetUpMacDictionaryWithFileBackedRepository(
-                ApplicationInsightsSettingsReader,
-                MacDictionarySettingsReader);
-
-            return services.BuildServiceProvider();
-        }
-
-        private static void SetUpConfiguration(this IServiceCollection services)
-        {
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .Build();
-
-            services.AddSingleton<IConfiguration>(sp => configuration);
-            services.RegisterAsOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
-        }
-
-        private static void RegisterIntegrationTestServices(this IServiceCollection services)
-        {
-            services.AddScoped(sp =>
-            {
-                var connectionString = ConnectionStringReader(MatchPredictionSqlConnectionString)(sp);
-                return new ContextFactory().Create(connectionString);
-            });
-
-            services.AddScoped<IHaplotypeFrequencyInspectionRepository>(sp =>
-                new HaplotypeFrequencyInspectionRepository(ConnectionStringReader(MatchPredictionSqlConnectionString)(sp))
-            );
-        }
-
-        private static void SetUpMockServices(this IServiceCollection services)
-        {
-            services.AddScoped(sp => Substitute.For<INotificationSender>());
-        }
-
-        private static Func<IServiceProvider, ApplicationInsightsSettings> ApplicationInsightsSettingsReader =>
-            _ => new ApplicationInsightsSettings { LogLevel = "Verbose" };
-
-        private static Func<IServiceProvider, AzureStorageSettings> AzureStorageSettingsReader =>
-            _ => new AzureStorageSettings { ConnectionString = "UseDevelopmentStorage=true", MatchPredictionResultsBlobContainer = "mpa-results" };
-
-        private static Func<IServiceProvider, MacDictionarySettings> MacDictionarySettingsReader =>
-            _ => new MacDictionarySettings();
+        return services.BuildServiceProvider();
     }
+
+    private static void SetUpConfiguration(this IServiceCollection services)
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .Build();
+
+        services.AddSingleton<IConfiguration>(sp => configuration);
+        services.RegisterAsOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
+    }
+
+    private static void RegisterIntegrationTestServices(this IServiceCollection services)
+    {
+        services.AddScoped(sp =>
+        {
+            var connectionString = ConnectionStringReader(MatchPredictionSqlConnectionString)(sp);
+            return new ContextFactory().Create(connectionString);
+        });
+
+        services.AddScoped<IHaplotypeFrequencyInspectionRepository>(sp =>
+            new HaplotypeFrequencyInspectionRepository(ConnectionStringReader(MatchPredictionSqlConnectionString)(sp))
+        );
+    }
+
+    private static void SetUpMockServices(this IServiceCollection services)
+    {
+        services.AddScoped(sp => Substitute.For<INotificationSender>());
+    }
+
+    private static Func<IServiceProvider, ApplicationInsightsSettings> ApplicationInsightsSettingsReader =>
+        _ => new ApplicationInsightsSettings { LogLevel = "Verbose" };
+
+    private static Func<IServiceProvider, AzureStorageSettings> AzureStorageSettingsReader =>
+        _ => new AzureStorageSettings { ConnectionString = "UseDevelopmentStorage=true", MatchPredictionResultsBlobContainer = "mpa-results" };
+
+    private static Func<IServiceProvider, MacDictionarySettings> MacDictionarySettingsReader =>
+        _ => new MacDictionarySettings();
 }

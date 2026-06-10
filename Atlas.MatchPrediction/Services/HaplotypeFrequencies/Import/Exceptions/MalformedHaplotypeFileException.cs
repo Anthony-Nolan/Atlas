@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions
+namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
+
+internal class MalformedHaplotypeFileException : Exception
 {
-    internal class MalformedHaplotypeFileException : Exception
+    internal MalformedHaplotypeFileException(string message) : base(message)
     {
-        internal MalformedHaplotypeFileException(string message) : base(message)
-        {
-        }
     }
 }

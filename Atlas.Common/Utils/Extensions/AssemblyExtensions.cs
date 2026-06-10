@@ -3,28 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Atlas.Common.Utils.Extensions
+namespace Atlas.Common.Utils.Extensions;
+
+public static class AssemblyExtensions
 {
-    public static class AssemblyExtensions
+    private const string AtlasAssemblyName = "Atlas";
+
+    public static IEnumerable<Assembly> LoadAtlasAssemblies(this Assembly assembly, string suffix = null)
     {
-        private const string AtlasAssemblyName = "Atlas";
-
-        public static IEnumerable<Assembly> LoadAtlasAssemblies(this Assembly assembly, string suffix = null)
+        if (AssemblyNameMatches(suffix)(assembly.GetName()))
         {
-            if (AssemblyNameMatches(suffix)(assembly.GetName()))
-            {
-                yield return assembly;
-            }
-            foreach (var name in assembly.GetReferencedAssemblies().Where(AssemblyNameMatches(suffix)))
-            {
-                yield return Assembly.Load(name);
-            }
+            yield return assembly;
         }
-
-        private static Func<AssemblyName, bool> AssemblyNameMatches(string suffix)
+        foreach (var name in assembly.GetReferencedAssemblies().Where(AssemblyNameMatches(suffix)))
         {
-            var prefix = suffix != null ? $"{AtlasAssemblyName}.{suffix}" : AtlasAssemblyName;
-            return name => name.Name.StartsWith(prefix);
+            yield return Assembly.Load(name);
         }
+    }
+
+    private static Func<AssemblyName, bool> AssemblyNameMatches(string suffix)
+    {
+        var prefix = suffix != null ? $"{AtlasAssemblyName}.{suffix}" : AtlasAssemblyName;
+        return name => name.Name.StartsWith(prefix);
     }
 }

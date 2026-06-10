@@ -18,160 +18,159 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 
-namespace Atlas.DonorImport.Test.Services.DonorChecker
+namespace Atlas.DonorImport.Test.Services.DonorChecker;
+
+[TestFixture]
+internal class DonorIdCheckerTests
 {
-    [TestFixture]
-    internal class DonorIdCheckerTests
+    private const string RecordIdPrefix = "record-id-";
+    private const int BatchSize = 10000;
+
+    private IDonorIdCheckerFileParser fileParser;
+    private IDonorReadRepository donorReadRepository;
+    private IDonorIdCheckerBlobStorageClient blobStorageClient;
+    private IDonorIdCheckerMessageSender messageSender;
+    private INotificationSender notificationSender;
+    private IAtlasLogger logger;
+    private ILazilyParsingDonorIdFile donorIdFile;
+
+    private IDonorIdChecker donorIdChecker;
+
+    [SetUp]
+    public void SetUp()
     {
-        private const string RecordIdPrefix = "record-id-";
-        private const int BatchSize = 10000;
+        fileParser = Substitute.For<IDonorIdCheckerFileParser>();
+        donorReadRepository = Substitute.For<IDonorReadRepository>();
+        blobStorageClient = Substitute.For<IDonorIdCheckerBlobStorageClient>();
+        messageSender = Substitute.For<IDonorIdCheckerMessageSender>();
+        notificationSender = Substitute.For<INotificationSender>();
+        logger = Substitute.For<IAtlasLogger>();
 
-        private IDonorIdCheckerFileParser fileParser;
-        private IDonorReadRepository donorReadRepository;
-        private IDonorIdCheckerBlobStorageClient blobStorageClient;
-        private IDonorIdCheckerMessageSender messageSender;
-        private INotificationSender notificationSender;
-        private IAtlasLogger logger;
-        private ILazilyParsingDonorIdFile donorIdFile;
+        donorIdFile = Substitute.For<ILazilyParsingDonorIdFile>();
+        donorIdFile.ReadLazyDonorIds().Returns(Enumerable.Empty<string>());
+        fileParser.PrepareToLazilyParsingDonorIdFile(Arg.Any<Stream>())
+            .Returns(donorIdFile);
 
-        private IDonorIdChecker donorIdChecker;
+        donorIdChecker = new DonorIdChecker(fileParser, donorReadRepository, blobStorageClient, messageSender, notificationSender, logger);
+    }
 
-        [SetUp]
-        public void SetUp()
-        {
-            fileParser = Substitute.For<IDonorIdCheckerFileParser>();
-            donorReadRepository = Substitute.For<IDonorReadRepository>();
-            blobStorageClient = Substitute.For<IDonorIdCheckerBlobStorageClient>();
-            messageSender = Substitute.For<IDonorIdCheckerMessageSender>();
-            notificationSender = Substitute.For<INotificationSender>();
-            logger = Substitute.For<IAtlasLogger>();
+    [Test]
+    public async Task CheckDonorIdsFromFile_ParsesInputFile()
+    {
+        var file = DonorIdCheckFileBuilder.New.Build();
 
-            donorIdFile = Substitute.For<ILazilyParsingDonorIdFile>();
-            donorIdFile.ReadLazyDonorIds().Returns(Enumerable.Empty<string>());
-            fileParser.PrepareToLazilyParsingDonorIdFile(Arg.Any<Stream>())
-                .Returns(donorIdFile);
-
-            donorIdChecker = new DonorIdChecker(fileParser, donorReadRepository, blobStorageClient, messageSender, notificationSender, logger);
-        }
-
-        [Test]
-        public async Task CheckDonorIdsFromFile_ParsesInputFile()
-        {
-            var file = DonorIdCheckFileBuilder.New.Build();
-
-            await donorIdChecker.CheckDonorIdsFromFile(file);
+        await donorIdChecker.CheckDonorIdsFromFile(file);
             
-            fileParser.Received().PrepareToLazilyParsingDonorIdFile(file.Contents);
-        }
+        fileParser.Received().PrepareToLazilyParsingDonorIdFile(file.Contents);
+    }
 
-        [Test]
-        public async Task CheckDonorIdsFromFile_ReadsExternalDonorCodesOnlyOnce()
-        {
-            const string registryCode = "registryCode";
-            const ImportDonorType donorType = ImportDonorType.Adult;
+    [Test]
+    public async Task CheckDonorIdsFromFile_ReadsExternalDonorCodesOnlyOnce()
+    {
+        const string registryCode = "registryCode";
+        const ImportDonorType donorType = ImportDonorType.Adult;
 
-            donorIdFile.DonorPool.Returns(registryCode);
-            donorIdFile.DonorType.Returns(donorType);
-            donorIdFile.ReadLazyDonorIds().Returns(Enumerable.Range(0, BatchSize * 2).Select(id => $"{RecordIdPrefix}{id}"));
+        donorIdFile.DonorPool.Returns(registryCode);
+        donorIdFile.DonorType.Returns(donorType);
+        donorIdFile.ReadLazyDonorIds().Returns(Enumerable.Range(0, BatchSize * 2).Select(id => $"{RecordIdPrefix}{id}"));
 
-            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
+        await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await donorReadRepository.Received(1).GetExternalDonorCodes(registryCode, DatabaseDonorType.Adult);
-        }
+        await donorReadRepository.Received(1).GetExternalDonorCodes(registryCode, DatabaseDonorType.Adult);
+    }
 
-        [Test]
-        public async Task CheckDonorIdsFromFile_WhenAbsentDonors_UploadsResults()
-        {
-            var absentDonorIds = Enumerable.Range(0, 100).Select(id => $"absent-id-{id}").ToList();
-            var presentDonorIds = Enumerable.Range(0, 100).Select(id => $"{RecordIdPrefix}{id}").ToList();
-            donorIdFile.ReadLazyDonorIds().Returns(absentDonorIds.Concat(presentDonorIds));
-            donorReadRepository.GetExternalDonorCodes(Arg.Any<string>(), Arg.Any<DatabaseDonorType>()).Returns(presentDonorIds);
+    [Test]
+    public async Task CheckDonorIdsFromFile_WhenAbsentDonors_UploadsResults()
+    {
+        var absentDonorIds = Enumerable.Range(0, 100).Select(id => $"absent-id-{id}").ToList();
+        var presentDonorIds = Enumerable.Range(0, 100).Select(id => $"{RecordIdPrefix}{id}").ToList();
+        donorIdFile.ReadLazyDonorIds().Returns(absentDonorIds.Concat(presentDonorIds));
+        donorReadRepository.GetExternalDonorCodes(Arg.Any<string>(), Arg.Any<DatabaseDonorType>()).Returns(presentDonorIds);
 
-            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
+        await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await blobStorageClient.Received().UploadResults(Arg.Is<DonorIdCheckerResults>(r => r.AbsentRecordIds.Count == absentDonorIds.Count && absentDonorIds.All(id => r.AbsentRecordIds.Contains(id))), Arg.Any<string>());
-        }
+        await blobStorageClient.Received().UploadResults(Arg.Is<DonorIdCheckerResults>(r => r.AbsentRecordIds.Count == absentDonorIds.Count && absentDonorIds.All(id => r.AbsentRecordIds.Contains(id))), Arg.Any<string>());
+    }
 
-        [Test]
-        public async Task CheckDonorIdsFromFile_WhenOrphanedDonors_UploadsResults()
-        {
-            var presentDonorIds = Enumerable.Range(0, 100).Select(id => $"{RecordIdPrefix}{id}").ToList();
-            var orphanedDonorIds = Enumerable.Range(100, 100).Select(id => $"absent-id-{id}").ToList();
-            donorIdFile.ReadLazyDonorIds().Returns(presentDonorIds);
-            donorReadRepository.GetExternalDonorCodes(Arg.Any<string>(), Arg.Any<DatabaseDonorType>()).Returns(presentDonorIds.Concat(orphanedDonorIds).ToList());
+    [Test]
+    public async Task CheckDonorIdsFromFile_WhenOrphanedDonors_UploadsResults()
+    {
+        var presentDonorIds = Enumerable.Range(0, 100).Select(id => $"{RecordIdPrefix}{id}").ToList();
+        var orphanedDonorIds = Enumerable.Range(100, 100).Select(id => $"absent-id-{id}").ToList();
+        donorIdFile.ReadLazyDonorIds().Returns(presentDonorIds);
+        donorReadRepository.GetExternalDonorCodes(Arg.Any<string>(), Arg.Any<DatabaseDonorType>()).Returns(presentDonorIds.Concat(orphanedDonorIds).ToList());
 
-            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
+        await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await blobStorageClient.Received().UploadResults(Arg.Is<DonorIdCheckerResults>(r => r.OrphanedRecordIds.Count == orphanedDonorIds.Count && orphanedDonorIds.All(id => r.OrphanedRecordIds.Contains(id))), Arg.Any<string>());
-        }
+        await blobStorageClient.Received().UploadResults(Arg.Is<DonorIdCheckerResults>(r => r.OrphanedRecordIds.Count == orphanedDonorIds.Count && orphanedDonorIds.All(id => r.OrphanedRecordIds.Contains(id))), Arg.Any<string>());
+    }
 
-        [Test]
-        public async Task CheckDonorIdsFromFile_WhenNoResults_DoesNotUploadResults()
-        {
-            var donorRecordIds = Enumerable.Range(0, 100).Select(id => $"{RecordIdPrefix}{id}").ToList();
-            donorIdFile.ReadLazyDonorIds().Returns(donorRecordIds);
-            donorReadRepository.GetExternalDonorCodes(Arg.Any<string>(), Arg.Any<DatabaseDonorType>()).Returns(donorRecordIds);
+    [Test]
+    public async Task CheckDonorIdsFromFile_WhenNoResults_DoesNotUploadResults()
+    {
+        var donorRecordIds = Enumerable.Range(0, 100).Select(id => $"{RecordIdPrefix}{id}").ToList();
+        donorIdFile.ReadLazyDonorIds().Returns(donorRecordIds);
+        donorReadRepository.GetExternalDonorCodes(Arg.Any<string>(), Arg.Any<DatabaseDonorType>()).Returns(donorRecordIds);
 
-            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
+        await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await blobStorageClient.DidNotReceive().UploadResults(Arg.Any<DonorCheckerResults>(), Arg.Any<string>());
-        }
+        await blobStorageClient.DidNotReceive().UploadResults(Arg.Any<DonorCheckerResults>(), Arg.Any<string>());
+    }
 
-        [Test]
-        public async Task CheckDonorIdsFromFile_SendsResultMessage()
-        {
-            var donorRecordIds = Enumerable.Range(0, 100).Select(id => $"{RecordIdPrefix}{id}").ToList();
-            donorIdFile.ReadLazyDonorIds().Returns(donorRecordIds);
-            donorReadRepository.GetExternalDonorCodes(Arg.Any<string>(), Arg.Any<DatabaseDonorType>()).Returns(new List<string>());
+    [Test]
+    public async Task CheckDonorIdsFromFile_SendsResultMessage()
+    {
+        var donorRecordIds = Enumerable.Range(0, 100).Select(id => $"{RecordIdPrefix}{id}").ToList();
+        donorIdFile.ReadLazyDonorIds().Returns(donorRecordIds);
+        donorReadRepository.GetExternalDonorCodes(Arg.Any<string>(), Arg.Any<DatabaseDonorType>()).Returns(new List<string>());
 
-            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
+        await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await messageSender.Received().SendSuccessDonorCheckMessage(Arg.Any<string>(), Arg.Is<int>(v => v > 0), Arg.Any<string>());
-        }
+        await messageSender.Received().SendSuccessDonorCheckMessage(Arg.Any<string>(), Arg.Is<int>(v => v > 0), Arg.Any<string>());
+    }
 
-        [Test]
-        public async Task CheckDonorIdsFromFile_WhenNoResults_SendsResultMessage()
-        {
-            var donorRecordIds = Enumerable.Range(0, 100).Select(id => $"{RecordIdPrefix}{id}").ToList();
-            donorIdFile.ReadLazyDonorIds().Returns(donorRecordIds);
-            donorReadRepository.GetExternalDonorCodes(Arg.Any<string>(), Arg.Any<DatabaseDonorType>()).Returns(donorRecordIds);
+    [Test]
+    public async Task CheckDonorIdsFromFile_WhenNoResults_SendsResultMessage()
+    {
+        var donorRecordIds = Enumerable.Range(0, 100).Select(id => $"{RecordIdPrefix}{id}").ToList();
+        donorIdFile.ReadLazyDonorIds().Returns(donorRecordIds);
+        donorReadRepository.GetExternalDonorCodes(Arg.Any<string>(), Arg.Any<DatabaseDonorType>()).Returns(donorRecordIds);
 
-            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
+        await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
             
-            await messageSender.Received().SendSuccessDonorCheckMessage(Arg.Any<string>(), 0, Arg.Any<string>());
-        }
+        await messageSender.Received().SendSuccessDonorCheckMessage(Arg.Any<string>(), 0, Arg.Any<string>());
+    }
 
-        [Test]
-        public async Task CheckDonorIdsFromFile_WhenEmptyDonorFileException_SendsAlert()
-        {
-            donorIdFile.ReadLazyDonorIds().Throws<EmptyDonorFileException>();
+    [Test]
+    public async Task CheckDonorIdsFromFile_WhenEmptyDonorFileException_SendsAlert()
+    {
+        donorIdFile.ReadLazyDonorIds().Throws<EmptyDonorFileException>();
 
-            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
+        await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await notificationSender.Received().SendAlert("Donor Ids file was present but it was empty.", $"Donor Ids file: file-location", Priority.Medium, Arg.Any<string>());
-        }
+        await notificationSender.Received().SendAlert("Donor Ids file was present but it was empty.", $"Donor Ids file: file-location", Priority.Medium, Arg.Any<string>());
+    }
 
-        [Test]
-        public async Task CheckDonorIdsFromFile_WhenMalformedDonorFileException_SendsAlert()
-        {
-            var exception = new MalformedDonorFileException("Error message");
-            donorIdFile.ReadLazyDonorIds().Throws(exception);
+    [Test]
+    public async Task CheckDonorIdsFromFile_WhenMalformedDonorFileException_SendsAlert()
+    {
+        var exception = new MalformedDonorFileException("Error message");
+        donorIdFile.ReadLazyDonorIds().Throws(exception);
 
-            await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
+        await donorIdChecker.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build());
 
-            await notificationSender.Received().SendAlert(exception.Message, Arg.Any<string>(), Priority.Medium, Arg.Any<string>());
-        }
+        await notificationSender.Received().SendAlert(exception.Message, Arg.Any<string>(), Priority.Medium, Arg.Any<string>());
+    }
 
-        [Test]
-        public async Task CheckDonorIdsFromFile_WhenUnexpectedException_LogsException()
-        {
-            var exception = new Exception("Error message");
-            donorIdFile.ReadLazyDonorIds().Throws(exception);
+    [Test]
+    public async Task CheckDonorIdsFromFile_WhenUnexpectedException_LogsException()
+    {
+        var exception = new Exception("Error message");
+        donorIdFile.ReadLazyDonorIds().Throws(exception);
 
-            await donorIdChecker.Invoking(p => p.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build()))
-                .Should().ThrowAsync<Exception>();
+        await donorIdChecker.Invoking(p => p.CheckDonorIdsFromFile(DonorIdCheckFileBuilder.New.Build()))
+            .Should().ThrowAsync<Exception>();
 
-            logger.Received().SendException(exception, Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>());
-        }
+        logger.Received().SendException(exception, Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>());
     }
 }

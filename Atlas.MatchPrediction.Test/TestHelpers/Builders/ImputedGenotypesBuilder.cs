@@ -6,76 +6,75 @@ using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Models;
 
-namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
+namespace Atlas.MatchPrediction.Test.TestHelpers.Builders;
+
+internal static class BuilderDefaults
 {
-    internal static class BuilderDefaults
+    public const string HlaName = "hla";
+    public const decimal Likelihood = 0.000001m;
+    public const HaplotypeTypingCategory TypingCategory = HaplotypeTypingCategory.SmallGGroup;
+}
+
+internal class ImputedGenotypesBuilder
+{
+    private ImputedGenotypes imputedGenotypes;
+
+    public ImputedGenotypesBuilder()
     {
-        public const string HlaName = "hla";
-        public const decimal Likelihood = 0.000001m;
-        public const HaplotypeTypingCategory TypingCategory = HaplotypeTypingCategory.SmallGGroup;
+        imputedGenotypes = new ImputedGenotypes
+        {
+            GenotypeLikelihoods = new Dictionary<PhenotypeInfo<string>, decimal>(),
+            Genotypes = new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>>(),
+            SumOfLikelihoods = 0m
+        };
     }
 
-    internal class ImputedGenotypesBuilder
+    public ImputedGenotypesBuilder Default()
     {
-        private ImputedGenotypes imputedGenotypes;
-
-        public ImputedGenotypesBuilder()
+        imputedGenotypes = new ImputedGenotypes
         {
-            imputedGenotypes = new ImputedGenotypes
+            GenotypeLikelihoods = new Dictionary<PhenotypeInfo<string>, decimal>
             {
-                GenotypeLikelihoods = new Dictionary<PhenotypeInfo<string>, decimal>(),
-                Genotypes = new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>>(),
-                SumOfLikelihoods = 0m
-            };
-        }
+                {new PhenotypeInfoBuilder<string>(BuilderDefaults.HlaName).Build(), BuilderDefaults.Likelihood}
+            },
+            Genotypes = new[] { new KnownTypingCategoryGenotypeBuilder(BuilderDefaults.HlaName).Build() }.ToHashSet(),
+            SumOfLikelihoods = BuilderDefaults.Likelihood
+        };
 
-        public ImputedGenotypesBuilder Default()
-        {
-            imputedGenotypes = new ImputedGenotypes
-            {
-                GenotypeLikelihoods = new Dictionary<PhenotypeInfo<string>, decimal>
-                {
-                    {new PhenotypeInfoBuilder<string>(BuilderDefaults.HlaName).Build(), BuilderDefaults.Likelihood}
-                },
-                Genotypes = new[] { new KnownTypingCategoryGenotypeBuilder(BuilderDefaults.HlaName).Build() }.ToHashSet(),
-                SumOfLikelihoods = BuilderDefaults.Likelihood
-            };
-
-            return this;
-        }
-
-        public ImputedGenotypes Build()
-        {
-            return imputedGenotypes;
-        }
+        return this;
     }
 
-    internal class KnownTypingCategoryGenotypeBuilder : PhenotypeInfoBuilder<HlaAtKnownTypingCategory>
+    public ImputedGenotypes Build()
     {
-        public KnownTypingCategoryGenotypeBuilder(string hlaName)
-            : base(new HlaAtKnownTypingCategory(hlaName, BuilderDefaults.TypingCategory))
-        {
-        }
+        return imputedGenotypes;
+    }
+}
+
+internal class KnownTypingCategoryGenotypeBuilder : PhenotypeInfoBuilder<HlaAtKnownTypingCategory>
+{
+    public KnownTypingCategoryGenotypeBuilder(string hlaName)
+        : base(new HlaAtKnownTypingCategory(hlaName, BuilderDefaults.TypingCategory))
+    {
+    }
+}
+
+internal class GenotypeAtDesiredResolutionsBuilder
+{
+    private GenotypeAtDesiredResolutions genotypeAtDesiredResolutions;
+
+    public GenotypeAtDesiredResolutionsBuilder Default()
+    {
+        var haplotypeResolutions = new KnownTypingCategoryGenotypeBuilder(BuilderDefaults.HlaName).Build();
+        genotypeAtDesiredResolutions = new GenotypeAtDesiredResolutions(
+            haplotypeResolutions, 
+            new PhenotypeInfo<string>(BuilderDefaults.HlaName),
+            BuilderDefaults.Likelihood);
+
+        return this;
     }
 
-    internal class GenotypeAtDesiredResolutionsBuilder
+    public GenotypeAtDesiredResolutions Build()
     {
-        private GenotypeAtDesiredResolutions genotypeAtDesiredResolutions;
-
-        public GenotypeAtDesiredResolutionsBuilder Default()
-        {
-            var haplotypeResolutions = new KnownTypingCategoryGenotypeBuilder(BuilderDefaults.HlaName).Build();
-            genotypeAtDesiredResolutions = new GenotypeAtDesiredResolutions(
-                haplotypeResolutions, 
-                new PhenotypeInfo<string>(BuilderDefaults.HlaName),
-                BuilderDefaults.Likelihood);
-
-            return this;
-        }
-
-        public GenotypeAtDesiredResolutions Build()
-        {
-            return genotypeAtDesiredResolutions;
-        }
+        return genotypeAtDesiredResolutions;
     }
 }

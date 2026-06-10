@@ -10,47 +10,46 @@ using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
-namespace Atlas.MatchPrediction.Test.Verification
+namespace Atlas.MatchPrediction.Test.Verification;
+
+internal static class Startup
 {
-    internal static class Startup
+    public static void Configure(IServiceCollection services)
     {
-        public static void Configure(IServiceCollection services)
-        {
-            // Stops the Visual Studio debug window from being flooded with not-very-helpful AI telemetry messages!
-            TelemetryDebugWriter.IsTracingDisabled = true;
+        // Stops the Visual Studio debug window from being flooded with not-very-helpful AI telemetry messages!
+        TelemetryDebugWriter.IsTracingDisabled = true;
 
-            RegisterSettings(services);
+        RegisterSettings(services);
 
-            services.AddHealthChecks();
+        services.AddHealthChecks();
 
-            services.RegisterVerificationServices(
-                ConnectionStringReader("MatchPredictionVerification:Sql"),
-                ConnectionStringReader("MatchPrediction:Sql"),
-                ConnectionStringReader("DonorImport:Sql"),
-                OptionsReaderFor<VerificationAzureStorageSettings>(),
-                OptionsReaderFor<DataRefreshSettings>(),
-                OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<MacDictionarySettings>(),
-                OptionsReaderFor<MacDownloadSettings>());
+        services.RegisterVerificationServices(
+            ConnectionStringReader("MatchPredictionVerification:Sql"),
+            ConnectionStringReader("MatchPrediction:Sql"),
+            ConnectionStringReader("DonorImport:Sql"),
+            OptionsReaderFor<VerificationAzureStorageSettings>(),
+            OptionsReaderFor<DataRefreshSettings>(),
+            OptionsReaderFor<HlaMetadataDictionarySettings>(),
+            OptionsReaderFor<ApplicationInsightsSettings>(),
+            OptionsReaderFor<MacDictionarySettings>(),
+            OptionsReaderFor<MacDownloadSettings>());
 
-            services.RegisterMatchingAlgorithmScoring(
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                OptionsReaderFor<MacDictionarySettings>(),
-                ConnectionStringReader("Matching:PersistentSql")
-            );
-        }
+        services.RegisterMatchingAlgorithmScoring(
+            OptionsReaderFor<ApplicationInsightsSettings>(),
+            OptionsReaderFor<HlaMetadataDictionarySettings>(),
+            OptionsReaderFor<MacDictionarySettings>(),
+            ConnectionStringReader("Matching:PersistentSql")
+        );
+    }
 
-        private static void RegisterSettings(IServiceCollection services)
-        {
-            services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterAsOptions<VerificationAzureStorageSettings>("AzureStorage");
-            services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
-            services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
-            services.RegisterAsOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
-            services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
-            services.RegisterAsOptions<MacDownloadSettings>("MacDictionary:Download");
-        }
+    private static void RegisterSettings(IServiceCollection services)
+    {
+        services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
+        services.RegisterAsOptions<VerificationAzureStorageSettings>("AzureStorage");
+        services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
+        services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
+        services.RegisterAsOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
+        services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
+        services.RegisterAsOptions<MacDownloadSettings>("MacDictionary:Download");
     }
 }

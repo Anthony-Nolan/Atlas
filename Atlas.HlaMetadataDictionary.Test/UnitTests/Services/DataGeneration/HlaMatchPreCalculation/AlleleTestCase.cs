@@ -1,10 +1,9 @@
 using Atlas.Common.Public.Models.GeneticData;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation;
+
+public class AlleleTestCase
 {
-    public class AlleleTestCase
-    {
-        public Locus Locus { get; set; }
-        public string Name { get; set; }
-    }
+    public Locus Locus { get; set; }
+    public string Name { get; set; }
 }

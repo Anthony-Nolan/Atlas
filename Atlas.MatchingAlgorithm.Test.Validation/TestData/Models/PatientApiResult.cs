@@ -1,10 +1,9 @@
 ﻿using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
+
+public class PatientApiResult
 {
-    public class PatientApiResult
-    {
-        public IExpectedDonorProvider ExpectedDonorProvider;
-        public SearchAlgorithmApiResult ApiResult;
-    }
+    public IExpectedDonorProvider ExpectedDonorProvider;
+    public SearchAlgorithmApiResult ApiResult;
 }

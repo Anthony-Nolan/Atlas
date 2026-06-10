@@ -1,23 +1,22 @@
 ﻿using Atlas.Common.Public.Models.GeneticData;
 
-namespace Atlas.MatchPrediction.Test.Verification.Models
+namespace Atlas.MatchPrediction.Test.Verification.Models;
+
+internal class CompileResultsRequest
 {
-    internal class CompileResultsRequest
+    public int VerificationRunId { get; set; }
+    public int MismatchCount { get; set; }
+
+    /// <summary>
+    /// Leave null for Cross-Loci prediction.
+    /// </summary>
+    public Locus? Locus { get; set; }
+
+    public string LocusName => Locus == null ? "CrossLoci" : Locus.ToString();
+    public string PredictionName => $"{LocusName}_{MismatchCount}mm";
+
+    public override string ToString()
     {
-        public int VerificationRunId { get; set; }
-        public int MismatchCount { get; set; }
-
-        /// <summary>
-        /// Leave null for Cross-Loci prediction.
-        /// </summary>
-        public Locus? Locus { get; set; }
-
-        public string LocusName => Locus == null ? "CrossLoci" : Locus.ToString();
-        public string PredictionName => $"{LocusName}_{MismatchCount}mm";
-
-        public override string ToString()
-        {
-            return $"RunId: {VerificationRunId}, Prediction: {PredictionName}";
-        }
+        return $"RunId: {VerificationRunId}, Prediction: {PredictionName}";
     }
 }

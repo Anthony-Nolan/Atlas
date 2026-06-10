@@ -3,36 +3,35 @@ using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 
-namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories
+namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+
+public interface IActiveRepositoryFactory : ITransientRepositoryFactory
 {
-    public interface IActiveRepositoryFactory : ITransientRepositoryFactory
+    IDonorSearchRepository GetDonorSearchRepository();
+    IDonorManagementLogRepository GetDonorManagementLogRepository();
+}
+
+public class ActiveRepositoryFactory : TransientRepositoryFactoryBase, IActiveRepositoryFactory
+{
+    private readonly IMatchingAlgorithmSearchLogger searchLogger;
+
+    // ReSharper disable once SuggestBaseTypeForParameter
+    public ActiveRepositoryFactory(
+        ActiveTransientSqlConnectionStringProvider activeConnectionStringProvider,
+        IMatchingAlgorithmImportLogger logger,
+        IMatchingAlgorithmSearchLogger searchLogger)
+        : base(activeConnectionStringProvider, logger)
     {
-        IDonorSearchRepository GetDonorSearchRepository();
-        IDonorManagementLogRepository GetDonorManagementLogRepository();
+        this.searchLogger = searchLogger;
     }
 
-    public class ActiveRepositoryFactory : TransientRepositoryFactoryBase, IActiveRepositoryFactory
+    public IDonorSearchRepository GetDonorSearchRepository()
     {
-        private readonly IMatchingAlgorithmSearchLogger searchLogger;
+        return new DonorSearchRepository(ConnectionStringProvider, searchLogger);
+    }
 
-        // ReSharper disable once SuggestBaseTypeForParameter
-        public ActiveRepositoryFactory(
-            ActiveTransientSqlConnectionStringProvider activeConnectionStringProvider,
-            IMatchingAlgorithmImportLogger logger,
-            IMatchingAlgorithmSearchLogger searchLogger)
-            : base(activeConnectionStringProvider, logger)
-        {
-            this.searchLogger = searchLogger;
-        }
-
-        public IDonorSearchRepository GetDonorSearchRepository()
-        {
-            return new DonorSearchRepository(ConnectionStringProvider, searchLogger);
-        }
-
-        public IDonorManagementLogRepository GetDonorManagementLogRepository()
-        {
-            return new DonorManagementLogRepository(ConnectionStringProvider);
-        }
+    public IDonorManagementLogRepository GetDonorManagementLogRepository()
+    {
+        return new DonorManagementLogRepository(ConnectionStringProvider);
     }
 }

@@ -4,52 +4,51 @@ using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Data.Services;
 
-namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories
+namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+
+public interface ITransientRepositoryFactory
 {
-    public interface ITransientRepositoryFactory
-    {
-        IHlaNamesRepository GetHlaNamesRepository(); 
-        IHlaImportRepository GetHlaImportRepository(); 
-        IPGroupRepository GetPGroupRepository();
-        IDonorInspectionRepository GetDonorInspectionRepository();
-        IDonorUpdateRepository GetDonorUpdateRepository();
-    }
+    IHlaNamesRepository GetHlaNamesRepository(); 
+    IHlaImportRepository GetHlaImportRepository(); 
+    IPGroupRepository GetPGroupRepository();
+    IDonorInspectionRepository GetDonorInspectionRepository();
+    IDonorUpdateRepository GetDonorUpdateRepository();
+}
     
-    public abstract class TransientRepositoryFactoryBase : ITransientRepositoryFactory
+public abstract class TransientRepositoryFactoryBase : ITransientRepositoryFactory
+{
+    protected readonly IConnectionStringProvider ConnectionStringProvider;
+    protected readonly IMatchingAlgorithmImportLogger logger;
+
+    protected TransientRepositoryFactoryBase(IConnectionStringProvider connectionStringProvider, IMatchingAlgorithmImportLogger logger)
     {
-        protected readonly IConnectionStringProvider ConnectionStringProvider;
-        protected readonly IMatchingAlgorithmImportLogger logger;
+        this.ConnectionStringProvider = connectionStringProvider;
+        this.logger = logger;
+    }
 
-        protected TransientRepositoryFactoryBase(IConnectionStringProvider connectionStringProvider, IMatchingAlgorithmImportLogger logger)
-        {
-            this.ConnectionStringProvider = connectionStringProvider;
-            this.logger = logger;
-        }
+    public IHlaNamesRepository GetHlaNamesRepository()
+    {
+        return new HlaNamesRepository(ConnectionStringProvider);
+    }
 
-        public IHlaNamesRepository GetHlaNamesRepository()
-        {
-            return new HlaNamesRepository(ConnectionStringProvider);
-        }
+    /// <inheritdoc />
+    public IHlaImportRepository GetHlaImportRepository()
+    {
+        return new HlaImportRepository(GetHlaNamesRepository(), GetPGroupRepository(), ConnectionStringProvider);
+    }
 
-        /// <inheritdoc />
-        public IHlaImportRepository GetHlaImportRepository()
-        {
-            return new HlaImportRepository(GetHlaNamesRepository(), GetPGroupRepository(), ConnectionStringProvider);
-        }
+    public IPGroupRepository GetPGroupRepository()
+    {
+        return new PGroupRepository(ConnectionStringProvider);
+    }
 
-        public IPGroupRepository GetPGroupRepository()
-        {
-            return new PGroupRepository(ConnectionStringProvider);
-        }
+    public IDonorInspectionRepository GetDonorInspectionRepository()
+    {
+        return new DonorInspectionRepository(ConnectionStringProvider);
+    }
 
-        public IDonorInspectionRepository GetDonorInspectionRepository()
-        {
-            return new DonorInspectionRepository(ConnectionStringProvider);
-        }
-
-        public IDonorUpdateRepository GetDonorUpdateRepository()
-        {
-            return new DonorUpdateRepository(GetHlaImportRepository(), ConnectionStringProvider, logger);
-        }
+    public IDonorUpdateRepository GetDonorUpdateRepository()
+    {
+        return new DonorUpdateRepository(GetHlaImportRepository(), ConnectionStringProvider, logger);
     }
 }

@@ -1,9 +1,8 @@
 ﻿using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 
-namespace Atlas.MatchingAlgorithm.Client.Models.Scoring
+namespace Atlas.MatchingAlgorithm.Client.Models.Scoring;
+
+public class IdentifiedDonorHla : PhenotypeInfoTransfer<string>
 {
-    public class IdentifiedDonorHla : PhenotypeInfoTransfer<string>
-    {
-        public string DonorId { get; set; }
-    }
+    public string DonorId { get; set; }
 }

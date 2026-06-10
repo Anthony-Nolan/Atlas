@@ -8,28 +8,28 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
+namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh;
+
+[TestFixture]
+public class DonorInfoConverterTests
 {
-    [TestFixture]
-    public class DonorInfoConverterTests
+    private IDonorInfoConverter converter;
+    private IMatchingAlgorithmImportLogger logger;
+
+    [SetUp]
+    public void SetUp()
     {
-        private IDonorInfoConverter converter;
-        private IMatchingAlgorithmImportLogger logger;
+        logger = Substitute.For<IMatchingAlgorithmImportLogger>();
+        converter = new DonorInfoConverter(logger);
+    }
 
-        [SetUp]
-        public void SetUp()
-        {
-            logger = Substitute.For<IMatchingAlgorithmImportLogger>();
-            converter = new DonorInfoConverter(logger);
-        }
+    [Test]
+    public async Task ConvertSearchableDonorUpdatesAsync_ValidDonor_ConvertsDonorInfo()
+    {
+        const int donorId = 123;
+        const string hlaName = "hla";
 
-        [Test]
-        public async Task ConvertSearchableDonorUpdatesAsync_ValidDonor_ConvertsDonorInfo()
-        {
-            const int donorId = 123;
-            const string hlaName = "hla";
-
-            var result = await converter.ConvertDonorInfoAsync(new List<SearchableDonorInformation>
+        var result = await converter.ConvertDonorInfoAsync(new List<SearchableDonorInformation>
             {
                 new SearchableDonorInformation
                 {
@@ -43,40 +43,39 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                     DRB1_2 = hlaName
                 }
             },
+            "event-name");
+
+        result.ProcessingResults.Should().OnlyContain(d => d.DonorId == donorId);
+    }
+
+    [Test]
+    public void ConvertSearchableDonorUpdatesAsync_InvalidUpdate_DoesNotThrowException()
+    {
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            await converter.ConvertDonorInfoAsync(
+                new List<SearchableDonorInformation>
+                {
+                    new SearchableDonorInformation()
+                },
                 "event-name");
+        });
+    }
 
-            result.ProcessingResults.Should().OnlyContain(d => d.DonorId == donorId);
-        }
+    [Test]
+    public async Task ConvertSearchableDonorUpdatesAsync_InvalidUpdate_ReturnsFailedDonorInfo()
+    {
+        const int donorId = 123;
 
-        [Test]
-        public void ConvertSearchableDonorUpdatesAsync_InvalidUpdate_DoesNotThrowException()
-        {
-            Assert.DoesNotThrowAsync(async () =>
-            {
-                await converter.ConvertDonorInfoAsync(
-                    new List<SearchableDonorInformation>
-                    {
-                        new SearchableDonorInformation()
-                    },
-                    "event-name");
-            });
-        }
-
-        [Test]
-        public async Task ConvertSearchableDonorUpdatesAsync_InvalidUpdate_ReturnsFailedDonorInfo()
-        {
-            const int donorId = 123;
-
-            var result = await converter.ConvertDonorInfoAsync(new List<SearchableDonorInformation>
+        var result = await converter.ConvertDonorInfoAsync(new List<SearchableDonorInformation>
             {
                 new SearchableDonorInformation
                 {
                     DonorId = donorId
                 }
             },
-                "event-name");
+            "event-name");
 
-            result.FailedDonors.Should().OnlyContain(d => d.AtlasDonorId == donorId);
-        }
+        result.FailedDonors.Should().OnlyContain(d => d.AtlasDonorId == donorId);
     }
 }

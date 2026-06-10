@@ -5,45 +5,44 @@ using Atlas.RepeatSearch.Models;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Atlas.RepeatSearch.Services.Search
+namespace Atlas.RepeatSearch.Services.Search;
+
+public interface IRepeatSearchMatchingFailureNotificationSender
 {
-    public interface IRepeatSearchMatchingFailureNotificationSender
+    Task SendFailureNotification(IdentifiedRepeatSearchRequest repeatSearchRequest, int attemptNumber, int remainingRetriesCount, string validationError = null);
+}
+
+public class RepeatSearchMatchingFailureNotificationSender : IRepeatSearchMatchingFailureNotificationSender
+{
+    private readonly IRepeatSearchServiceBusClient repeatSearchServiceBusClient;
+    private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
+
+    public RepeatSearchMatchingFailureNotificationSender(IRepeatSearchServiceBusClient repeatSearchServiceBusClient, IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
     {
-        Task SendFailureNotification(IdentifiedRepeatSearchRequest repeatSearchRequest, int attemptNumber, int remainingRetriesCount, string validationError = null);
+        this.repeatSearchServiceBusClient = repeatSearchServiceBusClient;
+        this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
     }
 
-    public class RepeatSearchMatchingFailureNotificationSender : IRepeatSearchMatchingFailureNotificationSender
+    public async Task SendFailureNotification(IdentifiedRepeatSearchRequest repeatSearchRequest, int attemptNumber, int remainingRetriesCount, string validationError = null)
     {
-        private readonly IRepeatSearchServiceBusClient repeatSearchServiceBusClient;
-        private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
-
-        public RepeatSearchMatchingFailureNotificationSender(IRepeatSearchServiceBusClient repeatSearchServiceBusClient, IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
+        var failureInfo = new MatchingAlgorithmFailureInfo
         {
-            this.repeatSearchServiceBusClient = repeatSearchServiceBusClient;
-            this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
-        }
+            ValidationError = validationError,
+            AttemptNumber = attemptNumber,
+            RemainingRetriesCount = remainingRetriesCount
+        };
 
-        public async Task SendFailureNotification(IdentifiedRepeatSearchRequest repeatSearchRequest, int attemptNumber, int remainingRetriesCount, string validationError = null)
+        var notification = new MatchingResultsNotification
         {
-            var failureInfo = new MatchingAlgorithmFailureInfo
-            {
-                ValidationError = validationError,
-                AttemptNumber = attemptNumber,
-                RemainingRetriesCount = remainingRetriesCount
-            };
+            WasSuccessful = false,
+            SearchRequestId = repeatSearchRequest.OriginalSearchId,
+            RepeatSearchRequestId = repeatSearchRequest.RepeatSearchId,
+            SearchRequest = repeatSearchRequest.RepeatSearchRequest.SearchRequest,
+            MatchingAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString(),
+            MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion(),
+            FailureInfo = failureInfo
+        };
 
-            var notification = new MatchingResultsNotification
-            {
-                WasSuccessful = false,
-                SearchRequestId = repeatSearchRequest.OriginalSearchId,
-                RepeatSearchRequestId = repeatSearchRequest.RepeatSearchId,
-                SearchRequest = repeatSearchRequest.RepeatSearchRequest.SearchRequest,
-                MatchingAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString(),
-                MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion(),
-                FailureInfo = failureInfo
-            };
-
-            await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
-        }
+        await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
     }
 }

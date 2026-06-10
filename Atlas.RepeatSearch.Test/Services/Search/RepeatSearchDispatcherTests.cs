@@ -17,91 +17,90 @@ using FluentAssertions;
 using FluentAssertions.Extensions;
 using Newtonsoft.Json;
 
-namespace Atlas.RepeatSearch.Test.Services.Search
+namespace Atlas.RepeatSearch.Test.Services.Search;
+
+[TestFixture]
+public class RepeatSearchDispatcherTests
 {
-    [TestFixture]
-    public class RepeatSearchDispatcherTests
+    private IRepeatSearchServiceBusClient repeatSearchServiceBusClient;
+    private ISearchTrackingServiceBusClient searchTrackingServiceBusClient;
+
+    private RepeatSearchDispatcher repeatSearchDispatcher;
+
+    [SetUp]
+    public void SetUp()
     {
-        private IRepeatSearchServiceBusClient repeatSearchServiceBusClient;
-        private ISearchTrackingServiceBusClient searchTrackingServiceBusClient;
+        repeatSearchServiceBusClient = Substitute.For<IRepeatSearchServiceBusClient>();
+        searchTrackingServiceBusClient = Substitute.For<ISearchTrackingServiceBusClient>();
 
-        private RepeatSearchDispatcher repeatSearchDispatcher;
+        repeatSearchDispatcher = new RepeatSearchDispatcher(repeatSearchServiceBusClient, searchTrackingServiceBusClient);
+    }
 
-        [SetUp]
-        public void SetUp()
+    [Test]
+    public async Task DispatchRepeatSearch_DispatchesRepeatSearchWithId()
+    {
+        var searchRequest = new SearchRequestBuilder()
+            .WithSearchHla(new PhenotypeInfo<string>("hla-type"))
+            .WithTotalMismatchCount(0)
+            .Build();
+
+        var repeatSearchRequest = new RepeatSearchRequest()
         {
-            repeatSearchServiceBusClient = Substitute.For<IRepeatSearchServiceBusClient>();
-            searchTrackingServiceBusClient = Substitute.For<ISearchTrackingServiceBusClient>();
+            OriginalSearchId = "1",
+            SearchCutoffDate = new DateTime(2024, 5, 11, 14, 30, 45, 0, 0, DateTimeKind.Utc),
+            SearchRequest = searchRequest
+        };
 
-            repeatSearchDispatcher = new RepeatSearchDispatcher(repeatSearchServiceBusClient, searchTrackingServiceBusClient);
-        }
+        await repeatSearchDispatcher.DispatchSearch(repeatSearchRequest);
 
-        [Test]
-        public async Task DispatchRepeatSearch_DispatchesRepeatSearchWithId()
+        await repeatSearchServiceBusClient.Received().PublishToRepeatSearchRequestsTopic(
+            Arg.Is<IdentifiedRepeatSearchRequest>(r => r.RepeatSearchId != null));
+    }
+
+    [Test]
+    public void DispatchRepeatSearch_ValidatesRepeatSearchRequest()
+    {
+        var invalidSearchRequest = new RepeatSearchRequest();
+
+        Assert.ThrowsAsync<ValidationException>(() => repeatSearchDispatcher.DispatchSearch(invalidSearchRequest));
+    }
+
+    [Test]
+    public async Task DispatchSearchTrackingEvent_WhenRepeatSearchRequested_DispatchesEventWithSearchRequested()
+    {
+        var id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+        var originalSearchId = "11111111-2222-3333-4444-555555555555";
+
+        var searchRequest = new SearchRequestBuilder()
+            .WithSearchHla(new PhenotypeInfo<string>("hla-type"))
+            .WithTotalMismatchCount(0)
+            .WithBetterMatchesConfig(true)
+            .WithMatchPredictionConfig(true)
+            .WithDonorRegistryCodes(["A", "B"])
+            .Build();
+
+        var repeatSearchRequest = new RepeatSearchRequest()
         {
-            var searchRequest = new SearchRequestBuilder()
-                    .WithSearchHla(new PhenotypeInfo<string>("hla-type"))
-                    .WithTotalMismatchCount(0)
-                    .Build();
+            OriginalSearchId = originalSearchId,
+            SearchCutoffDate = new DateTime(2024, 5 ,11, 14, 30, 45, 0, 0, DateTimeKind.Utc),
+            SearchRequest = searchRequest
+        };
 
-            var repeatSearchRequest = new RepeatSearchRequest()
-            {
-                OriginalSearchId = "1",
-                SearchCutoffDate = new DateTime(2024, 5, 11, 14, 30, 45, 0, 0, DateTimeKind.Utc),
-                SearchRequest = searchRequest
-            };
+        SearchRequestedEvent actualSearchRequestedEvent = null;
 
-            await repeatSearchDispatcher.DispatchSearch(repeatSearchRequest);
+        var expectedSearchRequestedEvent = SearchRequestedEventBuilder.New.Build();
+        expectedSearchRequestedEvent.RequestJson = JsonConvert.SerializeObject(repeatSearchRequest);
 
-            await repeatSearchServiceBusClient.Received().PublishToRepeatSearchRequestsTopic(
-                Arg.Is<IdentifiedRepeatSearchRequest>(r => r.RepeatSearchId != null));
-        }
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            Arg.Do<SearchRequestedEvent>(x => actualSearchRequestedEvent = x),
+            Arg.Is(SearchTrackingEventType.SearchRequested));
 
-        [Test]
-        public void DispatchRepeatSearch_ValidatesRepeatSearchRequest()
+        await repeatSearchDispatcher.DispatchSearchTrackingEvent(repeatSearchRequest, id);
+
+        actualSearchRequestedEvent.Should().BeEquivalentTo(expectedSearchRequestedEvent, options =>
         {
-            var invalidSearchRequest = new RepeatSearchRequest();
-
-            Assert.ThrowsAsync<ValidationException>(() => repeatSearchDispatcher.DispatchSearch(invalidSearchRequest));
-        }
-
-        [Test]
-        public async Task DispatchSearchTrackingEvent_WhenRepeatSearchRequested_DispatchesEventWithSearchRequested()
-        {
-            var id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
-            var originalSearchId = "11111111-2222-3333-4444-555555555555";
-
-            var searchRequest = new SearchRequestBuilder()
-                .WithSearchHla(new PhenotypeInfo<string>("hla-type"))
-                .WithTotalMismatchCount(0)
-                .WithBetterMatchesConfig(true)
-                .WithMatchPredictionConfig(true)
-                .WithDonorRegistryCodes(["A", "B"])
-                .Build();
-
-            var repeatSearchRequest = new RepeatSearchRequest()
-            {
-                OriginalSearchId = originalSearchId,
-                SearchCutoffDate = new DateTime(2024, 5 ,11, 14, 30, 45, 0, 0, DateTimeKind.Utc),
-                SearchRequest = searchRequest
-            };
-
-            SearchRequestedEvent actualSearchRequestedEvent = null;
-
-            var expectedSearchRequestedEvent = SearchRequestedEventBuilder.New.Build();
-            expectedSearchRequestedEvent.RequestJson = JsonConvert.SerializeObject(repeatSearchRequest);
-
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                Arg.Do<SearchRequestedEvent>(x => actualSearchRequestedEvent = x),
-                Arg.Is(SearchTrackingEventType.SearchRequested));
-
-            await repeatSearchDispatcher.DispatchSearchTrackingEvent(repeatSearchRequest, id);
-
-            actualSearchRequestedEvent.Should().BeEquivalentTo(expectedSearchRequestedEvent, options =>
-            {
-                options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
-                return options;
-            });
-        }
+            options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
+            return options;
+        });
     }
 }

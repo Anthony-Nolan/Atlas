@@ -15,57 +15,56 @@ using System.Linq;
 using System.Threading.Tasks;
 using Injection = Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection.DependencyInjection;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
+namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests;
+
+public class DonorManagementServiceTests
 {
-    public class DonorManagementServiceTests
+    private const int DonorId = 1;
+
+    private IDonorManagementService service;
+    private IDonorManagementLogRepository donorManagementLogRepository;
+
+    private TransientDatabase activeDb;
+
+
+    [SetUp]
+    public async Task SetUp()
     {
-        private const int DonorId = 1;
+        service = Injection.Provider.GetService<IDonorManagementService>();
+        donorManagementLogRepository = Injection.Provider.GetService<IActiveRepositoryFactory>().GetDonorManagementLogRepository();
 
-        private IDonorManagementService service;
-        private IDonorManagementLogRepository donorManagementLogRepository;
+        DatabaseManager.ClearTransientDatabases();
 
-        private TransientDatabase activeDb;
-
-
-        [SetUp]
-        public async Task SetUp()
-        {
-            service = Injection.Provider.GetService<IDonorManagementService>();
-            donorManagementLogRepository = Injection.Provider.GetService<IActiveRepositoryFactory>().GetDonorManagementLogRepository();
-
-            DatabaseManager.ClearTransientDatabases();
-
-            var dbProvider = Injection.Provider.GetService<IActiveDatabaseProvider>();
-            activeDb = dbProvider.GetActiveDatabase();
-        }
+        var dbProvider = Injection.Provider.GetService<IActiveDatabaseProvider>();
+        activeDb = dbProvider.GetActiveDatabase();
+    }
 
 
-        [Test]
-        public async Task ApplyDonorUpdatesToDatabase_WhenDonorHlaIsInvalid_DonorManagementLogIsntUpdated()
-        {
-            var expectedSequenceNumber = await AddDonorUpdateToDatabase();
-            var update = new DonorInfoBuilder(DonorId)
-                .WithHlaAtLocus(Locus.A, LocusPosition.One, "*01:ZZZZZZZ")
-                .Build()
-                .ToUpdate();
+    [Test]
+    public async Task ApplyDonorUpdatesToDatabase_WhenDonorHlaIsInvalid_DonorManagementLogIsntUpdated()
+    {
+        var expectedSequenceNumber = await AddDonorUpdateToDatabase();
+        var update = new DonorInfoBuilder(DonorId)
+            .WithHlaAtLocus(Locus.A, LocusPosition.One, "*01:ZZZZZZZ")
+            .Build()
+            .ToUpdate();
 
-            update.UpdateSequenceNumber = expectedSequenceNumber + 1;
+        update.UpdateSequenceNumber = expectedSequenceNumber + 1;
 
-            // Act
-            await service.ApplyDonorUpdatesToDatabase(new[] { update }, activeDb, FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion, false);
+        // Act
+        await service.ApplyDonorUpdatesToDatabase(new[] { update }, activeDb, FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion, false);
 
-            var logEntry = (await donorManagementLogRepository.GetDonorManagementLogBatch(new[] { DonorId })).Single();
-            logEntry.SequenceNumberOfLastUpdate.Should().Be(expectedSequenceNumber);
-        }
+        var logEntry = (await donorManagementLogRepository.GetDonorManagementLogBatch(new[] { DonorId })).Single();
+        logEntry.SequenceNumberOfLastUpdate.Should().Be(expectedSequenceNumber);
+    }
 
-        private async Task<long> AddDonorUpdateToDatabase()
-        {
-            var update = new DonorInfoBuilder(DonorId).Build().ToUpdate();
-            var sequenceNumber = update.UpdateSequenceNumber;
+    private async Task<long> AddDonorUpdateToDatabase()
+    {
+        var update = new DonorInfoBuilder(DonorId).Build().ToUpdate();
+        var sequenceNumber = update.UpdateSequenceNumber;
 
-            await service.ApplyDonorUpdatesToDatabase(new[] { update }, activeDb, FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion, false);
+        await service.ApplyDonorUpdatesToDatabase(new[] { update }, activeDb, FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion, false);
 
-            return sequenceNumber;
-        }
+        return sequenceNumber;
     }
 }

@@ -17,73 +17,72 @@ using NSubstitute;
 using NUnit.Framework;
 using SearchRequest = Atlas.Client.Models.Search.Requests.SearchRequest;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.Search
+namespace Atlas.MatchingAlgorithm.Test.Services.Search;
+
+[TestFixture]
+public class SearchDispatcherTests
 {
-    [TestFixture]
-    public class SearchDispatcherTests
+    private ISearchServiceBusClient searchServiceBusClient;
+    private ISearchTrackingServiceBusClient searchTrackingServiceBusClient;
+
+    private SearchDispatcher searchDispatcher;
+
+    [SetUp]
+    public void SetUp()
     {
-        private ISearchServiceBusClient searchServiceBusClient;
-        private ISearchTrackingServiceBusClient searchTrackingServiceBusClient;
+        searchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
+        searchTrackingServiceBusClient = Substitute.For<ISearchTrackingServiceBusClient>();
 
-        private SearchDispatcher searchDispatcher;
+        searchDispatcher = new SearchDispatcher(searchServiceBusClient, searchTrackingServiceBusClient);
+    }
 
-        [SetUp]
-        public void SetUp()
-        {
-            searchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
-            searchTrackingServiceBusClient = Substitute.For<ISearchTrackingServiceBusClient>();
-
-            searchDispatcher = new SearchDispatcher(searchServiceBusClient, searchTrackingServiceBusClient);
-        }
-
-        [Test]
-        public async Task DispatchSearch_DispatchesSearchWithId()
-        {
-            await searchDispatcher.DispatchSearch(
-                new SearchRequestBuilder()
-                    .WithSearchHla(new PhenotypeInfo<string>("hla-type"))
-                    .WithTotalMismatchCount(0)
-                    .Build());
-
-            await searchServiceBusClient.Received().PublishToSearchRequestsTopic(Arg.Is<IdentifiedSearchRequest>(r => r.Id != null));
-        }
-
-        [Test]
-        public void DispatchSearch_ValidatesSearchRequest()
-        {
-            var invalidSearchRequest = new SearchRequest();
-
-            Assert.ThrowsAsync<ValidationException>(() => searchDispatcher.DispatchSearch(invalidSearchRequest));
-        }
-
-        [Test]
-        public async Task DispatchSearchTrackingEvent_WhenSearchRequested_DispatchesEventWithSearchRequested()
-        {
-            var id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
-            var searchRequest = new SearchRequestBuilder()
+    [Test]
+    public async Task DispatchSearch_DispatchesSearchWithId()
+    {
+        await searchDispatcher.DispatchSearch(
+            new SearchRequestBuilder()
                 .WithSearchHla(new PhenotypeInfo<string>("hla-type"))
                 .WithTotalMismatchCount(0)
-                .WithBetterMatchesConfig(true)
-                .WithMatchPredictionConfig(true)
-                .WithDonorRegistryCodes(["A", "B"])
-                .Build();
+                .Build());
 
-            SearchRequestedEvent actualSearchRequestedEvent = null;
+        await searchServiceBusClient.Received().PublishToSearchRequestsTopic(Arg.Is<IdentifiedSearchRequest>(r => r.Id != null));
+    }
 
-            var expectedSearchRequestedEvent = SearchRequestedEventBuilder.New.Build();
-            expectedSearchRequestedEvent.RequestJson = JsonConvert.SerializeObject(searchRequest);
+    [Test]
+    public void DispatchSearch_ValidatesSearchRequest()
+    {
+        var invalidSearchRequest = new SearchRequest();
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                Arg.Do<SearchRequestedEvent>(x => actualSearchRequestedEvent = x),
-                Arg.Is(SearchTrackingEventType.SearchRequested));
+        Assert.ThrowsAsync<ValidationException>(() => searchDispatcher.DispatchSearch(invalidSearchRequest));
+    }
 
-            await searchDispatcher.DispatchSearchTrackingEvent(searchRequest, id);
+    [Test]
+    public async Task DispatchSearchTrackingEvent_WhenSearchRequested_DispatchesEventWithSearchRequested()
+    {
+        var id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+        var searchRequest = new SearchRequestBuilder()
+            .WithSearchHla(new PhenotypeInfo<string>("hla-type"))
+            .WithTotalMismatchCount(0)
+            .WithBetterMatchesConfig(true)
+            .WithMatchPredictionConfig(true)
+            .WithDonorRegistryCodes(["A", "B"])
+            .Build();
 
-            actualSearchRequestedEvent.Should().BeEquivalentTo(expectedSearchRequestedEvent, options =>
-            {
-                options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
-                return options;
-            });
-        }
+        SearchRequestedEvent actualSearchRequestedEvent = null;
+
+        var expectedSearchRequestedEvent = SearchRequestedEventBuilder.New.Build();
+        expectedSearchRequestedEvent.RequestJson = JsonConvert.SerializeObject(searchRequest);
+
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            Arg.Do<SearchRequestedEvent>(x => actualSearchRequestedEvent = x),
+            Arg.Is(SearchTrackingEventType.SearchRequested));
+
+        await searchDispatcher.DispatchSearchTrackingEvent(searchRequest, id);
+
+        actualSearchRequestedEvent.Should().BeEquivalentTo(expectedSearchRequestedEvent, options =>
+        {
+            options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
+            return options;
+        });
     }
 }

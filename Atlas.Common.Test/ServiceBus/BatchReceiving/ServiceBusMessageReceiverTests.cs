@@ -5,87 +5,86 @@ using NSubstitute;
 using NUnit.Framework;
 using System.Threading.Tasks;
 
-namespace Atlas.Common.Test.ServiceBus.BatchReceiving
+namespace Atlas.Common.Test.ServiceBus.BatchReceiving;
+
+[TestFixture]
+public class ServiceBusMessageReceiverTests
 {
-    [TestFixture]
-    public class ServiceBusMessageReceiverTests
+    private const string ConnectionString = "connectionString";
+    private const string TopicName = "topic";
+    private const string SubscriptionName = "subscription";
+
+    private IMessageReceiverFactory messageReceiverFactory;
+    private IMessageReceiver messageReceiver;
+    private IServiceBusMessageReceiver<string> serviceBusMessageReceiver;
+
+    [SetUp]
+    public void SetUp()
     {
-        private const string ConnectionString = "connectionString";
-        private const string TopicName = "topic";
-        private const string SubscriptionName = "subscription";
+        messageReceiverFactory = Substitute.For<IMessageReceiverFactory>();
+        messageReceiver = Substitute.For<IMessageReceiver>();
 
-        private IMessageReceiverFactory messageReceiverFactory;
-        private IMessageReceiver messageReceiver;
-        private IServiceBusMessageReceiver<string> serviceBusMessageReceiver;
+        messageReceiverFactory.GetMessageReceiver(TopicName, SubscriptionName, 6).Returns(messageReceiver);
 
-        [SetUp]
-        public void SetUp()
-        {
-            messageReceiverFactory = Substitute.For<IMessageReceiverFactory>();
-            messageReceiver = Substitute.For<IMessageReceiver>();
+        serviceBusMessageReceiver = new ServiceBusMessageReceiver<string>(messageReceiverFactory, TopicName, SubscriptionName, 6);
+    }
 
-            messageReceiverFactory.GetMessageReceiver(TopicName, SubscriptionName, 6).Returns(messageReceiver);
+    [Test]
+    public async Task ReceiveMessageBatchAsync_ReceivesBatchOfMessages()
+    {
+        const int batchSize = 10;
 
-            serviceBusMessageReceiver = new ServiceBusMessageReceiver<string>(messageReceiverFactory, TopicName, SubscriptionName, 6);
-        }
+        await serviceBusMessageReceiver.ReceiveMessageBatchAsync(batchSize);
 
-        [Test]
-        public async Task ReceiveMessageBatchAsync_ReceivesBatchOfMessages()
-        {
-            const int batchSize = 10;
+        await messageReceiver.Received().ReceiveMessagesAsync(batchSize);
+    }
 
-            await serviceBusMessageReceiver.ReceiveMessageBatchAsync(batchSize);
+    [Test]
+    public async Task ReceiveMessageBatchAsync_SetsPrefetchCount()
+    {
+        const int batchSize = 10;
+        const int prefetchCount = 123;
 
-            await messageReceiver.Received().ReceiveMessagesAsync(batchSize);
-        }
+        var receiver = new ServiceBusMessageReceiver<string>(messageReceiverFactory, TopicName, SubscriptionName, prefetchCount);
 
-        [Test]
-        public async Task ReceiveMessageBatchAsync_SetsPrefetchCount()
-        {
-            const int batchSize = 10;
-            const int prefetchCount = 123;
+        messageReceiverFactory.Received().GetMessageReceiver(TopicName, SubscriptionName, prefetchCount);
+    }
 
-            var receiver = new ServiceBusMessageReceiver<string>(messageReceiverFactory, TopicName, SubscriptionName, prefetchCount);
+    [Test]
+    public async Task ReceiveMessageBatchAsync_WhenNoMessagesReceived_ReturnsEmptyCollection()
+    {
+        var messages = await serviceBusMessageReceiver.ReceiveMessageBatchAsync(1);
 
-            messageReceiverFactory.Received().GetMessageReceiver(TopicName, SubscriptionName, prefetchCount);
-        }
+        messages.Should().BeEmpty();
+    }
 
-        [Test]
-        public async Task ReceiveMessageBatchAsync_WhenNoMessagesReceived_ReturnsEmptyCollection()
-        {
-            var messages = await serviceBusMessageReceiver.ReceiveMessageBatchAsync(1);
+    [Test]
+    public async Task RenewMessageLockAsync_RenewsLock()
+    {
+        var lockToken = new object();
 
-            messages.Should().BeEmpty();
-        }
+        await serviceBusMessageReceiver.RenewMessageLockAsync(lockToken);
 
-        [Test]
-        public async Task RenewMessageLockAsync_RenewsLock()
-        {
-            var lockToken = new object();
+        await messageReceiver.Received().RenewMessageLockAsync(lockToken);
+    }
 
-            await serviceBusMessageReceiver.RenewMessageLockAsync(lockToken);
+    [Test]
+    public async Task CompleteMessageAsync_CompletesMessage()
+    {
+        var lockToken = new object();
 
-            await messageReceiver.Received().RenewMessageLockAsync(lockToken);
-        }
+        await serviceBusMessageReceiver.CompleteMessageAsync(lockToken);
 
-        [Test]
-        public async Task CompleteMessageAsync_CompletesMessage()
-        {
-            var lockToken = new object();
+        await messageReceiver.Received().CompleteMessageAsync(lockToken);
+    }
 
-            await serviceBusMessageReceiver.CompleteMessageAsync(lockToken);
+    [Test]
+    public async Task AbandonMessageAsync_AbandonsMessage()
+    {
+        var lockToken = new object();
 
-            await messageReceiver.Received().CompleteMessageAsync(lockToken);
-        }
+        await serviceBusMessageReceiver.AbandonMessageAsync(lockToken);
 
-        [Test]
-        public async Task AbandonMessageAsync_AbandonsMessage()
-        {
-            var lockToken = new object();
-
-            await serviceBusMessageReceiver.AbandonMessageAsync(lockToken);
-
-            await messageReceiver.Received().AbandonMessageAsync(lockToken);
-        }
+        await messageReceiver.Received().AbandonMessageAsync(lockToken);
     }
 }

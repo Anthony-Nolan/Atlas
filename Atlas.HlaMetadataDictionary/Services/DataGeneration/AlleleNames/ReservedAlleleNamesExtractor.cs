@@ -4,30 +4,29 @@ using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
+
+internal interface IReservedAlleleNamesExtractor
 {
-    internal interface IReservedAlleleNamesExtractor
+    IEnumerable<AlleleNameMetadata> GetAlleleNames(string hlaNomenclatureVersion);
+}
+
+internal class ReservedAlleleNamesExtractor : AlleleNamesExtractorBase, IReservedAlleleNamesExtractor
+{
+    public ReservedAlleleNamesExtractor(IWmdaDataRepository dataRepository)
+        : base(dataRepository)
     {
-        IEnumerable<AlleleNameMetadata> GetAlleleNames(string hlaNomenclatureVersion);
     }
 
-    internal class ReservedAlleleNamesExtractor : AlleleNamesExtractorBase, IReservedAlleleNamesExtractor
+    public IEnumerable<AlleleNameMetadata> GetAlleleNames(string hlaNomenclatureVersion)
     {
-        public ReservedAlleleNamesExtractor(IWmdaDataRepository dataRepository)
-            : base(dataRepository)
-        {
-        }
+        return AllelesInVersionOfHlaNom(hlaNomenclatureVersion)
+            .Where(a => AlleleNameIsReserved(a, hlaNomenclatureVersion))
+            .Select(allele => new AlleleNameMetadata(allele.TypingLocus, allele.Name, allele.Name));
+    }
 
-        public IEnumerable<AlleleNameMetadata> GetAlleleNames(string hlaNomenclatureVersion)
-        {
-            return AllelesInVersionOfHlaNom(hlaNomenclatureVersion)
-                .Where(a => AlleleNameIsReserved(a, hlaNomenclatureVersion))
-                .Select(allele => new AlleleNameMetadata(allele.TypingLocus, allele.Name, allele.Name));
-        }
-
-        private bool AlleleNameIsReserved(HlaNom allele, string hlaNomenclatureVersion)
-        {
-            return allele.IsDeleted && AlleleNameIsNotInHistories(allele.TypingLocus, allele.Name, hlaNomenclatureVersion);
-        }
+    private bool AlleleNameIsReserved(HlaNom allele, string hlaNomenclatureVersion)
+    {
+        return allele.IsDeleted && AlleleNameIsNotInHistories(allele.TypingLocus, allele.Name, hlaNomenclatureVersion);
     }
 }

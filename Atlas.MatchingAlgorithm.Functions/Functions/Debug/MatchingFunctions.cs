@@ -12,58 +12,57 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 
-namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
+namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug;
+
+public class MatchingFunctions
 {
-    public class MatchingFunctions
+    private const string RoutePrefix = $"{RouteConstants.DebugRoutePrefix}/matching/";
+
+    private readonly IServiceBusPeeker<MatchingResultsNotification> notificationsPeeker;
+    private readonly IDebugResultsDownloader resultsDownloader;
+
+    public MatchingFunctions(
+        IServiceBusPeeker<MatchingResultsNotification> notificationsPeeker,
+        IDebugResultsDownloader resultsDownloader)
     {
-        private const string RoutePrefix = $"{RouteConstants.DebugRoutePrefix}/matching/";
+        this.notificationsPeeker = notificationsPeeker;
+        this.resultsDownloader = resultsDownloader;
+    }
 
-        private readonly IServiceBusPeeker<MatchingResultsNotification> notificationsPeeker;
-        private readonly IDebugResultsDownloader resultsDownloader;
+    [Function(nameof(PeekMatchingResultNotifications))]
+    [ProducesResponseType(typeof(PeekServiceBusMessagesResponse<MatchingResultsNotification>), (int)HttpStatusCode.OK)]
+    public async Task<IActionResult> PeekMatchingResultNotifications(
+        [HttpTrigger(
+            AuthorizationLevel.Function,
+            "post",
+            Route = $"{RoutePrefix}notifications/")]
+        [RequestBodyType(typeof(PeekServiceBusMessagesRequest), nameof(PeekServiceBusMessagesRequest))]
+        HttpRequest request)
+    {
+        var peekRequest = await request.DeserialiseRequestBody<PeekServiceBusMessagesRequest>();
+        var response = await notificationsPeeker.Peek(peekRequest);
+        return new JsonResult(response);
+    }
 
-        public MatchingFunctions(
-            IServiceBusPeeker<MatchingResultsNotification> notificationsPeeker,
-            IDebugResultsDownloader resultsDownloader)
+    [Function(nameof(FetchMatchingResultSet))]
+    [ProducesResponseType(typeof(OriginalMatchingAlgorithmResultSet), (int)HttpStatusCode.OK)]
+    public async Task<IActionResult> FetchMatchingResultSet(
+        [HttpTrigger(
+            AuthorizationLevel.Function,
+            "post",
+            Route = $"{RoutePrefix}resultSet/")]
+        [RequestBodyType(typeof(DebugSearchResultsRequest), nameof(DebugSearchResultsRequest))]
+        HttpRequest request)
+    {
+        try
         {
-            this.notificationsPeeker = notificationsPeeker;
-            this.resultsDownloader = resultsDownloader;
+            var debugRequest = await request.DeserialiseRequestBody<DebugSearchResultsRequest>();
+            var resultSet = await resultsDownloader.DownloadResultSet <OriginalMatchingAlgorithmResultSet, MatchingAlgorithmResult>(debugRequest);
+            return new JsonResult(resultSet);
         }
-
-        [Function(nameof(PeekMatchingResultNotifications))]
-        [ProducesResponseType(typeof(PeekServiceBusMessagesResponse<MatchingResultsNotification>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> PeekMatchingResultNotifications(
-            [HttpTrigger(
-                AuthorizationLevel.Function,
-                "post",
-                Route = $"{RoutePrefix}notifications/")]
-            [RequestBodyType(typeof(PeekServiceBusMessagesRequest), nameof(PeekServiceBusMessagesRequest))]
-            HttpRequest request)
+        catch (BlobNotFoundException ex)
         {
-            var peekRequest = await request.DeserialiseRequestBody<PeekServiceBusMessagesRequest>();
-            var response = await notificationsPeeker.Peek(peekRequest);
-            return new JsonResult(response);
-        }
-
-        [Function(nameof(FetchMatchingResultSet))]
-        [ProducesResponseType(typeof(OriginalMatchingAlgorithmResultSet), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> FetchMatchingResultSet(
-            [HttpTrigger(
-                AuthorizationLevel.Function,
-                "post",
-                Route = $"{RoutePrefix}resultSet/")]
-            [RequestBodyType(typeof(DebugSearchResultsRequest), nameof(DebugSearchResultsRequest))]
-            HttpRequest request)
-        {
-            try
-            {
-                var debugRequest = await request.DeserialiseRequestBody<DebugSearchResultsRequest>();
-                var resultSet = await resultsDownloader.DownloadResultSet <OriginalMatchingAlgorithmResultSet, MatchingAlgorithmResult>(debugRequest);
-                return new JsonResult(resultSet);
-            }
-            catch (BlobNotFoundException ex)
-            {
-                return new NotFoundObjectResult(ex.Message);
-            }
+            return new NotFoundObjectResult(ex.Message);
         }
     }
 }

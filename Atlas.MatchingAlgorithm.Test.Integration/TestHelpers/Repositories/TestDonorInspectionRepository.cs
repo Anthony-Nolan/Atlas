@@ -6,50 +6,49 @@ using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Dapper;
 using Microsoft.Data.SqlClient;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories
+namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
+
+public class DonorWithLog
 {
-    public class DonorWithLog
+    public Donor Donor { get; set; }
+    public DonorManagementLog Log { get; set; }
+}
+public class TestDonorInspectionRepository : DonorInspectionRepository
+{
+    public TestDonorInspectionRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
     {
-        public Donor Donor { get; set; }
-        public DonorManagementLog Log { get; set; }
     }
-    public class TestDonorInspectionRepository : DonorInspectionRepository
+
+    public int GetDonorCount()
     {
-        public TestDonorInspectionRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
+        using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
         {
+            return conn.ExecuteScalar<int>($"SELECT COUNT(*) FROM Donors", commandTimeout: 1);
         }
+    }
 
-        public int GetDonorCount()
+    public List<int> GetAllDonorIds()
+    {
+        using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
         {
-            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
-            {
-                return conn.ExecuteScalar<int>($"SELECT COUNT(*) FROM Donors", commandTimeout: 1);
-            }
+            return conn.Query<int>($"SELECT DonorId FROM Donors", commandTimeout: 2).ToList();
         }
+    }
 
-        public List<int> GetAllDonorIds()
+    public Dictionary<int, DonorWithLog> GetAllDonorsWithLogs()
+    {
+        using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
         {
-            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
-            {
-                return conn.Query<int>($"SELECT DonorId FROM Donors", commandTimeout: 2).ToList();
-            }
-        }
+            var donorLogsDictionary = conn.Query<DonorManagementLog>($"SELECT * FROM DonorManagementLogs", commandTimeout: 5).ToDictionary(d => d.DonorId);
+            var donors = conn.Query<Donor>($"SELECT * FROM Donors", commandTimeout: 5);
 
-        public Dictionary<int, DonorWithLog> GetAllDonorsWithLogs()
-        {
-            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
-            {
-                var donorLogsDictionary = conn.Query<DonorManagementLog>($"SELECT * FROM DonorManagementLogs", commandTimeout: 5).ToDictionary(d => d.DonorId);
-                var donors = conn.Query<Donor>($"SELECT * FROM Donors", commandTimeout: 5);
-
-                return donors.ToDictionary(
-                    d => d.DonorId,
-                    d => new DonorWithLog
-                    {
-                        Donor = d,
-                        Log = donorLogsDictionary[d.DonorId]
-                    });
-            }
+            return donors.ToDictionary(
+                d => d.DonorId,
+                d => new DonorWithLog
+                {
+                    Donor = d,
+                    Log = donorLogsDictionary[d.DonorId]
+                });
         }
     }
 }

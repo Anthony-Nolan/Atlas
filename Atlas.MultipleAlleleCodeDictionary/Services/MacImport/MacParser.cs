@@ -5,75 +5,74 @@ using System.Text.RegularExpressions;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 
-namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImport
+namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
+
+internal interface IMacParser
 {
-    internal interface IMacParser
+    /// <summary>
+    /// Lazily parses MACs added to NMDP source since <paramref name="lastMacEntry"/>.
+    /// </summary>
+    public IAsyncEnumerable<Mac> ParseMacsSince(Stream file, string lastMacEntry);
+}
+
+internal class MacLineParser : IMacParser
+{
+    private readonly IAtlasLogger logger;
+
+    public MacLineParser(IAtlasLogger logger)
     {
-        /// <summary>
-        /// Lazily parses MACs added to NMDP source since <paramref name="lastMacEntry"/>.
-        /// </summary>
-        public IAsyncEnumerable<Mac> ParseMacsSince(Stream file, string lastMacEntry);
+        this.logger = logger;
     }
 
-    internal class MacLineParser : IMacParser
+    public async IAsyncEnumerable<Mac> ParseMacsSince(Stream file, string lastMacEntry)
     {
-        private readonly IAtlasLogger logger;
+        logger.SendTrace($"Parsing MACs since: {lastMacEntry}");
 
-        public MacLineParser(IAtlasLogger logger)
+        using var reader = new StreamReader(file);
+        ReadToEntry(reader, lastMacEntry);
+        while (!reader.EndOfStream)
         {
-            this.logger = logger;
-        }
+            var macLine = (await reader.ReadLineAsync())?.TrimEnd();
 
-        public async IAsyncEnumerable<Mac> ParseMacsSince(Stream file, string lastMacEntry)
-        {
-            logger.SendTrace($"Parsing MACs since: {lastMacEntry}");
-
-            using var reader = new StreamReader(file);
-            ReadToEntry(reader, lastMacEntry);
-            while (!reader.EndOfStream)
+            if (string.IsNullOrWhiteSpace(macLine))
             {
-                var macLine = (await reader.ReadLineAsync())?.TrimEnd();
-
-                if (string.IsNullOrWhiteSpace(macLine))
-                {
-                    continue;
-                }
-
-                yield return ParseMac(macLine);
+                continue;
             }
+
+            yield return ParseMac(macLine);
         }
+    }
 
-        private static Mac ParseMac(string macString)
+    private static Mac ParseMac(string macString)
+    {
+        var substrings = macString.Split('\t');
+        var isGeneric = substrings[0] != "*";
+        return new Mac(substrings[1], substrings[2], isGeneric);
+    }
+
+    private static void ReadToEntry(StreamReader reader, string entryToReadTo)
+    {
+        // The first two lines of the NMDP source file contain descriptions, so are discarded
+        reader.ReadLine();
+        reader.ReadLine();
+
+        if (entryToReadTo == null)
         {
-            var substrings = macString.Split('\t');
-            var isGeneric = substrings[0] != "*";
-            return new Mac(substrings[1], substrings[2], isGeneric);
+            return;
         }
-
-        private static void ReadToEntry(StreamReader reader, string entryToReadTo)
+            
+        while (!reader.EndOfStream)
         {
-            // The first two lines of the NMDP source file contain descriptions, so are discarded
-            reader.ReadLine();
-            reader.ReadLine();
+            var line = reader.ReadLine().TrimEnd();
+            // Regex checking can slow down performance, it might be worth using a different comparison method if this slows us down significantly
+            var match = Regex.IsMatch(line, $@"\b{entryToReadTo}\b");
 
-            if (entryToReadTo == null)
+            if (match)
             {
                 return;
             }
-            
-            while (!reader.EndOfStream)
-            {
-                var line = reader.ReadLine().TrimEnd();
-                // Regex checking can slow down performance, it might be worth using a different comparison method if this slows us down significantly
-                var match = Regex.IsMatch(line, $@"\b{entryToReadTo}\b");
-
-                if (match)
-                {
-                    return;
-                }
-            }
-
-            throw new Exception($"Reached end of file without finding entry {entryToReadTo}");
         }
+
+        throw new Exception($"Reached end of file without finding entry {entryToReadTo}");
     }
 }

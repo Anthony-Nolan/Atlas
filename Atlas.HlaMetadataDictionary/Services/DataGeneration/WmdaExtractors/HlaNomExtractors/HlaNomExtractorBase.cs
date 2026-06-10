@@ -2,32 +2,31 @@
 using System.Text.RegularExpressions;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.HlaNomExtractors
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.HlaNomExtractors;
+
+internal abstract class HlaNomExtractorBase : WmdaDataExtractor<HlaNom>
 {
-    internal abstract class HlaNomExtractorBase : WmdaDataExtractor<HlaNom>
+    private const string FileName = WmdaFilePathPrefixPre2026 + "hla_nom.txt";
+    private readonly Regex regex = new Regex(@"^(\w+\*{0,1})\;([\w:]+)\;\d+\;(\d*)\;([\w:]*)\;", RegexOptions.Compiled);
+    private readonly TypingMethod typingMethod;
+
+    protected HlaNomExtractorBase(TypingMethod typingMethod) : base(FileName)
     {
-        private const string FileName = WmdaFilePathPrefixPre2026 + "hla_nom.txt";
-        private readonly Regex regex = new Regex(@"^(\w+\*{0,1})\;([\w:]+)\;\d+\;(\d*)\;([\w:]*)\;", RegexOptions.Compiled);
-        private readonly TypingMethod typingMethod;
+        this.typingMethod = typingMethod;
+    }
 
-        protected HlaNomExtractorBase(TypingMethod typingMethod) : base(FileName)
-        {
-            this.typingMethod = typingMethod;
-        }
+    protected override HlaNom MapLineOfFileContentsToWmdaHlaTyping(string line)
+    {
+        if (!regex.IsMatch(line))
+            return null;
 
-        protected override HlaNom MapLineOfFileContentsToWmdaHlaTyping(string line)
-        {
-            if (!regex.IsMatch(line))
-                return null;
+        var extractedData = regex.Match(line).Groups;
 
-            var extractedData = regex.Match(line).Groups;
-
-            return new HlaNom(
-                typingMethod,
-                extractedData[1].Value,
-                extractedData[2].Value,
-                !extractedData[3].Value.Equals(""),
-                extractedData[4].Value);
-        }
+        return new HlaNom(
+            typingMethod,
+            extractedData[1].Value,
+            extractedData[2].Value,
+            !extractedData[3].Value.Equals(""),
+            extractedData[4].Value);
     }
 }

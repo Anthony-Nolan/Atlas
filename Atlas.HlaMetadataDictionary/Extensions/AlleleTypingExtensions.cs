@@ -2,24 +2,23 @@
 using System.Linq;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 
-namespace Atlas.HlaMetadataDictionary.Extensions
+namespace Atlas.HlaMetadataDictionary.Extensions;
+
+internal static class AlleleTypingExtensions
 {
-    internal static class AlleleTypingExtensions
+    private const string XxCodeSuffix = ":XX";
+
+    public static IEnumerable<string> ToNmdpCodeAlleleLookupNames(this AlleleTyping alleleTyping)
     {
-        private const string XxCodeSuffix = ":XX";
-
-        public static IEnumerable<string> ToNmdpCodeAlleleLookupNames(this AlleleTyping alleleTyping)
+        return new []
         {
-            return new []
-            {
-                alleleTyping.TwoFieldNameIncludingExpressionSuffix,
-                alleleTyping.TwoFieldNameExcludingExpressionSuffix
-            }.Distinct();
-        }
+            alleleTyping.TwoFieldNameIncludingExpressionSuffix,
+            alleleTyping.TwoFieldNameExcludingExpressionSuffix
+        }.Distinct();
+    }
 
-        public static string ToXxCodeLookupName(this AlleleTyping alleleTyping)
-        {
-            return string.Concat(alleleTyping.FirstField, XxCodeSuffix);
-        }
+    public static string ToXxCodeLookupName(this AlleleTyping alleleTyping)
+    {
+        return string.Concat(alleleTyping.FirstField, XxCodeSuffix);
     }
 }

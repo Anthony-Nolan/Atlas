@@ -14,89 +14,88 @@ using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using EnumStringValues;
 using Microsoft.Extensions.Options;
 
-namespace Atlas.Functions.Services
+namespace Atlas.Functions.Services;
+
+public interface IMatchPredictionInputBuilder
 {
-    public interface IMatchPredictionInputBuilder
+    IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(
+        ResultSet<MatchingAlgorithmResult> matchingResultSet,
+        int? batchSizeOverride = null);
+}
+
+internal class MatchPredictionInputBuilder : IMatchPredictionInputBuilder
+{
+    private readonly IAtlasLogger logger;
+    private readonly IDonorInputBatcher donorInputBatcher;
+    private readonly int matchPredictionBatchSize;
+
+    public MatchPredictionInputBuilder(
+        ISearchLogger<SearchLoggingContext> logger,
+        IDonorInputBatcher donorInputBatcher,
+        IOptions<OrchestrationSettings> orchestrationSettings)
     {
-        IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(
-            ResultSet<MatchingAlgorithmResult> matchingResultSet,
-            int? batchSizeOverride = null);
+        this.logger = logger;
+        this.donorInputBatcher = donorInputBatcher;
+        matchPredictionBatchSize = orchestrationSettings.Value.MatchPredictionBatchSize;
     }
 
-    internal class MatchPredictionInputBuilder : IMatchPredictionInputBuilder
+    /// <inheritdoc />
+    public IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(
+        ResultSet<MatchingAlgorithmResult> matchingResultSet,
+        int? batchSizeOverride = null)
     {
-        private readonly IAtlasLogger logger;
-        private readonly IDonorInputBatcher donorInputBatcher;
-        private readonly int matchPredictionBatchSize;
-
-        public MatchPredictionInputBuilder(
-            ISearchLogger<SearchLoggingContext> logger,
-            IDonorInputBatcher donorInputBatcher,
-            IOptions<OrchestrationSettings> orchestrationSettings)
+        using (logger.RunTimed($"Building match prediction inputs: {matchingResultSet.SearchRequestId}"))
         {
-            this.logger = logger;
-            this.donorInputBatcher = donorInputBatcher;
-            matchPredictionBatchSize = orchestrationSettings.Value.MatchPredictionBatchSize;
+            var nonDonorInput = BuildSearchRequestMatchPredictionInput(matchingResultSet);
+            var donorInputs = matchingResultSet.Results.Select(BuildPerDonorMatchPredictionInput);
+
+            return donorInputBatcher.BatchDonorInputs(nonDonorInput, donorInputs, batchSizeOverride > 0 ? batchSizeOverride.Value : matchPredictionBatchSize).ToList();
         }
+    }
 
-        /// <inheritdoc />
-        public IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(
-            ResultSet<MatchingAlgorithmResult> matchingResultSet,
-            int? batchSizeOverride = null)
+    /// <summary>
+    /// Builds all non-donor information required to run the match prediction algorithm for a search request.
+    /// e.g. patient info, matching preferences
+    /// 
+    /// This will remain constant for all donors in the request, so only needs to be calculated once.
+    /// </summary>
+    private static IdentifiedMatchProbabilityRequest BuildSearchRequestMatchPredictionInput(ResultSet<MatchingAlgorithmResult> resultSet)
+    {
+        return new IdentifiedMatchProbabilityRequest
         {
-            using (logger.RunTimed($"Building match prediction inputs: {matchingResultSet.SearchRequestId}"))
+            SearchRequestId = resultSet.SearchRequestId,
+            MatchingAlgorithmHlaNomenclatureVersion = resultSet.MatchingAlgorithmHlaNomenclatureVersion,
+            ExcludedLoci = ExcludedLoci(resultSet.SearchRequest.MatchCriteria),
+            PatientHla = resultSet.SearchRequest.SearchHlaData.ToPhenotypeInfo().ToPhenotypeInfoTransfer(),
+            PatientFrequencySetMetadata = new FrequencySetMetadata
             {
-                var nonDonorInput = BuildSearchRequestMatchPredictionInput(matchingResultSet);
-                var donorInputs = matchingResultSet.Results.Select(BuildPerDonorMatchPredictionInput);
-
-                return donorInputBatcher.BatchDonorInputs(nonDonorInput, donorInputs, batchSizeOverride > 0 ? batchSizeOverride.Value : matchPredictionBatchSize).ToList();
+                EthnicityCode = resultSet.SearchRequest.PatientEthnicityCode,
+                RegistryCode = resultSet.SearchRequest.PatientRegistryCode
             }
-        }
-
-        /// <summary>
-        /// Builds all non-donor information required to run the match prediction algorithm for a search request.
-        /// e.g. patient info, matching preferences
-        /// 
-        /// This will remain constant for all donors in the request, so only needs to be calculated once.
-        /// </summary>
-        private static IdentifiedMatchProbabilityRequest BuildSearchRequestMatchPredictionInput(ResultSet<MatchingAlgorithmResult> resultSet)
-        {
-            return new IdentifiedMatchProbabilityRequest
-            {
-                SearchRequestId = resultSet.SearchRequestId,
-                MatchingAlgorithmHlaNomenclatureVersion = resultSet.MatchingAlgorithmHlaNomenclatureVersion,
-                ExcludedLoci = ExcludedLoci(resultSet.SearchRequest.MatchCriteria),
-                PatientHla = resultSet.SearchRequest.SearchHlaData.ToPhenotypeInfo().ToPhenotypeInfoTransfer(),
-                PatientFrequencySetMetadata = new FrequencySetMetadata
-                {
-                    EthnicityCode = resultSet.SearchRequest.PatientEthnicityCode,
-                    RegistryCode = resultSet.SearchRequest.PatientRegistryCode
-                }
-            };
-        }
-
-        /// <summary>
-        /// Pieces together various pieces of information into a match prediction input per donor.
-        /// </summary>
-        /// <returns>
-        /// Match prediction input for the given search result.
-        /// Null, if the donor's information could not be found in the donor store 
-        /// </returns>
-        private static DonorInput BuildPerDonorMatchPredictionInput(MatchingAlgorithmResult matchingAlgorithmResult) => new()
-            {
-                DonorId = matchingAlgorithmResult.AtlasDonorId,
-                DonorHla = matchingAlgorithmResult.MatchingResult.DonorHla,
-                DonorFrequencySetMetadata = new FrequencySetMetadata
-                {
-                    EthnicityCode = matchingAlgorithmResult.MatchingDonorInfo.EthnicityCode,
-                    RegistryCode = matchingAlgorithmResult.MatchingDonorInfo.RegistryCode
-                }
-            };
-
-        /// <summary>
-        /// If a locus did not have match criteria provided, we do not want to calculate match probabilities at that locus.
-        /// </summary>
-        private static IEnumerable<Locus> ExcludedLoci(MismatchCriteria mismatchCriteria) =>
-            EnumExtensions.EnumerateValues<Locus>().Where(l => mismatchCriteria.LocusMismatchCriteria.ToLociInfo().GetLocus(l) == null);
+        };
     }
+
+    /// <summary>
+    /// Pieces together various pieces of information into a match prediction input per donor.
+    /// </summary>
+    /// <returns>
+    /// Match prediction input for the given search result.
+    /// Null, if the donor's information could not be found in the donor store 
+    /// </returns>
+    private static DonorInput BuildPerDonorMatchPredictionInput(MatchingAlgorithmResult matchingAlgorithmResult) => new()
+    {
+        DonorId = matchingAlgorithmResult.AtlasDonorId,
+        DonorHla = matchingAlgorithmResult.MatchingResult.DonorHla,
+        DonorFrequencySetMetadata = new FrequencySetMetadata
+        {
+            EthnicityCode = matchingAlgorithmResult.MatchingDonorInfo.EthnicityCode,
+            RegistryCode = matchingAlgorithmResult.MatchingDonorInfo.RegistryCode
+        }
+    };
+
+    /// <summary>
+    /// If a locus did not have match criteria provided, we do not want to calculate match probabilities at that locus.
+    /// </summary>
+    private static IEnumerable<Locus> ExcludedLoci(MismatchCriteria mismatchCriteria) =>
+        EnumExtensions.EnumerateValues<Locus>().Where(l => mismatchCriteria.LocusMismatchCriteria.ToLociInfo().GetLocus(l) == null);
 }

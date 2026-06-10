@@ -14,209 +14,208 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion;
+
+[TestFixture]
+public class HlaConverterTests
 {
-    [TestFixture]
-    public class HlaConverterTests
+    private const Locus DefaultLocus = Locus.A;
+    private const string DefaultHlaName = "hla";
+
+    private IHlaNameToTwoFieldAlleleConverter hlaNameToTwoFieldAlleleConverter;
+    private IHlaScoringMetadataService scoringMetadataService;
+    private ISmallGGroupMetadataService smallGGroupMetadataService;
+
+    private IHlaConverter hlaConverter;
+
+    [SetUp]
+    public void SetUp()
     {
-        private const Locus DefaultLocus = Locus.A;
-        private const string DefaultHlaName = "hla";
+        hlaNameToTwoFieldAlleleConverter = Substitute.For<IHlaNameToTwoFieldAlleleConverter>();
+        scoringMetadataService = Substitute.For<IHlaScoringMetadataService>();
+        smallGGroupMetadataService = Substitute.For<ISmallGGroupMetadataService>();
 
-        private IHlaNameToTwoFieldAlleleConverter hlaNameToTwoFieldAlleleConverter;
-        private IHlaScoringMetadataService scoringMetadataService;
-        private ISmallGGroupMetadataService smallGGroupMetadataService;
+        hlaConverter = new HlaConverter(
+            hlaNameToTwoFieldAlleleConverter,
+            scoringMetadataService,
+            smallGGroupMetadataService);
+    }
 
-        private IHlaConverter hlaConverter;
+    [TestCase(null)]
+    [TestCase("")]
+    public async Task ConvertHla_HlaNameIsNullOrEmpty_ExceptionThrown(string hlaName)
+    {
+        await hlaConverter.Invoking(provider => provider.ConvertHla(DefaultLocus, hlaName, new HlaConversionBehaviour()))
+            .Should().ThrowAsync<ArgumentNullException>();
+    }
 
-        [SetUp]
-        public void SetUp()
+    [Test]
+    public async Task ConvertHla_ConversionBehaviourIsNull_ExceptionThrown()
+    {
+        await hlaConverter.Invoking(provider => provider.ConvertHla(DefaultLocus, "hla", null))
+            .Should().ThrowAsync<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task ConvertHla_TargetIsTwoFieldAlleleIncludingExpressionSuffix_CallsCorrectConverter()
+    {
+        const TargetHlaCategory targetHla = TargetHlaCategory.TwoFieldAlleleIncludingExpressionSuffix;
+
+        await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
         {
-            hlaNameToTwoFieldAlleleConverter = Substitute.For<IHlaNameToTwoFieldAlleleConverter>();
-            scoringMetadataService = Substitute.For<IHlaScoringMetadataService>();
-            smallGGroupMetadataService = Substitute.For<ISmallGGroupMetadataService>();
+            TargetHlaCategory = targetHla
+        });
 
-            hlaConverter = new HlaConverter(
-                hlaNameToTwoFieldAlleleConverter,
-                scoringMetadataService,
-                smallGGroupMetadataService);
-        }
+        await hlaNameToTwoFieldAlleleConverter.Received()
+            .ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Include, Arg.Any<string>());
+    }
 
-        [TestCase(null)]
-        [TestCase("")]
-        public async Task ConvertHla_HlaNameIsNullOrEmpty_ExceptionThrown(string hlaName)
+    [Test]
+    public async Task ConvertHla_TargetIsTwoFieldAlleleExcludingExpressionSuffix_CallsCorrectConverter()
+    {
+        const TargetHlaCategory targetHla = TargetHlaCategory.TwoFieldAlleleExcludingExpressionSuffix;
+
+        await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
         {
-            await hlaConverter.Invoking(provider => provider.ConvertHla(DefaultLocus, hlaName, new HlaConversionBehaviour()))
-                .Should().ThrowAsync<ArgumentNullException>();
-        }
+            TargetHlaCategory = targetHla
+        });
 
-        [Test]
-        public async Task ConvertHla_ConversionBehaviourIsNull_ExceptionThrown()
+        await hlaNameToTwoFieldAlleleConverter.Received()
+            .ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Exclude, Arg.Any<string>());
+    }
+
+    //TODO ATLAS-394: After HMD has been decoupled from Scoring, test using appropriate GGroup lookup service
+    [Test]
+    public async Task ConvertHla_TargetIsGGroup_CallsCorrectConverter()
+    {
+        const TargetHlaCategory targetHla = TargetHlaCategory.GGroup;
+        const string version = "version";
+
+        await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
         {
-            await hlaConverter.Invoking(provider => provider.ConvertHla(DefaultLocus, "hla", null))
-                .Should().ThrowAsync<ArgumentNullException>();
-        }
+            TargetHlaCategory = targetHla,
+            HlaNomenclatureVersion = version
+        });
 
-        [Test]
-        public async Task ConvertHla_TargetIsTwoFieldAlleleIncludingExpressionSuffix_CallsCorrectConverter()
+        await scoringMetadataService.Received()
+            .GetHlaMetadata(DefaultLocus, DefaultHlaName, version);
+    }
+
+    //TODO ATLAS-394: After HMD has been decoupled from Scoring, test using appropriate GGroup lookup service
+    [Test]
+    public async Task ConvertHla_TargetIsGGroup_ReturnsMatchingGGroups()
+    {
+        var gGroups = new List<string> {"g-group1", "g-group-2"};
+        var info = new ConsolidatedMolecularScoringInfoBuilder().WithMatchingGGroups(gGroups).Build();
+        var metadata = BuildHlaScoringMetadata(info);
+        scoringMetadataService.GetHlaMetadata(DefaultLocus, DefaultHlaName, Arg.Any<string>()).Returns(metadata);
+
+        const TargetHlaCategory targetHla = TargetHlaCategory.GGroup;
+        const string version = "version";
+        var result = await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
         {
-            const TargetHlaCategory targetHla = TargetHlaCategory.TwoFieldAlleleIncludingExpressionSuffix;
+            TargetHlaCategory = targetHla,
+            HlaNomenclatureVersion = version
+        });
 
-            await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla
-            });
+        result.Should().BeEquivalentTo(gGroups);
+    }
 
-            await hlaNameToTwoFieldAlleleConverter.Received()
-                .ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Include, Arg.Any<string>());
-        }
+    [Test]
+    public async Task ConvertHla_TargetIsSmallGGroup_CallsCorrectConverter()
+    {
+        const TargetHlaCategory targetHla = TargetHlaCategory.SmallGGroup;
+        const string version = "version";
 
-        [Test]
-        public async Task ConvertHla_TargetIsTwoFieldAlleleExcludingExpressionSuffix_CallsCorrectConverter()
+        await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
         {
-            const TargetHlaCategory targetHla = TargetHlaCategory.TwoFieldAlleleExcludingExpressionSuffix;
+            TargetHlaCategory = targetHla,
+            HlaNomenclatureVersion = version
+        });
 
-            await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla
-            });
+        await smallGGroupMetadataService.Received()
+            .GetSmallGGroups(DefaultLocus, DefaultHlaName, version);
+    }
 
-            await hlaNameToTwoFieldAlleleConverter.Received()
-                .ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Exclude, Arg.Any<string>());
-        }
+    [Test]
+    public async Task ConvertHla_TargetIsSmallGGroup_ReturnsSmallGGroups()
+    {
+        var gGroups = new List<string> {"g-group1", "g-group-2"};
+        smallGGroupMetadataService.GetSmallGGroups(default, default, default).ReturnsForAnyArgs(gGroups);
 
-        //TODO ATLAS-394: After HMD has been decoupled from Scoring, test using appropriate GGroup lookup service
-        [Test]
-        public async Task ConvertHla_TargetIsGGroup_CallsCorrectConverter()
+        const TargetHlaCategory targetHla = TargetHlaCategory.SmallGGroup;
+        const string version = "version";
+
+        var result = await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
         {
-            const TargetHlaCategory targetHla = TargetHlaCategory.GGroup;
-            const string version = "version";
+            TargetHlaCategory = targetHla,
+            HlaNomenclatureVersion = version
+        });
 
-            await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla,
-                HlaNomenclatureVersion = version
-            });
+        result.Should().BeEquivalentTo(gGroups);
+    }
 
-            await scoringMetadataService.Received()
-                .GetHlaMetadata(DefaultLocus, DefaultHlaName, version);
-        }
+    //TODO ATLAS-394: After HMD has been decoupled from Scoring, test using appropriate PGroup lookup service
+    [Test]
+    public async Task ConvertHla_TargetIsPGroup_CallsCorrectConverter()
+    {
+        const TargetHlaCategory targetHla = TargetHlaCategory.PGroup;
+        const string version = "version";
 
-        //TODO ATLAS-394: After HMD has been decoupled from Scoring, test using appropriate GGroup lookup service
-        [Test]
-        public async Task ConvertHla_TargetIsGGroup_ReturnsMatchingGGroups()
+        await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
         {
-            var gGroups = new List<string> {"g-group1", "g-group-2"};
-            var info = new ConsolidatedMolecularScoringInfoBuilder().WithMatchingGGroups(gGroups).Build();
-            var metadata = BuildHlaScoringMetadata(info);
-            scoringMetadataService.GetHlaMetadata(DefaultLocus, DefaultHlaName, Arg.Any<string>()).Returns(metadata);
+            TargetHlaCategory = targetHla,
+            HlaNomenclatureVersion = version
+        });
 
-            const TargetHlaCategory targetHla = TargetHlaCategory.GGroup;
-            const string version = "version";
-            var result = await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla,
-                HlaNomenclatureVersion = version
-            });
+        await scoringMetadataService.Received()
+            .GetHlaMetadata(DefaultLocus, DefaultHlaName, version);
+    }
 
-            result.Should().BeEquivalentTo(gGroups);
-        }
+    //TODO ATLAS-394: After HMD has been decoupled from Scoring, test using appropriate Serology lookup service
+    [Test]
+    public async Task ConvertHla_TargetIsSerology_CallsCorrectConverter()
+    {
+        const TargetHlaCategory targetHla = TargetHlaCategory.Serology;
+        const string version = "version";
 
-        [Test]
-        public async Task ConvertHla_TargetIsSmallGGroup_CallsCorrectConverter()
+        await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
         {
-            const TargetHlaCategory targetHla = TargetHlaCategory.SmallGGroup;
-            const string version = "version";
+            TargetHlaCategory = targetHla,
+            HlaNomenclatureVersion = version
+        });
 
-            await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla,
-                HlaNomenclatureVersion = version
-            });
+        await scoringMetadataService.Received()
+            .GetHlaMetadata(DefaultLocus, DefaultHlaName, version);
+    }
 
-            await smallGGroupMetadataService.Received()
-                .GetSmallGGroups(DefaultLocus, DefaultHlaName, version);
-        }
+    //TODO ATLAS-394: After HMD has been decoupled from Scoring, test using appropriate Serology lookup service
+    [Test]
+    public async Task ConvertHla_TargetIsSerology_ReturnsMatchingSerologies()
+    {
+        const string serologyName = "serology";
+        var serologies = new List<SerologyEntry> {new SerologyEntry(serologyName, SerologySubtype.Associated, false)};
+        var info = new ConsolidatedMolecularScoringInfoBuilder().WithMatchingSerologies(serologies).Build();
+        var metadata = BuildHlaScoringMetadata(info);
+        scoringMetadataService.GetHlaMetadata(DefaultLocus, DefaultHlaName, Arg.Any<string>()).Returns(metadata);
 
-        [Test]
-        public async Task ConvertHla_TargetIsSmallGGroup_ReturnsSmallGGroups()
+        const TargetHlaCategory targetHla = TargetHlaCategory.Serology;
+        const string version = "version";
+        var result = await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
         {
-            var gGroups = new List<string> {"g-group1", "g-group-2"};
-            smallGGroupMetadataService.GetSmallGGroups(default, default, default).ReturnsForAnyArgs(gGroups);
+            TargetHlaCategory = targetHla,
+            HlaNomenclatureVersion = version
+        });
 
-            const TargetHlaCategory targetHla = TargetHlaCategory.SmallGGroup;
-            const string version = "version";
+        result.Should().BeEquivalentTo(serologyName);
+    }
 
-            var result = await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla,
-                HlaNomenclatureVersion = version
-            });
-
-            result.Should().BeEquivalentTo(gGroups);
-        }
-
-        //TODO ATLAS-394: After HMD has been decoupled from Scoring, test using appropriate PGroup lookup service
-        [Test]
-        public async Task ConvertHla_TargetIsPGroup_CallsCorrectConverter()
-        {
-            const TargetHlaCategory targetHla = TargetHlaCategory.PGroup;
-            const string version = "version";
-
-            await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla,
-                HlaNomenclatureVersion = version
-            });
-
-            await scoringMetadataService.Received()
-                .GetHlaMetadata(DefaultLocus, DefaultHlaName, version);
-        }
-
-        //TODO ATLAS-394: After HMD has been decoupled from Scoring, test using appropriate Serology lookup service
-        [Test]
-        public async Task ConvertHla_TargetIsSerology_CallsCorrectConverter()
-        {
-            const TargetHlaCategory targetHla = TargetHlaCategory.Serology;
-            const string version = "version";
-
-            await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla,
-                HlaNomenclatureVersion = version
-            });
-
-            await scoringMetadataService.Received()
-                .GetHlaMetadata(DefaultLocus, DefaultHlaName, version);
-        }
-
-        //TODO ATLAS-394: After HMD has been decoupled from Scoring, test using appropriate Serology lookup service
-        [Test]
-        public async Task ConvertHla_TargetIsSerology_ReturnsMatchingSerologies()
-        {
-            const string serologyName = "serology";
-            var serologies = new List<SerologyEntry> {new SerologyEntry(serologyName, SerologySubtype.Associated, false)};
-            var info = new ConsolidatedMolecularScoringInfoBuilder().WithMatchingSerologies(serologies).Build();
-            var metadata = BuildHlaScoringMetadata(info);
-            scoringMetadataService.GetHlaMetadata(DefaultLocus, DefaultHlaName, Arg.Any<string>()).Returns(metadata);
-
-            const TargetHlaCategory targetHla = TargetHlaCategory.Serology;
-            const string version = "version";
-            var result = await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla,
-                HlaNomenclatureVersion = version
-            });
-
-            result.Should().BeEquivalentTo(serologyName);
-        }
-
-        private static IHlaScoringMetadata BuildHlaScoringMetadata(IHlaScoringInfo scoringInfo)
-        {
-            return new HlaScoringMetadataBuilder()
-                .AtLocus(DefaultLocus)
-                .WithLookupName(DefaultHlaName)
-                .WithHlaScoringInfo(scoringInfo)
-                .Build();
-        }
+    private static IHlaScoringMetadata BuildHlaScoringMetadata(IHlaScoringInfo scoringInfo)
+    {
+        return new HlaScoringMetadataBuilder()
+            .AtLocus(DefaultLocus)
+            .WithLookupName(DefaultHlaName)
+            .WithHlaScoringInfo(scoringInfo)
+            .Build();
     }
 }

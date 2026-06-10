@@ -1,12 +1,11 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Atlas.SearchTracking.Common.Enums
+namespace Atlas.SearchTracking.Common.Enums;
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum MatchingAlgorithmFailureType
 {
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum MatchingAlgorithmFailureType
-    {
-        ValidationError,
-        HlaMetadataDictionaryError,
-        UnexpectedError
-    }
+    ValidationError,
+    HlaMetadataDictionaryError,
+    UnexpectedError
 }

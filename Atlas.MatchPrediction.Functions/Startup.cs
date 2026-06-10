@@ -7,40 +7,39 @@ using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
-namespace Atlas.MatchPrediction.Functions
+namespace Atlas.MatchPrediction.Functions;
+
+internal static class Startup
 {
-    internal static class Startup
+    public static void Configure(IServiceCollection services)
     {
-        public static void Configure(IServiceCollection services)
-        {
-            RegisterSettings(services);
+        RegisterSettings(services);
 
-            services.AddHealthChecks();
+        services.AddHealthChecks();
 
-            services.RegisterMatchPredictionAlgorithm(
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                OptionsReaderFor<MacDictionarySettings>(),
-                OptionsReaderFor<NotificationsServiceBusSettings>(),
-                OptionsReaderFor<AzureStorageSettings>(),
-                ConnectionStringReader("MatchPredictionSql")
-            );
+        services.RegisterMatchPredictionAlgorithm(
+            OptionsReaderFor<ApplicationInsightsSettings>(),
+            OptionsReaderFor<HlaMetadataDictionarySettings>(),
+            OptionsReaderFor<MacDictionarySettings>(),
+            OptionsReaderFor<NotificationsServiceBusSettings>(),
+            OptionsReaderFor<AzureStorageSettings>(),
+            ConnectionStringReader("MatchPredictionSql")
+        );
 
-            services.RegisterMatchPredictionRequester(
-                OptionsReaderFor<MessagingServiceBusSettings>(),
-                OptionsReaderFor<MatchPredictionRequestsSettings>());
-        }
+        services.RegisterMatchPredictionRequester(
+            OptionsReaderFor<MessagingServiceBusSettings>(),
+            OptionsReaderFor<MatchPredictionRequestsSettings>());
+    }
 
-        private static void RegisterSettings(IServiceCollection services)
-        {
-            services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
-            services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
-            services.RegisterAsOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
-            services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
-            services.RegisterAsOptions<MatchPredictionRequestsSettings>("MatchPredictionRequests");
-            services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
-            services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
-        }
+    private static void RegisterSettings(IServiceCollection services)
+    {
+        services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
+        services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
+        services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
+        services.RegisterAsOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
+        services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
+        services.RegisterAsOptions<MatchPredictionRequestsSettings>("MatchPredictionRequests");
+        services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+        services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
     }
 }

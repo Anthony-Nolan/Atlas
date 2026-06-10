@@ -10,217 +10,216 @@ using Atlas.SearchTracking.Common.Enums;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.Search
+namespace Atlas.MatchingAlgorithm.Test.Services.Search;
+
+[TestFixture]
+public class SearchTrackingEventPublisherTests
 {
-    [TestFixture]
-    public class SearchTrackingEventPublisherTests
+    private ISearchTrackingServiceBusClient searchTrackingServiceBusClient;
+
+    private SearchTrackingEventPublisher searchTrackingDispatcher;
+
+    [SetUp]
+    public void SetUp()
     {
-        private ISearchTrackingServiceBusClient searchTrackingServiceBusClient;
+        searchTrackingServiceBusClient = Substitute.For<ISearchTrackingServiceBusClient>();
+        var context = new MatchingAlgorithmSearchTrackingContext
+            { SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"), AttemptNumber = 1 };
 
-        private SearchTrackingEventPublisher searchTrackingDispatcher;
+        searchTrackingDispatcher = new SearchTrackingEventPublisher(context, searchTrackingServiceBusClient);
+    }
 
-        [SetUp]
-        public void SetUp()
+    [Test]
+    public async Task ProcessSearchTrackingEvent_WhenMatchingAlgorithmStarted_DispatchesEventWithId()
+    {
+        const byte attemptNumber = 1;
+        var initiationTime = new DateTime(2024, 8, 12);
+        var startTime = new DateTime(2024, 8, 13);
+
+        var expectedMatchingAlgorithmAttemptStartedEvent = new MatchingAlgorithmAttemptStartedEvent
         {
-            searchTrackingServiceBusClient = Substitute.For<ISearchTrackingServiceBusClient>();
-            var context = new MatchingAlgorithmSearchTrackingContext
-                { SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"), AttemptNumber = 1 };
+            SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+            AttemptNumber = attemptNumber,
+            InitiationTimeUtc = initiationTime,
+            StartTimeUtc = startTime
+        };
 
-            searchTrackingDispatcher = new SearchTrackingEventPublisher(context, searchTrackingServiceBusClient);
-        }
+        MatchingAlgorithmAttemptStartedEvent actualAttemptStartedEvent = null;
 
-        [Test]
-        public async Task ProcessSearchTrackingEvent_WhenMatchingAlgorithmStarted_DispatchesEventWithId()
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            Arg.Do<MatchingAlgorithmAttemptStartedEvent>(x => actualAttemptStartedEvent = x),
+            Arg.Is(SearchTrackingEventType.MatchingAlgorithmAttemptStarted));
+
+        await searchTrackingDispatcher.ProcessInitiation(initiationTime, startTime);
+
+        actualAttemptStartedEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptStartedEvent);
+    }
+
+    [Test]
+    public async Task MatchingAlgorithmProcessCoreMatching_WhenStarted_DispatchesEvent()
+    {
+        const byte attemptNumber = 1;
+        var eventTime = DateTime.UtcNow;
+
+        var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
         {
-            const byte attemptNumber = 1;
-            var initiationTime = new DateTime(2024, 8, 12);
-            var startTime = new DateTime(2024, 8, 13);
+            SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+            AttemptNumber = attemptNumber,
+            TimeUtc = eventTime
+        };
 
-            var expectedMatchingAlgorithmAttemptStartedEvent = new MatchingAlgorithmAttemptStartedEvent
-            {
-                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
-                AttemptNumber = attemptNumber,
-                InitiationTimeUtc = initiationTime,
-                StartTimeUtc = startTime
-            };
+        MatchingAlgorithmAttemptTimingEvent actualAttemptTimingEvent = null;
 
-            MatchingAlgorithmAttemptStartedEvent actualAttemptStartedEvent = null;
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            Arg.Do<MatchingAlgorithmAttemptTimingEvent>(x => actualAttemptTimingEvent = x),
+            Arg.Is(SearchTrackingEventType.MatchingAlgorithmCoreMatchingStarted));
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                Arg.Do<MatchingAlgorithmAttemptStartedEvent>(x => actualAttemptStartedEvent = x),
-                Arg.Is(SearchTrackingEventType.MatchingAlgorithmAttemptStarted));
+        await searchTrackingDispatcher.ProcessCoreMatchingStarted();
 
-            await searchTrackingDispatcher.ProcessInitiation(initiationTime, startTime);
-
-            actualAttemptStartedEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptStartedEvent);
-        }
-
-        [Test]
-        public async Task MatchingAlgorithmProcessCoreMatching_WhenStarted_DispatchesEvent()
+        actualAttemptTimingEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptTimingEvent, options =>
         {
-            const byte attemptNumber = 1;
-            var eventTime = DateTime.UtcNow;
+            options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
+            return options;
+        });
+    }
 
-            var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
-            {
-                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
-                AttemptNumber = attemptNumber,
-                TimeUtc = eventTime
-            };
+    [Test]
+    public async Task MatchingAlgorithmProcessCoreMatching_WhenEnded_DispatchesEvent()
+    {
+        const byte attemptNumber = 1;
+        var eventTime = DateTime.UtcNow;
 
-            MatchingAlgorithmAttemptTimingEvent actualAttemptTimingEvent = null;
-
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                Arg.Do<MatchingAlgorithmAttemptTimingEvent>(x => actualAttemptTimingEvent = x),
-                Arg.Is(SearchTrackingEventType.MatchingAlgorithmCoreMatchingStarted));
-
-            await searchTrackingDispatcher.ProcessCoreMatchingStarted();
-
-            actualAttemptTimingEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptTimingEvent, options =>
-            {
-                options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
-                return options;
-            });
-        }
-
-        [Test]
-        public async Task MatchingAlgorithmProcessCoreMatching_WhenEnded_DispatchesEvent()
+        var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
         {
-            const byte attemptNumber = 1;
-            var eventTime = DateTime.UtcNow;
+            SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+            AttemptNumber = attemptNumber,
+            TimeUtc = eventTime
+        };
 
-            var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
-            {
-                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
-                AttemptNumber = attemptNumber,
-                TimeUtc = eventTime
-            };
+        MatchingAlgorithmAttemptTimingEvent actualAttemptTimingEvent = null;
 
-            MatchingAlgorithmAttemptTimingEvent actualAttemptTimingEvent = null;
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            Arg.Do<MatchingAlgorithmAttemptTimingEvent>(x => actualAttemptTimingEvent = x),
+            Arg.Is(SearchTrackingEventType.MatchingAlgorithmCoreMatchingEnded));
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                Arg.Do<MatchingAlgorithmAttemptTimingEvent>(x => actualAttemptTimingEvent = x),
-                Arg.Is(SearchTrackingEventType.MatchingAlgorithmCoreMatchingEnded));
+        await searchTrackingDispatcher.ProcessCoreMatchingEnded();
 
-            await searchTrackingDispatcher.ProcessCoreMatchingEnded();
-
-            actualAttemptTimingEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptTimingEvent, options =>
-            {
-                options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
-                return options;
-            });
-        }
-
-        [Test]
-        public async Task MatchingAlgorithmProcessCoreScoringOneDonor_WhenStarted_DispatchesEvent()
+        actualAttemptTimingEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptTimingEvent, options =>
         {
-            const byte attemptNumber = 1;
-            var eventTime = DateTime.UtcNow;
+            options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
+            return options;
+        });
+    }
 
-            var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
-            {
-                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
-                AttemptNumber = attemptNumber,
-                TimeUtc = eventTime
-            };
+    [Test]
+    public async Task MatchingAlgorithmProcessCoreScoringOneDonor_WhenStarted_DispatchesEvent()
+    {
+        const byte attemptNumber = 1;
+        var eventTime = DateTime.UtcNow;
 
-            MatchingAlgorithmAttemptTimingEvent actualAttemptTimingEvent = null;
-
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                Arg.Do<MatchingAlgorithmAttemptTimingEvent>(x => actualAttemptTimingEvent = x),
-                Arg.Is(SearchTrackingEventType.MatchingAlgorithmCoreScoringStarted));
-
-            await searchTrackingDispatcher.ProcessCoreScoringOneDonorStarted();
-
-            actualAttemptTimingEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptTimingEvent, options =>
-            {
-                options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
-                return options;
-            });
-        }
-
-        [Test]
-        public async Task MatchingAlgorithmProcessCoreScoringAllDonors_WhenEnded_DispatchesEvent()
+        var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
         {
-            const byte attemptNumber = 1;
-            var eventTime = DateTime.UtcNow;
+            SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+            AttemptNumber = attemptNumber,
+            TimeUtc = eventTime
+        };
 
-            var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
-            {
-                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
-                AttemptNumber = attemptNumber,
-                TimeUtc = eventTime
-            };
+        MatchingAlgorithmAttemptTimingEvent actualAttemptTimingEvent = null;
 
-            MatchingAlgorithmAttemptTimingEvent actualAttemptTimingEvent = null;
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            Arg.Do<MatchingAlgorithmAttemptTimingEvent>(x => actualAttemptTimingEvent = x),
+            Arg.Is(SearchTrackingEventType.MatchingAlgorithmCoreScoringStarted));
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                Arg.Do<MatchingAlgorithmAttemptTimingEvent>(x => actualAttemptTimingEvent = x),
-                Arg.Is(SearchTrackingEventType.MatchingAlgorithmCoreScoringEnded));
+        await searchTrackingDispatcher.ProcessCoreScoringOneDonorStarted();
 
-            await searchTrackingDispatcher.ProcessCoreScoringAllDonorsEnded();
-
-            actualAttemptTimingEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptTimingEvent, options =>
-            {
-                options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
-                return options;
-            });
-        }
-
-        [Test]
-        public async Task MatchingAlgorithmProcessPersistingResults_WhenStarted_DispatchesEvent()
+        actualAttemptTimingEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptTimingEvent, options =>
         {
-            const byte attemptNumber = 1;
-            var eventTime = DateTime.UtcNow;
+            options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
+            return options;
+        });
+    }
 
-            var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
-            {
-                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
-                AttemptNumber = attemptNumber,
-                TimeUtc = eventTime
-            };
+    [Test]
+    public async Task MatchingAlgorithmProcessCoreScoringAllDonors_WhenEnded_DispatchesEvent()
+    {
+        const byte attemptNumber = 1;
+        var eventTime = DateTime.UtcNow;
 
-            MatchingAlgorithmAttemptTimingEvent actualAttemptTimingEvent = null;
-
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                Arg.Do<MatchingAlgorithmAttemptTimingEvent>(x => actualAttemptTimingEvent = x),
-                Arg.Is(SearchTrackingEventType.MatchingAlgorithmPersistingResultsStarted));
-
-            await searchTrackingDispatcher.ProcessPersistingResultsStarted();
-
-            actualAttemptTimingEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptTimingEvent, options =>
-            {
-                options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
-                return options;
-            });
-        }
-
-        [Test]
-        public async Task MatchingAlgorithmProcessPersistingResults_WhenEnded_DispatchesEvent()
+        var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
         {
-            const byte attemptNumber = 1;
-            var eventTime = DateTime.UtcNow;
+            SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+            AttemptNumber = attemptNumber,
+            TimeUtc = eventTime
+        };
 
-            var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
-            {
-                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
-                AttemptNumber = attemptNumber,
-                TimeUtc = eventTime
-            };
+        MatchingAlgorithmAttemptTimingEvent actualAttemptTimingEvent = null;
 
-            MatchingAlgorithmAttemptTimingEvent actualAttemptTimingEvent = null;
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            Arg.Do<MatchingAlgorithmAttemptTimingEvent>(x => actualAttemptTimingEvent = x),
+            Arg.Is(SearchTrackingEventType.MatchingAlgorithmCoreScoringEnded));
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                Arg.Do<MatchingAlgorithmAttemptTimingEvent>(x => actualAttemptTimingEvent = x),
-                Arg.Is(SearchTrackingEventType.MatchingAlgorithmPersistingResultsEnded));
+        await searchTrackingDispatcher.ProcessCoreScoringAllDonorsEnded();
 
-            await searchTrackingDispatcher.ProcessPersistingResultsEnded();
+        actualAttemptTimingEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptTimingEvent, options =>
+        {
+            options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
+            return options;
+        });
+    }
 
-            actualAttemptTimingEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptTimingEvent, options =>
-            {
-                options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
-                return options;
-            });
-        }
+    [Test]
+    public async Task MatchingAlgorithmProcessPersistingResults_WhenStarted_DispatchesEvent()
+    {
+        const byte attemptNumber = 1;
+        var eventTime = DateTime.UtcNow;
+
+        var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
+        {
+            SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+            AttemptNumber = attemptNumber,
+            TimeUtc = eventTime
+        };
+
+        MatchingAlgorithmAttemptTimingEvent actualAttemptTimingEvent = null;
+
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            Arg.Do<MatchingAlgorithmAttemptTimingEvent>(x => actualAttemptTimingEvent = x),
+            Arg.Is(SearchTrackingEventType.MatchingAlgorithmPersistingResultsStarted));
+
+        await searchTrackingDispatcher.ProcessPersistingResultsStarted();
+
+        actualAttemptTimingEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptTimingEvent, options =>
+        {
+            options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
+            return options;
+        });
+    }
+
+    [Test]
+    public async Task MatchingAlgorithmProcessPersistingResults_WhenEnded_DispatchesEvent()
+    {
+        const byte attemptNumber = 1;
+        var eventTime = DateTime.UtcNow;
+
+        var expectedMatchingAlgorithmAttemptTimingEvent = new MatchingAlgorithmAttemptTimingEvent()
+        {
+            SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+            AttemptNumber = attemptNumber,
+            TimeUtc = eventTime
+        };
+
+        MatchingAlgorithmAttemptTimingEvent actualAttemptTimingEvent = null;
+
+        await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
+            Arg.Do<MatchingAlgorithmAttemptTimingEvent>(x => actualAttemptTimingEvent = x),
+            Arg.Is(SearchTrackingEventType.MatchingAlgorithmPersistingResultsEnded));
+
+        await searchTrackingDispatcher.ProcessPersistingResultsEnded();
+
+        actualAttemptTimingEvent.Should().BeEquivalentTo(expectedMatchingAlgorithmAttemptTimingEvent, options =>
+        {
+            options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1.Seconds())).WhenTypeIs<DateTime>();
+            return options;
+        });
     }
 }

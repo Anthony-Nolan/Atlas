@@ -1,9 +1,8 @@
-﻿namespace Atlas.Debug.Client.Models.Settings
+﻿namespace Atlas.Debug.Client.Models.Settings;
+
+/// <summary>
+/// Settings for calling the top-level debug functions.
+/// </summary>
+public class TopLevelHttpFunctionSettings : HttpFunctionSettings
 {
-    /// <summary>
-    /// Settings for calling the top-level debug functions.
-    /// </summary>
-    public class TopLevelHttpFunctionSettings : HttpFunctionSettings
-    {
-    }
 }

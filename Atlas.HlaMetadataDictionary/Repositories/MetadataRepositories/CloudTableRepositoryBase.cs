@@ -13,171 +13,170 @@ using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using Azure.Data.Tables;
 using LazyCache;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
+namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
+
+/// <summary>
+/// Generic repository that persists data to a TableClient
+/// & also caches it in memory for optimal read-access.
+/// </summary>
+internal interface IWarmableRepository
 {
-    /// <summary>
-    /// Generic repository that persists data to a TableClient
-    /// & also caches it in memory for optimal read-access.
-    /// </summary>
-    internal interface IWarmableRepository
+    Task LoadDataIntoMemory(string hlaNomenclatureVersion);
+}
+
+internal abstract class TableClientRepositoryBase<TStorable, TTableRow> :
+    IWarmableRepository
+    where TTableRow : HlaMetadataTableRow, new()
+    where TStorable : ISerialisableHlaMetadata
+{
+    protected readonly IAppCache Cache;
+    protected readonly IAtlasLogger AtlasLogger;
+
+    private readonly ITableClientFactory tableFactory;
+    private readonly ITableReferenceRepository tableReferenceRepository;
+    private readonly string functionalTableReferencePrefix;
+    private readonly string cacheKey;
+    private readonly IDictionary<string, TableClient> tableClients = new Dictionary<string, TableClient>();
+
+    protected TableClientRepositoryBase(
+        ITableClientFactory factory,
+        ITableReferenceRepository tableReferenceRepository,
+        string functionalTableReferencePrefix,
+        // ReSharper disable once SuggestBaseTypeForParameter
+        IPersistentCacheProvider cacheProvider,
+        string cacheKey,
+        IAtlasLogger logger)
     {
-        Task LoadDataIntoMemory(string hlaNomenclatureVersion);
+        tableFactory = factory;
+        this.tableReferenceRepository = tableReferenceRepository;
+        this.functionalTableReferencePrefix = functionalTableReferencePrefix;
+        Cache = cacheProvider.Cache;
+        this.cacheKey = cacheKey;
+        AtlasLogger = logger;
     }
 
-    internal abstract class TableClientRepositoryBase<TStorable, TTableRow> :
-        IWarmableRepository
-        where TTableRow : HlaMetadataTableRow, new()
-        where TStorable : ISerialisableHlaMetadata
+    /// <summary>
+    /// Pre-warms the in-memory cache of all metadata for the specified nomenclature version.
+    /// While the cache will be lazily warmed on first request, this can be called up-front
+    /// to e.g. ensure that the first real request of the day is not unnecessarily slow.   
+    /// </summary>
+    public async Task LoadDataIntoMemory(string hlaNomenclatureVersion)
     {
-        protected readonly IAppCache Cache;
-        protected readonly IAtlasLogger AtlasLogger;
+        await TableData(hlaNomenclatureVersion);
+    }
 
-        private readonly ITableClientFactory tableFactory;
-        private readonly ITableReferenceRepository tableReferenceRepository;
-        private readonly string functionalTableReferencePrefix;
-        private readonly string cacheKey;
-        private readonly IDictionary<string, TableClient> tableClients = new Dictionary<string, TableClient>();
+    protected async Task RecreateDataTable(IEnumerable<TStorable> tableContents, string hlaNomenclatureVersion)
+    {
+        var tablePrefix = VersionedTableReferencePrefix(hlaNomenclatureVersion);
+        var newDataTable = await CreateNewDataTable(tablePrefix);
 
-        protected TableClientRepositoryBase(
-            ITableClientFactory factory,
-            ITableReferenceRepository tableReferenceRepository,
-            string functionalTableReferencePrefix,
-            // ReSharper disable once SuggestBaseTypeForParameter
-            IPersistentCacheProvider cacheProvider,
-            string cacheKey,
-            IAtlasLogger logger)
+
+        await newDataTable.BatchInsert(tableContents.Select(rowData => new HlaMetadataTableRow(rowData).ToTableEntity()));
+        await tableReferenceRepository.UpdateTableReference(tablePrefix, newDataTable.Name);
+        tableClients.Remove(tablePrefix);
+    }
+
+    protected async Task<TTableRow> GetDataRowIfExists(string partition, string rowKey, string hlaNomenclatureVersion)
+    {
+        return await Cache.GetSingleItemAndScheduleWholeCollectionCacheWarm(
+            VersionedCacheKey(hlaNomenclatureVersion),
+            () => FetchAllRowsInTable(hlaNomenclatureVersion),
+            tableDictionary => GetRowFromCachedTable(partition, rowKey, tableDictionary),
+            () => FetchRowFromSourceTable(partition, rowKey, hlaNomenclatureVersion)
+        );
+    }
+
+    protected async Task<Dictionary<string, TTableRow>> TableData(string hlaNomenclatureVersion)
+    {
+        return await Cache.GetOrAddWholeCollectionAsync_Tracked(VersionedCacheKey(hlaNomenclatureVersion), () => FetchAllRowsInTable(hlaNomenclatureVersion))
+            ?? throw new MemoryCacheException($"HLA metadata could not be loaded for nomenclature version: {hlaNomenclatureVersion}");
+    }
+
+    private string VersionedCacheKey(string hlaNomenclatureVersion) => $"{cacheKey}:{hlaNomenclatureVersion}";
+
+    private async Task<Dictionary<string, TTableRow>> FetchAllRowsInTable(string hlaNomenclatureVersion)
+    {
+        var operationDescription = $"Fetch and cache Hla Metadata Dictionary data: {cacheKey} at version: '{hlaNomenclatureVersion}'.";
+        using (AtlasLogger.RunTimed(operationDescription))
         {
-            tableFactory = factory;
-            this.tableReferenceRepository = tableReferenceRepository;
-            this.functionalTableReferencePrefix = functionalTableReferencePrefix;
-            Cache = cacheProvider.Cache;
-            this.cacheKey = cacheKey;
-            AtlasLogger = logger;
-        }
+            var currentDataTable = await GetVersionedDataTable(hlaNomenclatureVersion);
+            //var tableResults = new CloudTableBatchQueryAsync<TTableRow>(currentDataTable);
+            var dataToLoad = new Dictionary<string, TTableRow>();
+            var pages = currentDataTable.QueryAsync<TableEntity>(x => true).AsPages();
 
-        /// <summary>
-        /// Pre-warms the in-memory cache of all metadata for the specified nomenclature version.
-        /// While the cache will be lazily warmed on first request, this can be called up-front
-        /// to e.g. ensure that the first real request of the day is not unnecessarily slow.   
-        /// </summary>
-        public async Task LoadDataIntoMemory(string hlaNomenclatureVersion)
-        {
-            await TableData(hlaNomenclatureVersion);
-        }
-
-        protected async Task RecreateDataTable(IEnumerable<TStorable> tableContents, string hlaNomenclatureVersion)
-        {
-            var tablePrefix = VersionedTableReferencePrefix(hlaNomenclatureVersion);
-            var newDataTable = await CreateNewDataTable(tablePrefix);
-
-
-            await newDataTable.BatchInsert(tableContents.Select(rowData => new HlaMetadataTableRow(rowData).ToTableEntity()));
-            await tableReferenceRepository.UpdateTableReference(tablePrefix, newDataTable.Name);
-            tableClients.Remove(tablePrefix);
-        }
-
-        protected async Task<TTableRow> GetDataRowIfExists(string partition, string rowKey, string hlaNomenclatureVersion)
-        {
-            return await Cache.GetSingleItemAndScheduleWholeCollectionCacheWarm(
-                VersionedCacheKey(hlaNomenclatureVersion),
-                () => FetchAllRowsInTable(hlaNomenclatureVersion),
-                tableDictionary => GetRowFromCachedTable(partition, rowKey, tableDictionary),
-                () => FetchRowFromSourceTable(partition, rowKey, hlaNomenclatureVersion)
-            );
-        }
-
-        protected async Task<Dictionary<string, TTableRow>> TableData(string hlaNomenclatureVersion)
-        {
-            return await Cache.GetOrAddWholeCollectionAsync_Tracked(VersionedCacheKey(hlaNomenclatureVersion), () => FetchAllRowsInTable(hlaNomenclatureVersion))
-                   ?? throw new MemoryCacheException($"HLA metadata could not be loaded for nomenclature version: {hlaNomenclatureVersion}");
-        }
-
-        private string VersionedCacheKey(string hlaNomenclatureVersion) => $"{cacheKey}:{hlaNomenclatureVersion}";
-
-        private async Task<Dictionary<string, TTableRow>> FetchAllRowsInTable(string hlaNomenclatureVersion)
-        {
-            var operationDescription = $"Fetch and cache Hla Metadata Dictionary data: {cacheKey} at version: '{hlaNomenclatureVersion}'.";
-            using (AtlasLogger.RunTimed(operationDescription))
+            await foreach (var page in pages)
             {
-                var currentDataTable = await GetVersionedDataTable(hlaNomenclatureVersion);
-                //var tableResults = new CloudTableBatchQueryAsync<TTableRow>(currentDataTable);
-                var dataToLoad = new Dictionary<string, TTableRow>();
-                var pages = currentDataTable.QueryAsync<TableEntity>(x => true).AsPages();
-
-                await foreach (var page in pages)
+                foreach (var result in page.Values)
                 {
-                    foreach (var result in page.Values)
-                    {
-                        var row = new TTableRow();
-                        row.ReadEntity(result);
+                    var row = new TTableRow();
+                    row.ReadEntity(result);
 
-                        dataToLoad.Add(RowPrimaryKey(result.PartitionKey, result.RowKey), row);
-                    }
+                    dataToLoad.Add(RowPrimaryKey(result.PartitionKey, result.RowKey), row);
                 }
-
-                return dataToLoad;
             }
+
+            return dataToLoad;
         }
+    }
 
-        private static string RowPrimaryKey(string partitionKey, string rowKey) => partitionKey + rowKey;
+    private static string RowPrimaryKey(string partitionKey, string rowKey) => partitionKey + rowKey;
 
-        private string VersionedTableReferencePrefix(string hlaNomenclatureVersion)
+    private string VersionedTableReferencePrefix(string hlaNomenclatureVersion)
+    {
+        return $"{functionalTableReferencePrefix}{hlaNomenclatureVersion}";
+    }
+
+    private readonly SemaphoreSlim tableConnectionCreationLock = new(1, 1);
+
+    /// <summary>
+    /// The connection to the current data table is cached so we don't open unnecessary connections
+    /// </summary>
+    private async Task<TableClient> GetVersionedDataTable(string hlaNomenclatureVersion)
+    {
+        await tableConnectionCreationLock.WaitAsync();
+
+        var tablePrefix = VersionedTableReferencePrefix(hlaNomenclatureVersion);
+
+        try
         {
-            return $"{functionalTableReferencePrefix}{hlaNomenclatureVersion}";
-        }
-
-        private readonly SemaphoreSlim tableConnectionCreationLock = new(1, 1);
-
-        /// <summary>
-        /// The connection to the current data table is cached so we don't open unnecessary connections
-        /// </summary>
-        private async Task<TableClient> GetVersionedDataTable(string hlaNomenclatureVersion)
-        {
-            await tableConnectionCreationLock.WaitAsync();
-
-            var tablePrefix = VersionedTableReferencePrefix(hlaNomenclatureVersion);
-
-            try
+            if (tableClients.TryGetValue(tablePrefix, out var cachedTableClient))
             {
-                if (tableClients.TryGetValue(tablePrefix, out var cachedTableClient))
-                {
-                    return cachedTableClient;
-                }
-
-                var dataTableReference = await tableReferenceRepository.GetCurrentTableReference(tablePrefix);
-                var TableClient = await tableFactory.GetTable(dataTableReference);
-                tableClients.Add(tablePrefix, TableClient);
-                return TableClient;
+                return cachedTableClient;
             }
-            finally
-            {
-                tableConnectionCreationLock.Release();
-            }
-        }
 
-        private static TTableRow GetRowFromCachedTable(string partition, string rowKey, IReadOnlyDictionary<string, TTableRow> metadataDictionary)
+            var dataTableReference = await tableReferenceRepository.GetCurrentTableReference(tablePrefix);
+            var TableClient = await tableFactory.GetTable(dataTableReference);
+            tableClients.Add(tablePrefix, TableClient);
+            return TableClient;
+        }
+        finally
         {
-            metadataDictionary.TryGetValue(RowPrimaryKey(partition, rowKey), out var row);
-            return row;
+            tableConnectionCreationLock.Release();
         }
+    }
 
-        private async Task<TTableRow> FetchRowFromSourceTable(string partition, string rowKey, string hlaNomenclatureVersion)
-        {
-            var table = await GetVersionedDataTable(hlaNomenclatureVersion);
-            var tableEntity = await table.GetByPartitionAndRowKey<TableEntity>(partition, rowKey);
+    private static TTableRow GetRowFromCachedTable(string partition, string rowKey, IReadOnlyDictionary<string, TTableRow> metadataDictionary)
+    {
+        metadataDictionary.TryGetValue(RowPrimaryKey(partition, rowKey), out var row);
+        return row;
+    }
 
-            if (tableEntity == null)
-                return null;
+    private async Task<TTableRow> FetchRowFromSourceTable(string partition, string rowKey, string hlaNomenclatureVersion)
+    {
+        var table = await GetVersionedDataTable(hlaNomenclatureVersion);
+        var tableEntity = await table.GetByPartitionAndRowKey<TableEntity>(partition, rowKey);
 
-            var item = new TTableRow();
-            item.ReadEntity(tableEntity);
-            return item;
-        }
+        if (tableEntity == null)
+            return null;
 
-        private async Task<TableClient> CreateNewDataTable(string tablePrefix)
-        {
-            var dataTableReference = tableReferenceRepository.GetNewTableReference(tablePrefix);
-            return await tableFactory.GetTable(dataTableReference);
-        }
+        var item = new TTableRow();
+        item.ReadEntity(tableEntity);
+        return item;
+    }
+
+    private async Task<TableClient> CreateNewDataTable(string tablePrefix)
+    {
+        var dataTableReference = tableReferenceRepository.GetNewTableReference(tablePrefix);
+        return await tableFactory.GetTable(dataTableReference);
     }
 }

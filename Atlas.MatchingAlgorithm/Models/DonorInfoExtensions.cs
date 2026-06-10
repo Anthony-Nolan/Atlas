@@ -1,15 +1,14 @@
 ﻿using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 
-namespace Atlas.MatchingAlgorithm.Models
+namespace Atlas.MatchingAlgorithm.Models;
+
+public static class DonorInfoExtensions
 {
-    public static class DonorInfoExtensions
+    public static FailedDonorInfo ToFailedDonorInfo(this DonorInfo donorInfo)
     {
-        public static FailedDonorInfo ToFailedDonorInfo(this DonorInfo donorInfo)
+        return new FailedDonorInfo(donorInfo)
         {
-            return new FailedDonorInfo(donorInfo)
-            {
-                AtlasDonorId = donorInfo.DonorId
-            };
-        }
+            AtlasDonorId = donorInfo.DonorId
+        };
     }
 }

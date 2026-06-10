@@ -1,31 +1,30 @@
 ﻿using Atlas.Common.ServiceBus;
 using Azure.Messaging.ServiceBus;
 
-namespace Atlas.ManualTesting.Services.ServiceBus
+namespace Atlas.ManualTesting.Services.ServiceBus;
+
+internal interface IDeadLetterReceiverFactory : IMessageReceiverFactory
 {
-    internal interface IDeadLetterReceiverFactory : IMessageReceiverFactory
+}
+
+internal class DeadLetterReceiverFactory : IDeadLetterReceiverFactory
+{
+    private readonly ServiceBusClient client;
+
+    public DeadLetterReceiverFactory(ServiceBusClient client)
     {
+        this.client = client;
     }
 
-    internal class DeadLetterReceiverFactory : IDeadLetterReceiverFactory
+    public IMessageReceiver GetMessageReceiver(string topicName, string subscriptionName, int? prefetchCount = null)
     {
-        private readonly ServiceBusClient client;
+        var options = new ServiceBusReceiverOptions { SubQueue = SubQueue.DeadLetter };
 
-        public DeadLetterReceiverFactory(ServiceBusClient client)
-        {
-            this.client = client;
-        }
+        if (prefetchCount is not null)
+            options.PrefetchCount = prefetchCount.Value;
 
-        public IMessageReceiver GetMessageReceiver(string topicName, string subscriptionName, int? prefetchCount = null)
-        {
-            var options = new ServiceBusReceiverOptions { SubQueue = SubQueue.DeadLetter };
+        var receiver = new MessageReceiver(client.CreateReceiver(topicName, subscriptionName, options));
 
-            if (prefetchCount is not null)
-                options.PrefetchCount = prefetchCount.Value;
-
-            var receiver = new MessageReceiver(client.CreateReceiver(topicName, subscriptionName, options));
-
-            return receiver;
-        }
+        return receiver;
     }
 }

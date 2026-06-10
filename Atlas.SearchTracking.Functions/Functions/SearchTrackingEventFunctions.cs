@@ -5,35 +5,34 @@ using Microsoft.Azure.Functions.Worker;
 using System.Text;
 using Atlas.SearchTracking.Common.Config;
 
-namespace Atlas.SearchTracking.Functions.Functions
+namespace Atlas.SearchTracking.Functions.Functions;
+
+public class SearchTrackingEventFunctions
 {
-    public class SearchTrackingEventFunctions
+    private readonly ISearchTrackingEventProcessor searchTrackingEventProcessor;
+
+    public SearchTrackingEventFunctions(ISearchTrackingEventProcessor searchTrackingEventProcessor)
     {
-        private readonly ISearchTrackingEventProcessor searchTrackingEventProcessor;
+        this.searchTrackingEventProcessor = searchTrackingEventProcessor;
+    }
 
-        public SearchTrackingEventFunctions(ISearchTrackingEventProcessor searchTrackingEventProcessor)
+    [Function(nameof(HandleSearchTrackingEvent))]
+    public async Task HandleSearchTrackingEvent(
+        [ServiceBusTrigger("%MessagingServiceBus:SearchTrackingTopic%",
+            "%MessagingServiceBus:SearchTrackingSubscription%",
+            Connection = "MessagingServiceBus:ConnectionString",
+            IsSessionsEnabled = true)]
+        ServiceBusReceivedMessage message,
+        int deliveryCount)
+    {
+        var body = Encoding.UTF8.GetString(message.Body);
+        var eventType =
+            Enum.Parse<SearchTrackingEventType>(message.ApplicationProperties.GetValueOrDefault(SearchTrackingConstants.EventType).ToString());
+
+        if (deliveryCount != 1)
         {
-            this.searchTrackingEventProcessor = searchTrackingEventProcessor;
+            await Task.Delay(deliveryCount * 1000);
         }
-
-        [Function(nameof(HandleSearchTrackingEvent))]
-        public async Task HandleSearchTrackingEvent(
-            [ServiceBusTrigger("%MessagingServiceBus:SearchTrackingTopic%",
-                "%MessagingServiceBus:SearchTrackingSubscription%",
-                Connection = "MessagingServiceBus:ConnectionString",
-                IsSessionsEnabled = true)]
-            ServiceBusReceivedMessage message,
-            int deliveryCount)
-        {
-            var body = Encoding.UTF8.GetString(message.Body);
-            var eventType =
-                Enum.Parse<SearchTrackingEventType>(message.ApplicationProperties.GetValueOrDefault(SearchTrackingConstants.EventType).ToString());
-
-            if (deliveryCount != 1)
-            {
-                await Task.Delay(deliveryCount * 1000);
-            }
-            await searchTrackingEventProcessor.HandleEvent(body, eventType);
-        }
+        await searchTrackingEventProcessor.HandleEvent(body, eventType);
     }
 }

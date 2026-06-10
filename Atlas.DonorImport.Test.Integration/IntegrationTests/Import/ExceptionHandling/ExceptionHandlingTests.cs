@@ -16,161 +16,160 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHandling
+namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHandling;
+
+[TestFixture]
+public class ExceptionHandlingTests
 {
-    [TestFixture]
-    public class ExceptionHandlingTests
+    private IDonorFileImporter donorFileImporter;
+    private IAtlasLogger mockLogger;
+    private INotificationSender mockNotificationSender;
+    private IDonorImportHistoryRepository donorImportHistoryRepository;
+
+    private const string DonorLocation = "blobStorage/test.json";
+
+    [OneTimeSetUp]
+    public void OneTimeSetUp()
     {
-        private IDonorFileImporter donorFileImporter;
-        private IAtlasLogger mockLogger;
-        private INotificationSender mockNotificationSender;
-        private IDonorImportHistoryRepository donorImportHistoryRepository;
-
-        private const string DonorLocation = "blobStorage/test.json";
-
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
+        TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
-            {
-                mockNotificationSender = Substitute.For<INotificationSender>();
+            mockNotificationSender = Substitute.For<INotificationSender>();
 
-                var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
-                services.AddScoped(sp => mockNotificationSender);
-                DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
+            var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
+            services.AddScoped(sp => mockNotificationSender);
+            DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
 
-                donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
-                mockLogger = DependencyInjection.DependencyInjection.Provider.GetService<IAtlasLogger>();
-                mockNotificationSender = DependencyInjection.DependencyInjection.Provider.GetService<INotificationSender>();
-                donorImportHistoryRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportHistoryRepository>();
-            });
-        }
+            donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
+            mockLogger = DependencyInjection.DependencyInjection.Provider.GetService<IAtlasLogger>();
+            mockNotificationSender = DependencyInjection.DependencyInjection.Provider.GetService<INotificationSender>();
+            donorImportHistoryRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportHistoryRepository>();
+        });
+    }
 
-        [OneTimeTearDown]
-        public void OneTimeTearDown()
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
+        // Ensure any mocks set up for this test do not stick around.
+        DependencyInjection.DependencyInjection.BackingProvider = DependencyInjection.ServiceConfiguration.CreateProvider();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        mockNotificationSender.ClearReceivedCalls();
+    }
+
+    [Test]
+    public async Task ImportDonors_WithEmptyFile_SwallowsErrorAndCompletesSuccessfully()
+    {
+        var donorFile = DonorImportFileBuilder.NewWithoutContents.Build();
+
+        await donorFileImporter.ImportDonorFile(donorFile);
+
+        await mockNotificationSender.Received().SendAlert("Donor file was present but it was empty.", Arg.Any<string>(), Arg.Any<Priority>(),
+            Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task ImportDonors_WithUnexpectedColumns_SwallowsErrorAndCompletesSuccessfully()
+    {
+        var malformedDonorFile = DonorImportFileWithMissingFieldBuilder.New.Build();
+        var file = new DonorImportFile
         {
-            // Ensure any mocks set up for this test do not stick around.
-            DependencyInjection.DependencyInjection.BackingProvider = DependencyInjection.ServiceConfiguration.CreateProvider();
-        }
+            Contents = malformedDonorFile.ToStream(), MessageId = "message-id", UploadTime = DateTime.Now, FileLocation = DonorLocation
+        };
 
-        [TearDown]
-        public void TearDown()
+        await donorFileImporter.ImportDonorFile(file);
+
+        await mockNotificationSender.Received()
+            .SendAlert("Error parsing Donor Format", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task ImportDonors_WithoutUpdateColumn_SwallowsErrorAndCompletesSuccessfully()
+    {
+        var malformedFile = DonorImportFileWithNoUpdateBuilder.New.Build();
+        var file = new DonorImportFile
         {
-            mockNotificationSender.ClearReceivedCalls();
-        }
+            Contents = malformedFile.ToStream(), MessageId = "message-id", UploadTime = DateTime.Now, FileLocation = DonorLocation
+        };
 
-        [Test]
-        public async Task ImportDonors_WithEmptyFile_SwallowsErrorAndCompletesSuccessfully()
+        await donorFileImporter.ImportDonorFile(file);
+
+        await mockNotificationSender.Received().SendAlert("Update Mode must be provided before donor list in donor import JSON file.",
+            Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task ImportDonors_WithoutDonorsColumn_CompletesSuccessfully()
+    {
+        var malformedFile = DonorImportFileWithNoDonorsBuilder.New.Build();
+        var file = new DonorImportFile
         {
-            var donorFile = DonorImportFileBuilder.NewWithoutContents.Build();
+            Contents = malformedFile.ToStream(), MessageId = "message-id", UploadTime = DateTime.Now, FileLocation = DonorLocation
+        };
 
-            await donorFileImporter.ImportDonorFile(donorFile);
-
-            await mockNotificationSender.Received().SendAlert("Donor file was present but it was empty.", Arg.Any<string>(), Arg.Any<Priority>(),
-                Arg.Any<string>());
-        }
-
-        [Test]
-        public async Task ImportDonors_WithUnexpectedColumns_SwallowsErrorAndCompletesSuccessfully()
-        {
-            var malformedDonorFile = DonorImportFileWithMissingFieldBuilder.New.Build();
-            var file = new DonorImportFile
-            {
-                Contents = malformedDonorFile.ToStream(), MessageId = "message-id", UploadTime = DateTime.Now, FileLocation = DonorLocation
-            };
-
-            await donorFileImporter.ImportDonorFile(file);
-
-            await mockNotificationSender.Received()
-                .SendAlert("Error parsing Donor Format", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
-        }
-
-        [Test]
-        public async Task ImportDonors_WithoutUpdateColumn_SwallowsErrorAndCompletesSuccessfully()
-        {
-            var malformedFile = DonorImportFileWithNoUpdateBuilder.New.Build();
-            var file = new DonorImportFile
-            {
-                Contents = malformedFile.ToStream(), MessageId = "message-id", UploadTime = DateTime.Now, FileLocation = DonorLocation
-            };
-
-            await donorFileImporter.ImportDonorFile(file);
-
-            await mockNotificationSender.Received().SendAlert("Update Mode must be provided before donor list in donor import JSON file.",
-                Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
-        }
-
-        [Test]
-        public async Task ImportDonors_WithoutDonorsColumn_CompletesSuccessfully()
-        {
-            var malformedFile = DonorImportFileWithNoDonorsBuilder.New.Build();
-            var file = new DonorImportFile
-            {
-                Contents = malformedFile.ToStream(), MessageId = "message-id", UploadTime = DateTime.Now, FileLocation = DonorLocation
-            };
-
-            await donorFileImporter.ImportDonorFile(file);
+        await donorFileImporter.ImportDonorFile(file);
             
-            var result = await donorImportHistoryRepository.GetFileIfExists("test.json", file.UploadTime);
+        var result = await donorImportHistoryRepository.GetFileIfExists("test.json", file.UploadTime);
 
-            result.FileState.Should().Be(DonorImportState.Completed);
-        }
+        result.FileState.Should().Be(DonorImportState.Completed);
+    }
 
-        [Test]
-        public async Task ImportDonors_WithoutADonorColumn_SwallowsErrorAndCompletesSuccessfully()
+    [Test]
+    public async Task ImportDonors_WithoutADonorColumn_SwallowsErrorAndCompletesSuccessfully()
+    {
+        const int numberOfDonors = 5;
+        var malformedFile = DonorImportFileWithMissingFieldBuilder.New.WithDonorCount(numberOfDonors).Build();
+        var file = new DonorImportFile
         {
-            const int numberOfDonors = 5;
-            var malformedFile = DonorImportFileWithMissingFieldBuilder.New.WithDonorCount(numberOfDonors).Build();
-            var file = new DonorImportFile
-            {
-                Contents = malformedFile.ToStream(), FileLocation = "file-location", MessageId = "message-id", UploadTime = DateTime.Now
-            };
+            Contents = malformedFile.ToStream(), FileLocation = "file-location", MessageId = "message-id", UploadTime = DateTime.Now
+        };
 
-            await donorFileImporter.ImportDonorFile(file);
-            await mockNotificationSender.Received()
-                .SendAlert("Donor property RecordId cannot be null.", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
-        }
+        await donorFileImporter.ImportDonorFile(file);
+        await mockNotificationSender.Received()
+            .SendAlert("Donor property RecordId cannot be null.", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
+    }
 
-        [Test]
-        public async Task ImportDonors_WithInvalidEnumAtUpdateInFile_SwallowsErrorAndCompletesSuccessfully()
+    [Test]
+    public async Task ImportDonors_WithInvalidEnumAtUpdateInFile_SwallowsErrorAndCompletesSuccessfully()
+    {
+        var malformedFile = DonorImportFileWithInvalidEnumBuilder.New.Build();
+        var file = new DonorImportFile
         {
-            var malformedFile = DonorImportFileWithInvalidEnumBuilder.New.Build();
-            var file = new DonorImportFile
-            {
-                Contents = malformedFile.ToStream(), FileLocation = "file-location", MessageId = "message-id", UploadTime = DateTime.Now
-            };
+            Contents = malformedFile.ToStream(), FileLocation = "file-location", MessageId = "message-id", UploadTime = DateTime.Now
+        };
 
-            await donorFileImporter.ImportDonorFile(file);
-            await mockNotificationSender.Received()
-                .SendAlert("Error parsing Donor Format", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
-        }
+        await donorFileImporter.ImportDonorFile(file);
+        await mockNotificationSender.Received()
+            .SendAlert("Error parsing Donor Format", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
+    }
 
-        [Test]
-        public async Task ImportDonors_WithInvalidEnumAtDonorUpdate_SwallowsErrorAndCompletesSuccessfully()
+    [Test]
+    public async Task ImportDonors_WithInvalidEnumAtDonorUpdate_SwallowsErrorAndCompletesSuccessfully()
+    {
+        var malformedFile = DonorImportFileWithInvalidEnumBuilder.New.WithInvalidEnumDonor().Build();
+        var file = new DonorImportFile
         {
-            var malformedFile = DonorImportFileWithInvalidEnumBuilder.New.WithInvalidEnumDonor().Build();
-            var file = new DonorImportFile
-            {
-                Contents = malformedFile.ToStream(), FileLocation = "file-location", MessageId = "message-id", UploadTime = DateTime.Now
-            };
+            Contents = malformedFile.ToStream(), FileLocation = "file-location", MessageId = "message-id", UploadTime = DateTime.Now
+        };
 
-            await donorFileImporter.ImportDonorFile(file);
-            await mockNotificationSender.Received()
-                .SendAlert("Error parsing Donor Format", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
-        }
+        await donorFileImporter.ImportDonorFile(file);
+        await mockNotificationSender.Received()
+            .SendAlert("Error parsing Donor Format", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
+    }
 
-        [Test]
-        public async Task ImportDonors_WithInvalidJsonFile_SwallowsErrorAndCompletesSuccessfully()
+    [Test]
+    public async Task ImportDonors_WithInvalidJsonFile_SwallowsErrorAndCompletesSuccessfully()
+    {
+        var donorTestFilePath = $"{typeof(ExceptionHandlingTests).Namespace}.MalformedImport.json";
+        await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFilePath))
         {
-            var donorTestFilePath = $"{typeof(ExceptionHandlingTests).Namespace}.MalformedImport.json";
-            await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFilePath))
-            {
-                await donorFileImporter.ImportDonorFile(new DonorImportFile
-                    {Contents = stream, FileLocation = donorTestFilePath, MessageId = "message-id", UploadTime = DateTime.Now});
-            }
-
-            await mockNotificationSender.Received()
-                .SendAlert("Invalid JSON was encountered", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
+            await donorFileImporter.ImportDonorFile(new DonorImportFile
+                {Contents = stream, FileLocation = donorTestFilePath, MessageId = "message-id", UploadTime = DateTime.Now});
         }
+
+        await mockNotificationSender.Received()
+            .SendAlert("Invalid JSON was encountered", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
     }
 }

@@ -8,95 +8,94 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.DurableTask.Client;
 
-namespace Atlas.Functions.DurableFunctions.Search.Client
+namespace Atlas.Functions.DurableFunctions.Search.Client;
+
+/// <summary>
+/// See https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-types-features-overview for the types of durable functions available
+/// We are using:
+///     - Client = entry points.
+///     - Orchestrator = orchestration. DETERMINISTIC (https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-code-constraints)
+///     - Activity = business logic. IDEMPOTENT (may be called multiple times, only at least once execution is guaranteed by Azure)
+/// </summary>
+public class SearchClientFunctions
 {
-    /// <summary>
-    /// See https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-types-features-overview for the types of durable functions available
-    /// We are using:
-    ///     - Client = entry points.
-    ///     - Orchestrator = orchestration. DETERMINISTIC (https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-code-constraints)
-    ///     - Activity = business logic. IDEMPOTENT (may be called multiple times, only at least once execution is guaranteed by Azure)
-    /// </summary>
-    public class SearchClientFunctions
+    private readonly IAtlasLogger logger;
+
+    public SearchClientFunctions(IAtlasLogger logger)
     {
-        private readonly IAtlasLogger logger;
+        this.logger = logger;
+    }
 
-        public SearchClientFunctions(IAtlasLogger logger)
+    [Function(nameof(Search))]
+    public async Task Search(
+        [ServiceBusTrigger(
+            "%AtlasFunction:MessagingServiceBus:MatchingResultsTopic%",
+            "%AtlasFunction:MessagingServiceBus:MatchingResultsSubscription%",
+            Connection = "AtlasFunction:MessagingServiceBus:ConnectionString"
+        )]
+        MatchingResultsNotification resultsNotification,
+        [DurableClient] DurableTaskClient starter,
+        DateTime enqueuedTimeUtc)
+    {
+        var searchId = resultsNotification.SearchRequestId;
+        if (!resultsNotification.SearchRequest?.RunMatchPrediction ?? false)
         {
-            this.logger = logger;
+            logger.SendTrace($"Match prediction for search request '{searchId}' was not requested, so will not be run.");
+            // TODO: ATLAS-493: Make the matching only results usable.
+            return;
         }
 
-        [Function(nameof(Search))]
-        public async Task Search(
-            [ServiceBusTrigger(
-                "%AtlasFunction:MessagingServiceBus:MatchingResultsTopic%",
-                "%AtlasFunction:MessagingServiceBus:MatchingResultsSubscription%",
-                Connection = "AtlasFunction:MessagingServiceBus:ConnectionString"
-            )]
-            MatchingResultsNotification resultsNotification,
-            [DurableClient] DurableTaskClient starter,
-            DateTime enqueuedTimeUtc)
+        var instanceId = await starter.ScheduleNewOrchestrationInstanceAsync(
+            nameof(SearchOrchestrationFunctions.SearchOrchestrator),
+            input: new SearchOrchestratorParameters{ MatchingResultsNotification = resultsNotification, InitiationTime = enqueuedTimeUtc });
+
+        try
         {
-            var searchId = resultsNotification.SearchRequestId;
-            if (!resultsNotification.SearchRequest?.RunMatchPrediction ?? false)
-            {
-                logger.SendTrace($"Match prediction for search request '{searchId}' was not requested, so will not be run.");
-                // TODO: ATLAS-493: Make the matching only results usable.
-                return;
-            }
+            logger.SendTrace($"Started match prediction orchestration with ID = '{searchId}'. Orchestration Instance: {instanceId}");
+        }
+        catch (Exception)
+        {
+            // This function cannot be allowed to fail post-orchestration scheduling, as it would then retry, and we cannot schedule more than one orchestrator with the same id.
+            // We are only doing logging past this point, so if it fails we just swallow exceptions.
+        }
+    }
 
-            var instanceId = await starter.ScheduleNewOrchestrationInstanceAsync(
-                nameof(SearchOrchestrationFunctions.SearchOrchestrator),
-                input: new SearchOrchestratorParameters{ MatchingResultsNotification = resultsNotification, InitiationTime = enqueuedTimeUtc });
-
-            try
-            {
-                logger.SendTrace($"Started match prediction orchestration with ID = '{searchId}'. Orchestration Instance: {instanceId}");
-            }
-            catch (Exception)
-            {
-                // This function cannot be allowed to fail post-orchestration scheduling, as it would then retry, and we cannot schedule more than one orchestrator with the same id.
-                // We are only doing logging past this point, so if it fails we just swallow exceptions.
-            }
+    [Function(nameof(RepeatSearch))]
+    public async Task RepeatSearch(
+        [ServiceBusTrigger(
+            "%AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic%",
+            "%AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsSubscription%",
+            Connection = "AtlasFunction:MessagingServiceBus:ConnectionString"
+        )]
+        MatchingResultsNotification resultsNotification,
+        [DurableClient] DurableTaskClient starter)
+    {
+        var repeatSearchId = resultsNotification.RepeatSearchRequestId;
+        if (!resultsNotification.SearchRequest?.RunMatchPrediction ?? false)
+        {
+            logger.SendTrace($"Match prediction for repeat search request '{repeatSearchId}' was not requested, so will not be run.");
+            // TODO: ATLAS-493: Make the matching only results usable.
+            return;
         }
 
-        [Function(nameof(RepeatSearch))]
-        public async Task RepeatSearch(
-            [ServiceBusTrigger(
-                "%AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic%",
-                "%AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsSubscription%",
-                Connection = "AtlasFunction:MessagingServiceBus:ConnectionString"
-            )]
-            MatchingResultsNotification resultsNotification,
-            [DurableClient] DurableTaskClient starter)
+        var instanceId = await starter.ScheduleNewOrchestrationInstanceAsync(nameof(SearchOrchestrationFunctions.RepeatSearchOrchestrator), input: resultsNotification);
+
+        try
         {
-            var repeatSearchId = resultsNotification.RepeatSearchRequestId;
-            if (!resultsNotification.SearchRequest?.RunMatchPrediction ?? false)
-            {
-                logger.SendTrace($"Match prediction for repeat search request '{repeatSearchId}' was not requested, so will not be run.");
-                // TODO: ATLAS-493: Make the matching only results usable.
-                return;
-            }
-
-            var instanceId = await starter.ScheduleNewOrchestrationInstanceAsync(nameof(SearchOrchestrationFunctions.RepeatSearchOrchestrator), input: resultsNotification);
-
-            try
-            {
-                logger.SendTrace($"Started match prediction orchestration with Repeat Search ID = '{repeatSearchId}'. Orchestration Instance: {instanceId}");
-            }
-            catch (Exception)
-            {
-                // This function cannot be allowed to fail post-orchestration scheduling, as it would then retry, and we cannot schedule more than one orchestrator with the same id.
-                // We are only doing logging past this point, so if it fails we just swallow exceptions.
-            }
+            logger.SendTrace($"Started match prediction orchestration with Repeat Search ID = '{repeatSearchId}'. Orchestration Instance: {instanceId}");
         }
-
-        [Function(nameof(GetStatusCheckEndpoints))]
-        public HttpResponseData GetStatusCheckEndpoints([HttpTrigger(AuthorizationLevel.Function, "get", Route = $"match-prediction-status/{{{nameof(instanceId)}}}")] HttpRequestData request,
-            string instanceId,
-            [DurableClient] DurableTaskClient orchestrationClient)
+        catch (Exception)
         {
-            return orchestrationClient.CreateCheckStatusResponse(request, instanceId);
+            // This function cannot be allowed to fail post-orchestration scheduling, as it would then retry, and we cannot schedule more than one orchestrator with the same id.
+            // We are only doing logging past this point, so if it fails we just swallow exceptions.
         }
+    }
+
+    [Function(nameof(GetStatusCheckEndpoints))]
+    public HttpResponseData GetStatusCheckEndpoints([HttpTrigger(AuthorizationLevel.Function, "get", Route = $"match-prediction-status/{{{nameof(instanceId)}}}")] HttpRequestData request,
+        string instanceId,
+        [DurableClient] DurableTaskClient orchestrationClient)
+    {
+        return orchestrationClient.CreateCheckStatusResponse(request, instanceId);
     }
 }

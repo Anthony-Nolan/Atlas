@@ -13,214 +13,213 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.RepeatSearch.Test.Services.Search
+namespace Atlas.RepeatSearch.Test.Services.Search;
+
+[TestFixture]
+public class RepeatSearchDifferentialCalculatorTests
 {
-    [TestFixture]
-    public class RepeatSearchDifferentialCalculatorTests
+    private IDonorReader donorReader;
+    private ICanonicalResultSetRepository canonicalResultSetRepository;
+
+    private IRepeatSearchDifferentialCalculator differentialCalculator;
+
+    private const string DefaultSearchRequestId = "default-search-id";
+    private readonly DateTimeOffset defaultCutoff = DateTimeOffset.UtcNow;
+
+    [SetUp]
+    public void SetUp()
     {
-        private IDonorReader donorReader;
-        private ICanonicalResultSetRepository canonicalResultSetRepository;
+        donorReader = Substitute.For<IDonorReader>();
+        canonicalResultSetRepository = Substitute.For<ICanonicalResultSetRepository>();
 
-        private IRepeatSearchDifferentialCalculator differentialCalculator;
+        // By default, no donors have been deleted - can be overridden test-by-test
+        donorReader.GetDonorsByExternalDonorCodes(default)
+            .ReturnsForAnyArgs(c => c.Arg<IEnumerable<string>>()?.ToDictionary(x => x, x => new Donor {ExternalDonorCode = x}));
 
-        private const string DefaultSearchRequestId = "default-search-id";
-        private readonly DateTimeOffset defaultCutoff = DateTimeOffset.UtcNow;
+        differentialCalculator = new RepeatSearchDifferentialCalculator(donorReader, canonicalResultSetRepository);
+    }
 
-        [SetUp]
-        public void SetUp()
-        {
-            donorReader = Substitute.For<IDonorReader>();
-            canonicalResultSetRepository = Substitute.For<ICanonicalResultSetRepository>();
+    [Test]
+    public async Task CalculateDifferential_WithNoChange_ReturnsEmptyDiff()
+    {
+        var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, new List<MatchingAlgorithmResult>(), defaultCutoff);
 
-            // By default, no donors have been deleted - can be overridden test-by-test
-            donorReader.GetDonorsByExternalDonorCodes(default)
-                .ReturnsForAnyArgs(c => c.Arg<IEnumerable<string>>()?.ToDictionary(x => x, x => new Donor {ExternalDonorCode = x}));
+        diff.NewResults.Should().BeEmpty();
+        diff.UpdatedResults.Should().BeEmpty();
+        diff.RemovedResults.Should().BeEmpty();
+    }
 
-            differentialCalculator = new RepeatSearchDifferentialCalculator(donorReader, canonicalResultSetRepository);
-        }
+    [Test]
+    public async Task CalculateDifferential_WithNewResults_ReturnsNewDonors()
+    {
+        var changedDonorCodes = new[] {"donor1", "donor2"};
+        donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
+            .Returns(changedDonorCodes.ToDictionary(code => code, _ => IncrementingIdGenerator.NextIntId()));
 
-        [Test]
-        public async Task CalculateDifferential_WithNoChange_ReturnsEmptyDiff()
-        {
-            var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, new List<MatchingAlgorithmResult>(), defaultCutoff);
+        var matchingResults = changedDonorCodes.Select(code => new MatchingAlgorithmResult {DonorCode = code}).ToList();
 
-            diff.NewResults.Should().BeEmpty();
-            diff.UpdatedResults.Should().BeEmpty();
-            diff.RemovedResults.Should().BeEmpty();
-        }
+        var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
 
-        [Test]
-        public async Task CalculateDifferential_WithNewResults_ReturnsNewDonors()
-        {
-            var changedDonorCodes = new[] {"donor1", "donor2"};
-            donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
-                .Returns(changedDonorCodes.ToDictionary(code => code, _ => IncrementingIdGenerator.NextIntId()));
+        diff.NewResults.Select(x => x.ExternalDonorCode).Should().BeEquivalentTo(changedDonorCodes);
+        diff.UpdatedResults.Should().BeEmpty();
+        diff.RemovedResults.Should().BeEmpty();
+    }
 
-            var matchingResults = changedDonorCodes.Select(code => new MatchingAlgorithmResult {DonorCode = code}).ToList();
+    [Test]
+    public async Task CalculateDifferential_WithNoChangesToResults_OnlyPopulatesUpdatedDonors()
+    {
+        var changedDonorCodes = new[] {"donor1", "donor2"};
+        var donorIds = changedDonorCodes.ToDictionary(id => id, id => IncrementingIdGenerator.NextIntId());
 
-            var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
+        donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
+            .Returns(changedDonorCodes.ToDictionary(code => code, d => donorIds[d]));
+        donorReader.GetDonorsByExternalDonorCodes(default)
+            .ReturnsForAnyArgs(changedDonorCodes.ToDictionary(code => code, code => new Donor {AtlasDonorId = donorIds[code]}));
+        canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
+            .Returns(changedDonorCodes.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
 
-            diff.NewResults.Select(x => x.ExternalDonorCode).Should().BeEquivalentTo(changedDonorCodes);
-            diff.UpdatedResults.Should().BeEmpty();
-            diff.RemovedResults.Should().BeEmpty();
-        }
+        var matchingResults = changedDonorCodes.Select(code => new MatchingAlgorithmResult {DonorCode = code}).ToList();
 
-        [Test]
-        public async Task CalculateDifferential_WithNoChangesToResults_OnlyPopulatesUpdatedDonors()
-        {
-            var changedDonorCodes = new[] {"donor1", "donor2"};
-            var donorIds = changedDonorCodes.ToDictionary(id => id, id => IncrementingIdGenerator.NextIntId());
+        var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
 
-            donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
-                .Returns(changedDonorCodes.ToDictionary(code => code, d => donorIds[d]));
-            donorReader.GetDonorsByExternalDonorCodes(default)
-                .ReturnsForAnyArgs(changedDonorCodes.ToDictionary(code => code, code => new Donor {AtlasDonorId = donorIds[code]}));
-            canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
-                .Returns(changedDonorCodes.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
+        diff.NewResults.Should().BeEmpty();
+        diff.UpdatedResults.Select(x => x.ExternalDonorCode).Should().BeEquivalentTo(changedDonorCodes);
+        diff.RemovedResults.Should().BeEmpty();
+    }
 
-            var matchingResults = changedDonorCodes.Select(code => new MatchingAlgorithmResult {DonorCode = code}).ToList();
+    [Test]
+    public async Task CalculateDifferential_WithDonorsNoLongerMatching_PopulatesRemovedResults()
+    {
+        var newlyInvalidDonors = new[] {"donor1", "donor2"};
+        var donorIds = newlyInvalidDonors.ToDictionary(id => id, id => IncrementingIdGenerator.NextIntId());
 
-            var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
+        donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
+            .Returns(newlyInvalidDonors.ToDictionary(code => code, code => donorIds[code]));
+        donorReader.GetDonorsByExternalDonorCodes(default)
+            .ReturnsForAnyArgs(newlyInvalidDonors.ToDictionary(code => code, code => new Donor {AtlasDonorId = donorIds[code]}));
+        canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
+            .Returns(newlyInvalidDonors.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
 
-            diff.NewResults.Should().BeEmpty();
-            diff.UpdatedResults.Select(x => x.ExternalDonorCode).Should().BeEquivalentTo(changedDonorCodes);
-            diff.RemovedResults.Should().BeEmpty();
-        }
+        var matchingResults = new List<MatchingAlgorithmResult>();
 
-        [Test]
-        public async Task CalculateDifferential_WithDonorsNoLongerMatching_PopulatesRemovedResults()
-        {
-            var newlyInvalidDonors = new[] {"donor1", "donor2"};
-            var donorIds = newlyInvalidDonors.ToDictionary(id => id, id => IncrementingIdGenerator.NextIntId());
+        var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
 
-            donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
-                .Returns(newlyInvalidDonors.ToDictionary(code => code, code => donorIds[code]));
-            donorReader.GetDonorsByExternalDonorCodes(default)
-                .ReturnsForAnyArgs(newlyInvalidDonors.ToDictionary(code => code, code => new Donor {AtlasDonorId = donorIds[code]}));
-            canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
-                .Returns(newlyInvalidDonors.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
+        diff.NewResults.Should().BeEmpty();
+        diff.UpdatedResults.Should().BeEmpty();
+        diff.RemovedResults.Should().BeEquivalentTo(newlyInvalidDonors);
+    }
 
-            var matchingResults = new List<MatchingAlgorithmResult>();
+    [Test]
+    public async Task CalculateDifferential_WithDonorsRemovedEntirely_PopulatesRemovedResults()
+    {
+        var removedDonors = new[] {"donor1", "donor2"};
+        donorReader.GetDonorIdsUpdatedSince(defaultCutoff).Returns(new Dictionary<string, int>());
+        donorReader.GetDonorsByExternalDonorCodes(removedDonors).ReturnsForAnyArgs(new Dictionary<string, Donor>());
+        canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
+            .Returns(removedDonors.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
 
-            var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
+        var matchingResults = new List<MatchingAlgorithmResult>();
 
-            diff.NewResults.Should().BeEmpty();
-            diff.UpdatedResults.Should().BeEmpty();
-            diff.RemovedResults.Should().BeEquivalentTo(newlyInvalidDonors);
-        }
+        var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
 
-        [Test]
-        public async Task CalculateDifferential_WithDonorsRemovedEntirely_PopulatesRemovedResults()
-        {
-            var removedDonors = new[] {"donor1", "donor2"};
-            donorReader.GetDonorIdsUpdatedSince(defaultCutoff).Returns(new Dictionary<string, int>());
-            donorReader.GetDonorsByExternalDonorCodes(removedDonors).ReturnsForAnyArgs(new Dictionary<string, Donor>());
-            canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
-                .Returns(removedDonors.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
+        diff.NewResults.Should().BeEmpty();
+        diff.UpdatedResults.Should().BeEmpty();
+        diff.RemovedResults.Should().BeEquivalentTo(removedDonors);
+    }
 
-            var matchingResults = new List<MatchingAlgorithmResult>();
+    [Test]
+    public async Task CalculateDifferential_WithACombinationOfRemovedAndNoLongerMatchingDonors_CombinesDonorsInRemovedResults()
+    {
+        const string removedDonor = "removed-donor-code";
+        const string noLongerMatchingDonor = "no-longer-matching-donor-code";
 
-            var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
+        var bothDonors = new[] {removedDonor, noLongerMatchingDonor};
+        var donorIds = bothDonors.ToDictionary(id => id, id => IncrementingIdGenerator.NextIntId());
 
-            diff.NewResults.Should().BeEmpty();
-            diff.UpdatedResults.Should().BeEmpty();
-            diff.RemovedResults.Should().BeEquivalentTo(removedDonors);
-        }
-
-        [Test]
-        public async Task CalculateDifferential_WithACombinationOfRemovedAndNoLongerMatchingDonors_CombinesDonorsInRemovedResults()
-        {
-            const string removedDonor = "removed-donor-code";
-            const string noLongerMatchingDonor = "no-longer-matching-donor-code";
-
-            var bothDonors = new[] {removedDonor, noLongerMatchingDonor};
-            var donorIds = bothDonors.ToDictionary(id => id, id => IncrementingIdGenerator.NextIntId());
-
-            donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
-                .Returns(new Dictionary<string, int> {{noLongerMatchingDonor, donorIds[noLongerMatchingDonor]}});
-            donorReader.GetDonorsByExternalDonorCodes(bothDonors)
-                .ReturnsForAnyArgs(new Dictionary<string, Donor>
+        donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
+            .Returns(new Dictionary<string, int> {{noLongerMatchingDonor, donorIds[noLongerMatchingDonor]}});
+        donorReader.GetDonorsByExternalDonorCodes(bothDonors)
+            .ReturnsForAnyArgs(new Dictionary<string, Donor>
+            {
                 {
+                    noLongerMatchingDonor, new Donor
                     {
-                        noLongerMatchingDonor, new Donor
-                        {
-                            ExternalDonorCode = noLongerMatchingDonor,
-                            AtlasDonorId = donorIds[noLongerMatchingDonor]
-                        }
+                        ExternalDonorCode = noLongerMatchingDonor,
+                        AtlasDonorId = donorIds[noLongerMatchingDonor]
                     }
-                });
-            canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
-                .Returns(bothDonors.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
-
-            var matchingResults = new List<MatchingAlgorithmResult>();
-
-            var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
-
-            diff.NewResults.Should().BeEmpty();
-            diff.UpdatedResults.Should().BeEmpty();
-            diff.RemovedResults.Should().BeEquivalentTo(bothDonors);
-        }
-
-
-        [Test]
-        public async Task CalculateDifferential_WhenDonorsMarkedAsUpdatedInMatchingStoreButNotDonorStore_PopulatesUpdatedDonors()
-        {
-            var changedDonorCodes = new[] {"donor1", "donor2"};
-            donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
-                .Returns(new Dictionary<string, int>());
-            canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
-                .Returns(changedDonorCodes.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
-
-            var matchingResults = changedDonorCodes.Select(code => new MatchingAlgorithmResult {DonorCode = code}).ToList();
-
-            var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
-
-            diff.NewResults.Should().BeEmpty();
-            diff.UpdatedResults.Select(x => x.ExternalDonorCode).Should().BeEquivalentTo(changedDonorCodes);
-            diff.RemovedResults.Should().BeEmpty();
-        }
-
-        [Test]
-        public async Task CalculateDifferential_WithACombinationOfDonorTypes_PopulatesCorrectDiff()
-        {
-            const string removedDonor = "removed-donor-code";
-            const string noLongerMatchingDonor = "no-longer-matching-donor-code";
-            const string updatedButStillMatchingDonor = "updated-matching-donor-code";
-            const string nonUpdatedMatchingDonor = "non-updated-matching-donor-code";
-            const string nonUpdatedNonMatchingDonor = "non-updated-non-matching-donor-code";
-            const string newDonor = "new-donor-code";
-            const string newlyMatchingDonor = "newly-matching-donor-code";
-
-            var updatedDonors = new[] {noLongerMatchingDonor, updatedButStillMatchingDonor, newDonor, newlyMatchingDonor};
-            var previouslyReturnedDonors = new[] {removedDonor, noLongerMatchingDonor, updatedButStillMatchingDonor, nonUpdatedMatchingDonor};
-            var stillExistingDonors = new[]
-            {
-                noLongerMatchingDonor, updatedButStillMatchingDonor, nonUpdatedMatchingDonor, nonUpdatedNonMatchingDonor, newDonor, newlyMatchingDonor
-            };
-            var repeatSearchResults = new[] {updatedButStillMatchingDonor, newDonor, newlyMatchingDonor};
-
-            var donorLookup = stillExistingDonors.ToDictionary(d => d, d => new Donor
-            {
-                ExternalDonorCode = d,
-                AtlasDonorId = IncrementingIdGenerator.NextIntId()
+                }
             });
+        canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
+            .Returns(bothDonors.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
 
-            donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
-                .Returns(updatedDonors.ToDictionary(d => d, d => donorLookup[d].AtlasDonorId));
+        var matchingResults = new List<MatchingAlgorithmResult>();
 
-            canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
-                .Returns(previouslyReturnedDonors.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
+        var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
 
-            donorReader.GetDonorsByExternalDonorCodes(previouslyReturnedDonors)
-                .ReturnsForAnyArgs(donorLookup);
+        diff.NewResults.Should().BeEmpty();
+        diff.UpdatedResults.Should().BeEmpty();
+        diff.RemovedResults.Should().BeEquivalentTo(bothDonors);
+    }
 
-            var matchingResults = repeatSearchResults.Select(code => new MatchingAlgorithmResult {DonorCode = code}).ToList();
 
-            var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
+    [Test]
+    public async Task CalculateDifferential_WhenDonorsMarkedAsUpdatedInMatchingStoreButNotDonorStore_PopulatesUpdatedDonors()
+    {
+        var changedDonorCodes = new[] {"donor1", "donor2"};
+        donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
+            .Returns(new Dictionary<string, int>());
+        canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
+            .Returns(changedDonorCodes.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
 
-            diff.NewResults.Select(x => x.ExternalDonorCode).Should().BeEquivalentTo(newDonor, newlyMatchingDonor);
-            diff.UpdatedResults.Select(x => x.ExternalDonorCode).Should().BeEquivalentTo(updatedButStillMatchingDonor);
-            diff.RemovedResults.Should().BeEquivalentTo(removedDonor, noLongerMatchingDonor);
-        }
+        var matchingResults = changedDonorCodes.Select(code => new MatchingAlgorithmResult {DonorCode = code}).ToList();
+
+        var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
+
+        diff.NewResults.Should().BeEmpty();
+        diff.UpdatedResults.Select(x => x.ExternalDonorCode).Should().BeEquivalentTo(changedDonorCodes);
+        diff.RemovedResults.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task CalculateDifferential_WithACombinationOfDonorTypes_PopulatesCorrectDiff()
+    {
+        const string removedDonor = "removed-donor-code";
+        const string noLongerMatchingDonor = "no-longer-matching-donor-code";
+        const string updatedButStillMatchingDonor = "updated-matching-donor-code";
+        const string nonUpdatedMatchingDonor = "non-updated-matching-donor-code";
+        const string nonUpdatedNonMatchingDonor = "non-updated-non-matching-donor-code";
+        const string newDonor = "new-donor-code";
+        const string newlyMatchingDonor = "newly-matching-donor-code";
+
+        var updatedDonors = new[] {noLongerMatchingDonor, updatedButStillMatchingDonor, newDonor, newlyMatchingDonor};
+        var previouslyReturnedDonors = new[] {removedDonor, noLongerMatchingDonor, updatedButStillMatchingDonor, nonUpdatedMatchingDonor};
+        var stillExistingDonors = new[]
+        {
+            noLongerMatchingDonor, updatedButStillMatchingDonor, nonUpdatedMatchingDonor, nonUpdatedNonMatchingDonor, newDonor, newlyMatchingDonor
+        };
+        var repeatSearchResults = new[] {updatedButStillMatchingDonor, newDonor, newlyMatchingDonor};
+
+        var donorLookup = stillExistingDonors.ToDictionary(d => d, d => new Donor
+        {
+            ExternalDonorCode = d,
+            AtlasDonorId = IncrementingIdGenerator.NextIntId()
+        });
+
+        donorReader.GetDonorIdsUpdatedSince(defaultCutoff)
+            .Returns(updatedDonors.ToDictionary(d => d, d => donorLookup[d].AtlasDonorId));
+
+        canonicalResultSetRepository.GetCanonicalResults(DefaultSearchRequestId)
+            .Returns(previouslyReturnedDonors.Select(code => new SearchResult {ExternalDonorCode = code}).ToList());
+
+        donorReader.GetDonorsByExternalDonorCodes(previouslyReturnedDonors)
+            .ReturnsForAnyArgs(donorLookup);
+
+        var matchingResults = repeatSearchResults.Select(code => new MatchingAlgorithmResult {DonorCode = code}).ToList();
+
+        var diff = await differentialCalculator.CalculateDifferential(DefaultSearchRequestId, matchingResults, defaultCutoff);
+
+        diff.NewResults.Select(x => x.ExternalDonorCode).Should().BeEquivalentTo(newDonor, newlyMatchingDonor);
+        diff.UpdatedResults.Select(x => x.ExternalDonorCode).Should().BeEquivalentTo(updatedButStillMatchingDonor);
+        diff.RemovedResults.Should().BeEquivalentTo(removedDonor, noLongerMatchingDonor);
     }
 }

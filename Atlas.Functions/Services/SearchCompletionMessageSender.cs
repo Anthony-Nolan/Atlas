@@ -14,124 +14,123 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
-namespace Atlas.Functions.Services
+namespace Atlas.Functions.Services;
+
+public interface ISearchCompletionMessageSender
 {
-    public interface ISearchCompletionMessageSender
+    Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime, string resultsBatchFolder) where T : SearchResultSet;
+    Task PublishFailureMessage(SendFailureNotificationParameters parameters);
+}
+
+internal class SearchCompletionMessageSender : ISearchCompletionMessageSender
+{
+    private readonly IAtlasLogger logger;
+    private readonly string resultsNotificationTopicName;
+    private readonly string repeatResultsNotificationTopicName;
+    private readonly ITopicClientFactory topicClientFactory;
+    private readonly int sendRetryCount;
+    private readonly int sendRetryCooldownSeconds;
+
+
+    public SearchCompletionMessageSender(
+        IOptions<MessagingServiceBusSettings> messagingServiceBusSettings,
+        ISearchLogger<SearchLoggingContext> logger,
+        [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory)
     {
-        Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime, string resultsBatchFolder) where T : SearchResultSet;
-        Task PublishFailureMessage(SendFailureNotificationParameters parameters);
+        this.logger = logger;
+        this.topicClientFactory = topicClientFactory;
+
+        resultsNotificationTopicName = messagingServiceBusSettings.Value.SearchResultsTopic;
+        repeatResultsNotificationTopicName = messagingServiceBusSettings.Value.RepeatSearchResultsTopic;
+        sendRetryCount = messagingServiceBusSettings.Value.SendRetryCount;
+        sendRetryCooldownSeconds = messagingServiceBusSettings.Value.SendRetryCooldownSeconds;
     }
 
-    internal class SearchCompletionMessageSender : ISearchCompletionMessageSender
+    public async Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime, string resultsBatchFolder) where T : SearchResultSet
     {
-        private readonly IAtlasLogger logger;
-        private readonly string resultsNotificationTopicName;
-        private readonly string repeatResultsNotificationTopicName;
-        private readonly ITopicClientFactory topicClientFactory;
-        private readonly int sendRetryCount;
-        private readonly int sendRetryCooldownSeconds;
-
-
-        public SearchCompletionMessageSender(
-            IOptions<MessagingServiceBusSettings> messagingServiceBusSettings,
-            ISearchLogger<SearchLoggingContext> logger,
-            [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory)
+        using (logger.RunTimed($"Publishing results message: {searchResultSet.SearchRequestId}"))
         {
-            this.logger = logger;
-            this.topicClientFactory = topicClientFactory;
-
-            resultsNotificationTopicName = messagingServiceBusSettings.Value.SearchResultsTopic;
-            repeatResultsNotificationTopicName = messagingServiceBusSettings.Value.RepeatSearchResultsTopic;
-            sendRetryCount = messagingServiceBusSettings.Value.SendRetryCount;
-            sendRetryCooldownSeconds = messagingServiceBusSettings.Value.SendRetryCooldownSeconds;
-        }
-
-        public async Task PublishResultsMessage<T>(T searchResultSet, DateTime searchInitiationTime, string resultsBatchFolder) where T : SearchResultSet
-        {
-            using (logger.RunTimed($"Publishing results message: {searchResultSet.SearchRequestId}"))
-            {
-                var orchestrationSearchTime = DateTime.UtcNow.Subtract(searchInitiationTime);
-                // Orchestration time covers everything in the orchestration function layer:
-                // [matching results download, donor info fetching, match prediction, results upload]
-                // It does not cover matching, which happens in another functions app - so we add it on here. 
-                // This means we don't track the queue time, on either the matching or orchestration queue - so user observed search time may be
-                // slightly longer than this reported time. This should only be noticeably different under high load. 
-                var searchTime = searchResultSet.MatchingAlgorithmTime + orchestrationSearchTime;
-                var repeatSearchId = searchResultSet is RepeatSearchResultSet repeatSet ? repeatSet.RepeatSearchId : null;
+            var orchestrationSearchTime = DateTime.UtcNow.Subtract(searchInitiationTime);
+            // Orchestration time covers everything in the orchestration function layer:
+            // [matching results download, donor info fetching, match prediction, results upload]
+            // It does not cover matching, which happens in another functions app - so we add it on here. 
+            // This means we don't track the queue time, on either the matching or orchestration queue - so user observed search time may be
+            // slightly longer than this reported time. This should only be noticeably different under high load. 
+            var searchTime = searchResultSet.MatchingAlgorithmTime + orchestrationSearchTime;
+            var repeatSearchId = searchResultSet is RepeatSearchResultSet repeatSet ? repeatSet.RepeatSearchId : null;
                 
-                logger.SendTrace(
-                    $"Search Request: {searchResultSet.SearchRequestId} finished. Matched {searchResultSet.TotalResults} donors in {searchTime} total.",
-                    LogLevel.Info,
-                    new Dictionary<string, string>
-                    {
-                        {nameof(searchResultSet.SearchRequestId), searchResultSet.SearchRequestId},
-                        {nameof(RepeatSearchResultSet.RepeatSearchId), repeatSearchId},
-                        {"Donors", searchResultSet.TotalResults.ToString()},
-                        {nameof(searchTime.Milliseconds), searchTime.Milliseconds.ToString()},
-                    });
-                
-                var searchResultsNotification = new SearchResultsNotification
+            logger.SendTrace(
+                $"Search Request: {searchResultSet.SearchRequestId} finished. Matched {searchResultSet.TotalResults} donors in {searchTime} total.",
+                LogLevel.Info,
+                new Dictionary<string, string>
                 {
-                    WasSuccessful = true,
-                    MatchingAlgorithmHlaNomenclatureVersion = searchResultSet.MatchingAlgorithmHlaNomenclatureVersion,
-                    NumberOfResults = searchResultSet.TotalResults,
-                    ResultsFileName = searchResultSet.ResultsFileName,
-                    SearchRequestId = searchResultSet.SearchRequestId,
-                    RepeatSearchRequestId = repeatSearchId,
-                    BlobStorageContainerName = searchResultSet.BlobStorageContainerName,
-                    MatchingAlgorithmTime = searchResultSet.MatchingAlgorithmTime,
-                    MatchPredictionTime = searchResultSet.MatchPredictionTime,
-                    OverallSearchTime = searchTime,
-                    ResultsBatched = searchResultSet.BatchedResult,
-                    BatchFolderName = searchResultSet.BatchedResult && searchResultSet.TotalResults > 0 ? resultsBatchFolder : null
-                };
-                await SendNotificationMessage(searchResultsNotification);
-            }
-        }
-
-        /// <inheritdoc />
-        public async Task PublishFailureMessage(SendFailureNotificationParameters parameters)
-        {
+                    {nameof(searchResultSet.SearchRequestId), searchResultSet.SearchRequestId},
+                    {nameof(RepeatSearchResultSet.RepeatSearchId), repeatSearchId},
+                    {"Donors", searchResultSet.TotalResults.ToString()},
+                    {nameof(searchTime.Milliseconds), searchTime.Milliseconds.ToString()},
+                });
+                
             var searchResultsNotification = new SearchResultsNotification
             {
-                WasSuccessful = false,
-                SearchRequestId = parameters.SearchRequestId,
-                RepeatSearchRequestId = parameters.RepeatSearchRequestId,
-                FailureInfo = new SearchFailureInfo
-                {
-                    StageReached = parameters.StageReached,
-                    MatchingAlgorithmFailureInfo = parameters.MatchingAlgorithmFailureInfo
-                }
+                WasSuccessful = true,
+                MatchingAlgorithmHlaNomenclatureVersion = searchResultSet.MatchingAlgorithmHlaNomenclatureVersion,
+                NumberOfResults = searchResultSet.TotalResults,
+                ResultsFileName = searchResultSet.ResultsFileName,
+                SearchRequestId = searchResultSet.SearchRequestId,
+                RepeatSearchRequestId = repeatSearchId,
+                BlobStorageContainerName = searchResultSet.BlobStorageContainerName,
+                MatchingAlgorithmTime = searchResultSet.MatchingAlgorithmTime,
+                MatchPredictionTime = searchResultSet.MatchPredictionTime,
+                OverallSearchTime = searchTime,
+                ResultsBatched = searchResultSet.BatchedResult,
+                BatchFolderName = searchResultSet.BatchedResult && searchResultSet.TotalResults > 0 ? resultsBatchFolder : null
             };
-
             await SendNotificationMessage(searchResultsNotification);
         }
+    }
 
-        private async Task SendNotificationMessage(SearchResultsNotification searchResultsNotification)
+    /// <inheritdoc />
+    public async Task PublishFailureMessage(SendFailureNotificationParameters parameters)
+    {
+        var searchResultsNotification = new SearchResultsNotification
         {
-            var json = JsonConvert.SerializeObject(searchResultsNotification);
-            var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(json))
+            WasSuccessful = false,
+            SearchRequestId = parameters.SearchRequestId,
+            RepeatSearchRequestId = parameters.RepeatSearchRequestId,
+            FailureInfo = new SearchFailureInfo
             {
-                ApplicationProperties =
-                {
-                    {nameof(SearchResultsNotification.SearchRequestId), searchResultsNotification.SearchRequestId},
-                    {nameof(SearchResultsNotification.RepeatSearchRequestId), searchResultsNotification.RepeatSearchRequestId},
-                    {nameof(SearchResultsNotification.WasSuccessful), searchResultsNotification.WasSuccessful},
-                    {nameof(SearchResultsNotification.FailureInfo.WillRetry), searchResultsNotification.FailureInfo?.WillRetry ?? false},
-                    {nameof(SearchResultsNotification.NumberOfResults), searchResultsNotification.NumberOfResults},
-                    {nameof(SearchResultsNotification.MatchingAlgorithmHlaNomenclatureVersion), searchResultsNotification.MatchingAlgorithmHlaNomenclatureVersion},
-                    {nameof(SearchResultsNotification.OverallSearchTime), searchResultsNotification.OverallSearchTime},
-                }
-            };
+                StageReached = parameters.StageReached,
+                MatchingAlgorithmFailureInfo = parameters.MatchingAlgorithmFailureInfo
+            }
+        };
 
-            var notificationTopicName = searchResultsNotification.RepeatSearchRequestId != null
-                ? repeatResultsNotificationTopicName
-                : resultsNotificationTopicName;
+        await SendNotificationMessage(searchResultsNotification);
+    }
 
-            await using var client = topicClientFactory.BuildTopicClient(notificationTopicName);
+    private async Task SendNotificationMessage(SearchResultsNotification searchResultsNotification)
+    {
+        var json = JsonConvert.SerializeObject(searchResultsNotification);
+        var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(json))
+        {
+            ApplicationProperties =
+            {
+                {nameof(SearchResultsNotification.SearchRequestId), searchResultsNotification.SearchRequestId},
+                {nameof(SearchResultsNotification.RepeatSearchRequestId), searchResultsNotification.RepeatSearchRequestId},
+                {nameof(SearchResultsNotification.WasSuccessful), searchResultsNotification.WasSuccessful},
+                {nameof(SearchResultsNotification.FailureInfo.WillRetry), searchResultsNotification.FailureInfo?.WillRetry ?? false},
+                {nameof(SearchResultsNotification.NumberOfResults), searchResultsNotification.NumberOfResults},
+                {nameof(SearchResultsNotification.MatchingAlgorithmHlaNomenclatureVersion), searchResultsNotification.MatchingAlgorithmHlaNomenclatureVersion},
+                {nameof(SearchResultsNotification.OverallSearchTime), searchResultsNotification.OverallSearchTime},
+            }
+        };
 
-            await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
-                (exception, retryNumber) => logger.SendTrace($"Could not send search results message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
-        }
+        var notificationTopicName = searchResultsNotification.RepeatSearchRequestId != null
+            ? repeatResultsNotificationTopicName
+            : resultsNotificationTopicName;
+
+        await using var client = topicClientFactory.BuildTopicClient(notificationTopicName);
+
+        await client.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+            (exception, retryNumber) => logger.SendTrace($"Could not send search results message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
     }
 }

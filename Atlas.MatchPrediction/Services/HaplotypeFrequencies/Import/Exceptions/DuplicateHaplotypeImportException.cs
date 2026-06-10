@@ -1,12 +1,11 @@
 ﻿using System;
 
-namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions
+namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
+
+public class DuplicateHaplotypeImportException : Exception
 {
-    public class DuplicateHaplotypeImportException : Exception
+    private const string ErrorMessage = "Duplicate haplotype import attempted.";
+    public DuplicateHaplotypeImportException() : base(ErrorMessage)
     {
-        private const string ErrorMessage = "Duplicate haplotype import attempted.";
-        public DuplicateHaplotypeImportException() : base(ErrorMessage)
-        {
-        }
     }
 }

@@ -10,59 +10,58 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
-namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications
+namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
+
+internal interface IDataRefreshServiceBusClient
 {
-    internal interface IDataRefreshServiceBusClient
+    Task PublishToRequestTopic(ValidatedDataRefreshRequest dataRefreshRequest);
+    Task PublishToCompletionTopic(CompletedDataRefresh completedDataRefresh);
+}
+
+internal sealed class DataRefreshServiceBusClient : IDataRefreshServiceBusClient, IAsyncDisposable
+{
+    private readonly ITopicClient requestTopicClient;
+    private readonly ITopicClient completionTopicClient;
+    private readonly int sendRetryCount;
+    private readonly int sendRetryCooldownSeconds;
+    private readonly IAtlasLogger logger;
+
+    public DataRefreshServiceBusClient(
+        [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory,
+        DataRefreshSettings dataRefreshSettings, IAtlasLogger logger)
     {
-        Task PublishToRequestTopic(ValidatedDataRefreshRequest dataRefreshRequest);
-        Task PublishToCompletionTopic(CompletedDataRefresh completedDataRefresh);
+        requestTopicClient = topicClientFactory.BuildTopicClient(dataRefreshSettings.RequestsTopic);
+        completionTopicClient = topicClientFactory.BuildTopicClient(dataRefreshSettings.CompletionTopic);
+        sendRetryCount = dataRefreshSettings.SendRetryCount;
+        sendRetryCooldownSeconds = dataRefreshSettings.SendRetryCooldownSeconds;
+        this.logger = logger;
     }
 
-    internal sealed class DataRefreshServiceBusClient : IDataRefreshServiceBusClient, IAsyncDisposable
+    public async Task PublishToRequestTopic(ValidatedDataRefreshRequest dataRefreshRequest)
     {
-        private readonly ITopicClient requestTopicClient;
-        private readonly ITopicClient completionTopicClient;
-        private readonly int sendRetryCount;
-        private readonly int sendRetryCooldownSeconds;
-        private readonly IAtlasLogger logger;
+        var message = BuildMessage(dataRefreshRequest);
 
-        public DataRefreshServiceBusClient(
-            [FromKeyedServices(typeof(MessagingServiceBusSettings))]ITopicClientFactory topicClientFactory,
-            DataRefreshSettings dataRefreshSettings, IAtlasLogger logger)
-        {
-            requestTopicClient = topicClientFactory.BuildTopicClient(dataRefreshSettings.RequestsTopic);
-            completionTopicClient = topicClientFactory.BuildTopicClient(dataRefreshSettings.CompletionTopic);
-            sendRetryCount = dataRefreshSettings.SendRetryCount;
-            sendRetryCooldownSeconds = dataRefreshSettings.SendRetryCooldownSeconds;
-            this.logger = logger;
-        }
+        await requestTopicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+            (exception, retryNumber) => logger.SendTrace($"Could not send data refresh request message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
+    }
 
-        public async Task PublishToRequestTopic(ValidatedDataRefreshRequest dataRefreshRequest)
-        {
-            var message = BuildMessage(dataRefreshRequest);
+    public async Task PublishToCompletionTopic(CompletedDataRefresh completedDataRefresh)
+    {
+        var message = BuildMessage(completedDataRefresh);
 
-            await requestTopicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
-                (exception, retryNumber) => logger.SendTrace($"Could not send data refresh request message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
-        }
+        await completionTopicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
+            (exception, retryNumber) => logger.SendTrace($"Could not send data refresh completion message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
+    }
 
-        public async Task PublishToCompletionTopic(CompletedDataRefresh completedDataRefresh)
-        {
-            var message = BuildMessage(completedDataRefresh);
+    public async ValueTask DisposeAsync()
+    {
+        await requestTopicClient.DisposeAsync();
+        await completionTopicClient.DisposeAsync();
+    }
 
-            await completionTopicClient.SendWithRetryAndWaitAsync(message, sendRetryCount, sendRetryCooldownSeconds,
-                (exception, retryNumber) => logger.SendTrace($"Could not send data refresh completion message to Service Bus; attempt {retryNumber}/{sendRetryCount}; exception: {exception}", LogLevel.Warn));
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await requestTopicClient.DisposeAsync();
-            await completionTopicClient.DisposeAsync();
-        }
-
-        private static ServiceBusMessage BuildMessage(object objectToSerialise)
-        {
-            var json = JsonConvert.SerializeObject(objectToSerialise);
-            return new ServiceBusMessage(Encoding.UTF8.GetBytes(json));
-        }
+    private static ServiceBusMessage BuildMessage(object objectToSerialise)
+    {
+        var json = JsonConvert.SerializeObject(objectToSerialise);
+        return new ServiceBusMessage(Encoding.UTF8.GetBytes(json));
     }
 }

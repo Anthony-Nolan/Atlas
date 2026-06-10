@@ -9,61 +9,60 @@ using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
+namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
+
+internal interface ISmallGGroupToPGroupMetadataRepository : IHlaMetadataRepository
 {
-    internal interface ISmallGGroupToPGroupMetadataRepository : IHlaMetadataRepository
+    Task<IDictionary<Locus, ISet<string>>> GetAllSmallGGroups(string hlaNomenclatureVersion);
+    Task<IMolecularTypingToPGroupMetadata> GetPGroupBySmallGGroupIfExists(Locus locus, string smallGGroup, string hlaNomenclatureVersion);
+}
+
+internal class SmallGGroupToPGroupMetadataRepository : HlaMetadataRepositoryBase, ISmallGGroupToPGroupMetadataRepository
+{
+    private const string DataTableReferencePrefix = "SmallGGroupToPGroupLookupData";
+    private const string CacheKey = nameof(SmallGGroupToPGroupMetadataRepository);
+
+    public SmallGGroupToPGroupMetadataRepository(
+        ITableClientFactory factory,
+        ITableReferenceRepository tableReferenceRepository,
+        IPersistentCacheProvider cacheProvider,
+        IAtlasLogger logger)
+        : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey, logger)
     {
-        Task<IDictionary<Locus, ISet<string>>> GetAllSmallGGroups(string hlaNomenclatureVersion);
-        Task<IMolecularTypingToPGroupMetadata> GetPGroupBySmallGGroupIfExists(Locus locus, string smallGGroup, string hlaNomenclatureVersion);
     }
 
-    internal class SmallGGroupToPGroupMetadataRepository : HlaMetadataRepositoryBase, ISmallGGroupToPGroupMetadataRepository
+    public async Task<IMolecularTypingToPGroupMetadata> GetPGroupBySmallGGroupIfExists(
+        Locus locus,
+        string smallGGroup,
+        string hlaNomenclatureVersion)
     {
-        private const string DataTableReferencePrefix = "SmallGGroupToPGroupLookupData";
-        private const string CacheKey = nameof(SmallGGroupToPGroupMetadataRepository);
+        var row = await GetHlaMetadataRowIfExists(locus, smallGGroup, TypingMethod.Molecular, hlaNomenclatureVersion);
 
-        public SmallGGroupToPGroupMetadataRepository(
-            ITableClientFactory factory,
-            ITableReferenceRepository tableReferenceRepository,
-            IPersistentCacheProvider cacheProvider,
-            IAtlasLogger logger)
-            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey, logger)
-        {
-        }
-
-        public async Task<IMolecularTypingToPGroupMetadata> GetPGroupBySmallGGroupIfExists(
-            Locus locus,
-            string smallGGroup,
-            string hlaNomenclatureVersion)
-        {
-            var row = await GetHlaMetadataRowIfExists(locus, smallGGroup, TypingMethod.Molecular, hlaNomenclatureVersion);
-
-            return row == null
-                ? null
-                : new MolecularTypingToPGroupMetadata(row.Locus, row.LookupName, row.GetHlaInfo<string>());
-        }
+        return row == null
+            ? null
+            : new MolecularTypingToPGroupMetadata(row.Locus, row.LookupName, row.GetHlaInfo<string>());
+    }
         
-        public async Task<IDictionary<Locus, ISet<string>>> GetAllSmallGGroups(string hlaNomenclatureVersion)
-        {
-            return await Cache.GetOrAddAsync(
-                $"All-small-g-Groups:{hlaNomenclatureVersion}",
-                async _ => await CalculateAllSmallGGroups(hlaNomenclatureVersion)
-            );
-        }
+    public async Task<IDictionary<Locus, ISet<string>>> GetAllSmallGGroups(string hlaNomenclatureVersion)
+    {
+        return await Cache.GetOrAddAsync(
+            $"All-small-g-Groups:{hlaNomenclatureVersion}",
+            async _ => await CalculateAllSmallGGroups(hlaNomenclatureVersion)
+        );
+    }
 
-        private async Task<IDictionary<Locus, ISet<string>>> CalculateAllSmallGGroups(string hlaNomenclatureVersion)
+    private async Task<IDictionary<Locus, ISet<string>>> CalculateAllSmallGGroups(string hlaNomenclatureVersion)
+    {
+        var tableData = await TableData(hlaNomenclatureVersion);
+        using (AtlasLogger.RunTimed("Calculate all small g-groups"))
         {
-            var tableData = await TableData(hlaNomenclatureVersion);
-            using (AtlasLogger.RunTimed("Calculate all small g-groups"))
-            {
-                var byLocus = tableData.Values.GroupBy(v => v.Locus);
-                return byLocus.ToDictionary(
-                    g => g.Key,
-                    g => g.Select(row => row.LookupName)
-                        .Where(x => x != null)
-                        .ToHashSet() as ISet<string>
-                );
-            }
+            var byLocus = tableData.Values.GroupBy(v => v.Locus);
+            return byLocus.ToDictionary(
+                g => g.Key,
+                g => g.Select(row => row.LookupName)
+                    .Where(x => x != null)
+                    .ToHashSet() as ISet<string>
+            );
         }
     }
 }

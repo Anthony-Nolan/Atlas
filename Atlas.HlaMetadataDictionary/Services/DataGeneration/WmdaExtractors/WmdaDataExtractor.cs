@@ -3,48 +3,47 @@ using System.Linq;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors;
+
+internal abstract class WmdaDataExtractor<TWmdaHlaTyping> where TWmdaHlaTyping : IWmdaHlaTyping
 {
-    internal abstract class WmdaDataExtractor<TWmdaHlaTyping> where TWmdaHlaTyping : IWmdaHlaTyping
+    protected const string WmdaFilePathPrefix = "wmda/";
+    protected const string WmdaFilePathPrefixPre2026 = "wmda/pre2026/";
+
+    private readonly string fileName;
+
+    protected WmdaDataExtractor(string fileName)
     {
-        protected const string WmdaFilePathPrefix = "wmda/";
-        protected const string WmdaFilePathPrefixPre2026 = "wmda/pre2026/";
+        this.fileName = fileName;
+    }
 
-        private readonly string fileName;
+    public IEnumerable<TWmdaHlaTyping> GetWmdaHlaTypingsForHlaMetadataDictionaryLoci(IWmdaFileReader fileReader, string hlaNomenclatureVersion)
+    {
+        var fileContents = fileReader.GetFileContentsWithoutHeader(hlaNomenclatureVersion, fileName).ToList();
+        ExtractHeaders(fileContents.First());
+        return ExtractWmdaHlaTypingsForHlaMetadataDictionaryLoci(fileContents);
+    }
 
-        protected WmdaDataExtractor(string fileName)
-        {
-            this.fileName = fileName;
-        }
+    /// <returns>
+    /// The information contained in the line, mapped to the appropriate type
+    /// Returns null if a line cannot be parsed
+    /// </returns>
+    protected abstract TWmdaHlaTyping MapLineOfFileContentsToWmdaHlaTyping(string line);
 
-        public IEnumerable<TWmdaHlaTyping> GetWmdaHlaTypingsForHlaMetadataDictionaryLoci(IWmdaFileReader fileReader, string hlaNomenclatureVersion)
-        {
-            var fileContents = fileReader.GetFileContentsWithoutHeader(hlaNomenclatureVersion, fileName).ToList();
-            ExtractHeaders(fileContents.First());
-            return ExtractWmdaHlaTypingsForHlaMetadataDictionaryLoci(fileContents);
-        }
+    /// <summary>
+    /// In some cases, the header information from the file is necessary to parse the remaining lines correctly
+    /// </summary>
+    protected virtual void ExtractHeaders(string headersLine)
+    {
+        // Do nothing by default
+    }
 
-        /// <returns>
-        /// The information contained in the line, mapped to the appropriate type
-        /// Returns null if a line cannot be parsed
-        /// </returns>
-        protected abstract TWmdaHlaTyping MapLineOfFileContentsToWmdaHlaTyping(string line);
-
-        /// <summary>
-        /// In some cases, the header information from the file is necessary to parse the remaining lines correctly
-        /// </summary>
-        protected virtual void ExtractHeaders(string headersLine)
-        {
-            // Do nothing by default
-        }
-
-        private IEnumerable<TWmdaHlaTyping> ExtractWmdaHlaTypingsForHlaMetadataDictionaryLoci(IEnumerable<string> wmdaFileContents)
-        {
-            return 
-                wmdaFileContents
-                    .Select(line => line.Trim())
-                    .Select(MapLineOfFileContentsToWmdaHlaTyping)
-                    .Where(typing => typing != null && typing.IsHlaMetadataDictionaryLocusTyping());
-        }
+    private IEnumerable<TWmdaHlaTyping> ExtractWmdaHlaTypingsForHlaMetadataDictionaryLoci(IEnumerable<string> wmdaFileContents)
+    {
+        return 
+            wmdaFileContents
+                .Select(line => line.Trim())
+                .Select(MapLineOfFileContentsToWmdaHlaTyping)
+                .Where(typing => typing != null && typing.IsHlaMetadataDictionaryLocusTyping());
     }
 }

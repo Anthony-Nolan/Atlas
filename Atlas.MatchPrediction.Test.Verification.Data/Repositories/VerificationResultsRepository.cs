@@ -5,30 +5,30 @@ using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Dapper;
 using Microsoft.Data.SqlClient;
 
-namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
+namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories;
+
+public interface IVerificationResultsRepository
 {
-    public interface IVerificationResultsRepository
-    {
-        Task<IEnumerable<PdpPrediction>> GetMaskedPdpPredictions(PdpPredictionsRequest request);
-        Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdpsForCrossLociPrediction(MatchedPdpsRequest request);
-        Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdpsForSingleLocusPrediction(SingleLocusMatchedPdpsRequest request);
-    }
+	Task<IEnumerable<PdpPrediction>> GetMaskedPdpPredictions(PdpPredictionsRequest request);
+	Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdpsForCrossLociPrediction(MatchedPdpsRequest request);
+	Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdpsForSingleLocusPrediction(SingleLocusMatchedPdpsRequest request);
+}
 
-	public class VerificationResultsRepository : IVerificationResultsRepository
-    {
-        private readonly string connectionString;
+public class VerificationResultsRepository : IVerificationResultsRepository
+{
+	private readonly string connectionString;
 
-        public VerificationResultsRepository(string connectionString)
-        {
-            this.connectionString = connectionString;
-        }
+	public VerificationResultsRepository(string connectionString)
+	{
+		this.connectionString = connectionString;
+	}
 
-        public async Task<IEnumerable<PdpPrediction>> GetMaskedPdpPredictions(PdpPredictionsRequest request)
-        {
-            const string nullLocusValue = "CrossLoci";
-            var locus = request.Locus == null ? nullLocusValue : request.Locus.ToString();
+	public async Task<IEnumerable<PdpPrediction>> GetMaskedPdpPredictions(PdpPredictionsRequest request)
+	{
+		const string nullLocusValue = "CrossLoci";
+		var locus = request.Locus == null ? nullLocusValue : request.Locus.ToString();
 
-            var sql = @$"
+		var sql = @$"
                 SELECT 
 				    ps.SourceSimulantId AS {nameof(PdpPrediction.PatientGenotypeSimulantId)},
 				    ds.SourceSimulantId AS {nameof(PdpPrediction.DonorGenotypeSimulantId)},
@@ -50,16 +50,16 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 				    p.MismatchCount = @{nameof(request.MismatchCount)} AND
 				    ISNULL(p.Locus, '{nullLocusValue}') = @{nameof(locus)}";
 
-            await using (var conn = new SqlConnection(connectionString))
-            {
-                return await conn.QueryAsync<PdpPrediction>(
-                    sql, new { request.VerificationRunId, request.MismatchCount, locus }, commandTimeout: 180);
-            }
-        }
+		await using (var conn = new SqlConnection(connectionString))
+		{
+			return await conn.QueryAsync<PdpPrediction>(
+				sql, new { request.VerificationRunId, request.MismatchCount, locus }, commandTimeout: 180);
+		}
+	}
 
-        public async Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdpsForCrossLociPrediction(MatchedPdpsRequest request)
-        {
-            var sql = @$"
+	public async Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdpsForCrossLociPrediction(MatchedPdpsRequest request)
+	{
+		var sql = @$"
                 SELECT 
 				    ps.Id AS {nameof(PatientDonorPair.PatientGenotypeSimulantId)},
 				    ds.Id AS {nameof(PatientDonorPair.DonorGenotypeSimulantId)}
@@ -77,18 +77,18 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 				    ds.SimulatedHlaTypingCategory = '{SimulatedHlaTypingCategory.Genotype}' AND
 				    d.TotalMatchCount = @{nameof(request.MatchCount)}";
 
-            await using (var conn = new SqlConnection(connectionString))
-            {
-                return await conn.QueryAsync<PatientDonorPair>(
-                    sql, new { request.VerificationRunId, request.MatchCount }, commandTimeout: 180);
-            }
-        }
+		await using (var conn = new SqlConnection(connectionString))
+		{
+			return await conn.QueryAsync<PatientDonorPair>(
+				sql, new { request.VerificationRunId, request.MatchCount }, commandTimeout: 180);
+		}
+	}
 
-        public async Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdpsForSingleLocusPrediction(SingleLocusMatchedPdpsRequest request)
-        {
-            var locus = request.Locus.ToString();
+	public async Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdpsForSingleLocusPrediction(SingleLocusMatchedPdpsRequest request)
+	{
+		var locus = request.Locus.ToString();
 
-            var sql = @$"
+		var sql = @$"
                 SELECT 
 				    ps.Id AS {nameof(PatientDonorPair.PatientGenotypeSimulantId)},
 				    ds.Id AS {nameof(PatientDonorPair.DonorGenotypeSimulantId)}
@@ -109,11 +109,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
                     mc.Locus = @{nameof(locus)} AND
 				    mc.MatchCount = @{nameof(request.MatchCount)}";
 
-            await using (var conn = new SqlConnection(connectionString))
-            {
-                return await conn.QueryAsync<PatientDonorPair>(
-                    sql, new { request.VerificationRunId, request.MatchCount, locus }, commandTimeout: 180);
-            }
+		await using (var conn = new SqlConnection(connectionString))
+		{
+			return await conn.QueryAsync<PatientDonorPair>(
+				sql, new { request.VerificationRunId, request.MatchCount, locus }, commandTimeout: 180);
 		}
-    }
+	}
 }

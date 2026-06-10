@@ -1,8 +1,7 @@
-namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
+namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection;
+
+public class ValidationTestSettings
 {
-    public class ValidationTestSettings
-    {
-        public string LogFileDirectory { get; set; }
-        public bool LogSuccessfulTests { get; set; }
-    }
+    public string LogFileDirectory { get; set; }
+    public bool LogSuccessfulTests { get; set; }
 }

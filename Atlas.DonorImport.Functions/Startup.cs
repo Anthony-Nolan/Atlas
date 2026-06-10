@@ -7,41 +7,40 @@ using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 
-namespace Atlas.DonorImport.Functions
+namespace Atlas.DonorImport.Functions;
+
+internal class Startup 
 {
-    internal class Startup 
+    public static void Configure(IServiceCollection services)
     {
-        public static void Configure(IServiceCollection services)
-        {
-            RegisterSettings(services);
+        RegisterSettings(services);
 
-            services.AddHealthChecks();
+        services.AddHealthChecks();
 
-            services.RegisterDonorImport(
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<MessagingServiceBusSettings>(),
-                OptionsReaderFor<NotificationConfigurationSettings>(),
-                OptionsReaderFor<NotificationsServiceBusSettings>(),
-                OptionsReaderFor<DonorImportSettings>(),
-                OptionsReaderFor<PublishDonorUpdatesSettings>(),
-                OptionsReaderFor<AzureStorageSettings>(),
-                OptionsReaderFor<FailureLogsSettings>(),
+        services.RegisterDonorImport(
+            OptionsReaderFor<ApplicationInsightsSettings>(),
+            OptionsReaderFor<MessagingServiceBusSettings>(),
+            OptionsReaderFor<NotificationConfigurationSettings>(),
+            OptionsReaderFor<NotificationsServiceBusSettings>(),
+            OptionsReaderFor<DonorImportSettings>(),
+            OptionsReaderFor<PublishDonorUpdatesSettings>(),
+            OptionsReaderFor<AzureStorageSettings>(),
+            OptionsReaderFor<FailureLogsSettings>(),
             ConnectionStringReader("DonorStoreSql")
-            );
+        );
 
-            services.RegisterDonorReader(ConnectionStringReader("DonorStoreSql"));
-        }
+        services.RegisterDonorReader(ConnectionStringReader("DonorStoreSql"));
+    }
 
-        private static void RegisterSettings(IServiceCollection services)
-        {
-            services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
-            services.RegisterAsOptions<NotificationConfigurationSettings>("NotificationConfiguration");
-            services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
-            services.RegisterAsOptions<DonorImportSettings>("DonorImport");
-            services.RegisterAsOptions<PublishDonorUpdatesSettings>("PublishDonorUpdates");
-            services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
-            services.RegisterAsOptions<FailureLogsSettings>("FailureLogs");
-        }
+    private static void RegisterSettings(IServiceCollection services)
+    {
+        services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
+        services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+        services.RegisterAsOptions<NotificationConfigurationSettings>("NotificationConfiguration");
+        services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
+        services.RegisterAsOptions<DonorImportSettings>("DonorImport");
+        services.RegisterAsOptions<PublishDonorUpdatesSettings>("PublishDonorUpdates");
+        services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
+        services.RegisterAsOptions<FailureLogsSettings>("FailureLogs");
     }
 }

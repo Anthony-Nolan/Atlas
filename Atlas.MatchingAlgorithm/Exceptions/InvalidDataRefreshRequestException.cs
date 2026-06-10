@@ -2,16 +2,15 @@
 using System.Net;
 using Atlas.Common.Utils.Http;
 
-namespace Atlas.MatchingAlgorithm.Exceptions
-{
-    internal class InvalidDataRefreshRequestHttpException : AtlasHttpException
-    {
-        public InvalidDataRefreshRequestHttpException(string message) : base(HttpStatusCode.BadRequest, message)
-        {
-        }
+namespace Atlas.MatchingAlgorithm.Exceptions;
 
-        public InvalidDataRefreshRequestHttpException(string message, Exception innerException) : base(HttpStatusCode.BadRequest, message, innerException)
-        {
-        }
+internal class InvalidDataRefreshRequestHttpException : AtlasHttpException
+{
+    public InvalidDataRefreshRequestHttpException(string message) : base(HttpStatusCode.BadRequest, message)
+    {
+    }
+
+    public InvalidDataRefreshRequestHttpException(string message, Exception innerException) : base(HttpStatusCode.BadRequest, message, innerException)
+    {
     }
 }

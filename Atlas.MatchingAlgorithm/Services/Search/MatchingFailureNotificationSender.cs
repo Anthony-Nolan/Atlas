@@ -5,49 +5,48 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Common.Models;
 
-namespace Atlas.MatchingAlgorithm.Services.Search
+namespace Atlas.MatchingAlgorithm.Services.Search;
+
+public interface IMatchingFailureNotificationSender
 {
-    public interface IMatchingFailureNotificationSender
+    /// <param name="searchRequest"></param>
+    /// <param name="attemptNumber">The number of times this <paramref name="searchRequest"/> has been attempted, including the current attempt.</param>
+    /// <param name="remainingRetriesCount">The number of times this <paramref name="searchRequest"/> will be retried until it completes successfully.</param>
+    /// <param name="validationError"></param>
+    Task SendFailureNotification(IdentifiedSearchRequest searchRequest, int attemptNumber, int remainingRetriesCount, string validationError = null);
+}
+
+public class MatchingFailureNotificationSender : IMatchingFailureNotificationSender
+{
+    private readonly ISearchServiceBusClient searchServiceBusClient;
+    private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
+
+    public MatchingFailureNotificationSender(ISearchServiceBusClient searchServiceBusClient, IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
     {
-        /// <param name="searchRequest"></param>
-        /// <param name="attemptNumber">The number of times this <paramref name="searchRequest"/> has been attempted, including the current attempt.</param>
-        /// <param name="remainingRetriesCount">The number of times this <paramref name="searchRequest"/> will be retried until it completes successfully.</param>
-        /// <param name="validationError"></param>
-        Task SendFailureNotification(IdentifiedSearchRequest searchRequest, int attemptNumber, int remainingRetriesCount, string validationError = null);
+        this.searchServiceBusClient = searchServiceBusClient;
+        this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
     }
 
-    public class MatchingFailureNotificationSender : IMatchingFailureNotificationSender
+    public async Task SendFailureNotification(IdentifiedSearchRequest searchRequest, int attemptNumber, int remainingRetriesCount, string validationError = null)
     {
-        private readonly ISearchServiceBusClient searchServiceBusClient;
-        private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
-
-        public MatchingFailureNotificationSender(ISearchServiceBusClient searchServiceBusClient, IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
+        var failureInfo = new MatchingAlgorithmFailureInfo
         {
-            this.searchServiceBusClient = searchServiceBusClient;
-            this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
-        }
+            ValidationError = validationError,
+            AttemptNumber = attemptNumber,
+            RemainingRetriesCount = remainingRetriesCount
+        };
 
-        public async Task SendFailureNotification(IdentifiedSearchRequest searchRequest, int attemptNumber, int remainingRetriesCount, string validationError = null)
+        var notification = new MatchingResultsNotification
         {
-            var failureInfo = new MatchingAlgorithmFailureInfo
-            {
-                ValidationError = validationError,
-                AttemptNumber = attemptNumber,
-                RemainingRetriesCount = remainingRetriesCount
-            };
+            WasSuccessful = false,
+            SearchRequestId = searchRequest.Id,
+            SearchRequest = searchRequest.SearchRequest,
+            MatchingAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString(),
+            MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion(),
+            ValidationError = failureInfo.ValidationError,
+            FailureInfo = failureInfo
+        };
 
-            var notification = new MatchingResultsNotification
-            {
-                WasSuccessful = false,
-                SearchRequestId = searchRequest.Id,
-                SearchRequest = searchRequest.SearchRequest,
-                MatchingAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString(),
-                MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion(),
-                ValidationError = failureInfo.ValidationError,
-                FailureInfo = failureInfo
-            };
-
-            await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
-        }
+        await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
     }
 }

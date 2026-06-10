@@ -9,102 +9,101 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelec
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.PatientDataSelection.DataSelectors
+namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.PatientDataSelection.DataSelectors;
+
+public class DatabaseDonorSelectorTests
 {
-    public class DatabaseDonorSelectorTests
+    private IDatabaseDonorSelector donorSelector;
+
+    [SetUp]
+    public void SetUp()
     {
-        private IDatabaseDonorSelector donorSelector;
+        donorSelector = new DatabaseDonorSelector();
+        ;
+    }
 
-        [SetUp]
-        public void SetUp()
+    [Test]
+    public void GetExpectedMatchingDonorId_ReturnsDonorId()
+    {
+        const int donorId = 1;
+        var metaDonor = new MetaDonor
         {
-            donorSelector = new DatabaseDonorSelector();
-            ;
-        }
-
-        [Test]
-        public void GetExpectedMatchingDonorId_ReturnsDonorId()
-        {
-            const int donorId = 1;
-            var metaDonor = new MetaDonor
+            DatabaseDonors = new List<Donor>
             {
-                DatabaseDonors = new List<Donor>
+                new Donor
                 {
-                    new Donor
-                    {
-                        DonorId = donorId
-                    }
+                    DonorId = donorId
                 }
-            };
-            var criteria = new DatabaseDonorSpecification();
+            }
+        };
+        var criteria = new DatabaseDonorSpecification();
 
-            var id = donorSelector.GetExpectedMatchingDonorId(metaDonor, criteria);
+        var id = donorSelector.GetExpectedMatchingDonorId(metaDonor, criteria);
 
-            id.Should().Be(donorId);
-        }
+        id.Should().Be(donorId);
+    }
 
-        [Test]
-        public void GetExpectedMatchingDonorId_WhenMultipleDonorsExistForMetaDonor_ReturnsDonorIdOfMatchingDonor()
+    [Test]
+    public void GetExpectedMatchingDonorId_WhenMultipleDonorsExistForMetaDonor_ReturnsDonorIdOfMatchingDonor()
+    {
+        const int donorIdMatching = 1;
+        const int donorIdNotMatching = 2;
+        var matchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.XxCode);
+
+        var metaDonor = new MetaDonor
         {
-            const int donorIdMatching = 1;
-            const int donorIdNotMatching = 2;
-            var matchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.XxCode);
-
-            var metaDonor = new MetaDonor
+            DatabaseDonors = new List<Donor>
             {
-                DatabaseDonors = new List<Donor>
+                new Donor
                 {
-                    new Donor
-                    {
-                        DonorId = donorIdNotMatching,
-                    },
-                    new Donor
-                    {
-                        DonorId = donorIdMatching
-                    }
+                    DonorId = donorIdNotMatching,
                 },
-                DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
+                new Donor
                 {
-                    new DatabaseDonorSpecification(),
-                    new DatabaseDonorSpecification
-                    {
-                        MatchingTypingResolutions = matchingTypingResolutions,
-                    }
+                    DonorId = donorIdMatching
                 }
-            };
-            var criteria = new DatabaseDonorSpecification
+            },
+            DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
             {
-                MatchingTypingResolutions = matchingTypingResolutions
-            };
-
-            var id = donorSelector.GetExpectedMatchingDonorId(metaDonor, criteria);
-
-            id.Should().Be(donorIdMatching);
-        }
-
-        [Test]
-        public void GetExpectedMatchingDonorId_WhenNoDonorExistsWithMatchingTypingResolution_ThrowsException()
+                new DatabaseDonorSpecification(),
+                new DatabaseDonorSpecification
+                {
+                    MatchingTypingResolutions = matchingTypingResolutions,
+                }
+            }
+        };
+        var criteria = new DatabaseDonorSpecification
         {
-            const int donorId = 1;
-            var metaDonor = new MetaDonor
-            {
-                DatabaseDonors = new List<Donor>
-                {
-                    new Donor
-                    {
-                        DonorId = donorId
-                    }
-                }
-            };
-            var criteria = new DatabaseDonorSpecification
-            {
-                MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>
-                (
-                    valueA: new LocusInfo<HlaTypingResolution>(HlaTypingResolution.Serology, default)
-                )
-            };
+            MatchingTypingResolutions = matchingTypingResolutions
+        };
 
-            Assert.Throws<DonorNotFoundException>(() => donorSelector.GetExpectedMatchingDonorId(metaDonor, criteria));
-        }
+        var id = donorSelector.GetExpectedMatchingDonorId(metaDonor, criteria);
+
+        id.Should().Be(donorIdMatching);
+    }
+
+    [Test]
+    public void GetExpectedMatchingDonorId_WhenNoDonorExistsWithMatchingTypingResolution_ThrowsException()
+    {
+        const int donorId = 1;
+        var metaDonor = new MetaDonor
+        {
+            DatabaseDonors = new List<Donor>
+            {
+                new Donor
+                {
+                    DonorId = donorId
+                }
+            }
+        };
+        var criteria = new DatabaseDonorSpecification
+        {
+            MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>
+            (
+                valueA: new LocusInfo<HlaTypingResolution>(HlaTypingResolution.Serology, default)
+            )
+        };
+
+        Assert.Throws<DonorNotFoundException>(() => donorSelector.GetExpectedMatchingDonorId(metaDonor, criteria));
     }
 }

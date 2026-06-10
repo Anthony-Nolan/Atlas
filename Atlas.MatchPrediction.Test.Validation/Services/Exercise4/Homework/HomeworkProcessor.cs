@@ -5,58 +5,57 @@ using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
 
-namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
+namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework;
+
+public interface IHomeworkProcessor
 {
-    public interface IHomeworkProcessor
+    Task StartOrContinueHomeworkSets(IEnumerable<int> homeworkSetIds);
+}
+
+internal class HomeworkProcessor : IHomeworkProcessor
+{
+    private readonly IHomeworkSetRepository setRepository;
+    private readonly IPatientDonorPairRepository pdpRepository;
+    private readonly IPatientDonorPairProcessor pdpProcessor;
+
+    public HomeworkProcessor(
+        IHomeworkSetRepository setRepository,
+        IPatientDonorPairRepository pdpRepository, 
+        IPatientDonorPairProcessor pdpProcessor)
     {
-        Task StartOrContinueHomeworkSets(IEnumerable<int> homeworkSetIds);
+        this.setRepository = setRepository;
+        this.pdpRepository = pdpRepository;
+        this.pdpProcessor = pdpProcessor;
     }
 
-    internal class HomeworkProcessor : IHomeworkProcessor
+    public async Task StartOrContinueHomeworkSets(IEnumerable<int> homeworkSetIds)
     {
-        private readonly IHomeworkSetRepository setRepository;
-        private readonly IPatientDonorPairRepository pdpRepository;
-        private readonly IPatientDonorPairProcessor pdpProcessor;
-
-        public HomeworkProcessor(
-            IHomeworkSetRepository setRepository,
-            IPatientDonorPairRepository pdpRepository, 
-            IPatientDonorPairProcessor pdpProcessor)
+        foreach (var homeworkSetId in homeworkSetIds)
         {
-            this.setRepository = setRepository;
-            this.pdpRepository = pdpRepository;
-            this.pdpProcessor = pdpProcessor;
+            await ProcessHomeworkSet(homeworkSetId);
+        }
+    }
+
+    private async Task ProcessHomeworkSet(int homeworkSetId)
+    {
+        var set = await setRepository.Get(homeworkSetId);
+
+        if (set == null)
+        {
+            throw new ArgumentException($"No homework set found with id {homeworkSetId}.");
         }
 
-        public async Task StartOrContinueHomeworkSets(IEnumerable<int> homeworkSetIds)
+        var pdps = (await pdpRepository.GetUnprocessedPairs(homeworkSetId)).ToList();
+
+        if (pdps.IsNullOrEmpty())
         {
-            foreach (var homeworkSetId in homeworkSetIds)
-            {
-                await ProcessHomeworkSet(homeworkSetId);
-            }
+            System.Diagnostics.Debug.WriteLine($"No unprocessed patient-donor pairs found for homework set {homeworkSetId}.");
+            return;
         }
 
-        private async Task ProcessHomeworkSet(int homeworkSetId)
+        foreach (var pdp in pdps)
         {
-            var set = await setRepository.Get(homeworkSetId);
-
-            if (set == null)
-            {
-                throw new ArgumentException($"No homework set found with id {homeworkSetId}.");
-            }
-
-            var pdps = (await pdpRepository.GetUnprocessedPairs(homeworkSetId)).ToList();
-
-            if (pdps.IsNullOrEmpty())
-            {
-                System.Diagnostics.Debug.WriteLine($"No unprocessed patient-donor pairs found for homework set {homeworkSetId}.");
-                return;
-            }
-
-            foreach (var pdp in pdps)
-            {
-                await pdpProcessor.Process(pdp, set.MatchLoci, set.HlaNomenclatureVersion);
-            }
+            await pdpProcessor.Process(pdp, set.MatchLoci, set.HlaNomenclatureVersion);
         }
     }
 }

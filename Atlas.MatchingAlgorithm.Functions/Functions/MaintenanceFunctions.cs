@@ -2,15 +2,14 @@ using System;
 using System.Runtime;
 using Microsoft.Azure.Functions.Worker;
 
-namespace Atlas.MatchingAlgorithm.Functions.Functions
+namespace Atlas.MatchingAlgorithm.Functions.Functions;
+
+public class MaintenanceFunctions
 {
-    public class MaintenanceFunctions
+    [Function(nameof(GCCollect))]
+    public static void GCCollect([TimerTrigger("%Maintenance:GCCollect:CronSchedule%")] TimerInfo timer)
     {
-        [Function(nameof(GCCollect))]
-        public static void GCCollect([TimerTrigger("%Maintenance:GCCollect:CronSchedule%")] TimerInfo timer)
-        {
-            GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
-            GC.Collect();
-        }
+        GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+        GC.Collect();
     }
 }

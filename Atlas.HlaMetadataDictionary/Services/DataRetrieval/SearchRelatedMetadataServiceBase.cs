@@ -13,93 +13,92 @@ using Microsoft.Extensions.Caching.Memory;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using System;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+
+internal interface ISearchRelatedMetadataService<THlaMetadata> where THlaMetadata : IHlaMetadata
 {
-    internal interface ISearchRelatedMetadataService<THlaMetadata> where THlaMetadata : IHlaMetadata
+    Task<THlaMetadata> GetHlaMetadata(Locus locus, string hlaName, string hlaNomenclatureVersion);
+}
+
+/// <summary>
+/// Common functionality when looking up search-related metadata (e.g., for matching, scoring, MPA, etc.)
+/// where the submitted HLA name could be any supported <see cref="Common.GeneticData.Hla.Models.HlaTypingCategory"/>.
+/// </summary>
+internal abstract class SearchRelatedMetadataServiceBase<THlaMetadata> :
+    MetadataServiceBase<THlaMetadata>,
+    ISearchRelatedMetadataService<THlaMetadata>
+    where THlaMetadata : IHlaMetadata
+{
+    protected readonly IHlaCategorisationService HlaCategorisationService;
+
+    private readonly IHlaMetadataRepository hlaMetadataRepository;
+    private readonly IAlleleNamesMetadataService alleleNamesMetadataService;
+    private readonly IAlleleNamesExtractor alleleNamesExtractor;
+    private readonly IMacDictionary macDictionary;
+    private readonly IAlleleGroupExpander alleleGroupExpander;
+
+    private readonly SearchRelatedMetadataServiceSettings options; 
+
+    protected SearchRelatedMetadataServiceBase(
+        IHlaMetadataRepository hlaMetadataRepository,
+        IAlleleNamesMetadataService alleleNamesMetadataService,
+        IHlaCategorisationService hlaCategorisationService,
+        IAlleleNamesExtractor alleleNamesExtractor,
+        IMacDictionary macDictionary,
+        IAlleleGroupExpander alleleGroupExpander,
+        string perTypeCacheKey,
+        IPersistentCacheProvider cacheProvider,
+        HlaMetadataDictionarySettings options
+    )
+        : base(perTypeCacheKey, cacheProvider)
     {
-        Task<THlaMetadata> GetHlaMetadata(Locus locus, string hlaName, string hlaNomenclatureVersion);
+        this.hlaMetadataRepository = hlaMetadataRepository;
+        this.alleleNamesMetadataService = alleleNamesMetadataService;
+        HlaCategorisationService = hlaCategorisationService;
+        this.alleleNamesExtractor = alleleNamesExtractor;
+        this.macDictionary = macDictionary;
+        this.alleleGroupExpander = alleleGroupExpander;
+        this.options = options.SearchRelatedMetadata ?? new SearchRelatedMetadataServiceSettings();
     }
 
-    /// <summary>
-    /// Common functionality when looking up search-related metadata (e.g., for matching, scoring, MPA, etc.)
-    /// where the submitted HLA name could be any supported <see cref="Common.GeneticData.Hla.Models.HlaTypingCategory"/>.
-    /// </summary>
-    internal abstract class SearchRelatedMetadataServiceBase<THlaMetadata> :
-        MetadataServiceBase<THlaMetadata>,
-        ISearchRelatedMetadataService<THlaMetadata>
-        where THlaMetadata : IHlaMetadata
+    public async Task<THlaMetadata> GetHlaMetadata(Locus locus, string hlaName, string hlaNomenclatureVersion)
     {
-        protected readonly IHlaCategorisationService HlaCategorisationService;
-
-        private readonly IHlaMetadataRepository hlaMetadataRepository;
-        private readonly IAlleleNamesMetadataService alleleNamesMetadataService;
-        private readonly IAlleleNamesExtractor alleleNamesExtractor;
-        private readonly IMacDictionary macDictionary;
-        private readonly IAlleleGroupExpander alleleGroupExpander;
-
-        private readonly SearchRelatedMetadataServiceSettings options; 
-
-        protected SearchRelatedMetadataServiceBase(
-            IHlaMetadataRepository hlaMetadataRepository,
-            IAlleleNamesMetadataService alleleNamesMetadataService,
-            IHlaCategorisationService hlaCategorisationService,
-            IAlleleNamesExtractor alleleNamesExtractor,
-            IMacDictionary macDictionary,
-            IAlleleGroupExpander alleleGroupExpander,
-            string perTypeCacheKey,
-            IPersistentCacheProvider cacheProvider,
-            HlaMetadataDictionarySettings options
-            )
-            : base(perTypeCacheKey, cacheProvider)
-        {
-            this.hlaMetadataRepository = hlaMetadataRepository;
-            this.alleleNamesMetadataService = alleleNamesMetadataService;
-            HlaCategorisationService = hlaCategorisationService;
-            this.alleleNamesExtractor = alleleNamesExtractor;
-            this.macDictionary = macDictionary;
-            this.alleleGroupExpander = alleleGroupExpander;
-            this.options = options.SearchRelatedMetadata ?? new SearchRelatedMetadataServiceSettings();
-        }
-
-        public async Task<THlaMetadata> GetHlaMetadata(Locus locus, string hlaName, string hlaNomenclatureVersion)
-        {
-            return await GetMetadata(locus, hlaName, hlaNomenclatureVersion);
-        }
-
-        protected override bool LookupNameIsValid(string lookupName)
-        {
-            return !string.IsNullOrEmpty(lookupName);
-        }
-
-        protected override async Task<THlaMetadata> PerformLookup(Locus locus, string lookupName, string hlaNomenclatureVersion)
-        {
-            var dictionaryLookup = GetHlaLookup(lookupName);
-            var metadataRows = await dictionaryLookup.PerformLookupAsync(locus, lookupName, hlaNomenclatureVersion);
-            var metadata = ConvertMetadataRowsToMetadata(metadataRows).ToList();
-
-            return ConsolidateHlaMetadata(locus, lookupName, metadata);
-        }
-
-        private HlaLookupBase GetHlaLookup(string lookupName)
-        {
-            var hlaTypingCategory = HlaCategorisationService.GetHlaTypingCategory(lookupName);
-
-            return HlaLookupFactory
-                .GetLookupByHlaTypingCategory(
-                    hlaTypingCategory,
-                    hlaMetadataRepository,
-                    alleleNamesMetadataService,
-                    alleleNamesExtractor,
-                    macDictionary,
-                    alleleGroupExpander);
-        }
-
-        protected override MemoryCacheEntryOptions GetMemoryCacheOptions() => options.CacheSlidingExpirationInSeconds == null
-            ? base.GetMemoryCacheOptions()
-            : base.GetMemoryCacheOptions().SetSlidingExpiration(TimeSpan.FromSeconds(options.CacheSlidingExpirationInSeconds.Value));
-
-        protected abstract IEnumerable<THlaMetadata> ConvertMetadataRowsToMetadata(IEnumerable<HlaMetadataTableRow> rows);
-
-        protected abstract THlaMetadata ConsolidateHlaMetadata(Locus locus, string lookupName, List<THlaMetadata> metadata);
+        return await GetMetadata(locus, hlaName, hlaNomenclatureVersion);
     }
+
+    protected override bool LookupNameIsValid(string lookupName)
+    {
+        return !string.IsNullOrEmpty(lookupName);
+    }
+
+    protected override async Task<THlaMetadata> PerformLookup(Locus locus, string lookupName, string hlaNomenclatureVersion)
+    {
+        var dictionaryLookup = GetHlaLookup(lookupName);
+        var metadataRows = await dictionaryLookup.PerformLookupAsync(locus, lookupName, hlaNomenclatureVersion);
+        var metadata = ConvertMetadataRowsToMetadata(metadataRows).ToList();
+
+        return ConsolidateHlaMetadata(locus, lookupName, metadata);
+    }
+
+    private HlaLookupBase GetHlaLookup(string lookupName)
+    {
+        var hlaTypingCategory = HlaCategorisationService.GetHlaTypingCategory(lookupName);
+
+        return HlaLookupFactory
+            .GetLookupByHlaTypingCategory(
+                hlaTypingCategory,
+                hlaMetadataRepository,
+                alleleNamesMetadataService,
+                alleleNamesExtractor,
+                macDictionary,
+                alleleGroupExpander);
+    }
+
+    protected override MemoryCacheEntryOptions GetMemoryCacheOptions() => options.CacheSlidingExpirationInSeconds == null
+        ? base.GetMemoryCacheOptions()
+        : base.GetMemoryCacheOptions().SetSlidingExpiration(TimeSpan.FromSeconds(options.CacheSlidingExpirationInSeconds.Value));
+
+    protected abstract IEnumerable<THlaMetadata> ConvertMetadataRowsToMetadata(IEnumerable<HlaMetadataTableRow> rows);
+
+    protected abstract THlaMetadata ConsolidateHlaMetadata(Locus locus, string lookupName, List<THlaMetadata> metadata);
 }

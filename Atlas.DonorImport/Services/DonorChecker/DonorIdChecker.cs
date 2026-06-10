@@ -15,134 +15,133 @@ using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 using Atlas.DonorImport.Models;
 using MoreLinq;
 
-namespace Atlas.DonorImport.Services.DonorChecker
+namespace Atlas.DonorImport.Services.DonorChecker;
+
+public interface IDonorIdChecker
 {
-    public interface IDonorIdChecker
+    Task CheckDonorIdsFromFile(DonorIdCheckFile file);
+}
+
+internal class DonorIdChecker : IDonorIdChecker
+{
+    private const int BatchSize = 10000;
+    private readonly IDonorIdCheckerFileParser fileParser;
+    private readonly IDonorReadRepository donorReadRepository;
+    private readonly IDonorIdCheckerBlobStorageClient blobStorageClient;
+    private readonly IDonorIdCheckerMessageSender messageSender;
+    private readonly INotificationSender notificationSender;
+    private readonly IAtlasLogger logger;
+
+    private Dictionary<string, bool> loadedExternalDonorCodes;
+
+    public DonorIdChecker(IDonorIdCheckerFileParser fileParser, IDonorReadRepository donorReadRepository,
+        IDonorIdCheckerBlobStorageClient blobStorageClient, IDonorIdCheckerMessageSender messageSender, INotificationSender notificationSender,
+        IAtlasLogger logger)
     {
-        Task CheckDonorIdsFromFile(DonorIdCheckFile file);
+        this.fileParser = fileParser;
+        this.donorReadRepository = donorReadRepository;
+        this.blobStorageClient = blobStorageClient;
+        this.messageSender = messageSender;
+        this.notificationSender = notificationSender;
+        this.logger = logger;
     }
 
-    internal class DonorIdChecker : IDonorIdChecker
+    public async Task CheckDonorIdsFromFile(DonorIdCheckFile file)
     {
-        private const int BatchSize = 10000;
-        private readonly IDonorIdCheckerFileParser fileParser;
-        private readonly IDonorReadRepository donorReadRepository;
-        private readonly IDonorIdCheckerBlobStorageClient blobStorageClient;
-        private readonly IDonorIdCheckerMessageSender messageSender;
-        private readonly INotificationSender notificationSender;
-        private readonly IAtlasLogger logger;
+        LogMessage($"Beginning Donor Id Check for file '{file.FileLocation}'.");
+        var lazyFile = fileParser.PrepareToLazilyParsingDonorIdFile(file.Contents);
+        var filename = GetResultFilename(file.FileLocation);
+        var checkedDonorIdsCount = 0;
+        var absentRecordIds = new List<string>();
 
-        private Dictionary<string, bool> loadedExternalDonorCodes;
-
-        public DonorIdChecker(IDonorIdCheckerFileParser fileParser, IDonorReadRepository donorReadRepository,
-            IDonorIdCheckerBlobStorageClient blobStorageClient, IDonorIdCheckerMessageSender messageSender, INotificationSender notificationSender,
-            IAtlasLogger logger)
+        try
         {
-            this.fileParser = fileParser;
-            this.donorReadRepository = donorReadRepository;
-            this.blobStorageClient = blobStorageClient;
-            this.messageSender = messageSender;
-            this.notificationSender = notificationSender;
-            this.logger = logger;
-        }
-
-        public async Task CheckDonorIdsFromFile(DonorIdCheckFile file)
-        {
-            LogMessage($"Beginning Donor Id Check for file '{file.FileLocation}'.");
-            var lazyFile = fileParser.PrepareToLazilyParsingDonorIdFile(file.Contents);
-            var filename = GetResultFilename(file.FileLocation);
-            var checkedDonorIdsCount = 0;
-            var absentRecordIds = new List<string>();
-
-            try
+            foreach (var recordIdsBatch in lazyFile.ReadLazyDonorIds().Batch(BatchSize))
             {
-                foreach (var recordIdsBatch in lazyFile.ReadLazyDonorIds().Batch(BatchSize))
+                var externalDonorCodes = await GetOrReadExternalDonorCodes(lazyFile.DonorPool, lazyFile.DonorType);
+                var recordIdsInBatchChecked = 0;
+                foreach (var recordId in recordIdsBatch)
                 {
-                    var externalDonorCodes = await GetOrReadExternalDonorCodes(lazyFile.DonorPool, lazyFile.DonorType);
-                    var recordIdsInBatchChecked = 0;
-                    foreach (var recordId in recordIdsBatch)
+                    recordIdsInBatchChecked++;
+                    if (externalDonorCodes.ContainsKey(recordId))
                     {
-                        recordIdsInBatchChecked++;
-                        if (externalDonorCodes.ContainsKey(recordId))
-                        {
-                            externalDonorCodes[recordId] = true;
-                        }
-                        else
-                        {
-                            absentRecordIds.Add(recordId);
-                        }
+                        externalDonorCodes[recordId] = true;
                     }
-
-                    checkedDonorIdsCount += recordIdsInBatchChecked;
-                    LogMessage(
-                        $"Batch complete - checked {recordIdsInBatchChecked} donor(s) this batch. Cumulatively {checkedDonorIdsCount} donor(s). "
-                    );
-                }
-
-                var orphanedRecordIds = (await GetOrReadExternalDonorCodes(lazyFile.DonorPool, lazyFile.DonorType)).Where(c => !c.Value)
-                    .Select(c => c.Key);
-
-                var donorIdCheckResults = new DonorIdCheckerResults
-                {
-                    RegistryCode = lazyFile.DonorPool,
-                    DonorType = lazyFile.DonorType.ToString(),
-                    AbsentRecordIds = absentRecordIds,
-                    OrphanedRecordIds = orphanedRecordIds.ToList()
-                };
-
-                var resultsCount = donorIdCheckResults.OrphanedRecordIds.Count + donorIdCheckResults.AbsentRecordIds.Count;
-
-                if (resultsCount > 0)
-                {
-                    using (logger.RunTimed("Donor Id Check results were uploaded."))
+                    else
                     {
-                        await blobStorageClient.UploadResults(donorIdCheckResults, filename);
+                        absentRecordIds.Add(recordId);
                     }
                 }
 
+                checkedDonorIdsCount += recordIdsInBatchChecked;
                 LogMessage(
-                    $"Donor Id Check for file '{file.FileLocation}' complete. Checked {checkedDonorIdsCount} donor(s). Found {donorIdCheckResults.AbsentRecordIds.Count} absent and {donorIdCheckResults.OrphanedRecordIds.Count} orphaned donor(s)."
+                    $"Batch complete - checked {recordIdsInBatchChecked} donor(s) this batch. Cumulatively {checkedDonorIdsCount} donor(s). "
                 );
+            }
 
-                await messageSender.SendSuccessDonorCheckMessage(file.FileLocation, resultsCount, filename);
-            }
-            catch (EmptyDonorFileException)
-            {
-                await LogFileErrorAndSendAlert("Donor Ids file was present but it was empty.", $"Donor Ids file: {file.FileLocation}");
-            }
-            catch (MalformedDonorFileException e)
-            {
-                await LogFileErrorAndSendAlert(e.Message, e.StackTrace);
-            }
-            catch (Exception e)
-            {
-                logger.SendException(e, LogLevel.Warn, new Dictionary<string, string>
-                    {
-                        { nameof(file.FileLocation), file.FileLocation },
-                    }
-                );
+            var orphanedRecordIds = (await GetOrReadExternalDonorCodes(lazyFile.DonorPool, lazyFile.DonorType)).Where(c => !c.Value)
+                .Select(c => c.Key);
 
-                throw;
-            }
-        }
+            var donorIdCheckResults = new DonorIdCheckerResults
+            {
+                RegistryCode = lazyFile.DonorPool,
+                DonorType = lazyFile.DonorType.ToString(),
+                AbsentRecordIds = absentRecordIds,
+                OrphanedRecordIds = orphanedRecordIds.ToList()
+            };
 
-        private async Task<Dictionary<string, bool>> GetOrReadExternalDonorCodes(string registryCode, ImportDonorType donorType) =>
-            loadedExternalDonorCodes ??= await logger.RunTimedAsync("Donor External Codes were read.",
-                async () =>
-                    (await donorReadRepository.GetExternalDonorCodes(registryCode, donorType.ToDatabaseType())).ToDictionary(c => c, _ => false),
-                logAtStart: true
+            var resultsCount = donorIdCheckResults.OrphanedRecordIds.Count + donorIdCheckResults.AbsentRecordIds.Count;
+
+            if (resultsCount > 0)
+            {
+                using (logger.RunTimed("Donor Id Check results were uploaded."))
+                {
+                    await blobStorageClient.UploadResults(donorIdCheckResults, filename);
+                }
+            }
+
+            LogMessage(
+                $"Donor Id Check for file '{file.FileLocation}' complete. Checked {checkedDonorIdsCount} donor(s). Found {donorIdCheckResults.AbsentRecordIds.Count} absent and {donorIdCheckResults.OrphanedRecordIds.Count} orphaned donor(s)."
             );
 
-        private string GetResultFilename(string location) =>
-            $"{Path.GetFileNameWithoutExtension(location)}-{DateTime.Now:yyyyMMddhhmmssfff}.json";
-
-        private async Task LogFileErrorAndSendAlert(string message, string description)
-        {
-            logger.SendTrace(message, LogLevel.Warn);
-            await notificationSender.SendAlert(message, description, Priority.Medium, nameof(CheckDonorIdsFromFile));
+            await messageSender.SendSuccessDonorCheckMessage(file.FileLocation, resultsCount, filename);
         }
+        catch (EmptyDonorFileException)
+        {
+            await LogFileErrorAndSendAlert("Donor Ids file was present but it was empty.", $"Donor Ids file: {file.FileLocation}");
+        }
+        catch (MalformedDonorFileException e)
+        {
+            await LogFileErrorAndSendAlert(e.Message, e.StackTrace);
+        }
+        catch (Exception e)
+        {
+            logger.SendException(e, LogLevel.Warn, new Dictionary<string, string>
+                {
+                    { nameof(file.FileLocation), file.FileLocation },
+                }
+            );
 
-        private void LogMessage(string message) =>
-            logger.SendTrace($"{nameof(DonorIdChecker)}: {message}");
+            throw;
+        }
     }
+
+    private async Task<Dictionary<string, bool>> GetOrReadExternalDonorCodes(string registryCode, ImportDonorType donorType) =>
+        loadedExternalDonorCodes ??= await logger.RunTimedAsync("Donor External Codes were read.",
+            async () =>
+                (await donorReadRepository.GetExternalDonorCodes(registryCode, donorType.ToDatabaseType())).ToDictionary(c => c, _ => false),
+            logAtStart: true
+        );
+
+    private string GetResultFilename(string location) =>
+        $"{Path.GetFileNameWithoutExtension(location)}-{DateTime.Now:yyyyMMddhhmmssfff}.json";
+
+    private async Task LogFileErrorAndSendAlert(string message, string description)
+    {
+        logger.SendTrace(message, LogLevel.Warn);
+        await notificationSender.SendAlert(message, description, Priority.Medium, nameof(CheckDonorIdsFromFile));
+    }
+
+    private void LogMessage(string message) =>
+        logger.SendTrace($"{nameof(DonorIdChecker)}: {message}");
 }

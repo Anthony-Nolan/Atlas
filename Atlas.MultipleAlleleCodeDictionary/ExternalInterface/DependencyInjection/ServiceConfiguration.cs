@@ -8,101 +8,100 @@ using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection
+namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
+
+public static class ServiceConfiguration
 {
-    public static class ServiceConfiguration
+    public static void RegisterMacDictionary(
+        this IServiceCollection services,
+        Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+        Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings
+    )
     {
-        public static void RegisterMacDictionary(
-            this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings
-        )
-        {
-            services.RegisterMacDictionarySettings(fetchApplicationInsightsSettings, fetchMacDictionarySettings);
-            services.RegisterMacDictionaryServices();
-            services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
-            services.RegisterLifeTimeScopedCacheTypes();
-        }
+        services.RegisterMacDictionarySettings(fetchApplicationInsightsSettings, fetchMacDictionarySettings);
+        services.RegisterMacDictionaryServices();
+        services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
+        services.RegisterLifeTimeScopedCacheTypes();
+    }
 
-        public static void RegisterMacImport(
-            this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
-            Func<IServiceProvider, MacDownloadSettings> fetchMacDownloadSettings
-        )
-        {
-            services.RegisterMacImportSettings(fetchApplicationInsightsSettings, fetchMacDictionarySettings, fetchMacDownloadSettings);
-            services.RegisterMacImportServices();
-            services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
-            services.RegisterLifeTimeScopedCacheTypes();
-        }
+    public static void RegisterMacImport(
+        this IServiceCollection services,
+        Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+        Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
+        Func<IServiceProvider, MacDownloadSettings> fetchMacDownloadSettings
+    )
+    {
+        services.RegisterMacImportSettings(fetchApplicationInsightsSettings, fetchMacDictionarySettings, fetchMacDownloadSettings);
+        services.RegisterMacImportServices();
+        services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
+        services.RegisterLifeTimeScopedCacheTypes();
+    }
 
-        internal static void RegisterMacFetcher(
-            this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, MacDownloadSettings> fetchMacDownloadSettings
-        )
-        {
-            services.RegisterMacDownloadSettings(fetchApplicationInsightsSettings, fetchMacDownloadSettings);
-            services.RegisterMacFetcherServices();
-            services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
-        }
+    internal static void RegisterMacFetcher(
+        this IServiceCollection services,
+        Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+        Func<IServiceProvider, MacDownloadSettings> fetchMacDownloadSettings
+    )
+    {
+        services.RegisterMacDownloadSettings(fetchApplicationInsightsSettings, fetchMacDownloadSettings);
+        services.RegisterMacFetcherServices();
+        services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
+    }
 
-        private static void RegisterMacDictionarySettings(
-            this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings)
-        {
-            services.MakeSettingsAvailableForUse(fetchApplicationInsightsSettings);
-            services.MakeSettingsAvailableForUse(fetchMacDictionarySettings);
-        }
+    private static void RegisterMacDictionarySettings(
+        this IServiceCollection services,
+        Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+        Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings)
+    {
+        services.MakeSettingsAvailableForUse(fetchApplicationInsightsSettings);
+        services.MakeSettingsAvailableForUse(fetchMacDictionarySettings);
+    }
 
-        private static void RegisterMacImportSettings(
-            this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
-            Func<IServiceProvider, MacDownloadSettings> fetchMacDownloadSettings)
-        {
-            services.RegisterMacDownloadSettings(fetchApplicationInsightsSettings, fetchMacDownloadSettings);
-            services.MakeSettingsAvailableForUse(fetchMacDictionarySettings);
-        }
+    private static void RegisterMacImportSettings(
+        this IServiceCollection services,
+        Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+        Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
+        Func<IServiceProvider, MacDownloadSettings> fetchMacDownloadSettings)
+    {
+        services.RegisterMacDownloadSettings(fetchApplicationInsightsSettings, fetchMacDownloadSettings);
+        services.MakeSettingsAvailableForUse(fetchMacDictionarySettings);
+    }
 
-        private static void RegisterMacDownloadSettings(
-            this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, MacDownloadSettings> fetchMacDownloadSettings)
-        {
-            services.MakeSettingsAvailableForUse(fetchApplicationInsightsSettings);
-            services.MakeSettingsAvailableForUse(fetchMacDownloadSettings);
-        }
+    private static void RegisterMacDownloadSettings(
+        this IServiceCollection services,
+        Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+        Func<IServiceProvider, MacDownloadSettings> fetchMacDownloadSettings)
+    {
+        services.MakeSettingsAvailableForUse(fetchApplicationInsightsSettings);
+        services.MakeSettingsAvailableForUse(fetchMacDownloadSettings);
+    }
 
-        private static void RegisterMacDictionaryServices(this IServiceCollection services)
-        {
-            services.RegisterSharedServices();
+    private static void RegisterMacDictionaryServices(this IServiceCollection services)
+    {
+        services.RegisterSharedServices();
 
-            services.AddScoped<IMacCacheService, MacCacheService>();
-            services.AddScoped<IMacDictionary, MacDictionary>();
-            services.AddScoped<IMacExpander, MacExpander>();
-        }
+        services.AddScoped<IMacCacheService, MacCacheService>();
+        services.AddScoped<IMacDictionary, MacDictionary>();
+        services.AddScoped<IMacExpander, MacExpander>();
+    }
 
-        private static void RegisterMacImportServices(this IServiceCollection services)
-        {
-            services.RegisterSharedServices();
+    private static void RegisterMacImportServices(this IServiceCollection services)
+    {
+        services.RegisterSharedServices();
 
-            services.RegisterMacFetcherServices();
-            services.AddScoped<IMacImporter, MacImporter>();
-        }
+        services.RegisterMacFetcherServices();
+        services.AddScoped<IMacImporter, MacImporter>();
+    }
 
-        private static void RegisterMacFetcherServices(this IServiceCollection services)
-        {
-            services.AddScoped<IMacFetcher, MacFetcher>();
-            services.AddScoped<IMacParser, MacLineParser>();
-            services.AddScoped<IMacCodeDownloader, MacCodeDownloader>();
-        }
+    private static void RegisterMacFetcherServices(this IServiceCollection services)
+    {
+        services.AddScoped<IMacFetcher, MacFetcher>();
+        services.AddScoped<IMacParser, MacLineParser>();
+        services.AddScoped<IMacCodeDownloader, MacCodeDownloader>();
+    }
 
-        private static void RegisterSharedServices(this IServiceCollection services)
-        {
-            services.AddScoped<IMacRepository, MacRepository>();
-        }
+    private static void RegisterSharedServices(this IServiceCollection services)
+    {
+        services.AddScoped<IMacRepository, MacRepository>();
     }
 }

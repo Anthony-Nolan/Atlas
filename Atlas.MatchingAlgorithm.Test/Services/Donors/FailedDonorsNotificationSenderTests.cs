@@ -8,85 +8,84 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Client.Models.SupportMessages;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.Donors
+namespace Atlas.MatchingAlgorithm.Test.Services.Donors;
+
+[TestFixture]
+public class FailedDonorsNotificationSenderTests
 {
-    [TestFixture]
-    public class FailedDonorsNotificationSenderTests
+    private IFailedDonorsNotificationSender failedDonorsNotificationSender;
+
+    private INotificationSender notificationSender;
+
+    [SetUp]
+    public void SetUp()
     {
-        private IFailedDonorsNotificationSender failedDonorsNotificationSender;
+        notificationSender = Substitute.For<INotificationSender>();
 
-        private INotificationSender notificationSender;
+        failedDonorsNotificationSender = new FailedDonorsNotificationSender(notificationSender);
+    }
 
-        [SetUp]
-        public void SetUp()
-        {
-            notificationSender = Substitute.For<INotificationSender>();
+    [Test]
+    public async Task SendFailedDonorsAlert_NoFailedDonors_DoesNotSendAlert()
+    {
+        await failedDonorsNotificationSender.SendFailedDonorsAlert(
+            new List<FailedDonorInfo>(), "alert", Priority.Medium);
 
-            failedDonorsNotificationSender = new FailedDonorsNotificationSender(notificationSender);
-        }
+        await notificationSender.DidNotReceiveWithAnyArgs().SendAlert(default, default, default, default);
+    }
 
-        [Test]
-        public async Task SendFailedDonorsAlert_NoFailedDonors_DoesNotSendAlert()
-        {
-            await failedDonorsNotificationSender.SendFailedDonorsAlert(
-                new List<FailedDonorInfo>(), "alert", Priority.Medium);
+    [Test]
+    public async Task SendFailedDonorsAlert_SendsAlertWithAlertSummary()
+    {
+        const string alertSummary = "alert-summary";
 
-            await notificationSender.DidNotReceiveWithAnyArgs().SendAlert(default, default, default, default);
-        }
+        await failedDonorsNotificationSender.SendFailedDonorsAlert(
+            FailedDonorInfoBuilder.New().Build(1),
+            alertSummary,
+            Priority.Medium);
 
-        [Test]
-        public async Task SendFailedDonorsAlert_SendsAlertWithAlertSummary()
-        {
-            const string alertSummary = "alert-summary";
+        await notificationSender.Received().SendAlert(
+            Arg.Is<string>(summary => summary == alertSummary),
+            Arg.Any<string>(),
+            Arg.Any<Priority>(),
+            Arg.Any<string>()
+        );
+    }
 
-            await failedDonorsNotificationSender.SendFailedDonorsAlert(
-                FailedDonorInfoBuilder.New().Build(1),
-                alertSummary,
-                Priority.Medium);
+    [Test]
+    public async Task SendFailedDonorsAlert_SendsAlertWithLoggerPriority()
+    {
+        const Priority loggerPriority = Priority.High;
 
-            await notificationSender.Received().SendAlert(
-                Arg.Is<string>(summary => summary == alertSummary),
-                Arg.Any<string>(),
-                Arg.Any<Priority>(),
-                Arg.Any<string>()
-            );
-        }
+        await failedDonorsNotificationSender.SendFailedDonorsAlert(
+            FailedDonorInfoBuilder.New().Build(1),
+            "alert",
+            loggerPriority);
 
-        [Test]
-        public async Task SendFailedDonorsAlert_SendsAlertWithLoggerPriority()
-        {
-            const Priority loggerPriority = Priority.High;
-
-            await failedDonorsNotificationSender.SendFailedDonorsAlert(
-                FailedDonorInfoBuilder.New().Build(1),
-                "alert",
-                loggerPriority);
-
-            await notificationSender.Received().SendAlert(
-                Arg.Any<string>(),
-                Arg.Any<string>(),
-                Arg.Is<Priority>(pri => pri == loggerPriority),
-                Arg.Any<string>()
-            );
-        }
+        await notificationSender.Received().SendAlert(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Is<Priority>(pri => pri == loggerPriority),
+            Arg.Any<string>()
+        );
+    }
 
 
-        [Test]
-        public async Task SendFailedDonorsAlert_SendsAlertWithDonorCount()
-        {
-            const int totalDonorCount = 50;
+    [Test]
+    public async Task SendFailedDonorsAlert_SendsAlertWithDonorCount()
+    {
+        const int totalDonorCount = 50;
 
-            await failedDonorsNotificationSender.SendFailedDonorsAlert(
-                FailedDonorInfoBuilder.New().Build(totalDonorCount),
-                "alert",
-                Priority.Medium);
+        await failedDonorsNotificationSender.SendFailedDonorsAlert(
+            FailedDonorInfoBuilder.New().Build(totalDonorCount),
+            "alert",
+            Priority.Medium);
 
-            await notificationSender.Received().SendAlert(
-                Arg.Any<string>(),
-                Arg.Is<string>(description => description.Contains(totalDonorCount.ToString())),
-                Arg.Any<Priority>(),
-                Arg.Any<string>()
-            );
-        }
+        await notificationSender.Received().SendAlert(
+            Arg.Any<string>(),
+            Arg.Is<string>(description => description.Contains(totalDonorCount.ToString())),
+            Arg.Any<Priority>(),
+            Arg.Any<string>()
+        );
     }
 }

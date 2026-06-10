@@ -32,134 +32,133 @@ using Atlas.SearchTracking.Common.Models;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
+namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection;
+
+internal static class ServiceConfiguration
 {
-    internal static class ServiceConfiguration
+    internal static IDonorReader MockDonorReader;
+
+    private const string PersistentSqlConnectionStringKey = "PersistentSql";
+    private const string TransientASqlConnectionStringKey = "SqlA";
+    private const string TransientBSqlConnectionStringKey = "SqlB";
+    private const string DonorImportSqlConnectionStringKey = "DonorImportSql";
+
+    public static IServiceProvider CreateProvider()
     {
-        internal static IDonorReader MockDonorReader;
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .Build();
 
-        private const string PersistentSqlConnectionStringKey = "PersistentSql";
-        private const string TransientASqlConnectionStringKey = "SqlA";
-        private const string TransientBSqlConnectionStringKey = "SqlB";
-        private const string DonorImportSqlConnectionStringKey = "DonorImportSql";
+        services.AddSingleton<IConfiguration>(sp => configuration);
 
-        public static IServiceProvider CreateProvider()
+        services.RegisterSettings();
+        services.RegisterSearchForMatchingAlgorithm(OptionsReaderFor<ApplicationInsightsSettings>(),
+            OptionsReaderFor<AzureStorageSettings>(),
+            OptionsReaderFor<HlaMetadataDictionarySettings>(),
+            _ => new MacDictionarySettings(),
+            OptionsReaderFor<MessagingServiceBusSettings>(),
+            OptionsReaderFor<SearchTrackingServiceBusSettings>(),
+            _ => new NotificationsServiceBusSettings(),
+            _ => new MatchingConfigurationSettings {MatchingBatchSize = 250000},
+            ConnectionStringReader(PersistentSqlConnectionStringKey),
+            ConnectionStringReader(TransientASqlConnectionStringKey),
+            ConnectionStringReader(TransientBSqlConnectionStringKey),
+            ConnectionStringReader(DonorImportSqlConnectionStringKey));
+
+        services.RegisterDataRefresh(
+            _ => new AzureAuthenticationSettings(),
+            _ => new AzureDatabaseManagementSettings(),
+            OptionsReaderFor<DataRefreshSettings>(),
+            OptionsReaderFor<ApplicationInsightsSettings>(),
+            OptionsReaderFor<AzureStorageSettings>(),
+            OptionsReaderFor<HlaMetadataDictionarySettings>(),
+            _ => new MacDictionarySettings(),
+            OptionsReaderFor<MessagingServiceBusSettings>(),
+            _ => new NotificationsServiceBusSettings(),
+            OptionsReaderFor<DonorManagementSettings>(),
+            ConnectionStringReader(PersistentSqlConnectionStringKey),
+            ConnectionStringReader(TransientASqlConnectionStringKey),
+            ConnectionStringReader(TransientBSqlConnectionStringKey),
+            ConnectionStringReader(DonorImportSqlConnectionStringKey));
+
+        services.RegisterDonorManagement(
+            OptionsReaderFor<ApplicationInsightsSettings>(),
+            OptionsReaderFor<AzureStorageSettings>(),
+            OptionsReaderFor<DonorManagementSettings>(),
+            OptionsReaderFor<HlaMetadataDictionarySettings>(),
+            _ => new MacDictionarySettings(),
+            OptionsReaderFor<MessagingServiceBusSettings>(),
+            _ => new NotificationsServiceBusSettings(),
+            ConnectionStringReader(PersistentSqlConnectionStringKey),
+            ConnectionStringReader(TransientASqlConnectionStringKey),
+            ConnectionStringReader(TransientBSqlConnectionStringKey),
+            ConnectionStringReader(DonorImportSqlConnectionStringKey));
+
+        // This call must be made after `RegisterMatchingAlgorithm()`, as it overrides the non-mock dictionary set up in that method
+        services.RegisterFileBasedHlaMetadataDictionaryForTesting(
+            //These configuration values won't be used, because all they are all (indirectly) overridden, below.
+            OptionsReaderFor<ApplicationInsightsSettings>(),
+            OptionsReaderFor<MacDictionarySettings>()
+        );
+
+        services.AddScoped(sp =>
+            new ContextFactory().Create(ConnectionStringReader(TransientASqlConnectionStringKey)(sp))
+        );
+
+        RegisterMockServices(services);
+        RegisterIntegrationTestServices(services);
+
+        return services.BuildServiceProvider();
+    }
+
+    private static void RegisterSettings(this IServiceCollection services)
+    {
+        services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
+        services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
+        services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
+        services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
+        services.RegisterAsOptions<DonorManagementSettings>("DonorManagement");
+        services.RegisterAsOptions<MessagingServiceBusSettings>("DonorManagementMessagingServiceBus");
+    }
+
+    private static void RegisterMockServices(IServiceCollection services)
+    {
+        // Clients
+        var mockSearchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
+        mockSearchServiceBusClient
+            .PublishToSearchRequestsTopic(Arg.Any<IdentifiedSearchRequest>())
+            .Returns(Task.CompletedTask);
+        services.AddScoped(sp => mockSearchServiceBusClient);
+
+        var mockSearchTrackingServiceBusClient = Substitute.For<ISearchTrackingServiceBusClient>();
+        mockSearchTrackingServiceBusClient.PublishSearchTrackingEvent(Arg.Any<SearchRequestedEvent>(), SearchTrackingEventType.SearchRequested)
+            .Returns(Task.CompletedTask);
+        services.AddScoped(sp => mockSearchTrackingServiceBusClient);
+
+        services.AddScoped(sp => Substitute.For<IMessageReceiverFactory>());
+        services.AddScoped(sp => Substitute.For<INotificationSender>());
+        services.AddScoped(sp => Substitute.For<IAzureDatabaseManager>());
+
+        services.AddKeyedSingleton<ServiceBusClient>(typeof(MessagingServiceBusSettings), (sp, _) => Substitute.For<ServiceBusClient>());
+
+        MockDonorReader = Substitute.For<IDonorReader>();
+        MockDonorReader.GetDonors(default).ReturnsForAnyArgs(callInfo =>
         {
-            var services = new ServiceCollection();
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .Build();
+            var ids = callInfo.Arg<IEnumerable<int>>();
+            return ids.ToDictionary(id => id, id => new Donor {AtlasDonorId = id, ExternalDonorCode = id.ToString()});
+        });
+        services.AddScoped(_ => MockDonorReader);
 
-            services.AddSingleton<IConfiguration>(sp => configuration);
+        // Log to file, not to ApplicationInsights!
+        services.AddSingleton<IAtlasLogger, FileBasedLogger>();
 
-            services.RegisterSettings();
-            services.RegisterSearchForMatchingAlgorithm(OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<AzureStorageSettings>(),
-                OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                _ => new MacDictionarySettings(),
-                OptionsReaderFor<MessagingServiceBusSettings>(),
-                OptionsReaderFor<SearchTrackingServiceBusSettings>(),
-                _ => new NotificationsServiceBusSettings(),
-                _ => new MatchingConfigurationSettings {MatchingBatchSize = 250000},
-                ConnectionStringReader(PersistentSqlConnectionStringKey),
-                ConnectionStringReader(TransientASqlConnectionStringKey),
-                ConnectionStringReader(TransientBSqlConnectionStringKey),
-                ConnectionStringReader(DonorImportSqlConnectionStringKey));
+    }
 
-            services.RegisterDataRefresh(
-                _ => new AzureAuthenticationSettings(),
-                _ => new AzureDatabaseManagementSettings(),
-                OptionsReaderFor<DataRefreshSettings>(),
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<AzureStorageSettings>(),
-                OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                _ => new MacDictionarySettings(),
-                OptionsReaderFor<MessagingServiceBusSettings>(),
-                _ => new NotificationsServiceBusSettings(),
-                OptionsReaderFor<DonorManagementSettings>(),
-                ConnectionStringReader(PersistentSqlConnectionStringKey),
-                ConnectionStringReader(TransientASqlConnectionStringKey),
-                ConnectionStringReader(TransientBSqlConnectionStringKey),
-                ConnectionStringReader(DonorImportSqlConnectionStringKey));
-
-            services.RegisterDonorManagement(
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<AzureStorageSettings>(),
-                OptionsReaderFor<DonorManagementSettings>(),
-                OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                _ => new MacDictionarySettings(),
-                OptionsReaderFor<MessagingServiceBusSettings>(),
-                _ => new NotificationsServiceBusSettings(),
-                ConnectionStringReader(PersistentSqlConnectionStringKey),
-                ConnectionStringReader(TransientASqlConnectionStringKey),
-                ConnectionStringReader(TransientBSqlConnectionStringKey),
-                ConnectionStringReader(DonorImportSqlConnectionStringKey));
-
-            // This call must be made after `RegisterMatchingAlgorithm()`, as it overrides the non-mock dictionary set up in that method
-            services.RegisterFileBasedHlaMetadataDictionaryForTesting(
-                //These configuration values won't be used, because all they are all (indirectly) overridden, below.
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<MacDictionarySettings>()
-            );
-
-            services.AddScoped(sp =>
-                new ContextFactory().Create(ConnectionStringReader(TransientASqlConnectionStringKey)(sp))
-            );
-
-            RegisterMockServices(services);
-            RegisterIntegrationTestServices(services);
-
-            return services.BuildServiceProvider();
-        }
-
-        private static void RegisterSettings(this IServiceCollection services)
-        {
-            services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
-            services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
-            services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
-            services.RegisterAsOptions<DonorManagementSettings>("DonorManagement");
-            services.RegisterAsOptions<MessagingServiceBusSettings>("DonorManagementMessagingServiceBus");
-        }
-
-        private static void RegisterMockServices(IServiceCollection services)
-        {
-            // Clients
-            var mockSearchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
-            mockSearchServiceBusClient
-                .PublishToSearchRequestsTopic(Arg.Any<IdentifiedSearchRequest>())
-                .Returns(Task.CompletedTask);
-            services.AddScoped(sp => mockSearchServiceBusClient);
-
-            var mockSearchTrackingServiceBusClient = Substitute.For<ISearchTrackingServiceBusClient>();
-            mockSearchTrackingServiceBusClient.PublishSearchTrackingEvent(Arg.Any<SearchRequestedEvent>(), SearchTrackingEventType.SearchRequested)
-                .Returns(Task.CompletedTask);
-            services.AddScoped(sp => mockSearchTrackingServiceBusClient);
-
-            services.AddScoped(sp => Substitute.For<IMessageReceiverFactory>());
-            services.AddScoped(sp => Substitute.For<INotificationSender>());
-            services.AddScoped(sp => Substitute.For<IAzureDatabaseManager>());
-
-            services.AddKeyedSingleton<ServiceBusClient>(typeof(MessagingServiceBusSettings), (sp, _) => Substitute.For<ServiceBusClient>());
-
-            MockDonorReader = Substitute.For<IDonorReader>();
-            MockDonorReader.GetDonors(default).ReturnsForAnyArgs(callInfo =>
-            {
-                var ids = callInfo.Arg<IEnumerable<int>>();
-                return ids.ToDictionary(id => id, id => new Donor {AtlasDonorId = id, ExternalDonorCode = id.ToString()});
-            });
-            services.AddScoped(_ => MockDonorReader);
-
-            // Log to file, not to ApplicationInsights!
-            services.AddSingleton<IAtlasLogger, FileBasedLogger>();
-
-        }
-
-        private static void RegisterIntegrationTestServices(IServiceCollection services)
-        {
-            services.RegisterLifeTimeScopedCacheTypes();
-            services.AddScoped<ITestDataRefreshHistoryRepository, TestDataRefreshHistoryRepository>();
-        }
+    private static void RegisterIntegrationTestServices(IServiceCollection services)
+    {
+        services.RegisterLifeTimeScopedCacheTypes();
+        services.AddScoped<ITestDataRefreshHistoryRepository, TestDataRefreshHistoryRepository>();
     }
 }

@@ -17,99 +17,98 @@ using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
-namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.Snapshots
+namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.Snapshots;
+
+/// <summary>
+/// These tests are designed to be snapshots covering a range of possibilities.
+/// They make no logical assertions about the match prediction algorithm.
+/// Their correctness has been confirmed by manual validation of the algorithm, with the assistance of the verification framework checked into this repository.
+/// 
+/// If any of the values for these tests change - then either:
+/// (a) the change that caused a test failure was incorrect and should be fixed/reverted
+/// (b) the change is correct, and we believe the new state of the algorithm is correct, despite having different values for these snapshots.
+/// In this case verification must be re-run to make sure the algorithm is still performing with acceptable accuracy. 
+/// </summary>
+[TestFixture]
+internal partial class SnapshotTests
 {
-    /// <summary>
-    /// These tests are designed to be snapshots covering a range of possibilities.
-    /// They make no logical assertions about the match prediction algorithm.
-    /// Their correctness has been confirmed by manual validation of the algorithm, with the assistance of the verification framework checked into this repository.
-    /// 
-    /// If any of the values for these tests change - then either:
-    /// (a) the change that caused a test failure was incorrect and should be fixed/reverted
-    /// (b) the change is correct, and we believe the new state of the algorithm is correct, despite having different values for these snapshots.
-    /// In this case verification must be re-run to make sure the algorithm is still performing with acceptable accuracy. 
-    /// </summary>
-    [TestFixture]
-    internal partial class SnapshotTests
+    private IMatchProbabilityService MatchProbabilityService { get; set; }
+    private IGenotypeSetService GenotypeSetService { get; set; }
+
+    // Registry and ethnicity values must match those used in test HF set files.
+    private const string Registry1 = "reg-1";
+    private const string Registry2 = "reg-2";
+    private const string Registry3 = "reg-3";
+    private const string RegistrySmallG = "reg-small-g";
+    private const string Ethnicity1 = "eth-1";
+    private const string Ethnicity2 = "eth-2";
+
+    private static PhenotypeInfoBuilder<string> DefaultPhenotypeBuilder =>
+        new PhenotypeInfoBuilder<string>()
+            .WithDataAt(Locus.A, "01:XX", "11:XX")
+            .WithDataAt(Locus.B, "27:XX", "35:XX")
+            .WithDataAt(Locus.C, "02:XX", "04:XX")
+            .WithDataAt(Locus.Dpb1, "03:XX", "04:XX")
+            .WithDataAt(Locus.Dqb1, "03:XX", "05:XX")
+            .WithDataAt(Locus.Drb1, "11:XX", "16:XX");
+
+    private static Builder<SingleDonorMatchProbabilityInput> DefaultInputBuilder => SingleDonorMatchProbabilityInputBuilder.Default
+        .WithPatientHla(DefaultPhenotypeBuilder.Build())
+        .WithDonorHla(DefaultPhenotypeBuilder.Build())
+        .WithDonorMetadata(new FrequencySetMetadata())
+        .WithPatientMetadata(new FrequencySetMetadata());
+
+    [SetUp]
+    public void SetUp()
     {
-        private IMatchProbabilityService MatchProbabilityService { get; set; }
-        private IGenotypeSetService GenotypeSetService { get; set; }
+        MatchProbabilityService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchProbabilityService>();
+        GenotypeSetService = DependencyInjection.DependencyInjection.Provider.GetService<IGenotypeSetService>();
+    }
 
-        // Registry and ethnicity values must match those used in test HF set files.
-        private const string Registry1 = "reg-1";
-        private const string Registry2 = "reg-2";
-        private const string Registry3 = "reg-3";
-        private const string RegistrySmallG = "reg-small-g";
-        private const string Ethnicity1 = "eth-1";
-        private const string Ethnicity2 = "eth-2";
+    [OneTimeSetUp]
+    public async Task OneTimeSetUp()
+    {
+        await TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage_Async(async () => { await ImportHaplotypeFrequencies(); });
+    }
 
-        private static PhenotypeInfoBuilder<string> DefaultPhenotypeBuilder =>
-            new PhenotypeInfoBuilder<string>()
-                .WithDataAt(Locus.A, "01:XX", "11:XX")
-                .WithDataAt(Locus.B, "27:XX", "35:XX")
-                .WithDataAt(Locus.C, "02:XX", "04:XX")
-                .WithDataAt(Locus.Dpb1, "03:XX", "04:XX")
-                .WithDataAt(Locus.Dqb1, "03:XX", "05:XX")
-                .WithDataAt(Locus.Drb1, "11:XX", "16:XX");
 
-        private static Builder<SingleDonorMatchProbabilityInput> DefaultInputBuilder => SingleDonorMatchProbabilityInputBuilder.Default
-            .WithPatientHla(DefaultPhenotypeBuilder.Build())
-            .WithDonorHla(DefaultPhenotypeBuilder.Build())
-            .WithDonorMetadata(new FrequencySetMetadata())
-            .WithPatientMetadata(new FrequencySetMetadata());
+    [Test]
+    // Confirm that a search with all the default builder values runs successfully
+    public async Task Control()
+    {
+        var matchDetails = await CalculateMatchProbability(DefaultInputBuilder.Build());
 
-        [SetUp]
-        public void SetUp()
+        matchDetails.MatchProbabilities.ShouldHavePercentages(16, 30, 39);
+    }
+
+    private async Task<MatchProbabilityResponse> CalculateMatchProbability(SingleDonorMatchProbabilityInput input)
+    {
+        var patientGenotypeSet = await GenotypeSetService.GetPatientGenotypeSet(input);
+        return await MatchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet);
+    }
+
+    private static async Task ImportHaplotypeFrequencies()
+    {
+        var importer = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
+
+        var filePaths = new List<string>
         {
-            MatchProbabilityService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchProbabilityService>();
-            GenotypeSetService = DependencyInjection.DependencyInjection.Provider.GetService<IGenotypeSetService>();
-        }
+            "Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.global.json",
+            "Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.reg-1-2-eth-1.json",
+            "Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.reg-2-3.json",
+            "Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.reg-2-3-eth-2.json",
+            "Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.small-g.json",
+        };
 
-        [OneTimeSetUp]
-        public async Task OneTimeSetUp()
+        foreach (var filePath in filePaths)
         {
-            await TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage_Async(async () => { await ImportHaplotypeFrequencies(); });
-        }
-
-
-        [Test]
-        // Confirm that a search with all the default builder values runs successfully
-        public async Task Control()
-        {
-            var matchDetails = await CalculateMatchProbability(DefaultInputBuilder.Build());
-
-            matchDetails.MatchProbabilities.ShouldHavePercentages(16, 30, 39);
-        }
-
-        private async Task<MatchProbabilityResponse> CalculateMatchProbability(SingleDonorMatchProbabilityInput input)
-        {
-            var patientGenotypeSet = await GenotypeSetService.GetPatientGenotypeSet(input);
-            return await MatchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet);
-        }
-
-        private static async Task ImportHaplotypeFrequencies()
-        {
-            var importer = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
-
-            var filePaths = new List<string>
+            await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(filePath))
+            using (var file = FrequencySetFileBuilder.FileWithoutContents()
+                       .WithHaplotypeFrequencyFileStream(stream)
+                       .Build()
+                  )
             {
-                "Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.global.json",
-                "Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.reg-1-2-eth-1.json",
-                "Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.reg-2-3.json",
-                "Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.reg-2-3-eth-2.json",
-                "Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.small-g.json",
-            };
-
-            foreach (var filePath in filePaths)
-            {
-                await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(filePath))
-                using (var file = FrequencySetFileBuilder.FileWithoutContents()
-                    .WithHaplotypeFrequencyFileStream(stream)
-                    .Build()
-                )
-                {
-                    await importer.ImportFrequencySet(file, new FrequencySetImportBehaviour {ShouldBypassHlaValidation = true});
-                }
+                await importer.ImportFrequencySet(file, new FrequencySetImportBehaviour {ShouldBypassHlaValidation = true});
             }
         }
     }

@@ -3,29 +3,28 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 
-namespace Atlas.MatchingAlgorithm.Clients.Scoring
-{
-    public interface IMatchingAlgorithmScoringFunctionsClient
-    {
-        Task<ScoringResult> Score(DonorHlaScoringRequest request);
+namespace Atlas.MatchingAlgorithm.Clients.Scoring;
 
-        Task<IEnumerable<DonorScoringResult>> ScoreBatch(BatchScoringRequest request);
+public interface IMatchingAlgorithmScoringFunctionsClient
+{
+    Task<ScoringResult> Score(DonorHlaScoringRequest request);
+
+    Task<IEnumerable<DonorScoringResult>> ScoreBatch(BatchScoringRequest request);
+}
+
+public class MatchingAlgorithmScoringFunctionsClient : MatchingAlgorithmHttpFunctionClient, IMatchingAlgorithmScoringFunctionsClient
+{
+    public MatchingAlgorithmScoringFunctionsClient(HttpClient client) : base(client)
+    {
     }
 
-    public class MatchingAlgorithmScoringFunctionsClient : MatchingAlgorithmHttpFunctionClient, IMatchingAlgorithmScoringFunctionsClient
+    public async Task<ScoringResult> Score(DonorHlaScoringRequest request)
     {
-        public MatchingAlgorithmScoringFunctionsClient(HttpClient client) : base(client)
-        {
-        }
+        return await PostRequest<DonorHlaScoringRequest, ScoringResult>("api/Score", request);
+    }
 
-        public async Task<ScoringResult> Score(DonorHlaScoringRequest request)
-        {
-            return await PostRequest<DonorHlaScoringRequest, ScoringResult>("api/Score", request);
-        }
-
-        public async Task<IEnumerable<DonorScoringResult>> ScoreBatch(BatchScoringRequest request)
-        {
-            return await PostRequest<BatchScoringRequest, IEnumerable<DonorScoringResult>>("api/ScoreBatch", request);
-        }
+    public async Task<IEnumerable<DonorScoringResult>> ScoreBatch(BatchScoringRequest request)
+    {
+        return await PostRequest<BatchScoringRequest, IEnumerable<DonorScoringResult>>("api/ScoreBatch", request);
     }
 }

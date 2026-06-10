@@ -1,8 +1,7 @@
-﻿namespace Atlas.MatchingAlgorithm.Client.Models.DataRefresh
+﻿namespace Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
+
+public class DataRefreshResponse
 {
-    public class DataRefreshResponse
-    {
-        public int? DataRefreshRecordId { get; set; }
-        public bool WasRefreshRun { get; set; } = true;
-    }
+    public int? DataRefreshRecordId { get; set; }
+    public bool WasRefreshRun { get; set; } = true;
 }

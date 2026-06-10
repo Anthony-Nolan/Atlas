@@ -8,62 +8,61 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Polly;
 
-namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImport
+namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
+
+internal interface IMacCodeDownloader
 {
-    internal interface IMacCodeDownloader
+    /// <remarks>
+    ///  Downloads the zipped Mac Source file fully, and when that is complete, unzips the result into a stream.
+    /// </remarks>
+    public Task<Stream> DownloadAndUnzipStream();
+}
+
+internal class MacCodeDownloader : IMacCodeDownloader
+{
+    private readonly IAtlasLogger logger;
+    private readonly WebClient webClient = new WebClient();
+    private readonly string url;
+
+    public MacCodeDownloader(MacDownloadSettings macDownloadSettings, IAtlasLogger logger)
     {
-        /// <remarks>
-        ///  Downloads the zipped Mac Source file fully, and when that is complete, unzips the result into a stream.
-        /// </remarks>
-        public Task<Stream> DownloadAndUnzipStream();
+        this.logger = logger;
+        url = macDownloadSettings.MacSourceUrl;
+    }
+        
+    /// <inheritdoc />
+    public async Task<Stream> DownloadAndUnzipStream()
+    {
+        var retryPolicy = Policy.Handle<Exception>().Retry(3);
+        return await retryPolicy.Execute(async () => await AttemptToDownloadAndUnzipStream());
     }
 
-    internal class MacCodeDownloader : IMacCodeDownloader
+    private async Task<Stream> AttemptToDownloadAndUnzipStream()
     {
-        private readonly IAtlasLogger logger;
-        private readonly WebClient webClient = new WebClient();
-        private readonly string url;
+        logger.SendTrace($"Downloading MACs from NMDP source");
+        var stream = await DownloadToMemoryStream();
+        logger.SendTrace($"Downloaded MACs. Unzipping.");
+        return UnzipStream(stream);
+    }
 
-        public MacCodeDownloader(MacDownloadSettings macDownloadSettings, IAtlasLogger logger)
-        {
-            this.logger = logger;
-            url = macDownloadSettings.MacSourceUrl;
-        }
-        
-        /// <inheritdoc />
-        public async Task<Stream> DownloadAndUnzipStream()
-        {
-            var retryPolicy = Policy.Handle<Exception>().Retry(3);
-            return await retryPolicy.Execute(async () => await AttemptToDownloadAndUnzipStream());
-        }
+    private async Task<Stream> DownloadToMemoryStream()
+    {
+        byte[] data = await webClient.DownloadDataTaskAsync(url);
+        var stream = new MemoryStream(data);
+        return stream;
+    }
 
-        private async Task<Stream> AttemptToDownloadAndUnzipStream()
+    private static Stream UnzipStream(Stream stream)
+    {
+        var zipArchive = new ZipArchive(stream);
+        if (zipArchive.Entries.Count > 1)
         {
-            logger.SendTrace($"Downloading MACs from NMDP source");
-            var stream = await DownloadToMemoryStream();
-            logger.SendTrace($"Downloaded MACs. Unzipping.");
-            return UnzipStream(stream);
+            throw new InvalidOperationException("NMDP zip archive contained more than one file");
         }
 
-        private async Task<Stream> DownloadToMemoryStream()
-        {
-            byte[] data = await webClient.DownloadDataTaskAsync(url);
-            var stream = new MemoryStream(data);
-            return stream;
-        }
-
-        private static Stream UnzipStream(Stream stream)
-        {
-            var zipArchive = new ZipArchive(stream);
-            if (zipArchive.Entries.Count > 1)
-            {
-                throw new InvalidOperationException("NMDP zip archive contained more than one file");
-            }
-
-            var fileName = zipArchive.Entries.Single().FullName;
-            var entry = zipArchive.GetEntry(fileName);
-            var unzippedStream = entry?.Open();
-            return unzippedStream;
-        }
+        var fileName = zipArchive.Entries.Single().FullName;
+        var entry = zipArchive.GetEntry(fileName);
+        var unzippedStream = entry?.Open();
+        return unzippedStream;
     }
 }

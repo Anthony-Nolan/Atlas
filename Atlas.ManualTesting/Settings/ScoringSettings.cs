@@ -1,7 +1,6 @@
-﻿namespace Atlas.ManualTesting.Settings
+﻿namespace Atlas.ManualTesting.Settings;
+
+internal class ScoringSettings
 {
-    internal class ScoringSettings
-    {
-        public string ScoreBatchRequestUrl { get; set; }
-    }
+    public string ScoreBatchRequestUrl { get; set; }
 }

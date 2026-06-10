@@ -10,36 +10,35 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
-namespace Atlas.MatchPrediction.Test.Validation.Functions
+namespace Atlas.MatchPrediction.Test.Validation.Functions;
+
+/// <summary>
+/// Functions required for running of either exercise.
+/// </summary>
+public class ValidationFunctions
 {
-    /// <summary>
-    /// Functions required for running of either exercise.
-    /// </summary>
-    public class ValidationFunctions
+    private const string FunctionNamePrefix = "BothExercises_";
+    private readonly ISubjectInfoImporter subjectInfoImporter;
+
+    public ValidationFunctions(ISubjectInfoImporter subjectInfoImporter)
     {
-        private const string FunctionNamePrefix = "BothExercises_";
-        private readonly ISubjectInfoImporter subjectInfoImporter;
+        this.subjectInfoImporter = subjectInfoImporter;
+    }
 
-        public ValidationFunctions(ISubjectInfoImporter subjectInfoImporter)
+    [Function($"{FunctionNamePrefix}{nameof(ImportSubjects)}")]
+    public async Task ImportSubjects(
+        [HttpTrigger(AuthorizationLevel.Function, "post")]
+        [RequestBodyType(typeof(ImportRequest), nameof(ImportRequest))]
+        HttpRequest request)
+    {
+        try
         {
-            this.subjectInfoImporter = subjectInfoImporter;
+            var importRequest = JsonConvert.DeserializeObject<ImportRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+            await subjectInfoImporter.Import(importRequest);
         }
-
-        [Function($"{FunctionNamePrefix}{nameof(ImportSubjects)}")]
-        public async Task ImportSubjects(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(ImportRequest), nameof(ImportRequest))]
-            HttpRequest request)
+        catch (Exception ex)
         {
-            try
-            {
-                var importRequest = JsonConvert.DeserializeObject<ImportRequest>(await new StreamReader(request.Body).ReadToEndAsync());
-                await subjectInfoImporter.Import(importRequest);
-            }
-            catch (Exception ex)
-            {
-                throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failed to import subjects.", ex);
-            }
+            throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failed to import subjects.", ex);
         }
     }
 }

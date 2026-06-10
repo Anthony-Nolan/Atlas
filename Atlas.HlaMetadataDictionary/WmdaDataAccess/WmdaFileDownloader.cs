@@ -5,59 +5,58 @@ using System.Linq;
 using System.Net;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 
-namespace Atlas.HlaMetadataDictionary.WmdaDataAccess
+namespace Atlas.HlaMetadataDictionary.WmdaDataAccess;
+
+internal class WmdaFileDownloader : IWmdaFileReader
 {
-    internal class WmdaFileDownloader : IWmdaFileReader
+    private readonly string hlaNomenclatureSourceUrl;
+
+    public WmdaFileDownloader(HlaMetadataDictionarySettings settings)
     {
-        private readonly string hlaNomenclatureSourceUrl;
+        hlaNomenclatureSourceUrl = settings.HlaNomenclatureSourceUrl;
+    }
 
-        public WmdaFileDownloader(HlaMetadataDictionarySettings settings)
+    public IEnumerable<string> GetFileContentsWithoutHeader(string hlaNomenclatureVersion, string fileName)
+    {
+        return new WebClient()
+            .DownloadString(GetFileAddress(hlaNomenclatureVersion, fileName))
+            .Split('\n')
+            .SkipWhile(IsCommentLine);
+    }
+
+    public string GetFirstNonCommentLine(string nomenclatureVersion, string fileName)
+    {
+        var fileAddress = GetFileAddress(nomenclatureVersion, fileName);
+        var stream = new WebClient().OpenRead(fileAddress);
+        if (stream == null)
         {
-            hlaNomenclatureSourceUrl = settings.HlaNomenclatureSourceUrl;
+            throw new Exception($"Null stream returned from WebClient when reading from: {fileAddress}");
         }
 
-        public IEnumerable<string> GetFileContentsWithoutHeader(string hlaNomenclatureVersion, string fileName)
+        using (var reader = new StreamReader(stream))
         {
-            return new WebClient()
-                .DownloadString(GetFileAddress(hlaNomenclatureVersion, fileName))
-                .Split('\n')
-                .SkipWhile(IsCommentLine);
-        }
-
-        public string GetFirstNonCommentLine(string nomenclatureVersion, string fileName)
-        {
-            var fileAddress = GetFileAddress(nomenclatureVersion, fileName);
-            var stream = new WebClient().OpenRead(fileAddress);
-            if (stream == null)
+            string line;
+            while ((line = reader.ReadLine()) != null)
             {
-                throw new Exception($"Null stream returned from WebClient when reading from: {fileAddress}");
-            }
-
-            using (var reader = new StreamReader(stream))
-            {
-                string line;
-                while ((line = reader.ReadLine()) != null)
+                if (IsCommentLine(line))
                 {
-                    if (IsCommentLine(line))
-                    {
-                        continue;
-                    }
-
-                    return line;
+                    continue;
                 }
 
-                throw new Exception($"No non comment lines found when reading: {fileAddress}");
+                return line;
             }
-        }
 
-        private string GetFileAddress(string hlaNomenclatureVersion, string fileName)
-        {
-            return $"{hlaNomenclatureSourceUrl}{hlaNomenclatureVersion}/{fileName}";
+            throw new Exception($"No non comment lines found when reading: {fileAddress}");
         }
+    }
 
-        private static bool IsCommentLine(string line)
-        {
-            return line.StartsWith("#");
-        }
+    private string GetFileAddress(string hlaNomenclatureVersion, string fileName)
+    {
+        return $"{hlaNomenclatureSourceUrl}{hlaNomenclatureVersion}/{fileName}";
+    }
+
+    private static bool IsCommentLine(string line)
+    {
+        return line.StartsWith("#");
     }
 }

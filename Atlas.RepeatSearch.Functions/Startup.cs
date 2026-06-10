@@ -11,50 +11,49 @@ using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
 
 
-namespace Atlas.RepeatSearch.Functions
+namespace Atlas.RepeatSearch.Functions;
+
+internal static class Startup
 {
-    internal static class Startup
+    public static void Configure(IServiceCollection services)
     {
-        public static void Configure(IServiceCollection services)
-        {
-            RegisterSettings(services);
+        RegisterSettings(services);
 
-            services.AddHealthChecks();
+        services.AddHealthChecks();
 
-            services.RegisterRepeatSearch(
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<RepeatSearch.Settings.Azure.AzureStorageSettings>(),
-                OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                OptionsReaderFor<MacDictionarySettings>(),
-                OptionsReaderFor<MatchingConfigurationSettings>(),
-                OptionsReaderFor<MessagingServiceBusSettings>(),
-                OptionsReaderFor<SearchTrackingServiceBusSettings>(),
-                OptionsReaderFor<NotificationsServiceBusSettings>(),
-                OptionsReaderFor<StoreOriginalSearchResultsBulkCopySettings>(),
-                ConnectionStringReader("RepeatSearchSql"),
-                ConnectionStringReader("MatchingPersistentSql"),
-                ConnectionStringReader("MatchingSqlA"),
-                ConnectionStringReader("MatchingSqlB"),
-                ConnectionStringReader("DonorSql")
-                );
-            services.RegisterDebugServices(
-                OptionsReaderFor<MessagingServiceBusSettings>(),
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<RepeatSearch.Settings.Azure.AzureStorageSettings>());
-        }
+        services.RegisterRepeatSearch(
+            OptionsReaderFor<ApplicationInsightsSettings>(),
+            OptionsReaderFor<RepeatSearch.Settings.Azure.AzureStorageSettings>(),
+            OptionsReaderFor<HlaMetadataDictionarySettings>(),
+            OptionsReaderFor<MacDictionarySettings>(),
+            OptionsReaderFor<MatchingConfigurationSettings>(),
+            OptionsReaderFor<MessagingServiceBusSettings>(),
+            OptionsReaderFor<SearchTrackingServiceBusSettings>(),
+            OptionsReaderFor<NotificationsServiceBusSettings>(),
+            OptionsReaderFor<StoreOriginalSearchResultsBulkCopySettings>(),
+            ConnectionStringReader("RepeatSearchSql"),
+            ConnectionStringReader("MatchingPersistentSql"),
+            ConnectionStringReader("MatchingSqlA"),
+            ConnectionStringReader("MatchingSqlB"),
+            ConnectionStringReader("DonorSql")
+        );
+        services.RegisterDebugServices(
+            OptionsReaderFor<MessagingServiceBusSettings>(),
+            OptionsReaderFor<ApplicationInsightsSettings>(),
+            OptionsReaderFor<RepeatSearch.Settings.Azure.AzureStorageSettings>());
+    }
 
-        private static void RegisterSettings(IServiceCollection services)
-        {
-            services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterAsOptions<RepeatSearch.Settings.Azure.AzureStorageSettings>("AzureStorage");
-            services.RegisterAsOptions<MatchingAlgorithm.Settings.Azure.AzureStorageSettings>("AzureStorage");
-            services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
-            services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
-            services.RegisterAsOptions<MatchingConfigurationSettings>("MatchingConfiguration");
-            services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
-            services.RegisterAsOptions<SearchTrackingServiceBusSettings>("SearchTrackingServiceBus");
-            services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
-            services.RegisterAsOptions<StoreOriginalSearchResultsBulkCopySettings>("StoreOriginalSearchResultsBulkCopy");
-        }
+    private static void RegisterSettings(IServiceCollection services)
+    {
+        services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
+        services.RegisterAsOptions<RepeatSearch.Settings.Azure.AzureStorageSettings>("AzureStorage");
+        services.RegisterAsOptions<MatchingAlgorithm.Settings.Azure.AzureStorageSettings>("AzureStorage");
+        services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
+        services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
+        services.RegisterAsOptions<MatchingConfigurationSettings>("MatchingConfiguration");
+        services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+        services.RegisterAsOptions<SearchTrackingServiceBusSettings>("SearchTrackingServiceBus");
+        services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
+        services.RegisterAsOptions<StoreOriginalSearchResultsBulkCopySettings>("StoreOriginalSearchResultsBulkCopy");
     }
 }

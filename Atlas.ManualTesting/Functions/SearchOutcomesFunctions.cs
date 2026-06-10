@@ -8,27 +8,26 @@ using Newtonsoft.Json;
 using System.IO;
 using Microsoft.Azure.Functions.Worker;
 
-namespace Atlas.ManualTesting.Functions
+namespace Atlas.ManualTesting.Functions;
+
+public class SearchOutcomesFunctions
 {
-    public class SearchOutcomesFunctions
+    private readonly ISearchOutcomesProcessor searchOutcomesProcessor;
+
+    public SearchOutcomesFunctions(ISearchOutcomesProcessor wmdaParallelRunResultsHandler)
     {
-        private readonly ISearchOutcomesProcessor searchOutcomesProcessor;
+        this.searchOutcomesProcessor = wmdaParallelRunResultsHandler;
+    }
 
-        public SearchOutcomesFunctions(ISearchOutcomesProcessor wmdaParallelRunResultsHandler)
-        {
-            this.searchOutcomesProcessor = wmdaParallelRunResultsHandler;
-        }
-
-        [Function(nameof(GetSearchOutcomes))]
-        public async Task<IActionResult> GetSearchOutcomes(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(SearchOutcomesPeekRequest), nameof(SearchOutcomesPeekRequest))]
-            HttpRequest request
-        )
-        {
-            var peekRequest = JsonConvert.DeserializeObject<SearchOutcomesPeekRequest>(await new StreamReader(request.Body).ReadToEndAsync());
-            var resultedFileNames = await searchOutcomesProcessor.ProcessSearchMessages(peekRequest);
-            return new JsonResult(new { resultedFileNames.PerformanceInfoFileName, resultedFileNames.FailedSearchesFileName, resultedFileNames.ProcessingErrorsFileName });
-        }
+    [Function(nameof(GetSearchOutcomes))]
+    public async Task<IActionResult> GetSearchOutcomes(
+        [HttpTrigger(AuthorizationLevel.Function, "post")]
+        [RequestBodyType(typeof(SearchOutcomesPeekRequest), nameof(SearchOutcomesPeekRequest))]
+        HttpRequest request
+    )
+    {
+        var peekRequest = JsonConvert.DeserializeObject<SearchOutcomesPeekRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+        var resultedFileNames = await searchOutcomesProcessor.ProcessSearchMessages(peekRequest);
+        return new JsonResult(new { resultedFileNames.PerformanceInfoFileName, resultedFileNames.FailedSearchesFileName, resultedFileNames.ProcessingErrorsFileName });
     }
 }

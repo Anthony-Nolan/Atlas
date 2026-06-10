@@ -14,130 +14,129 @@ using System.Threading.Tasks;
 using MaskedHla = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<
         System.Collections.Generic.IReadOnlyCollection<Atlas.MatchPrediction.Test.Verification.Models.SimulantLocusHla>>;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
+namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration;
+
+internal interface IMaskedSimulantsGenerator
 {
-    internal interface IMaskedSimulantsGenerator
+    /// <summary>
+    /// Generates (and stores) phenotypes by masking simulated genotypes.
+    /// </summary>
+    Task GenerateSimulants(
+        GenerateSimulantsRequest request,
+        MaskingRequests maskingRequests,
+        string hlaNomenclatureVersion,
+        ImportTypingCategory typingCategory);
+}
+
+internal class MaskedSimulantsGenerator : SimulantsGeneratorBase, IMaskedSimulantsGenerator
+{
+    private readonly ILocusHlaMasker locusHlaMasker;
+    private readonly ITestHarnessRepository testHarnessRepository;
+
+    public MaskedSimulantsGenerator(
+        ILocusHlaMasker locusHlaMasker,
+        ITestHarnessRepository testHarnessRepository,
+        ISimulantsRepository simulantsRepository)
+        : base(simulantsRepository)
     {
-        /// <summary>
-        /// Generates (and stores) phenotypes by masking simulated genotypes.
-        /// </summary>
-        Task GenerateSimulants(
-            GenerateSimulantsRequest request,
-            MaskingRequests maskingRequests,
-            string hlaNomenclatureVersion,
-            ImportTypingCategory typingCategory);
+        this.locusHlaMasker = locusHlaMasker;
+        this.testHarnessRepository = testHarnessRepository;
     }
 
-    internal class MaskedSimulantsGenerator : SimulantsGeneratorBase, IMaskedSimulantsGenerator
+    public async Task GenerateSimulants(
+        GenerateSimulantsRequest request,
+        MaskingRequests maskingRequests,
+        string hlaNomenclatureVersion,
+        ImportTypingCategory typingCategory)
     {
-        private readonly ILocusHlaMasker locusHlaMasker;
-        private readonly ITestHarnessRepository testHarnessRepository;
+        System.Diagnostics.Debug.WriteLine($"Masking {request.TestIndividualCategory} genotypes.");
 
-        public MaskedSimulantsGenerator(
-            ILocusHlaMasker locusHlaMasker,
-            ITestHarnessRepository testHarnessRepository,
-            ISimulantsRepository simulantsRepository)
-        : base(simulantsRepository)
+        var maskedLoci = await MaskGenotypesByLocus(request, maskingRequests, hlaNomenclatureVersion, typingCategory);
+        var maskedSimulants = BuildSimulantsFromMaskedLoci(maskedLoci, request);
+
+        await StoreSimulants(maskedSimulants);
+        await WriteMaskingRecords(request, maskingRequests);
+    }
+
+    private async Task<MaskedHla> MaskGenotypesByLocus(
+        GenerateSimulantsRequest request,
+        MaskingRequests maskingRequests,
+        string hlaNomenclatureVersion,
+        ImportTypingCategory typingCategory)
+    {
+        var genotypeSimulants = (await ReadGenotypeSimulants(request.TestHarnessId, request.TestIndividualCategory))
+            .Select(s => new { GenotypeId = s.Id, HlaInfo = s.ToPhenotypeInfo() })
+            .ToList();
+
+        if (genotypeSimulants.Count != request.SimulantCount)
         {
-            this.locusHlaMasker = locusHlaMasker;
-            this.testHarnessRepository = testHarnessRepository;
+            throw new Exception($"Problem when reading stored genotypes for test harness, {request.TestHarnessId}. " +
+                                $"Expected {request.SimulantCount}, but retrieved {genotypeSimulants.Count}.");
         }
 
-        public async Task GenerateSimulants(
-            GenerateSimulantsRequest request,
-            MaskingRequests maskingRequests,
-            string hlaNomenclatureVersion,
-            ImportTypingCategory typingCategory)
+        return await maskingRequests.MapAsync(async (locus, requests) =>
         {
-            System.Diagnostics.Debug.WriteLine($"Masking {request.TestIndividualCategory} genotypes.");
-
-            var maskedLoci = await MaskGenotypesByLocus(request, maskingRequests, hlaNomenclatureVersion, typingCategory);
-            var maskedSimulants = BuildSimulantsFromMaskedLoci(maskedLoci, request);
-
-            await StoreSimulants(maskedSimulants);
-            await WriteMaskingRecords(request, maskingRequests);
-        }
-
-        private async Task<MaskedHla> MaskGenotypesByLocus(
-            GenerateSimulantsRequest request,
-            MaskingRequests maskingRequests,
-            string hlaNomenclatureVersion,
-            ImportTypingCategory typingCategory)
-        {
-            var genotypeSimulants = (await ReadGenotypeSimulants(request.TestHarnessId, request.TestIndividualCategory))
-                .Select(s => new { GenotypeId = s.Id, HlaInfo = s.ToPhenotypeInfo() })
-                .ToList();
-
-            if (genotypeSimulants.Count != request.SimulantCount)
+            if (!MatchPredictionStaticData.MatchPredictionLoci.Contains(locus))
             {
-                throw new Exception($"Problem when reading stored genotypes for test harness, {request.TestHarnessId}. " +
-                                    $"Expected {request.SimulantCount}, but retrieved {genotypeSimulants.Count}.");
+                return new List<SimulantLocusHla>();
             }
 
-            return await maskingRequests.MapAsync(async (locus, requests) =>
+            var locusRequest = new LocusMaskingRequests
             {
-                if (!MatchPredictionStaticData.MatchPredictionLoci.Contains(locus))
-                {
-                    return new List<SimulantLocusHla>();
-                }
+                Locus = locus,
+                MaskingRequests = requests,
+                HlaNomenclatureVersion = hlaNomenclatureVersion,
+                TypingCategory = typingCategory,
+                TotalSimulantCount = request.SimulantCount
+            };
 
-                var locusRequest = new LocusMaskingRequests
-                {
-                    Locus = locus,
-                    MaskingRequests = requests,
-                    HlaNomenclatureVersion = hlaNomenclatureVersion,
-                    TypingCategory = typingCategory,
-                    TotalSimulantCount = request.SimulantCount
-                };
+            var typings = genotypeSimulants.Select(s => new SimulantLocusHla
+            {
+                GenotypeSimulantId = s.GenotypeId,
+                Locus = locus,
+                HlaTyping = s.HlaInfo.GetLocus(locus)
+            }).ToList();
 
-                var typings = genotypeSimulants.Select(s => new SimulantLocusHla
-                {
-                    GenotypeSimulantId = s.GenotypeId,
-                    Locus = locus,
-                    HlaTyping = s.HlaInfo.GetLocus(locus)
-                }).ToList();
+            return await locusHlaMasker.MaskHlaForSingleLocus(locusRequest, typings);
+        });
+    }
 
-                return await locusHlaMasker.MaskHlaForSingleLocus(locusRequest, typings);
-            });
-        }
+    private static IReadOnlyCollection<Simulant> BuildSimulantsFromMaskedLoci(
+        MaskedHla maskedLoci,
+        GenerateSimulantsRequest request)
+    {
+        // source locus chosen arbitrarily as ids at every locus should be the same
+        var genotypeIds = maskedLoci.A.Select(x => x.GenotypeSimulantId).ToHashSet();
 
-        private static IReadOnlyCollection<Simulant> BuildSimulantsFromMaskedLoci(
-            MaskedHla maskedLoci,
-            GenerateSimulantsRequest request)
-        {
-            // source locus chosen arbitrarily as ids at every locus should be the same
-            var genotypeIds = maskedLoci.A.Select(x => x.GenotypeSimulantId).ToHashSet();
-
-            return genotypeIds.Select(id => MapToSimulantDatabaseModel(
+        return genotypeIds.Select(id => MapToSimulantDatabaseModel(
                 request, SimulatedHlaTypingCategory.Masked, GetPhenotypeById(maskedLoci, id), id))
-                .ToList();
-        }
+            .ToList();
+    }
 
-        private static PhenotypeInfo<string> GetPhenotypeById(MaskedHla source, int id)
-        {
-            return source.Map((l, data) =>
+    private static PhenotypeInfo<string> GetPhenotypeById(MaskedHla source, int id)
+    {
+        return source.Map((l, data) =>
                 data.SingleOrDefault(d => d.GenotypeSimulantId == id)?.HlaTyping ?? new LocusInfo<string>())
-                .ToPhenotypeInfo();
-        }
+            .ToPhenotypeInfo();
+    }
 
-        private async Task WriteMaskingRecords(GenerateSimulantsRequest request, MaskingRequests maskingRequests)
+    private async Task WriteMaskingRecords(GenerateSimulantsRequest request, MaskingRequests maskingRequests)
+    {
+        var records = MatchPredictionStaticData.MatchPredictionLoci.Select(l =>
         {
-            var records = MatchPredictionStaticData.MatchPredictionLoci.Select(l =>
+            var locusRequests = maskingRequests
+                .GetLocus(l)
+                ?.Where(r => r.ProportionToMask > 0);
+
+            return new MaskingRecord
             {
-                var locusRequests = maskingRequests
-                    .GetLocus(l)
-                    ?.Where(r => r.ProportionToMask > 0);
+                TestHarness_Id = request.TestHarnessId,
+                TestIndividualCategory = request.TestIndividualCategory,
+                Locus = l,
+                MaskingRequests = locusRequests.IsNullOrEmpty() ? "No Requests" : JsonConvert.SerializeObject(locusRequests)
+            };
+        });
 
-                return new MaskingRecord
-                {
-                    TestHarness_Id = request.TestHarnessId,
-                    TestIndividualCategory = request.TestIndividualCategory,
-                    Locus = l,
-                    MaskingRequests = locusRequests.IsNullOrEmpty() ? "No Requests" : JsonConvert.SerializeObject(locusRequests)
-                };
-            });
-
-            await testHarnessRepository.AddMaskingRecords(records);
-        }
+        await testHarnessRepository.AddMaskingRecords(records);
     }
 }

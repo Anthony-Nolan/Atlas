@@ -9,40 +9,39 @@ using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
-namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
+namespace Atlas.MatchingAlgorithm.Functions.DonorManagement;
+
+internal static class Startup
 {
-    internal static class Startup
+    public static void Configure(IServiceCollection services)
     {
-        public static void Configure(IServiceCollection services)
-        {
-            RegisterSettings(services);
+        RegisterSettings(services);
 
-            services.AddHealthChecks();
+        services.AddHealthChecks();
 
-            services.RegisterDonorManagement(
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<AzureStorageSettings>(),
-                OptionsReaderFor<DonorManagementSettings>(),
-                OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                OptionsReaderFor<MacDictionarySettings>(),
-                OptionsReaderFor<MessagingServiceBusSettings>(),
-                OptionsReaderFor<NotificationsServiceBusSettings>(),
-                ConnectionStringReader("PersistentSql"),
-                ConnectionStringReader("SqlA"),
-                ConnectionStringReader("SqlB"),
-                ConnectionStringReader("DonorSql")
-            );
-        }
+        services.RegisterDonorManagement(
+            OptionsReaderFor<ApplicationInsightsSettings>(),
+            OptionsReaderFor<AzureStorageSettings>(),
+            OptionsReaderFor<DonorManagementSettings>(),
+            OptionsReaderFor<HlaMetadataDictionarySettings>(),
+            OptionsReaderFor<MacDictionarySettings>(),
+            OptionsReaderFor<MessagingServiceBusSettings>(),
+            OptionsReaderFor<NotificationsServiceBusSettings>(),
+            ConnectionStringReader("PersistentSql"),
+            ConnectionStringReader("SqlA"),
+            ConnectionStringReader("SqlB"),
+            ConnectionStringReader("DonorSql")
+        );
+    }
 
-        private static void RegisterSettings(IServiceCollection services)
-        {
-            services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
-            services.RegisterAsOptions<DonorManagementSettings>("MessagingServiceBus:DonorManagement");
-            services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
-            services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
-            services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
-            services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
-        }
+    private static void RegisterSettings(IServiceCollection services)
+    {
+        services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
+        services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
+        services.RegisterAsOptions<DonorManagementSettings>("MessagingServiceBus:DonorManagement");
+        services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
+        services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
+        services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+        services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
     }
 }

@@ -4,36 +4,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Atlas.Common.FeatureManagement
+namespace Atlas.Common.FeatureManagement;
+
+public interface IAtlasFeatureManager
 {
-    public interface IAtlasFeatureManager
+    Task<bool> IsFeatureEnabled(string featureName);
+}
+
+public class AtlasFeatureManager : IAtlasFeatureManager
+{
+    private readonly IFeatureManager featureManagerSnapshot;
+    private readonly IConfigurationRefresher configurationRefresher;
+
+    private readonly Dictionary<string, bool> features = new();
+
+    public AtlasFeatureManager(IFeatureManagerSnapshot featureManagerSnapshot, IConfigurationRefresherProvider refresherProvider)
     {
-        Task<bool> IsFeatureEnabled(string featureName);
+        this.featureManagerSnapshot = featureManagerSnapshot;
+        configurationRefresher = refresherProvider.Refreshers.First();
     }
 
-    public class AtlasFeatureManager : IAtlasFeatureManager
+    public async Task<bool> IsFeatureEnabled(string featureName)
     {
-        private readonly IFeatureManager featureManagerSnapshot;
-        private readonly IConfigurationRefresher configurationRefresher;
+        if (features.TryGetValue(featureName, out var value))
+            return value;
 
-        private readonly Dictionary<string, bool> features = new();
+        await configurationRefresher.TryRefreshAsync();
 
-        public AtlasFeatureManager(IFeatureManagerSnapshot featureManagerSnapshot, IConfigurationRefresherProvider refresherProvider)
-        {
-            this.featureManagerSnapshot = featureManagerSnapshot;
-            configurationRefresher = refresherProvider.Refreshers.First();
-        }
-
-        public async Task<bool> IsFeatureEnabled(string featureName)
-        {
-            if (features.TryGetValue(featureName, out var value))
-                return value;
-
-            await configurationRefresher.TryRefreshAsync();
-
-            var valueFromAzure = await featureManagerSnapshot.IsEnabledAsync(featureName);
-            features[featureName] = valueFromAzure;
-            return valueFromAzure;
-        }
+        var valueFromAzure = await featureManagerSnapshot.IsEnabledAsync(featureName);
+        features[featureName] = valueFromAzure;
+        return valueFromAzure;
     }
 }

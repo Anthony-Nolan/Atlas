@@ -3,49 +3,48 @@ using System.Collections.Generic;
 using Atlas.Common.Utils.Extensions;
 using Microsoft.ApplicationInsights;
 
-namespace Atlas.Common.ApplicationInsights
+namespace Atlas.Common.ApplicationInsights;
+
+public class ContextAwareLogger<TLogContext> : AtlasLogger where TLogContext: LoggingContext
 {
-    public class ContextAwareLogger<TLogContext> : AtlasLogger where TLogContext: LoggingContext
+    private readonly TLogContext loggingContext;
+
+    public ContextAwareLogger(
+        TLogContext loggingContext,
+        TelemetryClient client, 
+        ApplicationInsightsSettings applicationInsightsSettings) : base(client, applicationInsightsSettings)
     {
-        private readonly TLogContext loggingContext;
+        this.loggingContext = loggingContext;
+    }
 
-        public ContextAwareLogger(
-            TLogContext loggingContext,
-            TelemetryClient client, 
-            ApplicationInsightsSettings applicationInsightsSettings) : base(client, applicationInsightsSettings)
-        {
-            this.loggingContext = loggingContext;
-        }
+    public override void SendEvent(string name, LogLevel level = LogLevel.Info, Dictionary<string, string> props = null, Dictionary<string, double> metrics = null)
+    {
+        props ??= new Dictionary<string, string>();
+        AdornWithContextProps(props);
+        base.SendEvent(name, level, props, metrics);
+    }
 
-        public override void SendEvent(string name, LogLevel level = LogLevel.Info, Dictionary<string, string> props = null, Dictionary<string, double> metrics = null)
-        {
-            props ??= new Dictionary<string, string>();
-            AdornWithContextProps(props);
-            base.SendEvent(name, level, props, metrics);
-        }
+    public override void SendTrace(string message, LogLevel messageLogLevel, Dictionary<string, string> props)
+    {
+        props ??= new Dictionary<string, string>();
+        AdornWithContextProps(props);
+        base.SendTrace(message, messageLogLevel, props);
+    }
 
-        public override void SendTrace(string message, LogLevel messageLogLevel, Dictionary<string, string> props)
-        {
-            props ??= new Dictionary<string, string>();
-            AdornWithContextProps(props);
-            base.SendTrace(message, messageLogLevel, props);
-        }
+    public override void SendException(Exception exception, LogLevel messageLogLevel, Dictionary<string, string> props)
+    {
+        props ??= new Dictionary<string, string>();
+        AdornWithContextProps(props);
+        base.SendException(exception, messageLogLevel, props);
+    }
 
-        public override void SendException(Exception exception, LogLevel messageLogLevel, Dictionary<string, string> props)
+    private void AdornWithContextProps(IDictionary<string, string> properties)
+    {
+        foreach (var (key, value) in loggingContext.PropertiesToLog())
         {
-            props ??= new Dictionary<string, string>();
-            AdornWithContextProps(props);
-            base.SendException(exception, messageLogLevel, props);
-        }
-
-        private void AdornWithContextProps(IDictionary<string, string> properties)
-        {
-            foreach (var (key, value) in loggingContext.PropertiesToLog())
+            if (!properties.ContainsKey(key))
             {
-                if (!properties.ContainsKey(key))
-                {
-                    properties.AddIfNotNullOrEmpty(key, value);
-                }
+                properties.AddIfNotNullOrEmpty(key, value);
             }
         }
     }

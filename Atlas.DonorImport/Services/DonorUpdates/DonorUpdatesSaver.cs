@@ -7,55 +7,54 @@ using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Helpers;
 using Atlas.DonorImport.Models;
 
-namespace Atlas.DonorImport.Services.DonorUpdates
-{
-    public interface IDonorUpdatesSaver
-    {
-        Task Save(IEnumerable<SearchableDonorUpdate> donorUpdates);
+namespace Atlas.DonorImport.Services.DonorUpdates;
 
-        /// <summary>
-        /// Retrieves donors from db with ids in <paramref name="donorIds"/>. Then generate update messages for id present in donor store, and deletion updates for an absent id.
-        /// </summary>
-        /// <param name="donorIds">Donor ids</param>
-        Task GenerateAndSave(IEnumerable<int> donorIds);
+public interface IDonorUpdatesSaver
+{
+    Task Save(IEnumerable<SearchableDonorUpdate> donorUpdates);
+
+    /// <summary>
+    /// Retrieves donors from db with ids in <paramref name="donorIds"/>. Then generate update messages for id present in donor store, and deletion updates for an absent id.
+    /// </summary>
+    /// <param name="donorIds">Donor ids</param>
+    Task GenerateAndSave(IEnumerable<int> donorIds);
+}
+
+internal class DonorUpdatesSaver : IDonorUpdatesSaver
+{
+    private readonly IPublishableDonorUpdatesRepository updatesRepository;
+    private readonly IDonorReadRepository donorReadRepository;
+
+
+    public DonorUpdatesSaver(IPublishableDonorUpdatesRepository updatesRepository, IDonorReadRepository donorReadRepository)
+    {
+        this.updatesRepository = updatesRepository;
+        this.donorReadRepository = donorReadRepository;
     }
 
-    internal class DonorUpdatesSaver : IDonorUpdatesSaver
+    public async Task Save(IEnumerable<SearchableDonorUpdate> donorUpdates)
     {
-        private readonly IPublishableDonorUpdatesRepository updatesRepository;
-        private readonly IDonorReadRepository donorReadRepository;
-
-
-        public DonorUpdatesSaver(IPublishableDonorUpdatesRepository updatesRepository, IDonorReadRepository donorReadRepository)
+        if (donorUpdates.IsNullOrEmpty())
         {
-            this.updatesRepository = updatesRepository;
-            this.donorReadRepository = donorReadRepository;
+            return;
         }
 
-        public async Task Save(IEnumerable<SearchableDonorUpdate> donorUpdates)
-        {
-            if (donorUpdates.IsNullOrEmpty())
-            {
-                return;
-            }
+        var publishableUpdates = donorUpdates.Select(u => u.ToPublishableDonorUpdate()).ToList();
+        await updatesRepository.BulkInsert(publishableUpdates);
+    }
 
-            var publishableUpdates = donorUpdates.Select(u => u.ToPublishableDonorUpdate()).ToList();
-            await updatesRepository.BulkInsert(publishableUpdates);
-        }
+    public async Task GenerateAndSave(IEnumerable<int> donorIds)
+    {
+        var donorInfo = await donorReadRepository.GetDonorsByIds(donorIds);
+        var updates = donorIds.Select(id => Convert(id, donorInfo));
 
-        public async Task GenerateAndSave(IEnumerable<int> donorIds)
-        {
-            var donorInfo = await donorReadRepository.GetDonorsByIds(donorIds);
-            var updates = donorIds.Select(id => Convert(id, donorInfo));
+        await Save(updates);
+    }
 
-            await Save(updates);
-        }
-
-        private SearchableDonorUpdate Convert(int id, IReadOnlyDictionary<int, Data.Models.Donor> donors)
-        {
-            return donors.TryGetValue(id, out var donor)
-                ? SearchableDonorUpdateMapper.MapToMatchingUpdateMessage(donor)
-                : SearchableDonorUpdateMapper.MapToDeletionUpdateMessage(id);
-        }
+    private SearchableDonorUpdate Convert(int id, IReadOnlyDictionary<int, Data.Models.Donor> donors)
+    {
+        return donors.TryGetValue(id, out var donor)
+            ? SearchableDonorUpdateMapper.MapToMatchingUpdateMessage(donor)
+            : SearchableDonorUpdateMapper.MapToDeletionUpdateMessage(id);
     }
 }

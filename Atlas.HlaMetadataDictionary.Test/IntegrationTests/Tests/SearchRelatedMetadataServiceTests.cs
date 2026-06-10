@@ -9,81 +9,80 @@ using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
+namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests;
+
+/// <summary>
+/// Fixture testing the base functionality of HlaSearchingMetadataService via an arbitrarily chosen base class.
+/// Fixture relies on a file-backed HlaMetadataDictionary - tests may break if underlying data is changed.
+/// </summary>
+[TestFixture]
+public class SearchRelatedMetadataServiceTests
 {
-    /// <summary>
-    /// Fixture testing the base functionality of HlaSearchingMetadataService via an arbitrarily chosen base class.
-    /// Fixture relies on a file-backed HlaMetadataDictionary - tests may break if underlying data is changed.
-    /// </summary>
-    [TestFixture]
-    public class SearchRelatedMetadataServiceTests
+    private const Locus DefaultLocus = Locus.A;
+    private const string CacheKey = "NmdpCodeLookup_A";
+    private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
+
+    private ISearchRelatedMetadataService<IHlaMatchingMetadata> metadataService;
+    private IAppCache appCache;
+
+    [OneTimeSetUp]
+    public void OneTimeSetUp()
     {
-        private const Locus DefaultLocus = Locus.A;
-        private const string CacheKey = "NmdpCodeLookup_A";
-        private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
-
-        private ISearchRelatedMetadataService<IHlaMatchingMetadata> metadataService;
-        private IAppCache appCache;
-
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
+        TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
-            {
-                // The metadataService is the object under test here.
-                // We kinda want an abstract "IHlaSearchMetadataService<T>". But that's not an option, so we pick one
-                // of the concrete implementations (the Matching implementation, as it happens), and apply our tests to that.
-                // We could have used *any* of the concrete implementations of HlaSearchingMetadataServiceBase<THlaMetadata>.
-                metadataService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMatchingMetadataService>();
-                appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
-            });
-        }
+            // The metadataService is the object under test here.
+            // We kinda want an abstract "IHlaSearchMetadataService<T>". But that's not an option, so we pick one
+            // of the concrete implementations (the Matching implementation, as it happens), and apply our tests to that.
+            // We could have used *any* of the concrete implementations of HlaSearchingMetadataServiceBase<THlaMetadata>.
+            metadataService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMatchingMetadataService>();
+            appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
+        });
+    }
 
-        [TearDown]
-        public void TearDown()
-        {
-            // clear MAC allele mappings between tests
-            appCache.Remove(CacheKey);
-        }
+    [TearDown]
+    public void TearDown()
+    {
+        // clear MAC allele mappings between tests
+        appCache.Remove(CacheKey);
+    }
 
-        [Test]
-        public void GetHlaMetadata_WhenInvalidHlaTyping_ThrowsException()
-        {
-            const string hlaName = "XYZ:123:INVALID";
+    [Test]
+    public void GetHlaMetadata_WhenInvalidHlaTyping_ThrowsException()
+    {
+        const string hlaName = "XYZ:123:INVALID";
 
-            Assert.ThrowsAsync<HlaMetadataDictionaryException>(
-                async () => await metadataService.GetHlaMetadata(DefaultLocus, hlaName, HlaVersion));
-        }
+        Assert.ThrowsAsync<HlaMetadataDictionaryException>(
+            async () => await metadataService.GetHlaMetadata(DefaultLocus, hlaName, HlaVersion));
+    }
 
-        [Test]
-        public void GetHlaMetadata_WhenMacContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
-        {
-            // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories.LargeMacDictionary.csv
-            // YYY => 9999:9999, i.e., an invalid allele not in the HMD
-            const string mac = "9999:YYY";
+    [Test]
+    public void GetHlaMetadata_WhenMacContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
+    {
+        // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories.LargeMacDictionary.csv
+        // YYY => 9999:9999, i.e., an invalid allele not in the HMD
+        const string mac = "9999:YYY";
 
-            Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () => 
-                await metadataService.GetHlaMetadata(DefaultLocus, mac, HlaVersion));
-        }
+        Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () => 
+            await metadataService.GetHlaMetadata(DefaultLocus, mac, HlaVersion));
+    }
 
-        [Test]
-        public void GetHlaMetadata_WhenAlleleStringOfNamesContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
-        {
-            const string existingAllele = "01:133";
-            const string missingAllele = "9999:9999";
-            const string alleleString = existingAllele + "/" + missingAllele;
+    [Test]
+    public void GetHlaMetadata_WhenAlleleStringOfNamesContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
+    {
+        const string existingAllele = "01:133";
+        const string missingAllele = "9999:9999";
+        const string alleleString = existingAllele + "/" + missingAllele;
 
-            Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () =>
-                await metadataService.GetHlaMetadata(DefaultLocus, alleleString, HlaVersion));
-        }
+        Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () =>
+            await metadataService.GetHlaMetadata(DefaultLocus, alleleString, HlaVersion));
+    }
 
-        [Test]
-        public void GetHlaMetadata_WhenAlleleStringOfSubtypesContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
-        {
-            const string alleleString = "01:133/9999";
+    [Test]
+    public void GetHlaMetadata_WhenAlleleStringOfSubtypesContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
+    {
+        const string alleleString = "01:133/9999";
 
-            Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () =>
-                await metadataService.GetHlaMetadata(DefaultLocus, alleleString, HlaVersion));
-        }
+        Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () =>
+            await metadataService.GetHlaMetadata(DefaultLocus, alleleString, HlaVersion));
     }
 }

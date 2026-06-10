@@ -1,13 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Atlas.Common.GeneticData.Hla.Services
+namespace Atlas.Common.GeneticData.Hla.Services;
+
+public static class GeneticServicesRegistration
 {
-    public static class GeneticServicesRegistration
+    public static void RegisterCommonGeneticServices(this IServiceCollection services)
     {
-        public static void RegisterCommonGeneticServices(this IServiceCollection services)
-        {
-            services.AddScoped<IAlleleNamesExtractor, AlleleNamesExtractor>();
-            services.AddScoped<IHlaCategorisationService, HlaCategorisationService>();
-        }
+        services.AddScoped<IAlleleNamesExtractor, AlleleNamesExtractor>();
+        services.AddScoped<IHlaCategorisationService, HlaCategorisationService>();
     }
 }

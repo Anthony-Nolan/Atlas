@@ -7,123 +7,122 @@ using Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
+namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests;
+
+[TestFixture]
+public class TwoFieldBuilderTests
 {
-    [TestFixture]
-    public class TwoFieldBuilderTests
+    private ITwoFieldBuilder twoFieldBuilder;
+
+    [SetUp]
+    public void SetUp()
     {
-        private ITwoFieldBuilder twoFieldBuilder;
+        twoFieldBuilder = new TwoFieldBuilder();
+    }
 
-        [SetUp]
-        public void SetUp()
+    [TestCase("01:01")]
+    [TestCase("01:01N")]
+    [TestCase("01:01g")]
+    [TestCase("01:01:01")]
+    [TestCase("01:01:01N")]
+    [TestCase("01:01:01G")]
+    public async Task ConvertRandomLocusHlaToTwoField_ConvertsHlaToTwoFields(string hla)
+    {
+        const int simulantCount = 1;
+
+        // have to use value that looks like a real allele/ G group to pass test
+        var typings = SimulantLocusHlaBuilder.New
+            .With(x => x.HlaTyping, new LocusInfo<string>(hla))
+            .Build(simulantCount)
+            .ToList();
+
+        var request = new TransformationRequest
         {
-            twoFieldBuilder = new TwoFieldBuilder();
-        }
+            ProportionToTransform = 100,
+            TotalSimulantCount = simulantCount,
+            Typings = typings
+        };
 
-        [TestCase("01:01")]
-        [TestCase("01:01N")]
-        [TestCase("01:01g")]
-        [TestCase("01:01:01")]
-        [TestCase("01:01:01N")]
-        [TestCase("01:01:01G")]
-        public async Task ConvertRandomLocusHlaToTwoField_ConvertsHlaToTwoFields(string hla)
+        var results = await twoFieldBuilder.ConvertRandomLocusHlaToTwoField(request);
+        var result = results.SelectedTypings.Single();
+
+        result.HlaTyping.Position1.Should().Be("01:01");
+        result.HlaTyping.Position2.Should().Be("01:01");
+    }
+
+    [Test]
+    public async Task ConvertRandomLocusHlaToTwoField_ConvertsCorrectProportion([Values(0,50,100)] int proportion)
+    {
+        const int simulantCount = 100;
+
+        var typings = SimulantLocusHlaBuilder.New
+            .With(x => x.HlaTyping, new LocusInfo<string>("01:01:01"))
+            .Build(simulantCount)
+            .ToList();
+
+        var request = new TransformationRequest
         {
-            const int simulantCount = 1;
+            ProportionToTransform = proportion,
+            TotalSimulantCount = simulantCount,
+            Typings = typings
+        };
 
-            // have to use value that looks like a real allele/ G group to pass test
-            var typings = SimulantLocusHlaBuilder.New
-                .With(x => x.HlaTyping, new LocusInfo<string>(hla))
-                .Build(simulantCount)
-                .ToList();
+        var results = await twoFieldBuilder.ConvertRandomLocusHlaToTwoField(request);
 
-            var request = new TransformationRequest
-            {
-                ProportionToTransform = 100,
-                TotalSimulantCount = simulantCount,
-                Typings = typings
-            };
+        // `proportion` value can be used directly as long as `simulantCount` is 100
+        results.SelectedTypings.Count.Should().Be(proportion);
+        results.RemainingTypings.Count.Should().Be(simulantCount - proportion);
+    }
 
-            var results = await twoFieldBuilder.ConvertRandomLocusHlaToTwoField(request);
-            var result = results.SelectedTypings.Single();
+    [Test]
+    public async Task ConvertRandomLocusHlaToTwoField_NoOverlapBetweenSelectedAndRemainingTypings()
+    {
+        const int simulantCount = 10;
 
-            result.HlaTyping.Position1.Should().Be("01:01");
-            result.HlaTyping.Position2.Should().Be("01:01");
-        }
+        var typings = SimulantLocusHlaBuilder.New
+            .With(x => x.HlaTyping, new LocusInfo<string>("01:01:01"))
+            .WithIncrementingIds()
+            .Build(simulantCount)
+            .ToList();
 
-        [Test]
-        public async Task ConvertRandomLocusHlaToTwoField_ConvertsCorrectProportion([Values(0,50,100)] int proportion)
+        var request = new TransformationRequest
         {
-            const int simulantCount = 100;
+            ProportionToTransform = 50,
+            TotalSimulantCount = simulantCount,
+            Typings = typings
+        };
 
-            var typings = SimulantLocusHlaBuilder.New
-                .With(x => x.HlaTyping, new LocusInfo<string>("01:01:01"))
-                .Build(simulantCount)
-                .ToList();
+        var results = await twoFieldBuilder.ConvertRandomLocusHlaToTwoField(request);
+        var selected = results.SelectedTypings.Select(x => x.GenotypeSimulantId);
+        var remaining = results.RemainingTypings.Select(x => x.GenotypeSimulantId);
 
-            var request = new TransformationRequest
-            {
-                ProportionToTransform = proportion,
-                TotalSimulantCount = simulantCount,
-                Typings = typings
-            };
+        selected.Should().NotBeEquivalentTo(remaining);
+    }
 
-            var results = await twoFieldBuilder.ConvertRandomLocusHlaToTwoField(request);
+    [Test]
+    public async Task ConvertRandomLocusHlaToTwoField_DoesNotModifyMetadata()
+    {
+        const Locus locus = Locus.B;
+        const int simulantCount = 1;
 
-            // `proportion` value can be used directly as long as `simulantCount` is 100
-            results.SelectedTypings.Count.Should().Be(proportion);
-            results.RemainingTypings.Count.Should().Be(simulantCount - proportion);
-        }
+        var typings = SimulantLocusHlaBuilder.New
+            .With(x => x.HlaTyping, new LocusInfo<string>("01:01:01"))
+            .With(x => x.Locus, locus)
+            .Build(simulantCount)
+            .ToList();
+        var typing = typings.First();
 
-        [Test]
-        public async Task ConvertRandomLocusHlaToTwoField_NoOverlapBetweenSelectedAndRemainingTypings()
+        var request = new TransformationRequest
         {
-            const int simulantCount = 10;
+            ProportionToTransform = 100,
+            TotalSimulantCount = simulantCount,
+            Typings = typings
+        };
 
-            var typings = SimulantLocusHlaBuilder.New
-                .With(x => x.HlaTyping, new LocusInfo<string>("01:01:01"))
-                .WithIncrementingIds()
-                .Build(simulantCount)
-                .ToList();
+        var results = await twoFieldBuilder.ConvertRandomLocusHlaToTwoField(request);
+        var result = results.SelectedTypings.Single();
 
-            var request = new TransformationRequest
-            {
-                ProportionToTransform = 50,
-                TotalSimulantCount = simulantCount,
-                Typings = typings
-            };
-
-            var results = await twoFieldBuilder.ConvertRandomLocusHlaToTwoField(request);
-            var selected = results.SelectedTypings.Select(x => x.GenotypeSimulantId);
-            var remaining = results.RemainingTypings.Select(x => x.GenotypeSimulantId);
-
-            selected.Should().NotBeEquivalentTo(remaining);
-        }
-
-        [Test]
-        public async Task ConvertRandomLocusHlaToTwoField_DoesNotModifyMetadata()
-        {
-            const Locus locus = Locus.B;
-            const int simulantCount = 1;
-
-            var typings = SimulantLocusHlaBuilder.New
-                .With(x => x.HlaTyping, new LocusInfo<string>("01:01:01"))
-                .With(x => x.Locus, locus)
-                .Build(simulantCount)
-                .ToList();
-            var typing = typings.First();
-
-            var request = new TransformationRequest
-            {
-                ProportionToTransform = 100,
-                TotalSimulantCount = simulantCount,
-                Typings = typings
-            };
-
-            var results = await twoFieldBuilder.ConvertRandomLocusHlaToTwoField(request);
-            var result = results.SelectedTypings.Single();
-
-            result.Locus.Should().Be(locus);
-            result.GenotypeSimulantId.Should().Be(typing.GenotypeSimulantId);
-        }
+        result.Locus.Should().Be(locus);
+        result.GenotypeSimulantId.Should().Be(typing.GenotypeSimulantId);
     }
 }

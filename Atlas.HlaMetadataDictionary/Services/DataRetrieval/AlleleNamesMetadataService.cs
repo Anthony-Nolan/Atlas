@@ -8,51 +8,50 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+
+internal interface IAlleleNamesMetadataService
 {
-    internal interface IAlleleNamesMetadataService
+    Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName, string hlaNomenclatureVersion);
+}
+
+internal class AlleleNamesMetadataService : MetadataServiceBase<IEnumerable<string>>, IAlleleNamesMetadataService
+{
+    private const string CacheKey = nameof(AlleleNamesMetadataService);
+
+    private readonly IAlleleNamesMetadataRepository alleleNamesMetadataRepository;
+    private readonly IHlaCategorisationService hlaCategorisationService;
+
+    public AlleleNamesMetadataService(
+        IAlleleNamesMetadataRepository alleleNamesMetadataRepository, 
+        IHlaCategorisationService hlaCategorisationService,
+        IPersistentCacheProvider cacheProvider)
+        : base(CacheKey, cacheProvider)
     {
-        Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName, string hlaNomenclatureVersion);
+        this.alleleNamesMetadataRepository = alleleNamesMetadataRepository;
+        this.hlaCategorisationService = hlaCategorisationService;
     }
 
-    internal class AlleleNamesMetadataService : MetadataServiceBase<IEnumerable<string>>, IAlleleNamesMetadataService
+    public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName, string hlaNomenclatureVersion)
     {
-        private const string CacheKey = nameof(AlleleNamesMetadataService);
+        return await GetMetadata(locus, alleleLookupName, hlaNomenclatureVersion);
+    }
 
-        private readonly IAlleleNamesMetadataRepository alleleNamesMetadataRepository;
-        private readonly IHlaCategorisationService hlaCategorisationService;
+    protected override bool LookupNameIsValid(string lookupName)
+    {
+        return !string.IsNullOrEmpty(lookupName) &&
+               hlaCategorisationService.GetHlaTypingCategory(lookupName) == HlaTypingCategory.Allele;
+    }
 
-        public AlleleNamesMetadataService(
-            IAlleleNamesMetadataRepository alleleNamesMetadataRepository, 
-            IHlaCategorisationService hlaCategorisationService,
-            IPersistentCacheProvider cacheProvider)
-            : base(CacheKey, cacheProvider)
+    protected override async Task<IEnumerable<string>> PerformLookup(Locus locus, string lookupName, string hlaNomenclatureVersion)
+    {
+        var alleleNameMetadata = await alleleNamesMetadataRepository.GetAlleleNameIfExists(locus, lookupName, hlaNomenclatureVersion);
+
+        if (alleleNameMetadata == null)
         {
-            this.alleleNamesMetadataRepository = alleleNamesMetadataRepository;
-            this.hlaCategorisationService = hlaCategorisationService;
+            throw new InvalidHlaException(locus, lookupName);
         }
 
-        public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName, string hlaNomenclatureVersion)
-        {
-            return await GetMetadata(locus, alleleLookupName, hlaNomenclatureVersion);
-        }
-
-        protected override bool LookupNameIsValid(string lookupName)
-        {
-            return !string.IsNullOrEmpty(lookupName) &&
-                   hlaCategorisationService.GetHlaTypingCategory(lookupName) == HlaTypingCategory.Allele;
-        }
-
-        protected override async Task<IEnumerable<string>> PerformLookup(Locus locus, string lookupName, string hlaNomenclatureVersion)
-        {
-            var alleleNameMetadata = await alleleNamesMetadataRepository.GetAlleleNameIfExists(locus, lookupName, hlaNomenclatureVersion);
-
-            if (alleleNameMetadata == null)
-            {
-                throw new InvalidHlaException(locus, lookupName);
-            }
-
-            return alleleNameMetadata.CurrentAlleleNames.ToList();
-        }
+        return alleleNameMetadata.CurrentAlleleNames.ToList();
     }
 }

@@ -2,13 +2,12 @@
 using Atlas.MatchingAlgorithm.Models;
 using AutoMapper;
 
-namespace Atlas.MatchingAlgorithm.Mapping
+namespace Atlas.MatchingAlgorithm.Mapping;
+
+public class DonorManagementInfoProfile : Profile
 {
-    public class DonorManagementInfoProfile : Profile
+    public DonorManagementInfoProfile()
     {
-        public DonorManagementInfoProfile()
-        {
-            CreateMap<DonorAvailabilityUpdate, DonorManagementInfo>();
-        }
+        CreateMap<DonorAvailabilityUpdate, DonorManagementInfo>();
     }
 }
