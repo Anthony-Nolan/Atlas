@@ -4,7 +4,6 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.MatchCalculation;
-using LoggingStopwatch;
 using System;
 using System.Collections.Generic;
 using System.Linq;

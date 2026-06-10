@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
-using LoggingStopwatch;
 using Microsoft.Data.SqlClient;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories

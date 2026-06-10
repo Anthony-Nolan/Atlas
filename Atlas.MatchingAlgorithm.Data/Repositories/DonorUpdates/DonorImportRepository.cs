@@ -8,7 +8,6 @@ using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
-using LoggingStopwatch;
 using Microsoft.Data.SqlClient;
 using static Atlas.Common.Public.Models.GeneticData.Locus;
 

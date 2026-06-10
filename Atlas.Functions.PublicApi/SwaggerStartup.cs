@@ -1,19 +1,17 @@
 ﻿using System.Reflection;
-using Atlas.Functions;
 using AzureFunctions.Extensions.Swashbuckle;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Atlas.Functions
+namespace Atlas.Functions.PublicApi;
+
+internal static class SwashBuckleStartup 
 {
-    internal static class SwashBuckleStartup 
+    public static void Configure(IServiceCollection services)
     {
-        public static void Configure(IServiceCollection services)
-        {
-            services.AddSwashBuckle(opts =>
+        services.AddSwashBuckle(opts =>
             {
                 opts.RoutePrefix = "api";
             },
-                executingAssembly: Assembly.GetExecutingAssembly());
-        }
+            executingAssembly: Assembly.GetExecutingAssembly());
     }
 }

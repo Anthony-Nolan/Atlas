@@ -4,7 +4,7 @@ using Atlas.ManualTesting.Common.Services;
 using Atlas.ManualTesting.Services.Scoring;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 
-namespace Atlas.ManualTesting.Services.WmdaConsensusResults.Scorers
+namespace Atlas.ManualTesting.Services.WmdaExercises.Scorers
 {
     public interface IWmdaExerciseOneScorer : IScoreRequestProcessor
     {
@@ -13,7 +13,9 @@ namespace Atlas.ManualTesting.Services.WmdaConsensusResults.Scorers
     internal class WmdaExerciseOneScorer : WmdaExerciseScorerBase, IWmdaExerciseOneScorer
     {
         /// <inheritdoc />
-        public WmdaExerciseOneScorer(IFileReader<ImportedSubject> subjectReader, IScoreBatchRequester scoreBatchRequester) : base(subjectReader, scoreBatchRequester)
+        public WmdaExerciseOneScorer(IFileReader<ImportedSubject> subjectReader, IScoreBatchRequester scoreBatchRequester) : base(subjectReader,
+            scoreBatchRequester
+        )
         {
         }
 
@@ -29,10 +31,10 @@ namespace Atlas.ManualTesting.Services.WmdaConsensusResults.Scorers
             static string MatchGrades(LocusSearchResult locusResult) =>
                 $"{locusResult.ScoreDetailsAtPositionOne.MatchGrade};{locusResult.ScoreDetailsAtPositionTwo.MatchGrade}";
 
-            return $"{patientId};{donorId};" +
-                   $"{MatchGrades(scoringResult.SearchResultAtLocusA)};" +
-                   $"{MatchGrades(scoringResult.SearchResultAtLocusB)};" +
-                   $"{MatchGrades(scoringResult.SearchResultAtLocusDrb1)};";
+            return $"{patientId};{donorId};"
+                 + $"{MatchGrades(scoringResult.SearchResultAtLocusA)};"
+                 + $"{MatchGrades(scoringResult.SearchResultAtLocusB)};"
+                 + $"{MatchGrades(scoringResult.SearchResultAtLocusDrb1)};";
         }
     }
 }
