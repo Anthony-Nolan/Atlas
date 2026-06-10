@@ -29,7 +29,6 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
             }
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(UpdateHlaMetadataDictionaryCache))]
         public async Task UpdateHlaMetadataDictionaryCache(
             [TimerTrigger("00 00 03 * * *", RunOnStartup = true)]

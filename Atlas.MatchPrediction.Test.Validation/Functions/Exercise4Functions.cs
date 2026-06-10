@@ -54,7 +54,6 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             this.homeworkProcessor = homeworkProcessor;
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function($"{FunctionNamePrefix}1_{nameof(PrepareAtlasDonorStores)}")]
         public async Task PrepareAtlasDonorStores(
         [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request)

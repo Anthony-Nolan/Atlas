@@ -31,7 +31,6 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             this.matchPredictionLocationSender = matchPredictionLocationSender;
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function($"{FunctionNamePrefix}{nameof(SendMatchPredictionRequests)}")]
         public async Task SendMatchPredictionRequests(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
@@ -47,7 +46,6 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             }
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function($"{FunctionNamePrefix}{nameof(ResumeMatchPredictionRequests)}")]
         public async Task ResumeMatchPredictionRequests(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
@@ -63,7 +61,6 @@ namespace Atlas.MatchPrediction.Test.Validation.Functions
             }
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function($"{FunctionNamePrefix}{nameof(PromptDownloadOfMissingResults)}")]
         public async Task PromptDownloadOfMissingResults(
             [HttpTrigger(AuthorizationLevel.Function, "post")]

@@ -27,7 +27,6 @@ namespace Atlas.Functions.PublicApi.Functions
             this.mapper = mapper;
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(Score))]
         [ProducesResponseType(typeof(ScoringResult), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> Score(

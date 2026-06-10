@@ -34,7 +34,6 @@ namespace Atlas.RepeatSearch.Functions.Functions
             this.logger = logger;
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(InitiateRepeatSearch))]
         public async Task<IActionResult> InitiateRepeatSearch(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
@@ -53,7 +52,6 @@ namespace Atlas.RepeatSearch.Functions.Functions
             }
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(RunRepeatSearch))]
         public async Task RunRepeatSearch(
             [ServiceBusTrigger(

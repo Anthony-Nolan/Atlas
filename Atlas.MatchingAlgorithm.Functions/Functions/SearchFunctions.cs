@@ -41,7 +41,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             this.searchLoggingContext = searchLoggingContext;
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(InitiateSearch))]
         public async Task<IActionResult> InitiateSearch(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
@@ -59,7 +58,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             }
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(RunSearch))]
         public async Task RunSearch(
             [ServiceBusTrigger(

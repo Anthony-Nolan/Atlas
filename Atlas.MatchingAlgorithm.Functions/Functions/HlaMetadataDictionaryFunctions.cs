@@ -23,7 +23,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(RefreshHlaMetadataDictionary))]
         public async Task RefreshHlaMetadataDictionary([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
         {
@@ -41,7 +40,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             public string Version { get; set; }
         }
         
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(RefreshHlaMetadataDictionaryToSpecificVersion))]
         public async Task RefreshHlaMetadataDictionaryToSpecificVersion(
             [HttpTrigger(AuthorizationLevel.Function, "post")]

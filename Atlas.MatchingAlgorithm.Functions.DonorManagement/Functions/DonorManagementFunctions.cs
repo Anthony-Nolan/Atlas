@@ -27,7 +27,6 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
             this.logger = logger;
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(ProcessDifferentialDonorUpdatesForMatchingDbA))]
         public async Task ProcessDifferentialDonorUpdatesForMatchingDbA(
             [TimerTrigger("%MessagingServiceBus:DonorManagement:CronSchedule%")]
@@ -36,7 +35,6 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
             await ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase.DatabaseA);
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(ProcessDifferentialDonorUpdatesForMatchingDbB))]
         public async Task ProcessDifferentialDonorUpdatesForMatchingDbB(
             [TimerTrigger("%MessagingServiceBus:DonorManagement:CronSchedule%")]

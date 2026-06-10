@@ -35,7 +35,6 @@ namespace Atlas.ManualTesting.Functions
             return new JsonResult(resultsNotifications);
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(GetDonorsMissingFromActiveMatchingDatabase))]
         public async Task<IActionResult> GetDonorsMissingFromActiveMatchingDatabase(
             [HttpTrigger(AuthorizationLevel.Function, "get")]

@@ -23,7 +23,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             this.scoringRequestService = scoringRequestService;
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(Score))]
         [ProducesResponseType(typeof(ScoringResult), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> Score(

@@ -13,7 +13,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
     public class ServiceStatusFunctions
     {
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(ServiceStatus))]
         [ProducesResponseType(typeof(ServiceStatusModel), (int)HttpStatusCode.OK)]
         public IActionResult ServiceStatus([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest request)

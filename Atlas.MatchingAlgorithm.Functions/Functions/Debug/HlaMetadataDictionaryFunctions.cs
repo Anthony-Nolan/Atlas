@@ -53,7 +53,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             }
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(ScoringMetadata))]
         [ProducesResponseType(typeof(IHlaScoringMetadata), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> ScoringMetadata(
@@ -73,7 +72,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
             }
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(Dpb1TceGroups))]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> Dpb1TceGroups(

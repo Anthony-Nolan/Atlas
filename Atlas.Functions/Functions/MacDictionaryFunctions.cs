@@ -25,14 +25,12 @@ namespace Atlas.Functions.Functions
             this.macImporter = macImporter;
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(ImportMacs))]
         public async Task ImportMacs([TimerTrigger("%MacDictionary:Import:CronSchedule%")] TimerInfo timer)
         {
             await macImporter.ImportLatestMacs();
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(ManuallyImportMacs))]
         public async Task ManuallyImportMacs(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
@@ -43,7 +41,6 @@ namespace Atlas.Functions.Functions
 
         // This is useful for local dev, but it would be fairly risky to exist on Prod.
         // TODO: ATLAS-489. Review of Suitability of this endpoint existing all the time.
-        //[SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         //[FunctionName(nameof(RecreateMacTable))]
         //public async Task RecreateMacTable(
         //    [HttpTrigger(AuthorizationLevel.Function, "post")]

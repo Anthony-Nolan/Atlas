@@ -54,7 +54,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         /// <summary>
         /// Requests a full data refresh, if necessary.
         /// </summary>
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(SubmitDataRefreshRequest))]
         public async Task SubmitDataRefreshRequest([TimerTrigger("%DataRefresh:CronTab%")] TimerInfo timerInfo)
         {
@@ -73,7 +72,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             await dataRefreshOrchestrator.OrchestrateDataRefresh(request.DataRefreshRecordId);
         }
 
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(RunDataRefreshCleanupAfterJobRequestDeadLetters))]
         public async Task RunDataRefreshCleanupAfterJobRequestDeadLetters(
             [ServiceBusTrigger(
@@ -91,7 +89,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         /// Clean up should have been run if the job completed, whether successfully or not.
         /// The only time this should be triggered is if the server running the data refresh was restarted while the job was in progress, causing it to skip tear-down.
         /// </summary>
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(RunDataRefreshCleanup))]
         public async Task RunDataRefreshCleanup([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
         {

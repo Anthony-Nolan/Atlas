@@ -16,7 +16,6 @@ namespace Atlas.RepeatSearch.Functions.Functions
             this.originalSearchResultSetTracker = originalSearchResultSetTracker;
         }
         
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(StoreOriginalSearchResults))]
         public async Task StoreOriginalSearchResults(
             [ServiceBusTrigger(
