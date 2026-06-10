@@ -1,5 +1,4 @@
-﻿using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
+﻿using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using LochNessBuilder;
 using System.Collections.Generic;
 using System.Linq;

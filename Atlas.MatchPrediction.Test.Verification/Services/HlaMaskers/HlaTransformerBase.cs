@@ -1,5 +1,4 @@
-﻿using Atlas.Common.GeneticData;
-using Atlas.MatchPrediction.Test.Verification.Models;
+﻿using Atlas.MatchPrediction.Test.Verification.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

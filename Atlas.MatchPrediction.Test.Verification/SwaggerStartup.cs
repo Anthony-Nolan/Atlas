@@ -1,5 +1,4 @@
-﻿using Atlas.MatchPrediction.Test.Verification;
-using AzureFunctions.Extensions.Swashbuckle;
+﻿using AzureFunctions.Extensions.Swashbuckle;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 

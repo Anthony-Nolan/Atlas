@@ -1,5 +1,4 @@
-﻿using Atlas.MatchPrediction.Models;
-using Atlas.MatchPrediction.Models.FileSchema;
+﻿using Atlas.MatchPrediction.Models.FileSchema;
 using LochNessBuilder;
 
 namespace Atlas.MatchPrediction.Test.Verification.Test.TestHelpers

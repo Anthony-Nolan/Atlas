@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.LogFile;
-using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;

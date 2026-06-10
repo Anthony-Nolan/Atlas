@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 

@@ -1,6 +1,4 @@
-﻿using Atlas.Client.Models.Common.Requests;
-using Atlas.Client.Models.Search.Requests;
-using Atlas.Common.GeneticData;
+﻿using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Test.SharedTestHelpers.Builders;

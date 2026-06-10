@@ -8,7 +8,6 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.DonorTypeParsing

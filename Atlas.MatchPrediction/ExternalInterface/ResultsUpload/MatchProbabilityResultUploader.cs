@@ -5,9 +5,7 @@ using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
-using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
-using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
 {

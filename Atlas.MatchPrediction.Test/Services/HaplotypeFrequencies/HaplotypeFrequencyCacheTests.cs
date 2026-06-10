@@ -2,7 +2,6 @@ using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Common.Caching;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.ApplicationInsights;

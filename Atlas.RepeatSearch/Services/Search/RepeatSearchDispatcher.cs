@@ -10,7 +10,6 @@ using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
 using Newtonsoft.Json;
 using Atlas.MatchingAlgorithm.Helpers;
-using Atlas.SearchTracking.Data.Models;
 
 namespace Atlas.RepeatSearch.Services.Search
 {

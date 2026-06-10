@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.ServiceBus;
 using Azure.Messaging.ServiceBus;
-using System;
 
 namespace Atlas.Common.ServiceBus.BatchReceiving
 {

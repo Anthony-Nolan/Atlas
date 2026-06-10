@@ -6,7 +6,6 @@ using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedSt
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories
 {

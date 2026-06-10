@@ -1,7 +1,4 @@
-﻿using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.HlaMetadataDictionary.ExternalInterface;
+﻿using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;

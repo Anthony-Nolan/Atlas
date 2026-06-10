@@ -7,7 +7,6 @@ using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Worker.Services;
 using Atlas.MatchPrediction.Worker.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
-using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.DependencyInjection;
 using Atlas.SearchTracking.Common.Dispatchers;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;

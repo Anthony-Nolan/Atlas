@@ -1,5 +1,4 @@
 ﻿using Atlas.Client.Models.Search.Results;
-using Atlas.Common.Utils;
 using Atlas.Common.Utils.Http;
 using Atlas.ManualTesting.Common.Services;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
@@ -14,7 +13,6 @@ using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;

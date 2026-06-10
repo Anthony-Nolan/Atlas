@@ -1,8 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Atlas.MatchPrediction.Test.Verification.Services.Verification.Compilation;
 using FluentAssertions;
-using LochNessBuilder;
-using MathNet.Numerics.LinearRegression;
 using NSubstitute;
 using NUnit.Framework;
 using BinBuilder = LochNessBuilder.Builder<Atlas.MatchPrediction.Test.Verification.Services.Verification.Compilation.ProbabilityBin>;

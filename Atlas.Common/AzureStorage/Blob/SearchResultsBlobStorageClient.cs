@@ -1,7 +1,6 @@
 ﻿using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
-using Newtonsoft.Json;
 using System.Threading.Tasks;
 
 namespace Atlas.Common.AzureStorage.Blob

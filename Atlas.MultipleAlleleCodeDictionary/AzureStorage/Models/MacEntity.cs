@@ -1,9 +1,6 @@
 ﻿using Atlas.Common.AzureStorage;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.Services;
-using Azure;
-using Azure.Data.Tables;
-using System;
 
 namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models
 {

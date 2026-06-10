@@ -1,5 +1,4 @@
-﻿using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.Hla.Models;
+﻿using Atlas.Common.GeneticData.Hla.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

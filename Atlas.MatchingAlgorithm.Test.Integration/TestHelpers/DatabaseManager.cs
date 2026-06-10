@@ -1,8 +1,6 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Data.Context;
-using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;

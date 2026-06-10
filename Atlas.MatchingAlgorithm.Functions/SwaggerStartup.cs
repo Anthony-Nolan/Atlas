@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Atlas.MatchingAlgorithm.Functions;
 using AzureFunctions.Extensions.Swashbuckle;
 using Microsoft.Extensions.DependencyInjection;
 

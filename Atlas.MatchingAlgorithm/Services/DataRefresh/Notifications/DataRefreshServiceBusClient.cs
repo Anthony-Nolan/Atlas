@@ -1,10 +1,8 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
-using System.Transactions;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus;
-using Atlas.Common.Utils;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;

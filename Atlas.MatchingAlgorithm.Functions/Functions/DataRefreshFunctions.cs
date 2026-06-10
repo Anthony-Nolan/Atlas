@@ -1,9 +1,6 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
-using Atlas.Common.Utils;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;

@@ -4,7 +4,6 @@ using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 using Atlas.DonorImport.Services.DonorChecker;
 using Atlas.DonorImport.Test.TestHelpers.Builders.DonorIdCheck;
-using Atlas.DonorImport.Test.TestHelpers.Models.DonorIdCheck;
 using FluentAssertions;
 using NUnit.Framework;
 

@@ -13,7 +13,6 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
-using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;

@@ -6,7 +6,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Validation;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
-using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Models;
 using FluentValidation;
 using Newtonsoft.Json;

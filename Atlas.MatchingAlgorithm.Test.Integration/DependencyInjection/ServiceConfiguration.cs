@@ -1,6 +1,5 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
-using Atlas.Common.FeatureManagement;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus;
 using Atlas.Common.Test.SharedTestHelpers;
@@ -10,7 +9,6 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Config;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;

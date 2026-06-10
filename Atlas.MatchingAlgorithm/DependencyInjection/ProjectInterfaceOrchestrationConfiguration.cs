@@ -5,7 +5,6 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
-using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.DependencyInjection;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,4 +1,3 @@
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;

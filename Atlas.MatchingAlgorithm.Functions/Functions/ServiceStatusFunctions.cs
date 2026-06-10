@@ -1,9 +1,5 @@
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Reflection;
-using Atlas.Common.Utils;
-using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;

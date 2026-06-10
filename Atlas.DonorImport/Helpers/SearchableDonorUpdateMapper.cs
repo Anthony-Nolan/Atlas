@@ -1,11 +1,5 @@
-﻿using Atlas.DonorImport.Data.Models;
-using Atlas.DonorImport.ExternalInterface.Models;
+﻿using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models.Mapping;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Donor = Atlas.DonorImport.Data.Models.Donor;
 
 namespace Atlas.DonorImport.Helpers

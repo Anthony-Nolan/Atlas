@@ -3,7 +3,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
-using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Debug.Client.Models.ApplicationInsights;
 using Atlas.Debug.Client.Models.DonorImport;
 using Atlas.Debug.Client.Models.SearchResults;

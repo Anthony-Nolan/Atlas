@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;

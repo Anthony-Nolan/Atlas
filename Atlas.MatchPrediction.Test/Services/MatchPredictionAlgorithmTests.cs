@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
-using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.ExternalInterface;

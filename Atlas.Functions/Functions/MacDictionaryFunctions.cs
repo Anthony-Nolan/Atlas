@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Atlas.Common.Utils;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;

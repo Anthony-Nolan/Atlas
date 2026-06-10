@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using Atlas.Common.Utils;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;

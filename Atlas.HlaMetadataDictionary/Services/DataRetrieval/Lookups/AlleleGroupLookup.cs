@@ -1,5 +1,4 @@
-﻿using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
+﻿using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

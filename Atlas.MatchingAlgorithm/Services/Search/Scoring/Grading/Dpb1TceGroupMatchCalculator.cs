@@ -2,9 +2,7 @@
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
-using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Models;

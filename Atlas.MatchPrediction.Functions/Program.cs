@@ -1,13 +1,11 @@
 ﻿using Atlas.MatchPrediction.Functions;
 using Azure.Core.Serialization;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System;
 using System.Linq;
 
 var host = new HostBuilder()

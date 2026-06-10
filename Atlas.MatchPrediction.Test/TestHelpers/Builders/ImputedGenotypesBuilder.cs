@@ -5,7 +5,6 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Models;
-using MoreLinq;
 
 namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 {

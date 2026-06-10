@@ -1,5 +1,4 @@
 ﻿using Atlas.Client.Models.Common.Results;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
 using FluentAssertions;

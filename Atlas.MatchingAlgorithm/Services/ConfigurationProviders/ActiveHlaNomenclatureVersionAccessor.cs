@@ -1,6 +1,5 @@
 using System;
 using Atlas.Common.Caching;
-using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using LazyCache;
 

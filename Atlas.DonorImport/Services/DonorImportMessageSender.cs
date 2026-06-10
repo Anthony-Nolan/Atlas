@@ -10,8 +10,6 @@ using Atlas.DonorImport.FileSchema.Models;
 using Newtonsoft.Json;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
-using Atlas.Common.Utils;
-using System.Transactions;
 
 namespace Atlas.DonorImport.Services
 {

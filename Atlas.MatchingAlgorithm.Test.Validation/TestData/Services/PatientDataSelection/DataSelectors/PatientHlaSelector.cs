@@ -1,6 +1,4 @@
-﻿using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Maths;
+﻿using Atlas.Common.Maths;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;

@@ -18,7 +18,6 @@ using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
-using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.DependencyInjection;
 using Atlas.SearchTracking.Common.Dispatchers;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;

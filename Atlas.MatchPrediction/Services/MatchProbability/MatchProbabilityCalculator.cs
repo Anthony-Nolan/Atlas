@@ -2,8 +2,6 @@
 using System.IO;
 using System.Linq;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.MutableModels;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;

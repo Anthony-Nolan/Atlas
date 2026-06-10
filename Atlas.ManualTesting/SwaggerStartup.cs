@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Atlas.ManualTesting;
 using AzureFunctions.Extensions.Swashbuckle;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -1,5 +1,4 @@
 using Atlas.Client.Models.Search.Requests;
-using Atlas.Common.Utils;
 using Atlas.Common.Validation;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Common.Models;
@@ -11,7 +10,6 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;

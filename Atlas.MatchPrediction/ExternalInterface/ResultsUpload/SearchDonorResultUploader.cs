@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 
 namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload

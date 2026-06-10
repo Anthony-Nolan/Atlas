@@ -5,7 +5,6 @@ using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
-using Microsoft.VisualBasic;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

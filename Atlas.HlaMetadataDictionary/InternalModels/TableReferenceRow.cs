@@ -1,5 +1,4 @@
 using Atlas.Common.AzureStorage;
-using System;
 
 namespace Atlas.HlaMetadataDictionary.InternalModels
 {

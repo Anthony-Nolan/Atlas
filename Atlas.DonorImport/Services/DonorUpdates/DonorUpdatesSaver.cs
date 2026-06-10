@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
@@ -7,7 +6,6 @@ using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Helpers;
 using Atlas.DonorImport.Models;
-using MoreLinq;
 
 namespace Atlas.DonorImport.Services.DonorUpdates
 {

@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Services.HlaValidation;

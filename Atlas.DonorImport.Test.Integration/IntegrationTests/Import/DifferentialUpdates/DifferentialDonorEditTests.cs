@@ -17,7 +17,6 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
 using Donor = Atlas.DonorImport.Data.Models.Donor;
-using Atlas.Common.Public.Models.GeneticData;
 using Atlas.DonorImport.Logger;
 
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.DifferentialUpdates

@@ -2,7 +2,6 @@
 using Atlas.Client.Models.Common.Results;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;

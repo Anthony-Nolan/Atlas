@@ -3,7 +3,6 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.ManualTesting.Common.Settings;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
-using Atlas.MatchPrediction.Test.Verification;
 using Atlas.MatchPrediction.Test.Verification.DependencyInjection;
 using Atlas.MatchPrediction.Test.Verification.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;

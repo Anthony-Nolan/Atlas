@@ -1,4 +1,3 @@
-using Atlas.ManualTesting;
 using Atlas.ManualTesting.DependencyInjection;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,20 +1,12 @@
 ﻿using Atlas.Client.Models.SupportMessages;
-using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Logger;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
-using NLog;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Atlas.DonorImport.Test.Services

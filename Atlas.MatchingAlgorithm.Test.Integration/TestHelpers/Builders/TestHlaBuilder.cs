@@ -1,6 +1,4 @@
-﻿using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+﻿using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.Test.SharedTestHelpers;

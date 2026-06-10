@@ -1,6 +1,4 @@
-﻿using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Public.Models.GeneticData;
+﻿using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;

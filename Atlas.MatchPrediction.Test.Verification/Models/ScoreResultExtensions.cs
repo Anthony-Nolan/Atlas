@@ -1,5 +1,4 @@
-﻿using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+﻿using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 

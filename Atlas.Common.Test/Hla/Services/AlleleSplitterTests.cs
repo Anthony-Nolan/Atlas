@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 using FluentAssertions;
 using NUnit.Framework;

@@ -1,6 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Atlas.Common.Utils;
 using Atlas.Common.Utils.Http;
 using Atlas.ManualTesting.Models;
 using Atlas.ManualTesting.Services;

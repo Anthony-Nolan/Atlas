@@ -12,7 +12,6 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Settings;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 {

@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
+﻿using System.Collections.Generic;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
-using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.Hla.Models;

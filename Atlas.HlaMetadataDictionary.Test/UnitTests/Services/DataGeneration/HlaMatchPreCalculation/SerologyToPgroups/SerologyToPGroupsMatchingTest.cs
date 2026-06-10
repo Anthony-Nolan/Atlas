@@ -3,7 +3,6 @@ using ApprovalTests;
 using ApprovalTests.Namers;
 using ApprovalTests.Reporters;
 using ApprovalTests.Reporters.TestFrameworks;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;

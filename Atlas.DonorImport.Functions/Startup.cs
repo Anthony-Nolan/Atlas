@@ -3,7 +3,6 @@ using Atlas.Common.Notifications;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
-using Atlas.DonorImport.Functions;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 

@@ -10,7 +10,6 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using FluentAssertions;
 using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;

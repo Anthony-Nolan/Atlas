@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Common.Results;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;

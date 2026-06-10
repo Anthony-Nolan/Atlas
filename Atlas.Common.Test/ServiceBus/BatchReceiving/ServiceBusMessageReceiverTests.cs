@@ -1,6 +1,5 @@
 ﻿using Atlas.Common.ServiceBus;
 using Atlas.Common.ServiceBus.BatchReceiving;
-using Azure.Messaging.ServiceBus;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;

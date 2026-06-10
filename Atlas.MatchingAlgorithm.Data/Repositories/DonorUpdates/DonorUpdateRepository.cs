@@ -1,4 +1,3 @@
-using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Data.Extensions;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Test.Performance.Models;
 

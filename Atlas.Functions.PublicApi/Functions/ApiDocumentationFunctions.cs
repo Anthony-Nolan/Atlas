@@ -4,7 +4,6 @@ using Atlas.Common.Utils.Http;
 using AzureFunctions.Extensions.Swashbuckle;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using NJsonSchema;
-using System.Net.Http;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Newtonsoft.Json;
 using System.IO;

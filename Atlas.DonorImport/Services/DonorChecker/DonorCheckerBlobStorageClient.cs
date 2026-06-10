@@ -2,7 +2,6 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
-using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Services.DonorChecker
 {

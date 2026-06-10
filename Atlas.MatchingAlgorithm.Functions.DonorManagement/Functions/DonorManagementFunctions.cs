@@ -1,6 +1,5 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus.Exceptions;
-using Atlas.Common.Utils;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Exceptions;
@@ -8,7 +7,6 @@ using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Microsoft.Azure.Functions.Worker;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 

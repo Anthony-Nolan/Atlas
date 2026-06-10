@@ -1,5 +1,4 @@
-﻿using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
+﻿using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
 using LochNessBuilder;

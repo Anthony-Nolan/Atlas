@@ -1,5 +1,4 @@
-﻿using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
+﻿using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using System.Collections.Generic;
 using System.Linq;

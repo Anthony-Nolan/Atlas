@@ -55,7 +55,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FeatureManagement;
 using System;
 using Atlas.MatchingAlgorithm.Models;
-using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;

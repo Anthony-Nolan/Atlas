@@ -1,6 +1,5 @@
 using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.Notifications;
 using Atlas.Common.Public.Models.GeneticData;

@@ -1,14 +1,7 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Atlas.Common.ApplicationInsights;
-using Atlas.Common.Notifications;
-using Atlas.DonorImport.ExternalInterface.DependencyInjection;
-using Atlas.DonorImport.ExternalInterface.Settings;
-using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Functions;
-using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
-using Microsoft.ApplicationInsights.WorkerService;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using Newtonsoft.Json.Serialization;

@@ -1,5 +1,4 @@
-﻿using Atlas.Common.GeneticData;
-using Atlas.Common.Public.Models.GeneticData;
+﻿using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation.SerologyToSerology

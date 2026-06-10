@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
@@ -13,7 +12,6 @@ using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 

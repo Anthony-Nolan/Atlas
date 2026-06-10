@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using static EnumStringValues.EnumExtensions;
 

@@ -1,6 +1,5 @@
 using Atlas.ManualTesting.Common.Settings;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
-using Atlas.MatchPrediction.Test.Validation;
 using Atlas.MatchPrediction.Test.Validation.DependencyInjection;
 using Atlas.MatchPrediction.Test.Validation.Models;
 using Atlas.MatchPrediction.Test.Validation.Settings;

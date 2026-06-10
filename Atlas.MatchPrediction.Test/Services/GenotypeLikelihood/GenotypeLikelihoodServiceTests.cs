@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Config;
-using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;

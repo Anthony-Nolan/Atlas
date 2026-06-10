@@ -5,7 +5,6 @@ using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
-using System;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
 {

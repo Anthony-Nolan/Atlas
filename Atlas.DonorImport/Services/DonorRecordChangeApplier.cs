@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Notifications;
-using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Config;
@@ -11,11 +10,8 @@ using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.ExternalInterface.Settings;
-using Atlas.DonorImport.Models;
 using Atlas.DonorImport.FileSchema.Models;
-using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services.DonorUpdates;
-using Donor = Atlas.DonorImport.Data.Models.Donor;
 using Atlas.DonorImport.Helpers;
 
 namespace Atlas.DonorImport.Services

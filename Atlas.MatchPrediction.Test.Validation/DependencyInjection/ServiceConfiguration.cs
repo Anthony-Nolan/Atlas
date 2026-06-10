@@ -21,10 +21,8 @@ using Atlas.MatchPrediction.Test.Validation.Services.Exercise4;
 using Atlas.MatchPrediction.Test.Validation.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Atlas.MatchPrediction.Test.Validation.Data.Models.Homework;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
 using Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework;
-using Azure.Messaging.ServiceBus;
 
 namespace Atlas.MatchPrediction.Test.Validation.DependencyInjection
 {

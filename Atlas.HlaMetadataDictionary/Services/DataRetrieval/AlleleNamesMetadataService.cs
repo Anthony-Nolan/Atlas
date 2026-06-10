@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Caching;
-using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Public.Models.GeneticData;

@@ -1,6 +1,4 @@
 ﻿using Atlas.Common.Test.SharedTestHelpers;
-using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
-using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;

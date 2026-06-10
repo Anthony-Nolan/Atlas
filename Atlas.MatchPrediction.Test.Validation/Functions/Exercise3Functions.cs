@@ -1,11 +1,9 @@
-﻿using Atlas.Common.Utils;
-using Atlas.Common.Utils.Http;
+﻿using Atlas.Common.Utils.Http;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Test.Validation.Services.Exercise3;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Threading.Tasks;
 

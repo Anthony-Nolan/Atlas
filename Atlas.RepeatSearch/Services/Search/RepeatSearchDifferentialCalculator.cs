@@ -6,7 +6,6 @@ using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.RepeatSearch.Data.Repositories;
-using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.RepeatSearch.Services.Search
 {

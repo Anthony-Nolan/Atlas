@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.Notifications;
 using Atlas.Common.Test.SharedTestHelpers;
-using Atlas.DonorImport.Exceptions;
-using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;

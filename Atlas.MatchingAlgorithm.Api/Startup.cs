@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Reflection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;

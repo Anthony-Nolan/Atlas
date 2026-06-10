@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Extensions;

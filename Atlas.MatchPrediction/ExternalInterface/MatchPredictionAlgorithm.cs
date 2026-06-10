@@ -5,7 +5,6 @@ using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
-using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;

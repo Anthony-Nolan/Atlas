@@ -1,5 +1,4 @@
-﻿using Atlas.Common.GeneticData;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchPrediction.Config;
 

@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Reflection;
-using Atlas.DonorImport.Functions;
 using AzureFunctions.Extensions.Swashbuckle;
 using Microsoft.Extensions.DependencyInjection;
 
