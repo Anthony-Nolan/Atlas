@@ -1,11 +1,12 @@
 ﻿/* ******************************
-   **  Copyright Softwire 2020 ** 
-   ****************************** */
+ **  Copyright Softwire 2020 **
+ ****************************** */
 // This was taken from a Softwire shareable Repo. At soem point it may get nugetified, in which case we might want
 // migrate to that. Worth checking whether we've diverged, from the original code, though.
+
 using System;
 
-namespace LoggingStopwatch
+namespace Atlas.Common.ApplicationInsights.Timing
 {
     /// <summary>
     /// Defines
@@ -55,7 +56,9 @@ namespace LoggingStopwatch
             }
             else if (ExpectedNumberOfIterations <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(ExpectedNumberOfIterations), $"{nameof(ExpectedNumberOfIterations)} must be strictly positive! (Received '{ExpectedNumberOfIterations}')");
+                throw new ArgumentOutOfRangeException(nameof(ExpectedNumberOfIterations),
+                    $"{nameof(ExpectedNumberOfIterations)} must be strictly positive! (Received '{ExpectedNumberOfIterations}')"
+                );
             }
 
             if (ReportPerThreadTime && !ReportThreadCount)

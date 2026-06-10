@@ -9,7 +9,6 @@ using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.Services.MatchProbability;
-using LoggingStopwatch;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.MatchPrediction.ExternalInterface
