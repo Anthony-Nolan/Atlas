@@ -1,35 +1,32 @@
 using Atlas.Client.Models.Search.Results.MatchPrediction;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.MatchPrediction;
-using LochNessBuilder;
-using Builder = LochNessBuilder.Builder<Atlas.Client.Models.Search.Results.MatchPrediction.MatchProbabilityResponse>;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Composer = AutoFixture.Dsl.IPostprocessComposer<Atlas.Client.Models.Search.Results.MatchPrediction.MatchProbabilityResponse>;
 
-namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
+namespace Atlas.MatchPrediction.Test.TestHelpers.Builders;
+
+internal static class MatchProbabilityResponseBuilder
 {
-    [Builder]
-    internal static class MatchProbabilityResponseBuilder
+    public static Composer New => FixtureBuilder.For<Atlas.Client.Models.Search.Results.MatchPrediction.MatchProbabilityResponse>();
+
+    public static Composer WithAllProbabilityValuesSetTo(this Composer builder, decimal value)
     {
-        public static Builder New => Builder.New;
+        return builder.WithAllProbabilityValuesSetTo((decimal?) value);
+    }
 
-        public static Builder WithAllProbabilityValuesSetTo(this Builder builder, decimal value)
-        {
-            return builder.WithAllProbabilityValuesSetTo((decimal?) value);
-        }
+    public static Composer WithAllProbabilityValuesNull(this Composer builder)
+    {
+        return builder.WithAllProbabilityValuesSetTo(null);
+    }
 
-        public static Builder WithAllProbabilityValuesNull(this Builder builder)
-        {
-            return builder.WithAllProbabilityValuesSetTo(null);
-        }
+    private static Composer WithAllProbabilityValuesSetTo(this Composer builder, decimal? value)
+    {
+        var matchProbabilities = new MatchProbabilities(value != null ? new Probability(value.Value) : null);
 
-        private static Builder WithAllProbabilityValuesSetTo(this Builder builder, decimal? value)
-        {
-            var matchProbabilities = new MatchProbabilities(value != null ? new Probability(value.Value) : null);
-
-            return builder
-                .With(r => r.MatchProbabilities, matchProbabilities)
-                .With(r => r.MatchProbabilitiesPerLocus,
-                    new LociInfo<MatchProbabilityPerLocusResponse>(new MatchProbabilityPerLocusResponse(matchProbabilities)));
-        }
+        return builder
+            .With(r => r.MatchProbabilities, matchProbabilities)
+            .With(r => r.MatchProbabilitiesPerLocus,
+                new LociInfo<MatchProbabilityPerLocusResponse>(new MatchProbabilityPerLocusResponse(matchProbabilities)));
     }
 }

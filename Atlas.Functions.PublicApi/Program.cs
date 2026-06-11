@@ -1,5 +1,4 @@
-﻿using Atlas.Functions;
-using Atlas.Functions.PublicApi;
+﻿using Atlas.Functions.PublicApi;
 using Azure.Core.Serialization;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;

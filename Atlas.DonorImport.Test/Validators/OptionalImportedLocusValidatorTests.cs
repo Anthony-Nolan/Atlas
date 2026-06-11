@@ -2,6 +2,7 @@
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.DonorImport.Validators;
 using FluentAssertions;
 using NUnit.Framework;
