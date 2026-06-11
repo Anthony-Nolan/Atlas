@@ -169,18 +169,18 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
         private async Task<DataByResolution<IReadOnlyCollection<LociInfo<string>>>> FetchHaplotypesGroupedByTypingCategory(int frequencySetId)
         {
             // This piece of code doesn't even need dictionary, it just needs typingCategory => List<Hla> mapping from it
-            var (frequencies, interner) = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySetId);
+            var entry = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySetId);
 
-            if (frequencies.Count == 0)
+            if (entry.SetFrequencies.Count == 0)
             {
                 throw new Exception($"No haplotypes could be found for set id {frequencySetId}.");
             }
 
-            var groupedFrequencies = frequencies 
+            var groupedFrequencies = entry.SetFrequencies
                 .GroupBy(f => f.Value.TypingCategory)
                 .ToDictionary(
                     key => key.Key,
-                    value => value.Select(f => interner.ReverseLookup(f.Key)).ToList()
+                    value => value.Select(f => entry.Interner.ReverseLookup(f.Key)).ToList()
                 );
 
             return new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
