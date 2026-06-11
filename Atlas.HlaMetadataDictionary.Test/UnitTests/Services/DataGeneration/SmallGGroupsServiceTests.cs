@@ -2,6 +2,7 @@
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;

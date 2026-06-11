@@ -14,6 +14,7 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using FluentAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.MatchPrediction;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;

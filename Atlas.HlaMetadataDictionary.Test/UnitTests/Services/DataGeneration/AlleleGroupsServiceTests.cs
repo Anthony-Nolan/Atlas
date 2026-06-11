@@ -1,6 +1,7 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.Models.FileSchema;

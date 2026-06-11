@@ -15,6 +15,7 @@ using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using NSubstitute;
 using NUnit.Framework;
 
