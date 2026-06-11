@@ -18,10 +18,6 @@
         <PackageReference Include="Azure.Monitor.Query" Version="1.2.0"/>
         <PackageReference Include="EnumStringValues" Version="4.0.2"/>
         <PackageReference Include="FluentValidation" Version="8.4.0"/>
-        <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.1.0">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
         <PackageReference Include="LazyCache" Version="2.4.0"/>
         <PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.4.6" />
         <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0"/>

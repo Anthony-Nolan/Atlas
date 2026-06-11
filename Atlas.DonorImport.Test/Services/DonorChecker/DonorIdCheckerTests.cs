@@ -13,6 +13,7 @@ using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;
 using Atlas.DonorImport.Services.DonorChecker;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using FluentAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;

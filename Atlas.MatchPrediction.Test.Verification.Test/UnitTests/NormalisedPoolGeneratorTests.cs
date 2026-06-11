@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
 using Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;

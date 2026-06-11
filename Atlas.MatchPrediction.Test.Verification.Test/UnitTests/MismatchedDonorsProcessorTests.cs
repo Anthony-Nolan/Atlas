@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.ManualTesting.Common.Repositories;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
@@ -16,137 +17,136 @@ using Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
+namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests;
+
+[TestFixture]
+public class MismatchedDonorsProcessorTests
 {
-    [TestFixture]
-    public class MismatchedDonorsProcessorTests
+    private IGenotypeSimulantsInfoCache cache;
+    private IDonorScoringService scoringService;
+    private IProcessedResultsRepository<MatchedDonor> bulkInsertDonorRepository;
+    private IMatchedDonorsRepository matchedDonorsRepository;
+    private IProcessedResultsRepository<LocusMatchDetails> matchCountsRepository;
+
+    private IMismatchedDonorsStorer<MatchingAlgorithmResult> mismatchedDonorsStorer;
+
+    private static readonly Simulant Patient = SimulantBuilder.New.Build();
+    private static readonly Simulant MissingDonor = SimulantBuilder.New.Build();
+    private static readonly VerificationSearchRequestRecord VerificationSearchRequest = new VerificationSearchRequestRecord
     {
-        private IGenotypeSimulantsInfoCache cache;
-        private IDonorScoringService scoringService;
-        private IProcessedResultsRepository<MatchedDonor> bulkInsertDonorRepository;
-        private IMatchedDonorsRepository matchedDonorsRepository;
-        private IProcessedResultsRepository<LocusMatchDetails> matchCountsRepository;
+        PatientId = Patient.Id
+    };
 
-        private IMismatchedDonorsStorer<MatchingAlgorithmResult> mismatchedDonorsStorer;
+    [SetUp]
+    public void SetUp()
+    {
+        cache = Substitute.For<IGenotypeSimulantsInfoCache>();
+        scoringService = Substitute.For<IDonorScoringService>();
+        bulkInsertDonorRepository = Substitute.For<IProcessedResultsRepository<MatchedDonor>>();
+        matchedDonorsRepository = Substitute.For<IMatchedDonorsRepository>();
+        matchCountsRepository = Substitute.For<IProcessedResultsRepository<LocusMatchDetails>>();
 
-        private static readonly Simulant Patient = SimulantBuilder.New.Build();
-        private static readonly Simulant MissingDonor = SimulantBuilder.New.Build();
-        private static readonly VerificationSearchRequestRecord VerificationSearchRequest = new VerificationSearchRequestRecord
-        {
-            PatientId = Patient.Id
-        };
-
-        [SetUp]
-        public void SetUp()
-        {
-            cache = Substitute.For<IGenotypeSimulantsInfoCache>();
-            scoringService = Substitute.For<IDonorScoringService>();
-            bulkInsertDonorRepository = Substitute.For<IProcessedResultsRepository<MatchedDonor>>();
-            matchedDonorsRepository = Substitute.For<IMatchedDonorsRepository>();
-            matchCountsRepository = Substitute.For<IProcessedResultsRepository<LocusMatchDetails>>();
-
-            mismatchedDonorsStorer = new MismatchedDonorsStorer<MatchingAlgorithmResult>(
-                cache, scoringService, bulkInsertDonorRepository, matchedDonorsRepository, matchCountsRepository);
+        mismatchedDonorsStorer = new MismatchedDonorsStorer<MatchingAlgorithmResult>(
+            cache, scoringService, bulkInsertDonorRepository, matchedDonorsRepository, matchCountsRepository);
 
 
-            cache.GetOrAddGenotypeSimulantsInfo(default).ReturnsForAnyArgs(
-                GenotypeSimulantsInfoBuilder.New
-                    .WithPatient(Patient)
-                    .WithDonor(MissingDonor));
+        cache.GetOrAddGenotypeSimulantsInfo(default).ReturnsForAnyArgs(
+            GenotypeSimulantsInfoBuilder.New
+                .WithPatient(Patient)
+                .WithDonor(MissingDonor).Build());
 
-            scoringService.ScoreDonorHlaAgainstPatientHla(default)
-                .ReturnsForAnyArgs(new ScoreResultBuilder().Build());
+        scoringService.ScoreDonorHlaAgainstPatientHla(default)
+            .ReturnsForAnyArgs(new ScoreResultBuilder().Build());
 
-            matchedDonorsRepository.GetMatchedDonorId(default, default)
-                .ReturnsForAnyArgs(0);
-        }
+        matchedDonorsRepository.GetMatchedDonorId(default, default)
+            .ReturnsForAnyArgs(0);
+    }
 
-        [Test]
-        public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches_GetsGenotypeSimulantsInfo()
-        {
-            const int runId = 12345;
+    [Test]
+    public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches_GetsGenotypeSimulantsInfo()
+    {
+        const int runId = 12345;
 
-            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(
-                new VerificationSearchRequestRecord { VerificationRun_Id = runId }, default);
+        await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(
+            new VerificationSearchRequestRecord { VerificationRun_Id = runId }, default);
 
-            await cache.Received().GetOrAddGenotypeSimulantsInfo(runId);
-        }
+        await cache.Received().GetOrAddGenotypeSimulantsInfo(runId);
+    }
 
-        [Test]
-        public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches_PatientIsNotGenotype_DoesNotCreateRecords()
-        {
-            cache.GetOrAddGenotypeSimulantsInfo(default)
-                .ReturnsForAnyArgs(GenotypeSimulantsInfoBuilder.WithEmptySimulantsInfo);
+    [Test]
+    public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches_PatientIsNotGenotype_DoesNotCreateRecords()
+    {
+        cache.GetOrAddGenotypeSimulantsInfo(default)
+            .ReturnsForAnyArgs(GenotypeSimulantsInfoBuilder.WithEmptySimulantsInfo.Build());
 
-            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, default);
+        await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, default);
 
-            await bulkInsertDonorRepository.DidNotReceiveWithAnyArgs().BulkInsert(default);
-        }
+        await bulkInsertDonorRepository.DidNotReceiveWithAnyArgs().BulkInsert(default);
+    }
 
-        [Test]
-        public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches_NoMissingDonors_DoesNotCreateRecords()
-        {
-            var resultSet = MatchingResultSetBuilder.New.WithMatchingResult(MissingDonor.Id).Build();
+    [Test]
+    public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches_NoMissingDonors_DoesNotCreateRecords()
+    {
+        var resultSet = MatchingResultSetBuilder.New.WithMatchingResult(MissingDonor.Id).Build();
 
-            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, resultSet);
+        await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, resultSet);
 
-            await bulkInsertDonorRepository.DidNotReceiveWithAnyArgs().BulkInsert(default);
-        }
+        await bulkInsertDonorRepository.DidNotReceiveWithAnyArgs().BulkInsert(default);
+    }
 
-        [Test]
-        public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches_ScoresMissingDonorHlaAgainstPatientHla()
-        {
-            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, MatchingResultSetBuilder.Empty.Build());
+    [Test]
+    public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches_ScoresMissingDonorHlaAgainstPatientHla()
+    {
+        await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, MatchingResultSetBuilder.Empty.Build());
 
-            await scoringService.Received().ScoreDonorHlaAgainstPatientHla(Arg.Any<DonorHlaScoringRequest>());
-        }
+        await scoringService.Received().ScoreDonorHlaAgainstPatientHla(Arg.Any<DonorHlaScoringRequest>());
+    }
 
-        [Test]
-        public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches_MissingDonorHasMatchCountZero_DoesNotCreateRecord()
-        {
-            scoringService.ScoreDonorHlaAgainstPatientHla(default)
-                .ReturnsForAnyArgs(new ScoreResultBuilder().WithTotalMatchCount(0).Build());
+    [Test]
+    public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches_MissingDonorHasMatchCountZero_DoesNotCreateRecord()
+    {
+        scoringService.ScoreDonorHlaAgainstPatientHla(default)
+            .ReturnsForAnyArgs(new ScoreResultBuilder().WithTotalMatchCount(0).Build());
 
-            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, MatchingResultSetBuilder.Empty.Build());
+        await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, MatchingResultSetBuilder.Empty.Build());
 
-            await bulkInsertDonorRepository.DidNotReceiveWithAnyArgs().BulkInsert(default);
-        }
+        await bulkInsertDonorRepository.DidNotReceiveWithAnyArgs().BulkInsert(default);
+    }
 
-        [Test]
-        public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches_CreateRecordForMissingDonor()
-        {
-            const int totalMatchCount = 1;
+    [Test]
+    public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches_CreateRecordForMissingDonor()
+    {
+        const int totalMatchCount = 1;
 
-            scoringService.ScoreDonorHlaAgainstPatientHla(default)
-                .ReturnsForAnyArgs(new ScoreResultBuilder().WithTotalMatchCount(totalMatchCount).Build());
+        scoringService.ScoreDonorHlaAgainstPatientHla(default)
+            .ReturnsForAnyArgs(new ScoreResultBuilder().WithTotalMatchCount(totalMatchCount).Build());
 
-            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, MatchingResultSetBuilder.Empty.Build());
+        await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, MatchingResultSetBuilder.Empty.Build());
 
-            await bulkInsertDonorRepository.Received().BulkInsert(Arg.Is<IReadOnlyCollection<MatchedDonor>>(x =>
-                x.Single().DonorCode == MissingDonor.Id.ToString() &&
-                x.Single().TotalMatchCount == totalMatchCount));
-        }
+        await bulkInsertDonorRepository.Received().BulkInsert(Arg.Is<IReadOnlyCollection<MatchedDonor>>(x =>
+            x.Single().DonorCode == MissingDonor.Id.ToString() &&
+            x.Single().TotalMatchCount == totalMatchCount));
+    }
 
-        [Test]
-        public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches_OnlyCreatesRecordsForLociWithNonZeroMatchCount()
-        {
-            const int matchCount = 1;
-            const Locus nonZeroLocus = Locus.A;
-            var scoreResult = new ScoreResultBuilder()
-                .WithTotalMatchCount(matchCount)
-                .WithMatchCountAtLocus(nonZeroLocus, matchCount)
-                .Build();
-            scoringService.ScoreDonorHlaAgainstPatientHla(default).ReturnsForAnyArgs(scoreResult);
+    [Test]
+    public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches_OnlyCreatesRecordsForLociWithNonZeroMatchCount()
+    {
+        const int matchCount = 1;
+        const Locus nonZeroLocus = Locus.A;
+        var scoreResult = new ScoreResultBuilder()
+            .WithTotalMatchCount(matchCount)
+            .WithMatchCountAtLocus(nonZeroLocus, matchCount)
+            .Build();
+        scoringService.ScoreDonorHlaAgainstPatientHla(default).ReturnsForAnyArgs(scoreResult);
 
-            const int matchedDonorId = 12345;
-            matchedDonorsRepository.GetMatchedDonorId(default, default).ReturnsForAnyArgs(matchedDonorId);
+        const int matchedDonorId = 12345;
+        matchedDonorsRepository.GetMatchedDonorId(default, default).ReturnsForAnyArgs(matchedDonorId);
 
-            await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, MatchingResultSetBuilder.Empty.Build());
+        await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, MatchingResultSetBuilder.Empty.Build());
 
-            await matchCountsRepository.Received().BulkInsert(Arg.Is<IReadOnlyCollection<LocusMatchDetails>>(x =>
-                x.Single().Locus == nonZeroLocus &&
-                x.Single().MatchCount == matchCount &&
-                x.Single().MatchedDonor_Id == matchedDonorId));
-        }
+        await matchCountsRepository.Received().BulkInsert(Arg.Is<IReadOnlyCollection<LocusMatchDetails>>(x =>
+            x.Single().Locus == nonZeroLocus &&
+            x.Single().MatchCount == matchCount &&
+            x.Single().MatchedDonor_Id == matchedDonorId));
     }
 }

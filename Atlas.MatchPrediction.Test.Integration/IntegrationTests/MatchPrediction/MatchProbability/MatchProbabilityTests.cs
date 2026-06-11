@@ -14,380 +14,381 @@ using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using FluentAssertions;
 using NUnit.Framework;
 
-// ReSharper disable InconsistentNaming - want to avoid calling "G groups" "gGroup", as "g" groups are a distinct thing 
+// ReSharper disable InconsistentNaming - want to avoid calling "G groups" "gGroup", as "g" groups are a distinct thing
 
-namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.MatchProbability
+namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.MatchProbability;
+
+public class MatchProbabilityTests : MatchProbabilityTestsBase
 {
-    public class MatchProbabilityTests : MatchProbabilityTestsBase
+    [Test]
+    public async Task CalculateMatchProbability_ReturnsCorrectNomenclatureVersionForDonorAndPatient()
     {
-        [Test]
-        public async Task CalculateMatchProbability_ReturnsCorrectNomenclatureVersionForDonorAndPatient()
+        const string patientNomenclatureVersion = "3330";
+        const string donorNomenclatureVersion = "3400";
+
+        var matchProbabilityInput = DefaultInputBuilder
+            .WithPatientMetadata(new FrequencySetMetadata {EthnicityCode = "patient-ethnicity", RegistryCode = "patient-registry"})
+            .WithDonorMetadata(new FrequencySetMetadata {EthnicityCode = "donor-ethnicity", RegistryCode = "donor-registry"}).Build();
+
+        var possibleHaplotypes = new List<HaplotypeFrequency>
         {
-            const string patientNomenclatureVersion = "3330";
-            const string donorNomenclatureVersion = "3400";
+            DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
+            DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build(),
+        };
 
-            var matchProbabilityInput = DefaultInputBuilder
-                .WithPatientMetadata(new FrequencySetMetadata {EthnicityCode = "patient-ethnicity", RegistryCode = "patient-registry"})
-                .WithDonorMetadata(new FrequencySetMetadata {EthnicityCode = "donor-ethnicity", RegistryCode = "donor-registry"}).Build();
+        await ImportFrequencies(possibleHaplotypes, "patient-registry", "patient-ethnicity", patientNomenclatureVersion);
+        await ImportFrequencies(possibleHaplotypes, "donor-registry", "donor-ethnicity", donorNomenclatureVersion);
 
-            var possibleHaplotypes = new List<HaplotypeFrequency>
-            {
-                DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
-                DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build(),
-            };
+        var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
-            await ImportFrequencies(possibleHaplotypes, "patient-registry", "patient-ethnicity", patientNomenclatureVersion);
-            await ImportFrequencies(possibleHaplotypes, "donor-registry", "donor-ethnicity", donorNomenclatureVersion);
+        matchDetails.PatientFrequencySetNomenclatureVersion.Should().Be(patientNomenclatureVersion);
+        matchDetails.DonorFrequencySetNomenclatureVersion.Should().Be(donorNomenclatureVersion);
+    }
 
-            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
+    [Test]
+    public async Task CalculateMatchProbability_WhenIdenticalUnambiguousGenotypes_UnrepresentedInFrequencySet_ReturnsOneHundredPercent()
+    {
+        var matchProbabilityInput = DefaultInputBuilder.Build();
 
-            matchDetails.PatientFrequencySetNomenclatureVersion.Should().Be(patientNomenclatureVersion);
-            matchDetails.DonorFrequencySetNomenclatureVersion.Should().Be(donorNomenclatureVersion);
-        }
-
-        [Test]
-        public async Task CalculateMatchProbability_WhenIdenticalUnambiguousGenotypes_UnrepresentedInFrequencySet_ReturnsOneHundredPercent()
+        await ImportFrequencies(new List<HaplotypeFrequency>
         {
-            var matchProbabilityInput = DefaultInputBuilder.Build();
-
-            await ImportFrequencies(new List<HaplotypeFrequency>
-            {
-                DefaultHaplotypeFrequency1.WithDataAt(Locus.A, "68:24").With(h => h.Frequency, 0.00001m).Build()
-            });
+            DefaultHaplotypeFrequency1.WithDataAt(Locus.A, "68:24").With(h => h.Frequency, 0.00001m).Build()
+        });
             
-            var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>(1).SetLocus(Locus.Dpb1, null);
-            var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
-            var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
+        var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>(1).SetLocus(Locus.Dpb1, null);
+        var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
+        var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
 
-            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
+        var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(1m);
-            matchDetails.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0m);
-            matchDetails.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0m);
-            matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
-            matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
-            matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
-        }
+        matchDetails.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(1m);
+        matchDetails.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0m);
+        matchDetails.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0m);
+        matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
+        matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
+        matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
+    }
         
-        [Test]
-        public async Task CalculateMatchProbability_WhenIdenticalGenotypes_RepresentedInFrequencySet_ReturnsOneHundredPercent()
+    [Test]
+    public async Task CalculateMatchProbability_WhenIdenticalGenotypes_RepresentedInFrequencySet_ReturnsOneHundredPercent()
+    {
+        var matchProbabilityInput = DefaultInputBuilder.Build();
+
+        var possibleHaplotypes = new List<HaplotypeFrequency>
         {
-            var matchProbabilityInput = DefaultInputBuilder.Build();
+            DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
+            DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build(),
+        };
 
-            var possibleHaplotypes = new List<HaplotypeFrequency>
-            {
-                DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
-                DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build(),
-            };
+        await ImportFrequencies(possibleHaplotypes);
 
-            await ImportFrequencies(possibleHaplotypes);
+        var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>(1).SetLocus(Locus.Dpb1, null);
+        var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
+        var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
 
-            var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>(1).SetLocus(Locus.Dpb1, null);
-            var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
-            var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
+        var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
-            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
+        matchDetails.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(1m);
+        matchDetails.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0m);
+        matchDetails.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0m);
+        matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
+        matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
+        matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
+    }
 
-            matchDetails.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(1m);
-            matchDetails.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0m);
-            matchDetails.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0m);
-            matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
-            matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
-            matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
-        }
+    [Test]
+    public async Task CalculateMatchProbability_WhenGenotypesAreNonMatching_ZeroPercentProbability()
+    {
+        const string gGroupA = "23:01:01G";
+        const string gGroupB = "07:05:01G";
+        const string gGroupC = "07:01:01G";
+        const string gGroupDqb1 = "06:01:01G";
+        const string gGroupDrb1 = "01:01:01G";
 
-        [Test]
-        public async Task CalculateMatchProbability_WhenGenotypesAreNonMatching_ZeroPercentProbability()
+        var possibleHaplotypes = new List<HaplotypeFrequency>
         {
-            const string gGroupA = "23:01:01G";
-            const string gGroupB = "07:05:01G";
-            const string gGroupC = "07:01:01G";
-            const string gGroupDqb1 = "06:01:01G";
-            const string gGroupDrb1 = "01:01:01G";
+            DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00001m).Build(),
+            DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00002m).Build(),
+            HaplotypeFrequencyBuilder.New
+                .WithHaplotype(new LociInfo<string>(gGroupA, gGroupB, gGroupC, null, gGroupDqb1, gGroupDrb1))
+                .With(h => h.Frequency, 0.00003m)
+                .Build()
+        };
 
-            var possibleHaplotypes = new List<HaplotypeFrequency>
-            {
-                DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00001m).Build(),
-                DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00002m).Build(),
-                HaplotypeFrequencyBuilder.New
-                    .WithHaplotype(new LociInfo<string>(gGroupA, gGroupB, gGroupC, null, gGroupDqb1, gGroupDrb1))
-                    .With(h => h.Frequency, 0.00003m)
-                    .Build()
-            };
+        await ImportFrequencies(possibleHaplotypes);
 
-            await ImportFrequencies(possibleHaplotypes);
+        var patientHla = DefaultUnambiguousAllelesBuilder.WithDataAt(
+                Locus.A,
+                Alleles.UnambiguousAlleleDetails.A.Position1.Allele,
+                Alleles.UnambiguousAlleleDetails.A.Position2.Allele)
+            .Build();
 
-            var patientHla = DefaultUnambiguousAllelesBuilder.WithDataAt(
-                    Locus.A,
-                    Alleles.UnambiguousAlleleDetails.A.Position1.Allele,
-                    Alleles.UnambiguousAlleleDetails.A.Position2.Allele)
-                .Build();
+        var donorHla = new PhenotypeInfoBuilder<string>()
+            .WithDataAt(Locus.A, gGroupA)
+            .WithDataAt(Locus.B, gGroupB)
+            .WithDataAt(Locus.C, gGroupC)
+            .WithDataAt(Locus.Dqb1, gGroupDqb1)
+            .WithDataAt(Locus.Drb1, gGroupDrb1).Build();
 
-            var donorHla = new PhenotypeInfoBuilder<string>()
-                .WithDataAt(Locus.A, gGroupA)
-                .WithDataAt(Locus.B, gGroupB)
-                .WithDataAt(Locus.C, gGroupC)
-                .WithDataAt(Locus.Dqb1, gGroupDqb1)
-                .WithDataAt(Locus.Drb1, gGroupDrb1).Build();
+        var matchProbabilityInput = DefaultInputBuilder
+            .WithPatientHla(patientHla)
+            .WithDonorHla(donorHla)
+            .Build();
 
-            var matchProbabilityInput = DefaultInputBuilder
-                .WithPatientHla(patientHla)
-                .WithDonorHla(donorHla)
-                .Build();
+        var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
+        var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
+        var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>(1).SetLocus(Locus.Dpb1, null);
 
-            var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
-            var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
-            var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>(1).SetLocus(Locus.Dpb1, null);
+        var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
-            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
+        matchDetails.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(0m);
+        matchDetails.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0m);
+        matchDetails.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0m);
+        matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
+        matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
+        matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
+    }
 
-            matchDetails.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(0m);
-            matchDetails.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0m);
-            matchDetails.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0m);
-            matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
-            matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
-            matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
-        }
+    [Test]
+    public async Task CalculateMatchProbability_WhenAmbiguousHla_ReturnsProbability()
+    {
+        const string alleleStringA = "01:37";
+        const string GGroupA = "01:01:01G";
+        const string anotherAlleleStringA = "23:17";
+        const string anotherGGroupA = "23:01:01G";
 
-        [Test]
-        public async Task CalculateMatchProbability_WhenAmbiguousHla_ReturnsProbability()
+        const string alleleStringB = "08:182";
+        const string GGroupB = "08:01:01G";
+
+        const string alleleStringC = "04:82";
+        const string GGroupC = "04:01:01G";
+
+        const string alleleStringDqb1 = "06:39";
+        const string GGroupDqb1 = "06:04:01G";
+
+        const string alleleStringDrb1 = "11:129";
+        const string GGroupDrb1 = "11:06:01G";
+
+        var possibleHaplotypes = new List<HaplotypeFrequency>
         {
-            const string alleleStringA = "01:37";
-            const string GGroupA = "01:01:01G";
-            const string anotherAlleleStringA = "23:17";
-            const string anotherGGroupA = "23:01:01G";
+            DefaultHaplotypeFrequency2.With(h => h.A, anotherGGroupA).With(h => h.Frequency, 0.00008m).Build(),
+            DefaultHaplotypeFrequency1.With(h => h.A, GGroupA).With(h => h.Frequency, 0.00007m).Build(),
+            DefaultHaplotypeFrequency1.With(h => h.B, GGroupB).With(h => h.Frequency, 0.00006m).Build(),
+            DefaultHaplotypeFrequency1.With(h => h.C, GGroupC).With(h => h.Frequency, 0.00005m).Build(),
+            DefaultHaplotypeFrequency1.With(h => h.DQB1, GGroupDqb1).With(h => h.Frequency, 0.00004m).Build(),
+            DefaultHaplotypeFrequency1.With(h => h.DRB1, GGroupDrb1).With(h => h.Frequency, 0.00003m).Build(),
+            DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
+            DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build()
+        };
 
-            const string alleleStringB = "08:182";
-            const string GGroupB = "08:01:01G";
+        await ImportFrequencies(possibleHaplotypes);
 
-            const string alleleStringC = "04:82";
-            const string GGroupC = "04:01:01G";
+        var patientHla = DefaultUnambiguousAllelesBuilder
+            .WithDataAt(
+                Locus.A,
+                $"{Alleles.UnambiguousAlleleDetails.A.Position1.Allele}/{alleleStringA}",
+                $"{Alleles.UnambiguousAlleleDetails.A.Position2.Allele}/{anotherAlleleStringA}")
+            .WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{alleleStringB}")
+            .WithDataAt(Locus.C, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.C.Position1.Allele}/{alleleStringC}")
+            .WithDataAt(Locus.Dqb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Dqb1.Position1.Allele}/{alleleStringDqb1}")
+            .WithDataAt(Locus.Drb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
+            .Build();
 
-            const string alleleStringDqb1 = "06:39";
-            const string GGroupDqb1 = "06:04:01G";
+        var matchProbabilityInput = DefaultInputBuilder.WithPatientHla(patientHla).Build();
 
-            const string alleleStringDrb1 = "11:129";
-            const string GGroupDrb1 = "11:06:01G";
+        var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
+        (
+            0.0823045267489711934156378601m,
+            0.7777777777777777777777777778m,
+            0.8148148148148148148148148148m,
+            null,
+            0.8518518518518518518518518519m,
+            0.8888888888888888888888888889m
+        );
 
-            var possibleHaplotypes = new List<HaplotypeFrequency>
-            {
-                DefaultHaplotypeFrequency2.With(h => h.A, anotherGGroupA).With(h => h.Frequency, 0.00008m).Build(),
-                DefaultHaplotypeFrequency1.With(h => h.A, GGroupA).With(h => h.Frequency, 0.00007m).Build(),
-                DefaultHaplotypeFrequency1.With(h => h.B, GGroupB).With(h => h.Frequency, 0.00006m).Build(),
-                DefaultHaplotypeFrequency1.With(h => h.C, GGroupC).With(h => h.Frequency, 0.00005m).Build(),
-                DefaultHaplotypeFrequency1.With(h => h.DQB1, GGroupDqb1).With(h => h.Frequency, 0.00004m).Build(),
-                DefaultHaplotypeFrequency1.With(h => h.DRB1, GGroupDrb1).With(h => h.Frequency, 0.00003m).Build(),
-                DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
-                DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build()
-            };
+        var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>
+        (
+            0.6872427983539094650205761317m,
+            0.2222222222222222222222222222m,
+            0.1851851851851851851851851852m,
+            null,
+            0.1481481481481481481481481481m,
+            0.1111111111111111111111111111m
+        );
 
-            await ImportFrequencies(possibleHaplotypes);
+        var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>
+        (
+            0.2304526748971193415637860082m,
+            0m,
+            0m,
+            null,
+            0m,
+            0m
+        );
 
-            var patientHla = DefaultUnambiguousAllelesBuilder
-                .WithDataAt(
-                    Locus.A,
-                    $"{Alleles.UnambiguousAlleleDetails.A.Position1.Allele}/{alleleStringA}",
-                    $"{Alleles.UnambiguousAlleleDetails.A.Position2.Allele}/{anotherAlleleStringA}")
-                .WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{alleleStringB}")
-                .WithDataAt(Locus.C, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.C.Position1.Allele}/{alleleStringC}")
-                .WithDataAt(Locus.Dqb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Dqb1.Position1.Allele}/{alleleStringDqb1}")
-                .WithDataAt(Locus.Drb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
-                .Build();
+        var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
 
-            var matchProbabilityInput = DefaultInputBuilder.WithPatientHla(patientHla).Build();
+        matchDetails.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(0.008230452674897119341563786m);
+        matchDetails.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0.1687242798353909465020576132m);
+        matchDetails.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0.8230452674897119341563786008m);
+        matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
+        matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
+        matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
+    }
 
-            var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
-            (
-                0.0823045267489711934156378601m,
-                0.7777777777777777777777777778m,
-                0.8148148148148148148148148148m,
-                null,
-                0.8518518518518518518518518519m,
-                0.8888888888888888888888888889m
-            );
+    [Test]
+    public async Task CalculateMatchProbability_WhenAmbiguousHlaAndMissingLoci_ReturnsProbability()
+    {
+        const string alleleStringA = "01:37";
+        const string GGroupA = "01:01:01G";
+        const string anotherAlleleStringA = "23:17";
+        const string anotherGGroupA = "23:01:01G";
 
-            var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>
-            (
-                0.6872427983539094650205761317m,
-                0.2222222222222222222222222222m,
-                0.1851851851851851851851851852m,
-                null,
-                0.1481481481481481481481481481m,
-                0.1111111111111111111111111111m
-            );
+        const string alleleStringB = "08:182";
+        const string GGroupB = "08:01:01G";
 
-            var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>
-            (
-                0.2304526748971193415637860082m,
-                0m,
-                0m,
-                null,
-                0m,
-                0m
-            );
+        const string alleleStringC = "04:82";
 
-            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
+        const string alleleStringDrb1 = "11:129";
+        const string GGroupDrb1 = "11:06:01G";
 
-            matchDetails.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(0.008230452674897119341563786m);
-            matchDetails.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0.1687242798353909465020576132m);
-            matchDetails.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0.8230452674897119341563786008m);
-            matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
-            matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
-            matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
-        }
-
-        [Test]
-        public async Task CalculateMatchProbability_WhenAmbiguousHlaAndMissingLoci_ReturnsProbability()
+        var possibleHaplotypes = new List<HaplotypeFrequency>
         {
-            const string alleleStringA = "01:37";
-            const string GGroupA = "01:01:01G";
-            const string anotherAlleleStringA = "23:17";
-            const string anotherGGroupA = "23:01:01G";
+            DefaultHaplotypeFrequency2.With(h => h.A, anotherGGroupA).With(h => h.Frequency, 0.00008m).Build(),
+            DefaultHaplotypeFrequency1.With(h => h.A, GGroupA).With(h => h.Frequency, 0.00007m).Build(),
+            DefaultHaplotypeFrequency1.With(h => h.B, GGroupB).With(h => h.Frequency, 0.00006m).Build(),
+            DefaultHaplotypeFrequency1.With(h => h.DRB1, GGroupDrb1).With(h => h.Frequency, 0.00003m).Build(),
+            DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
+            DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build()
+        };
 
-            const string alleleStringB = "08:182";
-            const string GGroupB = "08:01:01G";
+        await ImportFrequencies(possibleHaplotypes);
 
-            const string alleleStringC = "04:82";
+        var patientHla = DefaultUnambiguousAllelesBuilder
+            .WithDataAt(
+                Locus.A,
+                $"{Alleles.UnambiguousAlleleDetails.A.Position1.Allele}/{alleleStringA}",
+                $"{Alleles.UnambiguousAlleleDetails.A.Position2.Allele}/{anotherAlleleStringA}")
+            .WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{alleleStringB}")
+            .WithDataAt(Locus.C, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.C.Position1.Allele}/{alleleStringC}")
+            .WithDataAt(Locus.Dqb1, null as string)
+            .WithDataAt(Locus.Drb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
+            .Build();
 
-            const string alleleStringDrb1 = "11:129";
-            const string GGroupDrb1 = "11:06:01G";
-
-            var possibleHaplotypes = new List<HaplotypeFrequency>
-            {
-                DefaultHaplotypeFrequency2.With(h => h.A, anotherGGroupA).With(h => h.Frequency, 0.00008m).Build(),
-                DefaultHaplotypeFrequency1.With(h => h.A, GGroupA).With(h => h.Frequency, 0.00007m).Build(),
-                DefaultHaplotypeFrequency1.With(h => h.B, GGroupB).With(h => h.Frequency, 0.00006m).Build(),
-                DefaultHaplotypeFrequency1.With(h => h.DRB1, GGroupDrb1).With(h => h.Frequency, 0.00003m).Build(),
-                DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
-                DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build()
-            };
-
-            await ImportFrequencies(possibleHaplotypes);
-
-            var patientHla = DefaultUnambiguousAllelesBuilder
-                .WithDataAt(
-                    Locus.A,
-                    $"{Alleles.UnambiguousAlleleDetails.A.Position1.Allele}/{alleleStringA}",
-                    $"{Alleles.UnambiguousAlleleDetails.A.Position2.Allele}/{anotherAlleleStringA}")
-                .WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{alleleStringB}")
-                .WithDataAt(Locus.C, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.C.Position1.Allele}/{alleleStringC}")
-                .WithDataAt(Locus.Dqb1, null as string)
-                .WithDataAt(Locus.Drb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
-                .Build();
-
-            var matchProbabilityInput = new SingleDonorMatchProbabilityInput
-            {
-                PatientHla = patientHla.ToPhenotypeInfoTransfer(),
-                Donor = new DonorInput
-                {
-                    DonorId = 123,
-                    DonorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.C, null as string).Build().ToPhenotypeInfoTransfer(),
-                    DonorFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode},
-                },
-                PatientFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode}
-            };
-
-            var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
-            (
-                0.0679012345679012345679012346m,
-                0.6666666666666666666666666667m,
-                1m,
-                null,
-                1m,
-                0.8333333333333333333333333333m
-            );
-
-            var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>
-            (
-                0.5864197530864197530864197531m,
-                0.3333333333333333333333333333m,
-                0m,
-                null,
-                0m,
-                0.1666666666666666666666666667m
-            );
-
-            var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>
-            (
-                0.3456790123456790123456790123m,
-                0m,
-                0m,
-                null,
-                0m,
-                0m
-            );
-
-            var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
-
-            matchDetails.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(0.012345679012345679012345679m);
-            matchDetails.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0.1975308641975308641975308642m);
-            matchDetails.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0.7901234567901234567901234568m);
-            matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
-            matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
-            matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
-        }
-
-        [Test]
-        public async Task CalculateMatchProbability_WithAmbiguousHomozygousHlaAtSingleLocus_ReturnsCorrectProbability()
+        var matchProbabilityInput = new SingleDonorMatchProbabilityInput
         {
-            var patientHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, "02:XX").Build();
-            var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.Two, "11:03/02:01").Build();
-
-            await ImportFrequencies(new List<HaplotypeFrequency>
+            PatientHla = patientHla.ToPhenotypeInfoTransfer(),
+            Donor = new DonorInput
             {
-                DefaultHaplotypeFrequency1.WithFrequency(0.05m),
-                DefaultHaplotypeFrequency2.WithDataAt(Locus.A, "02:01:01G").WithFrequency(0.02m),
-                DefaultHaplotypeFrequency2.WithFrequency(0.07m),
-            });
-            var matchProbabilityInput = DefaultInputBuilder
-                .WithPatientHla(patientHla)
-                .WithDonorHla(donorHla)
-                .Build();
+                DonorId = 123,
+                DonorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.C, null as string).Build().ToPhenotypeInfoTransfer(),
+                DonorFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode},
+            },
+            PatientFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode}
+        };
 
-            var matchProbability = await CalculateMatchProbability(matchProbabilityInput);
+        var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
+        (
+            0.0679012345679012345679012346m,
+            0.6666666666666666666666666667m,
+            1m,
+            null,
+            1m,
+            0.8333333333333333333333333333m
+        );
 
-            matchProbability.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(22);
-        }
+        var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>
+        (
+            0.5864197530864197530864197531m,
+            0.3333333333333333333333333333m,
+            0m,
+            null,
+            0m,
+            0.1666666666666666666666666667m
+        );
 
-        // These test cases were calculated by hand to ensure we are asserting the correct percentages
-        [TestCase(10, 90, 5)]
-        [TestCase(90, 10, 82)]
-        public async Task CalculateMatchProbability_WhenOnlyMatchingGenotypeIsHomozygousAtAllLoci_ReturnsCorrectProbability(
-            int sharedHaplotypeFrequencyAsPercentage,
-            int otherHaplotypeFrequencyAsPercentage,
-            int expectedZeroMismatchPercentage
-        )
+        var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>
+        (
+            0.3456790123456790123456790123m,
+            0m,
+            0m,
+            null,
+            0m,
+            0m
+        );
+
+        var matchDetails = await CalculateMatchProbability(matchProbabilityInput);
+
+        matchDetails.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(0.012345679012345679012345679m);
+        matchDetails.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0.1975308641975308641975308642m);
+        matchDetails.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0.7901234567901234567901234568m);
+        matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
+        matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
+        matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
+    }
+
+    [Test]
+    public async Task CalculateMatchProbability_WithAmbiguousHomozygousHlaAtSingleLocus_ReturnsCorrectProbability()
+    {
+        var patientHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, "02:XX").Build();
+        var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.Two, "11:03/02:01").Build();
+
+        await ImportFrequencies(new List<HaplotypeFrequency>
         {
-            var sharedHaplotypeHla = Alleles.UnambiguousAlleleDetails.GGroups().Split().Item1;
+            DefaultHaplotypeFrequency1.WithFrequency(0.05m).Build(),
+            DefaultHaplotypeFrequency2.WithDataAt(Locus.A, "02:01:01G").WithFrequency(0.02m).Build(),
+            DefaultHaplotypeFrequency2.WithFrequency(0.07m).Build(),
+        });
+        var matchProbabilityInput = DefaultInputBuilder
+            .WithPatientHla(patientHla)
+            .WithDonorHla(donorHla)
+            .Build();
 
-            // patientHla entirely homozygous
-            var patientHla = new PhenotypeInfo<string>(sharedHaplotypeHla, sharedHaplotypeHla);
+        var matchProbability = await CalculateMatchProbability(matchProbabilityInput);
 
-            const Locus ambiguousLocus = Locus.B;
-            const LocusPosition ambiguousPosition = LocusPosition.Two;
+        matchProbability.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(22);
+    }
 
-            var alleleDetailsAtAmbiguousLocus = Alleles.UnambiguousAlleleDetails.GetLocus(ambiguousLocus);
-            var donorHla = new PhenotypeInfoBuilder<string>(patientHla)
-                .WithDataAt(ambiguousLocus, ambiguousPosition,
-                    $"{alleleDetailsAtAmbiguousLocus.Position1.Allele}/{alleleDetailsAtAmbiguousLocus.Position2.Allele}")
-                .Build();
+    // These test cases were calculated by hand to ensure we are asserting the correct percentages
+    [TestCase(10, 90, 5)]
+    [TestCase(90, 10, 82)]
+    public async Task CalculateMatchProbability_WhenOnlyMatchingGenotypeIsHomozygousAtAllLoci_ReturnsCorrectProbability(
+        int sharedHaplotypeFrequencyAsPercentage,
+        int otherHaplotypeFrequencyAsPercentage,
+        int expectedZeroMismatchPercentage
+    )
+    {
+        var sharedHaplotypeHla = Alleles.UnambiguousAlleleDetails.GGroups().Split().Item1;
 
-            var matchProbabilityInput = DefaultInputBuilder
-                .WithPatientHla(patientHla)
-                .WithDonorHla(donorHla)
-                .Build();
-            await ImportFrequencies(new List<HaplotypeFrequency>
-            {
-                DefaultHaplotypeFrequency1
-                    .WithFrequencyAsPercentage(sharedHaplotypeFrequencyAsPercentage),
-                DefaultHaplotypeFrequency1
-                    .WithDataAt(ambiguousLocus, alleleDetailsAtAmbiguousLocus.Position2.GGroup)
-                    .WithFrequencyAsPercentage(otherHaplotypeFrequencyAsPercentage),
-            });
+        // patientHla entirely homozygous
+        var patientHla = new PhenotypeInfo<string>(sharedHaplotypeHla, sharedHaplotypeHla);
 
-            var matchProbability = await CalculateMatchProbability(matchProbabilityInput);
+        const Locus ambiguousLocus = Locus.B;
+        const LocusPosition ambiguousPosition = LocusPosition.Two;
 
-            matchProbability.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(expectedZeroMismatchPercentage);
-        }
+        var alleleDetailsAtAmbiguousLocus = Alleles.UnambiguousAlleleDetails.GetLocus(ambiguousLocus);
+        var donorHla = new PhenotypeInfoBuilder<string>(patientHla)
+            .WithDataAt(ambiguousLocus, ambiguousPosition,
+                $"{alleleDetailsAtAmbiguousLocus.Position1.Allele}/{alleleDetailsAtAmbiguousLocus.Position2.Allele}")
+            .Build();
+
+        var matchProbabilityInput = DefaultInputBuilder
+            .WithPatientHla(patientHla)
+            .WithDonorHla(donorHla)
+            .Build();
+        await ImportFrequencies(new List<HaplotypeFrequency>
+        {
+            DefaultHaplotypeFrequency1
+                .WithFrequencyAsPercentage(sharedHaplotypeFrequencyAsPercentage)
+                .Build(),
+            DefaultHaplotypeFrequency1
+                .WithDataAt(ambiguousLocus, alleleDetailsAtAmbiguousLocus.Position2.GGroup)
+                .WithFrequencyAsPercentage(otherHaplotypeFrequencyAsPercentage)
+                .Build(),
+        });
+
+        var matchProbability = await CalculateMatchProbability(matchProbabilityInput);
+
+        matchProbability.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(expectedZeroMismatchPercentage);
     }
 }
