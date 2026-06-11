@@ -1,18 +1,18 @@
 using System;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.DonorImport.FileSchema.Models;
-using LochNessBuilder;
+using AutoFixture.Dsl;
 
 namespace Atlas.DonorImport.Test.TestHelpers.Builders;
 
-[Builder]
 internal static class HlaBuilder
 {
     private static readonly ImportedLocus DefaultLocus = new() { Dna = new TwoFieldStringData()};
 
-    internal static Builder<ImportedHla> New => Builder<ImportedHla>.New;
+    internal static IPostprocessComposer<ImportedHla> New => FixtureBuilder.For<ImportedHla>();
 
-    internal static Builder<ImportedHla> Default => New
+    internal static IPostprocessComposer<ImportedHla> Default => New
         .With(hla => hla.A, DefaultLocus)
         .With(hla => hla.B, DefaultLocus)
         .With(hla => hla.C, DefaultLocus)
@@ -20,11 +20,11 @@ internal static class HlaBuilder
         .With(hla => hla.DQB1, DefaultLocus)
         .With(hla => hla.DRB1, DefaultLocus);
 
-    internal static Builder<ImportedHla> WithHomozygousMolecularHlaAtAllLoci(this Builder<ImportedHla> builder, string field) => builder.WithMolecularHlaAtAllLoci(field, field);
-    internal static Builder<ImportedHla> WithHomozygousMolecularHlaAtLocus(this Builder<ImportedHla> builder, Locus locus, string field) => builder.WithMolecularHlaAtLocus(locus, field, field);
-    internal static Builder<ImportedHla> WithValidHlaAtAllLoci(this Builder<ImportedHla> builder) => builder.WithMolecularHlaAtAllLoci("01:01", "01:01");
-        
-    internal static Builder<ImportedHla> WithMolecularHlaAtAllLoci(this Builder<ImportedHla> builder, string field1, string field2) =>
+    internal static IPostprocessComposer<ImportedHla> WithHomozygousMolecularHlaAtAllLoci(this IPostprocessComposer<ImportedHla> builder, string field) => builder.WithMolecularHlaAtAllLoci(field, field);
+    internal static IPostprocessComposer<ImportedHla> WithHomozygousMolecularHlaAtLocus(this IPostprocessComposer<ImportedHla> builder, Locus locus, string field) => builder.WithMolecularHlaAtLocus(locus, field, field);
+    internal static IPostprocessComposer<ImportedHla> WithValidHlaAtAllLoci(this IPostprocessComposer<ImportedHla> builder) => builder.WithMolecularHlaAtAllLoci("01:01", "01:01");
+
+    internal static IPostprocessComposer<ImportedHla> WithMolecularHlaAtAllLoci(this IPostprocessComposer<ImportedHla> builder, string field1, string field2) =>
         builder
             .WithMolecularHlaAtLocus(Locus.A, field1, field2)
             .WithMolecularHlaAtLocus(Locus.B, field1, field2)
@@ -33,12 +33,12 @@ internal static class HlaBuilder
             .WithMolecularHlaAtLocus(Locus.Dqb1, field1, field2)
             .WithMolecularHlaAtLocus(Locus.Drb1, field1, field2);
 
-    internal static Builder<ImportedHla> WithMolecularHlaAtLocus(this Builder<ImportedHla> builder, Locus locus, string field1, string field2)
+    internal static IPostprocessComposer<ImportedHla> WithMolecularHlaAtLocus(this IPostprocessComposer<ImportedHla> builder, Locus locus, string field1, string field2)
     {
         return builder.WithImportedLocus(locus, new ImportedLocus { Dna = new TwoFieldStringData { Field1 = field1, Field2 = field2 } });
     }
 
-    internal static Builder<ImportedHla> WithImportedLocus(this Builder<ImportedHla> builder, Locus locus, ImportedLocus typing)
+    internal static IPostprocessComposer<ImportedHla> WithImportedLocus(this IPostprocessComposer<ImportedHla> builder, Locus locus, ImportedLocus typing)
     {
         return locus switch
         {

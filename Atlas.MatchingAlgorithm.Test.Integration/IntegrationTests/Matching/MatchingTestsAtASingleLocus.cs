@@ -11,9 +11,9 @@ using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.TestHelpers;
-using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
-using LochNessBuilder;
+using AutoFixture.Dsl;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -171,7 +171,7 @@ public class MatchingTestsAtASingleLocus
     {
         var criteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(1)
-                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1)))
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1).Build()))
             .Build();
 
         var results = await matchingService.GetMatches(criteria, null).ToListAsync();
@@ -186,7 +186,7 @@ public class MatchingTestsAtASingleLocus
     {
         var criteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(1)
-                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1)))
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1).Build()))
             .Build();
 
         var results = await matchingService.GetMatches(criteria, null).ToListAsync();
@@ -199,7 +199,7 @@ public class MatchingTestsAtASingleLocus
     {
         var criteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(1)
-                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1)))
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1).Build()))
             .Build();
 
         var results = await matchingService.GetMatches(criteria, null).ToListAsync();
@@ -212,7 +212,7 @@ public class MatchingTestsAtASingleLocus
     {
         var criteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(1)
-                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1)))
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1).Build()))
             .Build();
 
         var results = await matchingService.GetMatches(criteria, null).ToListAsync();
@@ -225,7 +225,7 @@ public class MatchingTestsAtASingleLocus
     {
         var criteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(2)
-                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2)))
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2).Build()))
             .Build();
 
         var results = await matchingService.GetMatches(criteria, null).ToListAsync();
@@ -238,7 +238,7 @@ public class MatchingTestsAtASingleLocus
     {
         var criteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(2)
-                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2)))
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2).Build()))
             .Build();
 
         var results = await matchingService.GetMatches(criteria, null).ToListAsync();
@@ -253,7 +253,7 @@ public class MatchingTestsAtASingleLocus
     {
         var criteria = new MatchCriteriaBuilder(GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(2)
-                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2)))
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2).Build()))
             .Build();
 
         var results = await matchingService.GetMatches(criteria, null).ToListAsync();
@@ -271,12 +271,12 @@ public class MatchingTestsAtASingleLocus
             .WithSearchType(DefaultDonorType)
             .WithDonorMismatchCount(0);
 
-    private Builder<AlleleLevelLocusMatchCriteria> DefaultMatchingCriteriaBuilder() =>
+    private IPostprocessComposer<AlleleLevelLocusMatchCriteria> DefaultMatchingCriteriaBuilder() =>
         AlleleLevelLocusMatchCriteriaBuilder.New
             .WithMismatchCount(0)
             .WithPGroups(new[] {MatchingPGroup}, new[] {MatchingPGroup});
 
-    private Builder<AlleleLevelLocusMatchCriteria> DefaultPatientLocusCriteriaBuilder() =>
+    private IPostprocessComposer<AlleleLevelLocusMatchCriteria> DefaultPatientLocusCriteriaBuilder() =>
         AlleleLevelLocusMatchCriteriaBuilder.New
             .WithMismatchCount(0)
             .WithPGroups(patientPGroupsAtPositionOne, patientPGroupsAtPositionTwo);

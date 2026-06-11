@@ -13,7 +13,7 @@ using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
-using LochNessBuilder;
+using AutoFixture.Dsl;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -56,16 +56,16 @@ public class MatchProbabilityTestsBase
         await HaplotypeFrequencyImporter.Import(haplotypes, nomenclatureVersion, registryCode, ethnicityCode, typingCategory);
     }
 
-    protected static Builder<HaplotypeFrequency> DefaultHaplotypeFrequency1 => HaplotypeFrequencyBuilder.New
+    protected static IPostprocessComposer<HaplotypeFrequency> DefaultHaplotypeFrequency1 => HaplotypeFrequencyBuilder.New
         .WithHaplotype(Alleles.UnambiguousAlleleDetails.GGroups().Split().Item1);
 
-    protected static Builder<HaplotypeFrequency> DefaultHaplotypeFrequency2 => Builder<HaplotypeFrequency>.New
+    protected static IPostprocessComposer<HaplotypeFrequency> DefaultHaplotypeFrequency2 => FixtureBuilder.For<HaplotypeFrequency>()
         .WithHaplotype(Alleles.UnambiguousAlleleDetails.GGroups().Split().Item2);
 
-    protected static Builder<HaplotypeFrequency> DefaultSmallGGroupHaplotypeFrequency1 => HaplotypeFrequencyBuilder.New
+    protected static IPostprocessComposer<HaplotypeFrequency> DefaultSmallGGroupHaplotypeFrequency1 => HaplotypeFrequencyBuilder.New
         .WithHaplotype(Alleles.UnambiguousAlleleDetails.SmallGGroups().Split().Item1);
 
-    protected static Builder<HaplotypeFrequency> DefaultSmallGGroupHaplotypeFrequency2 => Builder<HaplotypeFrequency>.New
+    protected static IPostprocessComposer<HaplotypeFrequency> DefaultSmallGGroupHaplotypeFrequency2 => FixtureBuilder.For<HaplotypeFrequency>()
         .WithHaplotype(Alleles.UnambiguousAlleleDetails.SmallGGroups().Split().Item2);
 
     protected async Task<Client.Models.Search.Results.MatchPrediction.MatchProbabilityResponse> CalculateMatchProbability(
@@ -77,7 +77,7 @@ public class MatchProbabilityTestsBase
 
     protected static PhenotypeInfoBuilder<string> DefaultUnambiguousAllelesBuilder => new(Alleles.UnambiguousAlleleDetails.Alleles());
 
-    protected static Builder<SingleDonorMatchProbabilityInput> DefaultInputBuilder => SingleDonorMatchProbabilityInputBuilder.Default
+    protected static IPostprocessComposer<SingleDonorMatchProbabilityInput> DefaultInputBuilder => SingleDonorMatchProbabilityInputBuilder.Default
         .With(x => x.MatchingAlgorithmHlaNomenclatureVersion, MatchingAlgorithmHlaNomenclatureVersion)
         .WithPatientHla(DefaultUnambiguousAllelesBuilder.Build())
         .WithDonorHla(DefaultUnambiguousAllelesBuilder.Build())

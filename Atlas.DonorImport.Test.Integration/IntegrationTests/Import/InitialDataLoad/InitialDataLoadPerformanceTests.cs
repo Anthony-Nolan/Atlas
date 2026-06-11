@@ -6,6 +6,7 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -35,7 +36,7 @@ internal class InitialDataLoadPerformanceTests
     [IgnoreExceptOnCiPerfTest("Performance Test. 30_000 donors ran in ~17 seconds.")]
     public async Task ImportDonors_AllValid_Performance()
     {
-        var file = DonorImportFileBuilder.NewWithoutContents.WithDonorCount(30_000, true);
+        var file = DonorImportFileBuilder.NewWithoutContents.WithDonorCount(30_000, true).Build();
 
         await donorFileImporter.ImportDonorFile(file);
     }
@@ -46,7 +47,7 @@ internal class InitialDataLoadPerformanceTests
     {
         var hla = HlaBuilder.Default.WithValidHlaAtAllLoci().WithMolecularHlaAtLocus(Locus.B, null, null).Build();
         var donors = DonorUpdateBuilder.New.WithHla(hla).Build(100_000);
-        var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(donors.ToArray());
+        var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(donors.ToArray()).Build();
 
         await donorFileImporter.ImportDonorFile(file);
     }
@@ -61,7 +62,7 @@ internal class InitialDataLoadPerformanceTests
         var invalidDonors = DonorUpdateBuilder.New.WithHla(invalidHla).Build(donorCount/2);
         var validDonors = DonorUpdateBuilder.New.Build(donorCount/2);
 
-        var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(invalidDonors.Concat(validDonors).ToArray());
+        var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(invalidDonors.Concat(validDonors).ToArray()).Build();
         await donorFileImporter.ImportDonorFile(file);
     }
 }

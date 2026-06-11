@@ -5,23 +5,22 @@ using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedSt
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
-using LochNessBuilder;
-using Builder = LochNessBuilder.Builder<Atlas.MatchPrediction.Test.Integration.TestHelpers.Models.SerialisableFrequencySetFileContents>;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Composer = AutoFixture.Dsl.IPostprocessComposer<Atlas.MatchPrediction.Test.Integration.TestHelpers.Models.SerialisableFrequencySetFileContents>;
 
 namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 
-[Builder]
 internal static class FrequencySetFileContentsBuilder
 {
     private const int DefaultPopulationId = 1;
     private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
 
-    internal static Builder Default => Builder.New
+    internal static Composer Default => FixtureBuilder.For<Atlas.MatchPrediction.Test.Integration.TestHelpers.Models.SerialisableFrequencySetFileContents>()
         .With(f => f.nomenclatureVersion, HlaNomenclatureVersion)
         .With(f => f.populationId, DefaultPopulationId);
 
 
-    internal static Builder NewWithFrequencyCount(
+    internal static Composer NewWithFrequencyCount(
         string[] ethnicity = null,
         string[] registries = null,
         int haplotypeCount = 1,
@@ -35,7 +34,7 @@ internal static class FrequencySetFileContentsBuilder
             .With(x => x.frequencies, CreateFrequencyRecords(haplotypeCount, frequencyValue));
     }
 
-    internal static Builder NewWithFrequencies(
+    internal static Composer NewWithFrequencies(
         IEnumerable<HaplotypeFrequency> haplotypeFrequencies,
         string[] ethnicity = null,
         string[] registries = null,
@@ -48,7 +47,7 @@ internal static class FrequencySetFileContentsBuilder
             .With(x => x.frequencies, CreateFrequencyRecords(haplotypeFrequencies));
     }
 
-    internal static Builder WithTypingCategory(this Builder builder, ImportTypingCategory typingCategory) =>
+    internal static Composer WithTypingCategory(this Composer builder, ImportTypingCategory typingCategory) =>
         builder.With(f => f.TypingCategory, typingCategory);
 
     private static IEnumerable<FrequencyRecord> CreateFrequencyRecords(IEnumerable<HaplotypeFrequency> haplotypeFrequencies)

@@ -3,6 +3,7 @@ using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using EnumStringValues;
 using FluentAssertions;
 using NUnit.Framework;
@@ -70,7 +71,7 @@ internal class DonorImportFileParserTests
     {
         var variedDonors =
             DonorUpdateBuilder.New
-                .With(donor => donor.ChangeType, EnumExtensions.EnumerateValues<ImportDonorChangeType>())
+                .WithSequence(donor => donor.ChangeType, EnumExtensions.EnumerateValues<ImportDonorChangeType>())
                 .Build(10);
         var fileStream = DonorImportFileContentsBuilder.New
             .With(file => file.updateMode, UpdateMode.Full)
@@ -86,7 +87,7 @@ internal class DonorImportFileParserTests
     {
         var variedDonors =
             DonorUpdateBuilder.New
-                .With(donor => donor.ChangeType, EnumExtensions.EnumerateValues<ImportDonorChangeType>())
+                .WithSequence(donor => donor.ChangeType, EnumExtensions.EnumerateValues<ImportDonorChangeType>())
                 .Build(10);
         var fileStream = DonorImportFileContentsBuilder.New
             .With(file => file.updateMode, UpdateMode.Differential)

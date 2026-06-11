@@ -14,6 +14,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
@@ -105,7 +106,8 @@ public class DonorUpdateProcessorValidationTests
 
         var update = SearchableDonorUpdateBuilder.New
             .With(x => x.SearchableDonorInformation, donorInfo)
-            .With(x => x.DonorId, donorInfo.DonorId);
+            .With(x => x.DonorId, donorInfo.DonorId)
+            .Build();
 
         var message = SearchableDonorUpdateMessageBuilder.New
             .With(x => x.DeserializedBody, update)
@@ -128,7 +130,8 @@ public class DonorUpdateProcessorValidationTests
 
         var update = SearchableDonorUpdateBuilder.New
             .With(x => x.SearchableDonorInformation, donorInfo)
-            .With(x => x.DonorId, donorInfo.DonorId);
+            .With(x => x.DonorId, donorInfo.DonorId)
+            .Build();
 
         var message = SearchableDonorUpdateMessageBuilder.New
             .With(x => x.DeserializedBody, update)
@@ -155,7 +158,8 @@ public class DonorUpdateProcessorValidationTests
 
         var update = SearchableDonorUpdateBuilder.New
             .With(x => x.SearchableDonorInformation, donorInfo)
-            .With(x => x.DonorId, donorInfo.DonorId);
+            .With(x => x.DonorId, donorInfo.DonorId)
+            .Build();
 
         var message = SearchableDonorUpdateMessageBuilder.New
             .With(x => x.DeserializedBody, update)
@@ -184,7 +188,8 @@ public class DonorUpdateProcessorValidationTests
 
         var update = SearchableDonorUpdateBuilder.New
             .With(x => x.SearchableDonorInformation, donorInfo)
-            .With(x => x.DonorId, donorInfo.DonorId);
+            .With(x => x.DonorId, donorInfo.DonorId)
+            .Build();
 
         var message = SearchableDonorUpdateMessageBuilder.New
             .With(x => x.DeserializedBody, update)
@@ -211,7 +216,8 @@ public class DonorUpdateProcessorValidationTests
 
         var update = SearchableDonorUpdateBuilder.New
             .With(x => x.SearchableDonorInformation, donorInfo)
-            .With(x => x.DonorId, donorInfo.DonorId);
+            .With(x => x.DonorId, donorInfo.DonorId)
+            .Build();
 
         var message = SearchableDonorUpdateMessageBuilder.New
             .With(x => x.DeserializedBody, update)
@@ -258,7 +264,8 @@ public class DonorUpdateProcessorValidationTests
 
         var invalidUpdate = SearchableDonorUpdateBuilder.New
             .With(x => x.SearchableDonorInformation, invalidDonorInfo)
-            .With(x => x.DonorId, invalidDonorInfo.DonorId);
+            .With(x => x.DonorId, invalidDonorInfo.DonorId)
+            .Build();
 
         var invalidMessage = SearchableDonorUpdateMessageBuilder.New
             .With(x => x.DeserializedBody, invalidUpdate)

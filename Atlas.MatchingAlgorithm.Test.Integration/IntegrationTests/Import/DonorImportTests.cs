@@ -10,7 +10,8 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using FluentAssertions;
-using LochNessBuilder;
+using AutoFixture.Dsl;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
@@ -25,7 +26,7 @@ public class DonorImportTests
 
     private IDonorReader MockDonorReader { get; set; }
 
-    private Builder<Donor> IncrementingDonorBuilder => DonorBuilder.New.With(d => d.AtlasDonorId, DonorIdGenerator.NextId());
+    private IPostprocessComposer<Donor> IncrementingDonorBuilder => DonorBuilder.New.With(d => d.AtlasDonorId, DonorIdGenerator.NextId());
 
     [SetUp]
     public void SetUp()

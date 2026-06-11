@@ -1,13 +1,12 @@
 ﻿using Atlas.Client.Models.Search.Results.Matching.PerLocus;
-using LochNessBuilder;
-using ResultBuilder = LochNessBuilder.Builder<Atlas.Client.Models.Common.Results.LocusSearchResult>;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using ResultBuilder = AutoFixture.Dsl.IPostprocessComposer<Atlas.Client.Models.Common.Results.LocusSearchResult>;
 
 namespace Atlas.Functions.Test.Builders;
 
-[Builder]
 internal static class LocusScoreResultBuilder
 {
-    public static ResultBuilder New => ResultBuilder.New;
+    public static ResultBuilder New => FixtureBuilder.For<Atlas.Client.Models.Common.Results.LocusSearchResult>();
 
     public static ResultBuilder WithMatchGradesAtBothPositions(this ResultBuilder builder, LocusMatchCategory matchCategory, MatchGrade matchGrade)
     {

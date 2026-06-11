@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
 using Atlas.RepeatSearch.Test.TestHelpers.Builders;

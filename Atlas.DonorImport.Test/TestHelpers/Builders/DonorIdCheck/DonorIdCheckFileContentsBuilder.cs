@@ -1,52 +1,51 @@
 ﻿using System.Linq;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Test.TestHelpers.Models.DonorIdCheck;
-using LochNessBuilder;
+using AutoFixture.Dsl;
 
 namespace Atlas.DonorImport.Test.TestHelpers.Builders.DonorIdCheck;
 
-[Builder]
 internal static class DonorIdCheckFileContentsBuilder
 {
     private const string RecordIdPrefix = "record-id-";
 
-    public static Builder<SerializableDonorIdCheckerFileContent> New => Builder<SerializableDonorIdCheckerFileContent>.New
+    public static IPostprocessComposer<SerializableDonorIdCheckerFileContent> New => FixtureBuilder.For<SerializableDonorIdCheckerFileContent>()
         .With(c => c.donPool, "donPool")
         .With(c => c.donorType, ImportDonorType.Adult.ToString())
         .With(c => c.donors, Enumerable.Empty<string>());
 
-    public static Builder<SerializableDonorIdCheckerFileContent> WithDonorIds(
-        this Builder<SerializableDonorIdCheckerFileContent> builder,
+    public static IPostprocessComposer<SerializableDonorIdCheckerFileContent> WithDonorIds(
+        this IPostprocessComposer<SerializableDonorIdCheckerFileContent> builder,
         int numberOfIds) =>
         builder.With(c => c.donors, Enumerable.Range(0, numberOfIds).Select(id => $"{RecordIdPrefix}{id}"));
 
-    public static Builder<SerializableDonorIdCheckerFileContent> WithDonPool(
-        this Builder<SerializableDonorIdCheckerFileContent> builder,
+    public static IPostprocessComposer<SerializableDonorIdCheckerFileContent> WithDonPool(
+        this IPostprocessComposer<SerializableDonorIdCheckerFileContent> builder,
         string donPool) =>
         builder.With(c => c.donPool, donPool);
 
-    public static Builder<SerializableDonorIdCheckerFileContent> WithDonorType(
-        this Builder<SerializableDonorIdCheckerFileContent> builder,
+    public static IPostprocessComposer<SerializableDonorIdCheckerFileContent> WithDonorType(
+        this IPostprocessComposer<SerializableDonorIdCheckerFileContent> builder,
         ImportDonorType donorType) =>
         builder.With(c => c.donorType, donorType.ToString());
 
-    public static Builder<SerializableDonorIdCheckerFileContent> WithStringDonorType(
-        this Builder<SerializableDonorIdCheckerFileContent> builder,
+    public static IPostprocessComposer<SerializableDonorIdCheckerFileContent> WithStringDonorType(
+        this IPostprocessComposer<SerializableDonorIdCheckerFileContent> builder,
         string donorType) =>
         builder.With(c => c.donorType, donorType);
 }
 
 
-[Builder]
 internal static class InvalidDonorIdCheckFileContentsBuilder
 {
-    public static Builder<SerializableDonorIdCheckerFileContentWithInvalidPropertyOrder> FileWithInvalidPropertyOrder => Builder<SerializableDonorIdCheckerFileContentWithInvalidPropertyOrder>.New
+    public static IPostprocessComposer<SerializableDonorIdCheckerFileContentWithInvalidPropertyOrder> FileWithInvalidPropertyOrder => FixtureBuilder.For<SerializableDonorIdCheckerFileContentWithInvalidPropertyOrder>()
         .With(c => c.donPool, "donPool")
         .With(c => c.donorType, ImportDonorType.Adult.ToString())
         .With(c => c.donors, Enumerable.Empty<string>());
 
-    public static Builder<SerializableDonorIdCheckerFileContentWithUnexpectedProperty> FileWithUnexpectedProperty =>
-        Builder<SerializableDonorIdCheckerFileContentWithUnexpectedProperty>.New
+    public static IPostprocessComposer<SerializableDonorIdCheckerFileContentWithUnexpectedProperty> FileWithUnexpectedProperty =>
+        FixtureBuilder.For<SerializableDonorIdCheckerFileContentWithUnexpectedProperty>()
             .With(c => c.donPool, "donPool")
             .With(c => c.donorType, ImportDonorType.Adult.ToString())
             .With(c => c.donors, Enumerable.Empty<string>());

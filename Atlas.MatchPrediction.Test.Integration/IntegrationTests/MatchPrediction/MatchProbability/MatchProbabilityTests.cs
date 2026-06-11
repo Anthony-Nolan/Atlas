@@ -14,7 +14,7 @@ using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using FluentAssertions;
 using NUnit.Framework;
 
-// ReSharper disable InconsistentNaming - want to avoid calling "G groups" "gGroup", as "g" groups are a distinct thing 
+// ReSharper disable InconsistentNaming - want to avoid calling "G groups" "gGroup", as "g" groups are a distinct thing
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.MatchProbability;
 
@@ -335,9 +335,9 @@ public class MatchProbabilityTests : MatchProbabilityTestsBase
 
         await ImportFrequencies(new List<HaplotypeFrequency>
         {
-            DefaultHaplotypeFrequency1.WithFrequency(0.05m),
-            DefaultHaplotypeFrequency2.WithDataAt(Locus.A, "02:01:01G").WithFrequency(0.02m),
-            DefaultHaplotypeFrequency2.WithFrequency(0.07m),
+            DefaultHaplotypeFrequency1.WithFrequency(0.05m).Build(),
+            DefaultHaplotypeFrequency2.WithDataAt(Locus.A, "02:01:01G").WithFrequency(0.02m).Build(),
+            DefaultHaplotypeFrequency2.WithFrequency(0.07m).Build(),
         });
         var matchProbabilityInput = DefaultInputBuilder
             .WithPatientHla(patientHla)
@@ -379,10 +379,12 @@ public class MatchProbabilityTests : MatchProbabilityTestsBase
         await ImportFrequencies(new List<HaplotypeFrequency>
         {
             DefaultHaplotypeFrequency1
-                .WithFrequencyAsPercentage(sharedHaplotypeFrequencyAsPercentage),
+                .WithFrequencyAsPercentage(sharedHaplotypeFrequencyAsPercentage)
+                .Build(),
             DefaultHaplotypeFrequency1
                 .WithDataAt(ambiguousLocus, alleleDetailsAtAmbiguousLocus.Position2.GGroup)
-                .WithFrequencyAsPercentage(otherHaplotypeFrequencyAsPercentage),
+                .WithFrequencyAsPercentage(otherHaplotypeFrequencyAsPercentage)
+                .Build(),
         });
 
         var matchProbability = await CalculateMatchProbability(matchProbabilityInput);

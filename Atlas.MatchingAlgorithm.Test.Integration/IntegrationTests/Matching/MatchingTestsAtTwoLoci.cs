@@ -11,7 +11,6 @@ using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.TestHelpers;
-using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;

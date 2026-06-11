@@ -2,6 +2,7 @@
 using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.MatchPrediction;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.Functions.Services.MatchCategories;
 using Atlas.Functions.Test.Builders;
 using FluentAssertions;
@@ -65,7 +66,7 @@ internal class PositionalMatchCategoryServiceTests
     {
         var matchProbabilities = new MatchProbabilityResponse(new Probability(1m), AllowedLoci);
 
-        var response = categoryService.ReOrientatePositionalMatchCategories(matchProbabilities, ScoringResultBuilder.New.MatchedAtEveryLocus());
+        var response = categoryService.ReOrientatePositionalMatchCategories(matchProbabilities, ScoringResultBuilder.New.MatchedAtEveryLocus().Build());
 
         orientator.DidNotReceiveWithAnyArgs().AlignCategoriesToMismatchScore(Arg.Any<LocusMatchCategories>(), Arg.Any<LocusSearchResult>());
         CategoryAtEveryPositionShouldBe(PredictiveMatchCategory.Exact, response);
@@ -76,7 +77,7 @@ internal class PositionalMatchCategoryServiceTests
     {
         var matchProbabilities = new MatchProbabilityResponse(new Probability(0m), AllowedLoci);
 
-        categoryService.ReOrientatePositionalMatchCategories(matchProbabilities, ScoringResultBuilder.New.MismatchedAtEveryLocus());
+        categoryService.ReOrientatePositionalMatchCategories(matchProbabilities, ScoringResultBuilder.New.MismatchedAtEveryLocus().Build());
 
         orientator.ReceivedWithAnyArgs(AllowedLoci.Count).AlignCategoriesToMismatchScore(Arg.Any<LocusMatchCategories>(), Arg.Any<LocusSearchResult>());
     }

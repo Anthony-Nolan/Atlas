@@ -1,14 +1,14 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Models;
-using LochNessBuilder;
+﻿using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.MatchPrediction.Test.Verification.Models;
+using AutoFixture.Dsl;
 
 namespace Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
 
-[Builder]
 internal static class ActualVersusExpectedResultBuilder
 {
-    public static Builder<ActualVersusExpectedResult> New => Builder<ActualVersusExpectedResult>.New;
+    public static IPostprocessComposer<ActualVersusExpectedResult> New => FixtureBuilder.For<ActualVersusExpectedResult>();
 
-    public static Builder<ActualVersusExpectedResult> WithProbabilityAndCounts(this Builder<ActualVersusExpectedResult> builder, int probability, int pdpCount)
+    public static IPostprocessComposer<ActualVersusExpectedResult> WithProbabilityAndCounts(this IPostprocessComposer<ActualVersusExpectedResult> builder, int probability, int pdpCount)
     {
         return builder
             .With(x => x.Probability, probability)

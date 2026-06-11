@@ -10,7 +10,7 @@ using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
-using LochNessBuilder;
+using AutoFixture.Dsl;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -32,7 +32,7 @@ internal class PerformanceBenchmarks : MatchProbabilityTestsBase
         RegistryCode = RegistryCode
     };
 
-    private Builder<SingleDonorMatchProbabilityInput> InputBuilder => DefaultInputBuilder
+    private IPostprocessComposer<SingleDonorMatchProbabilityInput> InputBuilder => DefaultInputBuilder
         .WithDonorMetadata(frequencySetMetadata)
         .WithPatientMetadata(frequencySetMetadata);
 

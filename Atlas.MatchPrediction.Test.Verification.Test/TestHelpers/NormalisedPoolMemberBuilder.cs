@@ -1,12 +1,12 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Models;
-using LochNessBuilder;
+﻿using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.MatchPrediction.Test.Verification.Models;
+using AutoFixture.Dsl;
 
 namespace Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
 
-[Builder]
 internal static class NormalisedPoolMemberBuilder
 {
-    public static Builder<NormalisedPoolMember> New =>
-        Builder<NormalisedPoolMember>.New
-            .With(x => x.HaplotypeFrequency, HaplotypeFrequencyBuilder.Default);
+    public static IPostprocessComposer<NormalisedPoolMember> New =>
+        FixtureBuilder.For<NormalisedPoolMember>()
+            .With(x => x.HaplotypeFrequency, HaplotypeFrequencyBuilder.Default.Build());
 }

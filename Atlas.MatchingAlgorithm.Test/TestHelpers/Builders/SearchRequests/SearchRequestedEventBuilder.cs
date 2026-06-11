@@ -1,14 +1,14 @@
 ﻿using System;
 using Atlas.SearchTracking.Common.Models;
-using LochNessBuilder;
+using AutoFixture.Dsl;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 
-[Builder]
 internal static class SearchRequestedEventBuilder
 {
-    public static Builder<SearchRequestedEvent> New =>
-        Builder<SearchRequestedEvent>.New
+    public static IPostprocessComposer<SearchRequestedEvent> New =>
+        FixtureBuilder.For<SearchRequestedEvent>()
             .With(x => x.SearchIdentifier, new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"))
             .With(x => x.IsRepeatSearch, false)
             .With(x => x.SearchCriteria, "6/6")

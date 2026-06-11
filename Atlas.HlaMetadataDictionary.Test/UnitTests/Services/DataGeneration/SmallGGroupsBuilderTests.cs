@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
@@ -37,7 +38,7 @@ public class SmallGGroupsBuilderTests
             .AddPGroup(LocusName, "01:01P", pGroupAlleles)
             .AddGGroup(LocusName, "G-group", sharedAllele);
 
-        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset.Build());
 
         var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
         var smallG = result.Single();
@@ -58,7 +59,7 @@ public class SmallGGroupsBuilderTests
             .AddGGroup(LocusName, "G-group-1", new[] { sharedAllele, nullAllele1 })
             .AddGGroup(LocusName, "G-group-2", new[] { sharedAllele, nullAllele2 });
 
-        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset.Build());
 
         var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
         var smallG = result.Single();
@@ -83,7 +84,7 @@ public class SmallGGroupsBuilderTests
             .AddPGroup(differentLocusName, "99:99P", sharedAllele)
             .AddGGroup(differentLocusName, "different-locus-G-group", sharedAllele);
 
-        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset.Build());
 
         var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion)
             .OrderByDescending(g => g.Alleles.Count)
@@ -106,7 +107,7 @@ public class SmallGGroupsBuilderTests
         var dataset = WmdaDatasetBuilder.New
             .AddPGroup(LocusName, pGroupName , "01:01:01");
 
-        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset.Build());
 
         var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
         var smallG = result.Single();
@@ -126,7 +127,7 @@ public class SmallGGroupsBuilderTests
             .AddPGroup(LocusName, alleleName, alleleName)
             .AddGGroup(LocusName, alleleName, alleleName);
 
-        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset.Build());
 
         var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
         var smallG = result.Single();
@@ -146,7 +147,7 @@ public class SmallGGroupsBuilderTests
             .AddPGroup(LocusName, alleleName, alleleName)
             .AddGGroup(LocusName, alleleName, alleleName);
 
-        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset.Build());
 
         var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
         var smallG = result.Single();
@@ -173,7 +174,7 @@ public class SmallGGroupsBuilderTests
             .AddGGroup(LocusName, "G-group-with-only-nulls", new[] { fourFieldNullAllele1, fourFieldNullAllele2 })
             .AddGGroup(LocusName, nullAlleleWithDifferentTwoFields, nullAlleleWithDifferentTwoFields);
 
-        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset.Build());
 
         var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion)
             .OrderByDescending(g => g.Alleles.Count)
@@ -197,7 +198,7 @@ public class SmallGGroupsBuilderTests
             .AddGGroup(LocusName, nullAllele, nullAllele)
             .AddGGroup(differentLocusName, nullAllele, nullAllele);
 
-        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset.Build());
 
         var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion)
             .OrderBy(g => g.Locus)
@@ -224,7 +225,7 @@ public class SmallGGroupsBuilderTests
             .AddGGroup(LocusName, nullAllele1, nullAllele1)
             .AddGGroup(LocusName, nullAllele2, nullAllele2);
 
-        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset.Build());
 
         var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
         var smallG = result.Single();
@@ -253,7 +254,7 @@ public class SmallGGroupsBuilderTests
             .AddPGroup(LocusName, "P-group", pGroupAlleles)
             .AddGGroup(LocusName, "G-group", gGroupAlleles);
 
-        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset.Build());
 
         var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
         var smallG = result.Single();
@@ -284,7 +285,7 @@ public class SmallGGroupsBuilderTests
             .AddPGroup(LocusName, pGroupNameWithoutSuffix + "P", pGroupAlleles)
             .AddGGroup(LocusName, "G-group", gGroupAlleles);
 
-        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset.Build());
 
         var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
         var smallG = result.Single();
@@ -307,7 +308,7 @@ public class SmallGGroupsBuilderTests
             .AddPGroup(LocusName, alleleName, alleleName)
             .AddGGroup(LocusName, alleleName, alleleName);
 
-        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset.Build());
 
         var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
         var smallG = result.Single();
@@ -327,7 +328,7 @@ public class SmallGGroupsBuilderTests
     {
         var dataset = WmdaDatasetBuilder.New.AddGGroup(LocusName, nullAllele, nullAllele);
 
-        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset.Build());
 
         var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
         var smallG = result.Single();
@@ -354,7 +355,7 @@ public class SmallGGroupsBuilderTests
             .AddGGroup(LocusName, threeFieldNullAllele2, threeFieldNullAllele2)
             .AddGGroup(LocusName, "G-group-with-only-nulls", new[] { fourFieldNullAllele1, fourFieldNullAllele2 });
 
-        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+        wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset.Build());
 
         var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
         var smallG = result.Single();

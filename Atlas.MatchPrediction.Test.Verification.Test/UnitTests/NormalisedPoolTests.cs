@@ -1,4 +1,5 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Models;
+﻿using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
 using FluentAssertions;
 using NUnit.Framework;
@@ -43,7 +44,7 @@ public class NormalisedPoolTests
             .Build();
 
         var secondMember = NormalisedPoolMemberBuilder.New
-            .With(x => x.HaplotypeFrequency, HaplotypeFrequencyBuilder.Default.With(h => h.A, secondMemberA))
+            .With(x => x.HaplotypeFrequency, HaplotypeFrequencyBuilder.Default.With(h => h.A, secondMemberA).Build())
             .With(x => x.CopyNumber, 3)
             .With(x => x.PoolIndexLowerBoundary, firstMember.PoolIndexUpperBoundary + 1)
             .Build();

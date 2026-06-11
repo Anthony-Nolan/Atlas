@@ -6,9 +6,10 @@ using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.MatchProbability;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
+using AutoFixture.Dsl;
 using FluentAssertions;
-using LochNessBuilder;
 using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Services.MatchProbability;
@@ -25,7 +26,7 @@ public class MatchProbabilityCalculatorTests
 
     private static readonly ISet<Locus> AllowedLoci = new HashSet<Locus> {Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1};
 
-    private Builder<GenotypeMatchDetails> DefaultMatchDetailsBuilder => GenotypeMatchDetailsBuilder.New
+    private IPostprocessComposer<GenotypeMatchDetails> DefaultMatchDetailsBuilder => GenotypeMatchDetailsBuilder.New
         .WithAvailableLoci(AllowedLoci);
         
     [SetUp]

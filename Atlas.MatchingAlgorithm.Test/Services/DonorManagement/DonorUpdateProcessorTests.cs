@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.ServiceBus;
 using Atlas.Common.ServiceBus.BatchReceiving;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Services.DonorUpdates;
@@ -36,8 +37,8 @@ public class DonorUpdateProcessorTests
     private IDonorReader donorReader;
     private IDonorUpdatesSaver donorUpdatesSaver;
 
-    private readonly DataRefreshRecord dbARefreshing = DataRefreshRecordBuilder.New.WithDatabase(DatabaseA);
-    private readonly DataRefreshRecord dbBRefreshing = DataRefreshRecordBuilder.New.WithDatabase(DatabaseB);
+    private readonly DataRefreshRecord dbARefreshing = DataRefreshRecordBuilder.New.WithDatabase(DatabaseA).Build();
+    private readonly DataRefreshRecord dbBRefreshing = DataRefreshRecordBuilder.New.WithDatabase(DatabaseB).Build();
 
     [SetUp]
     public void Setup()

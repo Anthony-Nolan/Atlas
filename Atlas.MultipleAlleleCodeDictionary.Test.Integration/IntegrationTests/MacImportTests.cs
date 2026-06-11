@@ -1,4 +1,5 @@
 using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
@@ -99,10 +100,10 @@ internal class MacImportTests
     [Test]
     public async Task ImportMacs_WithMacsOfDifferentLength_DoesNotReImportAnyMacs()
     {
-        var shorterEarlyMac = MacBuilder.New.With(m => m.Code, "AA");
-        var shorterLateMac = MacBuilder.New.With(m => m.Code, "ZZ");
-        var longerEarlyMac = MacBuilder.New.With(m => m.Code, "AAA");
-        var longerLateMac = MacBuilder.New.With(m => m.Code, "AAZ");
+        var shorterEarlyMac = MacBuilder.New.With(m => m.Code, "AA").Build();
+        var shorterLateMac = MacBuilder.New.With(m => m.Code, "ZZ").Build();
+        var longerEarlyMac = MacBuilder.New.With(m => m.Code, "AAA").Build();
+        var longerLateMac = MacBuilder.New.With(m => m.Code, "AAZ").Build();
 
         mockDownloader.DownloadAndUnzipStream().Returns(
             MacSourceFileBuilder.BuildMacFile(shorterEarlyMac, shorterLateMac, longerEarlyMac));

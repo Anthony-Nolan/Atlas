@@ -1,17 +1,16 @@
 using System;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
-using LochNessBuilder;
-using Builder = LochNessBuilder.Builder<Atlas.MatchPrediction.Data.Models.HaplotypeFrequency>;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Composer = AutoFixture.Dsl.IPostprocessComposer<Atlas.MatchPrediction.Data.Models.HaplotypeFrequency>;
 
 namespace Atlas.MatchPrediction.Test.TestHelpers.Builders;
 
-[Builder]
 public static class HaplotypeFrequencyBuilder
 {
-    public static Builder New => Builder.New;
+    public static Composer New => FixtureBuilder.For<Atlas.MatchPrediction.Data.Models.HaplotypeFrequency>();
 
-    public static Builder WithHaplotype(this Builder builder, LociInfo<string> haplotype)
+    public static Composer WithHaplotype(this Composer builder, LociInfo<string> haplotype)
     {
         return builder
             .With(r => r.A, haplotype.A)
@@ -21,7 +20,7 @@ public static class HaplotypeFrequencyBuilder
             .With(r => r.DRB1, haplotype.Drb1);
     }
 
-    public static Builder WithDataAt(this Builder builder, Locus locus, string hla)
+    public static Composer WithDataAt(this Composer builder, Locus locus, string hla)
     {
         return locus switch
         {
@@ -35,12 +34,12 @@ public static class HaplotypeFrequencyBuilder
         };
     }
 
-    public static Builder WithFrequency(this Builder builder, decimal frequency)
+    public static Composer WithFrequency(this Composer builder, decimal frequency)
     {
         return builder.With(f => f.Frequency, frequency);
     }
 
-    public static Builder WithFrequencyAsPercentage(this Builder builder, int frequencyPercentage)
+    public static Composer WithFrequencyAsPercentage(this Composer builder, int frequencyPercentage)
     {
         return builder.With(f => f.Frequency, decimal.Divide(frequencyPercentage, 100));
     }

@@ -5,6 +5,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using AutoFixture;
@@ -242,7 +243,7 @@ public class MatchProbabilityServiceTests
             {
                 IsDonorPhenotypeUnrepresented = false,
                 IsPatientPhenotypeUnrepresented = false,
-                MatchProbabilities = MatchProbabilitiesBuilder.New.WithAllProbabilityValuesSetTo(probability)
+                MatchProbabilities = MatchProbabilitiesBuilder.New.WithAllProbabilityValuesSetTo(probability).Build()
             });
 
         var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();

@@ -3,7 +3,8 @@ using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 using FluentAssertions;
-using LochNessBuilder;
+using AutoFixture.Dsl;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Models.SearchResults;
@@ -15,7 +16,7 @@ internal class DenominatorTests
     /// Using <see cref="OriginalMatchingAlgorithmResultSet"/> as concrete representation of underlying base class <see cref="ResultSet{TResult}"/>
     /// to test base functionality of <see cref="ResultSet{TResult}.MatchCriteriaDenominator"/> and <see cref="ResultSet{TResult}.ScoringCriteriaDenominator"/>
     /// </summary>
-    private static Builder<OriginalMatchingAlgorithmResultSet> ResultBuilder => Builder<OriginalMatchingAlgorithmResultSet>.New;
+    private static IPostprocessComposer<OriginalMatchingAlgorithmResultSet> ResultBuilder => FixtureBuilder.For<OriginalMatchingAlgorithmResultSet>();
 
     [Test]
     public void MatchCriteriaDenominator_MatchAllLoci_Returns10([Range(0, 2)] int mismatchCount)

@@ -1,5 +1,6 @@
 ﻿using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using FluentAssertions;
 using NUnit.Framework;

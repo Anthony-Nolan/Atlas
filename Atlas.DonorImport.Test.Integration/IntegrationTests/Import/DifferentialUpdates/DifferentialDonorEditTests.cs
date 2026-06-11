@@ -11,8 +11,9 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture.Dsl;
 using FluentAssertions;
-using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
@@ -33,11 +34,11 @@ public class DifferentialDonorEditTests
 
     private List<Donor> InitialDonors;
     private const int InitialCount = 10;
-    private readonly Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
+    private readonly IPostprocessComposer<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
 
-    private Builder<DonorUpdate> donorEditBuilderForInitialDonors =>
+    private IPostprocessComposer<DonorUpdate> donorEditBuilderForInitialDonors =>
         DonorUpdateBuilder.New
-            .With(update => update.RecordId, InitialDonors.Select(donor => donor.ExternalDonorCode))
+            .WithSequence(update => update.RecordId, InitialDonors.Select(donor => donor.ExternalDonorCode))
             .With(upd => upd.ChangeType, ImportDonorChangeType.Edit);
 
     private const string hla1 = "*01:01";
@@ -79,7 +80,7 @@ public class DifferentialDonorEditTests
             DonorUpdateBuilder.New
                 .WithRecordIdPrefix(DonorCodePrefix)
                 .With(donor => donor.ChangeType, ImportDonorChangeType.Create)
-                .With(donor => donor.Hla, new[] { hlaObject1, hlaObject2 })
+                .WithSequence(donor => donor.Hla, new[] { hlaObject1, hlaObject2 })
                 .Build(InitialCount).ToArray();
         var donorUpdateFile = fileBuilder.WithDonors(newDonorUpdates).Build();
 
@@ -106,7 +107,7 @@ public class DifferentialDonorEditTests
             .With(donor => donor.Hla, hlaObject3)
             .Build();
 
-        var donorEditFile = fileBuilder.WithDonors(donorEdit);
+        var donorEditFile = fileBuilder.WithDonors(donorEdit).Build();
 
         //ACT
         await donorFileImporter.ImportDonorFile(donorEditFile);
@@ -125,7 +126,7 @@ public class DifferentialDonorEditTests
             .With(donor => donor.Hla, hlaObject1)
             .Build();
 
-        var donorEditFile = fileBuilder.WithDonors(donorEdit);
+        var donorEditFile = fileBuilder.WithDonors(donorEdit).Build();
 
         var updatesCountBeforeImport = await updatesInspectionRepository.Count();
 
@@ -147,7 +148,7 @@ public class DifferentialDonorEditTests
             .With(donor => donor.Hla, hlaObject3)
             .Build(2).ToArray();
 
-        var donorEditFile = fileBuilder.WithDonors(donorEdit);
+        var donorEditFile = fileBuilder.WithDonors(donorEdit).Build();
 
         //ACT
         await donorFileImporter.ImportDonorFile(donorEditFile);
@@ -162,10 +163,10 @@ public class DifferentialDonorEditTests
     public async Task ImportDonors_ForMultipleEdits_WhereNoPertinentInfoChangedForSingleDonor_RecordsAreChangedInDatabaseForDonorWithPertinentInfoThatChanged()
     {
         var donorEdit = donorEditBuilderForInitialDonors
-            .With(donor => donor.Hla, new[] { hlaObject1, hlaObject3 })
+            .WithSequence(donor => donor.Hla, new[] { hlaObject1, hlaObject3 })
             .Build(2).ToArray();
 
-        var donorEditFile = fileBuilder.WithDonors(donorEdit);
+        var donorEditFile = fileBuilder.WithDonors(donorEdit).Build();
 
         //ACT
         await donorFileImporter.ImportDonorFile(donorEditFile);
@@ -181,10 +182,10 @@ public class DifferentialDonorEditTests
     public async Task ImportDonors_ForEdits_SavesPublishableUpdatesMatchingTheNewProperties_AndAtlasIds()
     {
         var donorEdit = donorEditBuilderForInitialDonors
-            .With(donor => donor.Hla, new[] { hlaObject3, hlaObject1 })
+            .WithSequence(donor => donor.Hla, new[] { hlaObject3, hlaObject1 })
             .Build(2).ToArray();
 
-        var donorEditFile = fileBuilder.WithDonors(donorEdit);
+        var donorEditFile = fileBuilder.WithDonors(donorEdit).Build();
 
         //ACT
         await donorFileImporter.ImportDonorFile(donorEditFile);
@@ -210,7 +211,7 @@ public class DifferentialDonorEditTests
             .With(update => update.RecordId, "Unknown")
             .Build(editsCount).ToArray();
 
-        var donorEditFile = fileBuilder.WithDonors(donorEdits);
+        var donorEditFile = fileBuilder.WithDonors(donorEdits).Build();
 
         var updatesCountBeforeImport = await updatesInspectionRepository.Count();
 

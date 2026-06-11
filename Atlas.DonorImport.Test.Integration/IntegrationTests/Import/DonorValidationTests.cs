@@ -10,8 +10,9 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture.Dsl;
 using FluentAssertions;
-using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -26,9 +27,9 @@ public class DonorValidationTests
     private IDonorImportFailuresCleaner donorImportFailuresCleaner;
     private FailureLogsSettings failureLogsSettings;
 
-    private readonly Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
+    private readonly IPostprocessComposer<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
 
-    private Builder<DonorUpdate> DonorCreationBuilder =>
+    private IPostprocessComposer<DonorUpdate> DonorCreationBuilder =>
         DonorUpdateBuilder.New
             .WithRecordIdPrefix("external-donor-code-")
             .With(upd => upd.ChangeType, ImportDonorChangeType.Create);
@@ -91,7 +92,7 @@ public class DonorValidationTests
 
         var modifiedDonor = DonorUpdateBuilder.New
             .With(du => du.RecordId, donorUpdate.RecordId)
-            .With(du => du.Hla, HlaBuilder.Default.WithMolecularHlaAtLocus(Locus.A, null, null))
+            .With(du => du.Hla, HlaBuilder.Default.WithMolecularHlaAtLocus(Locus.A, null, null).Build())
             .With(upd => upd.ChangeType, ImportDonorChangeType.Edit)
             .Build();
         var modifiedDonorFile = fileBuilder.WithDonors(modifiedDonor).Build();
@@ -108,7 +109,7 @@ public class DonorValidationTests
     {
         var donorUpdate = DonorUpdateBuilder.New
             .WithRecordIdPrefix("external-donor-code-")
-            .With(du => du.Hla, HlaBuilder.Default.WithMolecularHlaAtLocus(Locus.A, null, null))
+            .With(du => du.Hla, HlaBuilder.Default.WithMolecularHlaAtLocus(Locus.A, null, null).Build())
             .With(upd => upd.ChangeType, ImportDonorChangeType.Upsert)
             .Build();
         var file = fileBuilder.WithDonors(donorUpdate).Build();
@@ -128,7 +129,7 @@ public class DonorValidationTests
 
         var modifiedDonor = DonorUpdateBuilder.New
             .With(du => du.RecordId, donorUpdate.RecordId)
-            .With(du => du.Hla, HlaBuilder.Default.WithMolecularHlaAtLocus(Locus.A, null, null))
+            .With(du => du.Hla, HlaBuilder.Default.WithMolecularHlaAtLocus(Locus.A, null, null).Build())
             .With(upd => upd.ChangeType, ImportDonorChangeType.Upsert)
             .Build();
         var modifiedDonorFile = fileBuilder.WithDonors(modifiedDonor).Build();

@@ -1,40 +1,40 @@
 using System;
 using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Test.TestHelpers.Models;
-using LochNessBuilder;
+using AutoFixture.Dsl;
 
 namespace Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 
-[Builder]
 internal static class DonorImportFileBuilder
 {
-    public static Builder<DonorImportFile> NewWithoutContents => Builder<DonorImportFile>.New
+    public static IPostprocessComposer<DonorImportFile> NewWithoutContents => FixtureBuilder.For<DonorImportFile>()
         .WithFileLocation("file-location-")
         .WithMessageId("message-id-")
         .With(t => t.UploadTime, DateTime.Now);
 
-    public static Builder<DonorImportFile> NewWithDefaultContents => NewWithoutContents
+    public static IPostprocessComposer<DonorImportFile> NewWithDefaultContents => NewWithoutContents
         .With(f => f.Contents, DonorImportFileContentsBuilder.New.Build().ToStream());
 
-    public static Builder<DonorImportFile> NewWithMetadata(string fileName, string messageId, DateTime uploadTime)
+    public static IPostprocessComposer<DonorImportFile> NewWithMetadata(string fileName, string messageId, DateTime uploadTime)
     {
-        return Builder<DonorImportFile>.New
+        return FixtureBuilder.For<DonorImportFile>()
             .With(t => t.FileLocation, fileName)
             .With(t => t.MessageId, messageId)
             .With(t => t.UploadTime, uploadTime);
     }
 
-    public static Builder<DonorImportFile> WithContents(
-        this Builder<DonorImportFile> builder,
-        Builder<SerialisableDonorImportFileContents> contentsBuilder)
+    public static IPostprocessComposer<DonorImportFile> WithContents(
+        this IPostprocessComposer<DonorImportFile> builder,
+        IPostprocessComposer<SerialisableDonorImportFileContents> contentsBuilder)
     {
         return builder
             .With(f => f.Contents, contentsBuilder.Build().ToStream());
     }
 
-    public static Builder<DonorImportFile> WithDonorCount(this Builder<DonorImportFile> builder, int numberOfDonors, bool isInitialImport = false)
+    public static IPostprocessComposer<DonorImportFile> WithDonorCount(this IPostprocessComposer<DonorImportFile> builder, int numberOfDonors, bool isInitialImport = false)
     {
         return builder
             .With(f => f.Contents, DonorImportFileContentsBuilder.New
@@ -44,16 +44,16 @@ internal static class DonorImportFileBuilder
                 .ToStream());
     }
 
-    public static Builder<DonorImportFile> WithDonors(this Builder<DonorImportFile> builder, params DonorUpdate[] donors)
+    public static IPostprocessComposer<DonorImportFile> WithDonors(this IPostprocessComposer<DonorImportFile> builder, params DonorUpdate[] donors)
     {
         return builder
             .With(f => f.Contents, DonorImportFileContentsBuilder.New.WithDonors(donors).Build().ToStream());
     }
 
-    public static Builder<DonorImportFile> WithInitialDonors(this Builder<DonorImportFile> builder, params DonorUpdate[] donors)
+    public static IPostprocessComposer<DonorImportFile> WithInitialDonors(this IPostprocessComposer<DonorImportFile> builder, params DonorUpdate[] donors)
         => builder.WithInitialDonorsAndUpdateMode(UpdateMode.Full, donors);
 
-    public static Builder<DonorImportFile> WithInitialDonorsAndUpdateMode(this Builder<DonorImportFile> builder, UpdateMode updateMode, params DonorUpdate[] donors)
+    public static IPostprocessComposer<DonorImportFile> WithInitialDonorsAndUpdateMode(this IPostprocessComposer<DonorImportFile> builder, UpdateMode updateMode, params DonorUpdate[] donors)
     {
         return builder
             .With(f => f.Contents, DonorImportFileContentsBuilder.New
@@ -63,13 +63,13 @@ internal static class DonorImportFileBuilder
                 .ToStream());
     }
 
-    private static Builder<DonorImportFile> WithFileLocation(this Builder<DonorImportFile> builder, string recordIdPrefix)
+    private static IPostprocessComposer<DonorImportFile> WithFileLocation(this IPostprocessComposer<DonorImportFile> builder, string recordIdPrefix)
     {
-        return builder.WithFactory(d => d.FileLocation, IncrementingIdGenerator.NextStringIdFactory(recordIdPrefix));
+        return builder.With(d => d.FileLocation, IncrementingIdGenerator.NextStringIdFactory(recordIdPrefix));
     }
 
-    private static Builder<DonorImportFile> WithMessageId(this Builder<DonorImportFile> builder, string messageIdPrefix)
+    private static IPostprocessComposer<DonorImportFile> WithMessageId(this IPostprocessComposer<DonorImportFile> builder, string messageIdPrefix)
     {
-        return builder.WithFactory(d => d.MessageId, IncrementingIdGenerator.NextStringIdFactory(messageIdPrefix));
+        return builder.With(d => d.MessageId, IncrementingIdGenerator.NextStringIdFactory(messageIdPrefix));
     }
 }

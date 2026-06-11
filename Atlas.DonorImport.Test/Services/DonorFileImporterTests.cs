@@ -5,6 +5,7 @@ using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Logger;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using NSubstitute;
 using NUnit.Framework;
 using System.Threading.Tasks;

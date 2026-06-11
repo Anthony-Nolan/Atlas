@@ -14,6 +14,7 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Services.DonorChecker;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using FluentAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -161,7 +162,7 @@ public class DonorInfoCheckerTests
     [Test]
     public async Task CompareDonorInfoInFileToAtlasDonorStore_WhenEmptyDonorFileException_SendsAlert()
     {
-        var file = DonorImportFileBuilder.NewWithoutContents.With(x => x.FileLocation, "name-of-the-file.ext");
+        var file = DonorImportFileBuilder.NewWithoutContents.With(x => x.FileLocation, "name-of-the-file.ext").Build();
         var fileParserResult = Substitute.For<ILazilyParsingDonorFile>();
         fileParserResult.ReadLazyDonorUpdates().Throws<EmptyDonorFileException>();
         fileParser.PrepareToLazilyParseDonorUpdates(default).Returns(fileParserResult);
@@ -174,7 +175,7 @@ public class DonorInfoCheckerTests
     [Test]
     public async Task CompareDonorInfoInFileToAtlasDonorStore_DisposeIsCalledOnILazilyParsingDonorFile()
     {
-        var file = DonorImportFileBuilder.NewWithoutContents.With(x => x.FileLocation, "name-of-the-file.ext");
+        var file = DonorImportFileBuilder.NewWithoutContents.With(x => x.FileLocation, "name-of-the-file.ext").Build();
         var fileParserResult = Substitute.For<ILazilyParsingDonorFile>();
 
         // Throwing an exception for not mocking parser beahvior. For purposes of this test should be enough, as Dispose is called anyway regardles was exception raised or not.

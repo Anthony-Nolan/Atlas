@@ -8,9 +8,10 @@ using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture.Dsl;
 using FluentAssertions;
 using FluentValidation;
-using LochNessBuilder;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -26,7 +27,7 @@ namespace Atlas.MatchPrediction.Test.Services;
 internal class MatchPredictionRequestRunnerTests
 {
     private const string DefaultRequestId = "request-id";
-    private static readonly Builder<IdentifiedMatchPredictionRequest> DefaultRequestBuilder = Builder<IdentifiedMatchPredictionRequest>.New
+    private static readonly IPostprocessComposer<IdentifiedMatchPredictionRequest> DefaultRequestBuilder = FixtureBuilder.For<IdentifiedMatchPredictionRequest>()
         .With(x => x.Id, DefaultRequestId)
         .With(x => x.SingleDonorMatchProbabilityInput, new SingleDonorMatchProbabilityInput());
 
@@ -229,7 +230,7 @@ internal class MatchPredictionRequestRunnerTests
 
 internal static class MatchPredictionRunnerTestsBuilderExtensions
 {
-    public static Builder<IdentifiedMatchPredictionRequest> WithDonorOfId(this Builder<IdentifiedMatchPredictionRequest> builder, int donorId)
+    public static IPostprocessComposer<IdentifiedMatchPredictionRequest> WithDonorOfId(this IPostprocessComposer<IdentifiedMatchPredictionRequest> builder, int donorId)
     {
         return builder.With(x => x.SingleDonorMatchProbabilityInput, new SingleDonorMatchProbabilityInput
         {

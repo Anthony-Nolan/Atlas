@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
@@ -64,9 +65,9 @@ public class StalledDonorImportTests
 
         // Set up initial stalled import
         var fileBuilderBase = DonorImportFileBuilder.NewWithMetadata(fileName, messageId, uploadTime);
-        await donorImportFileHistoryService.RegisterStartOfDonorImport(fileBuilderBase);
+        await donorImportFileHistoryService.RegisterStartOfDonorImport(fileBuilderBase.Build());
 
-        var donorFileRetry = fileBuilderBase.WithDonorCount(donorCount);
+        var donorFileRetry = fileBuilderBase.WithDonorCount(donorCount).Build();
         await donorFileImporter.ImportDonorFile(donorFileRetry);
 
         donorRepository.StreamAllDonors().Count().Should().Be(donorCount);
@@ -80,10 +81,10 @@ public class StalledDonorImportTests
         var uploadTime = DateTime.Now;
 
         // Set up initial stalled import
-        var donorFile = DonorImportFileBuilder.NewWithMetadata(fileName, messageId, uploadTime);
+        var donorFile = DonorImportFileBuilder.NewWithMetadata(fileName, messageId, uploadTime).Build();
         await donorImportFileHistoryService.RegisterStartOfDonorImport(donorFile);
 
-        var donorFileRetry = DonorImportFileBuilder.NewWithMetadata(fileName, "Different-Message_Id", uploadTime).WithDonorCount(10);
+        var donorFileRetry = DonorImportFileBuilder.NewWithMetadata(fileName, "Different-Message_Id", uploadTime).WithDonorCount(10).Build();
 
         // Act
         await donorFileImporter.ImportDonorFile(donorFileRetry);

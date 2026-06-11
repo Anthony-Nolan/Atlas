@@ -9,8 +9,9 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture.Dsl;
 using FluentAssertions;
-using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Donor = Atlas.DonorImport.Data.Models.Donor;
@@ -23,11 +24,11 @@ public class DifferentialDonorUpsertTests
     private IDonorInspectionRepository donorRepository;
     private IPublishableDonorUpdatesInspectionRepository updatesInspectionRepository;
     private IDonorFileImporter fileImporter;
-    private readonly Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
+    private readonly IPostprocessComposer<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
 
     private const string DonorCodePrefix = "external-donor-code-";
-        
-    private Builder<DonorUpdate> DonorBuilder => DonorUpdateBuilder.New
+
+    private IPostprocessComposer<DonorUpdate> DonorBuilder => DonorUpdateBuilder.New
         .WithRecordIdPrefix(DonorCodePrefix)
         .With(du => du.ChangeType, ImportDonorChangeType.Upsert);
 
@@ -66,7 +67,7 @@ public class DifferentialDonorUpsertTests
     {
         var initialDonors = DonorBuilder
             .With(du => du.ChangeType, ImportDonorChangeType.Create)
-            .With(du => du.Hla, new[] {hlaObject1, hlaObject2})
+            .WithSequence(du => du.Hla, new[] {hlaObject1, hlaObject2})
             .Build(InitialDonorsCount).ToArray();
 
         var initialDonorsFile = fileBuilder.WithDonors(initialDonors).Build();
@@ -90,7 +91,7 @@ public class DifferentialDonorUpsertTests
 
         var additionDonors = DonorBuilder.Build(additionCount).ToArray();
 
-        var donorsFile = fileBuilder.WithDonors(additionDonors);
+        var donorsFile = fileBuilder.WithDonors(additionDonors).Build();
 
         // ACT
         await fileImporter.ImportDonorFile(donorsFile);
@@ -105,12 +106,12 @@ public class DifferentialDonorUpsertTests
         const int modifiedCount = 3;
 
         var modifiedDonors = DonorBuilder
-            .With(du => du.RecordId, InitialDonors.Select(donor => donor.ExternalDonorCode))
+            .WithSequence(du => du.RecordId, InitialDonors.Select(donor => donor.ExternalDonorCode))
             .With(du => du.Hla, hlaObject3)
             .Build(modifiedCount).ToArray();
         var modifiedDonorCodes = modifiedDonors.Select(d => d.RecordId).ToArray();
 
-        var donorsFile = fileBuilder.WithDonors(modifiedDonors);
+        var donorsFile = fileBuilder.WithDonors(modifiedDonors).Build();
 
         // ACT
         await fileImporter.ImportDonorFile(donorsFile);
@@ -143,13 +144,13 @@ public class DifferentialDonorUpsertTests
             .Build(additionCount).ToArray();
 
         var modifiedDonors = DonorBuilder
-            .With(du => du.RecordId, InitialDonors.Select(d => d.ExternalDonorCode))
+            .WithSequence(du => du.RecordId, InitialDonors.Select(d => d.ExternalDonorCode))
             .With(du => du.Hla, hlaObject3)
             .Build(modifiedCount).ToArray();
         var modifiedDonorCodes = modifiedDonors.Select(d => d.RecordId).ToArray();
 
         var mixedDonors = additionDonors.Union(modifiedDonors).ToArray();
-        var mixedDonorsFile = fileBuilder.WithDonors(mixedDonors);
+        var mixedDonorsFile = fileBuilder.WithDonors(mixedDonors).Build();
 
         // ACT
         await fileImporter.ImportDonorFile(mixedDonorsFile);
@@ -175,10 +176,10 @@ public class DifferentialDonorUpsertTests
     public async Task ImportDonors_ForUpsert_NoPertinentInfoChanged_DatabaseNotChanged_NorSavesPublishableUpdates()
     {
         var modifiedDonor = DonorBuilder
-            .With(du => du.RecordId, InitialDonors.Select(d => d.ExternalDonorCode))
+            .WithSequence(du => du.RecordId, InitialDonors.Select(d => d.ExternalDonorCode))
             .With(du => du.Hla, hlaObject1)
             .Build();
-        var donorFile = fileBuilder.WithDonors(modifiedDonor);
+        var donorFile = fileBuilder.WithDonors(modifiedDonor).Build();
 
         var updatesCountBeforeImport = await updatesInspectionRepository.Count();
 
@@ -205,12 +206,12 @@ public class DifferentialDonorUpsertTests
             .Build(additionCount).ToArray();
 
         var modifiedDonors = DonorBuilder
-            .With(du => du.RecordId, InitialDonors.Select(d => d.ExternalDonorCode))
+            .WithSequence(du => du.RecordId, InitialDonors.Select(d => d.ExternalDonorCode))
             .With(du => du.Hla, hlaObject3)
             .Build(modifiedCount).ToArray();
 
         var mixedDonors = additionDonors.Union(modifiedDonors).ToArray();
-        var mixedDonorsFile = fileBuilder.WithDonors(mixedDonors);
+        var mixedDonorsFile = fileBuilder.WithDonors(mixedDonors).Build();
 
         var updatesCountBeforeImport = await updatesInspectionRepository.Count();
 

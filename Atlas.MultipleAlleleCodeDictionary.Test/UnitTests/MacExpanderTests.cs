@@ -1,4 +1,5 @@
-﻿using Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders;
+﻿using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders;
 using NUnit.Framework;
 using System.Linq;
 using Atlas.MultipleAlleleCodeDictionary.Services;
@@ -48,7 +49,7 @@ public class MacExpanderTests
     {
         var genericHla = "01/02/03";
         var firstField = "10";
-        var genericMac = MacBuilder.New.With(m => m.Hla, genericHla).With(m => m.IsGeneric, true);
+        var genericMac = MacBuilder.New.With(m => m.Hla, genericHla).With(m => m.IsGeneric, true).Build();
 
         var result = macExpander.ExpandMac(genericMac, firstField);
             

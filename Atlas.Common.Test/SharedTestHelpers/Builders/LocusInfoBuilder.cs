@@ -1,10 +1,7 @@
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
-using LochNessBuilder;
-
 namespace Atlas.Common.Test.SharedTestHelpers.Builders;
 
-[Builder]
 internal class LocusInfoBuilder<T>
 {
     private LocusInfo<T> locusInfo;

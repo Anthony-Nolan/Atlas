@@ -1,36 +1,36 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Services.Verification;
-using LochNessBuilder;
+using AutoFixture.Dsl;
 
 namespace Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
 
-[Builder]
 internal static class GenotypeSimulantsInfoBuilder
 {
-    public static Builder<GenotypeSimulantsInfo> New => Builder<GenotypeSimulantsInfo>.New;
+    public static IPostprocessComposer<GenotypeSimulantsInfo> New => FixtureBuilder.For<GenotypeSimulantsInfo>();
 
-    public static Builder<GenotypeSimulantsInfo> WithEmptySimulantsInfo => New
+    public static IPostprocessComposer<GenotypeSimulantsInfo> WithEmptySimulantsInfo => New
         .WithPatients(new List<Simulant>())
         .WithDonors(new List<Simulant>());
 
-    public static Builder<GenotypeSimulantsInfo> WithPatient(this Builder<GenotypeSimulantsInfo> builder, Simulant simulant)
+    public static IPostprocessComposer<GenotypeSimulantsInfo> WithPatient(this IPostprocessComposer<GenotypeSimulantsInfo> builder, Simulant simulant)
     {
         return builder.WithPatients(new[] { simulant });
     }
 
-    public static Builder<GenotypeSimulantsInfo> WithDonor(this Builder<GenotypeSimulantsInfo> builder, Simulant simulant)
+    public static IPostprocessComposer<GenotypeSimulantsInfo> WithDonor(this IPostprocessComposer<GenotypeSimulantsInfo> builder, Simulant simulant)
     {
         return builder.WithDonors(new[] { simulant });
     }
 
-    private static Builder<GenotypeSimulantsInfo> WithPatients(this Builder<GenotypeSimulantsInfo> builder, IReadOnlyCollection<Simulant> simulants)
+    private static IPostprocessComposer<GenotypeSimulantsInfo> WithPatients(this IPostprocessComposer<GenotypeSimulantsInfo> builder, IReadOnlyCollection<Simulant> simulants)
     {
         return builder.With(x => x.Patients, BuildSimulantsInfo(simulants));
     }
 
-    private static Builder<GenotypeSimulantsInfo> WithDonors(this Builder<GenotypeSimulantsInfo> builder, IReadOnlyCollection<Simulant> simulants)
+    private static IPostprocessComposer<GenotypeSimulantsInfo> WithDonors(this IPostprocessComposer<GenotypeSimulantsInfo> builder, IReadOnlyCollection<Simulant> simulants)
     {
         return builder.With(x => x.Donors, BuildSimulantsInfo(simulants));
     }

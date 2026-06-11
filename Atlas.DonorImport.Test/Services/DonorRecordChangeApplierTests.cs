@@ -10,6 +10,7 @@ using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
@@ -112,7 +113,7 @@ internal class DonorRecordChangeApplierTests
         //ARRANGE
         var donorUpdates = DonorUpdateBuilder.New
             .With(d => d.UpdateMode, UpdateMode.Differential)
-            .With(d => d.ChangeType, new[] { ImportDonorChangeType.Create, ImportDonorChangeType.Delete, ImportDonorChangeType.Edit })
+            .WithSequence(d => d.ChangeType, new[] { ImportDonorChangeType.Create, ImportDonorChangeType.Delete, ImportDonorChangeType.Edit })
             .Build(21)
             .ToList();
 

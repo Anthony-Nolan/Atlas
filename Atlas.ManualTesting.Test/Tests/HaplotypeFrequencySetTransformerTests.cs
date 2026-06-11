@@ -1,10 +1,11 @@
 ﻿using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.ManualTesting.Models;
 using Atlas.ManualTesting.Services.HaplotypeFrequencySet;
 using Atlas.ManualTesting.Test.TestHelpers;
 using Atlas.MatchPrediction.Models.FileSchema;
+using AutoFixture.Dsl;
 using FluentAssertions;
-using LochNessBuilder;
 using NUnit.Framework;
 
 namespace Atlas.ManualTesting.Test.Tests;
@@ -22,7 +23,7 @@ internal class HaplotypeFrequencySetTransformerTests
     private const Locus TestLocus = Locus.A;
     private const string Target = "43:02N";
     private const string Replacement = "43:01";
-    private readonly Builder<FindReplaceHlaNames> hlaNamesBuilder = Builder<FindReplaceHlaNames>.New
+    private readonly IPostprocessComposer<FindReplaceHlaNames> hlaNamesBuilder = FixtureBuilder.For<FindReplaceHlaNames>()
         .With(x => x.Locus, TestLocus)
         .With(x => x.TargetHlaName, Target)
         .With(x => x.ReplacementHlaName, Replacement);
@@ -119,5 +120,5 @@ internal class HaplotypeFrequencySetTransformerTests
     private ICollection<FrequencyRecord> TransformedFrequencyRecords() => TransformedSet().Set.Frequencies.ToList();
 
     private TransformedHaplotypeFrequencySet TransformedSet() => transformer
-        .TransformHaplotypeFrequencySet(testSet.TransformerTestSet, hlaNamesBuilder);
+        .TransformHaplotypeFrequencySet(testSet.TransformerTestSet, hlaNamesBuilder.Build());
 }

@@ -6,6 +6,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System.Threading.Tasks;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import;
 
@@ -37,7 +38,7 @@ public class FullModeDonorImportTests
     [Test]
     public async Task ImportDonorFile_WhenUpdateModeIsFull_AndFullModeImportIsntAllowed_DoesNotWriteToDatabase()
     {
-        var file = DonorImportFileBuilder.NewWithoutContents.WithDonorCount(10, true);
+        var file = DonorImportFileBuilder.NewWithoutContents.WithDonorCount(10, true).Build();
         settings.AllowFullModeImport = false;   
 
         await donorFileImporter.ImportDonorFile(file);
@@ -49,7 +50,7 @@ public class FullModeDonorImportTests
     [Test]
     public async Task ImportDonorFile_WhenUpdateModeIsFull_AndFullModeImportIsAllowed_WriteDonorsToDatabase()
     {
-        var file = DonorImportFileBuilder.NewWithoutContents.WithDonorCount(10, true);
+        var file = DonorImportFileBuilder.NewWithoutContents.WithDonorCount(10, true).Build();
         settings.AllowFullModeImport = true;
 
         await donorFileImporter.ImportDonorFile(file);

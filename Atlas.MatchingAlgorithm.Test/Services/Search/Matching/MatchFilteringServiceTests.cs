@@ -1,4 +1,5 @@
 ﻿using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -59,7 +60,7 @@ public class MatchFilteringServiceTests
     {
         var match = new MatchResult(default);
         const Locus locus = Locus.B;
-        match.SetMatchDetailsForLocus(locus, LocusMatchDetailsBuilder.New.WithDoubleMatch());
+        match.SetMatchDetailsForLocus(locus, LocusMatchDetailsBuilder.New.WithDoubleMatch().Build());
         var criteria = new AlleleLevelMatchCriteriaBuilder()
             .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria {MismatchCount = 0})
             .Build();
@@ -74,7 +75,7 @@ public class MatchFilteringServiceTests
     {
         var match = new MatchResult(default);
         const Locus locus = Locus.B;
-        match.SetMatchDetailsForLocus(locus, LocusMatchDetailsBuilder.New.WithSingleMatch());
+        match.SetMatchDetailsForLocus(locus, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
         var criteria = new AlleleLevelMatchCriteriaBuilder()
             .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria {MismatchCount = 1})
             .Build();
@@ -89,7 +90,7 @@ public class MatchFilteringServiceTests
     {
         var match = new MatchResult(default);
         const Locus locus = Locus.B;
-        match.SetMatchDetailsForLocus(locus, LocusMatchDetailsBuilder.New.WithSingleMatch());
+        match.SetMatchDetailsForLocus(locus, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
         var criteria = new AlleleLevelMatchCriteriaBuilder()
             .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria {MismatchCount = 0})
             .Build();
@@ -103,7 +104,7 @@ public class MatchFilteringServiceTests
     public void FulfilsTotalMatchCriteria_WithMoreMismatchesAtASingleLocusThanSpecifiedOverall_ReturnsFalse()
     {
         var match = new MatchResult(default);
-        match.SetMatchDetailsForLocus(Locus.B, LocusMatchDetailsBuilder.New.WithSingleMatch());
+        match.SetMatchDetailsForLocus(Locus.B, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
         var criteria = new AlleleLevelMatchCriteriaBuilder().WithDonorMismatchCount(0).WithRequiredLociMatchCriteria(2).Build();
 
         var result = matchFilteringService.FulfilsTotalMatchCriteria(match, criteria);
@@ -115,9 +116,9 @@ public class MatchFilteringServiceTests
     public void FulfilsTotalMatchCriteria_WithMoreMismatchesAcrossMultipleLociThanSpecifiedOverall_ReturnsFalse()
     {
         var match = new MatchResult(default);
-        match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch());
-        match.SetMatchDetailsForLocus(Locus.B, LocusMatchDetailsBuilder.New.WithSingleMatch());
-        match.SetMatchDetailsForLocus(Locus.Drb1, LocusMatchDetailsBuilder.New.WithSingleMatch());
+        match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
+        match.SetMatchDetailsForLocus(Locus.B, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
+        match.SetMatchDetailsForLocus(Locus.Drb1, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
 
         var criteria = new AlleleLevelMatchCriteriaBuilder()
             .WithDonorMismatchCount(2)
@@ -135,11 +136,11 @@ public class MatchFilteringServiceTests
     public void FulfilsTotalMatchCriteria_WithMoreMismatchesAcrossAllLociThanSpecifiedOverall_ReturnsFalse()
     {
         var match = new MatchResult(default);
-        match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch());
-        match.SetMatchDetailsForLocus(Locus.B, LocusMatchDetailsBuilder.New.WithSingleMatch());
-        match.SetMatchDetailsForLocus(Locus.Drb1, LocusMatchDetailsBuilder.New.WithSingleMatch());
-        match.SetMatchDetailsForLocus(Locus.C, LocusMatchDetailsBuilder.New.WithSingleMatch());
-        match.SetMatchDetailsForLocus(Locus.Dqb1, LocusMatchDetailsBuilder.New.WithSingleMatch());
+        match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
+        match.SetMatchDetailsForLocus(Locus.B, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
+        match.SetMatchDetailsForLocus(Locus.Drb1, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
+        match.SetMatchDetailsForLocus(Locus.C, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
+        match.SetMatchDetailsForLocus(Locus.Dqb1, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
 
         var criteria = new AlleleLevelMatchCriteriaBuilder()
             .WithDonorMismatchCount(2)
@@ -159,9 +160,9 @@ public class MatchFilteringServiceTests
     public void FulfilsTotalMatchCriteria_WithFewerTotalMismatchesThanSpecifiedOverall_ReturnsTrue()
     {
         var match = new MatchResult(default);
-        match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch());
-        match.SetMatchDetailsForLocus(Locus.B, LocusMatchDetailsBuilder.New.WithSingleMatch());
-        match.SetMatchDetailsForLocus(Locus.Drb1, LocusMatchDetailsBuilder.New.WithSingleMatch());
+        match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
+        match.SetMatchDetailsForLocus(Locus.B, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
+        match.SetMatchDetailsForLocus(Locus.Drb1, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
         var criteria = new AlleleLevelMatchCriteria
         {
             DonorMismatchCount = 4,
@@ -176,9 +177,9 @@ public class MatchFilteringServiceTests
     public void FulfilsTotalMatchCriteria_WithAsManyTotalMismatchesAsSpecifiedOverall_ReturnsTrue()
     {
         var match = new MatchResult(default);
-        match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch());
-        match.SetMatchDetailsForLocus(Locus.B, LocusMatchDetailsBuilder.New.WithSingleMatch());
-        match.SetMatchDetailsForLocus(Locus.Drb1, LocusMatchDetailsBuilder.New.WithSingleMatch());
+        match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
+        match.SetMatchDetailsForLocus(Locus.B, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
+        match.SetMatchDetailsForLocus(Locus.Drb1, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
         var criteria = new AlleleLevelMatchCriteria
         {
             DonorMismatchCount = 3,
@@ -219,7 +220,7 @@ public class MatchFilteringServiceTests
     {
         const Locus locus = Locus.A;
         var match = new MatchResult(default) {DonorInfo = new DonorInfo()};
-        match.SetMatchDetailsForLocus(locus, LocusMatchDetailsBuilder.New.WithSingleMatch());
+        match.SetMatchDetailsForLocus(locus, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
         var criteria = new AlleleLevelMatchCriteriaBuilder()
             .WithShouldIncludeBetterMatches(true)
             .WithDonorMismatchCount(1)
@@ -251,7 +252,7 @@ public class MatchFilteringServiceTests
     public void FulfilsConfigurableMatchCountCriteria_WithBetterMatchesDisallowed_WithExactTotalMismatchCount_ReturnsTrue()
     {
         var match = new MatchResult(default) {DonorInfo = new DonorInfo()};
-        match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch());
+        match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch().Build());
         var criteria = new AlleleLevelMatchCriteriaBuilder()
             .WithShouldIncludeBetterMatches(false)
             .WithDonorMismatchCount(1)

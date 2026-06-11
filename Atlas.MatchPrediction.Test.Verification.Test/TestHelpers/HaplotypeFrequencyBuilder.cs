@@ -1,15 +1,15 @@
-﻿using Atlas.MatchPrediction.Models.FileSchema;
-using LochNessBuilder;
+﻿using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.MatchPrediction.Models.FileSchema;
+using AutoFixture.Dsl;
 
 namespace Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
 
-[Builder]
 internal static class HaplotypeFrequencyBuilder
 {
     private const string DefaultHla = "hla";
 
-    public static Builder<FrequencyRecord> Default =>
-        Builder<FrequencyRecord>.New
+    public static IPostprocessComposer<FrequencyRecord> Default =>
+        FixtureBuilder.For<FrequencyRecord>()
             .With(x => x.A, DefaultHla)
             .With(x => x.B, DefaultHla)
             .With(x => x.C, DefaultHla)

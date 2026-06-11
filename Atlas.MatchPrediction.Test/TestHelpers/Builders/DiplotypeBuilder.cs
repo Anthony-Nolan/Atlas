@@ -1,10 +1,8 @@
 ﻿using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Models;
-using LochNessBuilder;
 
 namespace Atlas.MatchPrediction.Test.TestHelpers.Builders;
 
-[Builder]
 internal class DiplotypeBuilder
 {
     private Diplotype diplotype;

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
@@ -197,7 +198,7 @@ public class ActualVersusExpectedResultsCompilerTests
             .Replicate(expectedCount);
 
         var predictions = PdpPredictionBuilder.Default
-            .With(x => x.Probability, probabilities)
+            .WithSequence(x => x.Probability, probabilities)
             .Build(probabilityCount * expectedCount)
             .ToList();
 
@@ -303,7 +304,7 @@ public class ActualVersusExpectedResultsCompilerTests
             .Select(x => (decimal)x / 100);
 
         var predictions = PdpPredictionBuilder.Default
-            .With(x => x.Probability, probabilities)
+            .WithSequence(x => x.Probability, probabilities)
             .Build(probabilityCount)
             .ToList();
 
@@ -324,7 +325,7 @@ public class ActualVersusExpectedResultsCompilerTests
             .Replicate(totalPdpCount);
 
         return PdpPredictionBuilder.Default
-            .With(x => x.Probability, probabilities)
+            .WithSequence(x => x.Probability, probabilities)
             .Build(probabilityCount * totalPdpCount)
             .ToList();
     }

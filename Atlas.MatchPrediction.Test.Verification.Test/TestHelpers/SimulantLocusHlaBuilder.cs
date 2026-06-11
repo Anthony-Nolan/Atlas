@@ -1,22 +1,22 @@
 ﻿using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Test.Verification.Models;
-using LochNessBuilder;
+using AutoFixture.Dsl;
 
 namespace Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
 
-[Builder]
 internal static class SimulantLocusHlaBuilder
 {
-    internal static Builder<SimulantLocusHla> New => Builder<SimulantLocusHla>.New;
+    internal static IPostprocessComposer<SimulantLocusHla> New => FixtureBuilder.For<SimulantLocusHla>();
 
-    internal static Builder<SimulantLocusHla> WithIncrementingIds(this Builder<SimulantLocusHla> builder)
+    internal static IPostprocessComposer<SimulantLocusHla> WithIncrementingIds(this IPostprocessComposer<SimulantLocusHla> builder)
     {
-        return builder.WithFactory(x => x.GenotypeSimulantId, IncrementingIdGenerator.NextIntId);
+        return builder.With(x => x.GenotypeSimulantId, IncrementingIdGenerator.NextIntId);
     }
 
-    internal static Builder<SimulantLocusHla> WithTypingFromLocusName(this Builder<SimulantLocusHla> builder, Locus locus)
+    internal static IPostprocessComposer<SimulantLocusHla> WithTypingFromLocusName(this IPostprocessComposer<SimulantLocusHla> builder, Locus locus)
     {
         return builder
             .With(x => x.Locus, locus)

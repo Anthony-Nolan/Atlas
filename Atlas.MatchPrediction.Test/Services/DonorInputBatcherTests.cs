@@ -4,6 +4,7 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
@@ -47,8 +48,8 @@ internal class DonorInputBatcherTests
     {
         var sharedDonorInputBuilder = DonorInputBuilder.Default
             // Need to use factories here to ensure we have objects that differ by reference, but not by value.
-            .WithFactory(i => i.DonorHla, () => new PhenotypeInfo<string>("donor-hla-shared").ToPhenotypeInfoTransfer())
-            .WithFactory(
+            .With(i => i.DonorHla, () => new PhenotypeInfo<string>("donor-hla-shared").ToPhenotypeInfoTransfer())
+            .With(
                 i => i.DonorFrequencySetMetadata,
                 () => FrequencySetMetadataBuilder.New.ForRegistry("shared-reg").ForEthnicity("shared-eth").Build()
             );
@@ -56,7 +57,7 @@ internal class DonorInputBatcherTests
         var sharedDonorInputs = sharedDonorInputBuilder.Build(3).ToList();
         var donorInputWithDifferentHla = sharedDonorInputBuilder.WithHla(new PhenotypeInfo<string>("donor-hla-new")).Build();
         var donorInputWithDifferentMetadata = sharedDonorInputBuilder
-            .WithMetadata(FrequencySetMetadataBuilder.New.ForRegistry("diff-reg"))
+            .WithMetadata(FrequencySetMetadataBuilder.New.ForRegistry("diff-reg").Build())
             .Build();
 
         var batch = donorInputBatcher.BatchDonorInputs(
@@ -76,7 +77,7 @@ internal class DonorInputBatcherTests
     {
         var donorInputBuilder = DonorInputBuilder.Default
             .WithHla(new PhenotypeInfo<string>("donor-hla-shared"))
-            .WithFactory(i => i.DonorFrequencySetMetadata,
+            .With(i => i.DonorFrequencySetMetadata,
                 () => FrequencySetMetadataBuilder.New.ForRegistry(IncrementingIdGenerator.NextStringId("registry-")).Build()
             );
 

@@ -10,8 +10,9 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture.Dsl;
 using FluentAssertions;
-using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Atlas.DonorImport.Services.DonorUpdates;
@@ -27,9 +28,9 @@ internal class DonorUpdatesSaverTest
     private IDonorFileImporter fileImporter;
     private IDonorUpdatesSaver donorUpdatesSaver;
 
-    private static Builder<DonorUpdate> DonorBuilder => DonorUpdateBuilder.New
+    private static IPostprocessComposer<DonorUpdate> DonorBuilder => DonorUpdateBuilder.New
         .With(upd => upd.ChangeType, ImportDonorChangeType.Upsert);
-    private static readonly Builder<DonorImportFile> FileBuilder = DonorImportFileBuilder.NewWithoutContents;
+    private static readonly IPostprocessComposer<DonorImportFile> FileBuilder = DonorImportFileBuilder.NewWithoutContents;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()

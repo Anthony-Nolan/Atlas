@@ -1,15 +1,15 @@
 ﻿using System.IO;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.DonorImport.ExternalInterface.Models;
-using LochNessBuilder;
+using AutoFixture.Dsl;
 
 namespace Atlas.DonorImport.Test.TestHelpers.Builders;
 
-[Builder]
 internal static class DonorIdCheckFileBuilder
 {
-    public static Builder<DonorIdCheckFile> New => Builder<DonorIdCheckFile>.New
+    public static IPostprocessComposer<DonorIdCheckFile> New => FixtureBuilder.For<DonorIdCheckFile>()
         .With(f => f.FileLocation, "file-location");
 
-    public static Builder<DonorIdCheckFile> WithContents(this Builder<DonorIdCheckFile> builder, Stream contents) =>
+    public static IPostprocessComposer<DonorIdCheckFile> WithContents(this IPostprocessComposer<DonorIdCheckFile> builder, Stream contents) =>
         builder.With(f => f.Contents, contents);
 }

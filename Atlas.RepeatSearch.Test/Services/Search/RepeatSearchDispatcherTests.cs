@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.RepeatSearch.Models;
 using FluentValidation;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.RepeatSearch.Test.TestHelpers.Builders;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;

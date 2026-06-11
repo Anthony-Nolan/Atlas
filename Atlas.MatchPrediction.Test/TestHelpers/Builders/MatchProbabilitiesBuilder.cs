@@ -1,21 +1,20 @@
 ﻿using Atlas.Common.Public.Models.MatchPrediction;
-using LochNessBuilder;
-using Builder = LochNessBuilder.Builder<Atlas.Client.Models.Search.Results.MatchPrediction.MatchProbabilities>;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Composer = AutoFixture.Dsl.IPostprocessComposer<Atlas.Client.Models.Search.Results.MatchPrediction.MatchProbabilities>;
 
 namespace Atlas.MatchPrediction.Test.TestHelpers.Builders;
 
-[Builder]
 internal static class MatchProbabilitiesBuilder
 {
-    public static Builder New => Builder.New;
+    public static Composer New => FixtureBuilder.For<Atlas.Client.Models.Search.Results.MatchPrediction.MatchProbabilities>();
 
-    public static Builder WithAllProbabilityValuesSetTo(this Builder builder, decimal value)
+    public static Composer WithAllProbabilityValuesSetTo(this Composer builder, decimal value)
     {
         return builder.WithProbabilityValuesSetTo(value, value, value);
     }
 
-    public static Builder WithProbabilityValuesSetTo(
-        this Builder builder,
+    public static Composer WithProbabilityValuesSetTo(
+        this Composer builder,
         decimal zeroMismatchValue,
         decimal oneMismatchValue,
         decimal twoMismatchValue)
@@ -25,7 +24,7 @@ internal static class MatchProbabilitiesBuilder
             .With(r => r.TwoMismatchProbability, new Probability(twoMismatchValue));
     }
 
-    public static Builder WithZeroMismatchProbability(this Builder builder, decimal zeroMismatchValue)
+    public static Composer WithZeroMismatchProbability(this Composer builder, decimal zeroMismatchValue)
     {
         return builder.With(r => r.ZeroMismatchProbability, new Probability(zeroMismatchValue));
     }

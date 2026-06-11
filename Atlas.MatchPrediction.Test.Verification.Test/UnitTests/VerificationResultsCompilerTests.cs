@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Test.Verification.Services.Verification.Compilation;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using BinBuilder = LochNessBuilder.Builder<Atlas.MatchPrediction.Test.Verification.Services.Verification.Compilation.ProbabilityBin>;
 
 namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests;
 
@@ -30,9 +30,9 @@ public class VerificationResultsCompilerTests
         const int bin1Count = 50;
         const int bin2Count = 70;
 
-        var bins = BinBuilder.New
-            .With(x => x.WeightedMidpoint, new[] { 5m, 95m })
-            .With(x => x.TotalPdpCount, new[] { bin1Count, bin2Count })
+        var bins = FixtureBuilder.For<ProbabilityBin>()
+            .WithSequence(x => x.WeightedMidpoint, new[] { 5m, 95m })
+            .WithSequence(x => x.TotalPdpCount, new[] { bin1Count, bin2Count })
             .Build(2);
         probabilityBinCalculator.CalculateDecileProbabilityBins(default).ReturnsForAnyArgs(bins);
 
@@ -47,7 +47,7 @@ public class VerificationResultsCompilerTests
         const decimal midpoint1 = 5m;
         const decimal distance1 = 1m;
         const int pdpCount1 = 100;
-        var bin1 = BinBuilder.New
+        var bin1 = FixtureBuilder.For<ProbabilityBin>()
             .With(x => x.WeightedMidpoint, midpoint1)
             .With(x => x.ActuallyMatchedPercentage, midpoint1 + distance1)
             .With(x => x.TotalPdpCount, pdpCount1)
@@ -56,7 +56,7 @@ public class VerificationResultsCompilerTests
         const decimal midpoint2 = 95m;
         const decimal distance2 = 5m;
         const int pdpCount2 = 300;
-        var bin2 = BinBuilder.New
+        var bin2 = FixtureBuilder.For<ProbabilityBin>()
             .With(x => x.WeightedMidpoint, midpoint2)
             .With(x => x.ActuallyMatchedPercentage, midpoint2 + distance2)
             .With(x => x.TotalPdpCount, pdpCount2)
@@ -77,10 +77,10 @@ public class VerificationResultsCompilerTests
         var midpoints = new[] { 15m, 85m };
         var matchedPercentages = new[] { 12.5m, 87.5m };
         var pdpCounts = new[] { 50, 500 };
-        var bins = BinBuilder.New
-            .With(x => x.WeightedMidpoint, midpoints)
-            .With(x => x.ActuallyMatchedPercentage, matchedPercentages)
-            .With(x => x.TotalPdpCount, pdpCounts)
+        var bins = FixtureBuilder.For<ProbabilityBin>()
+            .WithSequence(x => x.WeightedMidpoint, midpoints)
+            .WithSequence(x => x.ActuallyMatchedPercentage, matchedPercentages)
+            .WithSequence(x => x.TotalPdpCount, pdpCounts)
             .Build(2);
 
         const decimal expectedSlope = 1.07m;

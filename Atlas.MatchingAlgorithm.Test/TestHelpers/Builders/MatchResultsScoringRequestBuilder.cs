@@ -1,7 +1,8 @@
 ﻿using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
-using LochNessBuilder;
+using AutoFixture.Dsl;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using System.Collections.Generic;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
@@ -9,18 +10,17 @@ using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 
-[Builder]
 internal static class MatchResultsScoringRequestBuilder
 {
-    public static Builder<MatchResultsScoringRequest> New =>
-        Builder<MatchResultsScoringRequest>.New
+    public static IPostprocessComposer<MatchResultsScoringRequest> New =>
+        FixtureBuilder.For<MatchResultsScoringRequest>()
             .With(x => x.PatientHla, new PhenotypeInfo<string>().ToPhenotypeInfoTransfer())
             .With(x => x.MatchResults, new List<MatchResult>())
             .With(x => x.ScoringCriteria, ScoringCriteriaBuilder.New.Build());
 
-    public static Builder<MatchResultsScoringRequest> ScoreAtAllLoci =>
+    public static IPostprocessComposer<MatchResultsScoringRequest> ScoreAtAllLoci =>
         New.With(x => x.ScoringCriteria, ScoringCriteriaBuilder.ScoreAllLoci.Build());
 
-    public static Builder<MatchResultsScoringRequest> ScoreDefaultMatchAtAllLoci =>
+    public static IPostprocessComposer<MatchResultsScoringRequest> ScoreDefaultMatchAtAllLoci =>
         ScoreAtAllLoci.With(x => x.MatchResults, new[] {new MatchResultBuilder().Build()});
 }

@@ -1,12 +1,12 @@
-﻿using Atlas.DonorImport.Data.Models;
-using LochNessBuilder;
+﻿using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.DonorImport.Data.Models;
+using AutoFixture.Dsl;
 
 namespace Atlas.DonorImport.Test.TestHelpers.Builders;
 
-[Builder]
-public static class DatabaseDonorBuilder 
+public static class DatabaseDonorBuilder
 {
-    public static Builder<Donor> New(string defaultHla) =>  Builder<Donor>.New
+    public static IPostprocessComposer<Donor> New(string defaultHla) =>  FixtureBuilder.For<Donor>()
         .With(d => d.A_1, defaultHla)
         .With(d => d.A_2, defaultHla)
         .With(d => d.B_1, defaultHla)
@@ -20,7 +20,7 @@ public static class DatabaseDonorBuilder
         .With(d => d.DQB1_1, defaultHla)
         .With(d => d.DQB1_2, defaultHla);
 
-    public static Builder<Donor> WithPropValuesBasedOnId(int id, DatabaseDonorType donorType) => Builder<Donor>.New
+    public static IPostprocessComposer<Donor> WithPropValuesBasedOnId(int id, DatabaseDonorType donorType) => FixtureBuilder.For<Donor>()
         .With(d => d.AtlasId, id)
         .With(d => d.DonorType, donorType)
         .With(d => d.ExternalDonorCode, $"#{id}{nameof(Donor.ExternalDonorCode)}")

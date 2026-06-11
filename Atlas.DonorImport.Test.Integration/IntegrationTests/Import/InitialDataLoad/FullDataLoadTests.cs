@@ -6,6 +6,7 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -39,7 +40,7 @@ internal class FullDataLoadTests
     {
         var hla = HlaBuilder.Default.WithValidHlaAtAllLoci().Build();
         var donors = DonorUpdateBuilder.New.WithHla(hla).Build(5).ToList();
-        var file1 = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(donors.ToArray());
+        var file1 = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(donors.ToArray()).Build();
 
         await donorFileImporter.ImportDonorFile(file1);
 
@@ -51,7 +52,7 @@ internal class FullDataLoadTests
             donor.Hla = updatedHla;
         }
 
-        var file2 = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(donors.ToArray());
+        var file2 = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(donors.ToArray()).Build();
         await donorFileImporter.ImportDonorFile(file2);
 
         var updatedDonors = donorRepository.StreamAllDonors().ToList();

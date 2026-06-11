@@ -2,30 +2,30 @@ using System;
 using System.Linq;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using EnumStringValues;
-using LochNessBuilder;
+using AutoFixture.Dsl;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 
-[Builder]
 public static class DataRefreshRecordBuilder
 {
-    public static Builder<DataRefreshRecord> New =>
-        Builder<DataRefreshRecord>.New
+    public static IPostprocessComposer<DataRefreshRecord> New =>
+        FixtureBuilder.For<DataRefreshRecord>()
             .With(r => r.WasSuccessful, false)
             .With(r => r.RefreshRequestedUtc, DateTime.UtcNow.AddSeconds(-1))
             .WithDatabase(TransientDatabase.DatabaseA);
 
-    public static Builder<DataRefreshRecord> WithDatabase(this Builder<DataRefreshRecord> builder, TransientDatabase db)
+    public static IPostprocessComposer<DataRefreshRecord> WithDatabase(this IPostprocessComposer<DataRefreshRecord> builder, TransientDatabase db)
     {
         return builder.With(r => r.Database, db.GetStringValue());
     }
 
-    public static Builder<DataRefreshRecord> SuccessfullyCompleted(this Builder<DataRefreshRecord> builder)
+    public static IPostprocessComposer<DataRefreshRecord> SuccessfullyCompleted(this IPostprocessComposer<DataRefreshRecord> builder)
     {
         return builder.With(r => r.WasSuccessful, true).With(r => r.RefreshEndUtc, DateTime.UtcNow);
     }
 
-    public static Builder<DataRefreshRecord> WithStageCompleted(this Builder<DataRefreshRecord> builder, DataRefreshStage stage)
+    public static IPostprocessComposer<DataRefreshRecord> WithStageCompleted(this IPostprocessComposer<DataRefreshRecord> builder, DataRefreshStage stage)
     {
         return stage switch
         {
@@ -42,8 +42,8 @@ public static class DataRefreshRecordBuilder
         };
     }
 
-    public static Builder<DataRefreshRecord> WithStagesCompleted(
-        this Builder<DataRefreshRecord> builder,
+    public static IPostprocessComposer<DataRefreshRecord> WithStagesCompleted(
+        this IPostprocessComposer<DataRefreshRecord> builder,
         params DataRefreshStage[] completedStages)
     {
         var editedBuilder = builder;
@@ -55,8 +55,8 @@ public static class DataRefreshRecordBuilder
         return editedBuilder;
     }
 
-    public static Builder<DataRefreshRecord> WithStagesCompletedUpToButNotIncluding(
-        this Builder<DataRefreshRecord> builder,
+    public static IPostprocessComposer<DataRefreshRecord> WithStagesCompletedUpToButNotIncluding(
+        this IPostprocessComposer<DataRefreshRecord> builder,
         DataRefreshStage firstIncompleteStage)
     {
         var completedStages =
@@ -67,8 +67,8 @@ public static class DataRefreshRecordBuilder
         return builder.WithStagesCompleted(completedStages);
     }
 
-    public static Builder<DataRefreshRecord> WithStagesCompletedUpToAndIncluding(
-        this Builder<DataRefreshRecord> builder,
+    public static IPostprocessComposer<DataRefreshRecord> WithStagesCompletedUpToAndIncluding(
+        this IPostprocessComposer<DataRefreshRecord> builder,
         DataRefreshStage firstIncompleteStage)
     {
         var completedStages =

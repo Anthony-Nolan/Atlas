@@ -6,9 +6,10 @@ using Atlas.Common.ServiceBus;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
+using AutoFixture.Dsl;
 using FluentAssertions;
-using LochNessBuilder;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -18,7 +19,7 @@ namespace Atlas.MatchPrediction.Test.Services;
 [TestFixture]
 internal class MatchPredictionRequestDispatcherTests
 {
-    private static readonly Builder<SingleDonorMatchProbabilityInput> InputMissingDonorInfo = SingleDonorMatchProbabilityInputBuilder.Default
+    private static readonly IPostprocessComposer<SingleDonorMatchProbabilityInput> InputMissingDonorInfo = SingleDonorMatchProbabilityInputBuilder.Default
         .With(x => x.Donor, (DonorInput)null);
 
     private IMessageBatchPublisher<IdentifiedMatchPredictionRequest> requestPublisher;

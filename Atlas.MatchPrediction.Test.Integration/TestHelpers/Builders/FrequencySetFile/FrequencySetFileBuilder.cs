@@ -6,27 +6,26 @@ using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedSt
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Models;
-using LochNessBuilder;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Newtonsoft.Json;
-using Builder = LochNessBuilder.Builder<Atlas.MatchPrediction.Models.FrequencySetFile>;
+using Composer = AutoFixture.Dsl.IPostprocessComposer<Atlas.MatchPrediction.Models.FrequencySetFile>;
 
 namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 
-[Builder]
 internal static class FrequencySetFileBuilder
 {
     private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
 
-    internal static Builder FileWithoutContents()
+    internal static Composer FileWithoutContents()
     {
         var uniqueFileName = $"file-{DateTime.Now:HHmmssffff}.json";
 
-        return Builder.New
+        return FixtureBuilder.For<Atlas.MatchPrediction.Models.FrequencySetFile>()
             .With(x => x.FileName, uniqueFileName)
             .With(t => t.UploadedDateTime, DateTime.Now);
     }
 
-    internal static Builder New(
+    internal static Composer New(
         string[] registries = null,
         string[] ethnicity = null,
         int haplotypeCount = 1,
@@ -40,7 +39,7 @@ internal static class FrequencySetFileBuilder
         return FileWithoutContents().With(x => x.Contents, GetStream(frequencySetFile));
     }
 
-    internal static Builder New(
+    internal static Composer New(
         IEnumerable<HaplotypeFrequency> haplotypeFrequencies,
         string[] registries = null,
         string[] ethnicity = null,
@@ -54,12 +53,12 @@ internal static class FrequencySetFileBuilder
         return FileWithoutContents().With(x => x.Contents, GetStream(frequencySetFile));
     }
 
-    internal static Builder WithHaplotypeFrequencyFileStream(this Builder builder, Stream stream)
+    internal static Composer WithHaplotypeFrequencyFileStream(this Composer builder, Stream stream)
     {
         return builder.With(f => f.Contents, stream);
     }
 
-    internal static Builder WithInvalidFormat()
+    internal static Composer WithInvalidFormat()
     {
         var frequencySetFile = FrequencySetFileContentsBuilder.NewWithFrequencyCount().Build();
 

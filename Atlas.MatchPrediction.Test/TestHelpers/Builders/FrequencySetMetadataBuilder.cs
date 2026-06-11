@@ -1,19 +1,19 @@
 using Atlas.Common.Public.Models.MatchPrediction;
-using LochNessBuilder;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture.Dsl;
 
 namespace Atlas.MatchPrediction.Test.TestHelpers.Builders;
 
-[Builder]
 public static class FrequencySetMetadataBuilder
 {
-    public static Builder<FrequencySetMetadata> New => Builder<FrequencySetMetadata>.New;
+    public static IPostprocessComposer<FrequencySetMetadata> New => FixtureBuilder.For<FrequencySetMetadata>();
 
-    public static Builder<FrequencySetMetadata> ForRegistry(this Builder<FrequencySetMetadata> builder, string registryCode)
+    public static IPostprocessComposer<FrequencySetMetadata> ForRegistry(this IPostprocessComposer<FrequencySetMetadata> builder, string registryCode)
     {
         return builder.With(d => d.RegistryCode, registryCode);
     }
 
-    public static Builder<FrequencySetMetadata> ForEthnicity(this Builder<FrequencySetMetadata> builder, string ethnicityCode)
+    public static IPostprocessComposer<FrequencySetMetadata> ForEthnicity(this IPostprocessComposer<FrequencySetMetadata> builder, string ethnicityCode)
     {
         return builder.With(d => d.EthnicityCode, ethnicityCode);
     }

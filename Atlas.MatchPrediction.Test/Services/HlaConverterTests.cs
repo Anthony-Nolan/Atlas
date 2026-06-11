@@ -6,9 +6,10 @@ using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.ApplicationInsights;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Services.HlaConversion;
+using AutoFixture.Dsl;
 using FluentAssertions;
-using LochNessBuilder;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -32,7 +33,7 @@ internal class HlaConverterTests
 
     private IHlaMetadataDictionary hfSetHmd;
     private IHlaMetadataDictionary matchingHmd;
-    private Builder<HlaConverterInput> inputBuilder;
+    private IPostprocessComposer<HlaConverterInput> inputBuilder;
 
     private IMatchPredictionLogger<MatchProbabilityLoggingContext> logger;
     private IHlaConverter converter;
@@ -51,7 +52,7 @@ internal class HlaConverterTests
         matchingHmd.HlaNomenclatureVersion.Returns(MatchingAlgorithmHlaVersion);
         matchingHmd.ConvertHla(default, default, default).ReturnsForAnyArgs(MatchingHmdResult);
 
-        inputBuilder = Builder<HlaConverterInput>.New;
+        inputBuilder = FixtureBuilder.For<HlaConverterInput>();
     }
 
     #region DoesNotTryLookupUsingMatchingAlgorithmHmd tests

@@ -1,6 +1,7 @@
 using Atlas.Client.Models.Common.Results;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.Functions.Services.MatchCategories;
 using Atlas.Functions.Test.Builders;
 using FluentAssertions;
@@ -24,10 +25,10 @@ public class PositionalMatchCategoryOrientatorTests
     private static readonly List<LocusMatchCategories> AllCategoryCombinations = new() { BothCategoriesNotMismatch, BothCategoriesMismatch, MismatchCategoryInOne, MismatchCategoryInTwo };
     private static readonly List<LocusMatchCategories> OnePositionHasMismatchCategory = new() { MismatchCategoryInOne, MismatchCategoryInTwo };
 
-    private static readonly LocusSearchResult BothGradesAreMismatch = LocusScoreResultBuilder.New.WithMatchGradesAtBothPositions(LocusMatchCategory.Mismatch, MatchGrade.Mismatch);
-    private static readonly LocusSearchResult BothGradesAreMatch = LocusScoreResultBuilder.New.WithMatchGradesAtBothPositions(LocusMatchCategory.Match, MatchGrade.PGroup);
-    private static readonly LocusSearchResult MismatchGradeInOne = LocusScoreResultBuilder.New.WithMatchGrades(LocusMatchCategory.Mismatch, MatchGrade.Mismatch, MatchGrade.PGroup);
-    private static readonly LocusSearchResult MismatchGradeInTwo = LocusScoreResultBuilder.New.WithMatchGrades(LocusMatchCategory.Mismatch, MatchGrade.PGroup, MatchGrade.Mismatch);
+    private static readonly LocusSearchResult BothGradesAreMismatch = LocusScoreResultBuilder.New.WithMatchGradesAtBothPositions(LocusMatchCategory.Mismatch, MatchGrade.Mismatch).Build();
+    private static readonly LocusSearchResult BothGradesAreMatch = LocusScoreResultBuilder.New.WithMatchGradesAtBothPositions(LocusMatchCategory.Match, MatchGrade.PGroup).Build();
+    private static readonly LocusSearchResult MismatchGradeInOne = LocusScoreResultBuilder.New.WithMatchGrades(LocusMatchCategory.Mismatch, MatchGrade.Mismatch, MatchGrade.PGroup).Build();
+    private static readonly LocusSearchResult MismatchGradeInTwo = LocusScoreResultBuilder.New.WithMatchGrades(LocusMatchCategory.Mismatch, MatchGrade.PGroup, MatchGrade.Mismatch).Build();
     private static readonly List<LocusSearchResult> AllScoreResults = new() { BothGradesAreMismatch, BothGradesAreMatch, MismatchGradeInOne, MismatchGradeInTwo };
     private static readonly List<LocusSearchResult> MismatchScoreResults = new() { BothGradesAreMismatch, MismatchGradeInOne, MismatchGradeInTwo };
         
@@ -115,7 +116,7 @@ public class PositionalMatchCategoryOrientatorTests
     public void AlignCategoriesToMismatchScore_NoScoreDetails_ReturnsOriginalMatchCategories(
         [ValueSource(nameof(OnePositionHasMismatchCategory))] LocusMatchCategories inputCategories)
     {
-        var noScoreDetails = LocusScoreResultBuilder.New.With(x => x.MatchCategory, LocusMatchCategory.Mismatch);
+        var noScoreDetails = LocusScoreResultBuilder.New.With(x => x.MatchCategory, LocusMatchCategory.Mismatch).Build();
 
         var returnedCategories = orientator.AlignCategoriesToMismatchScore(inputCategories, noScoreDetails);
 

@@ -13,7 +13,7 @@ using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
-using LochNessBuilder;
+using AutoFixture.Dsl;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -52,7 +52,7 @@ internal partial class SnapshotTests
             .WithDataAt(Locus.Dqb1, "03:XX", "05:XX")
             .WithDataAt(Locus.Drb1, "11:XX", "16:XX");
 
-    private static Builder<SingleDonorMatchProbabilityInput> DefaultInputBuilder => SingleDonorMatchProbabilityInputBuilder.Default
+    private static IPostprocessComposer<SingleDonorMatchProbabilityInput> DefaultInputBuilder => SingleDonorMatchProbabilityInputBuilder.Default
         .WithPatientHla(DefaultPhenotypeBuilder.Build())
         .WithDonorHla(DefaultPhenotypeBuilder.Build())
         .WithDonorMetadata(new FrequencySetMetadata())

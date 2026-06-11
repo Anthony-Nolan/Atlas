@@ -9,8 +9,9 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture.Dsl;
 using FluentAssertions;
-using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Donor = Atlas.DonorImport.Data.Models.Donor;
@@ -26,9 +27,9 @@ public class DifferentialDonorDeletionTests
 
     private List<Donor> initialDonors;
     private const int InitialCount = 10;
-    private readonly Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
+    private readonly IPostprocessComposer<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
 
-    private static Builder<DonorUpdate> DonorDeletionBuilder =>
+    private static IPostprocessComposer<DonorUpdate> DonorDeletionBuilder =>
         DonorUpdateBuilder.New
             .WithRecordIdPrefix("external-donor-code-")
             .With(upd => upd.ChangeType, ImportDonorChangeType.Delete);
@@ -58,7 +59,7 @@ public class DifferentialDonorDeletionTests
             DonorUpdateBuilder.New
                 .With(upd => upd.ChangeType, ImportDonorChangeType.Create)
                 .Build(InitialCount).ToArray();
-        var donorUpdateFile = fileBuilder.WithDonors(donorCreationUpdates);
+        var donorUpdateFile = fileBuilder.WithDonors(donorCreationUpdates).Build();
 
         await donorFileImporter.ImportDonorFile(donorUpdateFile);
 
@@ -80,10 +81,10 @@ public class DifferentialDonorDeletionTests
     {
         const int deletionCount = 3;
         var donorDeletes = DonorDeletionBuilder
-            .With(update => update.RecordId, initialDonors.Select(d => d.ExternalDonorCode).ToList())
+            .WithSequence(update => update.RecordId, initialDonors.Select(d => d.ExternalDonorCode).ToList())
             .Build(deletionCount).ToArray();
 
-        var donorDeleteFile = fileBuilder.WithDonors(donorDeletes);
+        var donorDeleteFile = fileBuilder.WithDonors(donorDeletes).Build();
 
         //ACT
         await donorFileImporter.ImportDonorFile(donorDeleteFile);
@@ -100,7 +101,7 @@ public class DifferentialDonorDeletionTests
             .With(update => update.RecordId, "Unknown")
             .Build(deletionCount).ToArray();
 
-        var donorDeleteFile = fileBuilder.WithDonors(donorDeletes);
+        var donorDeleteFile = fileBuilder.WithDonors(donorDeletes).Build();
 
         var updateCountBeforeImport = await updatesInspectionRepository.Count();
 
@@ -137,7 +138,7 @@ public class DifferentialDonorDeletionTests
     private (DonorImportFile, List<int>) GenerateMixedDeletionFileWithMatchingAtlasIds(int goodDeletesCount, int badDeletesCount)
     {
         var goodDeletes = DonorDeletionBuilder
-            .With(update => update.RecordId, initialDonors.Select(d => d.ExternalDonorCode).ToList())
+            .WithSequence(update => update.RecordId, initialDonors.Select(d => d.ExternalDonorCode).ToList())
             .Build(goodDeletesCount).ToList();
         var badDeletes = DonorDeletionBuilder.With(update => update.RecordId, "Unknown").Build(badDeletesCount);
         var goodDeleteAtlasIds =

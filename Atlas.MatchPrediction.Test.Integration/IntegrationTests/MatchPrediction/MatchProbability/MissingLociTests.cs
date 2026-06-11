@@ -12,7 +12,7 @@ using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.MatchProbability;
 
-// The tests in this suite are snapshots of frequencies calculated from the test data - they were not calculated or confirmed by hand  
+// The tests in this suite are snapshots of frequencies calculated from the test data - they were not calculated or confirmed by hand
 public class MissingLociTests : MatchProbabilityTestsBase
 {
     private readonly Dictionary<Locus, string> otherGGroupsAtLoci = new Dictionary<Locus, string>

@@ -4,7 +4,7 @@ using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
 using FluentAssertions;
-using LochNessBuilder;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring;
@@ -24,11 +24,11 @@ public class RankingServiceTests
     public void RankSearchResults_OrdersResultsByMatchCount()
     {
         var resultWithFewerMatches = new MatchAndScoreResultBuilder()
-            .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.MatchCount, 1).Build())
+            .WithAggregateScoringData(FixtureBuilder.For<AggregateScoreDetails>().With(x => x.MatchCount, 1).Build())
             .Build();
 
         var resultWithMoreMatches = new MatchAndScoreResultBuilder()
-            .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.MatchCount, 5).Build())
+            .WithAggregateScoringData(FixtureBuilder.For<AggregateScoreDetails>().With(x => x.MatchCount, 5).Build())
             .Build();
 
         var unorderedSearchResults = new List<MatchAndScoreResult>
@@ -50,11 +50,11 @@ public class RankingServiceTests
     public void RankSearchResults_OrdersResultsByMatchGrade()
     {
         var resultWithBetterOverallGrade = new MatchAndScoreResultBuilder()
-            .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.GradeScore, 100).Build())
+            .WithAggregateScoringData(FixtureBuilder.For<AggregateScoreDetails>().With(x => x.GradeScore, 100).Build())
             .Build();
 
         var resultWithWorseOverallGrade = new MatchAndScoreResultBuilder()
-            .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.GradeScore, 1).Build())
+            .WithAggregateScoringData(FixtureBuilder.For<AggregateScoreDetails>().With(x => x.GradeScore, 1).Build())
             .Build();
 
         var unorderedSearchResults = new List<MatchAndScoreResult>
@@ -77,7 +77,7 @@ public class RankingServiceTests
     {
         var resultWithBetterOverallGradeButFewerMatches = new MatchAndScoreResultBuilder()
             .WithAggregateScoringData(
-                Builder<AggregateScoreDetails>.New
+                FixtureBuilder.For<AggregateScoreDetails>()
                     .With(x => x.GradeScore, 100)
                     .With(x => x.MatchCount, 1)
                     .Build()
@@ -86,7 +86,7 @@ public class RankingServiceTests
 
         var resultWithWorseOverallGradeButMoreMatches = new MatchAndScoreResultBuilder()
             .WithAggregateScoringData(
-                Builder<AggregateScoreDetails>.New
+                FixtureBuilder.For<AggregateScoreDetails>()
                     .With(x => x.GradeScore, 1)
                     .With(x => x.MatchCount, 6)
                     .Build()
@@ -112,11 +112,11 @@ public class RankingServiceTests
     public void RankSearchResults_OrdersResultsByMatchConfidence()
     {
         var resultWithBetterOverallConfidence = new MatchAndScoreResultBuilder()
-            .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.ConfidenceScore, 100).Build())
+            .WithAggregateScoringData(FixtureBuilder.For<AggregateScoreDetails>().With(x => x.ConfidenceScore, 100).Build())
             .Build();
 
         var resultWithWorseOverallConfidence = new MatchAndScoreResultBuilder()
-            .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.ConfidenceScore, 1).Build())
+            .WithAggregateScoringData(FixtureBuilder.For<AggregateScoreDetails>().With(x => x.ConfidenceScore, 1).Build())
             .Build();
 
         var unorderedSearchResults = new List<MatchAndScoreResult>
@@ -139,7 +139,7 @@ public class RankingServiceTests
     {
         var resultWithWorseConfidenceButBetterGrade = new MatchAndScoreResultBuilder()
             .WithAggregateScoringData(
-                Builder<AggregateScoreDetails>.New
+                FixtureBuilder.For<AggregateScoreDetails>()
                     .With(x => x.GradeScore, 100)
                     .With(x => x.ConfidenceScore, 1)
                     .Build()
@@ -148,7 +148,7 @@ public class RankingServiceTests
 
         var resultWithBetterConfidenceButWorseGrade = new MatchAndScoreResultBuilder()
             .WithAggregateScoringData(
-                Builder<AggregateScoreDetails>.New
+                FixtureBuilder.For<AggregateScoreDetails>()
                     .With(x => x.GradeScore, 1)
                     .With(x => x.ConfidenceScore, 100)
                     .Build()
@@ -175,7 +175,7 @@ public class RankingServiceTests
     {
         var resultWithWorseConfidenceButBetterMatchCount = new MatchAndScoreResultBuilder()
             .WithAggregateScoringData(
-                Builder<AggregateScoreDetails>.New
+                FixtureBuilder.For<AggregateScoreDetails>()
                     .With(x => x.ConfidenceScore, 5)
                     .With(x => x.MatchCount, 6)
                     .Build()
@@ -184,7 +184,7 @@ public class RankingServiceTests
 
         var resultWithBetterConfidenceButWorseMatchCount = new MatchAndScoreResultBuilder()
             .WithAggregateScoringData(
-                Builder<AggregateScoreDetails>.New
+                FixtureBuilder.For<AggregateScoreDetails>()
                     .With(x => x.ConfidenceScore, 500)
                     .With(x => x.MatchCount, 1)
                     .Build()

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.ManualTesting.Common.Repositories;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
@@ -52,7 +53,7 @@ public class MismatchedDonorsProcessorTests
         cache.GetOrAddGenotypeSimulantsInfo(default).ReturnsForAnyArgs(
             GenotypeSimulantsInfoBuilder.New
                 .WithPatient(Patient)
-                .WithDonor(MissingDonor));
+                .WithDonor(MissingDonor).Build());
 
         scoringService.ScoreDonorHlaAgainstPatientHla(default)
             .ReturnsForAnyArgs(new ScoreResultBuilder().Build());
@@ -76,7 +77,7 @@ public class MismatchedDonorsProcessorTests
     public async Task CreateRecordsForGenotypeDonorsWithTooManyMismatches_PatientIsNotGenotype_DoesNotCreateRecords()
     {
         cache.GetOrAddGenotypeSimulantsInfo(default)
-            .ReturnsForAnyArgs(GenotypeSimulantsInfoBuilder.WithEmptySimulantsInfo);
+            .ReturnsForAnyArgs(GenotypeSimulantsInfoBuilder.WithEmptySimulantsInfo.Build());
 
         await mismatchedDonorsStorer.CreateRecordsForGenotypeDonorsWithTooManyMismatches(VerificationSearchRequest, default);
 

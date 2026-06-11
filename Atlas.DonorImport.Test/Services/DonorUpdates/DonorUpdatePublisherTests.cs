@@ -6,7 +6,8 @@ using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Services.DonorUpdates;
-using LochNessBuilder;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture.Dsl;
 using Newtonsoft.Json;
 using NSubstitute;
 using NUnit.Framework;
@@ -20,7 +21,7 @@ internal class DonorUpdatePublisherTests
     private IPublishableDonorUpdatesRepository updatesRepository;
     private IDonorUpdatesPublisher updatesPublisher;
 
-    private static readonly Builder<PublishableDonorUpdate> UpdateBuilder = Builder<PublishableDonorUpdate>.New
+    private static readonly IPostprocessComposer<PublishableDonorUpdate> UpdateBuilder = FixtureBuilder.For<PublishableDonorUpdate>()
         .With(x => x.Id, 123)
         .With(x => x.SearchableDonorUpdate, JsonConvert.SerializeObject(new SearchableDonorUpdate()));
 

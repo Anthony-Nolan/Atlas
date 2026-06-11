@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers;
@@ -73,8 +74,8 @@ public class LocusHlaMaskerTests
     {
         var typings = new List<SimulantLocusHla>
         {
-            SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A),
-            SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.B)
+            SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A).Build(),
+            SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.B).Build()
         };
 
         var requests = new LocusMaskingRequests
@@ -93,8 +94,8 @@ public class LocusHlaMaskerTests
     {
         var typings = new List<SimulantLocusHla>
         {
-            SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A),
-            SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A)
+            SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A).Build(),
+            SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A).Build()
         };
 
         var requests = new LocusMaskingRequests
@@ -148,7 +149,7 @@ public class LocusHlaMaskerTests
     [Test]
     public async Task MaskHla_SumOfMaskingProportionsUnder0_ThrowsException()
     {
-        var typings = new List<SimulantLocusHla> {SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A)};
+        var typings = new List<SimulantLocusHla> {SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A).Build()};
 
         var categories = EnumExtensions.EnumerateValues<MaskingCategory>().ToList();
         var requests = new LocusMaskingRequests
@@ -167,7 +168,7 @@ public class LocusHlaMaskerTests
     [Test]
     public async Task MaskHla_SumOfMaskingProportionsOver100_ThrowsException()
     {
-        var typings = new List<SimulantLocusHla> {SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A)};
+        var typings = new List<SimulantLocusHla> {SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A).Build()};
 
         var categories = EnumExtensions.EnumerateValues<MaskingCategory>().ToList();
         var requests = new LocusMaskingRequests

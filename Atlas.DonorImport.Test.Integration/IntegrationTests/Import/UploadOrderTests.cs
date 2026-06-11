@@ -12,8 +12,9 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture.Dsl;
 using FluentAssertions;
-using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
@@ -26,11 +27,11 @@ public class UploadOrderTests
     private INotificationSender mockNotificationSender;
     private IDonorImportLogger<DonorImportLoggingContext> mockLogger;
         
-    private Builder<DonorUpdate> createUpdateBuilder;
-    private Builder<DonorUpdate> editUpdateBuilder;
-    private Builder<DonorUpdate> deleteUpdateBuilder;
-    private Builder<DonorUpdate> upsertUpdateBuilder;
-    private Builder<DonorImportFile> fileBuilder;
+    private IPostprocessComposer<DonorUpdate> createUpdateBuilder;
+    private IPostprocessComposer<DonorUpdate> editUpdateBuilder;
+    private IPostprocessComposer<DonorUpdate> deleteUpdateBuilder;
+    private IPostprocessComposer<DonorUpdate> upsertUpdateBuilder;
+    private IPostprocessComposer<DonorImportFile> fileBuilder;
     private IDonorFileImporter donorFileImporter;
     private IDonorInspectionRepository donorRepository;
 
@@ -1088,7 +1089,7 @@ public class UploadOrderTests
         result2.Should().BeNull();
     }
         
-    private DonorImportFile CreateDonorImportFile(Builder<DonorUpdate> builder, string externalCode, string fileName, int order)
+    private DonorImportFile CreateDonorImportFile(IPostprocessComposer<DonorUpdate> builder, string externalCode, string fileName, int order)
     {
         // We want to ensure each donor import is unique so we use order to determine HLA - order should be unique within each test.
         var donor1 = builder

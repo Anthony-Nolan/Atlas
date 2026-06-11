@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
 using Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
@@ -142,13 +143,13 @@ public class GenotypeSimulatorTests
         const string secondHlaA = "second";
 
         var firstMember = NormalisedPoolMemberBuilder.New
-            .With(x => x.HaplotypeFrequency, HaplotypeFrequencyBuilder.Default.With(x => x.A, firstHlaA))
+            .With(x => x.HaplotypeFrequency, HaplotypeFrequencyBuilder.Default.With(x => x.A, firstHlaA).Build())
             .With(x => x.CopyNumber, 5)
             .With(x => x.PoolIndexLowerBoundary, 0)
             .Build();
 
         var secondMember = NormalisedPoolMemberBuilder.New
-            .With(x => x.HaplotypeFrequency, HaplotypeFrequencyBuilder.Default.With(x => x.A, secondHlaA))
+            .With(x => x.HaplotypeFrequency, HaplotypeFrequencyBuilder.Default.With(x => x.A, secondHlaA).Build())
             .With(x => x.CopyNumber, 5)
             .With(x => x.PoolIndexLowerBoundary, firstMember.PoolIndexUpperBoundary + 1)
             .Build();

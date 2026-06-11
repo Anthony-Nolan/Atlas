@@ -1,14 +1,14 @@
-﻿using Atlas.SearchTracking.Common.Models;
-using LochNessBuilder;
+﻿using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.SearchTracking.Common.Models;
+using AutoFixture.Dsl;
 using System;
 
 namespace Atlas.RepeatSearch.Test.TestHelpers.Builders;
 
-[Builder]
 internal static class SearchRequestedEventBuilder
 {
-    public static Builder<SearchRequestedEvent> New =>
-        Builder<SearchRequestedEvent>.New
+    public static IPostprocessComposer<SearchRequestedEvent> New =>
+        FixtureBuilder.For<SearchRequestedEvent>()
             .With(x => x.SearchIdentifier, new Guid("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"))
             .With(x => x.IsRepeatSearch, true)
             .With(x => x.OriginalSearchIdentifier, new Guid("11111111-2222-3333-4444-555555555555"))

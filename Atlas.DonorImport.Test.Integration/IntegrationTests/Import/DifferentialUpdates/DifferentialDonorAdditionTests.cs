@@ -11,8 +11,9 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture.Dsl;
 using FluentAssertions;
-using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
@@ -30,9 +31,9 @@ public class DifferentialDonorAdditionTests
     private IDonorInspectionRepository donorRepository;
     private IPublishableDonorUpdatesInspectionRepository updatesInspectionRepository;
     private IDonorFileImporter donorFileImporter;
-    private readonly Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
+    private readonly IPostprocessComposer<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
 
-    private Builder<DonorUpdate> DonorCreationBuilder =>
+    private IPostprocessComposer<DonorUpdate> DonorCreationBuilder =>
         DonorUpdateBuilder.New
             .WithRecordIdPrefix("external-donor-code-")
             .With(upd => upd.ChangeType, ImportDonorChangeType.Create);
@@ -98,7 +99,7 @@ public class DifferentialDonorAdditionTests
         var donorUpdates =
             DonorCreationBuilder
                 .WithRecordIdPrefix(donorCodePrefix)
-                .With(donor => donor.Hla, new[] { hlaObject1, hlaObject2 })
+                .WithSequence(donor => donor.Hla, new[] { hlaObject1, hlaObject2 })
                 .Build(2).ToArray();
         var donorUpdateFile = fileBuilder.WithDonors(donorUpdates).Build();
 

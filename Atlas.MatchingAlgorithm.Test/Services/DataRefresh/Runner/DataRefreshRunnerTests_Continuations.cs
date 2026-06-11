@@ -4,6 +4,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -333,7 +334,7 @@ public partial class DataRefreshRunnerTests
         dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
             DataRefreshRecordBuilder.New
                 .WithStagesCompletedUpToAndIncluding(DataRefreshStage.DonorHlaProcessing)
-                .WithSetup(r => { r.RefreshLastContinuedUtc = r.RefreshRequestedUtc.AddSeconds(1); })
+                .Do(r => { r.RefreshLastContinuedUtc = r.RefreshRequestedUtc.AddSeconds(1); })
                 .Build()
         );
 

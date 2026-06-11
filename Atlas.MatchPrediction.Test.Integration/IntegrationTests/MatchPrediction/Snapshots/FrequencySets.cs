@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.MatchPrediction;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using NUnit.Framework;

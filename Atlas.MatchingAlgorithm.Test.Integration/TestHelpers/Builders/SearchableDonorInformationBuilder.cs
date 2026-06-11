@@ -1,17 +1,17 @@
 ﻿using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
-using LochNessBuilder;
+using AutoFixture.Dsl;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 
-[Builder]
 public static class SearchableDonorInformationBuilder
 {
     private const string DefaultHlaName = "hla-name";
     private const DonorType DefaultDonorType = DonorType.Adult;
 
-    public static Builder<SearchableDonorInformation> New =>
-        Builder<SearchableDonorInformation>.New
+    public static IPostprocessComposer<SearchableDonorInformation> New =>
+        FixtureBuilder.For<SearchableDonorInformation>()
             .With(x => x.DonorId, DonorIdGenerator.NextId())
             .With(x => x.DonorType, DefaultDonorType)
             .With(x => x.A_1, DefaultHlaName)
