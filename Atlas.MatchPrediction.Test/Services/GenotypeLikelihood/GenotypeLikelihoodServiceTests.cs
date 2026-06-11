@@ -40,10 +40,14 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<ISet<Locus>>())
                 .Returns(new ExpandedGenotype {Diplotypes = new List<Diplotype> {new DiplotypeBuilder().Build()}});
 
-            // frequencyService.GetAllHaplotypeFrequencies(Arg.Any<int>())
-            //     .Returns(
-            //         new Dictionary<LociInfo<string>, HaplotypeFrequency> {{new LociInfo<string>(), HaplotypeFrequencyBuilder.New.Build()}}.ToFrozenDictionary()
-            //     );
+            frequencyService.GetAllHaplotypeFrequencies(Arg.Any<int>())
+                .Returns(
+                    new FrequencySetCacheEntry
+                    {
+                        SetFrequencies = new Dictionary<HaplotypeKey, HaplotypeFrequencyValue>().ToFrozenDictionary(),
+                        Interner = new HaplotypeInterner()
+                    }
+                );
 
             genotypeLikelihoodCalculator.CalculateLikelihood(Arg.Any<ExpandedGenotype>()).Returns(0);
 

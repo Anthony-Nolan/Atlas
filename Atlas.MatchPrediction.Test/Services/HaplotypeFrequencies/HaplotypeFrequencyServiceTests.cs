@@ -1,21 +1,20 @@
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.MatchPrediction;
-using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.ApplicationInsights;
-using Atlas.MatchPrediction.Data.Repositories;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using AutoFixture;
 using FluentAssertions;
-using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
+using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
+using HaplotypeHla = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies;
 
@@ -23,12 +22,8 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies;
 internal class HaplotypeFrequencyServiceTests
 {
     private IFrequencySetImporter frequencySetImporter;
-    private IHaplotypeFrequencySetRepository frequencySetRepository;
-    private IHaplotypeFrequenciesRepository frequencyRepository;
     private INotificationSender notificationSender;
     private IMatchPredictionLogger<MatchProbabilityLoggingContext> logger;
-    private IFrequencyConsolidator frequencyConsolidator;
-    private IPersistentCacheProvider persistentCacheProvider;
     private IHaplotypeFrequencyCache haplotypeFrequencyCache;
 
     private Fixture fixture;
@@ -40,93 +35,154 @@ internal class HaplotypeFrequencyServiceTests
     {
         fixture = new Fixture();
         frequencySetImporter = Substitute.For<IFrequencySetImporter>();
-        frequencySetRepository = Substitute.For<IHaplotypeFrequencySetRepository>();
-        frequencyRepository = Substitute.For<IHaplotypeFrequenciesRepository>();
         notificationSender = Substitute.For<INotificationSender>();
         logger = Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
-        frequencyConsolidator = Substitute.For<IFrequencyConsolidator>();
-        persistentCacheProvider = AppCacheBuilder.NewPersistentCacheProvider();
-        var cacheSettings = fixture.Build<HaplotypeFrequencySetCacheSettings>()
-            .With(x => x.ActiveSetCacheExpiryMinutes, 5)
-            .Create();
         haplotypeFrequencyCache = Substitute.For<IHaplotypeFrequencyCache>();
 
         sut = new HaplotypeFrequencyService(
             frequencySetImporter,
-            frequencySetRepository,
-            frequencyRepository,
             notificationSender,
             logger,
-            persistentCacheProvider,
-            frequencyConsolidator,
-            Options.Create(cacheSettings),
             haplotypeFrequencyCache
         );
     }
 
     [Test]
-    public async Task GetSingleHaplotypeFrequencySet_MultipleCalls_UsesCachedActiveSets()
+    public async Task GetSingleHaplotypeFrequencySet_ReturnsActiveSetMatchingMetadata()
     {
         var registryCode = fixture.Create<string>();
         var ethnicityCode = fixture.Create<string>();
 
-        var activeSet = fixture.Build<Data.Models.HaplotypeFrequencySet>()
+        var activeSet = fixture.Build<HaplotypeFrequencySet>()
             .With(x => x.RegistryCode, registryCode)
             .With(x => x.EthnicityCode, ethnicityCode)
-            .With(x => x.Active, true)
             .Create();
 
-        frequencySetRepository.GetAllActiveSets().Returns([activeSet]);
+        haplotypeFrequencyCache.GetActiveHaplotypeFrequencySets().Returns(
+            new Dictionary<(string, string), HaplotypeFrequencySet>
+            {
+                { (registryCode, ethnicityCode), activeSet }
+            });
 
         var metadata = fixture.Build<FrequencySetMetadata>()
             .With(x => x.RegistryCode, registryCode)
             .With(x => x.EthnicityCode, ethnicityCode)
             .Create();
 
-        var firstResult = await sut.GetSingleHaplotypeFrequencySet(metadata);
-        var secondResult = await sut.GetSingleHaplotypeFrequencySet(metadata);
+        var result = await sut.GetSingleHaplotypeFrequencySet(metadata);
 
-        firstResult.Id.Should().Be(activeSet.Id);
-        secondResult.Id.Should().Be(activeSet.Id);
-        await frequencySetRepository.Received(1).GetAllActiveSets();
+        result.Id.Should().Be(activeSet.Id);
     }
 
     [Test]
     public async Task ImportFrequencySet_SuccessfulImport_InvalidatesActiveSetCache()
     {
-        var registryCode = fixture.Create<string>();
-        var ethnicityCode = fixture.Create<string>();
-
         frequencySetImporter.Import(null, null).ReturnsForAnyArgs(Task.CompletedTask);
-
-        var firstActiveSet = fixture.Build<Data.Models.HaplotypeFrequencySet>()
-            .With(x => x.RegistryCode, registryCode)
-            .With(x => x.EthnicityCode, ethnicityCode)
-            .With(x => x.Active, true)
-            .Create();
-        var secondActiveSet = fixture.Build<Data.Models.HaplotypeFrequencySet>()
-            .With(x => x.RegistryCode, registryCode)
-            .With(x => x.EthnicityCode, ethnicityCode)
-            .With(x => x.Active, true)
-            .Create();
-
-        frequencySetRepository.GetAllActiveSets().Returns([firstActiveSet], [secondActiveSet]);
-
-        var metadata = fixture.Build<FrequencySetMetadata>()
-            .With(x => x.RegistryCode, registryCode)
-            .With(x => x.EthnicityCode, ethnicityCode)
-            .Create();
 
         var file = fixture.Build<FrequencySetFile>()
             .Without(f => f.Contents)
             .Create();
 
-        var resultBeforeImport = await sut.GetSingleHaplotypeFrequencySet(metadata);
         await sut.ImportFrequencySet(file, fixture.Create<FrequencySetImportBehaviour>());
-        var resultAfterImport = await sut.GetSingleHaplotypeFrequencySet(metadata);
 
-        resultBeforeImport.Id.Should().Be(firstActiveSet.Id);
-        resultAfterImport.Id.Should().Be(secondActiveSet.Id);
-        await frequencySetRepository.Received(2).GetAllActiveSets();
+        haplotypeFrequencyCache.Received(1).RemoveActiveHaplotypeFrequencySets();
+    }
+
+    [Test]
+    public async Task GetFrequencyForHla_WhenHaplotypeIsPresentInSet_ReturnsItsFrequency()
+    {
+        const int setId = 1;
+        haplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId).Returns(BuildEntry(("a", "b", "c", "q", "r", 0.3m)));
+        var hla = new HaplotypeHla(valueA: "a", valueB: "b", valueC: "c", valueDqb1: "q", valueDrb1: "r");
+
+        var result = await sut.GetFrequencyForHla(setId, hla, new HashSet<Locus>());
+
+        result.Should().Be(0.3m);
+        await haplotypeFrequencyCache.DidNotReceive()
+            .GetConsolidatedFrequency(Arg.Any<int>(), Arg.Any<HaplotypeHla>(), Arg.Any<ISet<Locus>>());
+    }
+
+    [Test]
+    public async Task GetFrequencyForHla_WhenAlleleAbsentFromSet_AndNoExcludedLoci_ReturnsZeroWithoutConsolidating()
+    {
+        const int setId = 1;
+        haplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId).Returns(BuildEntry(("a", "b", "c", "q", "r", 0.3m)));
+        // "zzz" at A never appears in the set, so the interner cannot resolve the haplotype at all.
+        var hla = new HaplotypeHla(valueA: "zzz", valueB: "b", valueC: "c", valueDqb1: "q", valueDrb1: "r");
+
+        var result = await sut.GetFrequencyForHla(setId, hla, new HashSet<Locus>());
+
+        result.Should().Be(0);
+        await haplotypeFrequencyCache.DidNotReceive()
+            .GetConsolidatedFrequency(Arg.Any<int>(), Arg.Any<HaplotypeHla>(), Arg.Any<ISet<Locus>>());
+    }
+
+    [Test]
+    public async Task GetFrequencyForHla_WhenAlleleAbsentFromSet_AndExcludedLoci_ReturnsConsolidatedFrequency()
+    {
+        const int setId = 1;
+        haplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId).Returns(BuildEntry(("a", "b", "c", "q", "r", 0.3m)));
+        haplotypeFrequencyCache.GetConsolidatedFrequency(setId, Arg.Any<HaplotypeHla>(), Arg.Any<ISet<Locus>>()).Returns(0.99m);
+        var hla = new HaplotypeHla(valueA: "zzz", valueB: "b", valueC: "c", valueDqb1: "q", valueDrb1: "r");
+
+        var result = await sut.GetFrequencyForHla(setId, hla, new HashSet<Locus> { Locus.C });
+
+        result.Should().Be(0.99m);
+        await haplotypeFrequencyCache.Received(1).GetConsolidatedFrequency(setId, hla, Arg.Any<ISet<Locus>>());
+    }
+
+    // Regression guard: the interner resolves each allele independently, so a cross-combination of alleles that all
+    // exist individually (but was never imported as a haplotype) resolves to a key that is NOT in the dictionary.
+    // Indexing into the dictionary on a successful resolve threw KeyNotFoundException for such haplotypes; we must
+    // probe it and fall through to the unrepresented handling instead.
+    [Test]
+    public async Task GetFrequencyForHla_WhenAllelesResolveButCombinationAbsent_AndNoExcludedLoci_ReturnsZeroWithoutThrowing()
+    {
+        const int setId = 1;
+        haplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId).Returns(BuildEntry(
+            ("a1", "b1", "c1", "q1", "r1", 0.1m),
+            ("a2", "b2", "c2", "q2", "r2", 0.2m)));
+        // Every allele below exists in the set, but this exact haplotype does not.
+        var hla = new HaplotypeHla(valueA: "a1", valueB: "b2", valueC: "c1", valueDqb1: "q1", valueDrb1: "r1");
+
+        var result = await sut.GetFrequencyForHla(setId, hla, new HashSet<Locus>());
+
+        result.Should().Be(0);
+        await haplotypeFrequencyCache.DidNotReceive()
+            .GetConsolidatedFrequency(Arg.Any<int>(), Arg.Any<HaplotypeHla>(), Arg.Any<ISet<Locus>>());
+    }
+
+    [Test]
+    public async Task GetFrequencyForHla_WhenAllelesResolveButCombinationAbsent_AndExcludedLoci_ReturnsConsolidatedFrequency()
+    {
+        const int setId = 1;
+        haplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId).Returns(BuildEntry(
+            ("a1", "b1", "c1", "q1", "r1", 0.1m),
+            ("a2", "b2", "c2", "q2", "r2", 0.2m)));
+        haplotypeFrequencyCache.GetConsolidatedFrequency(setId, Arg.Any<HaplotypeHla>(), Arg.Any<ISet<Locus>>()).Returns(0.55m);
+        var hla = new HaplotypeHla(valueA: "a1", valueB: "b2", valueC: "c1", valueDqb1: "q1", valueDrb1: "r1");
+
+        var result = await sut.GetFrequencyForHla(setId, hla, new HashSet<Locus> { Locus.C });
+
+        result.Should().Be(0.55m);
+        await haplotypeFrequencyCache.Received(1).GetConsolidatedFrequency(setId, hla, Arg.Any<ISet<Locus>>());
+    }
+
+    private static FrequencySetCacheEntry BuildEntry(
+        params (string A, string B, string C, string Dqb1, string Drb1, decimal Frequency)[] haplotypes)
+    {
+        var interner = new HaplotypeInterner();
+        var dictionary = new Dictionary<HaplotypeKey, HaplotypeFrequencyValue>();
+        foreach (var haplotype in haplotypes)
+        {
+            var key = interner.Intern(haplotype.A, haplotype.B, haplotype.C, haplotype.Dqb1, haplotype.Drb1);
+            dictionary[key] = new HaplotypeFrequencyValue(haplotype.Frequency, default);
+        }
+
+        return new FrequencySetCacheEntry
+        {
+            SetFrequencies = dictionary.ToFrozenDictionary(),
+            Interner = interner
+        };
     }
 }
