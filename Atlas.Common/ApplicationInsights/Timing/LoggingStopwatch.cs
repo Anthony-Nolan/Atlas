@@ -75,7 +75,7 @@ namespace Atlas.Common.ApplicationInsights.Timing
         private static string GenerateRandomStringId()
         {
             const int length = 5;
-            // ReSharper disable once StringLiteralTypo
+
             const string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             var output = new char[length];
             for (var i = 0; i < length; i++)

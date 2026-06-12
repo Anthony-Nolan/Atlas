@@ -150,7 +150,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         /// <remarks>
         /// Retain this for reference of how to do it correctly, if nothing else.
         /// </remarks>
-        // ReSharper disable once UnusedMember.Local
+
         private async Task ExplicitlyDeleteAllMacRecords()
         {
             var existingMacs =

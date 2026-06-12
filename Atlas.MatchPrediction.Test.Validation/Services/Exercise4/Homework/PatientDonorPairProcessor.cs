@@ -5,7 +5,6 @@ using Atlas.MatchPrediction.Test.Validation.Data.Models.Homework;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
 using Atlas.MatchPrediction.Test.Validation.Models;
 
-// ReSharper disable InconsistentNaming
 
 namespace Atlas.MatchPrediction.Test.Validation.Services.Exercise4.Homework
 {

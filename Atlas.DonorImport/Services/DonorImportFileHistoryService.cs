@@ -45,7 +45,6 @@ namespace Atlas.DonorImport.Services
             var filename = GetFileNameFromLocation(donorFile.FileLocation);
             var importRecord = await repository.GetFileIfExists(filename, donorFile.UploadTime);
 
-            // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
             switch (importRecord?.FileState)
             {
                 case null:

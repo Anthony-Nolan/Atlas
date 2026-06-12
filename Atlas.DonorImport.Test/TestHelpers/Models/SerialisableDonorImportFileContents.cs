@@ -11,11 +11,10 @@ namespace Atlas.DonorImport.Test.TestHelpers.Models
     /// </summary>
     internal class SerialisableDonorImportFileContents : DonorImportFileSchema
     {
-        // ReSharper disable once InconsistentNaming
+
         [JsonProperty(Order = 1)]
         public override UpdateMode updateMode { get; set; }
 
-        // ReSharper disable once InconsistentNaming
         [JsonProperty(Order = 2)]
         public override IEnumerable<DonorUpdate> donors { get; set; }
 

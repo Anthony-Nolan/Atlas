@@ -104,7 +104,6 @@ namespace Atlas.Common.Caching
         {
             var value = await cache.GetAsync<TCollection>(collectionCacheKey);
 
-            // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
             if (value == null)
             {
                 value = await cache.GenerateAndCacheCollectionWithTracking(collectionCacheKey, fetchFullCollection, true);

@@ -1,4 +1,3 @@
-// ReSharper disable ClassNeverInstantiated.Global
 
 namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels
 {

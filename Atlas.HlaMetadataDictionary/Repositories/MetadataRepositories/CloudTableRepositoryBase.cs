@@ -42,7 +42,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             ITableClientFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             string functionalTableReferencePrefix,
-            // ReSharper disable once SuggestBaseTypeForParameter
+
             IPersistentCacheProvider cacheProvider,
             string cacheKey,
             IAtlasLogger logger)

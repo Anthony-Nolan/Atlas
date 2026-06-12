@@ -15,7 +15,7 @@ namespace Atlas.MatchPrediction.Services.HlaConversion
     internal class HlaToTargetCategoryConverter : HlaConverterBase, IHlaToTargetCategoryConverter
     {
         public HlaToTargetCategoryConverter(
-            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger) : base(logger)
         {
         }

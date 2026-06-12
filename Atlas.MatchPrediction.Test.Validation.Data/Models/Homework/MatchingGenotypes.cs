@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Atlas.Common.Sql.BulkInsert;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-// ReSharper disable InconsistentNaming
 
 namespace Atlas.MatchPrediction.Test.Validation.Data.Models.Homework
 {

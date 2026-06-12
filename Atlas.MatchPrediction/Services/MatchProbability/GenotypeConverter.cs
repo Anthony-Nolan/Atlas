@@ -47,7 +47,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         private readonly ISmallGGroupToPGroupConverter smallGGroupConverter;
 
         public GenotypeConverter(
-            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             IHlaCategorisationService categoriser,
             IHlaToTargetCategoryConverter hlaToTargetCategoryConverter,

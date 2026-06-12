@@ -15,7 +15,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 
     public class DormantRepositoryFactory : TransientRepositoryFactoryBase, IDormantRepositoryFactory
     {
-        // ReSharper disable once SuggestBaseTypeForParameter
+
         public DormantRepositoryFactory(
             DormantTransientSqlConnectionStringProvider dormantConnectionStringProvider,
             IMatchingAlgorithmImportLogger logger

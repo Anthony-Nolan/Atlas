@@ -15,7 +15,6 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 
-// ReSharper disable InconsistentNaming
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 {

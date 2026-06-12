@@ -2,19 +2,16 @@
 using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 
-// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Atlas.MatchingAlgorithm.Data.Models
 {
-    // ReSharper disable once ClassNeverInstantiated.Global - instantiated by Dapper
+
     internal class DonorLocusMatch
     {
         public int DonorId { get; set; }
-        
-        // ReSharper disable once MemberCanBePrivate.Global - needed for Dapper deserialisation
+
         public int? TypePosition1 { get; set; }
 
-        // ReSharper disable once MemberCanBePrivate.Global - needed for Dapper deserialisation
         public int? TypePosition2 { get; set; }
 
         internal async IAsyncEnumerable<PotentialHlaMatchRelation> ToPotentialHlaMatchRelations(Locus locus)

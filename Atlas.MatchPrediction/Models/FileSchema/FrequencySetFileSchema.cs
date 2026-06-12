@@ -13,7 +13,6 @@ namespace Atlas.MatchPrediction.Models.FileSchema
         [JsonProperty(PropertyName = "donPool")]
         public string[] RegistryCodes { get; set; }
 
-        // ReSharper disable once StringLiteralTypo
         [JsonProperty(PropertyName = "ethn")]
         public string[] EthnicityCodes { get; set; }
 

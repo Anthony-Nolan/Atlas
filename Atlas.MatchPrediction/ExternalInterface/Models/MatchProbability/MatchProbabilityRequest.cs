@@ -39,9 +39,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         {
         }
 
-        // ReSharper disable once MemberCanBePrivate.Global
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        // ReSharper disable once CollectionNeverUpdated.Global
+
+
         /// <summary>
         /// Input for multiple donor phenotypes
         /// </summary>
@@ -78,7 +77,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
     /// </summary>
     public class IdentifiedMatchProbabilityRequest : MatchProbabilityRequestBase
     {
-        // ReSharper disable once MemberCanBeProtected.Global - Deserialised
+
         public IdentifiedMatchProbabilityRequest()
         {
         }
@@ -109,7 +108,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
     /// </summary>
     public abstract class MatchProbabilityRequestBase
     {
-        // ReSharper disable once MemberCanBeProtected.Global - Deserialised
+
         protected MatchProbabilityRequestBase()
         {
         }

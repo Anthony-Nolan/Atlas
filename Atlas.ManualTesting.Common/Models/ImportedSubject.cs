@@ -1,4 +1,4 @@
-﻿// ReSharper disable InconsistentNaming
+﻿
 
 namespace Atlas.ManualTesting.Common.Models
 {

@@ -39,7 +39,6 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
                 throw new ArgumentNullException();
             }
 
-            // ReSharper disable once ConvertSwitchStatementToSwitchExpression
             switch (conversionBehaviour.TargetHlaCategory)
             {
                 case TargetHlaCategory.TwoFieldAlleleIncludingExpressionSuffix:

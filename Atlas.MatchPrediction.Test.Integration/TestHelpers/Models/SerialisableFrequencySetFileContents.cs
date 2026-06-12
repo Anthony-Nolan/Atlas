@@ -5,7 +5,7 @@ using Newtonsoft.Json.Converters;
 
 namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Models
 {
-    // ReSharper disable InconsistentNaming
+
 
     /// <summary>
     /// File schema used to add attributes only needed for serialisation in tests.

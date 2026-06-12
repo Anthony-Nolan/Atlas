@@ -51,7 +51,7 @@ namespace Atlas.MatchPrediction.Services.HlaConversion
         private readonly IAtlasLogger logger;
 
         protected HlaConverterBase(
-            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger)
         {
             this.logger = logger;

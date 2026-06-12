@@ -1,5 +1,3 @@
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;

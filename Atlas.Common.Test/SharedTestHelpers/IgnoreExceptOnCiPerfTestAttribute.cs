@@ -12,7 +12,6 @@ namespace Atlas.Common.Test.SharedTestHelpers
         private const string Reason = "We want some slow Tests that really exercise the Performance of the code, but they should only run on DevOps";
         public const string CiIndicatorVariable = "RUN_CI_PERF_TESTS";
 
-        // ReSharper disable once UnusedParameter.Local
         /// <param name="lastBenchmark">Please record the how long this test took last time you ran it.</param>
         public IgnoreExceptOnCiPerfTestAttribute(string lastBenchmark) : base(CiIndicatorVariable, Reason)
         { }

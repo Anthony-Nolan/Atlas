@@ -8,6 +8,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
     public interface IActiveRepositoryFactory : ITransientRepositoryFactory
     {
         IDonorSearchRepository GetDonorSearchRepository();
+
         IDonorManagementLogRepository GetDonorManagementLogRepository();
     }
 
@@ -15,7 +16,6 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
     {
         private readonly IMatchingAlgorithmSearchLogger searchLogger;
 
-        // ReSharper disable once SuggestBaseTypeForParameter
         public ActiveRepositoryFactory(
             ActiveTransientSqlConnectionStringProvider activeConnectionStringProvider,
             IMatchingAlgorithmImportLogger logger,

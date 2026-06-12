@@ -26,7 +26,7 @@ namespace Atlas.ManualTesting.Services
 
         public DonorStoresInspector(
             IDonorReadRepository donorImportRepository,
-            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+
             IActiveMatchingDatabaseConnectionStringProvider connectionStringProvider)
         {
             this.donorImportRepository = donorImportRepository;

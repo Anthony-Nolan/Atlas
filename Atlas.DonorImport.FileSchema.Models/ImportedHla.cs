@@ -2,8 +2,8 @@ using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.FileSchema.Models
 {
-    // ReSharper disable InconsistentNaming
-    // ReSharper disable ClassNeverInstantiated.Global - Instantiated by JSON parser
+
+
     public class ImportedHla
     {
         public ImportedLocus A { get; set; }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness
 {
-    // ReSharper disable InconsistentNaming
+
 
     /// <summary>
     /// Record of masking that was performed when generating the test harness of ID <see cref="TestHarness_Id"/>.

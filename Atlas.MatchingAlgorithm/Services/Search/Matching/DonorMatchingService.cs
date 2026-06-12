@@ -42,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
         public DonorMatchingService(
             IMatchFilteringService matchFilteringService,
-            // ReSharper disable once SuggestBaseTypeForParameter
+
             IMatchingAlgorithmSearchLogger searchLogger,
             IMatchCriteriaAnalyser matchCriteriaAnalyser,
             IPerLocusDonorMatchingService perLocusDonorMatchingService,

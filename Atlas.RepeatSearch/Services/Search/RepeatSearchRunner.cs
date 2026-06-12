@@ -109,7 +109,6 @@ namespace Atlas.RepeatSearch.Services.Search
 
                 await searchTrackingEventPublisher.ProcessInitiation(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
 
-                // ReSharper disable once PossibleInvalidOperationException - validation has ensured this is not null.
                 var searchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value;
 
                 var stopwatch = new Stopwatch();
@@ -264,7 +263,7 @@ namespace Atlas.RepeatSearch.Services.Search
             var historyRecord = new RepeatSearchHistoryRecord
             {
                 DateCreated = DateTimeOffset.UtcNow,
-                // ReSharper disable once PossibleInvalidOperationException - validation should have caught nulls by now
+
                 SearchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value,
                 OriginalSearchRequestId = identifiedRepeatSearchRequest.OriginalSearchId,
                 RepeatSearchRequestId = identifiedRepeatSearchRequest.RepeatSearchId,

@@ -32,7 +32,7 @@ namespace Atlas.Common.Sql.BulkInsert
 
         public async Task BulkInsert(IEnumerable<TEntity> entities)
         {
-            // ReSharper disable once PossibleMultipleEnumeration - `IsNullOrEmpty` does not enumerate the collection
+
             if (entities.IsNullOrEmpty())
             {
                 return;
@@ -40,7 +40,6 @@ namespace Atlas.Common.Sql.BulkInsert
 
             var columnNames = GetColumnNames();
 
-            // ReSharper disable once PossibleMultipleEnumeration
             var dataTable = BuildDataTable(entities, columnNames);
 
             using (var sqlBulk = BuildSqlBulkCopy(columnNames))

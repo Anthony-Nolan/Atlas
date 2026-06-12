@@ -8,7 +8,7 @@ namespace Atlas.MatchPrediction.Test.Validation.Data.Context
 {
     public class MatchPredictionValidationContext : DbContext, IDonorExportData, ISearchData<ValidationSearchRequestRecord>
     {
-        // ReSharper disable once SuggestBaseTypeForParameter
+
         public MatchPredictionValidationContext(DbContextOptions<MatchPredictionValidationContext> options) : base(options)
         {
         }

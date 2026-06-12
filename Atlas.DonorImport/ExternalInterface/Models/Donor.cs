@@ -1,7 +1,6 @@
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using System;
 
-// ReSharper disable InconsistentNaming
 
 namespace Atlas.DonorImport.ExternalInterface.Models
 {

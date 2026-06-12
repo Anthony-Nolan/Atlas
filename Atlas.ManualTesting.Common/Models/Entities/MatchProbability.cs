@@ -4,7 +4,7 @@ using Atlas.Common.Sql.BulkInsert;
 
 namespace Atlas.ManualTesting.Common.Models.Entities
 {
-    // ReSharper disable InconsistentNaming
+
 
     public abstract class MatchProbability : IBulkInsertModel
     {

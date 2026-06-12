@@ -50,7 +50,7 @@ public interface IWmdaDiscrepantResultsReporter
 
         public WmdaDiscrepantResultsReporter(
             IWmdaResultsComparer resultsComparer,
-            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+
             ITransientCacheProvider cacheProvider,
             IConvertHlaRequester hlaConversionRequester,
             TargetHlaCategory targetHlaCategory)

@@ -8,7 +8,7 @@ namespace Atlas.DonorImport.Test.TestHelpers.Models.MalformedDonorFileModels
 {
     internal class DonorFileWithDonorUpdateWithMissingField
     {
-        // ReSharper disable once InconsistentNaming
+
         [JsonProperty(Order = 1)]
         public UpdateMode updateMode { get; set; }
         
@@ -34,8 +34,7 @@ namespace Atlas.DonorImport.Test.TestHelpers.Models.MalformedDonorFileModels
             UpdateMode = donor.UpdateMode;
             Ethnicity = donor.Ethnicity;
         }
-        
-        // ReSharper disable once StringLiteralTypo
+
         [JsonProperty(PropertyName = "ethn")]
         public string Ethnicity { get; set; }
         public ImportDonorChangeType ChangeType { get; set; }

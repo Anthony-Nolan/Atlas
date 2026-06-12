@@ -3,7 +3,6 @@ using Atlas.ManualTesting.Common.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
-// ReSharper disable InconsistentNaming
 
 namespace Atlas.MatchPrediction.Test.Validation.Data.Models
 {

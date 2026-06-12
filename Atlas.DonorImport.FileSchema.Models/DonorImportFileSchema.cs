@@ -1,4 +1,3 @@
-// ReSharper disable InconsistentNaming - As we are not deserialising this file directly, we must keep the property names in sync with the expected schema, including casing
 using System.Text.Json.Serialization;
 
 namespace Atlas.DonorImport.FileSchema.Models

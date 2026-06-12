@@ -1,4 +1,4 @@
-// ReSharper disable InconsistentNaming
+
 namespace Atlas.MatchingAlgorithm.Models.AzureManagement
 {
     /// <summary>

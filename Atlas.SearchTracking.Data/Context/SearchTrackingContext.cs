@@ -20,7 +20,6 @@ namespace Atlas.SearchTracking.Data.Context
     {
         internal const string Schema = "SearchTracking";
 
-        // ReSharper disable once SuggestBaseTypeForParameter
         public SearchTrackingContext(DbContextOptions<SearchTrackingContext> options) : base(options)
         {
         }

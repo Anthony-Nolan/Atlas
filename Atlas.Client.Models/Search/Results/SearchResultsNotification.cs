@@ -1,8 +1,7 @@
 using System;
 using Atlas.Client.Models.Search.Results.LogFile;
 
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable UnusedAutoPropertyAccessor.Global
+
 
 namespace Atlas.Client.Models.Search.Results
 {

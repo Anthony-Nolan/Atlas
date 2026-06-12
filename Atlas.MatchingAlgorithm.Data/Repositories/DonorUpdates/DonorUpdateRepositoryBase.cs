@@ -16,7 +16,6 @@ using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
 using Microsoft.Data.SqlClient;
 
-// ReSharper disable InconsistentNaming
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 {

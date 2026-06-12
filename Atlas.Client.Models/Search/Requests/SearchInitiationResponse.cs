@@ -1,5 +1,3 @@
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Atlas.Client.Models.Search.Requests
 {

@@ -11,11 +11,10 @@ namespace Atlas.DonorImport.Test.TestHelpers.Models.MalformedDonorFileModels
     /// </summary>
     internal class DonorFileWithUnexpectedField
     {
-        // ReSharper disable once InconsistentNaming
+
         [JsonProperty(Order = 1)]
         public UpdateMode updateMode { get; set; }
 
-        // ReSharper disable once InconsistentNaming
         [JsonProperty(Order = 2)]
         public IEnumerable<DonorUpdate> unexpectedField { get; set; }
 

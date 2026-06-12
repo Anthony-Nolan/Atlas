@@ -7,7 +7,7 @@ namespace Atlas.DonorImport.Test.TestHelpers.Models.MalformedDonorFileModels
 {
     internal class DonorFileWithoutDonor
     {
-        // ReSharper disable once InconsistentNaming
+
         [JsonProperty(Order = 1)]
         public UpdateMode updateMode { get; set; }
         

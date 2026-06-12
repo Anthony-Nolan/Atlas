@@ -17,7 +17,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
         private readonly IAppCache cache;
         private readonly IExpandedMacsRepository macsRepository;
 
-        // ReSharper disable once SuggestBaseTypeForParameter
         public ExpandedMacCache(ITransientCacheProvider cacheProvider, IExpandedMacsRepository macsRepository)
         {
             cache = cacheProvider.Cache;

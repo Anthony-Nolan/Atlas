@@ -26,7 +26,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         private const string CacheKey = nameof(SerologyToAllelesMetadataService);
 
         public SerologyToAllelesMetadataService(
-            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+
             ISerologyToAllelesMetadataRepository serologyToAllelesMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
             IHlaCategorisationService hlaCategorisationService,

@@ -9,7 +9,7 @@ using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation
 {
-    // ReSharper disable once InconsistentNaming
+
     internal class MatchedAllele_AlleleGroupsTests : MatchedOnTestBase<MatchedAllele>
     {
         private class MatchedAlleleTestData

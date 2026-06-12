@@ -2,7 +2,7 @@
 
 namespace Atlas.ManualTesting.Common.Models.Entities
 {
-    // ReSharper disable InconsistentNaming
+
 
     public class MatchedDonorProbability : MatchProbability
     {

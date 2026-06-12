@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification
 {
-    // ReSharper disable InconsistentNaming
+
 
     public class VerificationSearchRequestRecord : SearchRequestRecord
     {

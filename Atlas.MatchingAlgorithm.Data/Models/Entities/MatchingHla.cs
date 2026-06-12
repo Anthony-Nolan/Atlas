@@ -6,8 +6,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Config;
 
-// ReSharper disable ClassNeverInstantiated.Global - Instantiated by EF
-// ReSharper disable UnusedMember.Global - Used by EF
+
 
 namespace Atlas.MatchingAlgorithm.Data.Models.Entities
 {

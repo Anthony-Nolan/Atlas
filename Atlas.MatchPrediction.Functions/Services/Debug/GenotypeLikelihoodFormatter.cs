@@ -30,7 +30,7 @@ namespace Atlas.MatchPrediction.Functions.Services.Debug
         /// </summary>
         public static IEnumerable<string> ToFormattedStrings(this IEnumerable<GenotypeMatchDetails> genotypeMatchDetails)
         {
-            // ReSharper disable once PossibleMultipleEnumeration - `IsNullOrEmpty` extension method does not enumerate full collection
+
             if (genotypeMatchDetails.IsNullOrEmpty())
             {
                 yield break;
@@ -45,7 +45,6 @@ namespace Atlas.MatchPrediction.Functions.Services.Debug
                          $"{BuildGenotypeLikelihoodHeader("P-")}{FieldDelimiter}" +
                          $"{BuildGenotypeLikelihoodHeader("D-")}";
 
-            // ReSharper disable once PossibleMultipleEnumeration
             foreach (var details in genotypeMatchDetails.OrderByDescending(x => x.MatchCount))
             {
                 yield return $"{BuildCounts(details.MatchCount, details.MatchCounts)}{FieldDelimiter}" +

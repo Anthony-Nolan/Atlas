@@ -8,7 +8,7 @@ namespace Atlas.DonorImport.Test.TestHelpers.Models.MalformedDonorFileModels
 {
     internal class DonorFileWithDonorUpdateInvalidEnum
     {
-        // ReSharper disable once InconsistentNaming
+
         [JsonProperty(Order = 1)]
         public string updateMode { get; set; }
         
@@ -29,8 +29,7 @@ namespace Atlas.DonorImport.Test.TestHelpers.Models.MalformedDonorFileModels
 
         [JsonProperty(PropertyName = "donPool")]
         public string RegistryCode { get; set; }
-        
-        // ReSharper disable once StringLiteralTypo
+
         [JsonProperty(PropertyName = "ethn")]
         public string Ethnicity { get; set; }
         
