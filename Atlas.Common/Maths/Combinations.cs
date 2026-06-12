@@ -64,12 +64,9 @@ public static class Combinations
     /// <param name="r_combinationSize"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    // ReSharper disable once InconsistentNaming
     private static IEnumerable<IReadOnlyList<T>> AllCombinations<T>(IReadOnlyList<T> collection, int r_combinationSize)
     {
         var allIndexCombinations = AllCombinations(collection.Count, r_combinationSize).ToList();
-
-        // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
         foreach (var indexCombination in allIndexCombinations)
         {
             // Given collection {a, b, c} and index combination {1, 2}, returns {b, c}
@@ -84,7 +81,6 @@ public static class Combinations
     /// </summary>
     /// <param name="n_sourceCollectionSize"></param>
     /// <param name="r_combinationSize"></param>
-    // ReSharper disable twice InconsistentNaming
     public static IEnumerable<int[]> AllCombinations(int n_sourceCollectionSize, int r_combinationSize)
     {
         if (n_sourceCollectionSize * r_combinationSize <= 0 || n_sourceCollectionSize <= 0)
@@ -129,15 +125,11 @@ public static class Combinations
     {
         return array.Select(x => new Tuple<T, T>(x, x));
     }
-
-    // ReSharper disable once InconsistentNaming
     public static long nCr(int n_sourceCollectionSize, int r_combinationSize)
     {
         // naive: return Factorial(n) / (Factorial(r) * Factorial(n - r));
         return nPr(n_sourceCollectionSize, r_combinationSize) / Factorial(r_combinationSize);
     }
-
-    // ReSharper disable once InconsistentNaming
     private static long nPr(int n_sourceCollectionSize, int r_combinationSize)
     {
         // naive: return Factorial(n) / Factorial(n - r);

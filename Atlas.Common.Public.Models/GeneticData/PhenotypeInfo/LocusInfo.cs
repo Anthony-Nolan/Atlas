@@ -1,8 +1,5 @@
 using System.Diagnostics;
 
-// ReSharper disable InconsistentNaming - want to use T/R to easily distinguish contained type and target type(s)
-// ReSharper disable MemberCanBeInternal
-
 namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
 /// <summary>
@@ -11,7 +8,6 @@ namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 /// A <see cref="PhenotypeInfo{T}"/> is a special case of <see cref="LociInfo{T}"/>, where T = LocusInfo.
 /// </summary>
 [DebuggerDisplay("1: {Position1}, 2: {Position2}")]
-// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
 public class LocusInfo<T> : IEquatable<LocusInfo<T>>
 {
     public T Position1 { get; }

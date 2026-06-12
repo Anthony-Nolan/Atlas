@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Atlas.Common.Sql.BulkInsert;
 
 namespace Atlas.ManualTesting.Common.Models.Entities;
-// ReSharper disable InconsistentNaming
 public class MatchedDonor : IBulkInsertModel
 {
     public int Id { get; set; }

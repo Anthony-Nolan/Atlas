@@ -26,7 +26,6 @@ internal class DonorStoresInspector : IDonorStoresInspector
 
     public DonorStoresInspector(
         IDonorReadRepository donorImportRepository,
-        // ReSharper disable once SuggestBaseTypeForParameterInConstructor
         IActiveMatchingDatabaseConnectionStringProvider connectionStringProvider)
     {
         this.donorImportRepository = donorImportRepository;

@@ -61,7 +61,6 @@ internal class GenotypeMatcher : IGenotypeMatcher
     public GenotypeMatcher(
         IGenotypeSetService genotypeSetService,
         IMatchCalculationService matchCalculationService,
-        // ReSharper disable once SuggestBaseTypeForParameterInConstructor
         IMatchPredictionLogger<MatchProbabilityLoggingContext> logger)
     {
         this.genotypeSetService = genotypeSetService;

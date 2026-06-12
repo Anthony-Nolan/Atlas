@@ -7,8 +7,6 @@ using FluentAssertions;
 using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation.AlleleToSerology;
-
-// ReSharper disable once InconsistentNaming
 internal class MatchedAllele_AlleleToSerologyTests : MatchedOnTestBase<MatchedAllele>
 {
     [TestCaseSource(

@@ -14,8 +14,6 @@ public class DonorUpdate
 
     [JsonProperty(PropertyName = "donPool")]
     public string RegistryCode { get; set; }
-        
-    // ReSharper disable once StringLiteralTypo
     [JsonProperty(PropertyName = "ethn")]
     public string Ethnicity { get; set; }
         

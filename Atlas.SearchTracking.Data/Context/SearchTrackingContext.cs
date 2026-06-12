@@ -19,8 +19,6 @@ public interface ISearchTrackingContext : IDisposable
 public class SearchTrackingContext : DbContext, ISearchTrackingContext
 {
     internal const string Schema = "SearchTracking";
-
-    // ReSharper disable once SuggestBaseTypeForParameter
     public SearchTrackingContext(DbContextOptions<SearchTrackingContext> options) : base(options)
     {
     }

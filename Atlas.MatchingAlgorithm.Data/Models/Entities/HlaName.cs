@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-// ReSharper disable ClassNeverInstantiated.Global
 
 namespace Atlas.MatchingAlgorithm.Data.Models.Entities;
 

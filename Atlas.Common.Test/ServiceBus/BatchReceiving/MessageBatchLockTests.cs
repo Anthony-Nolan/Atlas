@@ -128,8 +128,6 @@ public class MessageBatchLockTests
                 DeserializedBody = MessageBody
             }
         };
-            
-        // ReSharper disable once ObjectCreationAsStatement - expected exception will be thrown on construction 
         Assert.Throws<Exception>(() => new MessageBatchLock<string>(messageReceiver, messages, LockTimeFraction));
     }
 }

@@ -14,8 +14,6 @@ public interface IActiveRepositoryFactory : ITransientRepositoryFactory
 public class ActiveRepositoryFactory : TransientRepositoryFactoryBase, IActiveRepositoryFactory
 {
     private readonly IMatchingAlgorithmSearchLogger searchLogger;
-
-    // ReSharper disable once SuggestBaseTypeForParameter
     public ActiveRepositoryFactory(
         ActiveTransientSqlConnectionStringProvider activeConnectionStringProvider,
         IMatchingAlgorithmImportLogger logger,

@@ -6,12 +6,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models;
 
 public class HlaAtKnownTypingCategory
 {
-    // ReSharper disable once MemberCanBeInternal
     public string Hla { get;  }
 
     public HaplotypeTypingCategory TypingCategory { get;  }
-
-    // ReSharper disable once MemberCanBeInternal
     public HlaAtKnownTypingCategory(string hla, HaplotypeTypingCategory typingCategory)
     {
         TypingCategory = typingCategory;

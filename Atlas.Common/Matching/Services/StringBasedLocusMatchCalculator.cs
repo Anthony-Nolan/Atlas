@@ -35,7 +35,6 @@ internal class StringBasedLocusMatchCalculator : IStringBasedLocusMatchCalculato
 {
     public int MatchCount(LocusInfo<string> patientHla, LocusInfo<string> donorHla, UntypedLocusBehaviour untypedLocusBehaviour)
     {
-        // ReSharper disable InconsistentNaming
         // deconstruct once to avoid additional property access
         var p_1 = patientHla.Position1;
         var p_2 = patientHla.Position2;
@@ -66,7 +65,6 @@ internal class StringBasedLocusMatchCalculator : IStringBasedLocusMatchCalculato
         var match_1_2 = ExpressingHlaMatch(p_1, d_2);
         var match_2_1 = ExpressingHlaMatch(p_2, d_1);
         var match_2_2 = ExpressingHlaMatch(p_2, d_2);
-        // ReSharper restore InconsistentNaming
 
         var directMatch = match_1_1 && match_2_2;
         var crossMatch = match_1_2 && match_2_1;

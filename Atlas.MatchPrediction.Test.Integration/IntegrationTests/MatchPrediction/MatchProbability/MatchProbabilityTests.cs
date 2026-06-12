@@ -14,8 +14,6 @@ using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using FluentAssertions;
 using NUnit.Framework;
 
-// ReSharper disable InconsistentNaming - want to avoid calling "G groups" "gGroup", as "g" groups are a distinct thing
-
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.MatchProbability;
 
 public class MatchProbabilityTests : MatchProbabilityTestsBase

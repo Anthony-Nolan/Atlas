@@ -14,7 +14,6 @@ internal interface ISmallGGroupToPGroupConverter : IHlaConverter
 internal class SmallGGroupToPGroupConverter : HlaConverterBase, ISmallGGroupToPGroupConverter
 {
     public SmallGGroupToPGroupConverter(
-        // ReSharper disable once SuggestBaseTypeForParameterInConstructor
         IMatchPredictionLogger<MatchProbabilityLoggingContext> logger) : base(logger)
     {
     }

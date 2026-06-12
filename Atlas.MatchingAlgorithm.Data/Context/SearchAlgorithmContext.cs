@@ -8,7 +8,6 @@ namespace Atlas.MatchingAlgorithm.Data.Context;
 // In all other cases we should use Dapper within repositories, else we won't be able to switch between databases at runtime
 public class SearchAlgorithmContext : DbContext
 {
-    // ReSharper disable once SuggestBaseTypeForParameter
     public SearchAlgorithmContext(DbContextOptions<SearchAlgorithmContext> options) : base(options)
     {
     }

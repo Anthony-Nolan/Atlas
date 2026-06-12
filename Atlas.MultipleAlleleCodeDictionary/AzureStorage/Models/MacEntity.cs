@@ -11,7 +11,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
 /// </remarks>
 internal class MacEntity : AtlasTableEntityBase, IHasMacCode
 {
-    // ReSharper disable once UnusedMember.Global Needed for some Cosmos API methods
     public MacEntity() {}
 
     public MacEntity(Mac mac)

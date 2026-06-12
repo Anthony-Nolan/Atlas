@@ -47,7 +47,6 @@ internal class GenotypeConverter : IGenotypeConverter
     private readonly ISmallGGroupToPGroupConverter smallGGroupConverter;
 
     public GenotypeConverter(
-        // ReSharper disable once SuggestBaseTypeForParameterInConstructor
         IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
         IHlaCategorisationService categoriser,
         IHlaToTargetCategoryConverter hlaToTargetCategoryConverter,

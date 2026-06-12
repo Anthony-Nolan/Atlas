@@ -8,9 +8,6 @@ using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchPrediction.Models;
 
-// ReSharper disable ParameterTypeCanBeEnumerable.Local
-// ReSharper disable SuggestBaseTypeForParameter
-
 namespace Atlas.MatchPrediction.Services.MatchProbability;
 
 internal class SubjectCalculatorInputs

@@ -51,7 +51,6 @@ internal abstract class HlaConverterBase : IHlaConverter
     private readonly IAtlasLogger logger;
 
     protected HlaConverterBase(
-        // ReSharper disable once SuggestBaseTypeForParameterInConstructor
         IMatchPredictionLogger<MatchProbabilityLoggingContext> logger)
     {
         this.logger = logger;

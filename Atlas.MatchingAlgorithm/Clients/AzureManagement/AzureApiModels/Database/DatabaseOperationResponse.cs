@@ -4,22 +4,16 @@ using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Clients.AzureManagement.AzureApiModels.Database;
-
-// ReSharper disable once ClassNeverInstantiated.Global
 internal class DatabaseOperationResponse
 {
     [JsonProperty("value")]
     public IEnumerable<DatabaseOperationValue> Value { get; set; }
 }
-
-// ReSharper disable once ClassNeverInstantiated.Global
 internal class DatabaseOperationValue
 {
     [JsonProperty("properties")]
     public DatabaseOperationProperties Properties { get; set; }
 }
-
-// ReSharper disable once ClassNeverInstantiated.Global
 internal class DatabaseOperationProperties
 {
     [JsonProperty("percentComplete")]

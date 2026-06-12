@@ -57,7 +57,6 @@ public class DataRefreshHistoryRepository : IDataRefreshHistoryRepository
 
     public async Task<int> Create(DataRefreshRecord dataRefreshRecord)
     {
-        // ReSharper disable once MethodHasAsyncOverload
         Context.DataRefreshRecords.Add(dataRefreshRecord);
         await Context.SaveChangesAsync();
         return dataRefreshRecord.Id;

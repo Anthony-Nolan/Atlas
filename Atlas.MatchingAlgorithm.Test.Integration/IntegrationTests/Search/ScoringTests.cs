@@ -16,8 +16,6 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
-// ReSharper disable InconsistentNaming
-
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search;
 
 /// <summary>

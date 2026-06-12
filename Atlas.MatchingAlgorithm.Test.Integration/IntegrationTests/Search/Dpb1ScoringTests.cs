@@ -22,8 +22,6 @@ using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using Atlas.Client.Models.Common.Results;
 
-// ReSharper disable InconsistentNaming
-
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search;
 
 /// <summary>

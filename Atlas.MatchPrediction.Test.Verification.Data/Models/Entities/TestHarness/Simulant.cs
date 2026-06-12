@@ -5,7 +5,6 @@ using Atlas.Common.Sql.BulkInsert;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
-// ReSharper disable InconsistentNaming
 public class Simulant : IBulkInsertModel
 {
     public int Id { get; set; }

@@ -38,8 +38,6 @@ internal class HlaConverter : IHlaConverter
         {
             throw new ArgumentNullException();
         }
-
-        // ReSharper disable once ConvertSwitchStatementToSwitchExpression
         switch (conversionBehaviour.TargetHlaCategory)
         {
             case TargetHlaCategory.TwoFieldAlleleIncludingExpressionSuffix:

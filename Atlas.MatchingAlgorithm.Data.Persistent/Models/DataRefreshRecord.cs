@@ -3,8 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 
-// ReSharper disable MemberCanBePrivate.Global - Properties need to be visible to EF 
-
 namespace Atlas.MatchingAlgorithm.Data.Persistent.Models;
 
 [Table(TableName)]
@@ -48,8 +46,6 @@ public class DataRefreshRecord
     public DateTime? IndexRecreationCompleted { get; set; }
     public DateTime? DatabaseScalingTearDownCompleted { get; set; }
     public DateTime? QueuedDonorUpdatesCompleted { get; set; }
-
-    // ReSharper disable once UnusedMember.Global This is for manual Support Team use only. Neither written nor read anywhere in the code.
     public string SupportComments { get; set; }
 
     /// <summary>

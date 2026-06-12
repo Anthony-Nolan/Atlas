@@ -4,7 +4,6 @@ using Atlas.Common.Public.Models.GeneticData;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
-// ReSharper disable InconsistentNaming
 /// <summary>
 /// Record of masking that was performed when generating the test harness of ID <see cref="TestHarness_Id"/>.
 /// The schema for this data is not fully normalised as the intent is to simply record past requests;

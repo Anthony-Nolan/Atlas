@@ -12,7 +12,6 @@ public class MatchPredictionVerificationContext :
     IDonorExportData,
     ISearchData<VerificationSearchRequestRecord>
 {
-    // ReSharper disable once SuggestBaseTypeForParameter
     public MatchPredictionVerificationContext(DbContextOptions<MatchPredictionVerificationContext> options) : base(options)
     {
     }

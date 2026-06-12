@@ -41,7 +41,6 @@ internal class DonorMatchingService : IDonorMatchingService
 
     public DonorMatchingService(
         IMatchFilteringService matchFilteringService,
-        // ReSharper disable once SuggestBaseTypeForParameter
         IMatchingAlgorithmSearchLogger searchLogger,
         IMatchCriteriaAnalyser matchCriteriaAnalyser,
         IPerLocusDonorMatchingService perLocusDonorMatchingService,

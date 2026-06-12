@@ -103,8 +103,6 @@ public static class CollectionCacheExtensions
     ) where TCollection : ICollection // See typeparam comment.
     {
         var value = await cache.GetAsync<TCollection>(collectionCacheKey);
-
-        // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
         if (value == null)
         {
             value = await cache.GenerateAndCacheCollectionWithTracking(collectionCacheKey, fetchFullCollection, true);

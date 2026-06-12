@@ -1,9 +1,4 @@
 ﻿using System.Diagnostics;
-
-// ReSharper disable InconsistentNaming - want to use T/R to easily distinguish contained type and target type(s)
-// ReSharper disable MemberCanBeInternal
-
-// ReSharper disable MemberCanBePrivate.Global
 namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
 /// <summary>

@@ -6,7 +6,6 @@ namespace Atlas.Common.Maths;
 
 public static class RandomSelectionHelper
 {
-    // ReSharper disable once InconsistentNaming
     private static readonly Random random = new Random();
 
     public static T GetRandomElement<T>(this IReadOnlyList<T> data)

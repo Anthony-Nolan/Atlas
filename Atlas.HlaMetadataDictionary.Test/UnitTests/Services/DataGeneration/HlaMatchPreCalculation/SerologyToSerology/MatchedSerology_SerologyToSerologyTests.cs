@@ -16,7 +16,6 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
 
 [UseReporter(typeof(NUnit4Reporter))]
 [UseApprovalSubdirectory("Approvals")]
-// ReSharper disable once InconsistentNaming
 internal class MatchedSerology_SerologyToSerologyTests : MatchedOnTestBase<MatchedSerology>
 {
     [TestCaseSource(

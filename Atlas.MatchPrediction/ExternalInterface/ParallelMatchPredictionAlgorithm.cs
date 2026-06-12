@@ -29,7 +29,6 @@ internal class ParallelMatchPredictionAlgorithm : IParallelMatchPredictionAlgori
 
     public ParallelMatchPredictionAlgorithm(
         IGenotypeSetService genotypeSetService,
-        // ReSharper disable once SuggestBaseTypeForParameterInConstructor
         IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
         IServiceScopeFactory serviceScopeFactory)
     {

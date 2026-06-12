@@ -6,8 +6,6 @@ using Atlas.MatchPrediction.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-// ReSharper disable InconsistentNaming
-
 namespace Atlas.MatchPrediction.Data.Models;
 
 [Table(TableName)]

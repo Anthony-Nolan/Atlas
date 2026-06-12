@@ -47,7 +47,6 @@ public interface IHaplotypeFrequencyService
     /// The haplotype frequency for the given haplotype hla, from the given set.
     /// If the given hla is unrepresented in the set, will return 0. 
     /// </returns>
-    // ReSharper disable once ParameterTypeCanBeEnumerable.Global
     Task<decimal> GetFrequencyForHla(int setId, HaplotypeHla hla, ISet<Locus> excludedLoci);
 }
 

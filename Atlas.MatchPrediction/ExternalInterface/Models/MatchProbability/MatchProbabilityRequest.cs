@@ -38,10 +38,6 @@ public class MultipleDonorMatchProbabilityInput : IdentifiedMatchProbabilityRequ
     public MultipleDonorMatchProbabilityInput(IdentifiedMatchProbabilityRequest request) : base(request)
     {
     }
-
-    // ReSharper disable once MemberCanBePrivate.Global
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    // ReSharper disable once CollectionNeverUpdated.Global
     /// <summary>
     /// Input for multiple donor phenotypes
     /// </summary>
@@ -78,7 +74,6 @@ public class DonorInput
 /// </summary>
 public class IdentifiedMatchProbabilityRequest : MatchProbabilityRequestBase
 {
-    // ReSharper disable once MemberCanBeProtected.Global - Deserialised
     public IdentifiedMatchProbabilityRequest()
     {
     }
@@ -109,7 +104,6 @@ public class IdentifiedMatchProbabilityRequest : MatchProbabilityRequestBase
 /// </summary>
 public abstract class MatchProbabilityRequestBase
 {
-    // ReSharper disable once MemberCanBeProtected.Global - Deserialised
     protected MatchProbabilityRequestBase()
     {
     }

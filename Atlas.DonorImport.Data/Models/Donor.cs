@@ -8,8 +8,6 @@ using Atlas.DonorImport.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-// ReSharper disable InconsistentNaming
-
 namespace Atlas.DonorImport.Data.Models;
 
 [Table(TableName)]

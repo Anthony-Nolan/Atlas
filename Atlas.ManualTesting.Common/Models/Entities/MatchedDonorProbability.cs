@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.ManualTesting.Common.Models.Entities;
-// ReSharper disable InconsistentNaming
 public class MatchedDonorProbability : MatchProbability
 {
     public int MatchedDonor_Id { get; set; }

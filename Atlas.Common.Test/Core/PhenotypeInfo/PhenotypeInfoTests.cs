@@ -11,11 +11,9 @@ public class PhenotypeInfoTests
     [Test]
     public void Constructor_LocusProperty_CannotBeNull()
     {
-        // ReSharper disable InconsistentNaming
         var phenotypeInfo_defaultConstructor = new PhenotypeInfo<string>();
         var phenotypeInfo_singleValueConstructor = new PhenotypeInfo<string>("default");
         var phenotypeInfo_locusInfoConstructor = new PhenotypeInfo<string>(valueDqb1: new LocusInfo<string>("a"));
-        // ReSharper restore InconsistentNaming
 
         phenotypeInfo_defaultConstructor.A.Should().NotBeNull();
         phenotypeInfo_singleValueConstructor.A.Should().NotBeNull();

@@ -1,5 +1,4 @@
-﻿// ReSharper disable InconsistentNaming
-using System;
+﻿using System;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 

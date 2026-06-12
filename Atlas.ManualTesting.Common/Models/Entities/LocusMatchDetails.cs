@@ -7,8 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.ManualTesting.Common.Models.Entities;
-
-// ReSharper disable InconsistentNaming
 public class LocusMatchDetails : IBulkInsertModel
 {
     public int Id { get; set; }

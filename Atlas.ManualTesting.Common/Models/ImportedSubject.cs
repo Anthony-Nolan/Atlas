@@ -1,5 +1,4 @@
-﻿// ReSharper disable InconsistentNaming
-
+﻿
 namespace Atlas.ManualTesting.Common.Models;
 
 public class ImportedSubject

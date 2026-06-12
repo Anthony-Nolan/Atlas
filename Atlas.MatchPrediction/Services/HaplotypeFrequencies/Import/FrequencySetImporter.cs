@@ -81,8 +81,6 @@ internal class FrequencySetImporter : IFrequencySetImporter
         frequencySetValidator.ValidateNonHlaDataAndThrow(frequencySet);
 
         var setIds = await AddNewInactiveSets(frequencySet, file.FileName);
-            
-        // ReSharper disable once PossibleInvalidOperationException - non null, enforced by Validator
         var frequencySetTypingCategory = frequencySet.TypingCategory.Value;
             
         var inputHaplotypes = frequencySet.Frequencies.Select(f => new HaplotypeFrequency

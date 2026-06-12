@@ -42,7 +42,6 @@ internal abstract class TableClientRepositoryBase<TStorable, TTableRow> :
         ITableClientFactory factory,
         ITableReferenceRepository tableReferenceRepository,
         string functionalTableReferencePrefix,
-        // ReSharper disable once SuggestBaseTypeForParameter
         IPersistentCacheProvider cacheProvider,
         string cacheKey,
         IAtlasLogger logger)

@@ -16,9 +16,6 @@ using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.MatchPrediction;
 
-// ReSharper disable ParameterTypeCanBeEnumerable.Local
-// ReSharper disable SuggestBaseTypeForParameter
-
 namespace Atlas.MatchPrediction.Services.MatchProbability;
 
 public interface IMatchProbabilityService
@@ -42,7 +39,6 @@ internal class MatchProbabilityService : IMatchProbabilityService
         IMatchProbabilityCalculator matchProbabilityCalculator,
         IHaplotypeFrequencyService haplotypeFrequencyService,
         IGenotypeMatcher genotypeMatcher,
-        // ReSharper disable once SuggestBaseTypeForParameterInConstructor
         IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
         MatchProbabilityLoggingContext matchProbabilityLoggingContext)
     {

@@ -1,11 +1,5 @@
 ﻿using System;
 
-// ReSharper disable UseDeconstructionOnParameter
-// ReSharper disable MemberCanBeInternal
-// ReSharper disable MemberCanBePrivate.Global
-
-// ReSharper disable InconsistentNaming - want to use T/R to easily distinguish contained type and target type(s)
-
 namespace Atlas.Common.GeneticData;
 
 /// <summary>

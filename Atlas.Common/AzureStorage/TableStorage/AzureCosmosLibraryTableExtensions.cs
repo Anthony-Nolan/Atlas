@@ -39,7 +39,6 @@ public static class AzureCosmosLibraryTableExtensions
     public static async Task BatchInsert<TEntity>(this TableClient table, IEnumerable<TEntity> entities)
         where TEntity : class, ITableEntity
     {
-        // ReSharper disable once SuggestVarOrType_Elsewhere
         // List<List<List<TEntities>>> 
         // This construct is:
         // * A List of Partitions, each containing

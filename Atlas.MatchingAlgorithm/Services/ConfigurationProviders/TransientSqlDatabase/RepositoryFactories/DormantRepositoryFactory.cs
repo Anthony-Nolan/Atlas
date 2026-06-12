@@ -14,7 +14,6 @@ public interface IDormantRepositoryFactory : ITransientRepositoryFactory
 
 public class DormantRepositoryFactory : TransientRepositoryFactoryBase, IDormantRepositoryFactory
 {
-    // ReSharper disable once SuggestBaseTypeForParameter
     public DormantRepositoryFactory(
         DormantTransientSqlConnectionStringProvider dormantConnectionStringProvider,
         IMatchingAlgorithmImportLogger logger

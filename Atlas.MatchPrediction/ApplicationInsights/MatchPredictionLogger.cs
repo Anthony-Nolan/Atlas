@@ -2,8 +2,6 @@ using Atlas.Common.ApplicationInsights;
 using Microsoft.ApplicationInsights;
 
 namespace Atlas.MatchPrediction.ApplicationInsights;
-
-// ReSharper disable once UnusedTypeParameter
 public interface IMatchPredictionLogger<TLoggingContext> : IAtlasLogger
     where TLoggingContext : MatchProbabilityLoggingContext
 {

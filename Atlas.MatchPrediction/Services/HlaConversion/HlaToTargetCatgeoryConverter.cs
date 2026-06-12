@@ -15,7 +15,6 @@ internal interface IHlaToTargetCategoryConverter : IHlaConverter
 internal class HlaToTargetCategoryConverter : HlaConverterBase, IHlaToTargetCategoryConverter
 {
     public HlaToTargetCategoryConverter(
-        // ReSharper disable once SuggestBaseTypeForParameterInConstructor
         IMatchPredictionLogger<MatchProbabilityLoggingContext> logger) : base(logger)
     {
     }

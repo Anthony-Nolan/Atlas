@@ -2,8 +2,6 @@
 using Atlas.ManualTesting.Common.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
-// ReSharper disable InconsistentNaming
-
 namespace Atlas.MatchPrediction.Test.Validation.Data.Models;
 
 public class ValidationSearchRequestRecord : SearchRequestRecord

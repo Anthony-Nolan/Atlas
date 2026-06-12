@@ -11,8 +11,6 @@ using Dapper;
 using Microsoft.Data.SqlClient;
 using static Atlas.Common.Public.Models.GeneticData.Locus;
 
-// ReSharper disable InconsistentNaming
-
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 
 /// <summary>

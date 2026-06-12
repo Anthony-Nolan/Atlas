@@ -35,7 +35,6 @@ internal class MatchPredictionAlgorithm : IMatchPredictionAlgorithm
     public MatchPredictionAlgorithm(
         IMatchProbabilityService matchProbabilityService,
         IGenotypeSetService genotypeSetService,
-        // ReSharper disable once SuggestBaseTypeForParameterInConstructor
         IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
         IHaplotypeFrequencyService haplotypeFrequencyService,
         ISearchDonorResultUploader resultUploader)

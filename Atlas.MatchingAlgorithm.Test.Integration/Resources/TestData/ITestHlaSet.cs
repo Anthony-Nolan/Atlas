@@ -1,7 +1,5 @@
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
-// ReSharper disable InconsistentNaming
-
 namespace Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData;
 
 /// <summary>

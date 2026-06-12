@@ -64,7 +64,6 @@ internal class RequiredImportedLocusValidator : AbstractValidator<ImportedLocus>
             .NotNull()
             .WithMessage(errorMessage)
             .SetValidator(new RequiredTwoFieldStringValidator(locus, HlaFieldType.Dna))
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse - removing the null check leads to null argument exceptions by the validator
             .Unless(l => l.Serology != null && new RequiredTwoFieldStringValidator(locus, HlaFieldType.Serology).Validate(l.Serology).IsValid)
             .WithMessage(errorMessage);
     }

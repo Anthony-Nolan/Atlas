@@ -6,8 +6,6 @@ namespace Atlas.DonorImport.Data.Context;
 public class DonorContext : DbContext
 {
     internal const string Schema = "Donors";
-        
-    // ReSharper disable once SuggestBaseTypeForParameter
     public DonorContext(DbContextOptions<DonorContext> options) : base(options)
     {       
     }

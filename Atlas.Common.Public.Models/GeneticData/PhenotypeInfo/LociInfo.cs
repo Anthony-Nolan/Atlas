@@ -1,10 +1,6 @@
 ﻿using System.Diagnostics;
 using EnumStringValues;
 
-// ReSharper disable InconsistentNaming
-
-// ReSharper disable MemberCanBeProtected.Global
-
 namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
 /// <summary>

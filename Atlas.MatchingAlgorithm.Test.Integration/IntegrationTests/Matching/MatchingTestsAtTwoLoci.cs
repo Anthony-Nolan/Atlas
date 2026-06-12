@@ -15,8 +15,6 @@ using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
-// ReSharper disable InconsistentNaming
-
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching;
 
 [TestFixture(Locus.A, Locus.B)]
