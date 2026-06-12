@@ -1,56 +1,67 @@
-using Atlas.Common.ServiceBus.BatchReceiving;
+using System.Text;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Worker.Services;
-using Atlas.MatchPrediction.Worker.Settings;
-using Microsoft.Extensions.Options;
+using Azure.Messaging.ServiceBus;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Worker;
 
 public class MatchPredictionWorker(
     IServiceScopeFactory serviceScopeFactory,
-    IServiceBusMessageReceiver<ParallelMatchPredictionBatchRequest> messageReceiver,
-    IOptions<MatchPredictionWorkerSettings> settings,
+    ServiceBusProcessor processor,
     ILogger<MatchPredictionWorker> logger) : BackgroundService
 {
-    private readonly int batchSize = settings.Value.BatchSize;
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("MatchPredictionWorker starting.");
 
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            var messages = (await messageReceiver.ReceiveMessageBatchAsync(batchSize)).ToList();
+        processor.ProcessMessageAsync += ProcessMessageAsync;
+        processor.ProcessErrorAsync += ProcessErrorAsync;
 
-            if (!messages.Any())
-            {
-                logger.LogInformation("No messages received, waiting for 5 seconds before retrying.");
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
-                continue;
-            }
+        await processor.StartProcessingAsync(stoppingToken);
+    }
 
-            using var batchLock = new MessageBatchLock<ParallelMatchPredictionBatchRequest>(messageReceiver, messages);
-
-            try
-            {
-                await using var scope = serviceScopeFactory.CreateAsyncScope();
-                var runner = scope.ServiceProvider.GetRequiredService<IParallelMatchPredictionBatchRunner>();
-                var requests = messages.Select(m => m.DeserializedBody).ToList();
-
-                foreach (var request in requests)
-                {
-                    await runner.RunBatch(request);
-                }
-
-                await batchLock.CompleteBatchAsync();
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Unexpected error processing parallel match prediction batch — abandoning batch.");
-                await batchLock.AbandonBatchAsync();
-            }
-        }
-
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
         logger.LogInformation("MatchPredictionWorker stopping.");
+
+        await processor.StopProcessingAsync(cancellationToken);
+
+        processor.ProcessMessageAsync -= ProcessMessageAsync;
+        processor.ProcessErrorAsync -= ProcessErrorAsync;
+
+        await base.StopAsync(cancellationToken);
+    }
+
+    private async Task ProcessMessageAsync(ProcessMessageEventArgs args)
+    {
+        var request = JsonConvert.DeserializeObject<ParallelMatchPredictionBatchRequest>(
+            Encoding.UTF8.GetString(args.Message.Body)
+        );
+
+        try
+        {
+            await using var scope = serviceScopeFactory.CreateAsyncScope();
+            var runner = scope.ServiceProvider.GetRequiredService<IParallelMatchPredictionBatchRunner>();
+
+            await runner.RunBatch(request!);
+
+            await args.CompleteMessageAsync(args.Message, args.CancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unexpected error processing parallel match prediction batch — abandoning message.");
+            await args.AbandonMessageAsync(args.Message, cancellationToken: args.CancellationToken);
+        }
+    }
+
+    private Task ProcessErrorAsync(ProcessErrorEventArgs args)
+    {
+        logger.LogError(
+            args.Exception,
+            "Service Bus processor error. Source: {ErrorSource}, Entity: {EntityPath}.",
+            args.ErrorSource, args.EntityPath
+        );
+        return Task.CompletedTask;
     }
 }

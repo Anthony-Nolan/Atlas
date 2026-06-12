@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Atlas.Client.Models.Common.Results;
-using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models.ScoringWeightings;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +12,6 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Context
     {
         internal const string Schema = "MatchingAlgorithmPersistent";
         
-        // ReSharper disable once SuggestBaseTypeForParameter
         public SearchAlgorithmPersistentContext(DbContextOptions<SearchAlgorithmPersistentContext> options) : base(options)
         {
         }
@@ -46,8 +44,97 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Context
 
         private static IEnumerable<GradeWeighting> SeededMatchGradeWeights()
         {
-            var grades = EnumerateValues<MatchGrade>();
-            return grades.Select((g, i) => new GradeWeighting {Name = g.ToString(), Weight = DefaultWeight, Id = i + 1});
+            List<GradeWeighting> grades = [
+                        new ()
+                        {
+                            Id = 1,
+                            Name = "Mismatch",
+                            Weight = 0
+                        },
+                        new ()
+                        {
+                            Id = 2,
+                            Name = "Broad",
+                            Weight = 0
+                        },
+                        new ()
+                        {
+                            Id = 3,
+                            Name = "Split",
+                            Weight = 0
+                        },
+                        new ()
+                        {
+                            Id = 4,
+                            Name = "Associated",
+                            Weight = 0
+                        },
+                        new ()
+                        {
+                            Id = 5,
+                            Name = "NullMismatch",
+                            Weight = 0
+                        },
+                        new ()
+                        {
+                            Id = 6,
+                            Name = "NullPartial",
+                            Weight = 0
+                        },
+                        new ()
+                        {
+                            Id = 7,
+                            Name = "NullCDna",
+                            Weight = 0
+                        },
+                        new ()
+                        {
+                            Id = 8,
+                            Name = "NullGDna",
+                            Weight = 0
+                        },
+                        new ()
+                        {
+                            Id = 9,
+                            Name = "PGroup",
+                            Weight = 0
+                        },
+                        new ()
+                        {
+                            Id = 10,
+                            Name = "GGroup",
+                            Weight = 0
+                        },
+                        new ()
+                        {
+                            Id = 11,
+                            Name = "Protein",
+                            Weight = 0
+                        },
+                        new ()
+                        {
+                            Id = 12,
+                            Name = "CDna",
+                            Weight = 0
+                        },
+                        new ()
+                        {
+                            Id = 13,
+                            Name = "GDna",
+                            Weight = 0
+                        },
+                        new ()
+                        {
+                            Id = 14,
+                            Name = "Unknown",
+                            Weight = 0
+                        },
+                        new ()
+                        {
+                            Id = 15,
+                            Name = "ExpressingVsNull",
+                        }];
+            return grades;
         }
 
         private static IEnumerable<ConfidenceWeighting> SeededConfidenceWeights()

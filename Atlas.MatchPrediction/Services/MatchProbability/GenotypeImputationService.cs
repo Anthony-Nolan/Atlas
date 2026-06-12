@@ -37,17 +37,16 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     {
         private const string LoggingPrefix = "MatchPrediction: ";
         private readonly ICompressedPhenotypeExpander compressedPhenotypeExpander;
-        private readonly IGenotypeLikelihoodService genotypeLikelihoodService;
+        private readonly IDiplotypeLikelihoodCalculator diplotypeLikelihoodCalculator;
         private readonly IAtlasLogger logger;
 
         public GenotypeImputationService(
             ICompressedPhenotypeExpander compressedPhenotypeExpander,
-            IGenotypeLikelihoodService genotypeLikelihoodService,
-            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+            IDiplotypeLikelihoodCalculator diplotypeLikelihoodCalculator,
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger)
         {
             this.compressedPhenotypeExpander = compressedPhenotypeExpander;
-            this.genotypeLikelihoodService = genotypeLikelihoodService;
+            this.diplotypeLikelihoodCalculator = diplotypeLikelihoodCalculator;
             this.logger = logger;
         }
 
@@ -121,7 +120,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             HaplotypeFrequencySet frequencySet,
             ISet<Locus> allowedLoci)
         {
-            var likelihood = await genotypeLikelihoodService.CalculateLikelihoodForDiplotype(diplotype, frequencySet, allowedLoci);
+            var likelihood = await diplotypeLikelihoodCalculator.CalculateLikelihoodForDiplotype(diplotype, frequencySet, allowedLoci);
             return new KeyValuePair<PhenotypeOfStrings, decimal>(diplotype, likelihood);
         }
     }

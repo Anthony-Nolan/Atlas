@@ -263,10 +263,22 @@ variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
   description = "Maximum number of match prediction requests processed in parallel per function instance. Keep this aligned with worker batch sizing."
 }
 
-variable "MATCH_PREDICTION_WORKER_BATCH_SIZE" {
+variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
   type        = number
   default     = 8
-  description = "Batch size used by the match prediction worker when receiving service bus messages. Aligned with match prediction request parallelism."
+  description = "Maximum number of service bus messages the match prediction worker's ServiceBusProcessor handles concurrently. Aligned with match prediction request parallelism."
+}
+
+variable "MATCH_PREDICTION_WORKER_PREFETCH_COUNT" {
+  type        = number
+  default     = 0
+  description = "Number of service bus messages the match prediction worker prefetches in advance of processing. Set to 0 to disable prefetch."
+}
+
+variable "MATCH_PREDICTION_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES" {
+  type        = number
+  default     = 5
+  description = "Maximum total duration (in minutes) for which the match prediction worker's ServiceBusProcessor auto-renews a message lock while it is being processed."
 }
 
 variable "MATCHING_PREDICTION_PROCESSING_BATCH_SIZE" {

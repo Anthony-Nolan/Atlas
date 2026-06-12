@@ -3,7 +3,6 @@ using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
-using MoreLinq.Extensions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

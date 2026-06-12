@@ -376,6 +376,7 @@ namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo
 
         private int CalculateHashCode()
         {
+            // This is called somewhere in the hot path
             unchecked
             {
                 var hashCode = EqualityComparer<T>.Default.GetHashCode(A);
