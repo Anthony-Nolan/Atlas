@@ -2,200 +2,217 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.Maths;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.MatchPrediction;
-using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 
-// ReSharper disable SuggestBaseTypeForParameter
-// ReSharper disable ParameterTypeCanBeEnumerable.Local
+namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 
-namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
+internal class CompressedPhenotypeExpanderInput
 {
-    internal class CompressedPhenotypeExpanderInput
+    /// <summary>
+    /// Given phenotype. Can be of any supported HLA resolution.
+    /// </summary>
+    public PhenotypeInfo<string> Phenotype { get; set; }
+
+    /// <summary>
+    /// Haplotype Frequency Set Id - used to fetch haplotypes, if needed
+    /// </summary>
+    public int HfSetId { get; set; }
+
+    /// <summary>
+    /// HLA nomenclature version of Haplotype Frequency Set
+    /// </summary>
+    public string HfSetHlaNomenclatureVersion { get; set; }
+
+    /// <inheritdoc cref="Common.Public.Models.MatchPrediction.MatchPredictionParameters" />
+    public MatchPredictionParameters MatchPredictionParameters { get; set; }
+}
+
+internal interface ICompressedPhenotypeExpander
+{
+    /// <summary>
+    /// Expands an ambiguous phenotype to GGroup resolution, then transforms into all possible permutations of the given hla representations.
+    /// Does not consider phase - so the results cannot necessarily be considered Diplotypes.
+    /// </summary>
+    public Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandCompressedPhenotype(CompressedPhenotypeExpanderInput input);
+}
+
+internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
+{
+    private readonly ICompressedPhenotypeConverter converter;
+    private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
+
+    public CompressedPhenotypeExpander(
+        ICompressedPhenotypeConverter converter,
+        IHaplotypeFrequencyService haplotypeFrequencyService)
     {
-        /// <summary>
-        /// Given phenotype. Can be of any supported HLA resolution.
-        /// </summary>
-        public PhenotypeInfo<string> Phenotype { get; set; }
-
-        /// <summary>
-        /// Haplotype Frequency Set Id - used to fetch haplotypes, if needed
-        /// </summary>
-        public int HfSetId { get; set; }
-
-        /// <summary>
-        /// HLA nomenclature version of Haplotype Frequency Set
-        /// </summary>
-        public string HfSetHlaNomenclatureVersion { get; set; }
-
-        /// <inheritdoc cref="Common.Public.Models.MatchPrediction.MatchPredictionParameters" />
-        public MatchPredictionParameters MatchPredictionParameters { get; set; }
+        this.converter = converter;
+        this.haplotypeFrequencyService = haplotypeFrequencyService;
     }
 
-    internal interface ICompressedPhenotypeExpander
+    public async Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandCompressedPhenotype(CompressedPhenotypeExpanderInput input)
     {
-        /// <summary>
-        /// Expands an ambiguous phenotype to GGroup resolution, then transforms into all possible permutations of the given hla representations.
-        /// Does not consider phase - so the results cannot necessarily be considered Diplotypes.
-        /// </summary>
-        public Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandCompressedPhenotype(CompressedPhenotypeExpanderInput input);
+        var allowedLoci = input.MatchPredictionParameters.AllowedLoci;
+        var groupsPerPosition = await converter.ConvertPhenotype(input);
+
+        if (IsUnambiguousAtAllowedLoci(allowedLoci, groupsPerPosition))
+        {
+            return BuildSingleSmallGGenotype(groupsPerPosition);
+        }
+
+        return await ExpandToPotentialDiplotypes(input.HfSetId, allowedLoci, groupsPerPosition);
     }
 
-    internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
+    private static ISet<PhenotypeInfo<HlaAtKnownTypingCategory>> BuildSingleSmallGGenotype(DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
     {
-        private readonly ICompressedPhenotypeConverter converter;
-        private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
-
-        public CompressedPhenotypeExpander(
-            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
-            ICompressedPhenotypeConverter converter,
-            IHaplotypeFrequencyService haplotypeFrequencyService)
+        return new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>>
         {
-            this.converter = converter;
-            this.haplotypeFrequencyService = haplotypeFrequencyService;
+            groupsPerPosition.SmallGGroup.Map((_, __, v) =>
+                v == null ? null : new HlaAtKnownTypingCategory(v.Single(), HaplotypeTypingCategory.SmallGGroup))
+        };
+    }
+
+    private static bool IsUnambiguousAtAllowedLoci(
+        ISet<Locus> allowedLoci,
+        DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
+    {
+        return allowedLoci.All(l =>
+        {
+            var groupsAtLocus = groupsPerPosition.SmallGGroup.GetLocus(l);
+            return groupsAtLocus.Position1?.Count == 1 && groupsAtLocus.Position2?.Count == 1;
+        });
+    }
+
+    /// <summary>
+    /// Filters a collection of haplotypes down to only those which are possible for an input phenotype, and then combines them into potential genotypes.
+    /// </summary>
+    /// <param name="hfSetId">Id of haplotype frequency set</param>
+    /// <param name="allowedLoci">List of loci that are being considered.</param>
+    /// <param name="groupsPerPosition">Allele groups present in the phenotype being expanded.</param>
+    /// <returns>Set of diplotypes (pairs of haplotypes) which are possible for an input phenotype</returns>
+    private async Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandToPotentialDiplotypes(
+        int hfSetId,
+        ISet<Locus> allowedLoci,
+        DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
+    {
+        var haplotypes = await GetHaplotypesForAllowedLoci(hfSetId, allowedLoci, groupsPerPosition);
+        var haplotypeList = haplotypes.ToList();
+
+        // Materialise the allowed loci once: iterating the ISet directly inside the per-diplotype loop would box an enumerator on every pair.
+        var allowedLociArray = allowedLoci.ToArray();
+
+        bool IsRepresentedInTargetPhenotype(HlaAtKnownTypingCategory hla, Locus locus, LocusPosition position)
+        {
+            var groups = groupsPerPosition.GetByCategory(hla.TypingCategory).GetPosition(locus, position);
+            return groups == null || groups.Contains(hla.Hla);
         }
 
-        public async Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandCompressedPhenotype(CompressedPhenotypeExpanderInput input)
+        // Only keep diplotypes where, at every allowed locus, both haplotypes' HLA are represented within the target phenotype (in either phase).
+        // This is the O(n^2) hot path, so it is written as an explicit loop to avoid the per-pair delegate and throwaway-collection allocations
+        // that the functional combinators (Combinations.AllPairs / LociInfo.AllAtLoci) would otherwise incur on every pair.
+        bool IsRepresentedDiplotype(LociInfo<HlaAtKnownTypingCategory> haplotype1, LociInfo<HlaAtKnownTypingCategory> haplotype2)
         {
-            var allowedLoci = input.MatchPredictionParameters.AllowedLoci;
-            var groupsPerPosition = await converter.ConvertPhenotype(input);
-
-            if (IsUnambiguousAtAllowedLoci(allowedLoci, groupsPerPosition))
+            foreach (var locus in allowedLociArray)
             {
-                return BuildSingleSmallGGenotype(groupsPerPosition);
-            }
+                var hla1 = haplotype1.GetLocus(locus);
+                var hla2 = haplotype2.GetLocus(locus);
 
-            return await ExpandToPotentialDiplotypes(input.HfSetId, allowedLoci, groupsPerPosition);
-        }
+                var representedDirectly =
+                    IsRepresentedInTargetPhenotype(hla1, locus, LocusPosition.One) &&
+                    IsRepresentedInTargetPhenotype(hla2, locus, LocusPosition.Two);
 
-        private static ISet<PhenotypeInfo<HlaAtKnownTypingCategory>> BuildSingleSmallGGenotype(DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
-        {
-            return new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>>
-            {
-                groupsPerPosition.SmallGGroup.Map((_, __, v) =>
-                    v == null ? null : new HlaAtKnownTypingCategory(v.Single(), HaplotypeTypingCategory.SmallGGroup))
-            };
-        }
+                var representedInverted =
+                    IsRepresentedInTargetPhenotype(hla1, locus, LocusPosition.Two) &&
+                    IsRepresentedInTargetPhenotype(hla2, locus, LocusPosition.One);
 
-        private static bool IsUnambiguousAtAllowedLoci(
-            ISet<Locus> allowedLoci,
-            DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
-        {
-            return allowedLoci.All(l =>
-            {
-                var groupsAtLocus = groupsPerPosition.SmallGGroup.GetLocus(l);
-                return groupsAtLocus.Position1?.Count == 1 && groupsAtLocus.Position2?.Count == 1;
-            });
-        }
-
-        /// <summary>
-        /// Filters a collection of haplotypes down to only those which are possible for an input phenotype, and then combines them into potential genotypes.
-        /// </summary>
-        /// <param name="hfSetId">Id of haplotype frequency set</param>
-        /// <param name="allowedLoci">List of loci that are being considered.</param>
-        /// <param name="groupsPerPosition">Allele groups present in the phenotype being expanded.</param>
-        /// <returns>Set of diplotypes (pairs of haplotypes) which are possible for an input phenotype</returns>
-        private async Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandToPotentialDiplotypes(
-            int hfSetId,
-            ISet<Locus> allowedLoci,
-            DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
-        {
-            var haplotypes = await GetHaplotypesForAllowedLoci(hfSetId, allowedLoci, groupsPerPosition);
-            var diplotypes = Combinations.AllPairs(haplotypes, true);
-
-            bool IsRepresentedInTargetPhenotype(HlaAtKnownTypingCategory hla, Locus locus, LocusPosition position)
-            {
-                var groups = groupsPerPosition.GetByCategory(hla.TypingCategory).GetPosition(locus, position);
-                return groups == null || groups.Contains(hla.Hla);
-            }
-
-            return diplotypes
-                // only select diplotypes where all HLA within the two haplotypes are represented within the target phenotype
-                .Where(diplotype =>
+                if (!representedDirectly && !representedInverted)
                 {
-                    var (haplotype1, haplotype2) = diplotype;
-                    return new LociInfo<bool>().AllAtLoci((locus, _) =>
-                    {
-                        var hla1 = haplotype1.GetLocus(locus);
-                        var hla2 = haplotype2.GetLocus(locus);
+                    return false;
+                }
+            }
 
-                        var representedDirectly =
-                            IsRepresentedInTargetPhenotype(hla1, locus, LocusPosition.One) &&
-                            IsRepresentedInTargetPhenotype(hla2, locus, LocusPosition.Two);
-
-                        var representedInverted =
-                            IsRepresentedInTargetPhenotype(hla1, locus, LocusPosition.Two) &&
-                            IsRepresentedInTargetPhenotype(hla2, locus, LocusPosition.One);
-
-                        return representedDirectly || representedInverted;
-                    }, allowedLoci);
-                })
-                .Select(dp => new PhenotypeInfo<HlaAtKnownTypingCategory>(dp.Item1, dp.Item2))
-                .ToHashSet();
+            return true;
         }
 
-        private async Task<IEnumerable<LociInfo<HlaAtKnownTypingCategory>>> GetHaplotypesForAllowedLoci(
-            int frequencySetId,
-            ISet<Locus> allowedLoci,
-            DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
+        var diplotypes = new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>>();
+        for (var i = 0; i < haplotypeList.Count; i++)
         {
-            var allHaplotypes = await FetchHaplotypesGroupedByTypingCategory(frequencySetId);
-            var groupsPerLocus = groupsPerPosition.Map(CombineSetsAtLoci);
-
-            var haplotypesFilteredBySubjectHla = allHaplotypes.Map((category, haplotypes) =>
+            // Start at i (not i + 1) to include the self-pair, matching Combinations.AllPairs(..., shouldIncludeSelfPairs: true).
+            for (var j = i; j < haplotypeList.Count; j++)
             {
-                return haplotypes.Where(haplotype => allowedLoci.All(locus =>
+                var haplotype1 = haplotypeList[i];
+                var haplotype2 = haplotypeList[j];
+                if (IsRepresentedDiplotype(haplotype1, haplotype2))
+                {
+                    diplotypes.Add(new PhenotypeInfo<HlaAtKnownTypingCategory>(haplotype1, haplotype2));
+                }
+            }
+        }
+
+        return diplotypes;
+    }
+
+    private async Task<IEnumerable<LociInfo<HlaAtKnownTypingCategory>>> GetHaplotypesForAllowedLoci(
+        int frequencySetId,
+        ISet<Locus> allowedLoci,
+        DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
+    {
+        var allHaplotypes = await FetchHaplotypesGroupedByTypingCategory(frequencySetId);
+        var groupsPerLocus = groupsPerPosition.Map(CombineSetsAtLoci);
+
+        var haplotypesFilteredBySubjectHla = allHaplotypes.Map((category, haplotypes) =>
+        {
+            return haplotypes.Where(haplotype => allowedLoci.All(locus =>
                 {
                     var hlaGroups = groupsPerLocus.GetByCategory(category).GetLocus(locus);
                     return hlaGroups == null || hlaGroups.Contains(haplotype.GetLocus(locus));
                 }))
-                    .Select(haplotype => haplotype.Map(hla => new HlaAtKnownTypingCategory(hla, category)))
-                    .ToList();
-            });
+                .Select(haplotype => haplotype.Map(hla => new HlaAtKnownTypingCategory(hla, category)))
+                .ToList();
+        });
 
-            var mergedHaplotypes = haplotypesFilteredBySubjectHla.GGroup
-                .Concat(haplotypesFilteredBySubjectHla.PGroup)
-                .Concat(haplotypesFilteredBySubjectHla.SmallGGroup);
+        var mergedHaplotypes = haplotypesFilteredBySubjectHla.GGroup
+            .Concat(haplotypesFilteredBySubjectHla.PGroup)
+            .Concat(haplotypesFilteredBySubjectHla.SmallGGroup);
 
-            return new HashSet<LociInfo<HlaAtKnownTypingCategory>>(mergedHaplotypes.Select(h =>
-                h.Map((l, hla) => allowedLoci.Contains(l) ? hla : null)));
+        return new HashSet<LociInfo<HlaAtKnownTypingCategory>>(mergedHaplotypes.Select(h =>
+            h.Map((l, hla) => allowedLoci.Contains(l) ? hla : null)));
+    }
+
+    private async Task<DataByResolution<IReadOnlyCollection<LociInfo<string>>>> FetchHaplotypesGroupedByTypingCategory(int frequencySetId)
+    {
+        // This piece of code doesn't even need dictionary, it just needs typingCategory => List<Hla> mapping from it
+        var haplotypeFrequencies = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySetId);
+
+        if (haplotypeFrequencies.SetFrequencies.Count == 0)
+        {
+            throw new Exception($"No haplotypes could be found for set id {frequencySetId}.");
         }
 
-        private async Task<DataByResolution<IReadOnlyCollection<LociInfo<string>>>> FetchHaplotypesGroupedByTypingCategory(int frequencySetId)
+        var groupedFrequencies = haplotypeFrequencies.SetFrequencies
+            .GroupBy(f => f.Value.TypingCategory)
+            .ToDictionary(
+                key => key.Key,
+                value => value.Select(f => haplotypeFrequencies.Interner.ReverseLookup(f.Key)).ToList()
+            );
+
+        return new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
         {
-            var haplotypeFrequencies = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySetId);
+            GGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.GGroup, []),
+            PGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.PGroup, []),
+            SmallGGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.SmallGGroup, []),
+        };
+    }
 
-            if (haplotypeFrequencies.IsNullOrEmpty())
-            {
-                throw new Exception($"No haplotypes could be found for set id {frequencySetId}.");
-            }
-
-            var groupedFrequencies = haplotypeFrequencies
-                .GroupBy(f => f.Value.TypingCategory)
-                .Select(g =>
-                    new KeyValuePair<HaplotypeTypingCategory, IReadOnlyCollection<LociInfo<string>>>(g.Key, g.Select(f => f.Value.Hla).ToList())
-                )
-                .ToDictionary();
-
-            return new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
-            {
-                GGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.GGroup, new List<LociInfo<string>>()),
-                PGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.PGroup, new List<LociInfo<string>>()),
-                SmallGGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.SmallGGroup, new List<LociInfo<string>>()),
-            };
-        }
-
-        private static LociInfo<ISet<string>> CombineSetsAtLoci(PhenotypeInfo<ISet<string>> phenotypeInfo)
-        {
-            return phenotypeInfo.ToLociInfo((_, set1, set2) => 
-                set1 != null && set2 != null
+    private static LociInfo<ISet<string>> CombineSetsAtLoci(PhenotypeInfo<ISet<string>> phenotypeInfo)
+    {
+        return phenotypeInfo.ToLociInfo((_, set1, set2) => 
+            set1 != null && set2 != null
                 ? (ISet<string>)new HashSet<string>(set1.Concat(set2))
                 : null);
-        }
     }
 }

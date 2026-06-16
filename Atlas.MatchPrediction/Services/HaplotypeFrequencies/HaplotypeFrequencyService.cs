@@ -1,17 +1,11 @@
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Config;
-using Atlas.MatchPrediction.Data.Models;
-using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
-using LazyCache;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -22,8 +16,6 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 using HaplotypeHla = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
 
@@ -43,7 +35,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
         public Task<HaplotypeFrequencySet> GetSingleHaplotypeFrequencySet(FrequencySetMetadata setMetaData);
 
-        Task<ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId);
+        Task<FrequencySetCacheEntry> GetAllHaplotypeFrequencies(int setId);
 
         /// <param name="setId"></param>
         /// <param name="hla"></param>
@@ -62,36 +54,22 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
     internal class HaplotypeFrequencyService : IHaplotypeFrequencyService
     {
         private const string SupportSummaryPrefix = "Haplotype Frequency Set Import";
-        private const string ActiveHaplotypeFrequencySetsCacheKey = "hf-active-sets";
 
         private readonly IFrequencySetImporter frequencySetImporter;
         private readonly INotificationSender notificationSender;
         private readonly IAtlasLogger logger;
-        private readonly IFrequencyConsolidator frequencyConsolidator;
-        private readonly IHaplotypeFrequencySetRepository frequencySetRepository;
-        private readonly IHaplotypeFrequenciesRepository frequencyRepository;
-        private readonly IAppCache cache;
-        private readonly HaplotypeFrequencySetCacheSettings haplotypeFrequencySetCacheSettings;
+        private readonly IHaplotypeFrequencyCache haplotypeFrequencyCache;
 
         public HaplotypeFrequencyService(
             IFrequencySetImporter frequencySetImporter,
-            IHaplotypeFrequencySetRepository frequencySetRepository,
-            IHaplotypeFrequenciesRepository frequencyRepository,
             INotificationSender notificationSender,
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
-            IPersistentCacheProvider persistentCacheProvider,
-            IFrequencyConsolidator frequencyConsolidator,
-            IOptions<HaplotypeFrequencySetCacheSettings> haplotypeFrequencySetCacheSettings
-        )
+            IHaplotypeFrequencyCache haplotypeFrequencyCache)
         {
             this.frequencySetImporter = frequencySetImporter;
             this.notificationSender = notificationSender;
             this.logger = logger;
-            this.frequencyConsolidator = frequencyConsolidator;
-            this.frequencySetRepository = frequencySetRepository;
-            this.frequencyRepository = frequencyRepository;
-            this.haplotypeFrequencySetCacheSettings = haplotypeFrequencySetCacheSettings.Value;
-            cache = persistentCacheProvider.Cache;
+            this.haplotypeFrequencyCache = haplotypeFrequencyCache;
         }
 
         public async Task ImportFrequencySet(FrequencySetFile file, FrequencySetImportBehaviour importBehaviour)
@@ -101,7 +79,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             try
             {
                 await frequencySetImporter.Import(file, importBehaviour);
-                cache.Remove(ActiveHaplotypeFrequencySetsCacheKey);
+                haplotypeFrequencyCache.RemoveActiveHaplotypeFrequencySets();
                 file.ImportedDateTime = DateTimeOffset.UtcNow;
 
                 await SendSuccessNotification(file);
@@ -157,7 +135,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
         public async Task<HaplotypeFrequencySet> GetSingleHaplotypeFrequencySet(FrequencySetMetadata setMetaData)
         {
-            var activeSets = await GetActiveHaplotypeFrequencySets();
+            var activeSets = await haplotypeFrequencyCache.GetActiveHaplotypeFrequencySets();
 
             // Attempt to get the most specific sets first
             var set = activeSets.GetValueOrDefault((setMetaData.RegistryCode, setMetaData.EthnicityCode));
@@ -180,105 +158,35 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         }
 
         /// <inheritdoc />
-        public async Task<ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId)
+        public Task<FrequencySetCacheEntry> GetAllHaplotypeFrequencies(int setId)
         {
-            var cacheKey = $"hf-set-{setId}";
-            return await cache.GetOrAddAsync(cacheKey, async () =>
-                {
-                    using (logger.RunTimed("Get All Frequencies from HF set - from SQL database", LogLevel.Verbose))
-                    {
-                        var allFrequencies = await frequencyRepository.GetAllHaplotypeFrequencies(setId);
-                        return new ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>(allFrequencies);
-                    }
-                }
-            );
+            return haplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId);
         }
 
         /// <inheritdoc />
         public async Task<decimal> GetFrequencyForHla(int setId, HaplotypeHla hla, ISet<Locus> excludedLoci)
         {
-            var frequencies = await GetAllHaplotypeFrequencies(setId);
+            var entry = await haplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId);
 
-            if (!frequencies.TryGetValue(hla, out var frequency))
+            // The interner resolves a key when every allele is known to the set individually - but that does NOT
+            // guarantee the *combination* is a stored haplotype (e.g. two haplotypes sharing alleles produce
+            // resolvable cross-combinations that were never imported). So we must still probe the dictionary
+            // rather than indexing into it, otherwise an unrepresented-but-resolvable haplotype throws instead of
+            // falling through to the unrepresented (0 / consolidate) handling below.
+            if (entry.Interner.TryResolve(a: hla.A, b: hla.B, c: hla.C, dqb1: hla.Dqb1, drb1: hla.Drb1, out var resolvedHaplotypeKey)
+                && entry.SetFrequencies.TryGetValue(resolvedHaplotypeKey, out var haplotypeFrequency))
             {
-                // If no loci are excluded, there is nothing to calculate - the haplotype is just unrepresented.
-                // We do not want to add all unrepresented haplotypes to the cache - this drastically reduces algorithm speed, increases memory, and has no benefit
-                if (!excludedLoci.Any())
-                {
-                    return 0;
-                }
-
-                return await GetConsolidatedFrequency(setId, hla, excludedLoci);
+                return haplotypeFrequency.Frequency;
             }
 
-            return frequency?.Frequency ?? 0;
-        }
-
-        /// <summary>
-        /// "Consolidated frequencies" are haplotypes that do not have an associated record in the stored haplotype set,
-        /// but have been calculated by consolidating other frequencies.
-        /// </summary>
-        private async Task<decimal> GetConsolidatedFrequency(int setId, HaplotypeHla hla, ISet<Locus> excludedLoci)
-        {
-            var cacheKey = $"hf-set-consolidated-{setId}";
-            // It is significantly faster to calculate all consolidated values up front than to calculate on the fly, even when caching individual values. 
-            // Many consolidated haplotypes may be inferable from the input data, but not actually represented in the haplotype frequency dataset  
-            return await cache.GetSingleItemAndScheduleWholeCollectionCacheWarm(
-                cacheKey,
-                async () =>
-                {
-                    using (logger.RunTimed($"Calculating consolidated frequencies with missing loci for set: {setId}"))
-                    {
-                        return frequencyConsolidator.PreConsolidateFrequencies(await GetAllHaplotypeFrequencies(setId));
-                    }
-                },
-                d =>
-                {
-                    var hlaAtLoci = hla.SetLoci(null, excludedLoci.ToArray());
-                    d.TryGetValue(hlaAtLoci, out var result);
-                    return result;
-                },
-                async () =>
-                {
-                    var frequencies = (await GetAllHaplotypeFrequencies(setId));
-                    return frequencyConsolidator.ConsolidateFrequenciesForHaplotype(frequencies, hla, excludedLoci);
-                }
-            );
-        }
-
-        private static HaplotypeFrequencySet MapDataModelToClientModel(Data.Models.HaplotypeFrequencySet set)
-        {
-            return new HaplotypeFrequencySet
+            // If no loci are excluded, there is nothing to calculate - the haplotype is just unrepresented.
+            // We do not want to add all unrepresented haplotypes to the cache - this drastically reduces algorithm speed, increases memory, and has no benefit
+            if (!excludedLoci.Any())
             {
-                HlaNomenclatureVersion = set.HlaNomenclatureVersion,
-                EthnicityCode = set.EthnicityCode,
-                Id = set.Id,
-                Name = set.Name,
-                RegistryCode = set.RegistryCode,
-                PopulationId = set.PopulationId
-            };
-        }
+                return 0;
+            }
 
-        private async Task<IReadOnlyDictionary<(string RegistryCode, string EthnicityCode), HaplotypeFrequencySet>> GetActiveHaplotypeFrequencySets()
-        {
-            return await cache.GetOrAddAsync(
-                ActiveHaplotypeFrequencySetsCacheKey,
-                async () =>
-                {
-                    using (logger.RunTimed("Get active HF sets - from SQL database", LogLevel.Verbose))
-                    {
-                        var activeSets = await frequencySetRepository.GetAllActiveSets();
-                        return activeSets.ToDictionary(
-                            set => (set.RegistryCode, set.EthnicityCode),
-                            MapDataModelToClientModel
-                        );
-                    }
-                },
-                new MemoryCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(haplotypeFrequencySetCacheSettings.ActiveSetCacheExpiryMinutes)
-                }
-            );
+            return await haplotypeFrequencyCache.GetConsolidatedFrequency(setId, hla, excludedLoci);
         }
 
         private async Task SendSuccessNotification(FrequencySetFile file)
@@ -298,12 +206,14 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
             if (file.UploadedDateTime != null)
             {
-                eventProperties[nameof(file.UploadedDateTime)] = file.UploadedDateTime.Value.UtcDateTime.ToString(CultureInfo.InvariantCulture) + " UTC";
+                eventProperties[nameof(file.UploadedDateTime)] =
+                    file.UploadedDateTime.Value.UtcDateTime.ToString(CultureInfo.InvariantCulture) + " UTC";
             }
 
             if (file.ImportedDateTime != null)
             {
-                eventProperties[nameof(file.ImportedDateTime)] = file.ImportedDateTime.Value.UtcDateTime.ToString(CultureInfo.InvariantCulture) + " UTC";
+                eventProperties[nameof(file.ImportedDateTime)] =
+                    file.ImportedDateTime.Value.UtcDateTime.ToString(CultureInfo.InvariantCulture) + " UTC";
             }
 
             logger.SendEvent(successName, LogLevel.Info, eventProperties);
@@ -328,9 +238,10 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             var errorName = $"{SupportSummaryPrefix} Failure";
 
             logger.SendException(ex, LogLevel.Error, new Dictionary<string, string>
-            {
-                { "FileName", file.FileName },
-            });
+                {
+                    { "FileName", file.FileName },
+                }
+            );
 
             await notificationSender.SendAlert(
                 errorName,

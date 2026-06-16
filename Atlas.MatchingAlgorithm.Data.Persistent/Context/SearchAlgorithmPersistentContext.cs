@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Atlas.Client.Models.Common.Results;
-using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models.ScoringWeightings;
 using Microsoft.EntityFrameworkCore;
@@ -13,12 +12,9 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Context
     {
         internal const string Schema = "MatchingAlgorithmPersistent";
         
-        // ReSharper disable once SuggestBaseTypeForParameter
         public SearchAlgorithmPersistentContext(DbContextOptions<SearchAlgorithmPersistentContext> options) : base(options)
         {
         }
-
-        private const int DefaultWeight = 0;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -46,14 +42,89 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Context
 
         private static IEnumerable<GradeWeighting> SeededMatchGradeWeights()
         {
-            var grades = EnumerateValues<MatchGrade>();
-            return grades.Select((g, i) => new GradeWeighting {Name = g.ToString(), Weight = DefaultWeight, Id = i + 1});
+            List<GradeWeighting> grades = [
+                        new ()
+                        {
+                            Id = 1,
+                            Name = "Mismatch",
+                        },
+                        new ()
+                        {
+                            Id = 2,
+                            Name = "Broad",
+                        },
+                        new ()
+                        {
+                            Id = 3,
+                            Name = "Split",
+                        },
+                        new ()
+                        {
+                            Id = 4,
+                            Name = "Associated",
+                        },
+                        new ()
+                        {
+                            Id = 5,
+                            Name = "NullMismatch",
+                        },
+                        new ()
+                        {
+                            Id = 6,
+                            Name = "NullPartial",
+                        },
+                        new ()
+                        {
+                            Id = 7,
+                            Name = "NullCDna",
+                        },
+                        new ()
+                        {
+                            Id = 8,
+                            Name = "NullGDna"
+                        },
+                        new ()
+                        {
+                            Id = 9,
+                            Name = "PGroup",
+                        },
+                        new ()
+                        {
+                            Id = 10,
+                            Name = "GGroup",
+                        },
+                        new ()
+                        {
+                            Id = 11,
+                            Name = "Protein",
+                        },
+                        new ()
+                        {
+                            Id = 12,
+                            Name = "CDna",
+                        },
+                        new ()
+                        {
+                            Id = 13,
+                            Name = "GDna",
+                        },
+                        new ()
+                        {
+                            Id = 14,
+                            Name = "Unknown",
+                        },
+                        new ()
+                        {
+                            Id = 15,
+                            Name = "ExpressingVsNull",
+                        }];
+            return grades;
         }
 
         private static IEnumerable<ConfidenceWeighting> SeededConfidenceWeights()
         {
             var confidences = EnumerateValues<MatchConfidence>();
-            return confidences.Select((c, i) => new ConfidenceWeighting {Name = c.ToString(), Weight = DefaultWeight, Id = i + 1});
+            return confidences.Select((c, i) => new ConfidenceWeighting {Name = c.ToString(), Weight = GradeWeighting.DefaultWeight, Id = i + 1});
         }
     }
 }

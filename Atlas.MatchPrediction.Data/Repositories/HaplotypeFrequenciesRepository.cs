@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Atlas.MatchPrediction.Data.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
-using HaplotypeHla = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Data.Repositories
 {
@@ -13,7 +12,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
     {
         Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies);
 
-        Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId);
+        Task<List<LightweightHaplotypeFrequencyRecord>> GetAllHaplotypeFrequencies(int setId);
 
         Task RemoveHaplotypeFrequencies(int setId);
     }
@@ -108,30 +107,26 @@ namespace Atlas.MatchPrediction.Data.Repositories
         }
 
         /// <inheritdoc />
-        public async Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId)
+        public async Task<List<LightweightHaplotypeFrequencyRecord>> GetAllHaplotypeFrequencies(int setId)
         {
             var sql = @$"
-SELECT {nameof(HaplotypeFrequency.Id)},
-{nameof(HaplotypeFrequency.A)},
+SELECT {nameof(HaplotypeFrequency.A)},
 {nameof(HaplotypeFrequency.B)},
 {nameof(HaplotypeFrequency.C)},
 {nameof(HaplotypeFrequency.DQB1)},
-{nameof(HaplotypeFrequency.DRB1)}, 
-{nameof(HaplotypeFrequency.Frequency)}, 
+{nameof(HaplotypeFrequency.DRB1)},
+{nameof(HaplotypeFrequency.Frequency)},
 {nameof(HaplotypeFrequency.TypingCategory)},
-{HaplotypeFrequency.SetIdColumnName}
-FROM {HaplotypeFrequency.QualifiedTableName} 
+{HaplotypeFrequency.SetIdColumnName} AS {nameof(LightweightHaplotypeFrequencyRecord.SetId)}
+FROM {HaplotypeFrequency.QualifiedTableName}
 WHERE {HaplotypeFrequency.SetIdColumnName} = @setId";
 
             return await RetryConfig.AsyncRetryPolicy.ExecuteAsync(async () =>
             {
                 await using (var conn = new SqlConnection(connectionString))
                 {
-                    var frequencyModels = await conn.QueryAsync<HaplotypeFrequency>(sql, new {setId}, commandTimeout: 600);
-                    return frequencyModels.ToDictionary(
-                        f => f.Haplotype(),
-                        f => f
-                    );
+                    var frequencyModels = await conn.QueryAsync<LightweightHaplotypeFrequencyRecord>(sql, new {setId}, commandTimeout: 600);
+                    return frequencyModels.ToList();
                 }
             });
         }

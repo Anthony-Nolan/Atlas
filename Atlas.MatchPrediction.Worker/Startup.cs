@@ -1,18 +1,17 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Notifications;
-using Atlas.Common.ServiceBus;
-using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
-using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Worker.Services;
 using Atlas.MatchPrediction.Worker.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.SearchTracking.Common.Clients;
+using Atlas.SearchTracking.Common.DependencyInjection;
 using Atlas.SearchTracking.Common.Dispatchers;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
+using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -51,27 +50,31 @@ public static class Startup
             return new BlobDownloader(settings.MatchPredictionConnectionString, atlasLogger);
         });
 
-        services.AddScoped<ISearchTrackingServiceBusClient>(sp =>
-        {
-            var settings = sp.GetRequiredService<IOptions<SearchTrackingServiceBusSettings>>().Value;
-            var logger = sp.GetRequiredService<IAtlasLogger>();
-            return new SearchTrackingServiceBusClient(settings, logger);
-        });
+        // Make the settings available as a plain singleton so the shared registration (and the client's constructor) can resolve it.
+        services.AddSingleton(sp => sp.GetRequiredService<IOptions<SearchTrackingServiceBusSettings>>().Value);
+        services.RegisterSearchTrackingServiceBusClient();
 
         services.AddScoped<IMatchPredictionSearchTrackingDispatcher, MatchPredictionSearchTrackingDispatcher>();
 
         services.AddScoped<IParallelMatchPredictionBatchRunner, ParallelMatchPredictionBatchRunner>();
 
-        services.AddSingleton<IServiceBusMessageReceiver<ParallelMatchPredictionBatchRequest>>(sp =>
+        services.AddSingleton(sp =>
             {
                 var requestSettings = sp.GetRequiredService<IOptions<MatchPredictionRequestsSettings>>().Value;
                 var workerSettings = sp.GetRequiredService<IOptions<MatchPredictionWorkerSettings>>().Value;
-                var factory = sp.GetRequiredKeyedService<IMessageReceiverFactory>(typeof(MessagingServiceBusSettings));
-                return new ServiceBusMessageReceiver<ParallelMatchPredictionBatchRequest>(
-                    factory,
+                var client = sp.GetRequiredKeyedService<ServiceBusClient>(typeof(MessagingServiceBusSettings));
+
+                return client.CreateProcessor(
                     requestSettings.RequestsTopic,
                     workerSettings.RequestsSubscription,
-                    workerSettings.BatchSize
+                    new ServiceBusProcessorOptions
+                    {
+                        // We complete/abandon explicitly once the batch has been processed.
+                        AutoCompleteMessages = false,
+                        MaxConcurrentCalls = workerSettings.MaxConcurrentCalls,
+                        PrefetchCount = workerSettings.PrefetchCount,
+                        MaxAutoLockRenewalDuration = TimeSpan.FromMinutes(workerSettings.MaxAutoLockRenewalMinutes),
+                    }
                 );
             }
         );

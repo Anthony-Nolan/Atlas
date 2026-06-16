@@ -14,7 +14,6 @@ using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Helpers;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Settings;
-using Dasync.Collections;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
@@ -122,7 +121,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 {
                     // Batching is implemented, as each SQL query needs a concrete list of filtered IDs, rather than a stream. 
                     // This batch size control a balance between performance and memory footprint - larger batches will lead to a higher memory footprint, but fewer SQL connections (and therefore faster searches)
-                    await foreach (var resultBatch in previousLociResultStream.Batch(matchingConfigurationSettings.MatchingBatchSize))
+                    await foreach (var resultBatch in previousLociResultStream.Chunk(matchingConfigurationSettings.MatchingBatchSize))
                     {
                         var donorBatch = resultBatch.ToDictionary(r => r.DonorId, r => r);
                         var donorIds = donorBatch.Keys.ToList();

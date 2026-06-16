@@ -56,6 +56,7 @@ using Microsoft.FeatureManagement;
 using System;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.SearchTracking.Common.Clients;
+using Atlas.SearchTracking.Common.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
 
@@ -426,7 +427,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             // Also used for dispatching searches, registered independently in ProjectInterfaceOrchestrationConfiguration.cs
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>();
-            services.AddScoped<ISearchTrackingServiceBusClient, SearchTrackingServiceBusClient>();
+            services.RegisterSearchTrackingServiceBusClient();
             services.AddScoped<ISearchDispatcher, SearchDispatcher>();
             services.AddScoped<ISearchRunner, SearchRunner>();
 

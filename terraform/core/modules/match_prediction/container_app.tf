@@ -117,8 +117,16 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         value = tostring(var.MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM)
       }
       env {
-        name  = "MatchPredictionWorker__BatchSize"
-        value = tostring(var.MATCH_PREDICTION_WORKER_BATCH_SIZE)
+        name  = "MatchPredictionWorker__MaxConcurrentCalls"
+        value = tostring(var.MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS)
+      }
+      env {
+        name  = "MatchPredictionWorker__PrefetchCount"
+        value = tostring(var.MATCH_PREDICTION_WORKER_PREFETCH_COUNT)
+      }
+      env {
+        name  = "MatchPredictionWorker__MaxAutoLockRenewalMinutes"
+        value = tostring(var.MATCH_PREDICTION_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES)
       }
 
       env {

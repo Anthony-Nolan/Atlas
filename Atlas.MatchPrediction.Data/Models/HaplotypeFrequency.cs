@@ -112,19 +112,4 @@ namespace Atlas.MatchPrediction.Data.Models
                 });
         }
     }
-
-    internal static class HaplotypeFrequencyExtensions
-    {
-        public static LociInfo<string> Haplotype(this HaplotypeFrequency haplotypeFrequency)
-        {
-            return new LociInfo<string>
-            (
-                valueA: haplotypeFrequency.A,
-                valueB: haplotypeFrequency.B,
-                valueC: haplotypeFrequency.C,
-                valueDqb1: haplotypeFrequency.DQB1,
-                valueDrb1: haplotypeFrequency.DRB1
-            );
-        }
-    }
 }

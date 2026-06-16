@@ -6,6 +6,7 @@ using Atlas.RepeatSearch.Clients;
 using Atlas.RepeatSearch.Services.Search;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Atlas.SearchTracking.Common.Clients;
+using Atlas.SearchTracking.Common.DependencyInjection;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -51,7 +52,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
                 sp => sp.GetRequiredService<MessagingServiceBusSettings>().ConnectionString);
 
             services.AddScoped<IRepeatSearchServiceBusClient, RepeatSearchServiceBusClient>();
-            services.AddScoped<ISearchTrackingServiceBusClient, SearchTrackingServiceBusClient>();
+            services.RegisterSearchTrackingServiceBusClient();
             services.AddScoped<IRepeatSearchDispatcher, RepeatSearchDispatcher>();
         }
     }

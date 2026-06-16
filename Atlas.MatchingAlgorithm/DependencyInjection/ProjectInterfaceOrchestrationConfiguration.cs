@@ -6,6 +6,7 @@ using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.SearchTracking.Common.Clients;
+using Atlas.SearchTracking.Common.DependencyInjection;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -51,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 sp => sp.GetRequiredService<MessagingServiceBusSettings>().ConnectionString);
 
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>();
-            services.AddScoped<ISearchTrackingServiceBusClient, SearchTrackingServiceBusClient>();
+            services.RegisterSearchTrackingServiceBusClient();
             services.AddScoped<ISearchDispatcher, SearchDispatcher>();
         }
     }

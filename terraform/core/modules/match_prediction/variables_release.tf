@@ -29,7 +29,15 @@ variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
   type = number
 }
 
-variable "MATCH_PREDICTION_WORKER_BATCH_SIZE" {
+variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
+  type = number
+}
+
+variable "MATCH_PREDICTION_WORKER_PREFETCH_COUNT" {
+  type = number
+}
+
+variable "MATCH_PREDICTION_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES" {
   type = number
 }
 

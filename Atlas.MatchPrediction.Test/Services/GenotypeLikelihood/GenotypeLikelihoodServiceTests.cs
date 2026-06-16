@@ -1,9 +1,7 @@
-﻿using System.Collections.Concurrent;
+﻿using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Config;
@@ -43,8 +41,12 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 .Returns(new ExpandedGenotype {Diplotypes = new List<Diplotype> {new DiplotypeBuilder().Build()}});
 
             frequencyService.GetAllHaplotypeFrequencies(Arg.Any<int>())
-                .Returns(new ConcurrentDictionary<LociInfo<string>, HaplotypeFrequency>(
-                    new Dictionary<LociInfo<string>, HaplotypeFrequency> {{new LociInfo<string>(), HaplotypeFrequencyBuilder.New.Build()}})
+                .Returns(
+                    new FrequencySetCacheEntry
+                    {
+                        SetFrequencies = new Dictionary<HaplotypeKey, HaplotypeFrequencyValue>().ToFrozenDictionary(),
+                        Interner = new HaplotypeInterner()
+                    }
                 );
 
             genotypeLikelihoodCalculator.CalculateLikelihood(Arg.Any<ExpandedGenotype>()).Returns(0);

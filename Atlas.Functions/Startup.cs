@@ -19,6 +19,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.SearchTracking.Common.Clients;
+using Atlas.SearchTracking.Common.DependencyInjection;
 using Atlas.SearchTracking.Common.Dispatchers;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
 using Microsoft.EntityFrameworkCore;
@@ -186,7 +187,7 @@ namespace Atlas.Functions
             services.MakeSettingsAvailableForUse(fetchSearchTrackingServiceBusSettings);
 
             services.AddScoped<IMatchPredictionSearchTrackingDispatcher, MatchPredictionSearchTrackingDispatcher>();
-            services.AddScoped<ISearchTrackingServiceBusClient, SearchTrackingServiceBusClient>();
+            services.RegisterSearchTrackingServiceBusClient();
         }
 
         private static void RegisterDebugServices(IServiceCollection services)

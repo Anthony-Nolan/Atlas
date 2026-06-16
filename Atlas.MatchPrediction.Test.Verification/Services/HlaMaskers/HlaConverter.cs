@@ -8,7 +8,6 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Models.FileSchema;
-using MoreLinq.Extensions;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
 {
