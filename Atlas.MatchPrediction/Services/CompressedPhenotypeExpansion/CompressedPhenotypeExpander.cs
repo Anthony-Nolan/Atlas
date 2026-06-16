@@ -186,18 +186,18 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     private async Task<DataByResolution<IReadOnlyCollection<LociInfo<string>>>> FetchHaplotypesGroupedByTypingCategory(int frequencySetId)
     {
         // This piece of code doesn't even need dictionary, it just needs typingCategory => List<Hla> mapping from it
-        var entry = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySetId);
+        var haplotypeFrequencies = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySetId);
 
-        if (entry.SetFrequencies.Count == 0)
+        if (haplotypeFrequencies.SetFrequencies.Count == 0)
         {
             throw new Exception($"No haplotypes could be found for set id {frequencySetId}.");
         }
 
-        var groupedFrequencies = entry.SetFrequencies
+        var groupedFrequencies = haplotypeFrequencies.SetFrequencies
             .GroupBy(f => f.Value.TypingCategory)
             .ToDictionary(
                 key => key.Key,
-                value => value.Select(f => entry.Interner.ReverseLookup(f.Key)).ToList()
+                value => value.Select(f => haplotypeFrequencies.Interner.ReverseLookup(f.Key)).ToList()
             );
 
         return new DataByResolution<IReadOnlyCollection<LociInfo<string>>>

@@ -13,7 +13,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood;
 public interface IDiplotypeLikelihoodCalculator
 {
     /// <summary>
-    /// 
+    /// Calculates the likelihood of a given diplotype based on the frequencies of its constituent haplotypes in the provided frequency set.
     /// </summary>
     /// <param name="diplotype">
     /// string HLA data must be at the same typing resolution as the frequency set provided, as no conversions will take place as part of this lookup.

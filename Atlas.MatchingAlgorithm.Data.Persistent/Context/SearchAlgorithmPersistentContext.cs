@@ -16,8 +16,6 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Context
         {
         }
 
-        private const int DefaultWeight = 0;
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasDefaultSchema(Schema);
@@ -49,43 +47,36 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Context
                         {
                             Id = 1,
                             Name = "Mismatch",
-                            Weight = 0
                         },
                         new ()
                         {
                             Id = 2,
                             Name = "Broad",
-                            Weight = 0
                         },
                         new ()
                         {
                             Id = 3,
                             Name = "Split",
-                            Weight = 0
                         },
                         new ()
                         {
                             Id = 4,
                             Name = "Associated",
-                            Weight = 0
                         },
                         new ()
                         {
                             Id = 5,
                             Name = "NullMismatch",
-                            Weight = 0
                         },
                         new ()
                         {
                             Id = 6,
                             Name = "NullPartial",
-                            Weight = 0
                         },
                         new ()
                         {
                             Id = 7,
                             Name = "NullCDna",
-                            Weight = 0
                         },
                         new ()
                         {
@@ -97,37 +88,31 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Context
                         {
                             Id = 9,
                             Name = "PGroup",
-                            Weight = 0
                         },
                         new ()
                         {
                             Id = 10,
                             Name = "GGroup",
-                            Weight = 0
                         },
                         new ()
                         {
                             Id = 11,
                             Name = "Protein",
-                            Weight = 0
                         },
                         new ()
                         {
                             Id = 12,
                             Name = "CDna",
-                            Weight = 0
                         },
                         new ()
                         {
                             Id = 13,
                             Name = "GDna",
-                            Weight = 0
                         },
                         new ()
                         {
                             Id = 14,
                             Name = "Unknown",
-                            Weight = 0
                         },
                         new ()
                         {
@@ -140,7 +125,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Context
         private static IEnumerable<ConfidenceWeighting> SeededConfidenceWeights()
         {
             var confidences = EnumerateValues<MatchConfidence>();
-            return confidences.Select((c, i) => new ConfidenceWeighting {Name = c.ToString(), Weight = DefaultWeight, Id = i + 1});
+            return confidences.Select((c, i) => new ConfidenceWeighting {Name = c.ToString(), Weight = GradeWeighting.DefaultWeight, Id = i + 1});
         }
     }
 }

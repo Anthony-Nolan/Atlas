@@ -6,7 +6,8 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models.ScoringWeightings
 {
     public class ScoringWeighting
     {
-        
+        public const int DefaultWeight = 0;
+
         public int Id { get; set; }
         
         /// <summary>
@@ -15,10 +16,10 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models.ScoringWeightings
         /// </summary>
         [StringLength(100)]
         public string Name { get; set; }
-        
+
         /// <summary>
         /// An integer weight used for relative ordering of grades/confidences in results
         /// </summary>
-        public int Weight { get; set; }
+        public int Weight { get; set; } = DefaultWeight;
     }
 }
