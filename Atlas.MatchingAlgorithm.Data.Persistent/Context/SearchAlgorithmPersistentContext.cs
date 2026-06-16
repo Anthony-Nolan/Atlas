@@ -81,8 +81,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Context
                         new ()
                         {
                             Id = 8,
-                            Name = "NullGDna",
-                            Weight = 0
+                            Name = "NullGDna"
                         },
                         new ()
                         {
