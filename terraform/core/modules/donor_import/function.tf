@@ -44,11 +44,11 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
 
     "NotificationConfiguration:NotifyOnAttemptedDeletionOfUntrackedDonor" = var.NOTIFICATIONS_ON_DELETION_OF_INVALID_DONOR
 
-    "NotificationsServiceBus:AlertsTopic"               = var.servicebus_topics.alerts.name
-    "NotificationsServiceBus:ConnectionString"          = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
-    "NotificationsServiceBus:NotificationsTopic"        = var.servicebus_topics.notifications.name
-    "NotificationsServiceBus:SendRetryCount"            = var.SERVICE_BUS_SEND_RETRY_COUNT
-    "NotificationsServiceBus:SendRetryCooldownSeconds"  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+    "NotificationsServiceBus:AlertsTopic"              = var.servicebus_topics.alerts.name
+    "NotificationsServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:NotificationsTopic"       = var.servicebus_topics.notifications.name
+    "NotificationsServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "NotificationsServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
     "PublishDonorUpdates:DeletionCronSchedule"              = var.DELETE_PUBLISHED_DONOR_UPDATES_CRONTAB
     "PublishDonorUpdates:PublishCronSchedule"               = var.PUBLISH_DONOR_UPDATES_CRONTAB
@@ -90,5 +90,13 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
     name  = "DonorStoreSql"
     type  = "SQLAzure"
     value = local.donor_import_connection_string
+  }
+
+  lifecycle {
+    ignore_changes = [
+      site_config[0].health_check_eviction_time_in_min,
+      site_config[0].cors,
+      tags["hidden-link: /app-insights-resource-id"],
+    ]
   }
 }

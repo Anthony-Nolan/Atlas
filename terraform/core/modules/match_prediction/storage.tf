@@ -1,17 +1,17 @@
 resource "azurerm_storage_container" "haplotype_frequency_set_blob_container" {
   name                  = "haplotype-frequency-set-import"
-  storage_account_name  = var.azure_storage.name
+  storage_account_id    = var.azure_storage.id
   container_access_type = "private"
 }
 
 resource "azurerm_storage_container" "match_prediction_requests_container" {
   name                  = "match-prediction-requests"
-  storage_account_name  = var.azure_storage.name
+  storage_account_id    = var.azure_storage.id
   container_access_type = "private"
 }
 
 resource "azurerm_storage_container" "match_prediction_results_container" {
   name                  = "match-prediction-results"
-  storage_account_name  = var.azure_storage.name
+  storage_account_id    = var.azure_storage.id
   container_access_type = "private"
 }

@@ -5,12 +5,13 @@ terraform {
 }
 
 locals {
-  repository_name     = "Atlas"
-  environment         = var.ENVIRONMENT
-  location            = var.LOCATION
-  min_tls_version     = "1.2"
-  resource_group_name = "${local.environment}-ATLAS-RESOURCE-GROUP"
-  subscription_id     = var.AZURE_SUBSCRIPTION_ID
+  repository_name        = "Atlas"
+  environment            = var.ENVIRONMENT
+  location               = var.LOCATION
+  min_tls_version        = "1.2"
+  resource_group_name    = "${local.environment}-ATLAS-RESOURCE-GROUP"
+  subscription_id        = var.AZURE_SUBSCRIPTION_ID
+  shared_subscription_id = var.SHARED_SUBSCRIPTION_ID
   common_tags = {
     controlled_by_terraform = true
     repository_name         = local.repository_name
@@ -26,7 +27,14 @@ provider "azurerm" {
   // so will trigger 403s for most devs. Accordingly, we disable the "register everything" behaviour, and
   // initial registrations will need to be organised as a one-off.
   // Currently, the only resource provider needed is this AzureRM provider.
-  skip_provider_registration = false
+  resource_provider_registrations = "core"
+  features {}
+}
+
+provider "azurerm" {
+  alias                           = "shared"
+  subscription_id                 = local.shared_subscription_id
+  resource_provider_registrations = "none"
   features {}
 }
 
@@ -81,6 +89,11 @@ module "donor_import" {
   FAILURE_LOGS_CRONTAB                          = var.DONOR_IMPORT_FAILURE_LOGS_CRONTAB
   FAILURE_LOGS_EXPIRY_IN_DAYS                   = var.DONOR_IMPORT_FAILURE_LOGS_EXPIRY_IN_DAYS
   ALLOW_FULL_MODE_IMPORT                        = var.DONOR_IMPORT_ALLOW_FULL_MODE_IMPORT
+
+  // External SQL variables
+  USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
+  EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
+  EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
 }
 
 module "matching_algorithm" {
@@ -158,6 +171,13 @@ module "matching_algorithm" {
   WEBSITE_RUN_FROM_PACKAGE                                 = var.WEBSITE_RUN_FROM_PACKAGE
   WMDA_FILE_URL                                            = var.WMDA_FILE_URL
   SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC = var.MATCHING_ALGORITHM_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
+
+  // External SQL variables
+  USE_EXTERNAL_SQL           = var.USE_EXTERNAL_SQL
+  EXTERNAL_SQL_SERVER_NAME   = var.EXTERNAL_SQL_SERVER_NAME
+  EXTERNAL_SQL_DB_SHARED     = var.EXTERNAL_SQL_DB_SHARED
+  EXTERNAL_SQL_DB_MATCHING_A = var.EXTERNAL_SQL_DB_MATCHING_A
+  EXTERNAL_SQL_DB_MATCHING_B = var.EXTERNAL_SQL_DB_MATCHING_B
 }
 
 module "match_prediction" {
@@ -188,20 +208,42 @@ module "match_prediction" {
   }
 
   servicebus_topics = {
-    alerts        = module.support.general.alerts_servicebus_topic
-    notifications = module.support.general.notifications_servicebus_topic
+    alerts          = module.support.general.alerts_servicebus_topic
+    notifications   = module.support.general.notifications_servicebus_topic
+    search_tracking = module.search_tracking.service_bus.search_tracking_topic
   }
+
+  // Container Apps DI Variables
+  container_app_environment = azurerm_container_app_environment.atlas
+  acr                       = data.azurerm_container_registry.shared
+  aca_identity              = azurerm_user_assigned_identity.aca_identity
 
   // Release variables
   APPLICATION_INSIGHTS_LOG_LEVEL                           = var.APPLICATION_INSIGHTS_LOG_LEVEL
+  ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES                       = var.MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES
   DATABASE_PASSWORD                                        = var.MATCH_PREDICTION_DATABASE_PASSWORD
   DATABASE_USERNAME                                        = var.MATCH_PREDICTION_DATABASE_USERNAME
   IP_RESTRICTION_SETTINGS                                  = var.IP_RESTRICTION_SETTINGS
   MAC_SOURCE                                               = var.MAC_SOURCE
+  MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM                = var.MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM
+  MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS             = var.MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS
+  MATCH_PREDICTION_WORKER_PREFETCH_COUNT                   = var.MATCH_PREDICTION_WORKER_PREFETCH_COUNT
+  MATCH_PREDICTION_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES    = var.MATCH_PREDICTION_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES
   SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS                  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
   SERVICE_BUS_SEND_RETRY_COUNT                             = var.SERVICE_BUS_SEND_RETRY_COUNT
   WEBSITE_RUN_FROM_PACKAGE                                 = var.WEBSITE_RUN_FROM_PACKAGE
   SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC = var.MATCH_PREDICTION_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
+  CONTAINER_IMAGE_TAG                                      = var.MATCH_PREDICTION_CONTAINER_IMAGE_TAG
+  CONTAINER_CPU                                            = var.MATCH_PREDICTION_CONTAINER_CPU
+  CONTAINER_MEMORY                                         = var.MATCH_PREDICTION_CONTAINER_MEMORY
+  CONTAINER_MIN_REPLICAS                                   = var.MATCH_PREDICTION_CONTAINER_MIN_REPLICAS
+  CONTAINER_MAX_REPLICAS                                   = var.MATCH_PREDICTION_CONTAINER_MAX_REPLICAS
+  CONTAINER_SCALE_RULE_MESSAGE_COUNT                       = var.MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT
+
+  // External SQL variables
+  USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
+  EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
+  EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
 }
 
 module "multiple_allele_code_lookup" {
@@ -262,6 +304,11 @@ module "repeat_search" {
   SERVICE_BUS_SEND_RETRY_COUNT                             = var.SERVICE_BUS_SEND_RETRY_COUNT
   STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE         = var.STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE
   STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT           = var.STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT
+
+  // External SQL variables
+  USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
+  EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
+  EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
 }
 
 module "search_tracking" {
@@ -275,10 +322,10 @@ module "search_tracking" {
   default_servicebus_settings = local.service-bus
 
   // DI Variables
-  application_insights                            = azurerm_application_insights.atlas
-  app_service_plan                                = azurerm_service_plan.atlas-elastic-plan
-  azure_app_configuration                         = azurerm_app_configuration.atlas_app_configuration
-  servicebus_namespace                            = azurerm_servicebus_namespace.general
+  application_insights    = azurerm_application_insights.atlas
+  app_service_plan        = azurerm_service_plan.atlas-elastic-plan
+  azure_app_configuration = azurerm_app_configuration.atlas_app_configuration
+  servicebus_namespace    = azurerm_servicebus_namespace.general
   servicebus_namespace_authorization_rules = {
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
     read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
@@ -289,10 +336,15 @@ module "search_tracking" {
   sql_server              = azurerm_mssql_server.atlas_sql_server
 
   // Release variables
-  APPLICATION_INSIGHTS_LOG_LEVEL                 = var.APPLICATION_INSIGHTS_LOG_LEVEL
-  DATABASE_PASSWORD                              = var.SEARCH_TRACKING_DATABASE_PASSWORD
-  DATABASE_USERNAME                              = var.SEARCH_TRACKING_DATABASE_USERNAME
-  IP_RESTRICTION_SETTINGS                        = var.IP_RESTRICTION_SETTINGS
+  APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
+  DATABASE_PASSWORD              = var.SEARCH_TRACKING_DATABASE_PASSWORD
+  DATABASE_USERNAME              = var.SEARCH_TRACKING_DATABASE_USERNAME
+  IP_RESTRICTION_SETTINGS        = var.IP_RESTRICTION_SETTINGS
+
+  // External SQL variables
+  USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
+  EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
+  EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
 }
 
 module "support" {

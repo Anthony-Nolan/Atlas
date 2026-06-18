@@ -10,6 +10,7 @@ variable "app_service_plan" {
 variable "application_insights" {
   type = object({
     instrumentation_key = string
+    connection_string   = string
   })
 }
 
@@ -52,8 +53,9 @@ variable "servicebus_namespace_authorization_rules" {
 
 variable "servicebus_topics" {
   type = object({
-    alerts        = object({ name = string })
-    notifications = object({ name = string })
+    alerts          = object({ name = string })
+    notifications   = object({ name = string })
+    search_tracking = object({ name = string })
   })
 }
 
@@ -68,5 +70,25 @@ variable "sql_server" {
     id                          = string
     name                        = string
     fully_qualified_domain_name = string
+  })
+}
+
+variable "container_app_environment" {
+  type = object({
+    id = string
+  })
+}
+
+variable "acr" {
+  type = object({
+    id           = string
+    login_server = string
+  })
+}
+
+variable "aca_identity" {
+  type = object({
+    id           = string
+    principal_id = string
   })
 }

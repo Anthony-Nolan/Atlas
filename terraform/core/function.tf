@@ -56,18 +56,25 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "AtlasFunction:AzureStorage:MatchPredictionProcessingBatchSize"       = var.MATCHING_PREDICTION_PROCESSING_BATCH_SIZE
     "AtlasFunction:AzureStorage:ShouldBatchResults"                       = var.SHOULD_BATCH_RESULTS
 
-    "AtlasFunction:MessagingServiceBus:ConnectionString"                        = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
-    "AtlasFunction:MessagingServiceBus:MatchingResultsSubscription"             = azurerm_servicebus_subscription.match-prediction-orchestration-search-results-ready.name
-    "AtlasFunction:MessagingServiceBus:MatchingResultsTopic"                    = module.matching_algorithm.service_bus.matching_results_topic.name
-    "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsSubscription" = module.repeat_search.service_bus.repeat_search_matching_results_subscription.name
-    "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic"        = module.repeat_search.service_bus.repeat_search_matching_results_topic.name
-    "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic"                = module.repeat_search.service_bus.repeat_search_results_topic.name
-    "AtlasFunction:MessagingServiceBus:SearchResultsTopic"                      = azurerm_servicebus_topic.search-results-ready.name
-    "AtlasFunction:MessagingServiceBus:SearchResultsDebugSubscription"          = azurerm_servicebus_subscription.debug-search-results-ready.name
-    "AtlasFunction:MessagingServiceBus:RepeatSearchResultsDebugSubscription"    = module.repeat_search.service_bus.repeat_search_results_debug_subscription.name
-    "AtlasFunction:MessagingServiceBus:SendRetryCount"                          = var.SERVICE_BUS_SEND_RETRY_COUNT
-    "AtlasFunction:MessagingServiceBus:SendRetryCooldownSeconds"                = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
-    "AtlasFunction:Orchestration:MatchPredictionBatchSize"                      = var.ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE
+    "AtlasFunction:MessagingServiceBus:ConnectionString"                           = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "AtlasFunction:MessagingServiceBus:MatchingResultsSubscription"                = azurerm_servicebus_subscription.match-prediction-orchestration-search-results-ready.name
+    "AtlasFunction:MessagingServiceBus:MatchingResultsTopic"                       = module.matching_algorithm.service_bus.matching_results_topic.name
+    "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsSubscription"    = module.repeat_search.service_bus.repeat_search_matching_results_subscription.name
+    "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic"           = module.repeat_search.service_bus.repeat_search_matching_results_topic.name
+    "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic"                   = module.repeat_search.service_bus.repeat_search_results_topic.name
+    "AtlasFunction:MessagingServiceBus:SearchResultsTopic"                         = azurerm_servicebus_topic.search-results-ready.name
+    "AtlasFunction:MessagingServiceBus:SearchResultsDebugSubscription"             = azurerm_servicebus_subscription.debug-search-results-ready.name
+    "AtlasFunction:MessagingServiceBus:RepeatSearchResultsDebugSubscription"       = module.repeat_search.service_bus.repeat_search_results_debug_subscription.name
+    "AtlasFunction:MessagingServiceBus:SendRetryCount"                             = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "AtlasFunction:MessagingServiceBus:SendRetryCooldownSeconds"                   = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+    "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionRequestsTopic"       = module.match_prediction.service_bus.parallel_match_prediction_requests_topic.name
+    "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionResultsTopic"        = module.match_prediction.service_bus.parallel_match_prediction_results_topic.name
+    "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionResultsSubscription" = module.match_prediction.service_bus.parallel_match_prediction_results_aggregator_subscription.name
+    "AtlasFunction:Orchestration:MatchPredictionBatchSize"                         = var.ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE
+    "AtlasFunction:Orchestration:ParallelMatchPredictionBatchSize"                 = var.ORCHESTRATION_PARALLEL_MATCH_PREDICTION_BATCH_SIZE
+    "AtlasFunction:Orchestration:ParallelFinalisationCronSchedule"                 = var.ORCHESTRATION_PARALLEL_FINALISATION_CRON_SCHEDULE
+    "AtlasFunction:Orchestration:ParallelBatchCleanupCronSchedule"                 = var.ORCHESTRATION_PARALLEL_BATCH_CLEANUP_CRON_SCHEDULE
+    "AtlasFunction:Orchestration:ParallelBatchRetentionDays"                       = var.ORCHESTRATION_PARALLEL_BATCH_RETENTION_DAYS
 
     "HlaMetadataDictionary:AzureStorageConnectionString"                          = azurerm_storage_account.azure_storage.primary_connection_string
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"                              = var.WMDA_FILE_URL
@@ -84,6 +91,8 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "Matching:MessagingServiceBus:SearchRequestsTopic" = module.matching_algorithm.service_bus.matching_requests_topic.name
     "Matching:MessagingServiceBus:SearchResultsTopic"  = module.matching_algorithm.service_bus.matching_results_topic.name
 
+    "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes" = var.MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES
+
     "MatchPrediction:AzureStorage:ConnectionString"                    = azurerm_storage_account.azure_storage.primary_connection_string
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer" = module.match_prediction.storage.match_prediction_results_container_name
 
@@ -99,6 +108,14 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "SearchTrackingServiceBus:SendRetryCount"                 = var.SERVICE_BUS_SEND_RETRY_COUNT
     "SearchTrackingServiceBus:SendRetryCooldownSeconds"       = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
     "WEBSITE_RUN_FROM_PACKAGE"                                = var.WEBSITE_RUN_FROM_PACKAGE
+  }
+
+  lifecycle {
+    ignore_changes = [
+      site_config[0].health_check_eviction_time_in_min,
+      site_config[0].cors,
+      tags["hidden-link: /app-insights-resource-id"],
+    ]
   }
 
   connection_string {
@@ -164,8 +181,8 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
   app_settings = {
     "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
-    "MatchingAlgorithmFunction:BaseUrl"                = module.matching_algorithm.function_app.base_url
-    "MatchingAlgorithmFunction:ApiKey"                 = module.matching_algorithm.function_app.api_key
+    "MatchingAlgorithmFunction:BaseUrl" = module.matching_algorithm.function_app.base_url
+    "MatchingAlgorithmFunction:ApiKey"  = module.matching_algorithm.function_app.api_key
 
     "Matching:MessagingServiceBus:ConnectionString"         = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
     "Matching:MessagingServiceBus:SearchRequestsTopic"      = module.matching_algorithm.service_bus.matching_requests_topic.name
@@ -173,26 +190,32 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
     "Matching:MessagingServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
     "Matching:MessagingServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "RepeatSearch:MessagingServiceBus:ConnectionString"           = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
-    "RepeatSearch:MessagingServiceBus:RepeatSearchRequestsTopic"  = module.repeat_search.service_bus.repeat_search_requests_topic.name
-    "RepeatSearch:MessagingServiceBus:SendRetryCount"             = var.SERVICE_BUS_SEND_RETRY_COUNT
-    "RepeatSearch:MessagingServiceBus:SendRetryCooldownSeconds"   = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+    "RepeatSearch:MessagingServiceBus:ConnectionString"          = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "RepeatSearch:MessagingServiceBus:RepeatSearchRequestsTopic" = module.repeat_search.service_bus.repeat_search_requests_topic.name
+    "RepeatSearch:MessagingServiceBus:SendRetryCount"            = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "RepeatSearch:MessagingServiceBus:SendRetryCooldownSeconds"  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
     "SearchTracking:SearchTrackingServiceBus:ConnectionString"         = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
     "SearchTracking:SearchTrackingServiceBus:SearchTrackingTopic"      = module.search_tracking.service_bus.search_tracking_topic.name
     "SearchTracking:SearchTrackingServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
     "SearchTracking:SearchTrackingServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "NotificationsServiceBus:AlertsTopic"                = module.support.general.alerts_servicebus_topic.name
-    "NotificationsServiceBus:ConnectionString"           = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
-    "NotificationsServiceBus:NotificationsTopic"         = module.support.general.notifications_servicebus_topic.name
-    "NotificationsServiceBus:SendRetryCount"             = var.SERVICE_BUS_SEND_RETRY_COUNT
-    "NotificationsServiceBus:SendRetryCooldownSeconds"   = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+    "NotificationsServiceBus:AlertsTopic"              = module.support.general.alerts_servicebus_topic.name
+    "NotificationsServiceBus:ConnectionString"         = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
+    "NotificationsServiceBus:NotificationsTopic"       = module.support.general.notifications_servicebus_topic.name
+    "NotificationsServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "NotificationsServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
     "WEBSITE_RUN_FROM_PACKAGE" = var.WEBSITE_RUN_FROM_PACKAGE
   }
 
   lifecycle {
+    ignore_changes = [
+      site_config[0].health_check_eviction_time_in_min,
+      site_config[0].cors,
+      tags["hidden-link: /app-insights-resource-id"],
+    ]
+
     replace_triggered_by = [
       # Recreate the entire functions app if the service plan changes.
       # This is necessary in case of updating var from `true` to `false`, as terraform attempts to destroy the public API service plan /before/ modifying the function app's service_plan_id.

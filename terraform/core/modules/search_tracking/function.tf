@@ -50,9 +50,17 @@ resource "azurerm_windows_function_app" "atlas_search_tracking_function" {
     health_check_path                 = "/api/HealthCheck"
     health_check_eviction_time_in_min = 10
 
-    app_scale_limit         = 1
+    app_scale_limit = 1
 
     ftps_state              = "AllAllowed"
     scm_minimum_tls_version = "1.0"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      site_config[0].health_check_eviction_time_in_min,
+      site_config[0].cors,
+      tags["hidden-link: /app-insights-resource-id"],
+    ]
   }
 }

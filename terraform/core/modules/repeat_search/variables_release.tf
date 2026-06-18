@@ -58,3 +58,19 @@ variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE" {
 variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT" {
   type = number
 }
+
+// External SQL variables
+variable "USE_EXTERNAL_SQL" {
+  type    = bool
+  default = false
+}
+
+variable "EXTERNAL_SQL_SERVER_NAME" {
+  type    = string
+  default = ""
+}
+
+variable "EXTERNAL_SQL_DB_SHARED" {
+  type    = string
+  default = ""
+}

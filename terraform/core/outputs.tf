@@ -58,3 +58,15 @@ output "storage_account" {
 output "support" {
   value = module.support
 }
+
+output "container_app_environment" {
+  value = {
+    id   = azurerm_container_app_environment.atlas.id
+    name = azurerm_container_app_environment.atlas.name
+  }
+}
+
+output "active_sql_source" {
+  description = "Indicates whether function apps target Terraform-managed or external SQL."
+  value       = var.USE_EXTERNAL_SQL ? "external" : "terraform-managed"
+}

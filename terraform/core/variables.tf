@@ -4,6 +4,12 @@ variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
   description = "Corresponds to the severity levels defined by application insights. Allowed values: Verbose, Info (maps to Information), Warn (maps to Warning), Error, Critical."
 }
 
+variable "APPLICATION_INSIGHTS_DAILY_DATA_CAP_IN_GB" {
+  type        = number
+  default     = 100
+  description = "Daily data cap in GB for Application Insights. Use TF_VAR_APPLICATION_INSIGHTS_DAILY_DATA_CAP_IN_GB environment variable to override for specific environments."
+}
+
 variable "AZURE_CLIENT_ID" {
   type        = string
   description = "Client ID used for authenticating to manage Azure resources from code."
@@ -239,10 +245,40 @@ variable "MATCH_PREDICTION_DATABASE_USERNAME" {
   default = "match_prediction"
 }
 
+variable "MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES" {
+  type        = number
+  default     = 5
+  description = "Absolute cache TTL, in minutes, for the active HaplotypeFrequencySets lookup used by the match prediction service."
+}
+
 variable "MATCH_PREDICTION_DOWNLOAD_BATCH_SIZE" {
   type        = number
   default     = 10
   description = "Batch size for downloading match prediction results"
+}
+
+variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
+  type        = number
+  default     = 8
+  description = "Maximum number of match prediction requests processed in parallel per function instance. Keep this aligned with worker batch sizing."
+}
+
+variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
+  type        = number
+  default     = 8
+  description = "Maximum number of service bus messages the match prediction worker's ServiceBusProcessor handles concurrently. Aligned with match prediction request parallelism."
+}
+
+variable "MATCH_PREDICTION_WORKER_PREFETCH_COUNT" {
+  type        = number
+  default     = 0
+  description = "Number of service bus messages the match prediction worker prefetches in advance of processing. Set to 0 to disable prefetch."
+}
+
+variable "MATCH_PREDICTION_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES" {
+  type        = number
+  default     = 5
+  description = "Maximum total duration (in minutes) for which the match prediction worker's ServiceBusProcessor auto-renews a message lock while it is being processed."
 }
 
 variable "MATCHING_PREDICTION_PROCESSING_BATCH_SIZE" {
@@ -395,6 +431,30 @@ variable "ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE" {
   default = 10
 }
 
+variable "ORCHESTRATION_PARALLEL_BATCH_CLEANUP_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 0 3 * * *"
+  description = "CRON schedule (six-field NCrontab) for the timer that purges per-batch rows of finalised parallel match-prediction runs."
+}
+
+variable "ORCHESTRATION_PARALLEL_BATCH_RETENTION_DAYS" {
+  type        = number
+  default     = 90
+  description = "Number of days to retain per-batch rows after a parallel match-prediction run finalises. Parent run rows are always retained."
+}
+
+variable "ORCHESTRATION_PARALLEL_FINALISATION_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */1 * * * *"
+  description = "CRON schedule (six-field NCrontab) for the timer that finalises completed parallel match-prediction runs."
+}
+
+variable "ORCHESTRATION_PARALLEL_MATCH_PREDICTION_BATCH_SIZE" {
+  type        = number
+  default     = 100
+  description = "Donor batch size used when preparing blobs for the parallel ACA Worker match-prediction path."
+}
+
 variable "REPEAT_SEARCH_DATABASE_PASSWORD" {
   type = string
 }
@@ -438,15 +498,15 @@ variable "SEARCH_TRACKING_DATABASE_USERNAME" {
 }
 
 variable "SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS" {
-	type        = number
-	default     = 20
-	description = "When sending a service bus message, time to wait before retrying a failed message"
+  type        = number
+  default     = 20
+  description = "When sending a service bus message, time to wait before retrying a failed message"
 }
 
 variable "SERVICE_BUS_SEND_RETRY_COUNT" {
-	type        = number
-	default     = 5
-	description = "When sending a service bus message, the total number of retries to attempt"
+  type        = number
+  default     = 5
+  description = "When sending a service bus message, the total number of retries to attempt"
 }
 
 variable "SHOULD_BATCH_RESULTS" {
@@ -521,4 +581,98 @@ variable "SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID" {
   type        = string
   default     = null
   description = "The ID of the action group to be used for deadletter alerts."
+}
+
+// Container Apps / ACR
+
+variable "ACR_NAME" {
+  type        = string
+  default     = "ancontainerregistry"
+  description = "Name of the shared Azure Container Registry."
+}
+
+variable "ACR_RESOURCE_GROUP_NAME" {
+  type        = string
+  default     = "AN-RESOURCE-GROUP"
+  description = "Resource group of the shared Azure Container Registry."
+}
+
+variable "SHARED_SUBSCRIPTION_ID" {
+  type        = string
+  default     = "f37d6d06-4bc8-4146-add7-fe2911b47e11"
+  description = "Subscription ID where shared organization-level resources reside (e.g., Container Registry)."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_IMAGE_TAG" {
+  type        = string
+  default     = "latest"
+  description = "Docker image tag for the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_CPU" {
+  type        = number
+  default     = 1.0
+  description = "CPU cores allocated to the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_MEMORY" {
+  type        = string
+  default     = "2Gi"
+  description = "Memory allocated to the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_MIN_REPLICAS" {
+  type        = number
+  default     = 0
+  description = "Minimum replica count for the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_MAX_REPLICAS" {
+  type        = number
+  default     = 1
+  description = "Maximum replica count for the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT" {
+  type        = number
+  default     = 5
+  description = "Message threshold for the match prediction container ACA Service Bus custom scale rule. Override via TF_VAR_MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT."
+}
+
+# --- External SQL variables (for retargeting function app connection strings) ---
+
+variable "USE_EXTERNAL_SQL" {
+  description = "When true, function app connection strings target an external SQL server instead of the Terraform-managed one."
+  type        = bool
+  default     = false
+}
+
+variable "EXTERNAL_SQL_SERVER_NAME" {
+  description = "Short name of the external Azure SQL server (without .database.windows.net suffix). Consumed via TF_VAR_EXTERNAL_SQL_SERVER_NAME."
+  type        = string
+  default     = ""
+}
+
+variable "EXTERNAL_SQL_DB_SHARED" {
+  description = "Name of the external shared (atlas) database. Consumed via TF_VAR_EXTERNAL_SQL_DB_SHARED."
+  type        = string
+  default     = ""
+}
+
+variable "EXTERNAL_SQL_DB_MATCHING_A" {
+  description = "Name of the external matching-a database. Consumed via TF_VAR_EXTERNAL_SQL_DB_MATCHING_A."
+  type        = string
+  default     = ""
+}
+
+variable "EXTERNAL_SQL_DB_MATCHING_B" {
+  description = "Name of the external matching-b database. Consumed via TF_VAR_EXTERNAL_SQL_DB_MATCHING_B."
+  type        = string
+  default     = ""
+}
+
+variable "EXTERNAL_SQL_SERVER_ADMIN_LOGIN" {
+  description = "Admin login for the external SQL server. Consumed via TF_VAR_EXTERNAL_SQL_SERVER_ADMIN_LOGIN."
+  type        = string
+  default     = ""
 }

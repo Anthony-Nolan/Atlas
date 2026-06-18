@@ -66,20 +66,20 @@ locals {
     "MessagingServiceBus:SendRetryCount"                 = var.SERVICE_BUS_SEND_RETRY_COUNT
     "MessagingServiceBus:SendRetryCooldownSeconds"       = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "NotificationsServiceBus:ConnectionString"           = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
-    "NotificationsServiceBus:AlertsTopic"                = var.servicebus_topics.alerts.name
-    "NotificationsServiceBus:NotificationsTopic"         = var.servicebus_topics.notifications.name
-    "NotificationsServiceBus:SendRetryCount"             = var.SERVICE_BUS_SEND_RETRY_COUNT
-    "NotificationsServiceBus:SendRetryCooldownSeconds"   = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+    "NotificationsServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:AlertsTopic"              = var.servicebus_topics.alerts.name
+    "NotificationsServiceBus:NotificationsTopic"       = var.servicebus_topics.notifications.name
+    "NotificationsServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "NotificationsServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "SearchTrackingServiceBus:ConnectionString"          = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
-    "SearchTrackingServiceBus:SearchTrackingTopic"       = var.servicebus_topics.search_tracking.name
-    "SearchTrackingServiceBus:SendRetryCount"            = var.SERVICE_BUS_SEND_RETRY_COUNT
-    "SearchTrackingServiceBus:SendRetryCooldownSeconds"  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+    "SearchTrackingServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "SearchTrackingServiceBus:SearchTrackingTopic"      = var.servicebus_topics.search_tracking.name
+    "SearchTrackingServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "SearchTrackingServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
     "Wmda:WmdaFileUri" = var.WMDA_FILE_URL
 
-    "WEBSITE_RUN_FROM_PACKAGE"                           = var.WEBSITE_RUN_FROM_PACKAGE
+    "WEBSITE_RUN_FROM_PACKAGE" = var.WEBSITE_RUN_FROM_PACKAGE
 
     "WEBSITE_PROACTIVE_AUTOHEAL_ENABLED" = false
   }
@@ -147,7 +147,14 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_function" {
   connection_string {
     name  = "DonorSql"
     type  = "SQLAzure"
-    value = "Server=tcp:${var.sql_server.fully_qualified_domain_name},1433;Initial Catalog=${var.donor_import_sql_database.name};Persist Security Info=False;User ID=${var.DONOR_IMPORT_DATABASE_USERNAME};Password=${var.DONOR_IMPORT_DATABASE_PASSWORD};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
+    value = local.matching_donor_database_connection_string
+  }
+
+  lifecycle {
+    ignore_changes = [
+      site_config[0].cors,
+      tags["hidden-link: /app-insights-resource-id"],
+    ]
   }
 }
 

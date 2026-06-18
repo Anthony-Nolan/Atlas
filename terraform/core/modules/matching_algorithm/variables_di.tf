@@ -11,6 +11,7 @@ variable "azure_app_configuration" {
 
 variable "azure_storage" {
   type = object({
+    id                        = string
     name                      = string
     primary_connection_string = string
   })
