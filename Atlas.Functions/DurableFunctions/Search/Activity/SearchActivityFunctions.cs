@@ -215,6 +215,13 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                     resultSet.BlobStorageContainerName)
             );
 
+            if (resultSet.Results == null && string.IsNullOrEmpty(matchingResultsNotification.BatchFolderName))
+            {
+                throw new InvalidOperationException(
+                    $"Search {resultSet.SearchRequestId}: ProcessBatchedSearchResults returned null " +
+                    "but BatchFolderName is not set — consumers cannot re-hydrate results.");
+            }
+
             await searchResultsBlobUploader.UploadResults(resultSet, resultSet.BlobStorageContainerName, resultSet.ResultsFileName);
             await matchPredictionSearchTrackingDispatcher.ProcessPersistingResultsEnded(trackingSearchIdentifier, originalSearchIdentifier);
             await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated, matchingResultsNotification.BatchFolderName);
@@ -280,7 +287,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             string batchFolder,
             string blobStorageContainerName)
         {
-            var allSearchResults = new List<SearchResult>();
+            if (batchFolder == null)
+            {
+                return Enumerable.Empty<SearchResult>();
+            }
+
             var batchNumber = 0;
 
             await foreach (var matchingResults in matchingResultsDownloader.DownloadResults(isRepeatSearch, batchFolder))
@@ -291,7 +302,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 await searchResultsBlobUploader.UploadResults(currentSearchResults, blobStorageContainerName, $"{batchFolder}/{++batchNumber}.json");
             }
 
-            return allSearchResults;
+            return null;
         }
 
         private async Task<IEnumerable<SearchResult>> ProcessSearchResults(string searchRequestId, IEnumerable<MatchingAlgorithmResult> matchingResults, IReadOnlyDictionary<int, string> matchPredictionResultLocations) =>

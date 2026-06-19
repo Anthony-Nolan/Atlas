@@ -436,7 +436,7 @@ variable "REPEAT_SEARCH_MATCHING_MAX_SCALE_OUT" {
 
 variable "RESULTS_BATCH_SIZE" {
   type        = number
-  default     = 2000
+  default     = 10000
   description = "Batch size (number of results written per file) for saving search/matching results"
 }
 
