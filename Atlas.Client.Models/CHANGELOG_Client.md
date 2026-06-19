@@ -15,8 +15,8 @@ This package contains all client models utilised by the Atlas Public API to requ
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-### 3.2.1
-* Removed option for `BatchedResult` from `ResultSet` model
+### 4.0.0
+* BREAKING CHANGE: Removed option for `BatchedResult` from `ResultSet` model
 
 ### 3.0.0
 * Updated .NET version from 6.0 to 8.0
