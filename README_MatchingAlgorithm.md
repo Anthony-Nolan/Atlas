@@ -270,7 +270,7 @@ These tests are primarily for the benefit of non-developers, intended to confirm
   - All test implementations should be via HTTP requests to the in-memory service.
   - **SETUP:** As these tests spin up a full version of the application, local user secrets must be set up in the validation test project
 
-- Tests are written in the Gherkin language, using the library `SpecFlow`
+- Tests are written in the Gherkin language, using the library `Reqnroll`
   - This allows the test suite to more more easily readable/reviewable/editable by non technical members of the Search and BioInformatics teams
 
 See [The Validation Test README](Atlas.MatchingAlgorithm.Test.Validation/ValidationTests/Features/README_MatchingValidationTests.md) for a more detailed, non-technical overview

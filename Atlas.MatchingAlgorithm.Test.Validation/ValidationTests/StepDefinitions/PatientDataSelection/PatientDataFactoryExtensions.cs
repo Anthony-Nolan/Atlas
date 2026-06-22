@@ -8,7 +8,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers;
-using TechTalk.SpecFlow;
+using Reqnroll;
 using static EnumStringValues.EnumExtensions;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection
