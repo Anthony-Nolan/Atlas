@@ -1,7 +1,7 @@
 ﻿using Atlas.Debug.Client.Models.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Settings.Azure;
-using Azure.Monitor.Query;
-using Azure.Monitor.Query.Models;
+using Azure.Monitor.Query.Logs;
+using Azure.Monitor.Query.Logs.Models;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
@@ -54,7 +54,7 @@ public class HlaExpansionFailuresService : IHlaExpansionFailuresService
         var response = await logsQueryClient.QueryWorkspaceAsync(
             azureMonitoringSettings.WorkspaceId, 
             HlaExpansionFailuresQuery, 
-            new QueryTimeRange(TimeSpan.FromDays(daysToQuery)));
+            new LogsQueryTimeRange(TimeSpan.FromDays(daysToQuery)));
         var result = response.Value;
 
         return result.Table.Rows.Select(MapHlaExpansionFailureFailure);
