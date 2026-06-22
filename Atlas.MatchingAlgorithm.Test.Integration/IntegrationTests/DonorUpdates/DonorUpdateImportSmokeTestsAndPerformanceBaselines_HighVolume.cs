@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -11,6 +12,7 @@ using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using CsvHelper;
+using CsvHelper.Configuration;
 using FluentAssertions;
 using MoreLinq.Extensions;
 using NUnit.Framework;
@@ -28,13 +30,16 @@ partial class DonorUpdateImportSmokeTestsAndPerformanceBaselines
         var donorTestFilePath = $"{GetType().Namespace}.{fileName}";
         await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFilePath))
         {
-            using (var reader = new StreamReader(stream))
-            using (var csv = new CsvReader(reader))
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
-                csv.Configuration.Delimiter = "\t";
-                csv.Configuration.HeaderValidated = null;
-                csv.Configuration.MissingFieldFound = null;
-                csv.Configuration.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("NULL");
+                Delimiter = "\t",
+                HeaderValidated = null,
+                MissingFieldFound = null,
+            };
+            using (var reader = new StreamReader(stream))
+            using (var csv = new CsvReader(reader, config))
+            {
+                csv.Context.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("NULL");
                 return csv.GetRecords<Donor>().ToList();
             }
         }

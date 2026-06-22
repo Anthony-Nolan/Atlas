@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -8,6 +9,7 @@ using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using CsvHelper;
+using CsvHelper.Configuration;
 using LazyCache;
 
 namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories;
@@ -80,16 +82,19 @@ public class FileBackedMacDictionaryRepository : IMacRepository
         // * Run the Manual Import endpoint, to populate your temporary table with the records you care about.
         // * Using AzureStorageExplorer navigate to your temp table and export it to CSV.
 
+        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            HeaderValidated = null, // Don't worry about the columns being a perfect match.
+            MissingFieldFound = null, // Don't worry about the columns being a perfect match.
+            AllowComments = true,
+            Comment = '#',
+        };
+
         var assembly = Assembly.GetExecutingAssembly();
         using (var stream = assembly.GetManifestResourceStream($"{GetType().Namespace}.LargeMacDictionary.csv"))
         using (var reader = new StreamReader(stream))
-        using (var csv = new CsvReader(reader))
+        using (var csv = new CsvReader(reader, config))
         {
-            csv.Configuration.HeaderValidated = null; // Don't worry about the columns being a perfect match.
-            csv.Configuration.MissingFieldFound = null; // Don't worry about the columns being a perfect match.
-            csv.Configuration.AllowComments = true; 
-            csv.Configuration.Comment = '#';
-
             return csv.GetRecords<MacEntity>().ToList();
         }
     }

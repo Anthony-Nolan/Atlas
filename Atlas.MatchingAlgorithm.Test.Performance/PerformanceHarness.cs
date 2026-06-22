@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -91,7 +92,7 @@ internal class Program
         using (var fileStream = new FileStream(outputFileName, FileMode.Append, FileAccess.Write))
         using (TextWriter writer = new StreamWriter(fileStream))
         {
-            var csv = new CsvWriter(writer);
+            var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
             csv.WriteRecords(results);
         }
     }

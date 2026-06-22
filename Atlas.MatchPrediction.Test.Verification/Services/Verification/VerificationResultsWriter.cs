@@ -7,6 +7,7 @@ using CsvHelper;
 using MoreLinq.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -89,7 +90,7 @@ internal class VerificationResultsWriter : IVerificationResultsWriter
         var filePath = $"{writeDirectory}\\VerId-{runId}" + $"_Prediction-{result.Request.PredictionName}.csv";
 
         using var writer = new StreamWriter(filePath);
-        using var csv = new CsvWriter(writer);
+        using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
         csv.WriteRecords(result.ActualVersusExpectedResults.OrderBy(r => r.Probability));
 
         System.Diagnostics.Debug.WriteLine($"AvE results written for {result.Request}.");
@@ -100,7 +101,7 @@ internal class VerificationResultsWriter : IVerificationResultsWriter
         var filePath = $"{writeDirectory}\\VerId-{runId}-metrics.csv";
 
         using var writer = new StreamWriter(filePath);
-        using var csv = new CsvWriter(writer);
+        using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
         csv.WriteRecords(results.Select(r => new
         {
             RunId = r.Request.VerificationRunId,

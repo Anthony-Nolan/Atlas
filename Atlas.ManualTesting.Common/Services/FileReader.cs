@@ -1,4 +1,6 @@
-﻿using CsvHelper;
+﻿using System.Globalization;
+using CsvHelper;
+using CsvHelper.Configuration;
 
 namespace Atlas.ManualTesting.Common.Services;
 
@@ -17,15 +19,19 @@ public class FileReader<T> : IFileReader<T>
     {
         FileChecks(filePath);
 
+        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            Delimiter = delimiter,
+            HasHeaderRecord = hasHeaderRecord,
+            HeaderValidated = null,
+            MissingFieldFound = null,
+        };
+
         await using var stream = File.OpenRead(filePath);
         using var reader = new StreamReader(stream);
-        using var csv = new CsvReader(reader);
+        using var csv = new CsvReader(reader, config);
 
-        csv.Configuration.Delimiter = delimiter;
-        csv.Configuration.HasHeaderRecord = hasHeaderRecord;
-        csv.Configuration.HeaderValidated = null;
-        csv.Configuration.MissingFieldFound = null;
-        csv.Configuration.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("");
+        csv.Context.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("");
 
         return csv.GetRecords<T>().ToList();
     }
@@ -34,14 +40,18 @@ public class FileReader<T> : IFileReader<T>
     {
         FileChecks(filePath);
 
+        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            Delimiter = delimiter,
+            HeaderValidated = null,
+            MissingFieldFound = null,
+        };
+
         await using var stream = File.OpenRead(filePath);
         using var reader = new StreamReader(stream);
-        using var csv = new CsvReader(reader);
+        using var csv = new CsvReader(reader, config);
 
-        csv.Configuration.Delimiter = delimiter;
-        csv.Configuration.HeaderValidated = null;
-        csv.Configuration.MissingFieldFound = null;
-        csv.Configuration.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("");
+        csv.Context.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("");
 
         await csv.ReadAsync();
         csv.ReadHeader();
