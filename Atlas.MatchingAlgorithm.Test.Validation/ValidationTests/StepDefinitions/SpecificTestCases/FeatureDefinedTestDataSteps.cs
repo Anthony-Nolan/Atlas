@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
-using TechTalk.SpecFlow;
-using TechTalk.SpecFlow.Assist;
+using Reqnroll;
+using Reqnroll.Assist;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.SpecificTestCases;
 
@@ -29,7 +29,7 @@ public class FeatureDefinedTestDataSteps
         SpecificTestDataSteps.GivenPatientHla(new PhenotypeInfo<string>(hla), scenarioContext);
     }
 
-    // Use a private class for serialisation from a SpecFlow DataTable - as individual positions are not settable in PhenotypeInfo 
+    // Use a private class for serialisation from a Reqnroll DataTable - as individual positions are not settable in PhenotypeInfo
     private class Hla
     {
         public string A1 { get; set; }

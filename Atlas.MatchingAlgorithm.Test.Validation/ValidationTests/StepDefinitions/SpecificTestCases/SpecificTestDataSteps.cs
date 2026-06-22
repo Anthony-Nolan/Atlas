@@ -8,7 +8,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.StaticDataSelection;
-using TechTalk.SpecFlow;
+using Reqnroll;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.SpecificTestCases;

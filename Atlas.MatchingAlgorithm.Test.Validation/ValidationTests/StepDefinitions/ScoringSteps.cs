@@ -8,7 +8,7 @@ using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 using FluentAssertions;
-using TechTalk.SpecFlow;
+using Reqnroll;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions;
 
@@ -217,8 +217,7 @@ public class ScoringSteps
             case "expressing-vs-null":
                 return new[] { MatchGrade.ExpressingVsNull };
             default:
-                scenarioContext.Pending();
-                return new List<MatchGrade>();
+                throw new PendingStepException();
         }
     }
 
@@ -237,8 +236,7 @@ public class ScoringSteps
             case "mismatch":
                 return new[] { MatchConfidence.Mismatch };
             default:
-                scenarioContext.Pending();
-                return new List<MatchConfidence>();
+                throw new PendingStepException();
         }
     }
 
@@ -258,8 +256,7 @@ public class ScoringSteps
             case "Permissive Mismatch":
                 return MatchCategory.PermissiveMismatch;
             default:
-                scenarioContext.Pending();
-                return null;
+                throw new PendingStepException();
         }
     }
 
@@ -274,8 +271,7 @@ public class ScoringSteps
             case "empty":
                 return null;
             default:
-                scenarioContext.Pending();
-                return null;
+                throw new PendingStepException();
         }
     }
 
@@ -316,8 +312,7 @@ public class ScoringSteps
                 expectedLoci.Add(Locus.Drb1);
                 break;
             default:
-                scenarioContext.Pending();
-                break;
+                throw new PendingStepException();
         }
 
         return expectedLoci;
@@ -334,8 +329,7 @@ public class ScoringSteps
             case Position2Text:
                 return new LocusPosition?[] { LocusPosition.Two };
             default:
-                scenarioContext.Pending();
-                return null;
+                throw new PendingStepException();
         }
     }
 
@@ -376,8 +370,7 @@ public class ScoringSteps
             case "a full potential match":
                 return results.Find(r => IsMatchConfidenceAtMatchedLoci(r, MatchConfidence.Potential));
             default:
-                scenarioContext.Pending();
-                return null;
+                throw new PendingStepException();
         }
     }
 
@@ -395,8 +388,7 @@ public class ScoringSteps
             case "Permissive Mismatch":
                 return LocusMatchCategory.PermissiveMismatch;
             default:
-                scenarioContext.Pending();
-                return null;
+                throw new PendingStepException();
         }
     }
 

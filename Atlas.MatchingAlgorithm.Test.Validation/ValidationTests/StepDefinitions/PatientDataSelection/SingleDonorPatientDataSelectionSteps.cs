@@ -4,7 +4,7 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers;
-using TechTalk.SpecFlow;
+using Reqnroll;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection;
 
@@ -56,8 +56,7 @@ public class SingleDonorPatientDataSelectionSteps
             case "DRB1":
                 throw new Exception("Loci A, B, DRB1 cannot be untyped");
             default:
-                scenarioContext.Pending();
-                break;
+                throw new PendingStepException();
         }
 
         scenarioContext.Set(patientDataFactory);
@@ -195,8 +194,7 @@ public class SingleDonorPatientDataSelectionSteps
                 patientDataFactory.SetMatchingDonorHomozygousAtLocus(Locus.Drb1);
                 break;
             default:
-                scenarioContext.Pending();
-                break;
+                throw new PendingStepException();
         }
 
         scenarioContext.Set(patientDataFactory);

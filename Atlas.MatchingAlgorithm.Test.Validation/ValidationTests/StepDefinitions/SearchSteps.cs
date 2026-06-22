@@ -13,7 +13,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelec
 using Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers;
 using EnumStringValues;
 using FluentAssertions;
-using TechTalk.SpecFlow;
+using Reqnroll;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions;
 
@@ -66,7 +66,7 @@ public class SearchSteps
         scenarioContext.Set(searchRequest.WithLociExcludedFromScoringAggregates(new List<Locus> {locus}));
     }
 
-    [When(@"I run a 6/6 search")]
+    [When(@"^I run a 6/6 search$")]
     public async Task WhenIRunASixOutOfSixSearch()
     {
         var patientDataProvider = scenarioContext.Get<IPatientDataProvider>();
@@ -84,7 +84,7 @@ public class SearchSteps
         scenarioContext.Set(await AlgorithmTestingService.Search(searchRequest));
     }
 
-    [When(@"I run a 4/6 search")]
+    [When(@"^I run a 4/6 search$")]
     public async Task WhenIRunAFourOutOfSixSearch()
     {
         var patientDataProvider = scenarioContext.Get<IPatientDataProvider>();
@@ -102,8 +102,8 @@ public class SearchSteps
         scenarioContext.Set(await AlgorithmTestingService.Search(searchRequest));
     }
 
-    [When(@"I run a 8/8 search")]
-    [When(@"I run an 8/8 search")]
+    [When(@"^I run a 8/8 search$")]
+    [When(@"^I run an 8/8 search$")]
     public async Task WhenIRunAnEightOutOfEightSearch()
     {
         var patientDataProvider = scenarioContext.Get<IPatientDataProvider>();
@@ -122,7 +122,7 @@ public class SearchSteps
         scenarioContext.Set(await AlgorithmTestingService.Search(searchRequest));
     }
 
-    [When(@"I run a 4/8 search")]
+    [When(@"^I run a 4/8 search$")]
     public async Task WhenIRunAFourOutOfEightSearch()
     {
         var patientDataProvider = scenarioContext.Get<IPatientDataProvider>();
@@ -141,7 +141,7 @@ public class SearchSteps
         scenarioContext.Set(await AlgorithmTestingService.Search(searchRequest));
     }
 
-    [When(@"I run a 10/10 search for each patient")]
+    [When(@"^I run a 10/10 search for each patient$")]
     public async Task WhenIRunATenOutOfTenSearchForEachPatient()
     {
         var selector = scenarioContext.Get<IMultiplePatientDataFactory>();
@@ -174,7 +174,7 @@ public class SearchSteps
         scenarioContext.Set(patientResults);
     }
 
-    [When(@"I run a 10/10 search")]
+    [When(@"^I run a 10/10 search$")]
     public async Task WhenIRunATenOutOfTenSearch()
     {
         var patientDataProvider = scenarioContext.Get<IPatientDataProvider>();
@@ -214,8 +214,8 @@ public class SearchSteps
         scenarioContext.Set(await AlgorithmTestingService.Search(searchRequest));
     }
 
-    [When(@"I run a 8/10 search")]
-    [When(@"I run an 8/10 search")]
+    [When(@"^I run a 8/10 search$")]
+    [When(@"^I run an 8/10 search$")]
     public async Task WhenIRunAnEightOutOfTenSearch()
     {
         var patientDataProvider = scenarioContext.Get<IPatientDataProvider>();
