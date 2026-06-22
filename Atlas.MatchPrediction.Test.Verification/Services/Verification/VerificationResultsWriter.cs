@@ -7,6 +7,7 @@ using CsvHelper;
 using MoreLinq.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -62,11 +63,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
         {
             var mismatchCounts = new[] { 0, 1, 2 };
             return mismatchCounts.Select(mc => new CompileResultsRequest
-            {
-                VerificationRunId = runId,
-                Locus = locus,
-                MismatchCount = mc
-            });
+                {
+                    VerificationRunId = runId,
+                    Locus = locus,
+                    MismatchCount = mc
+                }
+            );
         }
 
         private static void WriteResults(VerificationResultsRequest request, IReadOnlyCollection<VerificationResult> results)
@@ -89,7 +91,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
             var filePath = $"{writeDirectory}\\VerId-{runId}" + $"_Prediction-{result.Request.PredictionName}.csv";
 
             using var writer = new StreamWriter(filePath);
-            using var csv = new CsvWriter(writer);
+            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
             csv.WriteRecords(result.ActualVersusExpectedResults.OrderBy(r => r.Probability));
 
             System.Diagnostics.Debug.WriteLine($"AvE results written for {result.Request}.");
@@ -100,17 +102,19 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
             var filePath = $"{writeDirectory}\\VerId-{runId}-metrics.csv";
 
             using var writer = new StreamWriter(filePath);
-            using var csv = new CsvWriter(writer);
+            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
             csv.WriteRecords(results.Select(r => new
-            {
-                RunId = r.Request.VerificationRunId,
-                Locus = r.Request.LocusName,
-                MM = r.Request.MismatchCount,
-                r.TotalPdpCount,
-                WCBD = r.WeightedCityBlockDistance,
-                r.WeightedLinearRegression.Slope,
-                r.WeightedLinearRegression.Intercept
-            }));
+                    {
+                        RunId = r.Request.VerificationRunId,
+                        Locus = r.Request.LocusName,
+                        MM = r.Request.MismatchCount,
+                        r.TotalPdpCount,
+                        WCBD = r.WeightedCityBlockDistance,
+                        r.WeightedLinearRegression.Slope,
+                        r.WeightedLinearRegression.Intercept
+                    }
+                )
+            );
         }
     }
 }
