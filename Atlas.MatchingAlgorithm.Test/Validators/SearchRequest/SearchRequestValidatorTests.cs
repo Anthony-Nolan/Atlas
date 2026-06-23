@@ -2,7 +2,7 @@
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
-using FluentAssertions;
+using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using NUnit.Framework;
 
@@ -19,17 +19,19 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
             validator = new SearchRequestValidator();
         }
 
-        [Test]
-        public void Validator_WhenMatchCriteriaMissing_ShouldHaveValidationError()
-        {
-            validator.ShouldHaveValidationErrorFor(x => x.MatchCriteria, (MismatchCriteria) null);
-        }
+    [Test]
+    public void Validator_WhenMatchCriteriaMissing_ShouldHaveValidationError()
+    {
+        var request = new Atlas.Client.Models.Search.Requests.SearchRequest { MatchCriteria = null };
+        validator.TestValidate(request).ShouldHaveValidationErrorFor(x => x.MatchCriteria);
+    }
 
-        [Test]
-        public void Validator_WithInvalidSearchType_ShouldHaveValidationError()
-        {
-            validator.ShouldHaveValidationErrorFor(x => x.SearchDonorType, (Atlas.Client.Models.Search.DonorType) 999);
-        }
+    [Test]
+    public void Validator_WithInvalidSearchType_ShouldHaveValidationError()
+    {
+        var request = new Atlas.Client.Models.Search.Requests.SearchRequest { SearchDonorType = (Atlas.Client.Models.Search.DonorType) 999 };
+        validator.TestValidate(request).ShouldHaveValidationErrorFor(x => x.SearchDonorType);
+    }
 
         [TestCase(Locus.C)]
         [TestCase(Locus.Dqb1)]

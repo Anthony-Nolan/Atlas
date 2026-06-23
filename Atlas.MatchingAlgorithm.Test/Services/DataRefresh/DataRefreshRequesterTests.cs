@@ -13,7 +13,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Settings;
-using FluentAssertions;
+using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
 

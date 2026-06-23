@@ -1,12 +1,10 @@
-﻿using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+﻿using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders.ScoringInfoBuilders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
-using FluentAssertions;
-using NSubstitute;
+using AwesomeAssertions;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;

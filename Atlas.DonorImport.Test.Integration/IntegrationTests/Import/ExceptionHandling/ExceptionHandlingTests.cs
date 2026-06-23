@@ -12,7 +12,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;

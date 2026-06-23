@@ -7,7 +7,7 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers;
 using Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
-using FluentAssertions;
+using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
 

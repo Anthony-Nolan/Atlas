@@ -4,7 +4,7 @@ using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.Functions.Services.MatchCategories;
 using Atlas.Functions.Test.Builders;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 using LocusMatchCategories = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LocusInfo<Atlas.Client.Models.Search.Results.MatchPrediction.PredictiveMatchCategory?>;
 

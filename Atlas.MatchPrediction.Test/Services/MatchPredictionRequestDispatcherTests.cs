@@ -9,7 +9,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using AutoFixture.Dsl;
-using FluentAssertions;
+using AwesomeAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;

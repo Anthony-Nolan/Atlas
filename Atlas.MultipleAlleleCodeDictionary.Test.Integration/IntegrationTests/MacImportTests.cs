@@ -4,7 +4,7 @@ using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
 using Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;

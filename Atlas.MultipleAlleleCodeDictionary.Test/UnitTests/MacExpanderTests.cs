@@ -3,7 +3,7 @@ using Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders;
 using NUnit.Framework;
 using System.Linq;
 using Atlas.MultipleAlleleCodeDictionary.Services;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests;
 

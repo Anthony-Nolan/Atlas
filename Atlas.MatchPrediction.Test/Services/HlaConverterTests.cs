@@ -9,7 +9,7 @@ using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Services.HlaConversion;
 using AutoFixture.Dsl;
-using FluentAssertions;
+using AwesomeAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;

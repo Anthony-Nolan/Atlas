@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers
 {

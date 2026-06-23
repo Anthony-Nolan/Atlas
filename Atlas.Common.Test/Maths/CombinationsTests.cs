@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using Atlas.Common.Maths;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.Common.Test.Maths

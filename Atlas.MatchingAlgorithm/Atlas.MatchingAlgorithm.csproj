@@ -17,8 +17,8 @@
         <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.20.1" />
         <PackageReference Include="Azure.Monitor.Query.Logs" Version="1.0.0"/>
         <PackageReference Include="EnumStringValues" Version="4.0.2"/>
-        <PackageReference Include="FluentValidation" Version="8.4.0"/>
         <PackageReference Include="LazyCache" Version="2.4.0"/>
+        <PackageReference Include="FluentValidation" Version="12.1.1"/>
         <PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.4.6" />
         <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0"/>
 

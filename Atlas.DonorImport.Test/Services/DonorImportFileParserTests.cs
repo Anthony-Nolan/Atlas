@@ -5,7 +5,7 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using EnumStringValues;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.DonorImport.Test.Services;

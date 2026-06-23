@@ -9,7 +9,7 @@ using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
-using FluentAssertions;
+using AwesomeAssertions;
 using AutoFixture.Dsl;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Microsoft.Extensions.DependencyInjection;

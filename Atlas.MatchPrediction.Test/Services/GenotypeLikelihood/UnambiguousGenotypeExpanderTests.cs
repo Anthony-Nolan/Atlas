@@ -9,7 +9,7 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood

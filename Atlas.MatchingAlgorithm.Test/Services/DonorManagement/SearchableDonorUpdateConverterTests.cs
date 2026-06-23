@@ -4,7 +4,7 @@ using Atlas.Common.Public.Models.ServiceBus;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
-using FluentAssertions;
+using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
