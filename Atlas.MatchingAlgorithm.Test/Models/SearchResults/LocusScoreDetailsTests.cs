@@ -2,7 +2,7 @@ using System;
 using Atlas.Client.Models.Common.Results;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Models.SearchResults;

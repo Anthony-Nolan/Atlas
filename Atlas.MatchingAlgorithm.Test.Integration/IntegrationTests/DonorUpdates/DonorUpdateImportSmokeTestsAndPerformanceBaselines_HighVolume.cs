@@ -13,7 +13,7 @@ using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using CsvHelper;
 using CsvHelper.Configuration;
-using FluentAssertions;
+using AwesomeAssertions;
 using MoreLinq.Extensions;
 using NUnit.Framework;
 using Microsoft.Extensions.DependencyInjection;

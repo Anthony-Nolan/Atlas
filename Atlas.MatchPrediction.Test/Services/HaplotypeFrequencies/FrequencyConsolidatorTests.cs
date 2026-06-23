@@ -2,7 +2,7 @@ using System.Collections.Frozen;
 using System.Collections.Generic;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 using HaplotypeHla = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
 

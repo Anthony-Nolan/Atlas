@@ -1,6 +1,6 @@
 ﻿using Atlas.Common.ServiceBus;
 using Atlas.Common.ServiceBus.BatchReceiving;
-using FluentAssertions;
+using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using System.Threading.Tasks;

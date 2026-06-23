@@ -2,7 +2,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Models.Mapping;
-using FluentAssertions;
+using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
 

@@ -1,4 +1,5 @@
-﻿using Atlas.DonorImport.ExternalInterface.Models;
+﻿using Atlas.Common.Public.Models.ServiceBus;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
 using FluentValidation.TestHelper;
 using NUnit.Framework;
@@ -20,12 +21,14 @@ public class DonorUpdateMessageValidatorTests
     [TestCase(null)]
     public void Validator_WhenLockTokenIsMissing_ShouldHaveValidationError(string missingString)
     {
-        validator.ShouldHaveValidationErrorFor(x => x.LockToken, missingString);
+        var message = new DeserializedMessage<SearchableDonorUpdate> { LockToken = missingString };
+        validator.TestValidate(message).ShouldHaveValidationErrorFor(x => x.LockToken);
     }
 
     [Test]
     public void Validator_WhenDeserializedBodyIsNull_ShouldHaveValidationError()
     {
-        validator.ShouldHaveValidationErrorFor(x => x.DeserializedBody, (SearchableDonorUpdate)null);
+        var message = new DeserializedMessage<SearchableDonorUpdate> { DeserializedBody = null };
+        validator.TestValidate(message).ShouldHaveValidationErrorFor(x => x.DeserializedBody);
     }
 }

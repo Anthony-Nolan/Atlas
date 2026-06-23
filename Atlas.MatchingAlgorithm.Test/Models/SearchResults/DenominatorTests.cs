@@ -2,7 +2,7 @@
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
-using FluentAssertions;
+using AwesomeAssertions;
 using AutoFixture.Dsl;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using NUnit.Framework;

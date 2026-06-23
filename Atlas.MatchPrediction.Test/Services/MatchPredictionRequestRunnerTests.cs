@@ -10,7 +10,7 @@ using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using AutoFixture.Dsl;
-using FluentAssertions;
+using AwesomeAssertions;
 using FluentValidation;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;

@@ -1,6 +1,6 @@
 ﻿using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Test.SharedTestHelpers;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;

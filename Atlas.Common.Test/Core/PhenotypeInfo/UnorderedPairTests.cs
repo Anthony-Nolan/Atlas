@@ -1,5 +1,5 @@
 ﻿using Atlas.Common.GeneticData;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.Common.Test.Core.PhenotypeInfo;

@@ -6,7 +6,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
-using FluentAssertions;
+using AwesomeAssertions;
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;

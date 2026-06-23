@@ -5,7 +5,7 @@ using Atlas.Common.Test.SharedTestHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
-using FluentAssertions;
+using AwesomeAssertions;
 using LazyCache;
 using NUnit.Framework;
 

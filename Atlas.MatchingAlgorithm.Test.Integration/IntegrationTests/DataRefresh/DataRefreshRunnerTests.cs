@@ -8,7 +8,7 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 using EnumStringValues;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 

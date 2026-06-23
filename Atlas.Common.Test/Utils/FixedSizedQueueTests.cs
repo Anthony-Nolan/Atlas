@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using Atlas.Common.Utils;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.Common.Test.Utils;

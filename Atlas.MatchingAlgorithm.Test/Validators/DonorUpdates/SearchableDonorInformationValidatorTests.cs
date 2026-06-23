@@ -1,4 +1,5 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models.Donors;
+﻿using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
 using FluentValidation.TestHelper;
 using NUnit.Framework;
@@ -20,6 +21,7 @@ public class SearchableDonorInformationValidatorTests
     [TestCase(DonorType.Cord)]
     public void Validator_WhenDonorTypeIsValid_ShouldNotHaveValidationError(DonorType donorType)
     {
-        validator.ShouldNotHaveValidationErrorFor(x => x.DonorType, donorType);
+        var info = new SearchableDonorInformation { DonorType = donorType };
+        validator.TestValidate(info).ShouldNotHaveValidationErrorFor(x => x.DonorType);
     }
 }

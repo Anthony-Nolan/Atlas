@@ -6,7 +6,7 @@ using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood;

@@ -1,5 +1,5 @@
 using Atlas.DonorImport.Data.Models;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.DonorImport.Test.Models.Database;

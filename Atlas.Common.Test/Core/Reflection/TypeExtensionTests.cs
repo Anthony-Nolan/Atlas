@@ -6,7 +6,7 @@ using System.Text;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils.Extensions;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 using TypeExtensions = Atlas.Common.Utils.Extensions.TypeExtensions;
 

@@ -4,7 +4,7 @@ using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.DonorImport.Validators;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.DonorImport.Test.Validators;

@@ -4,7 +4,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
-using FluentAssertions;
+using AwesomeAssertions;
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;

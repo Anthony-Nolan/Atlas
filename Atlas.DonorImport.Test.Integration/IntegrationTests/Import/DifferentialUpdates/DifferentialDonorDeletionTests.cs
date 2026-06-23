@@ -11,7 +11,7 @@ using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using AutoFixture.Dsl;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Donor = Atlas.DonorImport.Data.Models.Donor;

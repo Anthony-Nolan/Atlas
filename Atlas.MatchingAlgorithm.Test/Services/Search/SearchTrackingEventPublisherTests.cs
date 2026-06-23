@@ -7,8 +7,8 @@ using NUnit.Framework;
 using System.Threading.Tasks;
 using Atlas.SearchTracking.Common.Models;
 using Atlas.SearchTracking.Common.Enums;
-using FluentAssertions;
-using FluentAssertions.Extensions;
+using AwesomeAssertions;
+using AwesomeAssertions.Extensions;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search;
 

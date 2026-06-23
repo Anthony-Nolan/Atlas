@@ -4,7 +4,7 @@ using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using EnumStringValues;
-using FluentAssertions;
+using AwesomeAssertions;
 using MoreLinq.Extensions;
 using NUnit.Framework;
 

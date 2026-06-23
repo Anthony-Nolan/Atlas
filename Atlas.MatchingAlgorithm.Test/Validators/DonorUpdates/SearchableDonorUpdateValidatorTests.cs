@@ -1,7 +1,7 @@
 ﻿using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
-using FluentAssertions;
+using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using NUnit.Framework;
 
@@ -22,7 +22,8 @@ public class SearchableDonorUpdateValidatorTests
     [Test]
     public void Validator_WhenDonorIdCanBeParsedToInteger_ShouldNotHaveValidationError()
     {
-        validator.ShouldNotHaveValidationErrorFor(x => x.DonorId, ValidDonorId);
+        var update = new SearchableDonorUpdate { DonorId = ValidDonorId };
+        validator.TestValidate(update).ShouldNotHaveValidationErrorFor(x => x.DonorId);
     }
 
     [Test]

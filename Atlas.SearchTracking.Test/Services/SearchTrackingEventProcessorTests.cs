@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using NSubstitute;
 using NUnit.Framework;
 using Atlas.SearchTracking.Common.Enums;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace Atlas.SearchTracking.Test.Services;
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda;

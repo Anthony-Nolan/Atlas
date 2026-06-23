@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Atlas.Common.Utils.Extensions;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.Common.Test.Utils;

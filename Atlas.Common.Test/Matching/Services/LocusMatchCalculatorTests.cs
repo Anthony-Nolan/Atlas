@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.Common.Test.Matching.Services;

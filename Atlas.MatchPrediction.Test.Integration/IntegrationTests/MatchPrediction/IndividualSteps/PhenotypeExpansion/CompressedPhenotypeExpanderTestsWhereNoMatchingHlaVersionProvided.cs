@@ -4,7 +4,7 @@ using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 using static Atlas.MatchPrediction.Test.Integration.Resources.Alleles.Alleles;
 
