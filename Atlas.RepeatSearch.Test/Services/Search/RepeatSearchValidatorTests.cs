@@ -5,7 +5,7 @@ using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 using Atlas.RepeatSearch.Data.Models;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Services.Search;
-using FluentAssertions;
+using AwesomeAssertions;
 using FluentValidation;
 using NSubstitute;
 using NUnit.Framework;

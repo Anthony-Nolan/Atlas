@@ -1,5 +1,5 @@
 using Atlas.Client.Models.Search.Results.MatchPrediction;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace Atlas.MatchPrediction.Test.Integration.TestHelpers
 {

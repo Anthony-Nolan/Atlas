@@ -1,5 +1,5 @@
 using System;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 using static Atlas.Common.Maths.FactorialMaths;
 

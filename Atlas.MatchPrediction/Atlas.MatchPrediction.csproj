@@ -6,7 +6,7 @@
 
     <ItemGroup>
         <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.20.1" />
-        <PackageReference Include="FluentValidation" Version="8.4.0" />
+        <PackageReference Include="FluentValidation" Version="12.1.1" />
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.9" />
         <PackageReference Include="morelinq" Version="4.4.0" />
         <ProjectReference Include="..\Atlas.Client.Models\Atlas.Client.Models.csproj" />

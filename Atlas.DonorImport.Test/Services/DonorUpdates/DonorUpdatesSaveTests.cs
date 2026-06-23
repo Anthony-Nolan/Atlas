@@ -6,7 +6,7 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
-using FluentAssertions;
+using AwesomeAssertions;
 using Newtonsoft.Json;
 using NSubstitute;
 using NUnit.Framework;

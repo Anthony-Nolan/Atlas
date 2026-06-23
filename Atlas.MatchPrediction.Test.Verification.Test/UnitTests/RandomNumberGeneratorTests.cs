@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests

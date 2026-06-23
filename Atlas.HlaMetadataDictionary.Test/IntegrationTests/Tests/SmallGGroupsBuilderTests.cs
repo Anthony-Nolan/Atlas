@@ -7,7 +7,7 @@ using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators;
 using Atlas.HlaMetadataDictionary.Test.UnitTests;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests

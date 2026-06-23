@@ -5,7 +5,7 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
-using FluentAssertions;
+using AwesomeAssertions;
 using FluentValidation;
 using NUnit.Framework;
 

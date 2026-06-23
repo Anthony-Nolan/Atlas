@@ -1,6 +1,6 @@
 ﻿using System;
 using Atlas.DonorImport.ExternalInterface.Models;
-using FluentAssertions;
+using AwesomeAssertions;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
