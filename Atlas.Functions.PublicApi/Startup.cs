@@ -7,7 +7,9 @@ using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.RepeatSearch.ExternalInterface.DependencyInjection;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.Functions.PublicApi
@@ -23,11 +25,13 @@ namespace Atlas.Functions.PublicApi
             services.RegisterMatchingAlgorithmOrchestration(
                 OptionsReaderFor<MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings>(),
                 OptionsReaderFor<SearchTrackingServiceBusSettings>(),
-                OptionsReaderFor<ApplicationInsightsSettings>());
+                OptionsReaderFor<ApplicationInsightsSettings>()
+            );
 
             services.RegisterRepeatSearchOrchestration(OptionsReaderFor<RepeatSearch.Settings.ServiceBus.MessagingServiceBusSettings>(),
                 OptionsReaderFor<SearchTrackingServiceBusSettings>(),
-                OptionsReaderFor<ApplicationInsightsSettings>());
+                OptionsReaderFor<ApplicationInsightsSettings>()
+            );
 
             services.RegisterMatchPredictionValidator();
 
@@ -55,7 +59,11 @@ namespace Atlas.Functions.PublicApi
             // Search Tracking
             services.RegisterAsOptions<SearchTrackingServiceBusSettings>("SearchTracking:SearchTrackingServiceBus");
 
-            services.AddSingleton(sp => AutoMapperConfig.CreateMapper());
+            services.AddSingleton(sp => AutoMapperConfig.CreateMapper(
+                    sp.GetService<IConfiguration>()?["AutoMapper:LicenseKey"],
+                    sp.GetService<ILoggerFactory>()
+                )
+            );
         }
     }
 }
