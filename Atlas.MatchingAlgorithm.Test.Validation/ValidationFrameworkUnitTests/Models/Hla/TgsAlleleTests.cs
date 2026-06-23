@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.Models.Hla

@@ -16,7 +16,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
-using FluentAssertions;
+using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using static Atlas.MatchingAlgorithm.Data.Persistent.Models.TransientDatabase;

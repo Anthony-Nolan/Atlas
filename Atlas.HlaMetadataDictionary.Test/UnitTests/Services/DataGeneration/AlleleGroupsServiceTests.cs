@@ -5,7 +5,7 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
-using FluentAssertions;
+using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;

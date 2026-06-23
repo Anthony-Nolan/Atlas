@@ -4,7 +4,7 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood

@@ -5,7 +5,7 @@ using Atlas.ManualTesting.Services.HaplotypeFrequencySet;
 using Atlas.ManualTesting.Test.TestHelpers;
 using Atlas.MatchPrediction.Models.FileSchema;
 using AutoFixture.Dsl;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.ManualTesting.Test.Tests;

@@ -7,7 +7,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetad
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders.ScoringInfoBuilders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring

@@ -15,7 +15,7 @@ using Atlas.DonorImport.Services.DonorChecker;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
-using FluentAssertions;
+using AwesomeAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;

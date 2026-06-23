@@ -7,7 +7,7 @@ using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using AutoFixture;
-using FluentAssertions;
+using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;

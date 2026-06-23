@@ -4,7 +4,7 @@ using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation

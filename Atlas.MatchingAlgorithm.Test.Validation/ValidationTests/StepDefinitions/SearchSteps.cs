@@ -12,7 +12,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers;
 using EnumStringValues;
-using FluentAssertions;
+using AwesomeAssertions;
 using Reqnroll;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions;

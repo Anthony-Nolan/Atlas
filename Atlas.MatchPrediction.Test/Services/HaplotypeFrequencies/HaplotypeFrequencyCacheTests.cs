@@ -11,7 +11,7 @@ using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using AutoFixture;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
