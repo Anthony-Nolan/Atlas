@@ -2,6 +2,8 @@ locals {
   donor_func_app_settings = {
     "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
+    "AutoMapper:LicenseKey" = var.AUTOMAPPER_LICENSE_KEY
+
     "AzureStorage:ConnectionString" = var.azure_storage.primary_connection_string
 
     "HlaMetadataDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string,

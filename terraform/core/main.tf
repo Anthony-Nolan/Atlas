@@ -137,6 +137,7 @@ module "matching_algorithm" {
 
   // Release variables
   APPLICATION_INSIGHTS_LOG_LEVEL                           = var.APPLICATION_INSIGHTS_LOG_LEVEL
+  AUTOMAPPER_LICENSE_KEY                                   = var.AUTOMAPPER_LICENSE_KEY
   AZURE_CLIENT_ID                                          = var.AZURE_CLIENT_ID
   AZURE_CLIENT_SECRET                                      = var.AZURE_CLIENT_SECRET
   AZURE_OAUTH_BASEURL                                      = var.AZURE_OAUTH_BASEURL
@@ -337,6 +338,7 @@ module "search_tracking" {
 
   // Release variables
   APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
+  AUTOMAPPER_LICENSE_KEY         = var.AUTOMAPPER_LICENSE_KEY
   DATABASE_PASSWORD              = var.SEARCH_TRACKING_DATABASE_PASSWORD
   DATABASE_USERNAME              = var.SEARCH_TRACKING_DATABASE_USERNAME
   IP_RESTRICTION_SETTINGS        = var.IP_RESTRICTION_SETTINGS

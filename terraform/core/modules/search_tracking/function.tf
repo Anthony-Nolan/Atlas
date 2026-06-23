@@ -18,6 +18,8 @@ resource "azurerm_windows_function_app" "atlas_search_tracking_function" {
   app_settings = {
     "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
+    "AutoMapper:LicenseKey" = var.AUTOMAPPER_LICENSE_KEY
+
     "AzureFunctionsJobHost__extensions__serviceBus__messageHandlerOptions__maxConcurrentCalls" = 3
 
     "AzureAppConfiguration:ConnectionString" = var.azure_app_configuration.primary_read_key[0].connection_string

@@ -4,6 +4,11 @@ variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
   type = string
 }
 
+variable "AUTOMAPPER_LICENSE_KEY" {
+  type      = string
+  sensitive = true
+}
+
 variable "AZURE_CLIENT_ID" {
   type = string
 }
