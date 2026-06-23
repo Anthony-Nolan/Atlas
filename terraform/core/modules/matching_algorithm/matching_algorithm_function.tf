@@ -2,6 +2,8 @@ locals {
   matching_func_app_settings = {
     "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
+    "AutoMapper:LicenseKey" = var.AUTOMAPPER_LICENSE_KEY
+
     "AzureFunctionsJobHost__extensions__serviceBus__messageHandlerOptions__maxConcurrentCalls" = var.MAX_CONCURRENT_SERVICEBUS_FUNCTIONS
 
     "AzureManagement:Authentication:ClientId"     = var.AZURE_CLIENT_ID

@@ -1,8 +1,10 @@
 using Atlas.Common.Utils.Extensions;
 using Azure.Core.Serialization;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using Atlas.SearchTracking.Data.Context;
@@ -41,7 +43,9 @@ var host = new HostBuilder()
         services.AddScoped<IMatchPredictionRepository, MatchPredictionRepository>();
         services.AddScoped<ISearchRequestMatchingAlgorithmAttemptsRepository, SearchRequestMatchingAlgorithmAttemptsRepository>();
         services.RegisterAsOptions<SearchTrackingServiceBusSettings>("MessagingServiceBus");
-        services.AddSingleton(sp => AutoMapperConfig.CreateMapper());
+        services.AddSingleton(sp => AutoMapperConfig.CreateMapper(
+            sp.GetService<IConfiguration>()?["AutoMapper:LicenseKey"],
+            sp.GetService<ILoggerFactory>()));
     })
     .Build();
 
