@@ -206,6 +206,8 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
     "NotificationsServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
     "NotificationsServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
+    "AtlasFunction:Search:DefaultParallelMatchPrediction" = var.DEFAULT_PARALLEL_MATCH_PREDICTION
+
     "WEBSITE_RUN_FROM_PACKAGE" = var.WEBSITE_RUN_FROM_PACKAGE
   }
 

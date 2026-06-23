@@ -515,6 +515,12 @@ variable "SHOULD_BATCH_RESULTS" {
   description = "Indicates whether final search/repeat search results should be batched or not"
 }
 
+variable "DEFAULT_PARALLEL_MATCH_PREDICTION" {
+  type        = bool
+  default     = false
+  description = "Default value for ParallelMatchPrediction on incoming search requests. When true, uses the parallel ACA Worker path; when false, uses the legacy sequential Durable orchestrator path."
+}
+
 variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE" {
   type        = number
   default     = 10000
