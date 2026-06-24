@@ -1,4 +1,4 @@
-﻿/* ******************************
+/* ******************************
    **  Copyright Softwire 2020 ** 
    ****************************** */
 // This was taken from a Softwire shareable Repo. At soem point it may get nugetified, in which case we might want

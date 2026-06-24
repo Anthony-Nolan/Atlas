@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Caching;
+using Atlas.Common.Caching;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;

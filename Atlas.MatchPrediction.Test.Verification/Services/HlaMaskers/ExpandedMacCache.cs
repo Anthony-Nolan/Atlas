@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Caching;
+using Atlas.Common.Caching;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using LazyCache;
 using System.Collections.Generic;

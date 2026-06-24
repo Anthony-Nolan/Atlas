@@ -1,4 +1,4 @@
-﻿using AzureFunctions.Extensions.Swashbuckle;
+using AzureFunctions.Extensions.Swashbuckle;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 

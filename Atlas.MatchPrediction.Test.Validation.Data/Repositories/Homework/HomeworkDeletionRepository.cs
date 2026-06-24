@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Microsoft.Data.SqlClient;
 
 namespace Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;

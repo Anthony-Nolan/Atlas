@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System;
 
 namespace Atlas.Debug.Client.Models.SearchTracking;

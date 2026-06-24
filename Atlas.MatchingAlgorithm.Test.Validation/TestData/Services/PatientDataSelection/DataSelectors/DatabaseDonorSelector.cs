@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 

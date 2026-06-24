@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Public.Models.MatchPrediction;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Composer = AutoFixture.Dsl.IPostprocessComposer<Atlas.Client.Models.Search.Results.MatchPrediction.MatchProbabilities>;
 

@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Models;

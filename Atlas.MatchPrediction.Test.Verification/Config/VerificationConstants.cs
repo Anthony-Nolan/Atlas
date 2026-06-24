@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search;
+using Atlas.Client.Models.Search;
 
 namespace Atlas.MatchPrediction.Test.Verification.Config;
 

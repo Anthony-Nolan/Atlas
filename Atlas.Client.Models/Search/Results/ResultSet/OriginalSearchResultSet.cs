@@ -1,4 +1,4 @@
-﻿namespace Atlas.Client.Models.Search.Results.ResultSet;
+namespace Atlas.Client.Models.Search.Results.ResultSet;
 
 public class OriginalSearchResultSet : SearchResultSet
 {

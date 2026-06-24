@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Test.Validation.Data.Models;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories;

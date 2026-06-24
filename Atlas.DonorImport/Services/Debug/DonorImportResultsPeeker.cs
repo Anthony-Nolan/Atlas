@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Debugging;
+using Atlas.Common.Debugging;
 using Atlas.Common.ServiceBus;
 using Atlas.Debug.Client.Models.ServiceBus;
 using Atlas.DonorImport.FileSchema.Models;

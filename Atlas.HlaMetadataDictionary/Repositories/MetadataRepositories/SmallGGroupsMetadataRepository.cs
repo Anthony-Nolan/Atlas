@@ -1,4 +1,4 @@
-﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 

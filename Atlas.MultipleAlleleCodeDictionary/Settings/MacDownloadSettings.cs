@@ -1,4 +1,4 @@
-﻿namespace Atlas.MultipleAlleleCodeDictionary.Settings;
+namespace Atlas.MultipleAlleleCodeDictionary.Settings;
 
 /// <summary>
 /// Settings needed for download of MACs from source.

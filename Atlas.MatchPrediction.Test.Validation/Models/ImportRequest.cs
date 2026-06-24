@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchPrediction.Test.Validation.Models;
+namespace Atlas.MatchPrediction.Test.Validation.Models;
 
 public class ImportRequest
 {

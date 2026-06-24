@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.SupportMessages;
+using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.FileSchema.Models;

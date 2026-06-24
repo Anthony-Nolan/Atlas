@@ -1,4 +1,4 @@
-﻿' Hide the component icons
+' Hide the component icons
 skinparam componentStyle rectangle
 
 skinparam rectangle {

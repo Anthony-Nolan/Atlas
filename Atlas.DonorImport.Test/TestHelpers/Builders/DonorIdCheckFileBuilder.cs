@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.DonorImport.ExternalInterface.Models;
 using AutoFixture.Dsl;

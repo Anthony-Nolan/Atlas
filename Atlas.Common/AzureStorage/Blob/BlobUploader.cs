@@ -1,4 +1,4 @@
-﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;

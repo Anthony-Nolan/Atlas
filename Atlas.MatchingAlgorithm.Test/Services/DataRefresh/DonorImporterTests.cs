@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.SupportMessages;
+using Atlas.Client.Models.SupportMessages;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;

@@ -1,4 +1,4 @@
-﻿using Atlas.MatchPrediction.Test.Validation.Data.Models;
+using Atlas.MatchPrediction.Test.Validation.Data.Models;
 using Atlas.MatchPrediction.Test.Validation.Data.Models.Homework;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories.Homework;
 using System.Collections.Generic;

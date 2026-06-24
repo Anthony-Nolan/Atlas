@@ -1,4 +1,4 @@
-﻿using Atlas.ManualTesting.Common.Models.Entities;
+using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

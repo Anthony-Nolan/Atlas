@@ -1,4 +1,4 @@
-﻿using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.AlleleGroupExtractors;
 

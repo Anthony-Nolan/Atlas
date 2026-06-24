@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Caching;
+using Atlas.Common.Caching;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;

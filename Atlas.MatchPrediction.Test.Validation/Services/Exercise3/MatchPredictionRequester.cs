@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Test.Validation.Data.Models;

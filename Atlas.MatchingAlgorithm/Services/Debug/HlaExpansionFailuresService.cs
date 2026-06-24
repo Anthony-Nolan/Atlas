@@ -1,4 +1,4 @@
-﻿using Atlas.Debug.Client.Models.ApplicationInsights;
+using Atlas.Debug.Client.Models.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Azure.Monitor.Query.Logs;
 using Azure.Monitor.Query.Logs.Models;

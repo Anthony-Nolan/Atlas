@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
 using Atlas.SearchTracking.Data.Repositories;

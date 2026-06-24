@@ -1,4 +1,4 @@
-﻿namespace Atlas.Functions.PublicApi.Settings;
+namespace Atlas.Functions.PublicApi.Settings;
 
 public class MatchingAlgorithmFunctionSettings
 {

@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchPrediction.Test.Verification.Models;
+namespace Atlas.MatchPrediction.Test.Verification.Models;
 
 public class VerificationResultsRequest
 {

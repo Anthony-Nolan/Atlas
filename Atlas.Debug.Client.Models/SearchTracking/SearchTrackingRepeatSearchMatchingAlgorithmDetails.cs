@@ -1,4 +1,4 @@
-﻿namespace Atlas.Debug.Client.Models.SearchTracking;
+namespace Atlas.Debug.Client.Models.SearchTracking;
 
 public class SearchTrackingRepeatSearchMatchingAlgorithmDetails
 {

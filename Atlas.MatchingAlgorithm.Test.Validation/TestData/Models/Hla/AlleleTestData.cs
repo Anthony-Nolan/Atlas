@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 
 public class AlleleTestData
 {

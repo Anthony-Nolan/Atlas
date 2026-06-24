@@ -1,4 +1,4 @@
-﻿using Atlas.Common.AzureStorage.Blob;
+using Atlas.Common.AzureStorage.Blob;
 
 namespace Atlas.RepeatSearch.Settings.Azure;
 

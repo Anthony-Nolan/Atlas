@@ -1,4 +1,4 @@
-﻿using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
+using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using AutoFixture.Dsl;
 

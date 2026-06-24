@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.Common.ApplicationInsights;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search.Results.Matching.PerLocus;
+using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 
 namespace Atlas.Client.Models.Common.Results;
 

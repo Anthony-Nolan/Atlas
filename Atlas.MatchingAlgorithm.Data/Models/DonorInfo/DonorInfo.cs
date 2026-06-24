@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.DonorInfo;

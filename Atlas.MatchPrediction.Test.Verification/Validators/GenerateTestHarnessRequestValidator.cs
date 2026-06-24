@@ -1,4 +1,4 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Models;
+using Atlas.MatchPrediction.Test.Verification.Models;
 using FluentValidation;
 using System.Collections.Generic;
 using System.Linq;

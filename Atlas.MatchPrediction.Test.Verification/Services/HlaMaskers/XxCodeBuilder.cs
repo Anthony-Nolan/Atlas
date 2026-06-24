@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers;

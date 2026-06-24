@@ -1,4 +1,4 @@
-﻿namespace Atlas.Common.Public.Models.MatchPrediction;
+namespace Atlas.Common.Public.Models.MatchPrediction;
 
 /// <summary>
 /// This is the data used to determine which frequency set to use, for both Donors and Patients.

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using System.Reflection;
 using Atlas.Common.Utils.Extensions;
 using Microsoft.Extensions.Logging;

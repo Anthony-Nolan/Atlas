@@ -1,4 +1,4 @@
-﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Sql.BulkInsert;
 using Atlas.DonorImport.Data.Models;
 using Dapper;

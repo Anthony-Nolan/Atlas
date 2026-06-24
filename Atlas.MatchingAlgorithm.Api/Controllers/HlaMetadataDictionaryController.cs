@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;

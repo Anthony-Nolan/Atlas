@@ -1,4 +1,4 @@
-﻿Feature: Scoring - Expressing Typing vs. Null Allele - Match Grade
+Feature: Scoring - Expressing Typing vs. Null Allele - Match Grade
   As a member of the search team
   I want search results to correctly handle the scoring of a locus that contains a null allele.
 

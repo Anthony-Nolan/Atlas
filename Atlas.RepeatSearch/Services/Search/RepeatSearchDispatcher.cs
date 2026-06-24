@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Search.Requests;
 using System;
 using System.Threading.Tasks;
 using Atlas.RepeatSearch.Clients;

@@ -1,4 +1,4 @@
-﻿namespace Atlas.Client.Models.Search.Results.LogFile;
+namespace Atlas.Client.Models.Search.Results.LogFile;
 
 /// <summary>
 /// Log for matching algorithm requests.

@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Data.Models;
 

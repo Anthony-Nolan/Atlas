@@ -1,4 +1,4 @@
-﻿using Atlas.DonorImport.Data.Models;
+using Atlas.DonorImport.Data.Models;
 using Atlas.ManualTesting.Common.Models;
 using Atlas.ManualTesting.Common.Repositories;
 using Atlas.ManualTesting.Common.Services;

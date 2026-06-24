@@ -1,4 +1,4 @@
-﻿using Atlas.DonorImport.Data.Repositories;
+using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Data.Models;
 using MoreLinq;
 

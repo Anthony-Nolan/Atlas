@@ -1,4 +1,4 @@
-﻿using Atlas.ManualTesting.Services.ServiceBus;
+using Atlas.ManualTesting.Services.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using System.Collections.Generic;
 using System.Linq;

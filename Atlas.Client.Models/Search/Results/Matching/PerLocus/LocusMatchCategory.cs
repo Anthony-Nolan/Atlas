@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Common.Results;
+using Atlas.Client.Models.Common.Results;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 

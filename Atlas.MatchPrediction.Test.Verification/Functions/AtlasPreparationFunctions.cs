@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Utils.Http;
+using Atlas.Common.Utils.Http;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;

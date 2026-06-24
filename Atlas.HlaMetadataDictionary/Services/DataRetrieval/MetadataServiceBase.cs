@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Caching;
+using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using LazyCache;
 using System;

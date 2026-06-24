@@ -1,4 +1,4 @@
-﻿using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
+using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;

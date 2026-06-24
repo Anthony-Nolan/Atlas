@@ -1,4 +1,4 @@
-﻿using Atlas.ManualTesting.Models;
+using Atlas.ManualTesting.Models;
 using Atlas.MatchPrediction.Models.FileSchema;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;

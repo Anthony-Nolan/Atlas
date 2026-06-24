@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.SupportMessages;
+using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Utils;

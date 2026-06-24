@@ -1,4 +1,4 @@
-﻿namespace Atlas.ManualTesting.Models;
+namespace Atlas.ManualTesting.Models;
 
 public class SearchOutcomesProcessingError
 {

@@ -1,4 +1,4 @@
-﻿using Atlas.DonorImport.Data.Models;
+using Atlas.DonorImport.Data.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using System;

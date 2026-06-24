@@ -1,4 +1,4 @@
-﻿using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Test.SharedTestHelpers;
 using AwesomeAssertions;
 using NUnit.Framework;

@@ -1,4 +1,4 @@
-﻿using Atlas.RepeatSearch.Data.Models;
+using Atlas.RepeatSearch.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.RepeatSearch.Data.Context;

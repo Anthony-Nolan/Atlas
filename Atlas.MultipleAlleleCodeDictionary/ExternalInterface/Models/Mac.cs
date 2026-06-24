@@ -1,4 +1,4 @@
-﻿using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
+using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
 using Atlas.MultipleAlleleCodeDictionary.Services;
 
 namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;

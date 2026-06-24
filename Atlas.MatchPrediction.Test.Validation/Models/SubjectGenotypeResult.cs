@@ -1,4 +1,4 @@
-﻿using Atlas.MatchPrediction.Test.Validation.Data.Models;
+using Atlas.MatchPrediction.Test.Validation.Data.Models;
 
 namespace Atlas.MatchPrediction.Test.Validation.Models;
 

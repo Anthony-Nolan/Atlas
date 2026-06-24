@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Atlas.MatchPrediction.Models.FileSchema;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;

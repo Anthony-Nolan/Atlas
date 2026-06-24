@@ -1,4 +1,4 @@
-﻿Feature: Scoring - Typed Loci Count
+Feature: Scoring - Typed Loci Count
   As a member of the search team
   I want search results to reveal the number of typed loci of a donor
 

@@ -1,4 +1,4 @@
-﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;

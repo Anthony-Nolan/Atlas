@@ -1,4 +1,4 @@
-﻿using Atlas.ManualTesting.Common.Models.Entities;
+using Atlas.ManualTesting.Common.Models.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.MatchPrediction.Test.Validation.Data.Models;

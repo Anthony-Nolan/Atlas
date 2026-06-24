@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.ManualTesting.Common.Models.Entities;
 public class MatchedDonorProbability : MatchProbability

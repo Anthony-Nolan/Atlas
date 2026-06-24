@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Atlas.MatchingAlgorithm.Models;
 using AutoFixture.Dsl;
 using Atlas.Common.Test.SharedTestHelpers.Builders;

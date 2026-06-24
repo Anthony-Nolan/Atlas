@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.ManualTesting.Common.Models;
 using Atlas.ManualTesting.Common.Services;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
 

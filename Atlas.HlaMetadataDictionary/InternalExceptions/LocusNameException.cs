@@ -1,4 +1,4 @@
-﻿using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 
 namespace Atlas.HlaMetadataDictionary.InternalExceptions;
 

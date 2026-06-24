@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.GeneticData.Hla.Models;

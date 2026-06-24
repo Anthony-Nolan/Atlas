@@ -1,4 +1,4 @@
-﻿namespace Atlas.Debug.Client.Models.DonorImport;
+namespace Atlas.Debug.Client.Models.DonorImport;
 
 /// <summary>
 /// Request object for the donor import debug endpoint.

@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Services;
 using AwesomeAssertions;
 using NUnit.Framework;

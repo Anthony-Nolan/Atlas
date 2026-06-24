@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.Entities;

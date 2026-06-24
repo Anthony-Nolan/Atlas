@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search.Results.Matching.ResultSet;
+using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;

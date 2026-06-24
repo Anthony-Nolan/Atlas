@@ -1,4 +1,4 @@
-﻿using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 
 namespace Atlas.MatchingAlgorithm.Models;

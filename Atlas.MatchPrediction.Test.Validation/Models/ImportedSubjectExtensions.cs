@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search;
+using Atlas.Client.Models.Search;
 using Atlas.ManualTesting.Common.Models;
 using Atlas.MatchPrediction.Test.Validation.Data.Models;
 using System;

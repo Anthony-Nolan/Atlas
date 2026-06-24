@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Debug.Client.Models.DonorImport;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 

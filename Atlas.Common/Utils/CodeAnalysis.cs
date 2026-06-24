@@ -1,4 +1,4 @@
-﻿namespace Atlas.Common.Utils;
+namespace Atlas.Common.Utils;
 
 public static class SuppressMessage
 {

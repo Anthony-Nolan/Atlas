@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Utils.Extensions;
+using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using System.Collections.Generic;

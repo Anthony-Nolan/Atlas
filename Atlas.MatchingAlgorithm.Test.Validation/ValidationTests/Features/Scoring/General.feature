@@ -1,4 +1,4 @@
-﻿Feature: Scoring - general
+Feature: Scoring - general
   As a member of the search team
   I want searches to complete successfully when scoring is enabled
 

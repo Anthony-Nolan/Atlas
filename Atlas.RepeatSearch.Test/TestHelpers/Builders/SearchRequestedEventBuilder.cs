@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.SearchTracking.Common.Models;
 using AutoFixture.Dsl;
 using System;

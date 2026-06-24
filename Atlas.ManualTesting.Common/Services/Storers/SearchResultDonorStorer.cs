@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search.Results;
+using Atlas.Client.Models.Search.Results;
 using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.ManualTesting.Common.Repositories;
 using Newtonsoft.Json;

@@ -1,4 +1,4 @@
-﻿using Atlas.Common.ServiceBus;
+using Atlas.Common.ServiceBus;
 
 namespace Atlas.ManualTesting.Common.Services;
 

@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Sql.BulkInsert;
+using Atlas.Common.Sql.BulkInsert;
 using Atlas.DonorImport.Data.Models;
 using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;

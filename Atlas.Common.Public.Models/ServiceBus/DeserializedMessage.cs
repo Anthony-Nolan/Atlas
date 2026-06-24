@@ -1,4 +1,4 @@
-﻿namespace Atlas.Common.Public.Models.ServiceBus;
+namespace Atlas.Common.Public.Models.ServiceBus;
 
 /// <summary>
 /// Service bus message with deserialized body of type T.

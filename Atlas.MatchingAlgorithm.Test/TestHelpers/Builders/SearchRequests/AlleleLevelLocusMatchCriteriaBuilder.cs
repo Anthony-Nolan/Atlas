@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Composer = AutoFixture.Dsl.IPostprocessComposer<Atlas.MatchingAlgorithm.Common.Models.AlleleLevelLocusMatchCriteria>;
 

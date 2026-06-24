@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders;
 using NUnit.Framework;
 using System.Linq;

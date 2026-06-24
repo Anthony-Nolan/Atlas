@@ -1,4 +1,4 @@
-﻿using Atlas.Debug.Client.Models.Exceptions;
+using Atlas.Debug.Client.Models.Exceptions;
 using Newtonsoft.Json;
 using System;
 using System.Net;

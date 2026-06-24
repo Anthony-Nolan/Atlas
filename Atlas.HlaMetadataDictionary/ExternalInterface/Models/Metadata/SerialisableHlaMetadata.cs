@@ -1,4 +1,4 @@
-﻿using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils.Extensions;
 

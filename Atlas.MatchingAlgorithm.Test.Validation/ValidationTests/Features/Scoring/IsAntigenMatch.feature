@@ -1,4 +1,4 @@
-﻿Feature: Scoring - Is Antigen Match?
+Feature: Scoring - Is Antigen Match?
   As a member of the search team
   I want search results to report whether a position is antigen matched or not.
 

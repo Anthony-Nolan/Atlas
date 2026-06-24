@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using AutoFixture.Dsl;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿Feature: Scoring - Positional Orientation
+Feature: Scoring - Positional Orientation
 
   As a member of the search team
   I want search results to report scoring results in the correct orientation wrt to locus position.

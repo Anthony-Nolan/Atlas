@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchPrediction.ExternalInterface.Models;
+namespace Atlas.MatchPrediction.ExternalInterface.Models;
 
 public class MatchPredictionResultLocation
 {

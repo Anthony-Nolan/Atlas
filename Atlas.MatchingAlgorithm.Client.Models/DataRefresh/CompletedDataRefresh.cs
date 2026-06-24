@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
+namespace Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 
 public class CompletedDataRefresh
 {

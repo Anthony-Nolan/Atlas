@@ -1,4 +1,4 @@
-﻿using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.ExternalInterface.Models;
 using AutoFixture.Dsl;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 

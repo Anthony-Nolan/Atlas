@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Atlas.Client.Models.Search.Results;
 
 namespace Atlas.ManualTesting.Models;

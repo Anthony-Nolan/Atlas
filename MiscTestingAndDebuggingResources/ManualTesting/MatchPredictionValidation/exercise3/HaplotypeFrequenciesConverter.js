@@ -1,4 +1,4 @@
-﻿// input.txt should be the donor data in the format published in the validation paper - likely named don.txt originally
+// input.txt should be the donor data in the format published in the validation paper - likely named don.txt originally
 var fs = require('fs');
 
 const noop = () => {

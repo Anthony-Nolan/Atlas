@@ -1,4 +1,4 @@
-﻿namespace Atlas.ManualTesting.Common.Settings;
+namespace Atlas.ManualTesting.Common.Settings;
 
 public class DataRefreshSettings
 {

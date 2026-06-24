@@ -1,4 +1,4 @@
-﻿using Atlas.DonorImport.Data.Models;
+using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Newtonsoft.Json;
 

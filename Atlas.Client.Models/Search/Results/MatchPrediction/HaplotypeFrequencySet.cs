@@ -1,4 +1,4 @@
-﻿namespace Atlas.Client.Models.Search.Results.MatchPrediction;
+namespace Atlas.Client.Models.Search.Results.MatchPrediction;
 
 public class HaplotypeFrequencySet
 {

@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search;
+using Atlas.Client.Models.Search;
 using Atlas.DonorImport.Data.Models;
 
 namespace Atlas.ManualTesting.Common.Models;

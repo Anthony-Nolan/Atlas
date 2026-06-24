@@ -1,4 +1,4 @@
-﻿namespace Atlas.Client.Models.Search.Results;
+namespace Atlas.Client.Models.Search.Results;
 
 public abstract class ResultsNotification
 {

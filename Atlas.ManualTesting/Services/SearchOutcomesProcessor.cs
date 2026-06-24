@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search.Results.LogFile;
+using Atlas.Client.Models.Search.Results.LogFile;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.ManualTesting.Models;
 using Atlas.ManualTesting.Settings;

@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
 using Microsoft.Azure.Functions.Worker;

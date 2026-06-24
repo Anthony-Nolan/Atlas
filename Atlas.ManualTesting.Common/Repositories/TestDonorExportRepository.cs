@@ -1,4 +1,4 @@
-﻿using Atlas.ManualTesting.Common.Models.Entities;
+using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Dapper;
 using Microsoft.Data.SqlClient;

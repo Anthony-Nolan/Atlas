@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.DonorImport.FileSchema.Models;
 using AutoFixture.Dsl;
 

@@ -1,4 +1,4 @@
-﻿namespace Atlas.DonorImport.ExternalInterface.Settings;
+namespace Atlas.DonorImport.ExternalInterface.Settings;
 
 public class PublishDonorUpdatesSettings
 {

@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.FileSchema.Models.DonorChecker;

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Atlas.Common.ApplicationInsights;
 using System.Threading.Tasks;
 using Newtonsoft.Json;

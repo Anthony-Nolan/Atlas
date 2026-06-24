@@ -1,4 +1,4 @@
-﻿using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models.Mapping;
 using Donor = Atlas.DonorImport.Data.Models.Donor;
 

@@ -1,4 +1,4 @@
-﻿using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.GeneticData.Hla.Models;
 
 namespace Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 

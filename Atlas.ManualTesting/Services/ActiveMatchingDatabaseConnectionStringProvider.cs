@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Data.Services;
+using Atlas.MatchingAlgorithm.Data.Services;
 
 namespace Atlas.ManualTesting.Services;
 

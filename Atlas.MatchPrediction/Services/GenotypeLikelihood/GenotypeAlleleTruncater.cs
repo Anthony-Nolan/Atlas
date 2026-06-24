@@ -1,4 +1,4 @@
-﻿using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
+using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchPrediction.Services.GenotypeLikelihood;

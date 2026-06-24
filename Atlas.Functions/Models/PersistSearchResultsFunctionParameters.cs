@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching;
 using System;
 using System.Collections.Generic;
 

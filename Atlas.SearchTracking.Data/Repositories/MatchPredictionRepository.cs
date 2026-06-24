@@ -1,4 +1,4 @@
-﻿using Atlas.SearchTracking.Common.Enums;
+using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
 using Atlas.SearchTracking.Data.Context;
 using Atlas.SearchTracking.Data.Models;

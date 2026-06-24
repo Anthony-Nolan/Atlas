@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 

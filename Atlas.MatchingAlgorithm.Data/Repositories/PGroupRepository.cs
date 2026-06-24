@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Data.Services;
+using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Collections.Generic;

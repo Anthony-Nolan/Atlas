@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using Newtonsoft.Json;

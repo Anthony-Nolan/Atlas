@@ -1,4 +1,4 @@
-﻿namespace Atlas.ManualTesting.Common.Repositories;
+namespace Atlas.ManualTesting.Common.Repositories;
 
 public interface IProcessedResultsRepository<in TDbModel>
 {

@@ -1,4 +1,4 @@
-﻿## Architecture Diagrams
+## Architecture Diagrams
 
 Diagrams have been written in [Plant UML](http://plantuml.com/), stored in the `source-diagrams` folder.
 

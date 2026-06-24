@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Data.Models;

@@ -1,4 +1,4 @@
-﻿namespace Atlas.ManualTesting.Common.Models.Entities;
+namespace Atlas.ManualTesting.Common.Models.Entities;
 
 public class TestDonorExportRecord
 {

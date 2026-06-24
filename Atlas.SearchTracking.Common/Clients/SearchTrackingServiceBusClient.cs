@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Transactions;
 using Atlas.Common.ApplicationInsights;
 using Atlas.SearchTracking.Common.Config;

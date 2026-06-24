@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus.DependencyInjection;
 using Atlas.Common.Utils.Extensions;

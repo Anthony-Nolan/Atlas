@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;

@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using AutoMapper;
 using System.Reflection;
 using Atlas.Common.Utils.Extensions;

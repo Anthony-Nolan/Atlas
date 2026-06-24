@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.Utils.Http;
 using AzureFunctions.Extensions.Swashbuckle;

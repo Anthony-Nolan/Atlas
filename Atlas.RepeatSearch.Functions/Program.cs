@@ -1,4 +1,4 @@
-﻿using Atlas.RepeatSearch.Functions;
+using Atlas.RepeatSearch.Functions;
 using Azure.Core.Serialization;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;

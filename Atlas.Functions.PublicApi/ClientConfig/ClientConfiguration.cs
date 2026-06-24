@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.Functions.PublicApi.Settings;
 using Atlas.MatchingAlgorithm.Clients.Scoring;
 using Microsoft.Extensions.DependencyInjection;

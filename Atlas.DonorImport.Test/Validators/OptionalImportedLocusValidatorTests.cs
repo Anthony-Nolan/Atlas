@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Test.TestHelpers.Builders;

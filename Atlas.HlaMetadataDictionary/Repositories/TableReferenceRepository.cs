@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.InternalModels;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;

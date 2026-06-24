@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.Client.Models.Search.Results.Matching;
 
 namespace Atlas.Functions.Models;

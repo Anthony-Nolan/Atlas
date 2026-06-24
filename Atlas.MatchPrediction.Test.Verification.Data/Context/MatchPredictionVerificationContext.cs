@@ -1,4 +1,4 @@
-﻿using Atlas.ManualTesting.Common.Contexts;
+using Atlas.ManualTesting.Common.Contexts;
 using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;

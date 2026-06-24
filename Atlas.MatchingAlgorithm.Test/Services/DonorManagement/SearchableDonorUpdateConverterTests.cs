@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.ServiceBus;
 using Atlas.DonorImport.ExternalInterface.Models;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.DonorImport.FileSchema.Models;
 using System.Collections.Generic;
 using System.Linq;

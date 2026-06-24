@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search;
+using Atlas.Client.Models.Search;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Services.DonorUpdates;

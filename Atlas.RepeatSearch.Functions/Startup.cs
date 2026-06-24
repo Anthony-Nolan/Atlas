@@ -1,4 +1,4 @@
-﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.Settings;

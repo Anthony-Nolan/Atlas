@@ -1,4 +1,4 @@
-﻿using Atlas.ManualTesting;
+using Atlas.ManualTesting;
 using Azure.Core.Serialization;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;

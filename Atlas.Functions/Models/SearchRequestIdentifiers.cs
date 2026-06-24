@@ -1,4 +1,4 @@
-﻿namespace Atlas.Functions.Models;
+namespace Atlas.Functions.Models;
 
 /// <summary>
 /// Identifies a search request (and optionally its originating repeat search) throughout orchestration.

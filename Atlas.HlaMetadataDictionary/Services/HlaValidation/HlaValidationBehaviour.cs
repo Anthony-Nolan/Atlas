@@ -1,4 +1,4 @@
-﻿namespace Atlas.HlaMetadataDictionary.Services.HlaValidation;
+namespace Atlas.HlaMetadataDictionary.Services.HlaValidation;
 
 internal class HlaValidationBehaviour
 {

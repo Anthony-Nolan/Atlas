@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.Utils.Extensions;

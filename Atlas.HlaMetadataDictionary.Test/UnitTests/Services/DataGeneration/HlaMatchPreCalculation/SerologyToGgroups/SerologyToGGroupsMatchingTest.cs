@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using ApprovalTests;
 using ApprovalTests.Namers;
 using ApprovalTests.Reporters;

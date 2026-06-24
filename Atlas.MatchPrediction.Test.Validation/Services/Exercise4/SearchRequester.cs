@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Common.Requests;
+using Atlas.Client.Models.Common.Requests;
 using Atlas.Client.Models.Search;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Public.Models.GeneticData;

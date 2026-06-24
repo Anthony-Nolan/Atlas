@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Functions.Models;
 using AutoMapper;
 

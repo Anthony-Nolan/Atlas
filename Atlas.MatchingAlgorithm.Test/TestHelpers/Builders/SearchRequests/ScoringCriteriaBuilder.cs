@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Atlas.Client.Models.Common.Requests;
 using Atlas.Common.Public.Models.GeneticData;

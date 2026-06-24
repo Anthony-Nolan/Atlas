@@ -1,4 +1,4 @@
-﻿using LazyCache;
+using LazyCache;
 using LazyCache.Providers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;

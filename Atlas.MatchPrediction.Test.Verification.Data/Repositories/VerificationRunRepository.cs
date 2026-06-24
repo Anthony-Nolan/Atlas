@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;

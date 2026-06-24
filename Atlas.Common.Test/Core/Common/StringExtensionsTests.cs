@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Utils.Extensions;
+using Atlas.Common.Utils.Extensions;
 using AwesomeAssertions;
 using NUnit.Framework;
 

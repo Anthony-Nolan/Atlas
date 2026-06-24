@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Data.Models;
+using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;

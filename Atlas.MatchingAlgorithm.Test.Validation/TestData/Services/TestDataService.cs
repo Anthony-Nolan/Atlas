@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;

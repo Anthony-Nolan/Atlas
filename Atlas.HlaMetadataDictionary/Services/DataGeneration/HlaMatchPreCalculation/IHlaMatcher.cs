@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation;

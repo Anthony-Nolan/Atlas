@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search;
+using Atlas.Client.Models.Search;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 
 namespace Atlas.MatchPrediction.Test.Validation.Models;

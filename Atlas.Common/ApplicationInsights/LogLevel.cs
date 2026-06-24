@@ -1,4 +1,4 @@
-﻿namespace Atlas.Common.ApplicationInsights;
+namespace Atlas.Common.ApplicationInsights;
 
 public enum LogLevel
 {

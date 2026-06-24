@@ -1,4 +1,4 @@
-﻿using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 
 namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 

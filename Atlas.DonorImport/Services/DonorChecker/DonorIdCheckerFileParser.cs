@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.FileSchema.Models;

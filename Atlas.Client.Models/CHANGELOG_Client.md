@@ -1,4 +1,4 @@
-﻿# Atlas.Client.Models
+# Atlas.Client.Models
 
 ## Description
 This package contains all client models utilised by the Atlas Public API to request searches and repeat searches, and to retrieve their results.

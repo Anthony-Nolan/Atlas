@@ -1,4 +1,4 @@
-﻿using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 
 namespace Atlas.HlaMetadataDictionary.Services.HlaValidation;

@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
 using Atlas.Client.Models.Search.Results.Matching;

@@ -1,4 +1,4 @@
-﻿using Atlas.SearchTracking.Data.Context;
+using Atlas.SearchTracking.Data.Context;
 using Atlas.SearchTracking.Data.Models;
 using Atlas.SearchTracking.Common.Models;
 using Microsoft.EntityFrameworkCore;

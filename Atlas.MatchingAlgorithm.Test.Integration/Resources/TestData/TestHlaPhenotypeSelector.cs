@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData;

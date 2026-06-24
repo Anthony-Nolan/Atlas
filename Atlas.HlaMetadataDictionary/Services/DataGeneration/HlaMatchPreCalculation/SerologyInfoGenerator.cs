@@ -1,4 +1,4 @@
-﻿using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation.SerologyRelationships;
 using System.Collections.Generic;

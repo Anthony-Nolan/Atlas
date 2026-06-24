@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Atlas.RepeatSearch.Data.Context;
 using Atlas.RepeatSearch.Data.Models;
 using Microsoft.EntityFrameworkCore;

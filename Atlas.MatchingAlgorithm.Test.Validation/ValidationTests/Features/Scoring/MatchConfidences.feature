@@ -1,4 +1,4 @@
-﻿Feature: Scoring - Match Confidences
+Feature: Scoring - Match Confidences
   As a member of the search team
   I want search results to have an appropriate match confidence
 

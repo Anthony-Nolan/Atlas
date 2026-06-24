@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.SearchTracking.Data.Context;
 using Atlas.SearchTracking.Data.Test.Builders;

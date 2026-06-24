@@ -1,4 +1,4 @@
-﻿# Atlas.MatchingAlgorithm.Client.Models
+# Atlas.MatchingAlgorithm.Client.Models
 
 ## Description
 This package contains all client models utilised by the Atlas Matching Algorithm API for data refresh, scoring-only, and matching-only requests.

@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Test.TestHelpers.Models.DonorIdCheck;

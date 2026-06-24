@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchPrediction.Test.Verification.Settings;
+namespace Atlas.MatchPrediction.Test.Verification.Settings;
 
 internal class VerificationSearchSettings
 {

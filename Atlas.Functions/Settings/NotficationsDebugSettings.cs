@@ -1,4 +1,4 @@
-﻿namespace Atlas.Functions.Settings;
+namespace Atlas.Functions.Settings;
 
 internal class NotificationsDebugSettings
 {

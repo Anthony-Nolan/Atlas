@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search.Results;
+using Atlas.Client.Models.Search.Results;
 using Atlas.Common.Utils.Http;
 using Atlas.ManualTesting.Common.Services;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;

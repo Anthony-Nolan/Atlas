@@ -1,4 +1,4 @@
-﻿using Atlas.MatchPrediction.Functions;
+using Atlas.MatchPrediction.Functions;
 using Azure.Core.Serialization;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;

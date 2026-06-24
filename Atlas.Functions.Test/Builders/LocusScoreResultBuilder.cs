@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search.Results.Matching.PerLocus;
+using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using ResultBuilder = AutoFixture.Dsl.IPostprocessComposer<Atlas.Client.Models.Common.Results.LocusSearchResult>;
 

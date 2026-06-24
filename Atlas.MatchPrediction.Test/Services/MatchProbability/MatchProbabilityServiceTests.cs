@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search.Results.MatchPrediction;
+using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;

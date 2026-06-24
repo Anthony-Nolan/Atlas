@@ -1,4 +1,4 @@
-﻿
+
 namespace Atlas.ManualTesting.Common.Models;
 
 public class ImportedSubject

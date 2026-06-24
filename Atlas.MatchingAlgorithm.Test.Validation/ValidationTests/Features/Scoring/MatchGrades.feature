@@ -1,4 +1,4 @@
-﻿Feature: Scoring - Match Grades
+Feature: Scoring - Match Grades
   As a member of the search team
   I want search results to have an appropriate match grade
 

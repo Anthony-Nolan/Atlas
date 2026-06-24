@@ -1,4 +1,4 @@
-﻿namespace Atlas.RepeatSearch.Settings.ServiceBus;
+namespace Atlas.RepeatSearch.Settings.ServiceBus;
 
 public class MessagingServiceBusSettings
 {

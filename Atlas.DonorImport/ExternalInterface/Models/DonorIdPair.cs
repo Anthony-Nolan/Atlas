@@ -1,4 +1,4 @@
-﻿namespace Atlas.DonorImport.ExternalInterface.Models;
+namespace Atlas.DonorImport.ExternalInterface.Models;
 
 /// <summary>
 /// Throughout Atlas, two forms of donor identifier are used - an external one, and an internal one.

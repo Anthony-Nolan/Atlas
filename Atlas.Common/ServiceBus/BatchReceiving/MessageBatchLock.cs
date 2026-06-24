@@ -1,4 +1,4 @@
-﻿using NeoSmart.AsyncLock;
+using NeoSmart.AsyncLock;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,4 +1,4 @@
-﻿using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData;
 using AwesomeAssertions;
 using NUnit.Framework;
 

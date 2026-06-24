@@ -1,4 +1,4 @@
-﻿Feature: Six Out Of Six Search
+Feature: Six Out Of Six Search
   As a member of the search team
   I want to be able to run an 6/6 search
 

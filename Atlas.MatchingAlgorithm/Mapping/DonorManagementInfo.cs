@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Data.Models;
+using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Models;
 using AutoMapper;
 

@@ -1,4 +1,4 @@
-﻿using Atlas.DonorImport.Data.Models;
+using Atlas.DonorImport.Data.Models;
 using Atlas.ManualTesting.Common.Models.Entities;
 using Atlas.ManualTesting.Common.Repositories;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;

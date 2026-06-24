@@ -1,4 +1,4 @@
-﻿namespace Atlas.Common.Utils.Http;
+namespace Atlas.Common.Utils.Http;
 
 public class ErrorsModel
 {

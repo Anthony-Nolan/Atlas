@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Sql.BulkInsert;
+using Atlas.Common.Sql.BulkInsert;
 using Atlas.ManualTesting.Common.Contexts;
 using Atlas.ManualTesting.Common.Models.Entities;
 using Dapper;

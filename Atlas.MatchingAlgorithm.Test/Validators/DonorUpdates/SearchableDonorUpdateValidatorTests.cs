@@ -1,4 +1,4 @@
-﻿using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
 using AwesomeAssertions;

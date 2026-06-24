@@ -1,4 +1,4 @@
-﻿using Atlas.Common.AzureEventGrid;
+using Atlas.Common.AzureEventGrid;
 using Atlas.DonorImport.ExternalInterface.Models;
 using System.IO;
 using System.Threading.Tasks;

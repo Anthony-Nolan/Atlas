@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Atlas.Client.Models.Search.Requests;
 

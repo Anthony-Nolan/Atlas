@@ -1,4 +1,4 @@
-﻿using AzureFunctions.Extensions.Swashbuckle.Attribute;
+using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System.IO;

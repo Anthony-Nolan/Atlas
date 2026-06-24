@@ -1,4 +1,4 @@
-﻿# Atlas.Debug.Client
+# Atlas.Debug.Client
 
 ## Description
 This package is a collection of Atlas debug endpoints intended for use by automated end-to-end tests.

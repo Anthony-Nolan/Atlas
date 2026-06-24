@@ -1,4 +1,4 @@
-﻿using Atlas.MatchPrediction.Test.Integration.DependencyInjection;
+using Atlas.MatchPrediction.Test.Integration.DependencyInjection;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using NUnit.Framework;
 

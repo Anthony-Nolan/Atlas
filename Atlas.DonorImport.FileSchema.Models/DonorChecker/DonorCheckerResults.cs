@@ -1,4 +1,4 @@
-﻿namespace Atlas.DonorImport.FileSchema.Models.DonorChecker;
+namespace Atlas.DonorImport.FileSchema.Models.DonorChecker;
 
 /// <summary>
 /// Results for the donor checker

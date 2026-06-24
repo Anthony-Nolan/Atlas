@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Atlas.RepeatSearch.Data.Context;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

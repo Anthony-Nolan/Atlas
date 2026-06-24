@@ -1,4 +1,4 @@
-﻿namespace Atlas.RepeatSearch.Data.Settings;
+namespace Atlas.RepeatSearch.Data.Settings;
 
 public class StoreOriginalSearchResultsBulkCopySettings
 {

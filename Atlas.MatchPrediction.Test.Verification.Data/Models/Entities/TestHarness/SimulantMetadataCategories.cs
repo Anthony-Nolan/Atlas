@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
+namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 
 public enum SimulatedHlaTypingCategory
 {

@@ -1,4 +1,4 @@
-﻿using Atlas.MatchPrediction.ExternalInterface.Models;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 
 namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 

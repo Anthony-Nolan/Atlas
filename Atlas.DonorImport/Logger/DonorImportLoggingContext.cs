@@ -1,4 +1,4 @@
-﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights;
 using System.Collections.Generic;
 
 namespace Atlas.DonorImport.Logger;

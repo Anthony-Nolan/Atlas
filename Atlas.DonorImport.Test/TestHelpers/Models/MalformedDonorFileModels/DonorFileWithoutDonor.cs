@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using Atlas.DonorImport.FileSchema.Models;
 using Newtonsoft.Json;

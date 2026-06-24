@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.Data.Models;
+namespace Atlas.MatchingAlgorithm.Data.Models;
 
 public class DonorMatchWithName
 {

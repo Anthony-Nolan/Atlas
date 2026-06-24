@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Services.HlaValidation;
 using Atlas.MatchPrediction.Data.Models;

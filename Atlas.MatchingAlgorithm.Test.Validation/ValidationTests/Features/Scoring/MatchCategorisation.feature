@@ -1,4 +1,4 @@
-﻿Feature: Scoring - Match Categorisation
+Feature: Scoring - Match Categorisation
   As a member of the search team
   I want search results to have an appropriate overall match category
 

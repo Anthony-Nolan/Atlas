@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search.Results.Matching.PerLocus;
+using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;

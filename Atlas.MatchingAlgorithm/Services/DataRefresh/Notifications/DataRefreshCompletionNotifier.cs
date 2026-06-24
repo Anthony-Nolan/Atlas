@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;

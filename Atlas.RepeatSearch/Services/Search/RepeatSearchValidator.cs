@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Validators;

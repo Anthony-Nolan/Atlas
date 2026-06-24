@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.SearchTracking.Common.Models;
 
 namespace Atlas.Functions.Models;

@@ -1,4 +1,4 @@
-﻿namespace Atlas.HlaMetadataDictionary.Services;
+namespace Atlas.HlaMetadataDictionary.Services;
 
 internal static class ExpressionSuffixParser
 {

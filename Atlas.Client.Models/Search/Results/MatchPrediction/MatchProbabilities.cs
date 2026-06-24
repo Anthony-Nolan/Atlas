@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Public.Models.MatchPrediction;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Newtonsoft.Json;
 
 namespace Atlas.Client.Models.Search.Results.MatchPrediction;

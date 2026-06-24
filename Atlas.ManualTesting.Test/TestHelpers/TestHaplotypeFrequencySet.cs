@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Atlas.MatchPrediction.Models.FileSchema;
 using Newtonsoft.Json;
 

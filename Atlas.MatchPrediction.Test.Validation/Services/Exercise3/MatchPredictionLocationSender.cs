@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Atlas.Common.ServiceBus;
 using Atlas.ManualTesting.Common.Services;
 using Atlas.MatchPrediction.ExternalInterface.Models;

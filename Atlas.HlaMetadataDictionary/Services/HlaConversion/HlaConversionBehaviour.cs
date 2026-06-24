@@ -1,4 +1,4 @@
-﻿using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 
 namespace Atlas.HlaMetadataDictionary.Services.HlaConversion;
 

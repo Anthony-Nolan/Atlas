@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 Changelog for Atlas as a product: it will cover functional and algorithmic changes that affect Atlas as a whole.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),

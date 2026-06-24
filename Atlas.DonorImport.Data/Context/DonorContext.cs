@@ -1,4 +1,4 @@
-﻿using Atlas.DonorImport.Data.Models;
+using Atlas.DonorImport.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.DonorImport.Data.Context;

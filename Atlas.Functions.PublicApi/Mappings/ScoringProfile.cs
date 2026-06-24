@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Common.Requests;
+using Atlas.Client.Models.Common.Requests;
 using Atlas.Client.Models.Scoring.Requests;
 using Atlas.Client.Models.Scoring.Results;
 using AutoMapper;

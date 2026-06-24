@@ -1,4 +1,4 @@
-﻿using Atlas.Common.ServiceBus;
+using Atlas.Common.ServiceBus;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using AwesomeAssertions;
 using NSubstitute;

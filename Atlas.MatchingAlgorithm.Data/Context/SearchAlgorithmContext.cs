@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 

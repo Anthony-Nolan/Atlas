@@ -1,4 +1,4 @@
-﻿# Atlas.Common.Public.Models
+# Atlas.Common.Public.Models
 
 ## Description
 This package contains models that are referenced by other Atlas NuGet packages, and are also utilised by other Atlas components, e.g., models of HLA typing data.

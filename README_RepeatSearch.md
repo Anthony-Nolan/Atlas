@@ -1,4 +1,4 @@
-﻿# Summary
+# Summary
 
 "Repeat Search" is a feature of Atlas that allows consumers to request differential results since the last time a request was run. 
 

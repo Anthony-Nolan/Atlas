@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using System.Collections.Generic;
 using System.Linq;

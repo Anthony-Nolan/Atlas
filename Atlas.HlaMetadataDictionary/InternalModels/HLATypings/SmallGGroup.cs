@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.HlaMetadataDictionary.InternalModels.HLATypings;

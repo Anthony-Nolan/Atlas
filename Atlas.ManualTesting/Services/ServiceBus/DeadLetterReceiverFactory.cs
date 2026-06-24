@@ -1,4 +1,4 @@
-﻿using Atlas.Common.ServiceBus;
+using Atlas.Common.ServiceBus;
 using Azure.Messaging.ServiceBus;
 
 namespace Atlas.ManualTesting.Services.ServiceBus;

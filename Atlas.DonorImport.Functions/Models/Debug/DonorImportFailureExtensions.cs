@@ -1,4 +1,4 @@
-﻿using Atlas.Debug.Client.Models.DonorImport;
+using Atlas.Debug.Client.Models.DonorImport;
 using Atlas.DonorImport.Data.Models;
 
 namespace Atlas.DonorImport.Functions.Models.Debug;

@@ -1,4 +1,4 @@
-﻿using Atlas.Debug.Client.Models.SearchTracking;
+using Atlas.Debug.Client.Models.SearchTracking;
 using Atlas.SearchTracking.Data.Models;
 using AutoMapper;
 

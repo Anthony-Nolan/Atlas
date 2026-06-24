@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 
 namespace Atlas.MatchingAlgorithm.Models;
 

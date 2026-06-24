@@ -1,4 +1,4 @@
-﻿namespace Atlas.DonorImport.FileSchema.Models.DonorChecker;
+namespace Atlas.DonorImport.FileSchema.Models.DonorChecker;
 
 public class DonorCheckerMessage
 {

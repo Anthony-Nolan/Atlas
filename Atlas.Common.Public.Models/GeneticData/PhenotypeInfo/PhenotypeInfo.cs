@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
 /// <summary>

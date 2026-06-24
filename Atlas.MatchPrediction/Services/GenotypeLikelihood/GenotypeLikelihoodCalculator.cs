@@ -1,4 +1,4 @@
-﻿using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Models;
 using System.Linq;
 
 namespace Atlas.MatchPrediction.Services.GenotypeLikelihood;

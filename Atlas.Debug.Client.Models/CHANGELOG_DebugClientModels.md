@@ -1,4 +1,4 @@
-﻿# Atlas.Debug.Client.Models
+# Atlas.Debug.Client.Models
 
 ## Description
 This package contains client models utilised by the Atlas debug endpoints.

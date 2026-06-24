@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Functions.DonorManagement;
+using Atlas.MatchingAlgorithm.Functions.DonorManagement;
 using Azure.Core.Serialization;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;

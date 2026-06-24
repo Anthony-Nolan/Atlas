@@ -1,4 +1,4 @@
-﻿namespace Atlas.DonorImport.FileSchema.Models.DonorChecker;
+namespace Atlas.DonorImport.FileSchema.Models.DonorChecker;
 
 /// <summary>
 /// Request to check whether a set of donors exist in the donor store or not, by their record IDs.

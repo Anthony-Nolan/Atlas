@@ -1,4 +1,4 @@
-﻿namespace Atlas.Common.Utils.Models;
+namespace Atlas.Common.Utils.Models;
 
 public class ServiceStatus
 {

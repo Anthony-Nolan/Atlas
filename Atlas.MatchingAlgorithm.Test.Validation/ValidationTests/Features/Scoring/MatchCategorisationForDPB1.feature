@@ -1,4 +1,4 @@
-﻿Feature: MatchCategorisationForDPB1
+Feature: MatchCategorisationForDPB1
   As a member of the search team
   I want search results to have an appropriate DPB1 match category
 

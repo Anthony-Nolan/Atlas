@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;

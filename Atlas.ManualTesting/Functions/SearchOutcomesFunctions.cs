@@ -1,4 +1,4 @@
-﻿using Atlas.ManualTesting.Models;
+using Atlas.ManualTesting.Models;
 using Atlas.ManualTesting.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;

@@ -1,4 +1,4 @@
-﻿using Atlas.SearchTracking.Data.Repositories;
+using Atlas.SearchTracking.Data.Repositories;
 using Newtonsoft.Json;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;

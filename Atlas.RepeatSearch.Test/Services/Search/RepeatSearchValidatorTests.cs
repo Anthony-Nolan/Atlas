@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;

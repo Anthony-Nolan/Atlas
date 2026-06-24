@@ -1,4 +1,4 @@
-﻿namespace Atlas.Debug.Client.Models.Settings;
+namespace Atlas.Debug.Client.Models.Settings;
 
 /// <summary>
 /// Settings for calling the Public API http functions.

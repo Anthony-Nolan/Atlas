@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Atlas.Common.Public.Models.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults;

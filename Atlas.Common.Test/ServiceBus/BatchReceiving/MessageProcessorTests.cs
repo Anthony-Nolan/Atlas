@@ -1,4 +1,4 @@
-﻿using Atlas.Common.ServiceBus.BatchReceiving;
+using Atlas.Common.ServiceBus.BatchReceiving;
 using NSubstitute;
 using NUnit.Framework;
 using System.Threading.Tasks;

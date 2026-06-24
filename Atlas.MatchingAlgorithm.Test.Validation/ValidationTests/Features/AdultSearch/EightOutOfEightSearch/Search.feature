@@ -1,4 +1,4 @@
-﻿Feature: Eight Out Of Eight Search
+Feature: Eight Out Of Eight Search
   As a member of the search team
   I want to be able to run an 8/8 search
 

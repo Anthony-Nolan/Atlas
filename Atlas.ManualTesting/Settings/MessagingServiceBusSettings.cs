@@ -1,4 +1,4 @@
-﻿namespace Atlas.ManualTesting.Settings;
+namespace Atlas.ManualTesting.Settings;
 
 public class MessagingServiceBusSettings
 {

@@ -1,4 +1,4 @@
-﻿using Atlas.Debug.Client.Clients;
+using Atlas.Debug.Client.Clients;
 using Atlas.Debug.Client.Models.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System;

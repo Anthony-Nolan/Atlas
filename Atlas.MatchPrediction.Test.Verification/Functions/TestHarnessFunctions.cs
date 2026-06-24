@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Utils.Http;
+using Atlas.Common.Utils.Http;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services;
 using Atlas.MatchPrediction.Test.Verification.Validators;

@@ -1,4 +1,4 @@
-﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;

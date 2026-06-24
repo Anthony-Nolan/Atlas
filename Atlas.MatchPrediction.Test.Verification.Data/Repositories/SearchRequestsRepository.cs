@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
 using Atlas.ManualTesting.Common.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;

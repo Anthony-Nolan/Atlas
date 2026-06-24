@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.Test.Integration.DependencyInjection;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using NUnit.Framework;

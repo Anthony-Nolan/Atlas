@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 
 /// <summary>
 /// Determines which dataset the genotype generator should use when deciding alleles

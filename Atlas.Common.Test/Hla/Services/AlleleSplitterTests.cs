@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 using AwesomeAssertions;
 using NUnit.Framework;

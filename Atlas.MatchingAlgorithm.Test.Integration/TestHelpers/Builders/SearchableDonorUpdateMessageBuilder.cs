@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.Common.Public.Models.ServiceBus;
 using Atlas.DonorImport.ExternalInterface.Models;
 using AutoFixture.Dsl;

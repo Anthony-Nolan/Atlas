@@ -1,4 +1,4 @@
-﻿using Atlas.MatchPrediction.Test.Validation;
+using Atlas.MatchPrediction.Test.Validation;
 using Azure.Core.Serialization;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;

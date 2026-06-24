@@ -1,4 +1,4 @@
-﻿using Atlas.DonorImport.ExternalInterface.Settings;
+using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;

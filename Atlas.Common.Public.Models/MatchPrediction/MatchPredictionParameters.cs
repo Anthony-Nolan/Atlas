@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData;
 using Newtonsoft.Json;
 
 namespace Atlas.Common.Public.Models.MatchPrediction;

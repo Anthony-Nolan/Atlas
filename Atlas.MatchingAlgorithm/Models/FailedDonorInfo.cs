@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.Models;
+namespace Atlas.MatchingAlgorithm.Models;
 
 public class FailedDonorInfo
 {

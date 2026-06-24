@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.Test.Performance.Models;
+namespace Atlas.MatchingAlgorithm.Test.Performance.Models;
 
 public class AlgorithmInstanceInfo
 {

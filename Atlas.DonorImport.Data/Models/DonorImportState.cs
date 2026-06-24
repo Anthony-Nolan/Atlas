@@ -1,4 +1,4 @@
-﻿namespace Atlas.DonorImport.Data.Models;
+namespace Atlas.DonorImport.Data.Models;
 
 public enum DonorImportState
 {

@@ -1,4 +1,4 @@
-﻿using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights;
 
 namespace Atlas.Common.ApplicationInsights;
 

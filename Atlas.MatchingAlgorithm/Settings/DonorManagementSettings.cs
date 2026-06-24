@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.Settings;
+namespace Atlas.MatchingAlgorithm.Settings;
 
 public class DonorManagementSettings
 {

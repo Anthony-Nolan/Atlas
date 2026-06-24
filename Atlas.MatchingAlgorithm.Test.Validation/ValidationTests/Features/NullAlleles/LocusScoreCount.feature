@@ -1,4 +1,4 @@
-﻿Feature: Scoring - Expressing Typing vs. Null Allele - Locus Score Count
+Feature: Scoring - Expressing Typing vs. Null Allele - Locus Score Count
   As a member of the search team
   I want search results to correctly handle the scoring of a locus that contains a null allele.
 

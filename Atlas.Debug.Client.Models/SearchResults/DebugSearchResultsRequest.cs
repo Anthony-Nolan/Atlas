@@ -1,4 +1,4 @@
-﻿namespace Atlas.Debug.Client.Models.SearchResults;
+namespace Atlas.Debug.Client.Models.SearchResults;
 
 /// <summary>
 /// Request to retrieve search results for debugging purposes.

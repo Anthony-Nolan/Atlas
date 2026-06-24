@@ -1,4 +1,4 @@
-﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights;
 using Microsoft.ApplicationInsights;
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;

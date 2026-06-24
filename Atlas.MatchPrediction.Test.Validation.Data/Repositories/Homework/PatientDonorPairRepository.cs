@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Sql.BulkInsert;
+using Atlas.Common.Sql.BulkInsert;
 using Atlas.MatchPrediction.Test.Validation.Data.Context;
 using Atlas.MatchPrediction.Test.Validation.Data.Models.Homework;
 using Dapper;

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System.Data;
 using Atlas.SearchTracking.Data.Context;
 using Microsoft.Data.Sqlite;

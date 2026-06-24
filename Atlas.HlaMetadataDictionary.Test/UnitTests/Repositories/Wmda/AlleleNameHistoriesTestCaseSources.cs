@@ -1,4 +1,4 @@
-﻿namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda;
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda;
 
 public class AlleleNameHistoriesTestCaseSources
 {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Atlas.Common.Public.Models.GeneticData;
 using static EnumStringValues.EnumExtensions;

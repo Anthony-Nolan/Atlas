@@ -1,4 +1,4 @@
-﻿using AwesomeAssertions;
+using AwesomeAssertions;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using NSubstitute;
 using NUnit.Framework;

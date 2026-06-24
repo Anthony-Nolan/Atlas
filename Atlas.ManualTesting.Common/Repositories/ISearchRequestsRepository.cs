@@ -1,4 +1,4 @@
-﻿using Atlas.ManualTesting.Common.Models;
+using Atlas.ManualTesting.Common.Models;
 using Atlas.ManualTesting.Common.Models.Entities;
 
 namespace Atlas.ManualTesting.Common.Repositories;

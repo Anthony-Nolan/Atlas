@@ -1,4 +1,4 @@
-﻿using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.Data.Repositories;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿namespace Atlas.SearchTracking.Common.Config;
+namespace Atlas.SearchTracking.Common.Config;
 
 public static class SearchTrackingConstants
 {

@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.Search.Results.MatchPrediction;
+using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;

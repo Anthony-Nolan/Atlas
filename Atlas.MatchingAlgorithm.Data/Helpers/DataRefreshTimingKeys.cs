@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.Data.Helpers;
+namespace Atlas.MatchingAlgorithm.Data.Helpers;
 
 //This isn't ideally located, but since the keys have to be accessed from the .Data project, they can't live in the HlaProcessor, where they might naturally belong.
 public static class DataRefreshTimingKeys

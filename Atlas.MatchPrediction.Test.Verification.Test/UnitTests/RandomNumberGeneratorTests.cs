@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
 using AwesomeAssertions;
 using NUnit.Framework;

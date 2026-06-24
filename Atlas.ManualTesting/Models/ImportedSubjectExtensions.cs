@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.ManualTesting.Common.Models;
 
 namespace Atlas.ManualTesting.Models;

@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.MatchCalculation;
 

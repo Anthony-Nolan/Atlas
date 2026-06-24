@@ -1,4 +1,4 @@
-﻿using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using System.Collections.Generic;
 
 namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImport;

@@ -1,4 +1,4 @@
-﻿using EnumStringValues;
+using EnumStringValues;
 
 namespace Atlas.MatchingAlgorithm.Client.Models.Donors;
 

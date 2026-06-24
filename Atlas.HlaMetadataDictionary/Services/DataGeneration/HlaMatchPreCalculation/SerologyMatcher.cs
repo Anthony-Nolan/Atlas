@@ -1,4 +1,4 @@
-﻿using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
+using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using System.Collections.Generic;
 using System.Linq;
 

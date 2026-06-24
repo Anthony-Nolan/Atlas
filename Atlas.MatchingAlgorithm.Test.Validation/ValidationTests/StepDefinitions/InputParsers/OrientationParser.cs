@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers;
 

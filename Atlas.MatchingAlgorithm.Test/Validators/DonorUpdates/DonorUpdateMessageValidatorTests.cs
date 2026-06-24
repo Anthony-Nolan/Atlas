@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Public.Models.ServiceBus;
+using Atlas.Common.Public.Models.ServiceBus;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
 using FluentValidation.TestHelper;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
 

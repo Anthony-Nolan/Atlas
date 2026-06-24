@@ -1,4 +1,4 @@
-﻿using Atlas.MatchPrediction.Test.Validation.Data.Context;
+using Atlas.MatchPrediction.Test.Validation.Data.Context;
 using Atlas.MatchPrediction.Test.Validation.Data.Models.Homework;
 using Dapper;
 using Microsoft.Data.SqlClient;

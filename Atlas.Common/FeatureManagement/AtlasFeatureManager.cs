@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration.AzureAppConfiguration;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.FeatureManagement;
 using System.Collections.Generic;
 using System.Linq;

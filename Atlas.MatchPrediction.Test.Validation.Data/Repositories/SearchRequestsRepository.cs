@@ -1,4 +1,4 @@
-﻿using Atlas.ManualTesting.Common.Repositories;
+using Atlas.ManualTesting.Common.Repositories;
 using Atlas.MatchPrediction.Test.Validation.Data.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Sql.BulkInsert;
 

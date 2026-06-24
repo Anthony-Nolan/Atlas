@@ -1,4 +1,4 @@
-﻿namespace Atlas.Common.AzureStorage.Blob;
+namespace Atlas.Common.AzureStorage.Blob;
 
 public class SearchResultsUploadSettings
 {

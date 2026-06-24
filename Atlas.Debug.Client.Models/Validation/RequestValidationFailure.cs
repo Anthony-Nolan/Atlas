@@ -1,4 +1,4 @@
-﻿namespace Atlas.Debug.Client.Models.Validation;
+namespace Atlas.Debug.Client.Models.Validation;
 
 /// <summary>
 /// Subset of most useful properties from the `FluentValidation.Results.ValidationFailure` class.

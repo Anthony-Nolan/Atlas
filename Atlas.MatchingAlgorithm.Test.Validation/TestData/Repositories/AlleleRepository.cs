@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.MatchGrades;

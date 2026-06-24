@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchPrediction.ApplicationInsights;

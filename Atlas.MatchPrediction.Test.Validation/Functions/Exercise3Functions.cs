@@ -1,4 +1,4 @@
-﻿using Atlas.Common.Utils.Http;
+using Atlas.Common.Utils.Http;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Test.Validation.Services.Exercise3;
 using Microsoft.AspNetCore.Http;

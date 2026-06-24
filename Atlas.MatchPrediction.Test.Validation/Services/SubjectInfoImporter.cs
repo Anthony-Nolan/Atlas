@@ -1,4 +1,4 @@
-﻿using Atlas.ManualTesting.Common.Models;
+using Atlas.ManualTesting.Common.Models;
 using Atlas.ManualTesting.Common.Services;
 using Atlas.MatchPrediction.Test.Validation.Data.Models;
 using Atlas.MatchPrediction.Test.Validation.Data.Repositories;

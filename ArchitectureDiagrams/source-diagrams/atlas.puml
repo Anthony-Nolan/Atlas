@@ -1,4 +1,4 @@
-﻿@startuml atlas
+@startuml atlas
 !include ./styling/atlas-styling.puml
 
 actor Consumer as consumer

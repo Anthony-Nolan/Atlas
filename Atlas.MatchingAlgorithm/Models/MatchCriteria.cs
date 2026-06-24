@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Common.Models;
 
 namespace Atlas.MatchingAlgorithm.Models;
 
