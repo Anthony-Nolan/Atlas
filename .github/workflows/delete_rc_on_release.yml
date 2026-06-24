@@ -1,0 +1,33 @@
+# This workflow will:
+# * When a released tag is pushed:
+# * Parse the major/minor version of the tag
+# * Delete any corresponding rc/* branch from origin
+
+name: Delete Deployed Release Candidate Branch
+
+on:
+  push:
+    tags:
+      - 'released/**'
+
+jobs:
+  delete-rc-branch:
+    name: Delete Deployed RC Branch
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Use third-party tool to parse semver from arbitrarily formatted tag
+      - run: sudo npm install -g semver
+
+      - run: |
+          # Extract semantic version from tag and cut to major.minor
+          majMin=$(semver -c ${{ github.ref }} | cut -f1,2 -d'.')
+
+          echo "Parsed major.minor: $majMin"
+
+          git push origin --delete "rc/$majMin" || true
+          git push origin --delete "rc/$majMin.x" || true

@@ -1,0 +1,40 @@
+# This workflow will:
+# * Identify creation of (but not updates to) release candidate branches, as denoted by `rc/*`
+# * Bump the minor version of the service on the *master* branch
+
+name: Post Release Candidate Branch Creation
+
+on:
+  # Runs on create of *any* branch. See https://github.community/t/trigger-job-on-branch-created/16878/5 - cannot currently trigger on create and filter by branch.
+  # We can either manually filter, or only trigger on push - and we don't want to bump the version every time we push to an rc branch!
+  create:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  bump-version:
+    name: Post Release Candidate Branch Creation
+    # Only run if *creating* an rc branch (excludes hotfix/* and all other branches)
+    if: ${{ contains(github.ref, 'refs/heads/rc/') }}
+    # Must run on windows - npm package used to bump version does not work on Ubuntu. https://github.com/vweevers/dotnet-bump/issues/1
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # By default, will checkout the pushed branch. We want to bump the version on *master*
+          ref: 'master'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm install -g dotnet-bump
+
+      # Cannot push without identification
+      - run: git config --global user.email ${{ github.actor }}
+      - run: git config --global user.name ${{ github.actor }}
+
+      # Note that dotnet-bump commits and tags. Tags are not pushed here as we don't want a version tag at this point.
+      - run: dotnet-bump minor
+      - run: git push
