@@ -1,0 +1,233 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Development" />
+    <BuildType Name="Release" />
+  </Configurations>
+  <Folder Name="/DebugClient/">
+    <Project Path="Atlas.Debug.Client.Models/Atlas.Debug.Client.Models.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.Debug.Client/Atlas.Debug.Client.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+  </Folder>
+  <Folder Name="/DonorImport/">
+    <File Path="README_DonorImport.md" />
+    <Project Path="Atlas.DonorImport.Data/Atlas.DonorImport.Data.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.DonorImport.FileSchema.Models/Atlas.DonorImport.FileSchema.Models.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.DonorImport.Functions/Atlas.DonorImport.Functions.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.DonorImport.Test.Integration/Atlas.DonorImport.Test.Integration.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.DonorImport.Test/Atlas.DonorImport.Test.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.DonorImport/Atlas.DonorImport.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+  </Folder>
+  <Folder Name="/HlaMetadataDictionary/">
+    <File Path="README_HlaMetadataDictionary.md" />
+    <Project Path="Atlas.HlaMetadataDictionary.Test/Atlas.HlaMetadataDictionary.Test.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.HlaMetadataDictionary/Atlas.HlaMetadataDictionary.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+  </Folder>
+  <Folder Name="/ManualTesting/">
+    <File Path="README_ManualTesting.md" />
+    <Project Path="Atlas.ManualTesting.Common/Atlas.ManualTesting.Common.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.ManualTesting.Test/Atlas.ManualTesting.Test.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.ManualTesting/Atlas.ManualTesting.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchingAlgorithm.Test.Performance/Atlas.MatchingAlgorithm.Test.Performance.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchPrediction.Test.Verification.Data/Atlas.MatchPrediction.Test.Verification.Data.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchPrediction.Test.Verification/Atlas.MatchPrediction.Test.Verification.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+  </Folder>
+  <Folder Name="/ManualTesting/Validation/">
+    <Project Path="Atlas.MatchPrediction.Test.Validation.Data/Atlas.MatchPrediction.Test.Validation.Data.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchPrediction.Test.Validation/Atlas.MatchPrediction.Test.Validation.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+  </Folder>
+  <Folder Name="/ManualTesting/Verification/">
+    <Project Path="Atlas.MatchPrediction.Test.Verification.Test/Atlas.MatchPrediction.Test.Verification.Test.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+  </Folder>
+  <Folder Name="/MatchingAlgorithm/">
+    <File Path="README_MatchingAlgorithm.md" />
+    <Project Path="Atlas.MatchingAlgorithm.Api/Atlas.MatchingAlgorithm.Api.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchingAlgorithm.Client.Models/Atlas.MatchingAlgorithm.Client.Models.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchingAlgorithm.Common/Atlas.MatchingAlgorithm.Common.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchingAlgorithm.Data.Persistent/Atlas.MatchingAlgorithm.Data.Persistent.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchingAlgorithm.Data/Atlas.MatchingAlgorithm.Data.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchingAlgorithm.Functions.DonorManagement/Atlas.MatchingAlgorithm.Functions.DonorManagement.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchingAlgorithm.Functions/Atlas.MatchingAlgorithm.Functions.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchingAlgorithm/Atlas.MatchingAlgorithm.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+  </Folder>
+  <Folder Name="/MatchingAlgorithm/MatchingAlgorithm.Tests/">
+    <Project Path="Atlas.MatchingAlgorithm.Test.Integration/Atlas.MatchingAlgorithm.Test.Integration.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchingAlgorithm.Test.Validation/Atlas.MatchingAlgorithm.Test.Validation.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchingAlgorithm.Test/Atlas.MatchingAlgorithm.Test.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+  </Folder>
+  <Folder Name="/MatchPrediction/">
+    <File Path="README_MatchPredictionAlgorithm.md" />
+    <Project Path="Atlas.MatchPrediction.Data/Atlas.MatchPrediction.Data.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchPrediction.Functions/Atlas.MatchPrediction.Functions.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchPrediction.Test.Integration/Atlas.MatchPrediction.Test.Integration.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchPrediction.Test/Atlas.MatchPrediction.Test.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchPrediction.Worker/Atlas.MatchPrediction.Worker.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MatchPrediction/Atlas.MatchPrediction.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+  </Folder>
+  <Folder Name="/MultipleAlleleCodeDictionary/">
+    <File Path="README_MultipleAlleleCodeDictionary.md" />
+    <Project Path="Atlas.MultipleAlleleCodeDictionary.Test.Integration/Atlas.MultipleAlleleCodeDictionary.Test.Integration.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MultipleAlleleCodeDictionary.Test/Atlas.MultipleAlleleCodeDictionary.Test.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.MultipleAlleleCodeDictionary/Atlas.MultipleAlleleCodeDictionary.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+  </Folder>
+  <Folder Name="/RepeatSearch/">
+    <File Path="README_RepeatSearch.md" />
+    <Project Path="Atlas.RepeatSearch.Data/Atlas.RepeatSearch.Data.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.RepeatSearch.Functions/Atlas.RepeatSearch.Functions.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.RepeatSearch.Test/Atlas.RepeatSearch.Test.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.RepeatSearch/Atlas.RepeatSearch.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+  </Folder>
+  <Folder Name="/SearchTracking/">
+    <Project Path="Atlas.SearchTracking.Common/Atlas.SearchTracking.Common.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.SearchTracking.Data.Test/Atlas.SearchTracking.Data.Test.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.SearchTracking.Data/Atlas.SearchTracking.Data.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.SearchTracking.Functions/Atlas.SearchTracking.Functions.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.SearchTracking.Test/Atlas.SearchTracking.Test.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+    <Project Path="Atlas.SearchTracking/Atlas.SearchTracking.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="nuget.config" />
+  </Folder>
+  <Folder Name="/Solution Items/Pipelines/">
+    <File Path="build-pipeline.yml" />
+    <File Path="test-pipeline.yml" />
+  </Folder>
+  <Folder Name="/Solution Items/Readmes/">
+    <File Path="README.md" />
+    <File Path="README_Specifications.md" />
+  </Folder>
+  <Folder Name="/Solution Items/Readmes/Development/">
+    <File Path="README_ArchitecturalOverview.md" />
+    <File Path="README_Contribution_Versioning.md" />
+    <File Path="README_DevelopmentSettings.md" />
+    <File Path="README_DevelopmentStartUpGuide.md" />
+    <File Path="README_Maintenance.md" />
+  </Folder>
+  <Folder Name="/Solution Items/Readmes/InstallationAndUsage/">
+    <File Path="README_Configuration.md" />
+    <File Path="README_Deployment.md" />
+    <File Path="README_Integration.md" />
+    <File Path="README_Maintenance.md" />
+    <File Path="README_Support.md" />
+  </Folder>
+  <Project Path="Atlas.Client.Models/Atlas.Client.Models.csproj">
+    <BuildType Solution="Development|*" Project="Debug" />
+  </Project>
+  <Project Path="Atlas.Common.Public.Models/Atlas.Common.Public.Models.csproj">
+    <BuildType Solution="Development|*" Project="Debug" />
+  </Project>
+  <Project Path="Atlas.Common.Test/Atlas.Common.Test.csproj">
+    <BuildType Solution="Development|*" Project="Debug" />
+  </Project>
+  <Project Path="Atlas.Common/Atlas.Common.csproj">
+    <BuildType Solution="Development|*" Project="Debug" />
+  </Project>
+  <Project Path="Atlas.Functions.PublicApi/Atlas.Functions.PublicApi.csproj">
+    <BuildType Solution="Development|*" Project="Debug" />
+  </Project>
+  <Project Path="Atlas.Functions.Test/Atlas.Functions.Test.csproj">
+    <BuildType Solution="Development|*" Project="Debug" />
+  </Project>
+  <Project Path="Atlas.Functions/Atlas.Functions.csproj">
+    <BuildType Solution="Development|*" Project="Debug" />
+  </Project>
+</Solution>
