@@ -100,6 +100,32 @@ jobs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/published-models'
           ArtifactName: published-models
 
+      - task: VersionReaderTask@2
+        displayName: 'Read Atlas Version'
+        inputs:
+          searchPattern: '**/Atlas.Functions.csproj'
+          variablesPrefix: Atlas
+
+      - task: file-creator@6
+        displayName: 'Create version.txt'
+        inputs:
+          filepath: '$(Build.ArtifactStagingDirectory)/metadata/version.txt'
+          filecontent: '$(Atlas_Version)'
+          fileoverwrite: true
+
+      - task: file-creator@6
+        displayName: 'Create commitSha.txt'
+        inputs:
+          filepath: '$(Build.ArtifactStagingDirectory)/metadata/commitSha.txt'
+          filecontent: '$(Build.SourceVersion)'
+          fileoverwrite: true
+
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: Metadata'
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/metadata'
+          ArtifactName: atlas_metadata
+
         # Suffix version number with build ID to allow for a prerelease ci (continuous integration) packages to be published
       - bash: dotnet pack **/Atlas.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/published-models-ci --no-build --version-suffix "ci-$(Build.BuildId)"
         displayName: Pack Prerelease Client Models
