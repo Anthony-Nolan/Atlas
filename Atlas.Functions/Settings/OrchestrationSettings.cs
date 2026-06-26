@@ -20,8 +20,22 @@ public class OrchestrationSettings
     public string ParallelBatchCleanupCronSchedule { get; set; }
 
     /// <summary>
+    /// CRON schedule for the parallel-MPA abandonment timer trigger (<c>MarkRunsAsAbandoned</c>).
+    /// Six-field NCrontab format.
+    /// </summary>
+    public string ParallelBatchAbandonmentCronSchedule { get; set; }
+
+    /// <summary>
     /// Number of days to retain per-batch rows after a parallel MPA run finalises. Parent run rows
-    /// are always retained — only the verbose per-batch rows are purged.
+    /// are always retained — only the verbose per-batch rows are purged. Also reused as the retention
+    /// period for abandoned runs.
     /// </summary>
     public int ParallelBatchRetentionDays { get; set; }
+
+    /// <summary>
+    /// Minutes after a parallel MPA run was initiated (<c>MatchPredictionRunInitiatedUtc</c>) before a run that
+    /// still has un-returned batches is abandoned. Used by the <c>MarkRunsAsAbandoned</c> timer to stop waiting
+    /// for lost batches.
+    /// </summary>
+    public int AbandonBatchAfterMinutes { get; set; }
 }

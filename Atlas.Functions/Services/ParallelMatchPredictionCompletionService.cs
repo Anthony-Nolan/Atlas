@@ -45,6 +45,17 @@ public interface IParallelMatchPredictionCompletionService
     /// </para>
     /// </remarks>
     Task CompleteRun(int runId);
+
+    /// <summary>
+    /// Abandons a single parallel match-prediction run whose batches never all returned within the configured
+    /// timeout: transitions the run to <see cref="ParallelMatchPredictionRunStatus.Abandoned"/> (marking its
+    /// still-pending batches <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionBatchStatus.Abandoned"/>
+    /// and setting <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRun.IsSuccessful"/> to
+    /// <c>false</c>) and publishes a single downstream failure notification (<c>WasSuccessful=false</c>).
+    /// The status compare-and-swap in the repository guards against double-processing; if the run is no longer
+    /// <c>Running</c> (already abandoned/finalised by another tick) this is a no-op.
+    /// </summary>
+    Task AbandonRun(int runId);
 }
 
 public class ParallelMatchPredictionCompletionService : IParallelMatchPredictionCompletionService
@@ -115,6 +126,36 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
             await repository.MarkRunFailedDuringCompletion(runId, DateTime.UtcNow);
             throw;
         }
+    }
+
+    public async Task AbandonRun(int runId)
+    {
+        // The repository performs a status compare-and-swap (Running -> Abandoned). Only the winning caller gets a
+        // header back, so we mark first and notify only on a real transition — this prevents a duplicate failure
+        // notification when two timer ticks overlap.
+        var header = await repository.TryMarkRunAsAbandoned(runId, DateTime.UtcNow);
+        if (header is null)
+        {
+            logger.SendTrace(
+                $"Parallel match prediction run {runId} was no longer in the Running state; skipping abandonment.",
+                LogLevel.Info
+            );
+            return;
+        }
+
+        await searchCompletionMessageSender.PublishFailureMessage(new SendFailureNotificationParameters
+            {
+                SearchRequestId = header.SearchIdentifier.ToString(),
+                RepeatSearchRequestId = header.RepeatSearchIdentifier?.ToString(),
+                StageReached = "MatchPredictionBatchProcessing",
+            }
+        );
+
+        logger.SendTrace(
+            $"Abandoned parallel match prediction run {runId} (search {header.SearchIdentifier}): "
+          + "one or more batches did not return within the configured timeout. Failure notification sent.",
+            LogLevel.Warn
+        );
     }
 
     private async Task CompleteFailedRun(
