@@ -25,5 +25,15 @@ public enum ParallelMatchPredictionRunStatus
     /// metrics, a failure notification and the tracking event) but no search results were persisted.
     /// </summary>
     FailedDuringBatchProcessing,
+
+    /// <summary>
+    /// One or more batches never returned a result within the configured timeout, so the run was abandoned:
+    /// the missing batches were marked <see cref="ParallelMatchPredictionBatchStatus.Abandoned"/> and a
+    /// failure notification was sent downstream. Per-batch rows are retained for research until cleanup.
+    /// If every missing batch's result later arrives (before cleanup) the run is replayed to
+    /// <see cref="Finalised"/>. Per-batch rows are purged by the retention clean-up like any other run
+    /// (<see cref="ParallelMatchPredictionRun.IsCleanedUp"/> is set; the status stays <c>Abandoned</c>).
+    /// </summary>
+    Abandoned,
 }
 

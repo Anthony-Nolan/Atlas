@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Context;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchingAlgorithm.Data.Context;
@@ -101,24 +102,18 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
         /// <inheritdoc />
         public void AddDonorsToAtlasDonorStore(IEnumerable<int> donorIds)
         {
-            // custom execution strategy must be used to allow manual transactions 
-            var executionStrategy = donorContext.Database.CreateExecutionStrategy();
-            executionStrategy.Execute(() =>
+            // transaction must be used to temporarily allow identity insert
+            donorContext.ExecuteInTransaction(() =>
             {
-                // transaction must be used to temporarily allow identity insert
-                using (var transaction = donorContext.Database.BeginTransaction())
+                donorContext.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Donors.Donors ON");
+                donorContext.SaveChanges();
+
+                foreach (var donorId in donorIds)
                 {
-                    donorContext.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Donors.Donors ON");
-                    donorContext.SaveChanges();
-
-                    foreach (var donorId in donorIds)
-                    {
-                        donorContext.Donors.Add(new DonorImport.Data.Models.Donor {AtlasId = donorId, ExternalDonorCode = donorId.ToString()});
-                    }
-
-                    donorContext.SaveChanges();
-                    transaction.Commit();
+                    donorContext.Donors.Add(new DonorImport.Data.Models.Donor {AtlasId = donorId, ExternalDonorCode = donorId.ToString()});
                 }
+
+                donorContext.SaveChanges();
             });
         }
 
