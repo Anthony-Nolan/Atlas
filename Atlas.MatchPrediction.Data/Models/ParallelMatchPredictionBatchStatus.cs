@@ -17,5 +17,14 @@ public enum ParallelMatchPredictionBatchStatus
     /// <see cref="ParallelMatchPredictionBatch.FailureException"/> capture the details.
     /// </summary>
     Failed,
+
+    /// <summary>
+    /// The batch was still <see cref="Requested"/> when its run was abandoned: no result (success or failure)
+    /// ever arrived within the configured timeout (the request message was lost, the Worker failed without
+    /// publishing a result, or the result-send itself failed). The row is retained for research until the
+    /// run is cleaned up. A late result arriving before cleanup moves the batch on to
+    /// <see cref="ResultsReceived"/> or <see cref="Failed"/>.
+    /// </summary>
+    Abandoned,
 }
 

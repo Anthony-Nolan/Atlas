@@ -22,6 +22,7 @@ public class ParallelMatchPredictionAggregatorFunctions
     private readonly IParallelMatchPredictionRepository repository;
     private readonly IParallelMatchPredictionCompletionService completionService;
     private readonly int retentionDays;
+    private readonly int abandonBatchAfterMinutes;
     private readonly ILogger<ParallelMatchPredictionAggregatorFunctions> logger;
 
     public ParallelMatchPredictionAggregatorFunctions(
@@ -33,6 +34,7 @@ public class ParallelMatchPredictionAggregatorFunctions
         this.repository = repository;
         this.completionService = completionService;
         retentionDays = orchestrationSettings.Value.ParallelBatchRetentionDays;
+        abandonBatchAfterMinutes = orchestrationSettings.Value.AbandonBatchAfterMinutes;
         this.logger = logger;
     }
 
@@ -53,7 +55,6 @@ public class ParallelMatchPredictionAggregatorFunctions
         )]
         ParallelMatchPredictionBatchResult message)
     {
-
         if (message.IsSuccessful)
         {
             var wasBatchResultRecordedSuccessfully = await repository.RecordBatchResult(
@@ -116,7 +117,7 @@ public class ParallelMatchPredictionAggregatorFunctions
     [Function(nameof(FinaliseCompletedParallelMatchPredictionRuns))]
     public async Task FinaliseCompletedParallelMatchPredictionRuns(
         [TimerTrigger("%AtlasFunction:Orchestration:ParallelFinalisationCronSchedule%")]
-        TimerInfo timer)
+        TimerInfo _)
     {
         var runIdsAwaitingFinalisation = await repository.GetRunIdsAwaitingFinalisationAndNotLeased();
         if (runIdsAwaitingFinalisation.Count == 0)
@@ -152,10 +153,49 @@ public class ParallelMatchPredictionAggregatorFunctions
             catch (Exception ex)
             {
                 // Run is already marked FailedDuringCompletion by the completion service — log and move on.
-                logger.LogError(ex,
-                    "Parallel match prediction run {RunId} failed during completion and has been marked as FailedDuringCompletion.",
+                logger.LogError(ex, "Parallel match prediction run {RunId} failed during completion and has been marked as FailedDuringCompletion.",
                     runId
                 );
+            }
+        }
+    }
+
+    /// <summary>
+    /// Timer-triggered abandonment sweep. Finds runs whose batches were initiated more than
+    /// <c>AbandonBatchAfterMinutes</c> minutes ago but that still have un-returned batches, then for each one marks the
+    /// run and its missing batches as
+    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.Abandoned"/> and publishes a
+    /// failure notification (<c>WasSuccessful=false</c>) downstream. The per-batch rows are retained for research until
+    /// the clean-up timer purges them. If the missing batch results arrive later (before cleanup) the finaliser replays
+    /// the run to <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.Finalised"/>.
+    /// </summary>
+    [Function(nameof(MarkRunsAsAbandoned))]
+    public async Task MarkRunsAsAbandoned(
+        [TimerTrigger("%AtlasFunction:Orchestration:ParallelBatchAbandonmentCronSchedule%")]
+        TimerInfo _)
+    {
+        var cutoff = DateTime.UtcNow.AddMinutes(-abandonBatchAfterMinutes);
+        var runIdsToAbandon = await repository.GetRunIdsToAbandon(cutoff);
+        if (runIdsToAbandon.Count == 0)
+        {
+            return;
+        }
+
+        logger.LogWarning(
+            "Found {Count} parallel match prediction run(s) to abandon (no batch results received within {Minutes} minute(s) of initiation).",
+            runIdsToAbandon.Count, abandonBatchAfterMinutes
+        );
+
+        foreach (var runId in runIdsToAbandon)
+        {
+            try
+            {
+                await completionService.AbandonRun(runId);
+            }
+            catch (Exception ex)
+            {
+                // Log and continue so a single failure does not block abandoning the remaining runs in this tick.
+                logger.LogError(ex, "Failed to abandon parallel match prediction run {RunId}.", runId);
             }
         }
     }
@@ -173,7 +213,7 @@ public class ParallelMatchPredictionAggregatorFunctions
     [Function(nameof(CleanupOldParallelMatchPredictionBatches))]
     public async Task CleanupOldParallelMatchPredictionBatches(
         [TimerTrigger("%AtlasFunction:Orchestration:ParallelBatchCleanupCronSchedule%")]
-        TimerInfo timer)
+        TimerInfo _)
     {
         var cutoffDate = DateTime.UtcNow.AddDays(-retentionDays);
         var deletedBatchesCount = await repository.CleanupBatchesForRunsInitiatedBefore(cutoffDate);

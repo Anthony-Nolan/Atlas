@@ -431,6 +431,18 @@ variable "ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE" {
   default = 10
 }
 
+variable "ORCHESTRATION_PARALLEL_ABANDON_BATCH_AFTER_MINUTES" {
+  type        = number
+  default     = 360
+  description = "Minutes after a parallel match-prediction run is initiated before a run with un-returned batches is abandoned (its lost batches and the run are marked Abandoned and a failure notification is sent)."
+}
+
+variable "ORCHESTRATION_PARALLEL_ABANDONMENT_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */5 * * * *"
+  description = "CRON schedule (six-field NCrontab) for the timer that abandons parallel match-prediction runs whose batches never returned."
+}
+
 variable "ORCHESTRATION_PARALLEL_BATCH_CLEANUP_CRON_SCHEDULE" {
   type        = string
   default     = "0 0 3 * * *"
