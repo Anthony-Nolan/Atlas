@@ -83,6 +83,16 @@ resource "azurerm_servicebus_subscription" "parallel-match-prediction-request-ru
   dead_lettering_on_message_expiration = false
 }
 
+resource "azurerm_servicebus_subscription" "audit-parallel-match-prediction-requests" {
+  name                                 = "audit"
+  topic_id                             = azurerm_servicebus_topic.parallel-match-prediction-requests.id
+  auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
+  default_message_ttl                  = var.default_servicebus_settings.audit-subscription-ttl-expiry
+  lock_duration                        = var.default_servicebus_settings.default-read-lock
+  max_delivery_count                   = var.default_servicebus_settings.default-message-retries
+  dead_lettering_on_message_expiration = false
+}
+
 resource "azurerm_servicebus_topic" "parallel-match-prediction-results" {
   name                  = "parallel-match-prediction-results"
   namespace_id          = var.servicebus_namespace.id
@@ -101,4 +111,17 @@ resource "azurerm_servicebus_subscription" "parallel-match-prediction-results-ag
   max_delivery_count                   = var.default_servicebus_settings.default-message-retries
   dead_lettering_on_message_expiration = false
   requires_session                     = true
+}
+
+// The audit subscription deliberately omits `requires_session`: it only retains messages for inspection and is
+// never read via a session receiver, mirroring the `search-tracking` topic where the audit sub is session-less
+// while the consuming subscription requires sessions.
+resource "azurerm_servicebus_subscription" "audit-parallel-match-prediction-results" {
+  name                                 = "audit"
+  topic_id                             = azurerm_servicebus_topic.parallel-match-prediction-results.id
+  auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
+  default_message_ttl                  = var.default_servicebus_settings.audit-subscription-ttl-expiry
+  lock_duration                        = var.default_servicebus_settings.default-read-lock
+  max_delivery_count                   = var.default_servicebus_settings.default-message-retries
+  dead_lettering_on_message_expiration = false
 }
