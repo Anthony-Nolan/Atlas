@@ -57,6 +57,17 @@ namespace Atlas.MatchPrediction.Data.Migrations
                 schema: "MatchPrediction",
                 table: "ParallelMatchPredictionRuns");
 
+            // Best-effort restore of the legacy status before the IsCleanedUp column is dropped, so older
+            // code that still expects FinalisedAndCleanedUp does not misread these historical rows.
+            // In the pre-migration world a finalised-and-cleaned run *was* FinalisedAndCleanedUp, so mapping
+            // (Finalised + IsCleanedUp) back to that value is the faithful inverse. Cleaned-up rows in other
+            // statuses (failed/abandoned) had no equivalent legacy value and are left as-is.
+            migrationBuilder.Sql(@"
+                UPDATE [MatchPrediction].[ParallelMatchPredictionRuns]
+                SET [Status] = 'FinalisedAndCleanedUp'
+                WHERE [Status] = 'Finalised' AND [IsCleanedUp] = 1
+            ");
+
             migrationBuilder.DropColumn(
                 name: "IsCleanedUp",
                 schema: "MatchPrediction",
