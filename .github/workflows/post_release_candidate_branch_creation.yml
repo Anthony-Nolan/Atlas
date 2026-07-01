@@ -35,6 +35,27 @@ jobs:
       - run: git config --global user.email ${{ github.actor }}
       - run: git config --global user.name ${{ github.actor }}
 
-      # Note that dotnet-bump commits and tags. Tags are not pushed here as we don't want a version tag at this point.
-      - run: dotnet-bump minor
+      # dotnet-bump only understands a literal <Version> tag, not <VersionPrefix>, which Atlas
+      # .csproj files use so that `dotnet pack --version-suffix` keeps working for CI prerelease
+      # packages. So version.json (a plain {"version": "x.y.z"}) is the source of truth that
+      # dotnet-bump bumps, then its new value is synced into every csproj's VersionPrefix below.
+      # --no-commit is used so both changes land in a single commit.
+      - run: dotnet-bump minor version.json --no-commit
+
+      - name: Sync VersionPrefix from version.json
+        shell: pwsh
+        run: |
+          $version = (Get-Content version.json | ConvertFrom-Json).version
+          Get-ChildItem -Recurse -Filter *.csproj | ForEach-Object {
+            $content = Get-Content $_.FullName -Raw
+            if ($content -match '<VersionPrefix>[\d.]+</VersionPrefix>') {
+              $updated = $content -replace '<VersionPrefix>[\d.]+</VersionPrefix>', "<VersionPrefix>$version</VersionPrefix>"
+              Set-Content -Path $_.FullName -NoNewline -Value $updated
+              Write-Host "Updated $($_.FullName) to $version"
+            }
+          }
+          echo "VERSION=$version" >> $env:GITHUB_ENV
+
+      - run: git add -A
+      - run: git commit -m "v${{ env.VERSION }}"
       - run: git push
