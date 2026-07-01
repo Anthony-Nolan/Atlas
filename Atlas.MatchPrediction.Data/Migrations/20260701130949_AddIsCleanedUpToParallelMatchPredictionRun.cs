@@ -25,9 +25,16 @@ namespace Atlas.MatchPrediction.Data.Migrations
 
             // Migrate legacy FinalisedAndCleanedUp rows: restore Status to Finalised and mark IsCleanedUp.
             // FinalisedAndCleanedUp has been removed from the enum; Status is stored as nvarchar.
+            // StatusDateUtc is realigned to FinalisedTimeUtc: under the new model the cleanup step no longer
+            // touches Status/StatusDateUtc, so a finalised-and-cleaned run's StatusDateUtc equals its
+            // finalisation moment. The legacy rows instead carried the cleanup time, which would leave the
+            // (Status='Finalised', StatusDateUtc) pair inconsistent. COALESCE keeps the existing value on the
+            // (not expected) chance FinalisedTimeUtc is null.
             migrationBuilder.Sql(@"
                 UPDATE [MatchPrediction].[ParallelMatchPredictionRuns]
-                SET [IsCleanedUp] = 1, [Status] = 'Finalised'
+                SET [IsCleanedUp] = 1,
+                    [Status] = 'Finalised',
+                    [StatusDateUtc] = COALESCE([FinalisedTimeUtc], [StatusDateUtc])
                 WHERE [Status] = 'FinalisedAndCleanedUp'
             ");
 
@@ -57,15 +64,17 @@ namespace Atlas.MatchPrediction.Data.Migrations
                 schema: "MatchPrediction",
                 table: "ParallelMatchPredictionRuns");
 
-            // Best-effort restore of the legacy status before the IsCleanedUp column is dropped, so older
-            // code that still expects FinalisedAndCleanedUp does not misread these historical rows.
-            // In the pre-migration world a finalised-and-cleaned run *was* FinalisedAndCleanedUp, so mapping
-            // (Finalised + IsCleanedUp) back to that value is the faithful inverse. Cleaned-up rows in other
-            // statuses (failed/abandoned) had no equivalent legacy value and are left as-is.
+            // Restore the pre-migration invariant "no batch rows implies FinalisedAndCleanedUp" before the
+            // IsCleanedUp column is dropped. Mapping cleaned-up Finalised rows back is the faithful inverse;
+            // mapping cleaned-up Running rows is a correctness fix — old code's finalisation query treats a
+            // batch-less Running run as ready (All(...) over an empty set is vacuously true) and would
+            // reprocess it. Failed runs are left as-is: terminal and never re-queried. StatusDateUtc is
+            // stamped with the rollback time, the moment this status change happens.
             migrationBuilder.Sql(@"
                 UPDATE [MatchPrediction].[ParallelMatchPredictionRuns]
-                SET [Status] = 'FinalisedAndCleanedUp'
-                WHERE [Status] = 'Finalised' AND [IsCleanedUp] = 1
+                SET [Status] = 'FinalisedAndCleanedUp',
+                    [StatusDateUtc] = SYSUTCDATETIME()
+                WHERE ([Status] = 'Finalised' OR [Status] = 'Running') AND [IsCleanedUp] = 1
             ");
 
             migrationBuilder.DropColumn(
