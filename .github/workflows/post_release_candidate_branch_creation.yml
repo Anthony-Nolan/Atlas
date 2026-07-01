@@ -47,11 +47,20 @@ jobs:
         run: |
           $version = (Get-Content version.json | ConvertFrom-Json).version
           Get-ChildItem -Recurse -Filter *.csproj | ForEach-Object {
-            $content = Get-Content $_.FullName -Raw
+            $path = $_.FullName
+            $bytes = [System.IO.File]::ReadAllBytes($path)
+            $hasBom = $bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF
+            $content = [System.IO.File]::ReadAllText($path)
+
             if ($content -match '<VersionPrefix>[\d.]+</VersionPrefix>') {
               $updated = $content -replace '<VersionPrefix>[\d.]+</VersionPrefix>', "<VersionPrefix>$version</VersionPrefix>"
-              Set-Content -Path $_.FullName -NoNewline -Value $updated
-              Write-Host "Updated $($_.FullName) to $version"
+              if ($updated -ne $content) {
+                # Preserve the file's original BOM setting; pwsh's Set-Content defaults to
+                # no-BOM UTF-8 and would otherwise strip it, causing unrelated diff churn.
+                $encoding = New-Object System.Text.UTF8Encoding($hasBom)
+                [System.IO.File]::WriteAllText($path, $updated, $encoding)
+                Write-Host "Updated $path to $version"
+              }
             }
           }
           echo "VERSION=$version" >> $env:GITHUB_ENV
