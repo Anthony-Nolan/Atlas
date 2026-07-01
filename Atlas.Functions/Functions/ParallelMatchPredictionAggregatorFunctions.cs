@@ -176,9 +176,9 @@ public class ParallelMatchPredictionAggregatorFunctions
         TimerInfo timer)
     {
         var cutoffDate = DateTime.UtcNow.AddDays(-retentionDays);
-        var deletedBatchesCount = await repository.CleanupBatchesForRunsCreatedBefore(cutoffDate);
+        var deletedBatchesCount = await repository.CleanupBatchesForRunsInitiatedBefore(cutoffDate);
         logger.LogInformation(
-            "Parallel match prediction batch cleanup deleted {Count} batch row(s) for runs created before {Cutoff:o} (retention {Days} day(s)) and marked their parent runs as IsCleanedUp.",
+            "Parallel match prediction batch cleanup deleted {Count} batch row(s) for runs initiated before {Cutoff:o} (retention {Days} day(s)) and marked their parent runs as cleaned up (IsCleanedUp=true).",
             deletedBatchesCount, cutoffDate, retentionDays
         );
     }
