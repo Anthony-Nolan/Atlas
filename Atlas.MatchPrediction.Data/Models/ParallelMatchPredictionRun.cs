@@ -10,7 +10,8 @@ namespace Atlas.MatchPrediction.Data.Models;
 /// One row per <c>SearchRequest</c> on the parallel path. Survives the batch clean-up so that
 /// historic searches remain visible even after their per-batch detail rows have been purged.
 /// </summary>
-[Index(nameof(Status), nameof(FinalisedTimeUtc))]
+[Index(nameof(IsCleanedUp), nameof(MatchPredictionRunInitiatedUtc))]
+[Index(nameof(Status))]
 public class ParallelMatchPredictionRun
 {
     [Key]
@@ -99,6 +100,14 @@ public class ParallelMatchPredictionRun
     /// <c>true</c> when every batch succeeded; <c>false</c> when at least one batch failed.
     /// </summary>
     public bool? IsSuccessful { get; set; }
+
+    /// <summary>
+    /// Whether this run's per-batch detail rows have been purged by the retention clean-up.
+    /// Tracked independently of <see cref="Status"/> so that a run keeps its outcome status
+    /// (e.g. <see cref="ParallelMatchPredictionRunStatus.Finalised"/> or a failed/abandoned state)
+    /// while still being recorded as cleaned up. 
+    /// </summary>
+    public bool IsCleanedUp { get; set; }
 
     public ICollection<ParallelMatchPredictionBatch> Batches { get; set; }
 }
