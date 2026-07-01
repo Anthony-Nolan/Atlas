@@ -131,7 +131,7 @@ public interface IParallelMatchPredictionRepository
     /// Parent run rows are intentionally retained.
     /// </summary>
     /// <returns>The number of batch rows deleted.</returns>
-    Task<int> CleanupBatchesForRunsCreatedBefore(DateTime cutoffUtc);
+    Task<int> CleanupBatchesForRunsInitiatedBefore(DateTime cutoffUtc);
 }
 
 public class ParallelMatchPredictionRepository : IParallelMatchPredictionRepository
@@ -363,13 +363,19 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
             );
     }
 
-    public async Task<int> CleanupBatchesForRunsCreatedBefore(DateTime cutoffUtc)
+    public async Task<int> CleanupBatchesForRunsInitiatedBefore(DateTime cutoffUtc)
     {
         // Every run that has been in the database longer than the retention period and has not already
         // been cleaned up, regardless of status (Finalised, failed, or abandoned while still Running).
+        // A Running run currently claimed for finalisation (FinalisationLeaseOwner set) is excluded:
+        // deleting its batches mid-flight would let the completion pipeline read an empty batch set and
+        // wrongly finalise the run as successful. Together with the single transaction below and the
+        // !IsCleanedUp guard on TryClaimFinalisationLease this closes the race - a claimed run is skipped,
+        // and an unclaimed run cleaned here can no longer be claimed afterwards.
         var runsToClean = context.ParallelMatchPredictionRuns
             .Where(r => !r.IsCleanedUp
                      && r.MatchPredictionRunInitiatedUtc < cutoffUtc
+                     && (r.Status != ParallelMatchPredictionRunStatus.Running || r.FinalisationLeaseOwner == null)
             );
 
         // Use a transaction so the batch deletion and the parent-run flag update are atomic.
