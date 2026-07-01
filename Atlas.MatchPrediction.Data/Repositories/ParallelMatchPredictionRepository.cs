@@ -120,14 +120,18 @@ public interface IParallelMatchPredictionRepository
     Task MarkRunFailedDuringCompletion(int runId, DateTime nowUtc);
 
     /// <summary>
-    /// Deletes batch rows belonging to runs that have status <see cref="ParallelMatchPredictionRunStatus.Finalised"/>
-    /// and whose <c>FinalisedTimeUtc</c> is before <paramref name="cutoffUtc"/>, then marks those runs as
-    /// <see cref="ParallelMatchPredictionRunStatus.FinalisedAndCleanedUp"/>. The whole operation is wrapped in a
-    /// transaction so that the status update and batch deletion are atomic.
+    /// Deletes batch rows belonging to runs that have not yet been cleaned up
+    /// (<see cref="ParallelMatchPredictionRun.IsCleanedUp"/> is <c>false</c>) and whose
+    /// <c>MatchPredictionRunInitiatedUtc</c> is before <paramref name="cutoffUtc"/> — i.e. every run that has
+    /// been in the database longer than the retention period, regardless of status (including abandoned
+    /// <see cref="ParallelMatchPredictionRunStatus.Running"/> runs and failed runs). Marks those runs as
+    /// cleaned up by setting <see cref="ParallelMatchPredictionRun.IsCleanedUp"/> to <c>true</c>; the run's
+    /// <see cref="ParallelMatchPredictionRun.Status"/> is left unchanged so it remains a historical record.
+    /// The whole operation is wrapped in a transaction so that the flag update and batch deletion are atomic.
     /// Parent run rows are intentionally retained.
     /// </summary>
     /// <returns>The number of batch rows deleted.</returns>
-    Task<int> CleanupBatchesForRunsFinalisedBefore(DateTime cutoffUtc);
+    Task<int> CleanupBatchesForRunsCreatedBefore(DateTime cutoffUtc);
 }
 
 public class ParallelMatchPredictionRepository : IParallelMatchPredictionRepository
@@ -272,6 +276,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
             .AsNoTracking()
             .Where(r => r.Status == ParallelMatchPredictionRunStatus.Running
                      && r.FinalisationLeaseOwner == null
+                     && !r.IsCleanedUp
                      && r.Batches.All(b => b.BatchStatus != ParallelMatchPredictionBatchStatus.Requested)
             )
             .Select(r => r.Id)
@@ -284,6 +289,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
             .Where(r => r.Id == runId
                      && r.Status == ParallelMatchPredictionRunStatus.Running
                      && r.FinalisationLeaseOwner == null
+                     && !r.IsCleanedUp
             )
             .ExecuteUpdateAsync(s => s
                 .SetProperty(r => r.FinalisationLeaseOwner, leaseOwner)
@@ -357,12 +363,14 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
             );
     }
 
-    public async Task<int> CleanupBatchesForRunsFinalisedBefore(DateTime cutoffUtc)
+    public async Task<int> CleanupBatchesForRunsCreatedBefore(DateTime cutoffUtc)
     {
+        // Every run that has been in the database longer than the retention period and has not already
+        // been cleaned up, regardless of status (Finalised, failed, or abandoned while still Running).
         var runIds = await context.ParallelMatchPredictionRuns
             .AsNoTracking()
-            .Where(r => r.Status == ParallelMatchPredictionRunStatus.Finalised
-                     && r.FinalisedTimeUtc < cutoffUtc
+            .Where(r => !r.IsCleanedUp
+                     && r.MatchPredictionRunInitiatedUtc < cutoffUtc
             )
             .Select(r => r.Id)
             .ToListAsync();
@@ -372,19 +380,18 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
             return 0;
         }
 
-        // Use a transaction so the batch deletion and the parent-status update are atomic.
+        // Use a transaction so the batch deletion and the parent-run flag update are atomic.
         await using var transaction = await context.Database.BeginTransactionAsync();
 
         var deletedBatchCount = await context.ParallelMatchPredictionBatches
             .Where(b => runIds.Contains(b.RunId))
             .ExecuteDeleteAsync();
 
-        var now = DateTime.UtcNow;
+        // Mark the runs as cleaned up. Status is intentionally left unchanged so the run keeps its outcome.
         await context.ParallelMatchPredictionRuns
             .Where(r => runIds.Contains(r.Id))
             .ExecuteUpdateAsync(s => s
-                .SetProperty(r => r.Status, ParallelMatchPredictionRunStatus.FinalisedAndCleanedUp)
-                .SetProperty(r => r.StatusDateUtc, now)
+                .SetProperty(r => r.IsCleanedUp, true)
             );
 
         await transaction.CommitAsync();

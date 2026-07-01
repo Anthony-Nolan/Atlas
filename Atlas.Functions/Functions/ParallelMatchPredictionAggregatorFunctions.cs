@@ -161,11 +161,14 @@ public class ParallelMatchPredictionAggregatorFunctions
     }
 
     /// <summary>
-    /// Timer-triggered clean-up. Deletes per-batch rows belonging to runs that finalised more than
-    /// <c>ParallelBatchRetentionDays</c> ago and marks those runs as
-    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.FinalisedAndCleanedUp"/>.
-    /// The parent <c>ParallelMatchPredictionRun</c> rows are kept indefinitely so historic searches remain visible
-    /// in dashboards/audits.
+    /// Timer-triggered clean-up. Deletes per-batch rows belonging to <em>any</em> run that has been in the
+    /// database for more than <c>ParallelBatchRetentionDays</c> (measured from <c>MatchPredictionRunInitiatedUtc</c>),
+    /// regardless of status — this includes abandoned runs still in
+    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.Running"/>,
+    /// finalised runs, and failed runs — and marks each such run with
+    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRun.IsCleanedUp"/> = <c>true</c>.
+    /// The run's <c>Status</c> is left unchanged. The parent <c>ParallelMatchPredictionRun</c> rows are kept
+    /// indefinitely so historic searches remain visible in dashboards/audits.
     /// </summary>
     [Function(nameof(CleanupOldParallelMatchPredictionBatches))]
     public async Task CleanupOldParallelMatchPredictionBatches(
@@ -173,9 +176,9 @@ public class ParallelMatchPredictionAggregatorFunctions
         TimerInfo timer)
     {
         var cutoffDate = DateTime.UtcNow.AddDays(-retentionDays);
-        var deletedBatchesCount = await repository.CleanupBatchesForRunsFinalisedBefore(cutoffDate);
+        var deletedBatchesCount = await repository.CleanupBatchesForRunsCreatedBefore(cutoffDate);
         logger.LogInformation(
-            "Parallel match prediction batch cleanup deleted {Count} batch row(s) finalised before {Cutoff:o} (retention {Days} day(s)) and marked their parent runs as cleaned up.",
+            "Parallel match prediction batch cleanup deleted {Count} batch row(s) for runs created before {Cutoff:o} (retention {Days} day(s)) and marked their parent runs as IsCleanedUp.",
             deletedBatchesCount, cutoffDate, retentionDays
         );
     }
