@@ -367,29 +367,20 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
     {
         // Every run that has been in the database longer than the retention period and has not already
         // been cleaned up, regardless of status (Finalised, failed, or abandoned while still Running).
-        var runIds = await context.ParallelMatchPredictionRuns
-            .AsNoTracking()
+        var runsToClean = context.ParallelMatchPredictionRuns
             .Where(r => !r.IsCleanedUp
                      && r.MatchPredictionRunInitiatedUtc < cutoffUtc
-            )
-            .Select(r => r.Id)
-            .ToListAsync();
-
-        if (runIds.Count == 0)
-        {
-            return 0;
-        }
+            );
 
         // Use a transaction so the batch deletion and the parent-run flag update are atomic.
         await using var transaction = await context.Database.BeginTransactionAsync();
-
+       
         var deletedBatchCount = await context.ParallelMatchPredictionBatches
-            .Where(b => runIds.Contains(b.RunId))
+            .Where(b => runsToClean.Any(r => r.Id == b.RunId))
             .ExecuteDeleteAsync();
 
         // Mark the runs as cleaned up. Status is intentionally left unchanged so the run keeps its outcome.
-        await context.ParallelMatchPredictionRuns
-            .Where(r => runIds.Contains(r.Id))
+        await runsToClean
             .ExecuteUpdateAsync(s => s
                 .SetProperty(r => r.IsCleanedUp, true)
             );
