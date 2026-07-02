@@ -15,12 +15,6 @@ public enum ParallelMatchPredictionRunStatus
     Finalised,
 
     /// <summary>
-    /// The run has been finalised and its per-batch rows have been deleted after the retention period.
-    /// The parent run row itself is kept indefinitely for audit purposes.
-    /// </summary>
-    FinalisedAndCleanedUp,
-
-    /// <summary>
     /// The persistence pipeline threw while finalising this run. The run is terminal — it will not be
     /// re-picked by the finaliser timer. Per-batch rows remain in place for audit/debugging.
     /// </summary>
