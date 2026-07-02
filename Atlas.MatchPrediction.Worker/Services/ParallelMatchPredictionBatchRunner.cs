@@ -21,7 +21,6 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
     private readonly ISessionMessagePublisher<ParallelMatchPredictionBatchResult> resultPublisher;
     private readonly IMatchPredictionSearchTrackingDispatcher trackingDispatcher;
     private readonly string requestsContainer;
-    private readonly int maxDegreeOfParallelism;
     private readonly ILogger<ParallelMatchPredictionBatchRunner> logger;
 
     public ParallelMatchPredictionBatchRunner(
@@ -30,7 +29,6 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
         ISessionMessagePublisher<ParallelMatchPredictionBatchResult> resultPublisher,
         IMatchPredictionSearchTrackingDispatcher trackingDispatcher,
         IOptions<AzureStorageSettings> azureStorageSettings,
-        IOptions<MatchPredictionRequestsSettings> matchPredictionRequestsSettings,
         ILogger<ParallelMatchPredictionBatchRunner> logger)
     {
         this.blobDownloader = blobDownloader;
@@ -38,7 +36,6 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
         this.resultPublisher = resultPublisher;
         this.trackingDispatcher = trackingDispatcher;
         requestsContainer = azureStorageSettings.Value.MatchPredictionRequestsBlobContainer;
-        maxDegreeOfParallelism = matchPredictionRequestsSettings.Value.MaxParallelism;
         this.logger = logger;
     }
 
@@ -101,7 +98,7 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
 
         await trackingDispatcher.ProcessRunningBatchesStarted(searchIdentifier, originalSearchIdentifier);
 
-        var results = await parallelMatchPredictionAlgorithm.RunBatch(batchInput, maxDegreeOfParallelism);
+        var results = await parallelMatchPredictionAlgorithm.RunBatch(batchInput);
 
         await trackingDispatcher.ProcessRunningBatchesEnded(searchIdentifier, originalSearchIdentifier);
 
