@@ -6,7 +6,7 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -72,10 +72,10 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [TestCase("01:01/02:01")]
         [TestCase("01:MAC")]
         [TestCase("01:XX")]
-        public void ExpandAlleleGroup_WhenValidHlaIsNotAnAlleleGroup_ThrowsException(string lookupName)
+        public async Task ExpandAlleleGroup_WhenValidHlaIsNotAnAlleleGroup_ThrowsException(string lookupName)
         {
-            alleleGroupExpander.Invoking(async service => await service.ExpandAlleleGroup(DefaultLocus, lookupName, HlaVersion))
-                .Should().Throw<Exception>();
+            await alleleGroupExpander.Invoking(service => service.ExpandAlleleGroup(DefaultLocus, lookupName, HlaVersion))
+                .Should().ThrowAsync<Exception>();
         }
     }
 }

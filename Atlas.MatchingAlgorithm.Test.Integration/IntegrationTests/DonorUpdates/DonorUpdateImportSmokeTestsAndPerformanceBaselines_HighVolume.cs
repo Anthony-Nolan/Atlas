@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -11,34 +12,38 @@ using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using CsvHelper;
-using FluentAssertions;
+using CsvHelper.Configuration;
+using AwesomeAssertions;
 using MoreLinq.Extensions;
 using NUnit.Framework;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
+namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates;
+
+[TestFixture]
+partial class DonorUpdateImportSmokeTestsAndPerformanceBaselines
 {
-    [TestFixture]
-    partial class DonorUpdateImportSmokeTestsAndPerformanceBaselines
+    private async Task<List<Donor>> ParseTestDonorFile()
     {
-        private async Task<List<Donor>> ParseTestDonorFile()
+        const string fileName = "TestDonorsForUpdatesForSmokeTests.tsv";
+        // Relies on namespace matching file nesting, but is resilient to file re-structure.
+        var donorTestFilePath = $"{GetType().Namespace}.{fileName}";
+        await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFilePath))
         {
-            const string fileName = "TestDonorsForUpdatesForSmokeTests.tsv";
-            // Relies on namespace matching file nesting, but is resilient to file re-structure.
-            var donorTestFilePath = $"{GetType().Namespace}.{fileName}";
-            await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFilePath))
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
-                using (var reader = new StreamReader(stream))
-                using (var csv = new CsvReader(reader))
-                {
-                    csv.Configuration.Delimiter = "\t";
-                    csv.Configuration.HeaderValidated = null;
-                    csv.Configuration.MissingFieldFound = null;
-                    csv.Configuration.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("NULL");
-                    return csv.GetRecords<Donor>().ToList();
-                }
+                Delimiter = "\t",
+                HeaderValidated = null,
+                MissingFieldFound = null,
+            };
+            using (var reader = new StreamReader(stream))
+            using (var csv = new CsvReader(reader, config))
+            {
+                csv.Context.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("NULL");
+                return csv.GetRecords<Donor>().ToList();
             }
         }
+    }
 
         [Test, Repeat(1000)]
         //[IgnoreExceptOnCiPerfTest("1000 Reps = 41.7s (ave of 20 runs. SD: 2.31)")]
@@ -214,18 +219,18 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 secondaryCreationsCount +
                 drasticUpdatesCount +
                 gentleUpdatesCount;
-            totalUsedFromFile.Should().BeLessOrEqualTo(20_000, "only 20k donors are available in the File.");
+            totalUsedFromFile.Should().BeLessThanOrEqualTo(20_000, "only 20k donors are available in the File.");
 
             var totalInitialAvailableDonorsEdited =
                 drasticUpdatesCount +
                 gentleUpdatesCount +
                 makeUnavailableCount;
-            totalInitialAvailableDonorsEdited.Should().BeLessOrEqualTo(initialAvailableCreationsCount);
+            totalInitialAvailableDonorsEdited.Should().BeLessThanOrEqualTo(initialAvailableCreationsCount);
 
             var totalInitialUnavailableDonorsEdited = makeAvailableCount;
-            totalInitialUnavailableDonorsEdited.Should().BeLessOrEqualTo(initialUnavailableCreationsCount);
+            totalInitialUnavailableDonorsEdited.Should().BeLessThanOrEqualTo(initialUnavailableCreationsCount);
 
-            artificialBatchSize.Should().BeLessOrEqualTo(1_000, "Batching is imposed elsewhere, so anything greater than that won't actually take effect.");
+            artificialBatchSize.Should().BeLessThanOrEqualTo(1_000, "Batching is imposed elsewhere, so anything greater than that won't actually take effect.");
         }
 
         public async Task<(Queue<Donor>, Queue<Donor>)> SetupInitialDonorsInDb(Queue<Donor> newDonors, int availableCount, int unavailableCount)
@@ -278,11 +283,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             return gentleUpdates;
         }
 
-        private static List<DonorAvailabilityUpdate> ModifySomeAvailabilities(Queue<Donor> existingAvailableDonors, Queue<Donor> existingUnavailableDonors, int availableCount, int unavailableCount)
-        {
-            var markAsAvailable = existingUnavailableDonors.Dequeue(availableCount).Select(d => d.ToDonorInfo().ToUpdate()).ToList();
-            var markAsUnavailable = existingAvailableDonors.Dequeue(unavailableCount).Select(d => d.ToDonorInfo().ToUnavailableUpdate()).ToList();
-            return markAsUnavailable.Union(markAsAvailable).ToList();
-        }
+    private static List<DonorAvailabilityUpdate> ModifySomeAvailabilities(Queue<Donor> existingAvailableDonors, Queue<Donor> existingUnavailableDonors, int availableCount, int unavailableCount)
+    {
+        var markAsAvailable = existingUnavailableDonors.Dequeue(availableCount).Select(d => d.ToDonorInfo().ToUpdate()).ToList();
+        var markAsUnavailable = existingAvailableDonors.Dequeue(unavailableCount).Select(d => d.ToDonorInfo().ToUnavailableUpdate()).ToList();
+        return markAsUnavailable.Union(markAsAvailable).ToList();
     }
 }

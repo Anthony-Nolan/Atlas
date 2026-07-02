@@ -7,7 +7,8 @@ using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
-using FluentAssertions;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
 

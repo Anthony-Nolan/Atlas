@@ -1,6 +1,6 @@
 ﻿using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Services;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services

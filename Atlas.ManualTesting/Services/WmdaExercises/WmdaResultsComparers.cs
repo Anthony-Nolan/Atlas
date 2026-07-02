@@ -4,14 +4,17 @@ using Atlas.ManualTesting.Common.Models;
 using Atlas.ManualTesting.Common.Services;
 using Atlas.ManualTesting.Models;
 
-namespace Atlas.ManualTesting.Services.WmdaConsensusResults
+namespace Atlas.ManualTesting.Services.WmdaExercises
 {
-    public interface IWmdaResultsTotalMismatchComparer : IWmdaResultsComparer { }
+    public interface IWmdaResultsTotalMismatchComparer : IWmdaResultsComparer
+    {
+    }
+
     internal class WmdaResultsTotalMismatchComparer : WmdaResultsComparerBase<WmdaConsensusResultsFile>, IWmdaResultsTotalMismatchComparer
     {
         public WmdaResultsTotalMismatchComparer(
             IFileReader<WmdaConsensusResultsFile> resultsFileReader,
-            IFileReader<ImportedSubject> subjectFileReader) 
+            IFileReader<ImportedSubject> subjectFileReader)
             : base(resultsFileReader, subjectFileReader)
         {
         }
@@ -22,12 +25,15 @@ namespace Atlas.ManualTesting.Services.WmdaConsensusResults
         }
     }
 
-    public interface IWmdaResultsAntigenMismatchComparer : IWmdaResultsComparer { }
+    public interface IWmdaResultsAntigenMismatchComparer : IWmdaResultsComparer
+    {
+    }
+
     internal class WmdaResultsAntigenMismatchComparer : WmdaResultsComparerBase<WmdaConsensusResultsFileSetTwo>, IWmdaResultsAntigenMismatchComparer
     {
         public WmdaResultsAntigenMismatchComparer(
             IFileReader<WmdaConsensusResultsFileSetTwo> resultsFileReader,
-            IFileReader<ImportedSubject> subjectFileReader) 
+            IFileReader<ImportedSubject> subjectFileReader)
             : base(resultsFileReader, subjectFileReader)
         {
         }

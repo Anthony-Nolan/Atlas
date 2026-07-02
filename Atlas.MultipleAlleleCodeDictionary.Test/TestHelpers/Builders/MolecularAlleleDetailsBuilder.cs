@@ -1,11 +1,10 @@
 ﻿using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
-using LochNessBuilder;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture.Dsl;
 
-namespace Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders
+namespace Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders;
+
+internal class MolecularAlleleDetailsBuilder
 {
-    [Builder]
-    internal class MolecularAlleleDetailsBuilder
-    {
-        public static Builder<MolecularAlleleDetails> New => Builder<MolecularAlleleDetails>.New;
-    }
+    public static IPostprocessComposer<MolecularAlleleDetails> New => FixtureBuilder.For<MolecularAlleleDetails>();
 }

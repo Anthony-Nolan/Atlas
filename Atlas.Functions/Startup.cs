@@ -23,7 +23,9 @@ using Atlas.SearchTracking.Common.DependencyInjection;
 using Atlas.SearchTracking.Common.Dispatchers;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -160,8 +162,10 @@ namespace Atlas.Functions
                     logger);
             });
 
-            services.AddSingleton(sp => AutoMapperConfig.CreateMapper());
-        }
+        services.AddSingleton(sp => AutoMapperConfig.CreateMapper(
+            sp.GetService<IConfiguration>()?["AutoMapper:LicenseKey"],
+            sp.GetService<ILoggerFactory>()));
+    }
 
         private static void RegisterMatchPredictionDatabase(IServiceCollection services)
         {

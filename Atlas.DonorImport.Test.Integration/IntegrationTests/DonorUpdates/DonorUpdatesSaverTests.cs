@@ -10,110 +10,110 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
-using FluentAssertions;
-using LochNessBuilder;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture.Dsl;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Newtonsoft.Json;
 
-namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorUpdates
+namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorUpdates;
+
+[TestFixture]
+internal class DonorUpdatesSaverTest
 {
-    [TestFixture]
-    internal class DonorUpdatesSaverTest
+    private IPublishableDonorUpdatesInspectionRepository updatesInspectionRepository;
+    private IDonorInspectionRepository donorInspectionRepository;
+    private IDonorFileImporter fileImporter;
+    private IDonorUpdatesSaver donorUpdatesSaver;
+
+    private static IPostprocessComposer<DonorUpdate> DonorBuilder => DonorUpdateBuilder.New
+        .With(upd => upd.ChangeType, ImportDonorChangeType.Upsert);
+    private static readonly IPostprocessComposer<DonorImportFile> FileBuilder = DonorImportFileBuilder.NewWithoutContents;
+
+    [OneTimeSetUp]
+    public void OneTimeSetUp()
     {
-        private IPublishableDonorUpdatesInspectionRepository updatesInspectionRepository;
-        private IDonorInspectionRepository donorInspectionRepository;
-        private IDonorFileImporter fileImporter;
-        private IDonorUpdatesSaver donorUpdatesSaver;
-
-        private static Builder<DonorUpdate> DonorBuilder => DonorUpdateBuilder.New
-            .With(upd => upd.ChangeType, ImportDonorChangeType.Upsert);
-        private static readonly Builder<DonorImportFile> FileBuilder = DonorImportFileBuilder.NewWithoutContents;
-
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
+        TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
-            {
-                fileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
-                updatesInspectionRepository = DependencyInjection.DependencyInjection.Provider.GetService<IPublishableDonorUpdatesInspectionRepository>();
-                donorInspectionRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
-                donorUpdatesSaver = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdatesSaver>();
-            });
-        }
+            fileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
+            updatesInspectionRepository = DependencyInjection.DependencyInjection.Provider.GetService<IPublishableDonorUpdatesInspectionRepository>();
+            donorInspectionRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
+            donorUpdatesSaver = DependencyInjection.DependencyInjection.Provider.GetService<IDonorUpdatesSaver>();
+        });
+    }
 
-        [OneTimeTearDown]
-        public void OneTimeTearDown()
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
+        TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
-            {
-                // Ensure any mocks set up for this test do not stick around.
-                DependencyInjection.DependencyInjection.BackingProvider = DependencyInjection.ServiceConfiguration.CreateProvider();
-                DatabaseManager.ClearDatabases();
-            });
-        }
+            // Ensure any mocks set up for this test do not stick around.
+            DependencyInjection.DependencyInjection.BackingProvider = DependencyInjection.ServiceConfiguration.CreateProvider();
+            DatabaseManager.ClearDatabases();
+        });
+    }
 
-        [TearDown]
-        public void TearDown()
-        {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(DatabaseManager.ClearPublishableDonorUpdates);
-        }
+    [TearDown]
+    public void TearDown()
+    {
+        TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(DatabaseManager.ClearPublishableDonorUpdates);
+    }
 
-        [Test]
-        public async Task ImportDonorFile_SavesUpdatesForEachDonor()
-        {
-            const int donorCount = 50;
+    [Test]
+    public async Task ImportDonorFile_SavesUpdatesForEachDonor()
+    {
+        const int donorCount = 50;
 
-            var donorIds = await BuildAndImportDonors(donorCount);
+        var donorIds = await BuildAndImportDonors(donorCount);
 
-            var updates = (await updatesInspectionRepository.GetAll()).ToList();
+        var updates = (await updatesInspectionRepository.GetAll()).ToList();
 
-            updates.Count.Should().Be(donorCount);
-            updates.Select(u => u.DonorId).Should().BeEquivalentTo(donorIds);
-            updates.Select(u => u.ToSearchableDonorUpdate().SearchableDonorInformation).Should().NotContainNulls();
-        }
+        updates.Count.Should().Be(donorCount);
+        updates.Select(u => u.DonorId).Should().BeEquivalentTo(donorIds);
+        updates.Select(u => u.ToSearchableDonorUpdate().SearchableDonorInformation).Should().NotContainNulls();
+    }
 
-        [Test]
-        public async Task ImportDonorFile_DefaultValueColumnsOnUpdatesAreSetCorrectly()
-        {
-            await BuildAndImportDonors(1);
-            var dateTimeJustAfterUpdateCreation = DateTimeOffset.Now;
+    [Test]
+    public async Task ImportDonorFile_DefaultValueColumnsOnUpdatesAreSetCorrectly()
+    {
+        await BuildAndImportDonors(1);
+        var dateTimeJustAfterUpdateCreation = DateTimeOffset.Now;
 
-            var updates = (await updatesInspectionRepository.GetAll()).ToList();
+        var updates = (await updatesInspectionRepository.GetAll()).ToList();
 
-            updates.Select(u => u.CreatedOn).Distinct().Single().Should().BeCloseTo(dateTimeJustAfterUpdateCreation, 10000);
-            updates.Select(u => u.IsPublished).Should().AllBeEquivalentTo(false);
-            updates.Select(u => u.PublishedOn).Should().AllBeEquivalentTo((DateTimeOffset?)null);
-        }
+        updates.Select(u => u.CreatedOn).Distinct().Single().Should().BeCloseTo(dateTimeJustAfterUpdateCreation, TimeSpan.FromMilliseconds(10000));
+        updates.Select(u => u.IsPublished).Should().AllBeEquivalentTo(false);
+        updates.Select(u => u.PublishedOn).Should().AllBeEquivalentTo((DateTimeOffset?)null);
+    }
 
-        [Test]
-        public async Task DonorUpdatesSaver_GenerateAndSave_ForExistingAndNonExistingDonors_SavesCorrespondingPublishabelDonorUpdates()
-        {
-            var id = (await BuildAndImportDonors(1)).Single();
-            await updatesInspectionRepository.RemoveAll();
+    [Test]
+    public async Task DonorUpdatesSaver_GenerateAndSave_ForExistingAndNonExistingDonors_SavesCorrespondingPublishabelDonorUpdates()
+    {
+        var id = (await BuildAndImportDonors(1)).Single();
+        await updatesInspectionRepository.RemoveAll();
 
-            await donorUpdatesSaver.GenerateAndSave(new[] { id, -id });
+        await donorUpdatesSaver.GenerateAndSave(new[] { id, -id });
 
-            var updates = (await updatesInspectionRepository.GetAll()).ToList();
-            updates.Count.Should().Be(2);
+        var updates = (await updatesInspectionRepository.GetAll()).ToList();
+        updates.Count.Should().Be(2);
 
-            var updateRecord = JsonConvert.DeserializeObject<SearchableDonorUpdate>(updates.Single(x => x.DonorId == id).SearchableDonorUpdate);
-            var deleteRecord = JsonConvert.DeserializeObject<SearchableDonorUpdate>(updates.Single(x => x.DonorId == -id).SearchableDonorUpdate);
-            updateRecord.IsAvailableForSearch.Should().BeTrue();
-            deleteRecord.IsAvailableForSearch.Should().BeFalse();
-        }
+        var updateRecord = JsonConvert.DeserializeObject<SearchableDonorUpdate>(updates.Single(x => x.DonorId == id).SearchableDonorUpdate);
+        var deleteRecord = JsonConvert.DeserializeObject<SearchableDonorUpdate>(updates.Single(x => x.DonorId == -id).SearchableDonorUpdate);
+        updateRecord.IsAvailableForSearch.Should().BeTrue();
+        deleteRecord.IsAvailableForSearch.Should().BeFalse();
+    }
 
-        /// <summary>
-        /// Importing donors creates new updates for publishing - this functionality is covered elsewhere.
-        /// </summary>
-        /// <returns>Atlas donor Ids</returns>
-        private async Task<IEnumerable<int>> BuildAndImportDonors(int donorCount)
-        {
-            var donors = DonorBuilder.Build(donorCount).ToArray();
-            await fileImporter.ImportDonorFile(FileBuilder.WithDonors(donors).Build());
-            var externalCodes = donors.Select(d => d.RecordId).ToList();
-            return (await donorInspectionRepository.GetDonorIdsByExternalDonorCodes(externalCodes)).Values;
-        }
+    /// <summary>
+    /// Importing donors creates new updates for publishing - this functionality is covered elsewhere.
+    /// </summary>
+    /// <returns>Atlas donor Ids</returns>
+    private async Task<IEnumerable<int>> BuildAndImportDonors(int donorCount)
+    {
+        var donors = DonorBuilder.Build(donorCount).ToArray();
+        await fileImporter.ImportDonorFile(FileBuilder.WithDonors(donors).Build());
+        var externalCodes = donors.Select(d => d.RecordId).ToList();
+        return (await donorInspectionRepository.GetDonorIdsByExternalDonorCodes(externalCodes)).Values;
     }
 }

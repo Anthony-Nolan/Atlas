@@ -5,7 +5,8 @@ using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
-using FluentAssertions;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AwesomeAssertions;
 using Newtonsoft.Json;
 using NSubstitute;
 using NUnit.Framework;
@@ -126,7 +127,7 @@ namespace Atlas.DonorImport.Test.Services.DonorUpdates
 
             var info = searchableDonorUpdate.SearchableDonorInformation;
             info.DonorId.Should().Be(donorId);
-            info.DonorType.Should().Be(donorType);
+            info.DonorType.ToString().Should().Be(donorType.ToString());
             info.ExternalDonorCode.Should().Be($"#{donorId}{nameof(Donor.ExternalDonorCode)}");
             info.EthnicityCode.Should().Be($"#{donorId}{nameof(Donor.EthnicityCode)}");
             info.RegistryCode.Should().Be($"#{donorId}{nameof(Donor.RegistryCode)}");

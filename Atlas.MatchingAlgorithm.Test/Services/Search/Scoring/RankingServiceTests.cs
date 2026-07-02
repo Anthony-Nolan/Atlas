@@ -3,207 +3,206 @@ using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
-using FluentAssertions;
-using LochNessBuilder;
+using AwesomeAssertions;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
+namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring;
+
+[TestFixture]
+public class RankingServiceTests
 {
-    [TestFixture]
-    public class RankingServiceTests
+    private IRankingService rankingService;
+
+    [SetUp]
+    public void SetUp()
     {
-        private IRankingService rankingService;
+        rankingService = new RankingService();
+    }
 
-        [SetUp]
-        public void SetUp()
+    [Test]
+    public void RankSearchResults_OrdersResultsByMatchCount()
+    {
+        var resultWithFewerMatches = new MatchAndScoreResultBuilder()
+            .WithAggregateScoringData(FixtureBuilder.For<AggregateScoreDetails>().With(x => x.MatchCount, 1).Build())
+            .Build();
+
+        var resultWithMoreMatches = new MatchAndScoreResultBuilder()
+            .WithAggregateScoringData(FixtureBuilder.For<AggregateScoreDetails>().With(x => x.MatchCount, 5).Build())
+            .Build();
+
+        var unorderedSearchResults = new List<MatchAndScoreResult>
         {
-            rankingService = new RankingService();
-        }
+            resultWithFewerMatches,
+            resultWithMoreMatches
+        };
 
-        [Test]
-        public void RankSearchResults_OrdersResultsByMatchCount()
+        var orderedSearchResults = rankingService.RankSearchResults(unorderedSearchResults);
+
+        orderedSearchResults.Should().ContainInOrder(new List<MatchAndScoreResult>
         {
-            var resultWithFewerMatches = new MatchAndScoreResultBuilder()
-                .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.MatchCount, 1).Build())
-                .Build();
+            resultWithMoreMatches,
+            resultWithFewerMatches
+        });
+    }
 
-            var resultWithMoreMatches = new MatchAndScoreResultBuilder()
-                .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.MatchCount, 5).Build())
-                .Build();
+    [Test]
+    public void RankSearchResults_OrdersResultsByMatchGrade()
+    {
+        var resultWithBetterOverallGrade = new MatchAndScoreResultBuilder()
+            .WithAggregateScoringData(FixtureBuilder.For<AggregateScoreDetails>().With(x => x.GradeScore, 100).Build())
+            .Build();
 
-            var unorderedSearchResults = new List<MatchAndScoreResult>
-            {
-                resultWithFewerMatches,
-                resultWithMoreMatches
-            };
+        var resultWithWorseOverallGrade = new MatchAndScoreResultBuilder()
+            .WithAggregateScoringData(FixtureBuilder.For<AggregateScoreDetails>().With(x => x.GradeScore, 1).Build())
+            .Build();
 
-            var orderedSearchResults = rankingService.RankSearchResults(unorderedSearchResults);
-
-            orderedSearchResults.Should().ContainInOrder(new List<MatchAndScoreResult>
-            {
-                resultWithMoreMatches,
-                resultWithFewerMatches
-            });
-        }
-
-        [Test]
-        public void RankSearchResults_OrdersResultsByMatchGrade()
+        var unorderedSearchResults = new List<MatchAndScoreResult>
         {
-            var resultWithBetterOverallGrade = new MatchAndScoreResultBuilder()
-                .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.GradeScore, 100).Build())
-                .Build();
+            resultWithWorseOverallGrade,
+            resultWithBetterOverallGrade,
+        };
 
-            var resultWithWorseOverallGrade = new MatchAndScoreResultBuilder()
-                .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.GradeScore, 1).Build())
-                .Build();
+        var orderedSearchResults = rankingService.RankSearchResults(unorderedSearchResults);
 
-            var unorderedSearchResults = new List<MatchAndScoreResult>
-            {
-                resultWithWorseOverallGrade,
-                resultWithBetterOverallGrade,
-            };
-
-            var orderedSearchResults = rankingService.RankSearchResults(unorderedSearchResults);
-
-            orderedSearchResults.Should().ContainInOrder(new List<MatchAndScoreResult>
-            {
-                resultWithBetterOverallGrade,
-                resultWithWorseOverallGrade
-            });
-        }
-
-        [Test]
-        public void RankSearchResults_OrdersResultsByMatchCountBeforeMatchGrade()
+        orderedSearchResults.Should().ContainInOrder(new List<MatchAndScoreResult>
         {
-            var resultWithBetterOverallGradeButFewerMatches = new MatchAndScoreResultBuilder()
-                .WithAggregateScoringData(
-                    Builder<AggregateScoreDetails>.New
+            resultWithBetterOverallGrade,
+            resultWithWorseOverallGrade
+        });
+    }
+
+    [Test]
+    public void RankSearchResults_OrdersResultsByMatchCountBeforeMatchGrade()
+    {
+        var resultWithBetterOverallGradeButFewerMatches = new MatchAndScoreResultBuilder()
+            .WithAggregateScoringData(
+                FixtureBuilder.For<AggregateScoreDetails>()
                     .With(x => x.GradeScore, 100)
                     .With(x => x.MatchCount, 1)
                     .Build()
-                )
-                .Build();
+            )
+            .Build();
 
-            var resultWithWorseOverallGradeButMoreMatches = new MatchAndScoreResultBuilder()
-                .WithAggregateScoringData(
-                    Builder<AggregateScoreDetails>.New
-                        .With(x => x.GradeScore, 1)
-                        .With(x => x.MatchCount, 6)
-                        .Build()
-                )
-                .Build();
+        var resultWithWorseOverallGradeButMoreMatches = new MatchAndScoreResultBuilder()
+            .WithAggregateScoringData(
+                FixtureBuilder.For<AggregateScoreDetails>()
+                    .With(x => x.GradeScore, 1)
+                    .With(x => x.MatchCount, 6)
+                    .Build()
+            )
+            .Build();
 
-            var unorderedSearchResults = new List<MatchAndScoreResult>
-            {
-                resultWithBetterOverallGradeButFewerMatches,
-                resultWithWorseOverallGradeButMoreMatches,
-            };
-
-            var orderedSearchResults = rankingService.RankSearchResults(unorderedSearchResults);
-
-            orderedSearchResults.Should().ContainInOrder(new List<MatchAndScoreResult>
-            {
-                resultWithWorseOverallGradeButMoreMatches,
-                resultWithBetterOverallGradeButFewerMatches,
-            });
-        }
-
-        [Test]
-        public void RankSearchResults_OrdersResultsByMatchConfidence()
+        var unorderedSearchResults = new List<MatchAndScoreResult>
         {
-            var resultWithBetterOverallConfidence = new MatchAndScoreResultBuilder()
-                .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.ConfidenceScore, 100).Build())
-                .Build();
+            resultWithBetterOverallGradeButFewerMatches,
+            resultWithWorseOverallGradeButMoreMatches,
+        };
 
-            var resultWithWorseOverallConfidence = new MatchAndScoreResultBuilder()
-                .WithAggregateScoringData(Builder<AggregateScoreDetails>.New.With(x => x.ConfidenceScore, 1).Build())
-                .Build();
+        var orderedSearchResults = rankingService.RankSearchResults(unorderedSearchResults);
 
-            var unorderedSearchResults = new List<MatchAndScoreResult>
-            {
-                resultWithWorseOverallConfidence,
-                resultWithBetterOverallConfidence,
-            };
-
-            var orderedSearchResults = rankingService.RankSearchResults(unorderedSearchResults);
-
-            orderedSearchResults.Should().ContainInOrder(new List<MatchAndScoreResult>
-            {
-                resultWithBetterOverallConfidence,
-                resultWithWorseOverallConfidence
-            });
-        }
-
-        [Test]
-        public void RankSearchResults_OrdersResultsByMatchGradeBeforeConfidence()
+        orderedSearchResults.Should().ContainInOrder(new List<MatchAndScoreResult>
         {
-            var resultWithWorseConfidenceButBetterGrade = new MatchAndScoreResultBuilder()
-                .WithAggregateScoringData(
-                    Builder<AggregateScoreDetails>.New
-                        .With(x => x.GradeScore, 100)
-                        .With(x => x.ConfidenceScore, 1)
-                        .Build()
-                )
-                .Build();
+            resultWithWorseOverallGradeButMoreMatches,
+            resultWithBetterOverallGradeButFewerMatches,
+        });
+    }
 
-            var resultWithBetterConfidenceButWorseGrade = new MatchAndScoreResultBuilder()
-                .WithAggregateScoringData(
-                    Builder<AggregateScoreDetails>.New
-                        .With(x => x.GradeScore, 1)
-                        .With(x => x.ConfidenceScore, 100)
-                        .Build()
-                )
-                .Build();
+    [Test]
+    public void RankSearchResults_OrdersResultsByMatchConfidence()
+    {
+        var resultWithBetterOverallConfidence = new MatchAndScoreResultBuilder()
+            .WithAggregateScoringData(FixtureBuilder.For<AggregateScoreDetails>().With(x => x.ConfidenceScore, 100).Build())
+            .Build();
 
-            var unorderedSearchResults = new List<MatchAndScoreResult>
-            {
-                resultWithBetterConfidenceButWorseGrade,
-                resultWithWorseConfidenceButBetterGrade,
-            };
+        var resultWithWorseOverallConfidence = new MatchAndScoreResultBuilder()
+            .WithAggregateScoringData(FixtureBuilder.For<AggregateScoreDetails>().With(x => x.ConfidenceScore, 1).Build())
+            .Build();
 
-            var orderedSearchResults = rankingService.RankSearchResults(unorderedSearchResults);
-
-            orderedSearchResults.Should().ContainInOrder(new List<MatchAndScoreResult>
-            {
-                resultWithWorseConfidenceButBetterGrade,
-                resultWithBetterConfidenceButWorseGrade
-            });
-        }
-
-        [Test]
-        public void RankSearchResults_OrdersResultsByMatchCountBeforeConfidence()
+        var unorderedSearchResults = new List<MatchAndScoreResult>
         {
-            var resultWithWorseConfidenceButBetterMatchCount = new MatchAndScoreResultBuilder()
-                .WithAggregateScoringData(
-                    Builder<AggregateScoreDetails>.New
-                        .With(x => x.ConfidenceScore, 5)
-                        .With(x => x.MatchCount, 6)
-                        .Build()
-                )
-                .Build();
+            resultWithWorseOverallConfidence,
+            resultWithBetterOverallConfidence,
+        };
 
-            var resultWithBetterConfidenceButWorseMatchCount = new MatchAndScoreResultBuilder()
-                .WithAggregateScoringData(
-                    Builder<AggregateScoreDetails>.New
-                        .With(x => x.ConfidenceScore, 500)
-                        .With(x => x.MatchCount, 1)
-                        .Build()
-                )
-                .Build();
+        var orderedSearchResults = rankingService.RankSearchResults(unorderedSearchResults);
 
-            var unorderedSearchResults = new List<MatchAndScoreResult>
-            {
-                resultWithBetterConfidenceButWorseMatchCount,
-                resultWithWorseConfidenceButBetterMatchCount,
-            };
+        orderedSearchResults.Should().ContainInOrder(new List<MatchAndScoreResult>
+        {
+            resultWithBetterOverallConfidence,
+            resultWithWorseOverallConfidence
+        });
+    }
 
-            var orderedSearchResults = rankingService.RankSearchResults(unorderedSearchResults);
+    [Test]
+    public void RankSearchResults_OrdersResultsByMatchGradeBeforeConfidence()
+    {
+        var resultWithWorseConfidenceButBetterGrade = new MatchAndScoreResultBuilder()
+            .WithAggregateScoringData(
+                FixtureBuilder.For<AggregateScoreDetails>()
+                    .With(x => x.GradeScore, 100)
+                    .With(x => x.ConfidenceScore, 1)
+                    .Build()
+            )
+            .Build();
 
-            orderedSearchResults.Should().ContainInOrder(new List<MatchAndScoreResult>
-            {
-                resultWithWorseConfidenceButBetterMatchCount,
-                resultWithBetterConfidenceButWorseMatchCount
-            });
-        }
+        var resultWithBetterConfidenceButWorseGrade = new MatchAndScoreResultBuilder()
+            .WithAggregateScoringData(
+                FixtureBuilder.For<AggregateScoreDetails>()
+                    .With(x => x.GradeScore, 1)
+                    .With(x => x.ConfidenceScore, 100)
+                    .Build()
+            )
+            .Build();
+
+        var unorderedSearchResults = new List<MatchAndScoreResult>
+        {
+            resultWithBetterConfidenceButWorseGrade,
+            resultWithWorseConfidenceButBetterGrade,
+        };
+
+        var orderedSearchResults = rankingService.RankSearchResults(unorderedSearchResults);
+
+        orderedSearchResults.Should().ContainInOrder(new List<MatchAndScoreResult>
+        {
+            resultWithWorseConfidenceButBetterGrade,
+            resultWithBetterConfidenceButWorseGrade
+        });
+    }
+
+    [Test]
+    public void RankSearchResults_OrdersResultsByMatchCountBeforeConfidence()
+    {
+        var resultWithWorseConfidenceButBetterMatchCount = new MatchAndScoreResultBuilder()
+            .WithAggregateScoringData(
+                FixtureBuilder.For<AggregateScoreDetails>()
+                    .With(x => x.ConfidenceScore, 5)
+                    .With(x => x.MatchCount, 6)
+                    .Build()
+            )
+            .Build();
+
+        var resultWithBetterConfidenceButWorseMatchCount = new MatchAndScoreResultBuilder()
+            .WithAggregateScoringData(
+                FixtureBuilder.For<AggregateScoreDetails>()
+                    .With(x => x.ConfidenceScore, 500)
+                    .With(x => x.MatchCount, 1)
+                    .Build()
+            )
+            .Build();
+
+        var unorderedSearchResults = new List<MatchAndScoreResult>
+        {
+            resultWithBetterConfidenceButWorseMatchCount,
+            resultWithWorseConfidenceButBetterMatchCount,
+        };
+
+        var orderedSearchResults = rankingService.RankSearchResults(unorderedSearchResults);
+
+        orderedSearchResults.Should().ContainInOrder(new List<MatchAndScoreResult>
+        {
+            resultWithWorseConfidenceButBetterMatchCount,
+            resultWithBetterConfidenceButWorseMatchCount
+        });
     }
 }

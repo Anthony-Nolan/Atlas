@@ -1,8 +1,8 @@
 using System.IO;
 using System.Threading.Tasks;
 using Atlas.ManualTesting.Models;
-using Atlas.ManualTesting.Services.WmdaConsensusResults;
-using Atlas.ManualTesting.Services.WmdaConsensusResults.Scorers;
+using Atlas.ManualTesting.Services.WmdaExercises;
+using Atlas.ManualTesting.Services.WmdaExercises.Scorers;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;

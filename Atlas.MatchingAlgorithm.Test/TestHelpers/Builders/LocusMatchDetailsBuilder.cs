@@ -1,22 +1,21 @@
 using System.Linq;
 using Atlas.Common.Public.Models.GeneticData;
-using LochNessBuilder;
-using Builder = LochNessBuilder.Builder<Atlas.MatchingAlgorithm.Common.Models.SearchResults.LocusMatchDetails>;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Composer = AutoFixture.Dsl.IPostprocessComposer<Atlas.MatchingAlgorithm.Common.Models.SearchResults.LocusMatchDetails>;
 
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 
-[Builder]
 internal static class LocusMatchDetailsBuilder
 {
-    internal static Builder New => Builder.New;
+    internal static Composer New => FixtureBuilder.For<Atlas.MatchingAlgorithm.Common.Models.SearchResults.LocusMatchDetails>();
 
-    internal static Builder WithDoubleMatch(this Builder builder)
+    internal static Composer WithDoubleMatch(this Composer builder)
     {
         return builder.WithDoubleDirectMatch();
     }
 
-    internal static Builder WithSingleMatch(this Builder builder)
+    internal static Composer WithSingleMatch(this Composer builder)
     {
         return builder.With(
             d => d.PositionPairs,
@@ -24,15 +23,15 @@ internal static class LocusMatchDetailsBuilder
         );
     }
 
-    internal static Builder WithDoubleCrossMatch(this Builder builder)
+    internal static Composer WithDoubleCrossMatch(this Composer builder)
     {
         return builder.With(
             d => d.PositionPairs,
             new[] {(LocusPosition.One, LocusPosition.Two), (LocusPosition.Two, LocusPosition.One)}.ToHashSet()
         );
     }
-        
-    internal static Builder WithDoubleDirectMatch(this Builder builder)
+
+    internal static Composer WithDoubleDirectMatch(this Composer builder)
     {
         return builder.With(
             d => d.PositionPairs,

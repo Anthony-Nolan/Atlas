@@ -1,29 +1,28 @@
 ﻿using System.Collections.Generic;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
-using LochNessBuilder;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture.Dsl;
 
-namespace Atlas.MatchPrediction.Test.Verification.Test.TestHelpers
+namespace Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
+
+internal static class MatchingResultSetBuilder
 {
-    [Builder]
-    internal static class MatchingResultSetBuilder
+    public static IPostprocessComposer<OriginalMatchingAlgorithmResultSet> New => FixtureBuilder.For<OriginalMatchingAlgorithmResultSet>();
+
+    public static IPostprocessComposer<OriginalMatchingAlgorithmResultSet> Empty => New
+        .With(x => x.Results, new List<MatchingAlgorithmResult>());
+
+    public static IPostprocessComposer<OriginalMatchingAlgorithmResultSet> WithMatchingResult(this IPostprocessComposer<OriginalMatchingAlgorithmResultSet> builder, int donorId)
     {
-        public static Builder<OriginalMatchingAlgorithmResultSet> New => Builder<OriginalMatchingAlgorithmResultSet>.New;
+        return builder.With(x => x.Results, new[] { BuildMatchingAlgorithmResult(donorId) });
+    }
 
-        public static Builder<OriginalMatchingAlgorithmResultSet> Empty => New
-            .With(x => x.Results, new List<MatchingAlgorithmResult>());
-
-        public static Builder<OriginalMatchingAlgorithmResultSet> WithMatchingResult(this Builder<OriginalMatchingAlgorithmResultSet> builder, int donorId)
+    private static MatchingAlgorithmResult BuildMatchingAlgorithmResult(int donorId)
+    {
+        return new MatchingAlgorithmResult
         {
-            return builder.With(x => x.Results, new[] { BuildMatchingAlgorithmResult(donorId) });
-        }
-
-        private static MatchingAlgorithmResult BuildMatchingAlgorithmResult(int donorId)
-        {
-            return new MatchingAlgorithmResult
-            {
-                DonorCode = donorId.ToString()
-            };
-        }
+            DonorCode = donorId.ToString()
+        };
     }
 }

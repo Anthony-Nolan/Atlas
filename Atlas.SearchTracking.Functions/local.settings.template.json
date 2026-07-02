@@ -1,6 +1,7 @@
 {
   "IsEncrypted": false,
   "Values": {
+    "AutoMapper:LicenseKey": "",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "ConnectionStrings:PersistentSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;trustServerCertificate=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",

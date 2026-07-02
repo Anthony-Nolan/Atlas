@@ -2,25 +2,23 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Public.Models.MatchPrediction;
-using LochNessBuilder;
-using Builder = LochNessBuilder.Builder<Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability.IdentifiedMatchProbabilityRequest>;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Composer = AutoFixture.Dsl.IPostprocessComposer<Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability.IdentifiedMatchProbabilityRequest>;
 
-namespace Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs
+namespace Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
+
+internal static class MatchProbabilityRequestInputBuilder
 {
-    [Builder]
-    internal static class MatchProbabilityRequestInputBuilder
-    {
-        public static Builder Default => Builder.New
-            .WithPatientHla(new PhenotypeInfo<string>("hla"))
-            .WithPatientMetadata(FrequencySetMetadataBuilder.New.Build());
+    public static Composer Default => FixtureBuilder.For<Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability.IdentifiedMatchProbabilityRequest>()
+        .WithPatientHla(new PhenotypeInfo<string>("hla"))
+        .WithPatientMetadata(FrequencySetMetadataBuilder.New.Build());
 
-        public static Builder WithPatientHla(this Builder builder, PhenotypeInfo<string> patientHla) =>
-            builder.With(i => i.PatientHla, patientHla.ToPhenotypeInfoTransfer());
+    public static Composer WithPatientHla(this Composer builder, PhenotypeInfo<string> patientHla) =>
+        builder.With(i => i.PatientHla, patientHla.ToPhenotypeInfoTransfer());
 
-        public static Builder WithPatientMetadata(this Builder builder, FrequencySetMetadata frequencySetMetadata) =>
-            builder.With(i => i.PatientFrequencySetMetadata, frequencySetMetadata);
+    public static Composer WithPatientMetadata(this Composer builder, FrequencySetMetadata frequencySetMetadata) =>
+        builder.With(i => i.PatientFrequencySetMetadata, frequencySetMetadata);
 
-        public static Builder WithExcludedLoci(this Builder builder, params Locus[] loci) => builder.With(i => i.ExcludedLoci, loci);
-        public static Builder WithSearchRequestId(this Builder builder, string requestId) => builder.With(i => i.SearchRequestId, requestId);
-    }
+    public static Composer WithExcludedLoci(this Composer builder, params Locus[] loci) => builder.With(i => i.ExcludedLoci, loci);
+    public static Composer WithSearchRequestId(this Composer builder, string requestId) => builder.With(i => i.SearchRequestId, requestId);
 }

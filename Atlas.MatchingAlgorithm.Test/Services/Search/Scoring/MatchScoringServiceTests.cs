@@ -12,7 +12,7 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
-using FluentAssertions;
+using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
@@ -27,6 +27,7 @@ using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching;
 using Atlas.Client.Models.Common.Results;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 {

@@ -8,15 +8,15 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.ManualTesting.Models;
 using LazyCache;
 
-namespace Atlas.ManualTesting.Services.WmdaConsensusResults
+namespace Atlas.ManualTesting.Services.WmdaExercises {
+
+public interface IWmdaDiscrepantResultsReporter
 {
-    public interface IWmdaDiscrepantResultsReporter
-    {
-        /// <summary>
-        /// Compares WMDA consensus file to Atlas results file to identify discrepant mismatch counts.
-        /// </summary>
-        Task<DiscrepantResultsReport> ReportDiscrepantResults(ReportDiscrepanciesRequest request);
-    }
+    /// <summary>
+    /// Compares WMDA consensus file to Atlas results file to identify discrepant mismatch counts.
+    /// </summary>
+    Task<DiscrepantResultsReport> ReportDiscrepantResults(ReportDiscrepanciesRequest request);
+}
 
     /// <summary>
     /// Reports discrepant allele (total) mismatch counts.

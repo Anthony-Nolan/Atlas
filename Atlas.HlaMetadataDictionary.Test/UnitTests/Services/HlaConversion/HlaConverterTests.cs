@@ -12,7 +12,7 @@ using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders.ScoringInfoBuilders;
-using FluentAssertions;
+using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -45,17 +45,17 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
 
         [TestCase(null)]
         [TestCase("")]
-        public void ConvertHla_HlaNameIsNullOrEmpty_ExceptionThrown(string hlaName)
+        public async Task ConvertHla_HlaNameIsNullOrEmpty_ExceptionThrown(string hlaName)
         {
-            hlaConverter.Invoking(async provider => await provider.ConvertHla(DefaultLocus, hlaName, new HlaConversionBehaviour()))
-                .Should().Throw<ArgumentNullException>();
+            await hlaConverter.Invoking(provider => provider.ConvertHla(DefaultLocus, hlaName, new HlaConversionBehaviour()))
+                .Should().ThrowAsync<ArgumentNullException>();
         }
 
         [Test]
-        public void ConvertHla_ConversionBehaviourIsNull_ExceptionThrown()
+        public async Task ConvertHla_ConversionBehaviourIsNull_ExceptionThrown()
         {
-            hlaConverter.Invoking(async provider => await provider.ConvertHla(DefaultLocus, "hla", null))
-                .Should().Throw<ArgumentNullException>();
+            await hlaConverter.Invoking(provider => provider.ConvertHla(DefaultLocus, "hla", null))
+                .Should().ThrowAsync<ArgumentNullException>();
         }
 
         [Test]

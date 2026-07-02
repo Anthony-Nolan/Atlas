@@ -1,8 +1,9 @@
 ﻿/* ******************************
-   **  Copyright Softwire 2020 ** 
-   ****************************** */
+ **  Copyright Softwire 2020 **
+ ****************************** */
 // This was taken from a Softwire shareable Repo. At soem point it may get nugetified, in which case we might want
 // migrate to that. Worth checking whether we've diverged, from the original code, though.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +11,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 
-namespace LoggingStopwatch
+namespace Atlas.Common.ApplicationInsights.Timing
 {
     public interface ILongOperationLoggingStopwatch : IDisposable
     {
@@ -59,6 +60,7 @@ namespace LoggingStopwatch
         private readonly InnerOperationExecutionTimer innerTimingHandler;
 
         #region Constructors
+
         /// <inheritdoc cref="LongOperationLoggingStopwatch"/>
         /// <param name="identifier">
         /// String to identify in the logs what operation was timed.
@@ -92,6 +94,7 @@ namespace LoggingStopwatch
                 Log(initiationMessage);
             }
         }
+
         #endregion
 
         /// <summary>
@@ -130,13 +133,16 @@ namespace LoggingStopwatch
         // This is deliberately static, so that we're forced to explicitly pass in captured
         // values and can't use instance fields that might have been updated by other threads.
         // This is to ensure that it is fully threadsafe.
-        private static void LogPerExecutionMessageIfAppropriate(LongLoggingSettings settings, long newCompletedCount, Stopwatch outerStopwatch, Action<string, long?> logAction)
+        private static void LogPerExecutionMessageIfAppropriate(LongLoggingSettings settings, long newCompletedCount, Stopwatch outerStopwatch,
+            Action<string, long?> logAction)
         {
             if (newCompletedCount % settings.InnerOperationLoggingPeriod == 0)
             {
                 try
                 {
-                    var elapsedOuterTime_MS = outerStopwatch.ElapsedMilliseconds; //Dont pass in just the ElapsedMillis, since that's not completely trivial for it to calculate.
+                    var elapsedOuterTime_MS =
+                        outerStopwatch
+                            .ElapsedMilliseconds; //Dont pass in just the ElapsedMillis, since that's not completely trivial for it to calculate.
                     var logMessage = $"Progress: ({newCompletedCount}) operations completed. ";
 
                     if (settings.ExpectedNumberOfIterations.HasValue)
@@ -154,7 +160,7 @@ namespace LoggingStopwatch
                             var remainingMultiplier = remainingPercentage / completionPercentage;
 
                             var projectedTotalTimeRemaining_MS = elapsedOuterTime_MS * remainingMultiplier;
-                            var projectedOuterCompletionTime = DateTime.UtcNow.AddMilliseconds((double) projectedTotalTimeRemaining_MS);
+                            var projectedOuterCompletionTime = DateTime.UtcNow.AddMilliseconds((double)projectedTotalTimeRemaining_MS);
                             logMessage += $"|Projected completion time: {projectedOuterCompletionTime}Z (UTC)";
                         }
                     }
@@ -168,7 +174,6 @@ namespace LoggingStopwatch
                     logAction("Swallowing exception in LoggingStopwatch: " + e.ToString(), null);
                 }
             }
-
         }
 
         public void LogFinalTimingReport()
@@ -178,7 +183,9 @@ namespace LoggingStopwatch
 
             if (activeExecutions > 0)
             {
-                Log("WARNING: Some inner executions were still outstanding when the outer stopwatch was Disposed! Reporting will ignore those executions.");
+                Log(
+                    "WARNING: Some inner executions were still outstanding when the outer stopwatch was Disposed! Reporting will ignore those executions."
+                );
             }
 
             if (iterationsCompleted == 0)
@@ -190,14 +197,15 @@ namespace LoggingStopwatch
             var threadCountMessage = $"Inner operations were spread over {innerTimingHandler.DistinctThreads} thread(s):";
 
             //Log the high-level results.
-            var primaryLogMessage = $"Completed|{iterationsCompleted} Inner operations ran for a linear total of: {innerTimingHandler.TotalLinearTime}|The outer scope ran for an elapsed time of: {overallTime}";
+            var primaryLogMessage =
+                $"Completed|{iterationsCompleted} Inner operations ran for a linear total of: {innerTimingHandler.TotalLinearTime}|The outer scope ran for an elapsed time of: {overallTime}";
             if (settings.ReportThreadCount && !settings.ReportPerThreadTime)
             {
                 primaryLogMessage += $"|{threadCountMessage}";
             }
-            
+
             Log(primaryLogMessage);
-            
+
             //Log per-thread results if requested.
             if (settings.ReportPerThreadTime)
             {
@@ -256,8 +264,11 @@ namespace LoggingStopwatch
                 parent.ReportInnerExecutionComplete();
             }
 
-            public IList<TimeSpan> ListAllThreadTimes() => timers_OnThread.Values.Select(watch => watch.Elapsed).Where(elapsed => elapsed != TimeSpan.Zero).ToArray();
+            public IList<TimeSpan> ListAllThreadTimes() =>
+                timers_OnThread.Values.Select(watch => watch.Elapsed).Where(elapsed => elapsed != TimeSpan.Zero).ToArray();
+
             public int DistinctThreads => ListAllThreadTimes().Count;
+
             public TimeSpan TotalLinearTime => new TimeSpan(ListAllThreadTimes().Sum(watches => watches.Ticks));
         }
     }

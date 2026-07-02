@@ -9,12 +9,12 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation.SerologyToSerology
 {
-    [UseReporter(typeof(NUnitReporter))]
+    [UseReporter(typeof(NUnit4Reporter))]
     [UseApprovalSubdirectory("Approvals")]
     // ReSharper disable once InconsistentNaming
     internal class MatchedSerology_SerologyToSerologyTests : MatchedOnTestBase<MatchedSerology>

@@ -4,6 +4,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;

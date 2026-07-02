@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace LoggingStopwatch
+namespace Atlas.Common.ApplicationInsights.Timing {
+
+public class LongStopwatchCollection
 {
-    public class LongStopwatchCollection
-    {
-        private readonly Dictionary<string, ILongOperationLoggingStopwatch> watches = new Dictionary<string, ILongOperationLoggingStopwatch>();
+    private readonly Dictionary<string, ILongOperationLoggingStopwatch> watches = new Dictionary<string, ILongOperationLoggingStopwatch>();
 
         private readonly Action<string, long?> defaultLoggingAction;
         private readonly LongLoggingSettings defaultLoggingSettings;
