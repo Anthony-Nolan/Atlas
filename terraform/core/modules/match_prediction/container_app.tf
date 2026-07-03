@@ -178,13 +178,16 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         transport        = "HTTP"
         initial_delay    = 10
         interval_seconds = 30
+        timeout          = 3
       }
 
       readiness_probe {
         path             = "/health/ready"
         port             = 8080
         transport        = "HTTP"
-        interval_seconds = 10
+        initial_delay    = 10
+        interval_seconds = 5
+        timeout          = 3
       }
     }
   }

@@ -611,13 +611,13 @@ variable "MATCH_PREDICTION_CONTAINER_IMAGE_TAG" {
 
 variable "MATCH_PREDICTION_CONTAINER_CPU" {
   type        = number
-  default     = 1.0
+  default     = 2.0
   description = "CPU cores allocated to the match prediction container app."
 }
 
 variable "MATCH_PREDICTION_CONTAINER_MEMORY" {
   type        = string
-  default     = "2Gi"
+  default     = "4Gi"
   description = "Memory allocated to the match prediction container app."
 }
 
@@ -629,7 +629,7 @@ variable "MATCH_PREDICTION_CONTAINER_MIN_REPLICAS" {
 
 variable "MATCH_PREDICTION_CONTAINER_MAX_REPLICAS" {
   type        = number
-  default     = 1
+  default     = 50
   description = "Maximum replica count for the match prediction container app."
 }
 
