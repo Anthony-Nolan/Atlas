@@ -38,7 +38,7 @@ public class ParallelMatchPredictionRunResults
 /// Minimal identifying information about a run that has just been abandoned — enough to publish the downstream
 /// failure notification without reloading the full run and its batches.
 /// </summary>
-public record AbandonedRunHeader(Guid SearchIdentifier, Guid? RepeatSearchIdentifier, bool IsRepeatSearch);
+public record AbandonedRunHeader(Guid SearchIdentifier, Guid? RepeatSearchIdentifier, bool IsRepeatSearch, int TotalBatchCount);
 
 public interface IParallelMatchPredictionRepository
 {
@@ -482,7 +482,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
             return await context.ParallelMatchPredictionRuns
                 .AsNoTracking()
                 .Where(r => r.Id == runId)
-                .Select(r => new AbandonedRunHeader(r.SearchIdentifier, r.RepeatSearchIdentifier, r.IsRepeatSearch))
+                .Select(r => new AbandonedRunHeader(r.SearchIdentifier, r.RepeatSearchIdentifier, r.IsRepeatSearch, r.TotalBatchCount))
                 .FirstAsync();
         });
     }

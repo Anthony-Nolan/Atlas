@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
+using AutoFixture;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ParallelMatchP
     {
         private MatchPredictionContext context;
         private IParallelMatchPredictionRepository repository;
+
+        private readonly Fixture fixture = new();
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -116,6 +119,28 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ParallelMatchP
         }
 
         [Test]
+        public async Task RecordBatchFailure_ForAbandonedBatch_RecordsLateFailureAndRunBecomesFinalisationEligible()
+        {
+            var runId = await CreateRun(totalBatchCount: 1);
+            await repository.TryMarkRunAsAbandoned(runId, DateTime.UtcNow); // batch -> Abandoned
+
+            // Late failure replay: the previously-missing batch returns a failure (e.g. an OOM) after abandonment.
+            var recorded = await repository.RecordBatchFailure(runId, 0, fixture.Create<string>(), fixture.Create<string>());
+
+            recorded.Should().BeTrue();
+            (await GetBatchStatuses(runId)).Should().ContainSingle()
+                .Which.Should().Be(ParallelMatchPredictionBatchStatus.Failed);
+
+            // The run stays Abandoned but is now finalisation-eligible (no Requested/Abandoned batches remain), so the
+            // finaliser re-picks it and the completion service republishes the definitive failure (with the real
+            // batch-failure cause) and transitions the run to FailedDuringBatchProcessing.
+            var runResults = await repository.GetRunWithResults(runId);
+            runResults.Run.Status.Should().Be(ParallelMatchPredictionRunStatus.Abandoned);
+            runResults.FailedBatches.Should().ContainSingle();
+            (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().Contain(runId);
+        }
+
+        [Test]
         public async Task RecordBatchResult_AfterBatchRowDeletedByCleanup_Throws()
         {
             var runId = await CreateRun(totalBatchCount: 1);
@@ -157,14 +182,15 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ParallelMatchP
         private async Task<int> CreateRun(int totalBatchCount)
         {
             return await repository.CreateRun(new CreateParallelMatchPredictionRunInfo(
-                SearchIdentifier: Guid.NewGuid(),
+                SearchIdentifier: fixture.Create<Guid>(),
                 IsRepeatSearch: false,
                 RepeatSearchIdentifier: null,
-                ResultsFileName: "results.json",
+                ResultsFileName: fixture.Create<string>(),
                 ResultsBatched: false,
-                BatchFolderName: "batch-folder",
-                MatchingAlgorithmElapsedTime: TimeSpan.Zero,
-                SearchInitiatedTimeUtc: DateTime.UtcNow,
+                // BatchFolderName has a 36-char limit; a GUID string fits it exactly.
+                BatchFolderName: fixture.Create<Guid>().ToString(),
+                MatchingAlgorithmElapsedTime: fixture.Create<TimeSpan>(),
+                SearchInitiatedTimeUtc: fixture.Create<DateTime>(),
                 TotalBatchCount: totalBatchCount
             ));
         }
