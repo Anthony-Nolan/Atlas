@@ -78,7 +78,7 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "AtlasFunction:Orchestration:ParallelBatchCleanupCronSchedule"                 = var.ORCHESTRATION_PARALLEL_BATCH_CLEANUP_CRON_SCHEDULE
     "AtlasFunction:Orchestration:ParallelBatchRetentionDays"                       = var.ORCHESTRATION_PARALLEL_BATCH_RETENTION_DAYS
     "AtlasFunction:Orchestration:AbandonBatchAfterMinutes"                         = var.ORCHESTRATION_PARALLEL_ABANDON_BATCH_AFTER_MINUTES
-    "AtlasFunction:Orchestration:ParallelAbandonmentCronSchedule"                  = var.ORCHESTRATION_PARALLEL_ABANDONMENT_CRON_SCHEDULE
+    "AtlasFunction:Orchestration:ParallelBatchAbandonmentCronSchedule"             = var.ORCHESTRATION_PARALLEL_ABANDONMENT_CRON_SCHEDULE
 
     "HlaMetadataDictionary:AzureStorageConnectionString"                          = azurerm_storage_account.azure_storage.primary_connection_string
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"                              = var.WMDA_FILE_URL

@@ -29,7 +29,8 @@ namespace Atlas.Client.Models.Search.Results
 
         /// <summary>
         /// Free-form detail describing why the search failed, when available (e.g. the match-prediction abandonment
-        /// reason, or the number of batches that failed during processing). Empty when no further detail was supplied.
+        /// reason, or the number of batches that failed during processing). <c>null</c> when no further detail was
+        /// supplied, consistent with the other optional fields on this type; <see cref="Summary"/> treats it as absent.
         /// </summary>
         public string Message { get; set; }
 

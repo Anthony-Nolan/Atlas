@@ -147,11 +147,12 @@ public interface IParallelMatchPredictionRepository
     /// <see cref="ParallelMatchPredictionRunStatus.Abandoned"/> (setting <see cref="ParallelMatchPredictionRun.IsSuccessful"/>
     /// to <c>false</c>) and marks its still-<see cref="ParallelMatchPredictionBatchStatus.Requested"/> batches as
     /// <see cref="ParallelMatchPredictionBatchStatus.Abandoned"/>. The status compare-and-swap is the concurrency guard:
-    /// only the first caller wins. Batches that already have a result are left untouched for research, and
-    /// <see cref="ParallelMatchPredictionRun.FinalisationLeaseOwner"/> is left <c>null</c> so a late-result replay can
-    /// later finalise the run.
+    /// only the first caller wins, and the run is only abandoned while <see cref="ParallelMatchPredictionRun.FinalisationLeaseOwner"/>
+    /// is <c>null</c> — a run a finaliser has already claimed (e.g. because a late batch result arrived after selection)
+    /// is left to that finaliser rather than being abandoned. Batches that already have a result are left untouched for
+    /// research, and the lease is itself left <c>null</c> here so a late-result replay can later finalise the run.
     /// </summary>
-    /// <returns>The run header if this call performed the transition; <c>null</c> if the run was no longer Running.</returns>
+    /// <returns>The run header if this call performed the transition; <c>null</c> if the run was no longer Running or had already been leased.</returns>
     Task<AbandonedRunHeader> TryMarkRunAsAbandoned(int runId, DateTime nowUtc);
 }
 
@@ -449,10 +450,15 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         return context.ExecuteInTransactionAsync(async () =>
             {
                 // Compare-and-swap on status — only the first caller to flip Running -> Abandoned proceeds, so concurrent
-                // timer ticks cannot both abandon (and double-notify) the same run. FinalisationLeaseOwner is deliberately
-                // left null so a late-result replay can re-pick the run for finalisation.
+                // timer ticks cannot both abandon (and double-notify) the same run. The lease check defers to any finaliser
+                // that has already claimed the run: if a late batch result arrived in the window after GetRunIdsToAbandon
+                // selected this run, a finaliser may have leased it for completion — abandoning it then would fire a
+                // spurious failure notification/alert for a run that is about to finalise. The finaliser owns it instead.
+                // FinalisationLeaseOwner is otherwise deliberately left null so a late-result
                 var rowsUpdated = await context.ParallelMatchPredictionRuns
-                    .Where(r => r.Id == runId && r.Status == ParallelMatchPredictionRunStatus.Running)
+                    .Where(r => r.Id == runId 
+                             && r.Status == ParallelMatchPredictionRunStatus.Running
+                                && r.FinalisationLeaseOwner == null)
                     .ExecuteUpdateAsync(s => s
                         .SetProperty(r => r.Status, ParallelMatchPredictionRunStatus.Abandoned)
                         .SetProperty(r => r.IsSuccessful, false)
