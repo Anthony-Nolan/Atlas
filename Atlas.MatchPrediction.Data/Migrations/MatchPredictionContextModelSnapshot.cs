@@ -228,7 +228,9 @@ namespace Atlas.MatchPrediction.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Status");
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_ParallelMatchPredictionRuns_Status_Running")
+                        .HasFilter("[Status] = 'Running'");
 
                     b.HasIndex("IsCleanedUp", "MatchPredictionRunInitiatedUtc");
 

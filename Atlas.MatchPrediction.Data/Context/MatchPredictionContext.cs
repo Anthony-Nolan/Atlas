@@ -28,6 +28,11 @@ public class MatchPredictionContext : DbContext
             .Property(x => x.Status)
             .HasConversion<string>();
 
+        modelBuilder.Entity<ParallelMatchPredictionRun>()
+            .HasIndex(x => x.Status)
+            .HasDatabaseName("IX_ParallelMatchPredictionRuns_Status_Running")
+            .HasFilter("[Status] = 'Running'");
+
         modelBuilder.Entity<ParallelMatchPredictionBatch>()
             .Property(x => x.BatchStatus)
             .HasConversion<string>()

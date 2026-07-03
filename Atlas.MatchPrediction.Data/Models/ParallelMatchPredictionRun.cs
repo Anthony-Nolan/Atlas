@@ -11,7 +11,6 @@ namespace Atlas.MatchPrediction.Data.Models;
 /// historic searches remain visible even after their per-batch detail rows have been purged.
 /// </summary>
 [Index(nameof(IsCleanedUp), nameof(MatchPredictionRunInitiatedUtc))]
-[Index(nameof(Status))]
 public class ParallelMatchPredictionRun
 {
     [Key]

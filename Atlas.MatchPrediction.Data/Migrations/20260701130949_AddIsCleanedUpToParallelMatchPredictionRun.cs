@@ -30,10 +30,11 @@ namespace Atlas.MatchPrediction.Data.Migrations
                 columns: new[] { "IsCleanedUp", "MatchPredictionRunInitiatedUtc" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ParallelMatchPredictionRuns_Status",
+                name: "IX_ParallelMatchPredictionRuns_Status_Running",
                 schema: "MatchPrediction",
                 table: "ParallelMatchPredictionRuns",
-                column: "Status");
+                column: "Status",
+                filter: "[Status] = 'Running'");
         }
 
         /// <inheritdoc />
@@ -45,7 +46,7 @@ namespace Atlas.MatchPrediction.Data.Migrations
                 table: "ParallelMatchPredictionRuns");
 
             migrationBuilder.DropIndex(
-                name: "IX_ParallelMatchPredictionRuns_Status",
+                name: "IX_ParallelMatchPredictionRuns_Status_Running",
                 schema: "MatchPrediction",
                 table: "ParallelMatchPredictionRuns");
 
