@@ -28,6 +28,12 @@ namespace Atlas.Client.Models.Search.Results
         public bool WillRetry => MatchingAlgorithmFailureInfo is { RemainingRetriesCount: > 0 };
 
         /// <summary>
+        /// Free-form detail describing why the search failed, when available (e.g. the match-prediction abandonment
+        /// reason, or the number of batches that failed during processing). Empty when no further detail was supplied.
+        /// </summary>
+        public string Message { get; set; }
+
+        /// <summary>
         /// Summary of the failure.
         /// </summary>
         public string Summary
@@ -38,7 +44,11 @@ namespace Atlas.Client.Models.Search.Results
                     ? ""
                     : $", with validation error: {MatchingAlgorithmFailureInfo.ValidationError}";
 
-                return $"Search failed at stage: {StageReached}{validationError}";
+                var detail = string.IsNullOrEmpty(Message)
+                    ? ""
+                    : $": {Message}";
+
+                return $"Search failed at stage: {StageReached}{validationError}{detail}";
             }
         }
     }

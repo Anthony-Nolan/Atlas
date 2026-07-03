@@ -4,11 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.LogFile;
+using Atlas.Client.Models.SupportMessages;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.Common.Notifications;
 using Atlas.Functions.Models;
 using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.Functions.Settings;
@@ -67,9 +69,13 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
     private readonly ISearchResultsBlobStorageClient searchResultsBlobUploader;
     private readonly ISearchCompletionMessageSender searchCompletionMessageSender;
     private readonly IMatchPredictionSearchTrackingDispatcher matchPredictionSearchTrackingDispatcher;
+    private readonly INotificationSender notificationSender;
     private readonly IAtlasLogger logger;
     private readonly AzureStorageSettings azureStorageSettings;
     private readonly int parallelMatchPredictionBatchSize;
+
+    private const string AbandonmentNotificationSource = "Atlas.Functions.ParallelMatchPrediction";
+    private const string MatchPredictionBatchProcessingStage = "MatchPredictionBatchProcessing";
 
     public ParallelMatchPredictionCompletionService(
         IParallelMatchPredictionRepository repository,
@@ -78,6 +84,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         ISearchResultsBlobStorageClient searchResultsBlobUploader,
         ISearchCompletionMessageSender searchCompletionMessageSender,
         IMatchPredictionSearchTrackingDispatcher matchPredictionSearchTrackingDispatcher,
+        INotificationSender notificationSender,
         ISearchLogger<SearchLoggingContext> logger,
         IOptions<AzureStorageSettings> azureStorageSettings,
         IOptions<OrchestrationSettings> orchestrationSettings)
@@ -88,6 +95,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         this.searchResultsBlobUploader = searchResultsBlobUploader;
         this.searchCompletionMessageSender = searchCompletionMessageSender;
         this.matchPredictionSearchTrackingDispatcher = matchPredictionSearchTrackingDispatcher;
+        this.notificationSender = notificationSender;
         this.logger = logger;
         this.azureStorageSettings = azureStorageSettings.Value;
         parallelMatchPredictionBatchSize = orchestrationSettings.Value.ParallelMatchPredictionBatchSize;
@@ -115,6 +123,15 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
 
             if (runResults.FailedBatches.Count > 0)
             {
+                // A run that was previously Abandoned can be re-picked here once all of its late batch results have
+                // finally arrived. If any of those late results is a failure, we deliberately run the failure path
+                // again rather than suppressing it: the abandonment failure is only provisional (the late-all-success
+                // path below likewise supersedes it with a result message), so once every batch has reported we send
+                // the definitive outcome. The replayed failure is strictly more informative than the abandonment one —
+                // it carries the real BatchWorkerFailure cause and exception detail, and ProcessCompleted supersedes
+                // the provisional Abandoned tracking with the true failure. The run lands in FailedDuringBatchProcessing,
+                // identical to any normal failed run. Consumers may therefore receive the provisional abandonment
+                // failure followed by this confirmed failure — accepted and documented, mirroring the success replay.
                 await CompleteFailedRun(runId, run, runResults, trackingSearchIdentifier, originalSearchIdentifier);
                 return;
             }
@@ -136,31 +153,68 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         var header = await repository.TryMarkRunAsAbandoned(runId, DateTime.UtcNow);
         if (header is null)
         {
-            logger.SendTrace(
-                $"Parallel match prediction run {runId} was no longer in the Running state; skipping abandonment.",
-                LogLevel.Info
-            );
+            logger.SendTrace($"Parallel match prediction run {runId} was no longer in the Running state; skipping abandonment.");
             return;
         }
 
+        // Match the repeat-search identifier convention used by CompleteRun so tracking events line up.
+        var trackingSearchIdentifier = header.IsRepeatSearch
+            ? header.RepeatSearchIdentifier!.Value
+            : header.SearchIdentifier;
+        var originalSearchIdentifier = header.IsRepeatSearch
+            ? header.SearchIdentifier
+            : (Guid?)null;
+
+        var failureMessage =
+            $"Parallel match prediction run {runId} (search {header.SearchIdentifier}) was abandoned: "
+          + "one or more batches did not return a result within the configured timeout.";
+
+        // Emit the completion tracking event so search tracking records the run as an abandonment (rather than never
+        // recording a terminal state). Uses the dedicated Abandoned failure type to distinguish it from a batch failure.
+        await matchPredictionSearchTrackingDispatcher.ProcessCompleted(
+            (
+                trackingSearchIdentifier,
+                originalSearchIdentifier,
+                IsSuccessful: false,
+                FailureInfo: new MatchPredictionFailureInfo
+                {
+                    Type = MatchPredictionFailureType.Abandoned,
+                    Message = failureMessage,
+                },
+                DonorsPerBatch: parallelMatchPredictionBatchSize,
+                TotalNumberOfBatches: header.TotalBatchCount
+            )
+        );
+
+        // Publish the single downstream failure notification, carrying the abandonment detail in the shared payload.
         await searchCompletionMessageSender.PublishFailureMessage(new SendFailureNotificationParameters
             {
                 SearchRequestId = header.SearchIdentifier.ToString(),
                 RepeatSearchRequestId = header.RepeatSearchIdentifier?.ToString(),
-                StageReached = "MatchPredictionBatchProcessing",
+                StageReached = MatchPredictionBatchProcessingStage,
+                FailureDetail = failureMessage,
             }
+        );
+
+        // Raise an operational alert so an abandoned search does not fail silently for support.
+        await notificationSender.SendAlert(
+            $"Parallel match prediction run abandoned (search {header.SearchIdentifier})",
+            failureMessage,
+            Priority.Medium,
+            AbandonmentNotificationSource
         );
 
         logger.SendTrace(
             $"Abandoned parallel match prediction run {runId} (search {header.SearchIdentifier}): "
-          + "one or more batches did not return within the configured timeout. Failure notification sent.",
+          + "one or more batches did not return within the configured timeout. "
+          + "Failure notification, tracking event and alert sent.",
             LogLevel.Warn
         );
     }
 
     private async Task CompleteFailedRun(
         int runId,
-        Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRun run,
+        ParallelMatchPredictionRun run,
         ParallelMatchPredictionRunResults runResults,
         Guid trackingSearchIdentifier,
         Guid? originalSearchIdentifier)
@@ -223,12 +277,13 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
             )
         );
 
-        // Emit failure notification.
+        // Emit failure notification, carrying the failure detail in the shared payload.
         await searchCompletionMessageSender.PublishFailureMessage(new SendFailureNotificationParameters
             {
                 SearchRequestId = run.SearchIdentifier.ToString(),
                 RepeatSearchRequestId = run.RepeatSearchIdentifier?.ToString(),
-                StageReached = "MatchPredictionBatchProcessing",
+                StageReached = MatchPredictionBatchProcessingStage,
+                FailureDetail = failureMessage,
             }
         );
 
@@ -242,7 +297,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
 
     private async Task CompleteSuccessfulRun(
         int runId,
-        Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRun run,
+        ParallelMatchPredictionRun run,
         IReadOnlyList<string> batchResultLocations,
         Guid trackingSearchIdentifier,
         Guid? originalSearchIdentifier)

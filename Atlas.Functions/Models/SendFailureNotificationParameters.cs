@@ -16,6 +16,12 @@ public record SendFailureNotificationParameters
     public string StageReached { get; init; }
 
     /// <summary>
+    /// Optional free-form detail describing why the search failed (e.g. the match-prediction abandonment reason).
+    /// Surfaced to downstream consumers via <see cref="Atlas.Client.Models.Search.Results.SearchFailureInfo.Message"/>.
+    /// </summary>
+    public string FailureDetail { get; init; }
+
+    /// <summary>
     /// Only populated when the failure originated in the matching algorithm.
     /// </summary>
     public MatchingAlgorithmFailureInfo MatchingAlgorithmFailureInfo { get; init; }
