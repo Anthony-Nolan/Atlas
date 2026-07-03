@@ -106,6 +106,20 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ParallelMatchP
         }
 
         [Test]
+        public async Task TryMarkRunAsAbandoned_WhenRunAlreadyLeasedByFinaliser_DoesNotAbandon()
+        {
+            var runId = await CreateRun(totalBatchCount: 1);
+            // A finaliser claims the run (e.g. after a late result arrived) before the abandonment sweep acts on it.
+            (await repository.TryClaimFinalisationLease(runId, fixture.Create<Guid>())).Should().BeTrue();
+
+            var header = await repository.TryMarkRunAsAbandoned(runId, DateTime.UtcNow);
+
+            header.Should().BeNull();
+            (await repository.GetRunWithResults(runId)).Run.Status
+                .Should().Be(ParallelMatchPredictionRunStatus.Running);
+        }
+
+        [Test]
         public async Task RecordBatchResult_ForAbandonedBatch_RecordsTheLateResult()
         {
             var runId = await CreateRun(totalBatchCount: 1);
