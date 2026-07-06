@@ -513,8 +513,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddSingleton<IMemoryCache, MemoryCache>(sp => new MemoryCache(new MemoryCacheOptions()));
 
             services.AddSingleton(sp => AutoMapperConfig.CreateMapper(
-            sp.GetService<IConfiguration>()?["AutoMapper:LicenseKey"],
-            sp.GetService<ILoggerFactory>()));
+            sp.GetRequiredService<IConfiguration>()["AutoMapper:LicenseKey"] ?? throw new InvalidOperationException("AutoMapper license key is required"),
+            sp.GetRequiredService<ILoggerFactory>()));
 
             services.AddApplicationInsightsTelemetryWorkerService();
 

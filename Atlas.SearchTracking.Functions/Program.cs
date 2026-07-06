@@ -44,8 +44,8 @@ var host = new HostBuilder()
         services.AddScoped<ISearchRequestMatchingAlgorithmAttemptsRepository, SearchRequestMatchingAlgorithmAttemptsRepository>();
         services.RegisterAsOptions<SearchTrackingServiceBusSettings>("MessagingServiceBus");
         services.AddSingleton(sp => AutoMapperConfig.CreateMapper(
-            sp.GetService<IConfiguration>()?["AutoMapper:LicenseKey"],
-            sp.GetService<ILoggerFactory>()));
+            sp.GetRequiredService<IConfiguration>()["AutoMapper:LicenseKey"] ?? throw new InvalidOperationException("AutoMapper license key is required"),
+            sp.GetRequiredService<ILoggerFactory>()));
     })
     .Build();
 

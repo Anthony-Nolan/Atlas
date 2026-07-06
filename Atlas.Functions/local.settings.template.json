@@ -3,7 +3,7 @@
   "Values": {
     "ApplicationInsights:LogLevel": "Info",
 
-    "AutoMapper:LicenseKey": "",
+    "AutoMapper:LicenseKey": "override-this",
 
     "AtlasFunction:AzureStorage:MatchingConnectionString": "UseDevelopmentStorage=true",
     "AtlasFunction:AzureStorage:MatchingResultsBlobContainer": "matching-algorithm-results",

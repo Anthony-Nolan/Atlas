@@ -8,7 +8,7 @@ using Atlas.ManualTesting.Models;
 using Atlas.ManualTesting.Services.Scoring;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 
-namespace Atlas.ManualTesting.Services.WmdaExercises.Scorers {
+namespace Atlas.ManualTesting.Services.WmdaConsensusResults.Scorers {
 
 internal abstract class WmdaExerciseScorerBase : ScoreRequestProcessor
 {

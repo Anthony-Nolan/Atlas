@@ -1,5 +1,6 @@
 using Atlas.MatchingAlgorithm.Config;
 using AutoMapper;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers
 {
@@ -7,6 +8,6 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers
     {
         private static IMapper _mapper;
         
-        public static IMapper Mapper => _mapper ?? (_mapper = AutoMapperConfig.CreateMapper());
+        public static IMapper Mapper => _mapper ??= AutoMapperConfig.CreateMapper("", NullLoggerFactory.Instance);
     }
 }

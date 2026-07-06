@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Atlas.ManualTesting.Services.WmdaExercises
+namespace Atlas.ManualTesting.Services.WmdaConsensusResults
 {
     public interface IWmdaDiscrepantResultsWriter
     {

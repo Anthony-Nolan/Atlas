@@ -163,8 +163,8 @@ namespace Atlas.Functions
             });
 
         services.AddSingleton(sp => AutoMapperConfig.CreateMapper(
-            sp.GetService<IConfiguration>()?["AutoMapper:LicenseKey"],
-            sp.GetService<ILoggerFactory>()));
+            sp.GetRequiredService<IConfiguration>()["AutoMapper:LicenseKey"] ?? throw new InvalidOperationException("AutoMapper license key is required"),
+            sp.GetRequiredService<ILoggerFactory>()));
     }
 
         private static void RegisterMatchPredictionDatabase(IServiceCollection services)

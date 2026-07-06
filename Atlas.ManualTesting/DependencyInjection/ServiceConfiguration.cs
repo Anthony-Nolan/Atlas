@@ -22,8 +22,8 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Atlas.ManualTesting.Services.WmdaExercises;
-using Atlas.ManualTesting.Services.WmdaExercises.Scorers;
+using Atlas.ManualTesting.Services.WmdaConsensusResults;
+using Atlas.ManualTesting.Services.WmdaConsensusResults.Scorers;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.ManualTesting.DependencyInjection

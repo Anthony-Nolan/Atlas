@@ -2,7 +2,7 @@
   "IsEncrypted": false,
   "Values": {
     "ApplicationInsights:LogLevel": "Info",
-    "AutoMapper:LicenseKey": "",
+    "AutoMapper:LicenseKey": "override-this",
     "AzureManagement:Authentication:ClientId": "5b04c766-cc2e-41f6-9782-2b93df889e44",
     "AzureManagement:Authentication:ClientSecret": "not-used-locally",
     "AzureManagement:Authentication:OAuthBaseUrl": "https://login.microsoftonline.com/<domain-override-this>/oauth2/v2.0/token",

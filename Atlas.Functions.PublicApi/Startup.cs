@@ -1,3 +1,4 @@
+using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.Functions.PublicApi.ClientConfig;
@@ -60,8 +61,8 @@ namespace Atlas.Functions.PublicApi
             services.RegisterAsOptions<SearchTrackingServiceBusSettings>("SearchTracking:SearchTrackingServiceBus");
 
             services.AddSingleton(sp => AutoMapperConfig.CreateMapper(
-                    sp.GetService<IConfiguration>()?["AutoMapper:LicenseKey"],
-                    sp.GetService<ILoggerFactory>()
+                    sp.GetRequiredService<IConfiguration>()["AutoMapper:LicenseKey"] ?? throw new InvalidOperationException("AutoMapper license key is required"),
+                    sp.GetRequiredService<ILoggerFactory>()
                 )
             );
         }
