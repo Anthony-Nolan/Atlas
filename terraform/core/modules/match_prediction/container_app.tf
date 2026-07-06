@@ -186,8 +186,8 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         port             = 8080
         transport        = "HTTP"
         initial_delay    = 10
-        interval_seconds = 5
-        timeout          = 3
+        interval_seconds = 15
+        timeout          = 5
       }
     }
   }
