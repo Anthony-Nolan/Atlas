@@ -47,13 +47,16 @@ namespace Atlas.Functions.Test.Functions
         }
 
         [Test]
-        public async Task MarkRunsAsAbandoned_WhenAbandoningOneRunThrows_StillAbandonsTheOthers()
+        public async Task MarkRunsAsAbandoned_WhenAbandoningOneRunThrows_StillAbandonsTheOthersThenThrows()
         {
             repository.GetRunIdsToAbandon(Arg.Any<DateTime>())
                 .Returns(new List<int> { 1, 2, 3 });
             completionService.AbandonRun(2).Returns(Task.FromException(new InvalidOperationException("boom")));
 
-            await functions.MarkRunsAsAbandoned(null);
+            // A single failure does not block the other runs, but the invocation is still reported as failed so the
+            // partial failure surfaces in monitoring rather than being silently swallowed.
+            var ex = Assert.ThrowsAsync<AggregateException>(() => functions.MarkRunsAsAbandoned(null));
+            Assert.That(ex.InnerExceptions, Has.Count.EqualTo(1));
 
             await completionService.Received(1).AbandonRun(1);
             await completionService.Received(1).AbandonRun(3);

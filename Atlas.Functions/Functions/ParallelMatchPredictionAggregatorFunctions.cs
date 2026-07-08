@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Functions.Services;
 using Atlas.Functions.Settings;
@@ -108,7 +109,7 @@ public class ParallelMatchPredictionAggregatorFunctions
     /// Timer-triggered finaliser. Scans for unclaimed runs that have received all expected batches and are still in the
     /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.Running"/> state, then atomically
     /// claims each run with a per-invocation lease GUID before driving the persistence pipeline via
-    /// <see cref="IParallelMatchPredictionCompletionService.CompleteRun"/>. The lease prevents concurrent invocations
+    /// <see cref="IParallelMatchPredictionCompletionService.FinaliseRun"/>. The lease prevents concurrent invocations
     /// from processing the same run: only the invocation that wins the compare-and-swap claim will proceed.
     /// On failure the completion service moves the run to
     /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.FailedDuringCompletion"/>
@@ -148,7 +149,7 @@ public class ParallelMatchPredictionAggregatorFunctions
 
             try
             {
-                await completionService.CompleteRun(runId);
+                await completionService.FinaliseRun(runId);
             }
             catch (Exception ex)
             {
@@ -186,6 +187,7 @@ public class ParallelMatchPredictionAggregatorFunctions
             runIdsToAbandon.Count, abandonBatchAfterMinutes
         );
 
+        var failures = new List<Exception>();
         foreach (var runId in runIdsToAbandon)
         {
             try
@@ -196,7 +198,20 @@ public class ParallelMatchPredictionAggregatorFunctions
             {
                 // Log and continue so a single failure does not block abandoning the remaining runs in this tick.
                 logger.LogError(ex, "Failed to abandon parallel match prediction run {RunId}.", runId);
+                failures.Add(new InvalidOperationException($"Failed to abandon parallel match prediction run {runId}.", ex));
             }
+        }
+
+        // Every run above was still attempted; a run that failed here stays Running and is re-selected on the next
+        // sweep (AbandonRun is an idempotent status compare-and-swap, so a retry cannot double-notify). Re-throw the
+        // collected failures so the invocation is recorded as Failed for monitoring/alerting and is easy to research —
+        // a swallowed abandonment can otherwise leave no durable trace beyond this log line.
+        if (failures.Count > 0)
+        {
+            throw new AggregateException(
+                $"{failures.Count} of {runIdsToAbandon.Count} parallel match prediction run(s) failed to abandon in this sweep.",
+                failures
+            );
         }
     }
 

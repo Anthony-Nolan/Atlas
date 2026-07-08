@@ -22,6 +22,12 @@ public record CreateParallelMatchPredictionRunInfo(
     int TotalBatchCount);
 
 /// <summary>
+/// Minimal identifying information about a run that has just been abandoned — enough to publish the downstream
+/// failure notification without reloading the full run and its batches.
+/// </summary>
+public record AbandonedRunHeader(Guid SearchIdentifier, Guid? RepeatSearchIdentifier, bool IsRepeatSearch, int TotalBatchCount);
+
+/// <summary>
 /// A run together with the merged donor → blob location map built from all of its received batch rows.
 /// </summary>
 public class ParallelMatchPredictionRunResults
@@ -33,12 +39,6 @@ public class ParallelMatchPredictionRunResults
     /// <summary>Batches whose <see cref="ParallelMatchPredictionBatch.BatchStatus"/> is <see cref="ParallelMatchPredictionBatchStatus.Failed"/>.</summary>
     public IReadOnlyList<ParallelMatchPredictionBatch> FailedBatches { get; init; }
 }
-
-/// <summary>
-/// Minimal identifying information about a run that has just been abandoned — enough to publish the downstream
-/// failure notification without reloading the full run and its batches.
-/// </summary>
-public record AbandonedRunHeader(Guid SearchIdentifier, Guid? RepeatSearchIdentifier, bool IsRepeatSearch, int TotalBatchCount);
 
 public interface IParallelMatchPredictionRepository
 {
@@ -110,7 +110,10 @@ public interface IParallelMatchPredictionRepository
     /// Marks the run as <see cref="ParallelMatchPredictionRunStatus.Finalised"/> and sets
     /// <see cref="ParallelMatchPredictionRun.IsSuccessful"/> to <c>true</c>, provided it still has
     /// status <see cref="ParallelMatchPredictionRunStatus.Running"/> or
-    /// <see cref="ParallelMatchPredictionRunStatus.Abandoned"/> (a late-result replay flips it back to success).
+    /// <see cref="ParallelMatchPredictionRunStatus.Abandoned"/>. The Abandoned case is the late-result replay:
+    /// an abandoned run keeps its run-status while its per-batch rows are superseded by late results, and once no
+    /// <see cref="ParallelMatchPredictionBatchStatus.Requested"/>/<see cref="ParallelMatchPredictionBatchStatus.Abandoned"/>
+    /// batch remains the finaliser re-picks it and flips it to Finalised here.
     /// Call this as the very last step, after all persistence has succeeded.
     /// </summary>
     Task MarkRunFinalised(int runId, DateTime finalisedTimeUtc);
@@ -131,13 +134,15 @@ public interface IParallelMatchPredictionRepository
     /// <summary>
     /// Deletes batch rows belonging to runs that have not yet been cleaned up
     /// (<see cref="ParallelMatchPredictionRun.IsCleanedUp"/> is <c>false</c>) and whose
-    /// <c>MatchPredictionRunInitiatedUtc</c> is before <paramref name="cutoffUtc"/> — i.e. every run that has
-    /// been in the database longer than the retention period, regardless of status (including abandoned
-    /// <see cref="ParallelMatchPredictionRunStatus.Running"/> runs and failed runs). Marks those runs as
-    /// cleaned up by setting <see cref="ParallelMatchPredictionRun.IsCleanedUp"/> to <c>true</c>; the run's
-    /// <see cref="ParallelMatchPredictionRun.Status"/> is left unchanged so it remains a historical record.
-    /// The whole operation is wrapped in a transaction so that the flag update and batch deletion are atomic.
-    /// Parent run rows are intentionally retained.
+    /// <c>MatchPredictionRunInitiatedUtc</c> is before <paramref name="cutoffUtc"/> — i.e. every run older than the
+    /// retention period, whatever its outcome (<see cref="ParallelMatchPredictionRunStatus.Finalised"/>,
+    /// FailedDuring*, <see cref="ParallelMatchPredictionRunStatus.Abandoned"/>, or a still-<see cref="ParallelMatchPredictionRunStatus.Running"/>
+    /// run that never completed). The one exception is a Running run currently claimed for finalisation
+    /// (<see cref="ParallelMatchPredictionRun.FinalisationLeaseOwner"/> set): its batches are left in place so the
+    /// in-flight completion pipeline does not read an empty batch set. Marks the cleaned runs by setting
+    /// <see cref="ParallelMatchPredictionRun.IsCleanedUp"/> to <c>true</c>; <see cref="ParallelMatchPredictionRun.Status"/>
+    /// is left unchanged so the run stays a historical record. Batch deletion and the flag update run in a single
+    /// transaction. Parent run rows are intentionally retained.
     /// </summary>
     /// <returns>The number of batch rows deleted.</returns>
     Task<int> CleanupBatchesForRunsInitiatedBefore(DateTime cutoffUtc);
@@ -309,7 +314,8 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
                      && r.FinalisationLeaseOwner == null
                      && !r.IsCleanedUp
                      && r.Batches.All(b => b.BatchStatus != ParallelMatchPredictionBatchStatus.Requested
-                                        && b.BatchStatus != ParallelMatchPredictionBatchStatus.Abandoned)
+                                        && b.BatchStatus != ParallelMatchPredictionBatchStatus.Abandoned
+                        )
             )
             .Select(r => r.Id)
             .ToListAsync();
@@ -465,9 +471,10 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
                 // spurious failure notification/alert for a run that is about to finalise. The finaliser owns it instead.
                 // FinalisationLeaseOwner is otherwise deliberately left null so a late-result
                 var rowsUpdated = await context.ParallelMatchPredictionRuns
-                    .Where(r => r.Id == runId 
+                    .Where(r => r.Id == runId
                              && r.Status == ParallelMatchPredictionRunStatus.Running
-                                && r.FinalisationLeaseOwner == null)
+                             && r.FinalisationLeaseOwner == null
+                    )
                     .ExecuteUpdateAsync(s => s
                         .SetProperty(r => r.Status, ParallelMatchPredictionRunStatus.Abandoned)
                         .SetProperty(r => r.IsSuccessful, false)

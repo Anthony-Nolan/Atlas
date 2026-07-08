@@ -1,4 +1,5 @@
-﻿using Atlas.Client.Models.Search.Results.Matching;
+﻿using Atlas.Client.Models.Search.Results;
+using Atlas.Client.Models.Search.Results.Matching;
 
 namespace Atlas.Functions.Models;
 
@@ -17,7 +18,7 @@ public record SendFailureNotificationParameters
 
     /// <summary>
     /// Optional free-form detail describing why the search failed (e.g. the match-prediction abandonment reason).
-    /// Surfaced to downstream consumers via <see cref="Atlas.Client.Models.Search.Results.SearchFailureInfo.Message"/>.
+    /// Surfaced to downstream consumers via <see cref="SearchFailureInfo.FailureDetail"/>.
     /// </summary>
     public string FailureDetail { get; init; }
 

@@ -165,7 +165,7 @@ namespace Atlas.Functions.Test.Services
         }
 
         [Test]
-        public async Task CompleteRun_LateFailureReplayForAbandonedRun_RepublishesFailureWithRealCauseAndMarksFailed()
+        public async Task FinaliseRun_LateFailureReplayForAbandonedRun_RepublishesFailureWithRealCauseAndMarksFailed()
         {
             var runId = fixture.Create<int>();
             repository.GetRunWithResults(runId).Returns(RunResults(
@@ -173,7 +173,7 @@ namespace Atlas.Functions.Test.Services
                 failedBatch: true
             ));
 
-            await completionService.CompleteRun(runId);
+            await completionService.FinaliseRun(runId);
 
             // The provisional abandonment failure is superseded once every batch has reported: the definitive
             // failure is re-published, now carrying the real batch-failure cause rather than the generic timeout.
@@ -190,7 +190,7 @@ namespace Atlas.Functions.Test.Services
         }
 
         [Test]
-        public async Task CompleteRun_FailedRunThatWasNotAbandoned_PublishesFailureNotificationAndMarksFailed()
+        public async Task FinaliseRun_FailedRunThatWasNotAbandoned_PublishesFailureNotificationAndMarksFailed()
         {
             var runId = fixture.Create<int>();
             repository.GetRunWithResults(runId).Returns(RunResults(
@@ -198,7 +198,7 @@ namespace Atlas.Functions.Test.Services
                 failedBatch: true
             ));
 
-            await completionService.CompleteRun(runId);
+            await completionService.FinaliseRun(runId);
 
             await searchCompletionMessageSender.Received(1).PublishFailureMessage(
                 Arg.Is<SendFailureNotificationParameters>(p => !string.IsNullOrEmpty(p.FailureDetail))

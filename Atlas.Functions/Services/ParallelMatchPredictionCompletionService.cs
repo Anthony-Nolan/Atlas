@@ -45,7 +45,7 @@ public interface IParallelMatchPredictionCompletionService
     /// and the exception is rethrown. The finalisation timer will not re-pick a failed run.
     /// </para>
     /// </remarks>
-    Task CompleteRun(int runId);
+    Task FinaliseRun(int runId);
 
     /// <summary>
     /// Abandons a single parallel match-prediction run whose batches never all returned within the configured
@@ -99,7 +99,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         parallelMatchPredictionBatchSize = orchestrationSettings.Value.ParallelMatchPredictionBatchSize;
     }
 
-    public async Task CompleteRun(int runId)
+    public async Task FinaliseRun(int runId)
     {
         var runResults = await repository.GetRunWithResults(runId);
         if (runResults is null)
@@ -156,7 +156,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
             return;
         }
 
-        // Match the repeat-search identifier convention used by CompleteRun so tracking events line up.
+        // Match the repeat-search identifier convention used by FinaliseRun so tracking events line up.
         var trackingSearchIdentifier = header.IsRepeatSearch
             ? header.RepeatSearchIdentifier!.Value
             : header.SearchIdentifier;
