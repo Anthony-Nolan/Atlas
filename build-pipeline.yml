@@ -100,20 +100,20 @@ jobs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/published-models'
           ArtifactName: published-models
 
-      - task: VersionReaderTask@2
+      - task: VersionReaderTask@3
         displayName: 'Read Atlas Version'
         inputs:
           searchPattern: '**/Atlas.Functions.PublicApi.csproj'
           variablesPrefix: Atlas
 
-      - task: file-creator@6
+      - task: file-creator@7
         displayName: 'Create version.txt'
         inputs:
           filepath: '$(Build.ArtifactStagingDirectory)/metadata/version.txt'
           filecontent: '$(Atlas_VersionPrefix)'
           fileoverwrite: true
 
-      - task: file-creator@6
+      - task: file-creator@7
         displayName: 'Create commitSha.txt'
         inputs:
           filepath: '$(Build.ArtifactStagingDirectory)/metadata/commitSha.txt'
