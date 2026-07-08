@@ -61,6 +61,7 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
                 SearchIdentifier = new Guid(request.SearchRequestId),
                 RepeatSearchIdentifier = request.RepeatSearchRequestId == null ? null : new Guid(request.RepeatSearchRequestId),
                 ParallelRunId = request.ParallelRunId,
+                BatchId = request.BatchId,
                 BatchSequenceNumber = request.BatchSequenceNumber,
                 IsSuccessful = false,
                 FailureMessage = ex.Message,
@@ -101,13 +102,13 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
 
         await trackingDispatcher.ProcessRunningBatchesStarted(searchIdentifier, originalSearchIdentifier);
 
-        var results = await parallelMatchPredictionAlgorithm.RunBatch(batchInput, maxDegreeOfParallelism);
+        var resultLocation = await parallelMatchPredictionAlgorithm.RunBatch(batchInput, maxDegreeOfParallelism, request.BatchId);
 
         await trackingDispatcher.ProcessRunningBatchesEnded(searchIdentifier, originalSearchIdentifier);
 
         logger.LogInformation(
-            "Completed match prediction for {DonorCount} donors for search {SearchRequestId}, blob {BlobLocation}",
-            results.Count, request.SearchRequestId, request.BlobLocation
+            "Completed match prediction for batch {BatchId} ({DonorCount} donors) for search {SearchRequestId}; stored results in single blob {ResultLocation}",
+            request.BatchId, batchInput.Donors?.Count, request.SearchRequestId, resultLocation
         );
 
         var batchResult = new ParallelMatchPredictionBatchResult
@@ -115,16 +116,17 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
             SearchIdentifier = new Guid(request.SearchRequestId),
             RepeatSearchIdentifier = request.RepeatSearchRequestId == null ? null : new Guid(request.RepeatSearchRequestId),
             IsSuccessful = true,
-            MatchPredictionResultLocations = results,
+            MatchPredictionResultLocation = resultLocation,
             ParallelRunId = request.ParallelRunId,
+            BatchId = request.BatchId,
             BatchSequenceNumber = request.BatchSequenceNumber,
         };
 
         await resultPublisher.PublishWithSession(batchResult, sessionId: request.SearchRequestId);
 
         logger.LogInformation(
-            "Published batch result for search {SearchRequestId} (session) to parallel-match-prediction-results",
-            request.SearchRequestId
+            "Published batch result for batch {BatchId}, search {SearchRequestId} (session) to parallel-match-prediction-results",
+            request.BatchId, request.SearchRequestId
         );
     }
 }

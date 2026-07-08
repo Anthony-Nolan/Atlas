@@ -37,11 +37,9 @@ public class ParallelMatchPredictionAggregatorFunctions
     }
 
     /// <summary>
-    /// Session-aware Service Bus trigger. Persists a single batch result row keyed by
-    /// <c>(RunId, BatchSequenceNumber)</c>. Duplicate Service Bus deliveries are silently ignored at the
-    /// repository level (idempotency is enforced by the unique index, not by the function).
-    /// Failure results (<see cref="ParallelMatchPredictionBatchResult.IsSuccessful"/> == <c>false</c>) record
-    /// the batch as <c>Failed</c> so the run can still be finalised even when some batches fail.
+    /// Session-aware Service Bus trigger. Persists a single batch result row keyed by <c>BatchId</c>; duplicate
+    /// deliveries are ignored via the batch status. Failure results are recorded as <c>Failed</c> so the run can
+    /// still be finalised.
     /// </summary>
     [Function(nameof(StoreParallelMatchPredictionBatchResult))]
     public async Task StoreParallelMatchPredictionBatchResult(
@@ -57,31 +55,29 @@ public class ParallelMatchPredictionAggregatorFunctions
         if (message.IsSuccessful)
         {
             var wasBatchResultRecordedSuccessfully = await repository.RecordBatchResult(
-                message.ParallelRunId,
-                message.BatchSequenceNumber,
-                message.MatchPredictionResultLocations
+                message.BatchId,
+                message.MatchPredictionResultLocation
             );
 
             if (wasBatchResultRecordedSuccessfully)
             {
                 logger.LogInformation(
-                    "Recorded parallel MPA batch result. RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}.",
-                    message.ParallelRunId, message.BatchSequenceNumber, message.SearchIdentifier
+                    "Recorded parallel MPA batch result. BatchId={BatchId}, RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}.",
+                    message.BatchId, message.ParallelRunId, message.BatchSequenceNumber, message.SearchIdentifier
                 );
             }
             else
             {
                 logger.LogWarning(
-                    "Duplicate parallel MPA batch result ignored. RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}.",
-                    message.ParallelRunId, message.BatchSequenceNumber, message.SearchIdentifier
+                    "Duplicate parallel MPA batch result ignored. BatchId={BatchId}, RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}.",
+                    message.BatchId, message.ParallelRunId, message.BatchSequenceNumber, message.SearchIdentifier
                 );
             }
         }
         else
         {
             var wasFailureRecordedSuccessfully = await repository.RecordBatchFailure(
-                message.ParallelRunId,
-                message.BatchSequenceNumber,
+                message.BatchId,
                 message.FailureMessage,
                 message.FailureException
             );
@@ -89,15 +85,15 @@ public class ParallelMatchPredictionAggregatorFunctions
             if (wasFailureRecordedSuccessfully)
             {
                 logger.LogError(
-                    "Recorded parallel MPA batch failure. RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}. Failure: {FailureMessage}",
-                    message.ParallelRunId, message.BatchSequenceNumber, message.SearchIdentifier, message.FailureMessage
+                    "Recorded parallel MPA batch failure. BatchId={BatchId}, RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}. Failure: {FailureMessage}",
+                    message.BatchId, message.ParallelRunId, message.BatchSequenceNumber, message.SearchIdentifier, message.FailureMessage
                 );
             }
             else
             {
                 logger.LogWarning(
-                    "Duplicate parallel MPA batch failure ignored. RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}.",
-                    message.ParallelRunId, message.BatchSequenceNumber, message.SearchIdentifier
+                    "Duplicate parallel MPA batch failure ignored. BatchId={BatchId}, RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}.",
+                    message.BatchId, message.ParallelRunId, message.BatchSequenceNumber, message.SearchIdentifier
                 );
             }
         }

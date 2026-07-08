@@ -23,6 +23,22 @@ namespace Atlas.Functions.Services
             IEnumerable<MatchingAlgorithmResult> matchingAlgorithmResults,
             IReadOnlyDictionary<int, string> matchPredictionResultLocations);
 
+        /// <summary>
+        /// Combines matching results with already-downloaded match prediction results (keyed by Atlas donor id).
+        /// Used by the parallel path.
+        /// </summary>
+        IEnumerable<SearchResult> CombineResults(
+            string searchRequestId,
+            IEnumerable<MatchingAlgorithmResult> matchingAlgorithmResults,
+            IReadOnlyDictionary<int, MatchProbabilityResponse> matchPredictionResults);
+
+        /// <summary>
+        /// Downloads every per-batch result blob (each a <c>Dictionary&lt;int, MatchProbabilityResponse&gt;</c>) and
+        /// merges them into a single donor → result map.
+        /// </summary>
+        Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> DownloadBatchedMatchPredictionResults(
+            IReadOnlyCollection<string> batchResultLocations);
+
         SearchResultSet BuildResultsSummary(ResultSet<MatchingAlgorithmResult> matchingAlgorithmResultSet, TimeSpan matchPredictionTime, TimeSpan matchingTime);
     }
 
@@ -89,6 +105,52 @@ namespace Atlas.Functions.Services
                     MatchingResult = r,
                     MatchPredictionResult = matchCategoryService.ReOrientatePositionalMatchCategories(matchPredictionResults[r.AtlasDonorId], r.ScoringResult)
                 });
+            }
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<SearchResult> CombineResults(
+            string searchRequestId,
+            IEnumerable<MatchingAlgorithmResult> matchingAlgorithmResults,
+            IReadOnlyDictionary<int, MatchProbabilityResponse> matchPredictionResults)
+        {
+            using (logger.RunTimed($"Combine search results: {searchRequestId}"))
+            {
+                return matchingAlgorithmResults.Select(r => new SearchResult
+                {
+                    DonorCode = r.MatchingDonorInfo.ExternalDonorCode,
+                    MatchingResult = r,
+                    MatchPredictionResult = matchCategoryService.ReOrientatePositionalMatchCategories(matchPredictionResults[r.AtlasDonorId], r.ScoringResult)
+                }).ToList();
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> DownloadBatchedMatchPredictionResults(
+            IReadOnlyCollection<string> batchResultLocations)
+        {
+            using (logger.RunTimed("Download match prediction algorithm results"))
+            {
+                logger.SendTrace($"{batchResultLocations.Count} batch result file(s) to download");
+
+                var merged = new Dictionary<int, MatchProbabilityResponse>();
+                foreach (var locationBatch in batchResultLocations.Chunk(matchPredictionDownloadBatchSize))
+                {
+                    var downloadTasks = locationBatch
+                        .Select(location => blobDownloader.Download<Dictionary<int, MatchProbabilityResponse>>(matchPredictionResultsContainer, location))
+                        .ToList();
+                    var downloadedBatches = await Task.WhenAll(downloadTasks);
+
+                    foreach (var batchResults in downloadedBatches)
+                    {
+                        foreach (var donorResult in batchResults)
+                        {
+                            merged[donorResult.Key] = donorResult.Value;
+                        }
+                    }
+                }
+
+                return merged;
             }
         }
 

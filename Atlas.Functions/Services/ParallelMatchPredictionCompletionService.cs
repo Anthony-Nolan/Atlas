@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.LogFile;
 using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
@@ -91,7 +92,6 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         }
 
         var run = runResults.Run;
-        var resultsLocations = runResults.MergedResultLocations;
 
         try
         {
@@ -108,7 +108,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
                 return;
             }
 
-            await CompleteSuccessfulRun(runId, run, resultsLocations, trackingSearchIdentifier, originalSearchIdentifier);
+            await CompleteSuccessfulRun(runId, run, runResults.BatchResultLocations, trackingSearchIdentifier, originalSearchIdentifier);
         }
         catch
         {
@@ -202,7 +202,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
     private async Task CompleteSuccessfulRun(
         int runId,
         Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRun run,
-        IReadOnlyDictionary<int, string> resultsLocations,
+        IReadOnlyList<string> batchResultLocations,
         Guid trackingSearchIdentifier,
         Guid? originalSearchIdentifier)
     {
@@ -228,17 +228,23 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
             : azureStorageSettings.SearchResultsBlobContainer;
         resultSet.BatchedResult = run.ResultsBatched && azureStorageSettings.ShouldBatchResults;
 
+        // Download the per-batch result blobs and merge into one donor → result map.
+        var matchPredictionResults = await logger.RunTimedAsync(
+            "Download match prediction batch results",
+            async () => await resultsCombiner.DownloadBatchedMatchPredictionResults(batchResultLocations)
+        );
+
         resultSet.Results = await logger.RunTimedAsync("Combining search results", async () =>
             run.ResultsBatched
                 ? await CombineBatchedSearchResults(
                     resultSet.SearchRequestId,
                     run.IsRepeatSearch,
-                    resultsLocations,
+                    matchPredictionResults,
                     run.BatchFolderName,
                     resultSet.BlobStorageContainerName,
                     azureStorageSettings.ShouldBatchResults
                 )
-                : await resultsCombiner.CombineResults(resultSet.SearchRequestId, matchingResultsSummary.Results, resultsLocations)
+                : resultsCombiner.CombineResults(resultSet.SearchRequestId, matchingResultsSummary.Results, matchPredictionResults)
         );
 
         await searchResultsBlobUploader.UploadResults(
@@ -301,7 +307,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
     private async Task<IEnumerable<SearchResult>> CombineBatchedSearchResults(
         string searchRequestId,
         bool isRepeatSearch,
-        IReadOnlyDictionary<int, string> matchPredictionResultLocations,
+        IReadOnlyDictionary<int, MatchProbabilityResponse> matchPredictionResults,
         string batchFolder,
         string blobStorageContainerName,
         bool resultsShouldBeBatched)
@@ -312,11 +318,11 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         await foreach (var matchingResults in matchingResultsDownloader.DownloadResults(isRepeatSearch, batchFolder))
         {
             var matchingAlgorithmResults = matchingResults.ToList();
-            var donorIds = matchingAlgorithmResults.Select(r => r.AtlasDonorId).ToList();
-            var matchPredictionResultLocationsForCurrentDonors =
-                matchPredictionResultLocations.Where(l => donorIds.Contains(l.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
+            var donorIds = matchingAlgorithmResults.Select(r => r.AtlasDonorId).ToHashSet();
+            var matchPredictionResultsForCurrentDonors =
+                matchPredictionResults.Where(r => donorIds.Contains(r.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
             var currentSearchResults =
-                await resultsCombiner.CombineResults(searchRequestId, matchingAlgorithmResults, matchPredictionResultLocationsForCurrentDonors);
+                resultsCombiner.CombineResults(searchRequestId, matchingAlgorithmResults, matchPredictionResultsForCurrentDonors);
 
             if (resultsShouldBeBatched)
             {

@@ -7,10 +7,9 @@ namespace Atlas.MatchPrediction.Data.Models;
 
 /// <summary>
 /// One row per batch in a parallel match-prediction run, pre-created before any batch messages are dispatched.
-/// Idempotency for result recording is enforced by the <see cref="BatchStatus"/> field — once a result
-/// is received (or a failure recorded), the row is updated atomically; duplicate Service Bus deliveries are detected and ignored.
-/// The unique <c>(RunId, BatchSequenceNumber)</c> index is used to find the correct row to update.
-/// Rows are purged by the clean-up timer after the parent run is finalised (the parent row itself is kept).
+/// The row's <see cref="Id"/> is stamped onto the dispatched request and echoed back on the result, so the aggregator
+/// locates and updates the row by primary key; idempotency is enforced by <see cref="BatchStatus"/> (duplicate
+/// deliveries are ignored). Rows are purged by the clean-up timer after the parent run is finalised.
 /// </summary>
 [Index(nameof(RunId), nameof(BatchSequenceNumber), IsUnique = true)]
 public class ParallelMatchPredictionBatch
@@ -23,12 +22,7 @@ public class ParallelMatchPredictionBatch
 
     public ParallelMatchPredictionRun Run { get; set; }
 
-    /// <summary>
-    /// Zero-based sequence number assigned by the orchestrator when the batch is dispatched.
-    /// Together with <see cref="RunId"/> forms the idempotency key used to locate this row when a result arrives.
-    /// The same sequence number is embedded in the <c>ParallelMatchPredictionBatchRequest</c> message and
-    /// echoed back on the <c>ParallelMatchPredictionBatchResult</c> message so the aggregator can find this row.
-    /// </summary>
+    /// <summary>Zero-based sequence number assigned by the orchestrator. Retained for logging and ordering.</summary>
     public int BatchSequenceNumber { get; set; }
 
     /// <summary>
@@ -44,12 +38,11 @@ public class ParallelMatchPredictionBatch
     public DateTime? ResultReceivedTimeUtc { get; set; }
 
     /// <summary>
-    /// JSON-serialised <c>IReadOnlyDictionary&lt;int, string&gt;</c> mapping Atlas donor id to
-    /// the blob filename (relative to the match-prediction-results container) holding that
-    /// donor's per-batch MPA result. <c>null</c> until a successful result arrives.
+    /// Blob filename of the single file holding this batch's donor → MPA result map. <c>null</c> until a successful
+    /// result arrives (or when the batch had no donors).
     /// </summary>
-    [MaxLength]
-    public string ResultLocationJson { get; set; }
+    [MaxLength(1024)]
+    public string ResultLocation { get; set; }
 
     /// <summary>
     /// Human-readable failure message from the Worker exception.
