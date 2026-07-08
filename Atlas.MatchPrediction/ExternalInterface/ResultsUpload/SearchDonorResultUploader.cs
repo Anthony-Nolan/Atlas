@@ -39,7 +39,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
 
         public async Task<string> UploadBatchResult(string searchRequestId, int batchId, IReadOnlyDictionary<int, MatchProbabilityResponse> resultsByDonorId)
         {
-            var fileName = $"{searchRequestId}/{batchId}.json";
+            var fileName = $"{searchRequestId}/batch-{batchId}.json";
             await UploadBatchResults(fileName, resultsByDonorId);
             return fileName;
         }
