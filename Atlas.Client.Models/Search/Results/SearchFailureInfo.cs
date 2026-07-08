@@ -32,7 +32,7 @@ namespace Atlas.Client.Models.Search.Results
         /// reason, or the number of batches that failed during processing). <c>null</c> when no further detail was
         /// supplied, consistent with the other optional fields on this type; <see cref="Summary"/> treats it as absent.
         /// </summary>
-        public string Message { get; set; }
+        public string FailureDetail { get; set; }
 
         /// <summary>
         /// Summary of the failure.
@@ -45,9 +45,9 @@ namespace Atlas.Client.Models.Search.Results
                     ? ""
                     : $", with validation error: {MatchingAlgorithmFailureInfo.ValidationError}";
 
-                var detail = string.IsNullOrEmpty(Message)
+                var detail = string.IsNullOrEmpty(FailureDetail)
                     ? ""
-                    : $": {Message}";
+                    : $": {FailureDetail}";
 
                 return $"Search failed at stage: {StageReached}{validationError}{detail}";
             }

@@ -103,7 +103,7 @@ namespace Atlas.Functions.Services
                 FailureInfo = new SearchFailureInfo
                 {
                     StageReached = parameters.StageReached,
-                    Message = parameters.FailureDetail,
+                    FailureDetail = parameters.FailureDetail,
                     MatchingAlgorithmFailureInfo = parameters.MatchingAlgorithmFailureInfo
                 }
             };
