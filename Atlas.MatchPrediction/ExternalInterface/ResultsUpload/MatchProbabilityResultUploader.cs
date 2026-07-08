@@ -35,5 +35,13 @@ namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
                 await UploadMultiple(ResultsContainer, fileNames.Select(f => new KeyValuePair<string, MatchProbabilityResponse>(f, matchProbabilityResponse)).ToDictionary());
             }
         }
+
+        protected async Task UploadBatchResults(string fileName, IReadOnlyDictionary<int, MatchProbabilityResponse> resultsByDonorId)
+        {
+            using (logger.RunTimed("Uploading match prediction batch results", LogLevel.Verbose))
+            {
+                await Upload(ResultsContainer, fileName, resultsByDonorId);
+            }
+        }
     }
 }

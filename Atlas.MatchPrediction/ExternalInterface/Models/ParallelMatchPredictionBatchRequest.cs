@@ -22,8 +22,11 @@ public class ParallelMatchPredictionBatchRequest
     public int ParallelRunId { get; set; }
 
     /// <summary>
-    /// Zero-based sequence number of this batch within the parallel run. Together with <see cref="ParallelRunId"/>
-    /// forms the idempotency key used by the aggregator when persisting per-batch results.
+    /// Id of the pre-created <c>ParallelMatchPredictionBatch</c> row. The Worker names the output blob after it and
+    /// echoes it back on the result; the aggregator keys per-batch persistence on it.
     /// </summary>
+    public int BatchId { get; set; }
+
+    /// <summary>Zero-based sequence number of this batch within the run. Retained for logging and ordering.</summary>
     public int BatchSequenceNumber { get; set; }
 }

@@ -15,6 +15,13 @@ namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
         /// </summary>
         /// <returns>List of filenames of results files</returns>
         Task<Dictionary<int, string>> UploadSearchDonorResults(string searchRequestId, IEnumerable<int> atlasDonorIds, MatchProbabilityResponse matchProbabilityResponse);
+
+        /// <summary>
+        /// Uploads a whole parallel batch's match probability results into a single blob, keyed by Atlas donor id and
+        /// named after the batch id.
+        /// </summary>
+        /// <returns>The blob filename where the batch results were stored.</returns>
+        Task<string> UploadBatchResult(string searchRequestId, int batchId, IReadOnlyDictionary<int, MatchProbabilityResponse> resultsByDonorId);
     }
 
     internal class SearchDonorResultUploader : MatchProbabilityResultUploader, ISearchDonorResultUploader
@@ -28,6 +35,13 @@ namespace Atlas.MatchPrediction.ExternalInterface.ResultsUpload
             var fileNames = atlasDonorIds.Select(id => new KeyValuePair<int, string> (id, $"{searchRequestId}/{id}.json") ).ToDictionary();
             await UploadResults(fileNames.Select(f => f.Value), matchProbabilityResponse);
             return fileNames;
+        }
+
+        public async Task<string> UploadBatchResult(string searchRequestId, int batchId, IReadOnlyDictionary<int, MatchProbabilityResponse> resultsByDonorId)
+        {
+            var fileName = $"{searchRequestId}/{batchId}.json";
+            await UploadBatchResults(fileName, resultsByDonorId);
+            return fileName;
         }
     }
 }

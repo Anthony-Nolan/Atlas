@@ -169,7 +169,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 
             await matchPredictionSearchTrackingDispatcher.ProcessPrepareBatchesEnded(trackingSearchIdentifier, originalSearchIdentifier);
 
-            var parallelRunId = await parallelMatchPredictionRepository.CreateRun(
+            var runResult = await parallelMatchPredictionRepository.CreateRun(
                 new CreateParallelMatchPredictionRunInfo(
                     SearchIdentifier: new Guid(matchingResultsNotification.SearchRequestId),
                     IsRepeatSearch: matchingResultsNotification.IsRepeatSearch,
@@ -193,7 +193,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 RepeatSearchRequestId = matchingResultsNotification.IsRepeatSearch
                     ? matchingResultsNotification.RepeatSearchRequestId
                     : null,
-                ParallelRunId = parallelRunId,
+                ParallelRunId = runResult.RunId,
+                BatchId = runResult.BatchIdsBySequence[index],
                 BatchSequenceNumber = index,
             });
 

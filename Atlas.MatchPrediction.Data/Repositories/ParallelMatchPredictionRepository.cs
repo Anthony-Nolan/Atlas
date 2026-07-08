@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
-using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Models;
 using Microsoft.EntityFrameworkCore;
@@ -22,13 +20,18 @@ public record CreateParallelMatchPredictionRunInfo(
     int TotalBatchCount);
 
 /// <summary>
-/// A run together with the merged donor → blob location map built from all of its received batch rows.
+/// The new run id together with the ids of its pre-created batch rows, indexed by batch sequence number
+/// (<c>BatchIdsBySequence[seq]</c> is the id of the batch with <c>BatchSequenceNumber == seq</c>).
 /// </summary>
+public record CreateParallelMatchPredictionRunResult(int RunId, IReadOnlyList<int> BatchIdsBySequence);
+
+/// <summary>A run together with the result-file locations of its received batches, plus any failed batches.</summary>
 public class ParallelMatchPredictionRunResults
 {
     public ParallelMatchPredictionRun Run { get; init; }
 
-    public IReadOnlyDictionary<int, string> MergedResultLocations { get; init; }
+    /// <summary>Blob filenames of the result files for every batch with a non-null location.</summary>
+    public IReadOnlyList<string> BatchResultLocations { get; init; }
 
     /// <summary>Batches whose <see cref="ParallelMatchPredictionBatch.BatchStatus"/> is <see cref="ParallelMatchPredictionBatchStatus.Failed"/>.</summary>
     public IReadOnlyList<ParallelMatchPredictionBatch> FailedBatches { get; init; }
@@ -37,38 +40,26 @@ public class ParallelMatchPredictionRunResults
 public interface IParallelMatchPredictionRepository
 {
     /// <summary>
-    /// Creates the parent run record (with status <see cref="ParallelMatchPredictionRunStatus.Running"/>) and
-    /// pre-creates one <see cref="ParallelMatchPredictionBatch"/> row per expected batch
-    /// (<c>BatchSequenceNumber</c> 0 … <c>TotalBatchCount − 1</c>) before any batch messages are dispatched.
-    /// Returns the new run id.
+    /// Creates the parent run record and pre-creates one <see cref="ParallelMatchPredictionBatch"/> row per expected
+    /// batch (<c>BatchSequenceNumber</c> 0 … <c>TotalBatchCount − 1</c>) before any batch messages are dispatched.
     /// </summary>
-    Task<int> CreateRun(CreateParallelMatchPredictionRunInfo info);
+    Task<CreateParallelMatchPredictionRunResult> CreateRun(CreateParallelMatchPredictionRunInfo info);
 
     /// <summary>
-    /// Records a single successful batch result by updating the pre-created batch row keyed by
-    /// <c>(runId, batchSequenceNumber)</c>. Idempotent: if the result was already recorded the update
-    /// is a no-op and <c>false</c> is returned.
+    /// Records a successful batch result by updating the pre-created batch row identified by <paramref name="batchId"/>.
+    /// Idempotent — a duplicate delivery is a no-op returning <c>false</c>.
     /// </summary>
-    /// <returns>
-    /// <c>true</c> if this is the first time the result was recorded; <c>false</c> if it was a duplicate.
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when no pre-created batch row exists for the given key, which indicates an invalid message or data corruption.
-    /// </exception>
-    Task<bool> RecordBatchResult(int runId, int batchSequenceNumber, IReadOnlyDictionary<int, string> resultLocations);
+    /// <returns><c>true</c> on first record; <c>false</c> if it was a duplicate.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when no batch row exists for the given id.</exception>
+    Task<bool> RecordBatchResult(int batchId, string resultLocation);
 
     /// <summary>
-    /// Records a batch failure by updating the pre-created batch row keyed by
-    /// <c>(runId, batchSequenceNumber)</c>. Idempotent: if the batch was already recorded the update
-    /// is a no-op and <c>false</c> is returned.
+    /// Records a batch failure by updating the pre-created batch row identified by <paramref name="batchId"/>.
+    /// Idempotent — a duplicate delivery is a no-op returning <c>false</c>.
     /// </summary>
-    /// <returns>
-    /// <c>true</c> if this is the first time the failure was recorded; <c>false</c> if it was a duplicate.
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when no pre-created batch row exists for the given key.
-    /// </exception>
-    Task<bool> RecordBatchFailure(int runId, int batchSequenceNumber, string failureMessage, string failureException);
+    /// <returns><c>true</c> on first record; <c>false</c> if it was a duplicate.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when no batch row exists for the given id.</exception>
+    Task<bool> RecordBatchFailure(int batchId, string failureMessage, string failureException);
 
     /// <summary>
     /// Returns the ids of all <see cref="ParallelMatchPredictionRunStatus.Running"/> runs whose every batch
@@ -93,7 +84,7 @@ public interface IParallelMatchPredictionRepository
     Task<bool> TryClaimFinalisationLease(int runId, Guid leaseOwner);
 
     /// <summary>
-    /// Returns the run together with the merged donor → blob location map built from its received batch rows.
+    /// Returns the run together with the blob locations of each successfully-received batch's result file.
     /// Returns <c>null</c> if the run does not exist.
     /// </summary>
     Task<ParallelMatchPredictionRunResults> GetRunWithResults(int runId);
@@ -143,7 +134,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         this.context = context;
     }
 
-    public async Task<int> CreateRun(CreateParallelMatchPredictionRunInfo info)
+    public async Task<CreateParallelMatchPredictionRunResult> CreateRun(CreateParallelMatchPredictionRunInfo info)
     {
         await using var transaction = await context.Database.BeginTransactionAsync();
         try
@@ -168,7 +159,8 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
             };
             context.ParallelMatchPredictionRuns.Add(entity);
 
-            // Pre-create one batch row per expected batch so that results can be recorded via UPDATE rather than INSERT.
+            // Pre-create one batch row per expected batch (in sequence order) so results can be recorded via UPDATE.
+            var batches = new List<ParallelMatchPredictionBatch>(info.TotalBatchCount);
             for (var seq = 0; seq < info.TotalBatchCount; seq++)
             {
                 var matchPredictionBatch = new ParallelMatchPredictionBatch
@@ -177,13 +169,17 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
                     BatchSequenceNumber = seq,
                     BatchStatus = ParallelMatchPredictionBatchStatus.Requested,
                 };
+                batches.Add(matchPredictionBatch);
                 context.ParallelMatchPredictionBatches.Add(matchPredictionBatch);
             }
 
             await context.SaveChangesAsync();
 
             await transaction.CommitAsync();
-            return entity.Id;
+
+            // Ids are populated by SaveChanges; batches is in ascending sequence order.
+            var batchIdsBySequence = batches.Select(b => b.Id).ToList();
+            return new CreateParallelMatchPredictionRunResult(entity.Id, batchIdsBySequence);
         }
         catch
         {
@@ -192,21 +188,19 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         }
     }
 
-    public async Task<bool> RecordBatchResult(int runId, int batchSequenceNumber, IReadOnlyDictionary<int, string> resultLocations)
+    public async Task<bool> RecordBatchResult(int batchId, string resultLocation)
     {
         var now = DateTime.UtcNow;
-        var serializedLocations = JsonSerializer.Serialize(resultLocations);
 
         // Atomically update only if still Requested — prevents overwriting with a duplicate delivery.
         var rowsUpdated = await context.ParallelMatchPredictionBatches
-            .Where(b => b.RunId == runId
-                     && b.BatchSequenceNumber == batchSequenceNumber
+            .Where(b => b.Id == batchId
                      && b.BatchStatus == ParallelMatchPredictionBatchStatus.Requested
             )
             .ExecuteUpdateAsync(s => s
                 .SetProperty(b => b.BatchStatus, ParallelMatchPredictionBatchStatus.ResultsReceived)
                 .SetProperty(b => b.ResultReceivedTimeUtc, now)
-                .SetProperty(b => b.ResultLocationJson, serializedLocations)
+                .SetProperty(b => b.ResultLocation, resultLocation)
             );
 
         if (rowsUpdated == 1)
@@ -216,13 +210,13 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
 
         // Distinguish "already received" (idempotent duplicate) from "row not found" (data error).
         var exists = await context.ParallelMatchPredictionBatches
-            .AnyAsync(b => b.RunId == runId && b.BatchSequenceNumber == batchSequenceNumber);
+            .AnyAsync(b => b.Id == batchId);
 
         if (!exists)
         {
             throw new InvalidOperationException(
-                $"No pre-created batch row found for RunId={runId}, BatchSequenceNumber={batchSequenceNumber}. "
-              + "This indicates an invalid message or data corruption — a batch result was received for a run/batch that was never registered."
+                $"No pre-created batch row found for BatchId={batchId}. "
+              + "This indicates an invalid message or data corruption — a batch result was received for a batch that was never registered."
             );
         }
 
@@ -230,14 +224,13 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         return false;
     }
 
-    public async Task<bool> RecordBatchFailure(int runId, int batchSequenceNumber, string failureMessage, string failureException)
+    public async Task<bool> RecordBatchFailure(int batchId, string failureMessage, string failureException)
     {
         var now = DateTime.UtcNow;
 
         // Atomically update only if still Requested — prevents overwriting with a duplicate delivery.
         var rowsUpdated = await context.ParallelMatchPredictionBatches
-            .Where(b => b.RunId == runId
-                     && b.BatchSequenceNumber == batchSequenceNumber
+            .Where(b => b.Id == batchId
                      && b.BatchStatus == ParallelMatchPredictionBatchStatus.Requested
             )
             .ExecuteUpdateAsync(s => s
@@ -253,13 +246,13 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         }
 
         var exists = await context.ParallelMatchPredictionBatches
-            .AnyAsync(b => b.RunId == runId && b.BatchSequenceNumber == batchSequenceNumber);
+            .AnyAsync(b => b.Id == batchId);
 
         if (!exists)
         {
             throw new InvalidOperationException(
-                $"No pre-created batch row found for RunId={runId}, BatchSequenceNumber={batchSequenceNumber}. "
-              + "This indicates an invalid message or data corruption — a batch failure was received for a run/batch that was never registered."
+                $"No pre-created batch row found for BatchId={batchId}. "
+              + "This indicates an invalid message or data corruption — a batch failure was received for a batch that was never registered."
             );
         }
 
@@ -310,13 +303,10 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
             return null;
         }
 
-        var mergedResultLocations = new Dictionary<int, string>();
-        foreach (var batch in run.Batches.Where(b => b.BatchStatus == ParallelMatchPredictionBatchStatus.ResultsReceived))
-        {
-            var currentBatchResultLocations = JsonSerializer.Deserialize<Dictionary<int, string>>(batch.ResultLocationJson)
-                                           ?? new Dictionary<int, string>();
-            mergedResultLocations = mergedResultLocations.Merge(currentBatchResultLocations);
-        }
+        var batchResultLocations = run.Batches
+            .Where(b => b.BatchStatus == ParallelMatchPredictionBatchStatus.ResultsReceived && b.ResultLocation != null)
+            .Select(b => b.ResultLocation)
+            .ToList();
 
         var failedBatches = run.Batches
             .Where(b => b.BatchStatus == ParallelMatchPredictionBatchStatus.Failed)
@@ -325,7 +315,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         return new ParallelMatchPredictionRunResults
         {
             Run = run,
-            MergedResultLocations = mergedResultLocations,
+            BatchResultLocations = batchResultLocations,
             FailedBatches = failedBatches,
         };
     }
