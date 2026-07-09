@@ -13,7 +13,7 @@
 // using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 // using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
 // using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
-// using FluentAssertions;
+// using AwesomeAssertions;
 // using Microsoft.Extensions.DependencyInjection;
 // using NUnit.Framework;
 //
@@ -203,7 +203,7 @@
 //             var finalPGroupCount = await GetPGroupCountAtLocusAPositionOne(donorInfo.DonorId);
 //             
 //             // Assert we correctly set up duplicate P-Groups
-//             finalPGroupCount.Should().BeGreaterOrEqualTo(2);
+//             finalPGroupCount.Should().BeGreaterThanOrEqualTo(2);
 //         
 //             // Hla processor acts on the dormant database, so once complete, we need to activate it before running a search
 //             await dataRefreshHistoryRepository.SwitchDormantDatabase();

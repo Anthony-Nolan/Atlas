@@ -12,7 +12,7 @@ using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using NUnit.Framework.Internal;

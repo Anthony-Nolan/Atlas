@@ -6,13 +6,14 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers;
 using Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration;
 using Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
-using FluentAssertions;
+using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -62,18 +63,19 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
 
         [TestCase(0, 100)]
         [TestCase(100, 10)]
-        public void GenerateSimulants_NumberOfGenotypesDoesNotMatchSimulantCount_ThrowsException(int genotypeCount, int simulantCount)
+        public async Task GenerateSimulants_NumberOfGenotypesDoesNotMatchSimulantCount_ThrowsException(int genotypeCount, int simulantCount)
         {
             simulantsRepository.GetGenotypeSimulants(default, default)
                 .ReturnsForAnyArgs(SimulantBuilder.Default.Build(genotypeCount));
 
-            simulantsGenerator
-                .Invoking(async x => await x.GenerateSimulants(
-                    new GenerateSimulantsRequest { SimulantCount = simulantCount },
-                    new MaskingRequests(),
-                    default,
-                    default))
-                .Should().Throw<Exception>();
+            var act = async () => await simulantsGenerator.GenerateSimulants(
+                new GenerateSimulantsRequest { SimulantCount = simulantCount },
+                new MaskingRequests(),
+                default,
+                default
+            );
+            
+            await act.Should().ThrowAsync<Exception>();
         }
 
         [Test]

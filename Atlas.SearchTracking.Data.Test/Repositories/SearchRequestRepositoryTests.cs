@@ -1,9 +1,10 @@
-﻿using Atlas.SearchTracking.Common.Enums;
+﻿using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
 using Atlas.SearchTracking.Data.Repositories;
 using Atlas.SearchTracking.Data.Test.Builders;
 using Atlas.SearchTracking.Data.Test.TestHelpers;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.SearchTracking.Data.Test.Repositories
@@ -35,7 +36,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
 
             var act = async () => await searchRequestRepository.GetSearchRequestByIdentifier(expectedSearchRequestId);
 
-            act.Should().Throw<Exception>().WithMessage($"Search request with identifier {expectedSearchRequestId} not found");
+            await act.Should().ThrowAsync<Exception>().WithMessage($"Search request with identifier {expectedSearchRequestId} not found");
         }
 
         [Test]

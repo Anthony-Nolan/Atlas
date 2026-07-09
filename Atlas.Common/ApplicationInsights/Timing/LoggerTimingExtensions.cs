@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LoggingStopwatch;
 
 namespace Atlas.Common.ApplicationInsights.Timing
 {
@@ -16,7 +15,7 @@ namespace Atlas.Common.ApplicationInsights.Timing
             LogLevel logLevel = LogLevel.Info,
             bool logAtStart = false)
         {
-            return new LoggingStopwatch.LoggingStopwatch(
+            return new LoggingStopwatch(
                 completionMessage, (text, milliseconds) => logger.SendTrace(text, logLevel, BuildProperties(milliseconds)),
                 logAtStart
             );
@@ -60,15 +59,16 @@ namespace Atlas.Common.ApplicationInsights.Timing
             LongLoggingSettings settings,
             LogLevel logLevel = LogLevel.Info)
         {
-            return new LoggingStopwatch.LongOperationLoggingStopwatch(
+            return new LongOperationLoggingStopwatch(
                 completionMessage,
                 (text, milliseconds) => logger.SendTrace(text, logLevel, BuildProperties(milliseconds)),
-                settings);
+                settings
+            );
         }
 
         private static Dictionary<string, string> BuildProperties(long? milliseconds)
         {
-            return milliseconds == null ? null : new Dictionary<string, string> {{"Milliseconds", milliseconds.ToString()}};
+            return milliseconds == null ? null : new Dictionary<string, string> { { "Milliseconds", milliseconds.ToString() } };
         }
     }
 }

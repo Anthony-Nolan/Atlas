@@ -1,6 +1,6 @@
 ﻿using System;
 using Atlas.DonorImport.ExternalInterface.Models;
-using FluentAssertions;
+using AwesomeAssertions;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
@@ -30,14 +30,14 @@ namespace Atlas.MatchingAlgorithm.Test.Models
         {
             const string message = @"{ }";
             var update = JsonConvert.DeserializeObject<SearchableDonorUpdate>(message);
-            update.PublishedDateTime.Should().BeCloseTo(DateTimeOffset.UtcNow);
+            update.PublishedDateTime.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1));
         }
 
         [Test]
         public void New_SetsPublishedDateTimeToUtcNowByDefault()
         {
             var update = new SearchableDonorUpdate();
-            update.PublishedDateTime.Should().BeCloseTo(DateTimeOffset.UtcNow);
+            update.PublishedDateTime.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1));
         }
     }
 }

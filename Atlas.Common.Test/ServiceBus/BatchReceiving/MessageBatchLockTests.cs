@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using NSubstitute;
 using NUnit.Framework;
@@ -93,7 +93,7 @@ namespace Atlas.Common.Test.ServiceBus.BatchReceiving
             // sleep thread for long enough to allow lock renewal calls to be made
             Thread.Sleep(LockRenewalTime * (lockRenewalCount + 1));
 
-            numberOfCalls.Should().BeGreaterOrEqualTo(lockRenewalCount);
+            numberOfCalls.Should().BeGreaterThanOrEqualTo(lockRenewalCount);
         }
 
         [Test]

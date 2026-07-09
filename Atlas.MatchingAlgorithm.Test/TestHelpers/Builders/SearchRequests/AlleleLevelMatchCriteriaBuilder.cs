@@ -8,7 +8,7 @@ using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
+namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests
 {
     public class AlleleLevelMatchCriteriaBuilder
     {
@@ -31,9 +31,9 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 
         public AlleleLevelMatchCriteriaBuilder WithRequiredLociMatchCriteria(int mismatchCount)
         {
-            criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(Locus.A, new AlleleLevelLocusMatchCriteria {MismatchCount = mismatchCount});
-            criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(Locus.B, new AlleleLevelLocusMatchCriteria {MismatchCount = mismatchCount});
-            criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(Locus.Drb1, new AlleleLevelLocusMatchCriteria {MismatchCount = mismatchCount});
+            criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(Locus.A, new AlleleLevelLocusMatchCriteria { MismatchCount = mismatchCount });
+            criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(Locus.B, new AlleleLevelLocusMatchCriteria { MismatchCount = mismatchCount });
+            criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(Locus.Drb1, new AlleleLevelLocusMatchCriteria { MismatchCount = mismatchCount });
             return this;
         }
 
@@ -53,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         // Populates all null required match criteria (A, B, DRB) with given value
         public AlleleLevelMatchCriteriaBuilder WithDefaultLocusMatchCriteria(AlleleLevelLocusMatchCriteria locusMatchCriteria)
         {
-            var requiredLoci = new[] {Locus.A, Locus.B, Locus.Drb1};
+            var requiredLoci = new[] { Locus.A, Locus.B, Locus.Drb1 };
             criteria.LocusCriteria = criteria.LocusCriteria.Map((l, v) => requiredLoci.Contains(l) ? v ?? locusMatchCriteria : v);
             return this;
         }
@@ -76,7 +76,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         }
     }
 
-    public class MatchCriteriaBuilder 
+    public class MatchCriteriaBuilder
     {
         private readonly AlleleLevelMatchCriteriaBuilder inner;
         private string[] registryCodes;
@@ -85,6 +85,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         {
             inner = alleleLevelMatchCriteriaBuilder;
         }
+
         public MatchCriteriaBuilder()
         {
         }
@@ -104,10 +105,9 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         {
             return new MatchCriteria
             {
-                NonHlaFilteringCriteria = new NonHlaFilteringCriteria() { RegistryCodes = registryCodes?.ToList()},
+                NonHlaFilteringCriteria = new NonHlaFilteringCriteria() { RegistryCodes = registryCodes?.ToList() },
                 AlleleLevelMatchCriteria = inner.Build()
             };
         }
     }
-
 }

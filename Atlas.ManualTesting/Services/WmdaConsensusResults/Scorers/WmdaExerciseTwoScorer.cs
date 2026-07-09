@@ -8,11 +8,11 @@ using Atlas.ManualTesting.Models;
 using Atlas.ManualTesting.Services.Scoring;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 
-namespace Atlas.ManualTesting.Services.WmdaConsensusResults.Scorers
+namespace Atlas.ManualTesting.Services.WmdaConsensusResults.Scorers {
+
+public interface IWmdaExerciseTwoScorer : IScoreRequestProcessor
 {
-    public interface IWmdaExerciseTwoScorer : IScoreRequestProcessor
-    {
-    }
+}
 
     internal class WmdaExerciseTwoScorer : WmdaExerciseScorerBase, IWmdaExerciseTwoScorer
     {

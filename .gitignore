@@ -2,6 +2,9 @@
 [Oo]bj/
 [Ll]og/
 
+# Generated Reqnroll feature code-behind
+*.feature.cs
+
 *.csproj.user
 
 **/local.settings.json

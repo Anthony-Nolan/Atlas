@@ -2,20 +2,27 @@
 using AutoMapper;
 using System.Reflection;
 using Atlas.Common.Utils.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Atlas.Functions.PublicApi.Config
+namespace Atlas.Functions.PublicApi.Config;
+
+internal class AutoMapperConfig
 {
-    internal class AutoMapperConfig
+    public static IMapper CreateMapper(string licenseKey, ILoggerFactory loggerFactory)
     {
-        public static IMapper CreateMapper()
-        {
-            var assemblyNames = Assembly.GetExecutingAssembly()
-                .LoadAtlasAssemblies()
-                .Select(a => a.GetName().Name)
-                .ToArray();
+        var assemblyNames = Assembly.GetExecutingAssembly()
+            .LoadAtlasAssemblies()
+            .Select(a => a.GetName().Name)
+            .ToArray();
 
-            var config = new MapperConfiguration(cfg => { cfg.AddMaps(assemblyNames); });
-            return config.CreateMapper();
-        }
+        var config = new MapperConfiguration(cfg =>
+            {
+                cfg.LicenseKey = licenseKey;
+                cfg.AddMaps(assemblyNames);
+            }, loggerFactory
+        );
+
+        return config.CreateMapper();
     }
 }

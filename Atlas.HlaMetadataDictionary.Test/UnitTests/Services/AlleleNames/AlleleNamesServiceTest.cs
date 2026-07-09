@@ -6,7 +6,7 @@ using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.AlleleNames

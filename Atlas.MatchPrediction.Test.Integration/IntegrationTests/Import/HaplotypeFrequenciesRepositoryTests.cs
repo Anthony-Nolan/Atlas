@@ -2,7 +2,7 @@
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System;
@@ -49,7 +49,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 TypingCategory = firstEntry.TypingCategory
             });
 
-            repository.Invoking(r => r.AddHaplotypeFrequencies(setId, haplotypeFrequencies)).Should().Throw<Exception>();
+            await repository.Invoking(r => r.AddHaplotypeFrequencies(setId, haplotypeFrequencies)).Should().ThrowAsync<Exception>();
 
             var latestHaplotypeFrequenciesSetId = await inspectionRepository.GetLatestSetId();
             var hasHaplotypeFrequency = await inspectionRepository.HasHaplotypeFrequencies(setId);

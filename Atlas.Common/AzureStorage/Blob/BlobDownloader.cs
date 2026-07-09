@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using System.Linq;
 using MoreLinq;
 using Azure;
@@ -75,7 +76,7 @@ namespace Atlas.Common.AzureStorage.Blob
             {
                 var data = new List<T>();
                 var containerClient = GetBlobContainer(container);
-                var blobs = containerClient.GetBlobsAsync(prefix: $"{folderName}/");
+                var blobs = containerClient.GetBlobsAsync(traits: BlobTraits.None, states: BlobStates.None, prefix: $"{folderName}/", cancellationToken: default);
                 await foreach (var blob in blobs)
                 {
                     data.AddRange(await GetBlobData<IEnumerable<T>>(containerClient, blob.Name));
@@ -105,7 +106,7 @@ namespace Atlas.Common.AzureStorage.Blob
         {
             var sw = Stopwatch.StartNew();
             var containerClient = GetBlobContainer(container);
-            var blobs = containerClient.GetBlobsAsync(prefix: $"{folderName}/");
+            var blobs = containerClient.GetBlobsAsync(traits: BlobTraits.None, states: BlobStates.None, prefix: $"{folderName}/", cancellationToken: default);
 
             await foreach (var blob in blobs)
             {

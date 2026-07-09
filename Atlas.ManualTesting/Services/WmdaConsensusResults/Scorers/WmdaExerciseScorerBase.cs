@@ -8,15 +8,15 @@ using Atlas.ManualTesting.Models;
 using Atlas.ManualTesting.Services.Scoring;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 
-namespace Atlas.ManualTesting.Services.WmdaConsensusResults.Scorers
+namespace Atlas.ManualTesting.Services.WmdaConsensusResults.Scorers {
+
+internal abstract class WmdaExerciseScorerBase : ScoreRequestProcessor
 {
-    internal abstract class WmdaExerciseScorerBase : ScoreRequestProcessor
+    /// <inheritdoc />
+    protected WmdaExerciseScorerBase(IFileReader<ImportedSubject> subjectReader, IScoreBatchRequester scoreBatchRequester) 
+        : base(subjectReader, scoreBatchRequester)
     {
-        /// <inheritdoc />
-        protected WmdaExerciseScorerBase(IFileReader<ImportedSubject> subjectReader, IScoreBatchRequester scoreBatchRequester) 
-            : base(subjectReader, scoreBatchRequester)
-        {
-        }
+    }
 
         /// <inheritdoc />
         protected override ScoringCriteria BuildScoringCriteria()

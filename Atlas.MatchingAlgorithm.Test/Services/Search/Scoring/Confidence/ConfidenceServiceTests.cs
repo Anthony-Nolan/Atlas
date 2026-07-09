@@ -8,9 +8,9 @@ using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence;
-using FluentAssertions;
 using LazyCache;
 using LazyCache.Providers;
+using AwesomeAssertions;
 using Microsoft.Extensions.Caching.Memory;
 using NSubstitute;
 using NUnit.Framework;
@@ -176,7 +176,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
             // Direct confidence (P1: D1) is Potential, Cross (P1: D2) is Definite
             // Direct confidence (P2: D2) is Definite, Cross (P2: D1) is Potential
             // As both confidence pairs are equivalent, it doesn't matter which position has which confidence, as long as they are not both the same
-            confidences.Should().BeEquivalentTo(MatchConfidence.Definite, MatchConfidence.Potential);
+            confidences.Should().BeEquivalentTo(new[] { MatchConfidence.Definite, MatchConfidence.Potential });
         }
 
         [Test]

@@ -8,15 +8,15 @@ using Atlas.ManualTesting.Common.Models;
 using Atlas.ManualTesting.Common.Services;
 using Atlas.ManualTesting.Models;
 
-namespace Atlas.ManualTesting.Services.WmdaConsensusResults
+namespace Atlas.ManualTesting.Services.WmdaConsensusResults {
+
+public class WmdaComparerResult
 {
-    public class WmdaComparerResult
-    {
-        public Locus Locus { get; set; }
-        public LocusInfo<string> PatientHla { get; set; }
-        public LocusInfo<string> DonorHla { get; set; }
-        public MismatchCountDetails MismatchCountDetails { get; set; }
-    }
+    public Locus Locus { get; set; }
+    public LocusInfo<string> PatientHla { get; set; }
+    public LocusInfo<string> DonorHla { get; set; }
+    public MismatchCountDetails MismatchCountDetails { get; set; }
+}
 
     public class MismatchCountDetails
     {

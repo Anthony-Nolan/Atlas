@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using Atlas.Common.Maths;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.Common.Test.Maths
@@ -102,14 +102,15 @@ namespace Atlas.Common.Test.Maths
 
             var actualPairs = Combinations.AllPairs(array, true);
 
-            actualPairs.Should().BeEquivalentTo(
+            actualPairs.Should().BeEquivalentTo(new[]
+            {
                 new Tuple<int, int>(1, 1),
                 new Tuple<int, int>(1, 1),
                 new Tuple<int, int>(1, 2),
                 new Tuple<int, int>(1, 1),
                 new Tuple<int, int>(1, 2),
                 new Tuple<int, int>(2, 2)
-            );
+            });
         }
 
         [Test]
@@ -119,11 +120,12 @@ namespace Atlas.Common.Test.Maths
 
             var actualPairs = Combinations.AllPairs(array);
 
-            actualPairs.Should().BeEquivalentTo(
+            actualPairs.Should().BeEquivalentTo(new[]
+            {
                 new Tuple<int, int>(1, 1),
                 new Tuple<int, int>(1, 2),
                 new Tuple<int, int>(1, 2)
-            );
+            });
         }
 
         [Test, // most of these a < 0.1s

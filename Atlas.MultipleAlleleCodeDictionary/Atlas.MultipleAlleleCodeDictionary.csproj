@@ -9,9 +9,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4" />
     <PackageReference Include="morelinq" Version="4.4.0" />
-    <PackageReference Include="Polly" Version="8.6.6" />
+    <PackageReference Include="Polly" Version="8.7.0" />
   </ItemGroup>
 
   <ItemGroup>

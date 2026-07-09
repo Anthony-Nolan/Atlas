@@ -5,10 +5,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.17.5" />
-        <PackageReference Include="FluentValidation" Version="8.4.0" />
-        <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4" />
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.8" />
+        <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.20.1" />
+        <PackageReference Include="FluentValidation" Version="12.1.1" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.9" />
         <PackageReference Include="morelinq" Version="4.4.0" />
         <ProjectReference Include="..\Atlas.Client.Models\Atlas.Client.Models.csproj" />
         <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />

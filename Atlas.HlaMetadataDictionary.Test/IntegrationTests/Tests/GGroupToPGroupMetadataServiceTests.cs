@@ -7,7 +7,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
-using FluentAssertions;
+using AwesomeAssertions;
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -65,11 +65,11 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
-        public void GetSinglePGroupForGGroup_ForInvalidGGroup_ThrowsException()
+        public async Task GetSinglePGroupForGGroup_ForInvalidGGroup_ThrowsException()
         {
-            metadataService.Invoking(async service =>
-                 await service.ConvertGGroupToPGroup(Locus.A, "not-a-valid-g-group", HlaVersion)
-                ).Should().Throw<HlaMetadataDictionaryException>();
+            await metadataService.Invoking(service =>
+                 service.ConvertGGroupToPGroup(Locus.A, "not-a-valid-g-group", HlaVersion)
+                ).Should().ThrowAsync<HlaMetadataDictionaryException>();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,15 +16,16 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
 {
     internal class Program
     {
-        private static readonly string DefaultOutputDirectory = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory)?.Replace("\\bin\\Debug", "");
+        private static readonly string DefaultOutputDirectory =
+            Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory)?.Replace("\\bin\\Debug", "");
 
         public static async Task Main(string[] args)
         {
             var outputFilePath = args.Length > 0 ? args[0] : null;
-            
+
             var results = new List<TestOutput>();
             var testsRun = 0;
-            
+
             foreach (var testInput in TestCases.TestInputs)
             {
                 var testOutput = await RunSearch(testInput);
@@ -92,7 +94,7 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
             using (var fileStream = new FileStream(outputFileName, FileMode.Append, FileAccess.Write))
             using (TextWriter writer = new StreamWriter(fileStream))
             {
-                var csv = new CsvWriter(writer);
+                var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
                 csv.WriteRecords(results);
             }
         }

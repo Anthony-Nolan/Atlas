@@ -9,7 +9,7 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
-using FluentAssertions;
+using AwesomeAssertions;
 using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
@@ -56,7 +56,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             var actualDiplotypeHla = expandedGenotype.Diplotypes.Select(d => d.Map(h => h.Hla));
             var actualHomozygousValue = expandedGenotype.IsHomozygousAtEveryLocus;
 
-            actualDiplotypeHla.Should().BeEquivalentTo(expectedDiplotypeHla);
+            actualDiplotypeHla.Should().BeEquivalentTo(new[] { expectedDiplotypeHla });
             actualHomozygousValue.Should().BeTrue();
         }
 

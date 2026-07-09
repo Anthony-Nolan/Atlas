@@ -3,31 +3,30 @@ using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
-using LochNessBuilder;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture.Dsl;
 
-namespace Atlas.Functions.Test.Builders
+namespace Atlas.Functions.Test.Builders;
+
+internal static class ScoringResultBuilder
 {
-    [Builder]
-    internal static class ScoringResultBuilder
+    public static IPostprocessComposer<ScoringResult> New = FixtureBuilder.For<ScoringResult>();
+
+    public static IPostprocessComposer<ScoringResult> MatchedAtEveryLocus(this IPostprocessComposer<ScoringResult> builder)
     {
-        public static Builder<ScoringResult> New = Builder<ScoringResult>.New;
+        var locusScore = LocusScoreResultBuilder.New.WithMatchGradesAtBothPositions(LocusMatchCategory.Match, MatchGrade.PGroup).Build();
 
-        public static Builder<ScoringResult> MatchedAtEveryLocus(this Builder<ScoringResult> builder)
-        {
-            var locusScore = LocusScoreResultBuilder.New.WithMatchGradesAtBothPositions(LocusMatchCategory.Match, MatchGrade.PGroup);
+        return builder
+            .With(x => x.MatchCategory, MatchCategory.Exact)
+            .With(x => x.ScoringResultsByLocus, new LociInfo<LocusSearchResult>(locusScore).ToLociInfoTransfer());
+    }
 
-            return builder
-                .With(x => x.MatchCategory, MatchCategory.Exact)
-                .With(x => x.ScoringResultsByLocus, new LociInfo<LocusSearchResult>(locusScore).ToLociInfoTransfer());
-        }
+    public static IPostprocessComposer<ScoringResult> MismatchedAtEveryLocus(this IPostprocessComposer<ScoringResult> builder)
+    {
+        var locusScore = LocusScoreResultBuilder.New.WithMatchGradesAtBothPositions(LocusMatchCategory.Mismatch, MatchGrade.Mismatch).Build();
 
-        public static Builder<ScoringResult> MismatchedAtEveryLocus(this Builder<ScoringResult> builder)
-        {
-            var locusScore = LocusScoreResultBuilder.New.WithMatchGradesAtBothPositions(LocusMatchCategory.Mismatch, MatchGrade.Mismatch);
-
-            return builder
-                .With(x => x.MatchCategory, MatchCategory.Mismatch)
-                .With(x => x.ScoringResultsByLocus, new LociInfo<LocusSearchResult>(locusScore).ToLociInfoTransfer());
-        }
+        return builder
+            .With(x => x.MatchCategory, MatchCategory.Mismatch)
+            .With(x => x.ScoringResultsByLocus, new LociInfo<LocusSearchResult>(locusScore).ToLociInfoTransfer());
     }
 }

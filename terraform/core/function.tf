@@ -42,6 +42,8 @@ resource "azurerm_windows_function_app" "atlas_function" {
   app_settings = {
     "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
+    "AutoMapper:LicenseKey" = var.AUTOMAPPER_LICENSE_KEY
+
     "AzureFunctionsJobHost__extensions__durableTask__maxConcurrentActivityFunctions" = var.MAX_CONCURRENT_ACTIVITY_FUNCTIONS
 
     "AtlasFunction:AzureStorage:MatchingConnectionString"                 = azurerm_storage_account.azure_storage.primary_connection_string
@@ -181,6 +183,7 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
   app_settings = {
     "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
+    "AutoMapper:LicenseKey" = var.AUTOMAPPER_LICENSE_KEY
     "AtlasFunction:Search:DefaultParallelMatchPrediction" = var.DEFAULT_PARALLEL_MATCH_PREDICTION
 
     "MatchingAlgorithmFunction:BaseUrl" = module.matching_algorithm.function_app.base_url
