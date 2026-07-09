@@ -28,13 +28,13 @@ namespace Atlas.MatchPrediction.ExternalInterface
     internal class ParallelMatchPredictionAlgorithm : IParallelMatchPredictionAlgorithm
     {
         private readonly IGenotypeSetService genotypeSetService;
-        private readonly ISearchDonorResultUploader resultUploader;
+        private readonly IMatchPredictionBatchResultUploader resultUploader;
         private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly IAtlasLogger logger;
 
         public ParallelMatchPredictionAlgorithm(
             IGenotypeSetService genotypeSetService,
-            ISearchDonorResultUploader resultUploader,
+            IMatchPredictionBatchResultUploader resultUploader,
             // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
             IServiceScopeFactory serviceScopeFactory)
@@ -80,7 +80,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
                     .SelectMany(donorResults => donorResults)
                     .ToDictionary(kv => kv.Key, kv => kv.Value);
 
-                return await resultUploader.UploadBatchResult(searchRequestId, batchId, resultsByDonorId);
+                return await resultUploader.UploadMatchPredictionBatchResult(searchRequestId, batchId, resultsByDonorId);
             }
         }
     }

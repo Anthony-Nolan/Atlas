@@ -26,7 +26,7 @@ namespace Atlas.MatchPrediction.Test.Services
     {
         private IMatchProbabilityService matchProbabilityService;
         private IGenotypeSetService genotypeSetService;
-        private ISearchDonorResultUploader resultUploader;
+        private IMatchPredictionBatchResultUploader resultUploader;
         private IMatchPredictionLogger<MatchProbabilityLoggingContext> logger;
         private IServiceScopeFactory serviceScopeFactory;
         private IParallelMatchPredictionAlgorithm sut;
@@ -36,7 +36,7 @@ namespace Atlas.MatchPrediction.Test.Services
         {
             matchProbabilityService = Substitute.For<IMatchProbabilityService>();
             genotypeSetService = Substitute.For<IGenotypeSetService>();
-            resultUploader = Substitute.For<ISearchDonorResultUploader>();
+            resultUploader = Substitute.For<IMatchPredictionBatchResultUploader>();
             logger = Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
             serviceScopeFactory = Substitute.For<IServiceScopeFactory>();
 
@@ -46,7 +46,7 @@ namespace Atlas.MatchPrediction.Test.Services
             genotypeSetService.GetPatientGenotypeSet(default).ReturnsForAnyArgs(patientGenotypeSet);
 
             matchProbabilityService.CalculateMatchProbability(default, default).ReturnsForAnyArgs(new MatchProbabilityResponse(null, new HashSet<Locus>()));
-            resultUploader.UploadBatchResult(default, default, default).ReturnsForAnyArgs("batch-result.json");
+            resultUploader.UploadMatchPredictionBatchResult(default, default, default).ReturnsForAnyArgs("batch-result.json");
 
             serviceScopeFactory.CreateScope().Returns(_ => CreateMockScope());
         }
@@ -153,7 +153,7 @@ namespace Atlas.MatchPrediction.Test.Services
             var resultLocation = await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 42);
 
             Assert.That(resultLocation, Is.EqualTo("batch-result.json"));
-            await resultUploader.Received(1).UploadBatchResult(
+            await resultUploader.Received(1).UploadMatchPredictionBatchResult(
                 "search-request-id",
                 42,
                 Arg.Is<IReadOnlyDictionary<int, MatchProbabilityResponse>>(d =>
@@ -175,7 +175,7 @@ namespace Atlas.MatchPrediction.Test.Services
             var resultLocation = await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 42);
 
             Assert.That(resultLocation, Is.Null);
-            await resultUploader.DidNotReceiveWithAnyArgs().UploadBatchResult(default, default, default);
+            await resultUploader.DidNotReceiveWithAnyArgs().UploadMatchPredictionBatchResult(default, default, default);
         }
     }
 }
