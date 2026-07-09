@@ -210,6 +210,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.AddScoped<IGenotypeConverter, GenotypeConverter>();
 
             services.AddScoped<ISearchDonorResultUploader, SearchDonorResultUploader>();
+            services.AddScoped<IMatchPredictionBatchResultUploader, MatchPredictionBatchResultUploader>();
         }
     }
 }

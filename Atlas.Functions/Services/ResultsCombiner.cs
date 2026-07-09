@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -133,22 +134,21 @@ namespace Atlas.Functions.Services
             {
                 logger.SendTrace($"{batchResultLocations.Count} batch result file(s) to download");
 
-                var merged = new Dictionary<int, MatchProbabilityResponse>();
-                foreach (var locationBatch in batchResultLocations.Chunk(matchPredictionDownloadBatchSize))
-                {
-                    var downloadTasks = locationBatch
-                        .Select(location => blobDownloader.Download<Dictionary<int, MatchProbabilityResponse>>(matchPredictionResultsContainer, location))
-                        .ToList();
-                    var downloadedBatches = await Task.WhenAll(downloadTasks);
+                // Download concurrently, throttled to matchPredictionDownloadBatchSize in-flight downloads.
+                // Donor ids are partitioned across batches, so batches never share a key and the merge order is irrelevant.
+                var merged = new ConcurrentDictionary<int, MatchProbabilityResponse>();
 
-                    foreach (var batchResults in downloadedBatches)
+                await Parallel.ForEachAsync(
+                    batchResultLocations,
+                    new ParallelOptions { MaxDegreeOfParallelism = matchPredictionDownloadBatchSize },
+                    async (location, _) =>
                     {
+                        var batchResults = await blobDownloader.Download<Dictionary<int, MatchProbabilityResponse>>(matchPredictionResultsContainer, location);
                         foreach (var donorResult in batchResults)
                         {
                             merged[donorResult.Key] = donorResult.Value;
                         }
-                    }
-                }
+                    });
 
                 return merged;
             }
