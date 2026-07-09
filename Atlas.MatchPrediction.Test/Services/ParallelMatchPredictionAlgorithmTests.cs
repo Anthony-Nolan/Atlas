@@ -40,7 +40,7 @@ namespace Atlas.MatchPrediction.Test.Services
             logger = Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
             serviceScopeFactory = Substitute.For<IServiceScopeFactory>();
 
-            sut = new ParallelMatchPredictionAlgorithm(genotypeSetService, logger, serviceScopeFactory);
+            sut = new ParallelMatchPredictionAlgorithm(genotypeSetService, logger, serviceScopeFactory, new DonorProcessingLimiter(10));
 
             var patientGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions>(), 0.1m);
             genotypeSetService.GetPatientGenotypeSet(default).ReturnsForAnyArgs(patientGenotypeSet);
@@ -82,7 +82,7 @@ namespace Atlas.MatchPrediction.Test.Services
                 }
             };
 
-            await sut.RunBatch(input, maxDegreeOfParallelism: 10);
+            await sut.RunBatch(input);
 
             await genotypeSetService.Received(1).GetPatientGenotypeSet(Arg.Any<SingleDonorMatchProbabilityInput>());
             await matchProbabilityService.Received(2).CalculateMatchProbability(
@@ -91,7 +91,7 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public async Task RunBatch_ProcessesAllDonorsWithConstrainedParallelism()
+        public async Task RunBatch_ProcessesAllDonors()
         {
             var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest
             {
@@ -107,7 +107,7 @@ namespace Atlas.MatchPrediction.Test.Services
                 }
             };
 
-            await sut.RunBatch(input, maxDegreeOfParallelism: 1);
+            await sut.RunBatch(input);
 
             await matchProbabilityService.Received(3).CalculateMatchProbability(
                 Arg.Any<SingleDonorMatchProbabilityInput>(),
@@ -131,7 +131,7 @@ namespace Atlas.MatchPrediction.Test.Services
                 }
             };
 
-            await sut.RunBatch(input, maxDegreeOfParallelism: 10);
+            await sut.RunBatch(input);
 
             serviceScopeFactory.Received(3).CreateScope();
         }
@@ -152,7 +152,7 @@ namespace Atlas.MatchPrediction.Test.Services
                 }
             };
 
-            var results = await sut.RunBatch(input, maxDegreeOfParallelism: 10);
+            var results = await sut.RunBatch(input);
 
             Assert.That(results.Keys, Is.EquivalentTo(new[] { 1, 2 }));
             Assert.That(results[1], Is.EqualTo("1.json"));

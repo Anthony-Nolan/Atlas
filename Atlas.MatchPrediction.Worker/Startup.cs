@@ -4,6 +4,7 @@ using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
+using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Worker.Services;
 using Atlas.MatchPrediction.Worker.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
@@ -57,6 +58,16 @@ public static class Startup
         services.AddScoped<IMatchPredictionSearchTrackingDispatcher, MatchPredictionSearchTrackingDispatcher>();
 
         services.AddScoped<IParallelMatchPredictionBatchRunner, ParallelMatchPredictionBatchRunner>();
+
+        // A single, process-wide donor concurrency budget shared across all batch messages the ServiceBusProcessor
+        // handles concurrently (MaxConcurrentCalls). MaxParallelism is now the TOTAL number of donors processed at
+        // once on this host, not a per-batch figure — so concurrent batches fill each other's freed slots instead of
+        // each multiplying the budget. For cross-batch slot-filling to actually kick in, keep MaxConcurrentCalls > 1.
+        services.AddSingleton<IDonorProcessingLimiter>(sp =>
+        {
+            var maxConcurrentDonors = sp.GetRequiredService<IOptions<MatchPredictionRequestsSettings>>().Value.MaxParallelism;
+            return new DonorProcessingLimiter(maxConcurrentDonors);
+        });
 
         services.AddSingleton(sp =>
             {
