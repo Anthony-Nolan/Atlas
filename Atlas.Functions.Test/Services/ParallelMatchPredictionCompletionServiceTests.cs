@@ -224,7 +224,7 @@ namespace Atlas.Functions.Test.Services
                     Status = status,
                     SearchInitiatedTimeUtc = fixture.Create<DateTime>(),
                 },
-                MergedResultLocations = new Dictionary<int, string>(),
+                BatchResultLocations = new List<string>(),
                 FailedBatches = failedBatch
                     ? new List<ParallelMatchPredictionBatch>
                     {

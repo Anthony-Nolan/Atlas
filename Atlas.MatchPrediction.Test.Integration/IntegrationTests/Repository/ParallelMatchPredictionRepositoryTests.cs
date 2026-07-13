@@ -145,7 +145,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Repository
             ParallelMatchPredictionRunStatus status = ParallelMatchPredictionRunStatus.Running,
             Guid? finalisationLeaseOwner = null)
         {
-            var runId = await repository.CreateRun(new CreateParallelMatchPredictionRunInfo(
+            var runId = (await repository.CreateRun(new CreateParallelMatchPredictionRunInfo(
                 SearchIdentifier: Guid.NewGuid(),
                 IsRepeatSearch: false,
                 RepeatSearchIdentifier: null,
@@ -154,7 +154,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Repository
                 BatchFolderName: null,
                 MatchingAlgorithmElapsedTime: TimeSpan.FromSeconds(1),
                 SearchInitiatedTimeUtc: initiatedUtc,
-                TotalBatchCount: batchCount));
+                TotalBatchCount: batchCount))).RunId;
 
             // CreateRun stamps MatchPredictionRunInitiatedUtc with 'now' and status Running; override to
             // position the run relative to the cutoff and to exercise the status-agnostic behaviour.

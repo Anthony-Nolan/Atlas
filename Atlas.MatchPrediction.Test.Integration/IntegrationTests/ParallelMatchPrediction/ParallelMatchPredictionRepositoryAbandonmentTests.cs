@@ -43,30 +43,30 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ParallelMatchP
         [Test]
         public async Task GetRunIdsToAbandon_RunInitiatedBeforeCutoffWithRequestedBatch_IsReturned()
         {
-            var runId = await CreateRun(totalBatchCount: 2);
-            await repository.RecordBatchResult(runId, 0, new Dictionary<int, string>()); // batch 1 still Requested
+            var created = await CreateRun(totalBatchCount: 2);
+            await repository.RecordBatchResult(created.BatchIdsBySequence[0], fixture.Create<string>()); // batch 1 still Requested
 
             var result = await repository.GetRunIdsToAbandon(DateTime.UtcNow.AddMinutes(1));
 
-            result.Should().Contain(runId);
+            result.Should().Contain(created.RunId);
         }
 
         [Test]
         public async Task GetRunIdsToAbandon_RunWithEveryBatchReceived_IsNotReturned()
         {
-            var runId = await CreateRun(totalBatchCount: 2);
-            await repository.RecordBatchResult(runId, 0, new Dictionary<int, string>());
-            await repository.RecordBatchResult(runId, 1, new Dictionary<int, string>());
+            var created = await CreateRun(totalBatchCount: 2);
+            await repository.RecordBatchResult(created.BatchIdsBySequence[0], fixture.Create<string>());
+            await repository.RecordBatchResult(created.BatchIdsBySequence[1], fixture.Create<string>());
 
             var result = await repository.GetRunIdsToAbandon(DateTime.UtcNow.AddMinutes(1));
 
-            result.Should().NotContain(runId);
+            result.Should().NotContain(created.RunId);
         }
 
         [Test]
         public async Task GetRunIdsToAbandon_RunInitiatedAfterCutoff_IsNotReturned()
         {
-            var runId = await CreateRun(totalBatchCount: 1);
+            var runId = (await CreateRun(totalBatchCount: 1)).RunId;
 
             // Cutoff is in the past, so a run initiated "now" has not yet timed out.
             var result = await repository.GetRunIdsToAbandon(DateTime.UtcNow.AddMinutes(-1));
@@ -77,18 +77,18 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ParallelMatchP
         [Test]
         public async Task TryMarkRunAsAbandoned_MarksRunAndOnlyTheRequestedBatches()
         {
-            var runId = await CreateRun(totalBatchCount: 2);
-            await repository.RecordBatchResult(runId, 0, new Dictionary<int, string>()); // batch 0 received
+            var created = await CreateRun(totalBatchCount: 2);
+            await repository.RecordBatchResult(created.BatchIdsBySequence[0], fixture.Create<string>()); // batch 0 received
 
-            var header = await repository.TryMarkRunAsAbandoned(runId, DateTime.UtcNow);
+            var header = await repository.TryMarkRunAsAbandoned(created.RunId, DateTime.UtcNow);
 
             header.Should().NotBeNull();
 
-            var run = (await repository.GetRunWithResults(runId)).Run;
+            var run = (await repository.GetRunWithResults(created.RunId)).Run;
             run.Status.Should().Be(ParallelMatchPredictionRunStatus.Abandoned);
             run.IsSuccessful.Should().BeFalse();
 
-            var batchStatuses = await GetBatchStatuses(runId);
+            var batchStatuses = await GetBatchStatuses(created.RunId);
             batchStatuses.Should().BeEquivalentTo(new[]
             {
                 ParallelMatchPredictionBatchStatus.ResultsReceived,
@@ -99,7 +99,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ParallelMatchP
         [Test]
         public async Task TryMarkRunAsAbandoned_CalledTwice_SecondCallReturnsNull()
         {
-            var runId = await CreateRun(totalBatchCount: 1);
+            var runId = (await CreateRun(totalBatchCount: 1)).RunId;
 
             (await repository.TryMarkRunAsAbandoned(runId, DateTime.UtcNow)).Should().NotBeNull();
             (await repository.TryMarkRunAsAbandoned(runId, DateTime.UtcNow)).Should().BeNull();
@@ -108,7 +108,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ParallelMatchP
         [Test]
         public async Task TryMarkRunAsAbandoned_WhenRunAlreadyLeasedByFinaliser_DoesNotAbandon()
         {
-            var runId = await CreateRun(totalBatchCount: 1);
+            var runId = (await CreateRun(totalBatchCount: 1)).RunId;
             // A finaliser claims the run (e.g. after a late result arrived) before the abandonment sweep acts on it.
             (await repository.TryClaimFinalisationLease(runId, fixture.Create<Guid>())).Should().BeTrue();
 
@@ -122,45 +122,45 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ParallelMatchP
         [Test]
         public async Task RecordBatchResult_ForAbandonedBatch_RecordsTheLateResult()
         {
-            var runId = await CreateRun(totalBatchCount: 1);
-            await repository.TryMarkRunAsAbandoned(runId, DateTime.UtcNow); // batch -> Abandoned
+            var created = await CreateRun(totalBatchCount: 1);
+            await repository.TryMarkRunAsAbandoned(created.RunId, DateTime.UtcNow); // batch -> Abandoned
 
-            var recorded = await repository.RecordBatchResult(runId, 0, new Dictionary<int, string>());
+            var recorded = await repository.RecordBatchResult(created.BatchIdsBySequence[0], fixture.Create<string>());
 
             recorded.Should().BeTrue();
-            (await GetBatchStatuses(runId)).Should().ContainSingle()
+            (await GetBatchStatuses(created.RunId)).Should().ContainSingle()
                 .Which.Should().Be(ParallelMatchPredictionBatchStatus.ResultsReceived);
         }
 
         [Test]
         public async Task RecordBatchFailure_ForAbandonedBatch_RecordsLateFailureAndRunBecomesFinalisationEligible()
         {
-            var runId = await CreateRun(totalBatchCount: 1);
-            await repository.TryMarkRunAsAbandoned(runId, DateTime.UtcNow); // batch -> Abandoned
+            var created = await CreateRun(totalBatchCount: 1);
+            await repository.TryMarkRunAsAbandoned(created.RunId, DateTime.UtcNow); // batch -> Abandoned
 
             // Late failure replay: the previously-missing batch returns a failure (e.g. an OOM) after abandonment.
-            var recorded = await repository.RecordBatchFailure(runId, 0, fixture.Create<string>(), fixture.Create<string>());
+            var recorded = await repository.RecordBatchFailure(created.BatchIdsBySequence[0], fixture.Create<string>(), fixture.Create<string>());
 
             recorded.Should().BeTrue();
-            (await GetBatchStatuses(runId)).Should().ContainSingle()
+            (await GetBatchStatuses(created.RunId)).Should().ContainSingle()
                 .Which.Should().Be(ParallelMatchPredictionBatchStatus.Failed);
 
             // The run stays Abandoned but is now finalisation-eligible (no Requested/Abandoned batches remain), so the
             // finaliser re-picks it and the completion service republishes the definitive failure (with the real
             // batch-failure cause) and transitions the run to FailedDuringBatchProcessing.
-            var runResults = await repository.GetRunWithResults(runId);
+            var runResults = await repository.GetRunWithResults(created.RunId);
             runResults.Run.Status.Should().Be(ParallelMatchPredictionRunStatus.Abandoned);
             runResults.FailedBatches.Should().ContainSingle();
-            (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().Contain(runId);
+            (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().Contain(created.RunId);
         }
 
         [Test]
         public async Task RecordBatchResult_AfterBatchRowDeletedByCleanup_Throws()
         {
-            var runId = await CreateRun(totalBatchCount: 1);
-            await context.ParallelMatchPredictionBatches.Where(b => b.RunId == runId).ExecuteDeleteAsync();
+            var created = await CreateRun(totalBatchCount: 1);
+            await context.ParallelMatchPredictionBatches.Where(b => b.RunId == created.RunId).ExecuteDeleteAsync();
 
-            Func<Task> act = () => repository.RecordBatchResult(runId, 0, new Dictionary<int, string>());
+            Func<Task> act = () => repository.RecordBatchResult(created.BatchIdsBySequence[0], fixture.Create<string>());
 
             await act.Should().ThrowAsync<InvalidOperationException>();
         }
@@ -168,26 +168,26 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ParallelMatchP
         [Test]
         public async Task GetRunIdsAwaitingFinalisationAndNotLeased_AbandonedRun_BecomesEligibleOnceAllLateResultsArrive()
         {
-            var runId = await CreateRun(totalBatchCount: 1);
-            await repository.TryMarkRunAsAbandoned(runId, DateTime.UtcNow); // run + batch Abandoned
+            var created = await CreateRun(totalBatchCount: 1);
+            await repository.TryMarkRunAsAbandoned(created.RunId, DateTime.UtcNow); // run + batch Abandoned
 
             // Still has an Abandoned batch, so not yet finalisable.
-            (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().NotContain(runId);
+            (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().NotContain(created.RunId);
 
-            await repository.RecordBatchResult(runId, 0, new Dictionary<int, string>()); // late result arrives
+            await repository.RecordBatchResult(created.BatchIdsBySequence[0], fixture.Create<string>()); // late result arrives
 
-            (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().Contain(runId);
+            (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().Contain(created.RunId);
         }
 
         [Test]
         public async Task GetRunIdsAwaitingFinalisationAndNotLeased_AbandonedRunWithAnyBatchStillAbandoned_IsNotEligible()
         {
-            var runId = await CreateRun(totalBatchCount: 2);
-            await repository.TryMarkRunAsAbandoned(runId, DateTime.UtcNow); // both batches -> Abandoned
+            var created = await CreateRun(totalBatchCount: 2);
+            await repository.TryMarkRunAsAbandoned(created.RunId, DateTime.UtcNow); // both batches -> Abandoned
 
             // Only one of the two abandoned batches gets a late result; the other stays Abandoned.
-            await repository.RecordBatchResult(runId, 0, new Dictionary<int, string>());
-            (await GetBatchStatuses(runId)).Should().BeEquivalentTo(new[]
+            await repository.RecordBatchResult(created.BatchIdsBySequence[0], fixture.Create<string>());
+            (await GetBatchStatuses(created.RunId)).Should().BeEquivalentTo(new[]
             {
                 ParallelMatchPredictionBatchStatus.ResultsReceived,
                 ParallelMatchPredictionBatchStatus.Abandoned,
@@ -195,17 +195,17 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ParallelMatchP
 
             // A single lingering Abandoned batch keeps the already-reported run out of finalisation — it must not be
             // re-finalised (as bogus success) while a batch is still outstanding.
-            (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().NotContain(runId);
+            (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().NotContain(created.RunId);
 
             // Only once every abandoned batch has been superseded by a late result does the run become eligible (replay).
-            await repository.RecordBatchResult(runId, 1, new Dictionary<int, string>());
-            (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().Contain(runId);
+            await repository.RecordBatchResult(created.BatchIdsBySequence[1], fixture.Create<string>());
+            (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().Contain(created.RunId);
         }
 
         [Test]
         public async Task CleanupBatchesForRunsInitiatedBefore_CleansAbandonedRunAndItsAbandonedBatches()
         {
-            var runId = await CreateRun(totalBatchCount: 2);
+            var runId = (await CreateRun(totalBatchCount: 2)).RunId;
             await repository.TryMarkRunAsAbandoned(runId, DateTime.UtcNow); // Status -> Abandoned, both batches -> Abandoned
             await BackdateInitiation(runId, DateTime.UtcNow.AddDays(-1));
             (await GetBatchStatuses(runId)).Should().AllBeEquivalentTo(ParallelMatchPredictionBatchStatus.Abandoned);
@@ -221,7 +221,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ParallelMatchP
             run.Status.Should().Be(ParallelMatchPredictionRunStatus.Abandoned);
         }
 
-        private async Task<int> CreateRun(int totalBatchCount)
+        private async Task<CreateParallelMatchPredictionRunResult> CreateRun(int totalBatchCount)
         {
             return await repository.CreateRun(new CreateParallelMatchPredictionRunInfo(
                 SearchIdentifier: fixture.Create<Guid>(),
