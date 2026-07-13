@@ -265,7 +265,7 @@ variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
 
 variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
   type        = number
-  default     = 8
+  default     = 3
   description = "Maximum number of service bus messages the match prediction worker's ServiceBusProcessor handles concurrently. Aligned with match prediction request parallelism."
 }
 
@@ -635,8 +635,14 @@ variable "MATCH_PREDICTION_CONTAINER_MAX_REPLICAS" {
 
 variable "MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT" {
   type        = number
-  default     = 5
+  default     = 3
   description = "Message threshold for the match prediction container ACA Service Bus custom scale rule. Override via TF_VAR_MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS" {
+  type        = number
+  default     = 10
+  description = "The interval in seconds used by the match prediction container app for polling KEDA scale rules."
 }
 
 # --- External SQL variables (for retargeting function app connection strings) ---

@@ -90,6 +90,11 @@ variable "CONTAINER_SCALE_RULE_MESSAGE_COUNT" {
   default = 5
 }
 
+variable "CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS" {
+  type    = number
+  default = 30
+}
+
 // External SQL variables
 variable "USE_EXTERNAL_SQL" {
   type    = bool
