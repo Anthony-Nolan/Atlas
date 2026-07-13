@@ -4,6 +4,7 @@ using Atlas.MatchPrediction.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.MatchPrediction.Data.Migrations
 {
     [DbContext(typeof(MatchPredictionContext))]
-    partial class MatchPredictionContextModelSnapshot : ModelSnapshot
+    [Migration("20260706130641_ReplaceParallelBatchResultLocationJsonWithResultLocation")]
+    partial class ReplaceParallelBatchResultLocationJsonWithResultLocation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -184,9 +187,6 @@ namespace Atlas.MatchPrediction.Data.Migrations
                     b.Property<DateTime?>("FinalisedTimeUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsCleanedUp")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsRepeatSearch")
                         .HasColumnType("bit");
 
@@ -229,11 +229,7 @@ namespace Atlas.MatchPrediction.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Status")
-                        .HasDatabaseName("IX_ParallelMatchPredictionRuns_Status_Running")
-                        .HasFilter("[Status] = 'Running'");
-
-                    b.HasIndex("IsCleanedUp", "MatchPredictionRunInitiatedUtc");
+                    b.HasIndex("Status", "FinalisedTimeUtc");
 
                     b.ToTable("ParallelMatchPredictionRuns", "MatchPrediction");
                 });

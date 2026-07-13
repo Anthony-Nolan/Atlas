@@ -26,7 +26,7 @@ namespace Atlas.MatchPrediction.Test.Services
     {
         private IMatchProbabilityService matchProbabilityService;
         private IGenotypeSetService genotypeSetService;
-        private ISearchDonorResultUploader resultUploader;
+        private IMatchPredictionBatchResultUploader resultUploader;
         private IMatchPredictionLogger<MatchProbabilityLoggingContext> logger;
         private IServiceScopeFactory serviceScopeFactory;
         private IParallelMatchPredictionAlgorithm sut;
@@ -36,18 +36,17 @@ namespace Atlas.MatchPrediction.Test.Services
         {
             matchProbabilityService = Substitute.For<IMatchProbabilityService>();
             genotypeSetService = Substitute.For<IGenotypeSetService>();
-            resultUploader = Substitute.For<ISearchDonorResultUploader>();
+            resultUploader = Substitute.For<IMatchPredictionBatchResultUploader>();
             logger = Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
             serviceScopeFactory = Substitute.For<IServiceScopeFactory>();
 
-            sut = new ParallelMatchPredictionAlgorithm(genotypeSetService, logger, serviceScopeFactory);
+            sut = new ParallelMatchPredictionAlgorithm(genotypeSetService, resultUploader, logger, serviceScopeFactory);
 
             var patientGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions>(), 0.1m);
             genotypeSetService.GetPatientGenotypeSet(default).ReturnsForAnyArgs(patientGenotypeSet);
 
             matchProbabilityService.CalculateMatchProbability(default, default).ReturnsForAnyArgs(new MatchProbabilityResponse(null, new HashSet<Locus>()));
-            resultUploader.UploadSearchDonorResults(default, default, default).ReturnsForAnyArgs(call =>
-                ((IEnumerable<int>)call[1]).ToDictionary(id => id, id => $"{id}.json"));
+            resultUploader.UploadMatchPredictionBatchResult(default, default, default).ReturnsForAnyArgs("batch-result.json");
 
             serviceScopeFactory.CreateScope().Returns(_ => CreateMockScope());
         }
@@ -56,7 +55,6 @@ namespace Atlas.MatchPrediction.Test.Services
         {
             var serviceProvider = Substitute.For<IServiceProvider>();
             serviceProvider.GetService(typeof(IMatchProbabilityService)).Returns(matchProbabilityService);
-            serviceProvider.GetService(typeof(ISearchDonorResultUploader)).Returns(resultUploader);
             serviceProvider.GetService(typeof(IMatchPredictionLogger<MatchProbabilityLoggingContext>)).Returns(logger);
             var scope = Substitute.For<IServiceScope>();
             scope.ServiceProvider.Returns(serviceProvider);
@@ -82,7 +80,7 @@ namespace Atlas.MatchPrediction.Test.Services
                 }
             };
 
-            await sut.RunBatch(input, maxDegreeOfParallelism: 10);
+            await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 1);
 
             await genotypeSetService.Received(1).GetPatientGenotypeSet(Arg.Any<SingleDonorMatchProbabilityInput>());
             await matchProbabilityService.Received(2).CalculateMatchProbability(
@@ -107,7 +105,7 @@ namespace Atlas.MatchPrediction.Test.Services
                 }
             };
 
-            await sut.RunBatch(input, maxDegreeOfParallelism: 1);
+            await sut.RunBatch(input, maxDegreeOfParallelism: 1, batchId: 1);
 
             await matchProbabilityService.Received(3).CalculateMatchProbability(
                 Arg.Any<SingleDonorMatchProbabilityInput>(),
@@ -131,13 +129,13 @@ namespace Atlas.MatchPrediction.Test.Services
                 }
             };
 
-            await sut.RunBatch(input, maxDegreeOfParallelism: 10);
+            await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 1);
 
             serviceScopeFactory.Received(3).CreateScope();
         }
 
         [Test]
-        public async Task RunBatch_AggregatesAllDonorResults()
+        public async Task RunBatch_UploadsAllDonorResultsInSingleFileAndReturnsItsLocation()
         {
             var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest
             {
@@ -152,11 +150,32 @@ namespace Atlas.MatchPrediction.Test.Services
                 }
             };
 
-            var results = await sut.RunBatch(input, maxDegreeOfParallelism: 10);
+            var resultLocation = await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 42);
 
-            Assert.That(results.Keys, Is.EquivalentTo(new[] { 1, 2 }));
-            Assert.That(results[1], Is.EqualTo("1.json"));
-            Assert.That(results[2], Is.EqualTo("2.json"));
+            Assert.That(resultLocation, Is.EqualTo("batch-result.json"));
+            await resultUploader.Received(1).UploadMatchPredictionBatchResult(
+                "search-request-id",
+                42,
+                Arg.Is<IReadOnlyDictionary<int, MatchProbabilityResponse>>(d =>
+                    d.Count == 2 && d.ContainsKey(1) && d.ContainsKey(2)));
+        }
+
+        [Test]
+        public async Task RunBatch_WithNoDonors_ReturnsNullAndDoesNotUpload()
+        {
+            var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest
+            {
+                SearchRequestId = "search-request-id",
+                PatientHla = new PhenotypeInfo<string>("patient-hla").ToPhenotypeInfoTransfer()
+            })
+            {
+                Donors = new List<DonorInput>()
+            };
+
+            var resultLocation = await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 42);
+
+            Assert.That(resultLocation, Is.Null);
+            await resultUploader.DidNotReceiveWithAnyArgs().UploadMatchPredictionBatchResult(default, default, default);
         }
     }
 }
