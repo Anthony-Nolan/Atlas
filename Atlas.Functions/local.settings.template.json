@@ -40,6 +40,8 @@
     "AtlasFunction:Orchestration:ParallelFinalisationCronSchedule": "0 */1 * * * *",
     "AtlasFunction:Orchestration:ParallelBatchCleanupCronSchedule": "0 0 3 * * *",
     "AtlasFunction:Orchestration:ParallelBatchRetentionDays": 90,
+    "AtlasFunction:Orchestration:AbandonBatchAfterMinutes": 360,
+    "AtlasFunction:Orchestration:ParallelBatchAbandonmentCronSchedule": "0 */5 * * * *",
 
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
 

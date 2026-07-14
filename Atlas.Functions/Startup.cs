@@ -171,7 +171,9 @@ namespace Atlas.Functions
         {
             services.AddDbContext<MatchPredictionContext>((sp, options) =>
             {
-                options.UseSqlServer(ConnectionStringReader("MatchPrediction:Sql")(sp));
+                options.UseSqlServer(
+                    ConnectionStringReader("MatchPrediction:Sql")(sp),
+                    sqlOptions => sqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null));
             });
 
             services.AddScoped<IParallelMatchPredictionRepository, ParallelMatchPredictionRepository>();

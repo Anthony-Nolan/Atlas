@@ -1,4 +1,5 @@
-﻿using Atlas.Client.Models.Search.Results.Matching;
+﻿using Atlas.Client.Models.Search.Results;
+using Atlas.Client.Models.Search.Results.Matching;
 
 namespace Atlas.Functions.Models;
 
@@ -14,6 +15,12 @@ public record SendFailureNotificationParameters
 
     /// <summary>The orchestration stage at which the failure occurred.</summary>
     public string StageReached { get; init; }
+
+    /// <summary>
+    /// Optional free-form detail describing why the search failed (e.g. the match-prediction abandonment reason).
+    /// Surfaced to downstream consumers via <see cref="SearchFailureInfo.FailureDetail"/>.
+    /// </summary>
+    public string FailureDetail { get; init; }
 
     /// <summary>
     /// Only populated when the failure originated in the matching algorithm.
