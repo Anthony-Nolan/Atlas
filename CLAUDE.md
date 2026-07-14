@@ -24,7 +24,8 @@ dotnet restore
 dotnet build --configuration Release --no-restore
 
 # Run all unit tests (Test projects only, excludes Integration/Validation/Performance/Verification)
-dotnet test "**/*Test.csproj"
+shopt -s globstar
+dotnet test **/*Test.csproj
 
 # Run a single test project
 dotnet test Atlas.MatchingAlgorithm.Test/Atlas.MatchingAlgorithm.Test.csproj
@@ -47,7 +48,7 @@ Test projects follow a strict per-component split, each with different infra req
 - `*.Test.Validation` (Matching, Match Prediction) — spins up a real in-memory server and exercises it over HTTP; written in Gherkin via Reqnroll for non-technical review by the Search/BioInformatics teams; requires user secrets and a specific HLA Metadata Dictionary version to be generated locally first.
 - `*.Test.Performance` / `*.Test.Verification` — manual/CI-nightly performance harnesses, gated by the custom `IgnoreExceptOnCiPerfTestAttribute` (only runs when `RUN_CI_PERF_TESTS` env var is set).
 
-There is no local Azure Service Bus emulator — local dev requires a real Azure Service Bus namespace with manually-created topics/subscriptions (see `README_DevelopmentStartUpGuide.md` for the exact topic/subscription names needed per workflow).
+There is no local Azure Service Bus emulator in use for this project — local dev requires a real Azure Service Bus namespace with manually-created topics/subscriptions (see `README_DevelopmentStartUpGuide.md` for the exact topic/subscription names needed per workflow). Microsoft does ship a dockerized Service Bus emulator, but it isn't adopted here (it caps out at ~10 concurrent requests and is clunky to configure).
 
 ## Architecture
 
@@ -84,19 +85,19 @@ Non-Functions projects use `appsettings.json` + user secrets. Functions apps use
 ## Conventions
 
 - Test framework: NUnit (`[TestFixture]`/`[Test]`), NSubstitute for mocking, AwesomeAssertions (FluentAssertions-compatible, `.Should()`) for assertions, AutoFixture (via a repo `FixtureBuilder.For<T>()` helper) plus custom `*Builder` classes under `TestHelpers/Builders` for test data. Test naming: `MethodUnderTest_ExpectedBehaviour`.
-- Commit messages are prefixed with the GitHub issue number and a semantic type, e.g. `feature: #34: add match prediction`, `fix: #45: fix null reference` (see `README_Contribution_Versioning.md` for the full type list).
+- Commit messages are prefixed with the Jira ticket ID and a semantic type, e.g. `feature: ATL-34: add match prediction`, `fix: ATL-45: fix null reference` (see `README_Contribution_Versioning.md` for the full type list — note that README documents an older GitHub-issue-number convention, e.g. `fix: #45: ...`, which real commit history confirms has been superseded by the `ATL-###` Jira convention).
 - Versioning is semantic (`major.minor.patch`) and applies only to the public-interface projects listed above; stable releases are tagged `stable/x.y.z`.
 - `.editorconfig` sets `max_line_length = 150`.
 
 ## Branching
 
-This repo uses release/hotfix-based development, not trunk-based development off `master` — do not target `master` directly with a feature branch or PR.
+**Current practice (until release 4.0 is cut):** feature/fix branches are created from `master` and PR'd directly back into `master`, matching `README_Contribution_Versioning.md`'s Contributing section.
 
-- **Release branches**: prefix `rc/` (e.g. `rc/3.4.0`), created from `master`. One is active per in-progress minor version.
-- **Hotfix branches**: prefix `hotfix/` (e.g. `hotfix/3.1.1`), created from the corresponding `rc/` release branch (not from `master`), for patching an already-cut release.
-- **Feature/fix branches**: branch from the `rc/` or `hotfix/` branch that the change is targeting, and PR back into that same `rc/`/`hotfix/` branch — never into `master` directly.
+**From release 4.0 onward**, the repo moves to release/hotfix-based development instead of trunk-based development off `master`:
+
+- **Release branches**: prefix `rc/` (e.g. `rc/4.0.0`), created from `master`. One is active per in-progress minor version.
+- **Hotfix branches**: prefix `hotfix/` (e.g. `hotfix/4.0.1`), created from the corresponding `rc/` release branch (not from `master`), for patching an already-cut release.
+- **Feature/fix branches**: branch from the `rc/` or `hotfix/` branch that the change is targeting, and PR back into that same `rc/`/`hotfix/` branch — not into `master` directly.
 - `master` is only advanced by the release/hotfix process itself (e.g. `post_release_candidate_branch_creation.yml` bumps the version on `master` when a new `rc/*` branch is cut), not by regular feature work.
 
-When creating a branch or opening a PR, confirm which `rc/`/`hotfix/` branch is the intended target before assuming `master`.
-
-> **Inconsistency found in existing docs:** `README_Contribution_Versioning.md` (Contributing section) currently instructs contributors to fork, branch, and "Create a Github Pull Request from your fork branch to the **master** branch of this repository." This contradicts the release/hotfix branching model above (confirmed against real branches in this repo, e.g. `origin/rc/3.4.0`, `origin/hotfix/3.1.1`) and should be corrected to target the relevant `rc/`/`hotfix/` branch instead — flagging here rather than editing since that file wasn't otherwise in scope for this change.
+When creating a branch or opening a PR, confirm whether release 4.0 has been cut yet — if it has, target the relevant `rc/`/`hotfix/` branch instead of `master`.
