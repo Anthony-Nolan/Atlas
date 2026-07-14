@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.Notifications;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.MatchPrediction;
@@ -86,6 +88,36 @@ internal class HaplotypeFrequencyServiceTests
         await sut.ImportFrequencySet(file, fixture.Create<FrequencySetImportBehaviour>());
 
         haplotypeFrequencyCache.Received(1).RemoveActiveHaplotypeFrequencySets();
+    }
+
+    // The typed catch blocks send a Medium-priority alert and swallow; an unexpected (generic) exception must instead
+    // raise a High-priority failure alert AND propagate, so the import is retried / surfaced rather than lost.
+    [Test]
+    public async Task ImportFrequencySet_WhenImportThrowsUnexpectedException_SendsHighPriorityAlertAndRethrows()
+    {
+        var exception = new InvalidOperationException(fixture.Create<string>());
+        frequencySetImporter.Import(null, null).ReturnsForAnyArgs(Task.FromException(exception));
+
+        var file = fixture.Build<FrequencySetFile>()
+            .Without(f => f.Contents)
+            .Create();
+
+        var import = () => sut.ImportFrequencySet(file, fixture.Create<FrequencySetImportBehaviour>());
+
+        (await import.Should().ThrowAsync<InvalidOperationException>()).Which.Should().BeSameAs(exception);
+        await notificationSender.Received(1).SendAlert(Arg.Any<string>(), Arg.Any<string>(), Priority.High, Arg.Any<string>());
+        haplotypeFrequencyCache.DidNotReceive().RemoveActiveHaplotypeFrequencySets();
+    }
+
+    [Test]
+    public async Task GetSingleHaplotypeFrequencySet_WhenNoSetMatchesAndNoGlobalSetExists_Throws()
+    {
+        haplotypeFrequencyCache.GetActiveHaplotypeFrequencySets()
+            .Returns(new Dictionary<(string, string), HaplotypeFrequencySet>());
+
+        var getSet = () => sut.GetSingleHaplotypeFrequencySet(fixture.Create<FrequencySetMetadata>());
+
+        await getSet.Should().ThrowAsync<Exception>().WithMessage("No Global Haplotype frequency set was found");
     }
 
     [Test]

@@ -7,8 +7,8 @@ using Newtonsoft.Json;
 namespace Atlas.MatchPrediction.Worker;
 
 public class MatchPredictionWorker(
-    IServiceScopeFactory serviceScopeFactory,
     ServiceBusProcessor processor,
+    IServiceScopeFactory serviceScopeFactory,
     ILogger<MatchPredictionWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
