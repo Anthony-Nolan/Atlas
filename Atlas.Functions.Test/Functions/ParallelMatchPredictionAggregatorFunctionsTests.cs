@@ -2,6 +2,7 @@ using Atlas.Functions.Functions;
 using Atlas.Functions.Services;
 using Atlas.Functions.Settings;
 using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
@@ -143,5 +144,53 @@ internal class ParallelMatchPredictionAggregatorFunctionsTests
         // A single status-agnostic clean-up (keyed off initiation time) purges finalised, failed and
         // abandoned runs alike, marking each IsCleanedUp=true.
         await repository.Received(1).CleanupBatchesForRunsInitiatedBefore(Arg.Any<DateTime>());
+    }
+
+    [Test]
+    public async Task StoreParallelMatchPredictionBatchResult_WhenSuccessful_RecordsBatchResultAndNotFailure()
+    {
+        var message = fixture.Build<ParallelMatchPredictionBatchResult>().With(m => m.IsSuccessful, true).Create();
+        repository.RecordBatchResult(Arg.Any<int>(), Arg.Any<string>()).Returns(true);
+
+        await functions.StoreParallelMatchPredictionBatchResult(message);
+
+        await repository.Received(1).RecordBatchResult(message.BatchId, message.MatchPredictionResultLocation);
+        await repository.DidNotReceiveWithAnyArgs().RecordBatchFailure(default, default, default);
+    }
+
+    [Test]
+    public async Task StoreParallelMatchPredictionBatchResult_WhenSuccessfulButDuplicate_RecordsBatchResultOnce_DoesNotThrow()
+    {
+        var message = fixture.Build<ParallelMatchPredictionBatchResult>().With(m => m.IsSuccessful, true).Create();
+        repository.RecordBatchResult(Arg.Any<int>(), Arg.Any<string>()).Returns(false);
+
+        await functions.Invoking(f => f.StoreParallelMatchPredictionBatchResult(message)).Should().NotThrowAsync();
+
+        await repository.Received(1).RecordBatchResult(message.BatchId, message.MatchPredictionResultLocation);
+        await repository.DidNotReceiveWithAnyArgs().RecordBatchFailure(default, default, default);
+    }
+
+    [Test]
+    public async Task StoreParallelMatchPredictionBatchResult_WhenFailure_RecordsBatchFailureAndNotResult()
+    {
+        var message = fixture.Build<ParallelMatchPredictionBatchResult>().With(m => m.IsSuccessful, false).Create();
+        repository.RecordBatchFailure(Arg.Any<int>(), Arg.Any<string>(), Arg.Any<string>()).Returns(true);
+
+        await functions.StoreParallelMatchPredictionBatchResult(message);
+
+        await repository.Received(1).RecordBatchFailure(message.BatchId, message.FailureMessage, message.FailureException);
+        await repository.DidNotReceiveWithAnyArgs().RecordBatchResult(default, default);
+    }
+
+    [Test]
+    public async Task StoreParallelMatchPredictionBatchResult_WhenFailureButDuplicate_RecordsBatchFailureOnce_DoesNotThrow()
+    {
+        var message = fixture.Build<ParallelMatchPredictionBatchResult>().With(m => m.IsSuccessful, false).Create();
+        repository.RecordBatchFailure(Arg.Any<int>(), Arg.Any<string>(), Arg.Any<string>()).Returns(false);
+
+        await functions.Invoking(f => f.StoreParallelMatchPredictionBatchResult(message)).Should().NotThrowAsync();
+
+        await repository.Received(1).RecordBatchFailure(message.BatchId, message.FailureMessage, message.FailureException);
+        await repository.DidNotReceiveWithAnyArgs().RecordBatchResult(default, default);
     }
 }

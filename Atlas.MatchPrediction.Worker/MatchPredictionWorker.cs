@@ -1,4 +1,3 @@
-using System.Text;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Worker.Services;
 using Azure.Messaging.ServiceBus;
@@ -7,8 +6,8 @@ using Newtonsoft.Json;
 namespace Atlas.MatchPrediction.Worker;
 
 public class MatchPredictionWorker(
-    IServiceScopeFactory serviceScopeFactory,
     ServiceBusProcessor processor,
+    IServiceScopeFactory serviceScopeFactory,
     ILogger<MatchPredictionWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -35,9 +34,8 @@ public class MatchPredictionWorker(
 
     private async Task ProcessMessageAsync(ProcessMessageEventArgs args)
     {
-        var request = JsonConvert.DeserializeObject<ParallelMatchPredictionBatchRequest>(
-            Encoding.UTF8.GetString(args.Message.Body)
-        );
+        // We expect that message body is always a valid JSON
+        var request = JsonConvert.DeserializeObject<ParallelMatchPredictionBatchRequest>(args.Message.Body.ToString());
 
         try
         {
