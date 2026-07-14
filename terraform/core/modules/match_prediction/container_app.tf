@@ -15,8 +15,9 @@ resource "azurerm_container_app" "atlas_match_prediction" {
   }
 
   template {
-    min_replicas = var.CONTAINER_MIN_REPLICAS
-    max_replicas = var.CONTAINER_MAX_REPLICAS
+    min_replicas                = var.CONTAINER_MIN_REPLICAS
+    max_replicas                = var.CONTAINER_MAX_REPLICAS
+    polling_interval_in_seconds = var.CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS
 
     custom_scale_rule {
       name             = "parallel-match-prediction-requests-scale-rule"
