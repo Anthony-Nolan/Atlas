@@ -107,8 +107,9 @@ internal class ParallelMatchPredictionBatchRunnerTests
         var thrown = new InvalidOperationException(fixture.Create<string>());
         blobDownloader.Download<MultipleDonorMatchProbabilityInput>(Arg.Any<string>(), Arg.Any<string>()).ThrowsAsync(thrown);
 
-        await runner.Invoking(r => r.RunBatch(request)).Should().NotThrowAsync();
+        var act = () => runner.RunBatch(request);
 
+        await act.Should().NotThrowAsync();
         await resultPublisher.Received(1).PublishWithSession(
             Arg.Is<ParallelMatchPredictionBatchResult>(r =>
                 !r.IsSuccessful
@@ -129,7 +130,9 @@ internal class ParallelMatchPredictionBatchRunnerTests
         resultPublisher.PublishWithSession(Arg.Any<ParallelMatchPredictionBatchResult>(), Arg.Any<string>())
             .ThrowsAsync(new Exception(fixture.Create<string>()));
 
-        await runner.Invoking(r => r.RunBatch(request)).Should().ThrowAsync<Exception>();
+        var act = () => runner.RunBatch(request);
+
+        await act.Should().ThrowAsync<Exception>();
     }
 
     private ParallelMatchPredictionBatchRequest BuildRequest(bool isRepeatSearch) => new()

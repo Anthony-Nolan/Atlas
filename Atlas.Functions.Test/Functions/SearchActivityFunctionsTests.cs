@@ -82,14 +82,42 @@ internal class SearchActivityFunctionsTests
             loggingContext);
     }
 
+    // Success path for the non-repeat parallel dispatch: builds inputs at the configured batch size, creates the run
+    // record (before publishing), publishes one sequence-aligned request per uploaded blob, and brackets the work
+    // with prepare-batches tracking events. Facets that need a different arrange (repeat search, the batched-results
+    // branch) have their own tests below.
     [Test]
-    public async Task PrepareAndDispatchParallelMatchPredictionBatches_PublishesOneBatchRequestPerUploadedBlob_WithSequenceAlignedBatchIds()
+    public async Task PrepareAndDispatchParallelMatchPredictionBatches_SuccessPath_CreatesRunThenPublishesAlignedRequestsAndTracksProgress()
     {
         var notification = CreateNotification(isRepeat: false);
         var (parameters, runResult, blobLocations) = ArrangeDispatchPipeline(notification, batchCount: 3);
+        var searchIdentifier = new Guid(notification.SearchRequestId);
 
         await functions.PrepareAndDispatchParallelMatchPredictionBatches(parameters);
 
+        // Inputs built at the configured parallel batch size
+        matchPredictionInputBuilder.Received(1).BuildMatchPredictionInputs(Arg.Any<OriginalMatchingAlgorithmResultSet>(), ParallelBatchSize);
+
+        // Run record created (with details from the notification) before any batch requests are published
+        Received.InOrder(() =>
+        {
+            parallelMatchPredictionRepository.CreateRun(Arg.Any<CreateParallelMatchPredictionRunInfo>());
+            parallelBatchPublisher.BatchPublish(Arg.Any<IEnumerable<ParallelMatchPredictionBatchRequest>>());
+        });
+
+        capturedRunInfo.Should().NotBeNull();
+        var runInfo = capturedRunInfo!;
+        runInfo.SearchIdentifier.Should().Be(searchIdentifier);
+        runInfo.IsRepeatSearch.Should().BeFalse();
+        runInfo.RepeatSearchIdentifier.Should().BeNull();
+        runInfo.ResultsFileName.Should().Be(notification.ResultsFileName);
+        runInfo.ResultsBatched.Should().Be(notification.ResultsBatched);
+        runInfo.BatchFolderName.Should().Be(notification.BatchFolderName);
+        runInfo.MatchingAlgorithmElapsedTime.Should().Be(notification.ElapsedTime);
+        runInfo.SearchInitiatedTimeUtc.Should().Be(parameters.SearchInitiatedTimeUtc);
+        runInfo.TotalBatchCount.Should().Be(blobLocations.Count);
+
+        // One request published per uploaded blob, with batch ids aligned to blob sequence
         publishedRequests.Should().HaveCount(3);
         foreach (var (request, index) in publishedRequests!.Select((r, i) => (r, i)))
         {
@@ -101,42 +129,10 @@ internal class SearchActivityFunctionsTests
             request.IsRepeatSearch.Should().BeFalse();
             request.RepeatSearchRequestId.Should().BeNull();
         }
-    }
 
-    [Test]
-    public async Task PrepareAndDispatchParallelMatchPredictionBatches_CreatesRunRecordBeforePublishingBatchRequests()
-    {
-        var notification = CreateNotification(isRepeat: false);
-        var (parameters, _, _) = ArrangeDispatchPipeline(notification);
-
-        await functions.PrepareAndDispatchParallelMatchPredictionBatches(parameters);
-
-        Received.InOrder(() =>
-        {
-            parallelMatchPredictionRepository.CreateRun(Arg.Any<CreateParallelMatchPredictionRunInfo>());
-            parallelBatchPublisher.BatchPublish(Arg.Any<IEnumerable<ParallelMatchPredictionBatchRequest>>());
-        });
-    }
-
-    [Test]
-    public async Task PrepareAndDispatchParallelMatchPredictionBatches_CreatesRunWithDetailsFromNotification()
-    {
-        var notification = CreateNotification(isRepeat: false);
-        var (parameters, _, blobLocations) = ArrangeDispatchPipeline(notification, batchCount: 4);
-
-        await functions.PrepareAndDispatchParallelMatchPredictionBatches(parameters);
-
-        capturedRunInfo.Should().NotBeNull();
-        var runInfo = capturedRunInfo!;
-        runInfo.SearchIdentifier.Should().Be(new Guid(notification.SearchRequestId));
-        runInfo.IsRepeatSearch.Should().BeFalse();
-        runInfo.RepeatSearchIdentifier.Should().BeNull();
-        runInfo.ResultsFileName.Should().Be(notification.ResultsFileName);
-        runInfo.ResultsBatched.Should().Be(notification.ResultsBatched);
-        runInfo.BatchFolderName.Should().Be(notification.BatchFolderName);
-        runInfo.MatchingAlgorithmElapsedTime.Should().Be(notification.ElapsedTime);
-        runInfo.SearchInitiatedTimeUtc.Should().Be(parameters.SearchInitiatedTimeUtc);
-        runInfo.TotalBatchCount.Should().Be(blobLocations.Count);
+        // Prepare-batches tracking bracketing, keyed by the search id (no original for a non-repeat search)
+        await matchPredictionSearchTrackingDispatcher.Received(1).ProcessPrepareBatchesStarted(searchIdentifier, null);
+        await matchPredictionSearchTrackingDispatcher.Received(1).ProcessPrepareBatchesEnded(searchIdentifier, null);
     }
 
     [Test]
@@ -159,19 +155,6 @@ internal class SearchActivityFunctionsTests
         publishedRequests.Should().OnlyContain(r => r.IsRepeatSearch && r.RepeatSearchRequestId == notification.RepeatSearchRequestId);
     }
 
-    [Test]
-    public async Task PrepareAndDispatchParallelMatchPredictionBatches_SendsPrepareBatchesTrackingEventsWithSearchIdentifier()
-    {
-        var notification = CreateNotification(isRepeat: false);
-        var (parameters, _, _) = ArrangeDispatchPipeline(notification);
-        var searchIdentifier = new Guid(notification.SearchRequestId);
-
-        await functions.PrepareAndDispatchParallelMatchPredictionBatches(parameters);
-
-        await matchPredictionSearchTrackingDispatcher.Received(1).ProcessPrepareBatchesStarted(searchIdentifier, null);
-        await matchPredictionSearchTrackingDispatcher.Received(1).ProcessPrepareBatchesEnded(searchIdentifier, null);
-    }
-
     [TestCase(true)]
     [TestCase(false)]
     public async Task PrepareAndDispatchParallelMatchPredictionBatches_DownloadsResultsFromBatchFolderOnlyWhenResultsAreBatched(bool resultsBatched)
@@ -185,23 +168,12 @@ internal class SearchActivityFunctionsTests
         await matchingResultsDownloader.Received(1).Download(notification.ResultsFileName, false, expectedBatchFolder);
     }
 
-    [Test]
-    public async Task PrepareAndDispatchParallelMatchPredictionBatches_BuildsInputsUsingConfiguredParallelBatchSize()
-    {
-        var notification = CreateNotification(isRepeat: false);
-        var (parameters, _, _) = ArrangeDispatchPipeline(notification);
-
-        await functions.PrepareAndDispatchParallelMatchPredictionBatches(parameters);
-
-        matchPredictionInputBuilder.Received(1).BuildMatchPredictionInputs(Arg.Any<OriginalMatchingAlgorithmResultSet>(), ParallelBatchSize);
-    }
-
     [TestCase(false)]
     [TestCase(true)]
     public async Task SendFailureNotification_PublishesFailureMessageAndTracksResultsSent(bool isRepeatSearch)
     {
-        var searchIdentifier = Guid.NewGuid();
-        var repeatSearchIdentifier = isRepeatSearch ? Guid.NewGuid() : (Guid?)null;
+        var searchIdentifier = fixture.Create<Guid>();
+        var repeatSearchIdentifier = isRepeatSearch ? fixture.Create<Guid>() : (Guid?)null;
         var parameters = fixture.Build<SendFailureNotificationParameters>()
             .With(p => p.SearchRequestId, searchIdentifier.ToString())
             .With(p => p.RepeatSearchRequestId, repeatSearchIdentifier?.ToString())
@@ -266,8 +238,8 @@ internal class SearchActivityFunctionsTests
 
     private MatchingResultsNotification CreateNotification(bool isRepeat, bool resultsBatched = true) =>
         fixture.Build<MatchingResultsNotification>()
-            .With(n => n.SearchRequestId, Guid.NewGuid().ToString())
-            .With(n => n.RepeatSearchRequestId, isRepeat ? Guid.NewGuid().ToString() : null)
+            .With(n => n.SearchRequestId, fixture.Create<Guid>().ToString())
+            .With(n => n.RepeatSearchRequestId, isRepeat ? fixture.Create<Guid>().ToString() : null)
             .With(n => n.ResultsBatched, resultsBatched)
             .Without(n => n.SearchRequest)
             .Create();
