@@ -35,22 +35,29 @@ public class MatchPredictionWorker(
 
     private async Task ProcessMessageAsync(ProcessMessageEventArgs args)
     {
-        var request = JsonConvert.DeserializeObject<ParallelMatchPredictionBatchRequest>(
-            Encoding.UTF8.GetString(args.Message.Body)
-        );
-
         try
         {
+            // Deserialize inside the try so a malformed message body is abandoned (and eventually dead-lettered
+            // once the subscription's max delivery count is exceeded) rather than escaping uncaught.
+            var request = JsonConvert.DeserializeObject<ParallelMatchPredictionBatchRequest>(
+                Encoding.UTF8.GetString(args.Message.Body)
+            );
+
+            if (request is null)
+            {
+                throw new InvalidOperationException("Parallel match prediction batch request could not be deserialized (null body).");
+            }
+
             await using var scope = serviceScopeFactory.CreateAsyncScope();
             var runner = scope.ServiceProvider.GetRequiredService<IParallelMatchPredictionBatchRunner>();
 
-            await runner.RunBatch(request!);
+            await runner.RunBatch(request);
 
             await args.CompleteMessageAsync(args.Message, args.CancellationToken);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Unexpected error processing parallel match prediction batch — abandoning message.");
+            logger.LogError(ex, "Unexpected error processing parallel match prediction batch — abandoning message for redelivery/dead-lettering.");
             await args.AbandonMessageAsync(args.Message, cancellationToken: args.CancellationToken);
         }
     }

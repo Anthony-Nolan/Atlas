@@ -50,9 +50,13 @@ namespace Atlas.SearchTracking.Data.Repositories
             var id = await GetSearchRequestIdByIdentifier(matchPredictionCompletedEvent.SearchIdentifier);
 
             var matchPrediction = await GetRequiredMatchPredictionTiming(id);
+            var completionDetails = matchPredictionCompletedEvent.CompletionDetails;
 
             matchPrediction.CompletionTimeUtc = matchPredictionCompletedEvent.CompletionTimeUtc;
-            matchPrediction.IsSuccessful = matchPredictionCompletedEvent.CompletionDetails.IsSuccessful;
+            matchPrediction.IsSuccessful = completionDetails.IsSuccessful;
+            matchPrediction.FailureInfo_Message = completionDetails.FailureInfo?.Message;
+            matchPrediction.FailureInfo_ExceptionStacktrace = completionDetails.FailureInfo?.ExceptionStacktrace;
+            matchPrediction.FailureInfo_Type = completionDetails.FailureInfo?.Type;
             await context.SaveChangesAsync();
         }
 
