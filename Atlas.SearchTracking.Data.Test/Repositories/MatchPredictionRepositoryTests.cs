@@ -5,6 +5,7 @@ using Atlas.SearchTracking.Data.Models;
 using Atlas.SearchTracking.Data.Repositories;
 using Atlas.SearchTracking.Data.Test.Builders;
 using Atlas.SearchTracking.Data.Test.TestHelpers;
+using AutoFixture;
 using AwesomeAssertions;
 using NUnit.Framework;
 
@@ -15,6 +16,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
     {
         private IMatchPredictionRepository matchPredictionRepository;
         private SearchRequestMatchPrediction defaultMatchPrediction;
+        private Fixture fixture;
 
         [SetUp]
         public async Task SetUp()
@@ -23,6 +25,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
             matchPredictionRepository = new MatchPredictionRepository(SearchTrackingContext);
             await InitiateData();
             defaultMatchPrediction = MatchPredictionEntityBuilder.Default.Build();
+            fixture = new Fixture();
         }
 
         [TearDown]
@@ -127,8 +130,8 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
             var expectedMatchPredictionEntity = MatchPredictionEntityBuilder.Completed
                 .With(m => m.IsSuccessful, false)
                 .With(m => m.FailureInfo_Type, MatchPredictionFailureType.BatchWorkerFailure)
-                .With(m => m.FailureInfo_Message, "2 out of 3 match prediction batch(es) failed during processing.")
-                .With(m => m.FailureInfo_ExceptionStacktrace, "System.Exception: batch worker failed\n---\nSystem.Exception: batch worker failed")
+                .With(m => m.FailureInfo_Message, fixture.Create<string>())
+                .With(m => m.FailureInfo_ExceptionStacktrace, fixture.Create<string>())
                 .Build();
 
             var expectedSearchRequestGuid = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000");

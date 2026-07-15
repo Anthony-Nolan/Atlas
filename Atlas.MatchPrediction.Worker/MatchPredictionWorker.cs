@@ -37,8 +37,10 @@ public class MatchPredictionWorker(
     {
         try
         {
-            // Deserialize inside the try so a malformed message body is abandoned (and eventually dead-lettered
-            // once the subscription's max delivery count is exceeded) rather than escaping uncaught.
+            // we don't expect a malformed body: every message on this topic is produced by our own
+            // orchestrator, and nothing writes to the queue by hand. Deserializing inside the try is defensive,
+            // should a bad body ever appear it is abandoned (and eventually dead-lettered once the
+            // subscription's max delivery count is exceeded) rather than escaping uncaught.
             var request = JsonConvert.DeserializeObject<ParallelMatchPredictionBatchRequest>(
                 Encoding.UTF8.GetString(args.Message.Body)
             );
