@@ -211,7 +211,45 @@ namespace Atlas.Functions.Test.Services
             await repository.Received(1).MarkRunFailed(runId, Arg.Any<DateTime>());
         }
 
-        private ParallelMatchPredictionRunResults RunResults(ParallelMatchPredictionRunStatus status, bool failedBatch)
+        [Test]
+        public async Task FinaliseRun_FailedRunThatWasNotAbandoned_RaisesHighPriorityAlert()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(
+                status: ParallelMatchPredictionRunStatus.Running,
+                failedBatch: true
+            ));
+
+            await completionService.FinaliseRun(runId);
+
+            await notificationSender.Received(1).SendAlert(
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                Priority.High,
+                Arg.Any<string>()
+            );
+        }
+
+        [Test]
+        public async Task FinaliseRun_FailedRun_PublishesFailureDetailCarryingBatchReason()
+        {
+            var runId = fixture.Create<int>();
+            var batchFailureMessage = fixture.Create<string>();
+            repository.GetRunWithResults(runId).Returns(RunResults(
+                status: ParallelMatchPredictionRunStatus.Running,
+                failedBatch: true,
+                batchFailureMessage: batchFailureMessage
+            ));
+
+            await completionService.FinaliseRun(runId);
+
+            await searchCompletionMessageSender.Received(1).PublishFailureMessage(
+                Arg.Is<SendFailureNotificationParameters>(p => p.FailureDetail.Contains(batchFailureMessage))
+            );
+        }
+
+        private ParallelMatchPredictionRunResults RunResults(
+            ParallelMatchPredictionRunStatus status, bool failedBatch, string batchFailureMessage = null)
         {
             return new ParallelMatchPredictionRunResults
             {
@@ -232,7 +270,7 @@ namespace Atlas.Functions.Test.Services
                         {
                             BatchSequenceNumber = 0,
                             BatchStatus = ParallelMatchPredictionBatchStatus.Failed,
-                            FailureMessage = fixture.Create<string>(),
+                            FailureMessage = batchFailureMessage ?? fixture.Create<string>(),
                             FailureException = fixture.Create<string>(),
                         }
                     }
