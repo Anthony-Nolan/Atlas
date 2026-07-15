@@ -69,31 +69,25 @@ internal class SearchOrchestrationFunctionsTests
         await AssertActivityNotCalled(nameof(SearchActivityFunctions.SendMatchPredictionProcessInitiated));
     }
 
+    // Success path for the parallel branch: tracks initiation (with the parallel flag), dispatches the batches with
+    // the notification and start time, returns the matching donor count, sets the custom status, and — crucially —
+    // runs none of the sequential inline match-prediction / persistence / completion steps, which the aggregator now
+    // owns. The null-donor-count edge and the dispatch-failure path have their own tests below.
     [Test]
-    public async Task SearchOrchestrator_ParallelPath_SendsInitiationTrackingWithParallelFlag()
+    public async Task SearchOrchestrator_ParallelPath_SuccessPath_TracksInitiationDispatchesBatchesAndSkipsSequentialSteps()
     {
         var notification = CreateNotification(parallelMatchPrediction: true);
         SetUpSearchOrchestratorInput(notification);
-
-        await functions.SearchOrchestrator(context);
-
         var searchIdentifier = new Guid(notification.SearchRequestId);
+
+        var output = await functions.SearchOrchestrator(context);
+
         await AssertActivityCalled<MatchPredictionProcessInitiatedParameters>(
             nameof(SearchActivityFunctions.SendMatchPredictionProcessInitiated),
             p => p.IsParallelMatchPrediction
                  && p.SearchIdentifier == searchIdentifier
                  && p.OriginalSearchIdentifier == null
                  && p.InitiationTimeUtc == orchestrationStartTime);
-    }
-
-    [Test]
-    public async Task SearchOrchestrator_ParallelPath_DispatchesBatchesAndReturnsMatchingDonorCount()
-    {
-        var notification = CreateNotification(parallelMatchPrediction: true);
-        SetUpSearchOrchestratorInput(notification);
-
-        var output = await functions.SearchOrchestrator(context);
-
         await AssertActivityCalled<PrepareAndDispatchParallelMatchPredictionBatchesParameters>(
             nameof(SearchActivityFunctions.PrepareAndDispatchParallelMatchPredictionBatches),
             p => ReferenceEquals(p.MatchingResultsNotification, notification)
@@ -102,6 +96,14 @@ internal class SearchOrchestrationFunctionsTests
         context.Received(1).SetCustomStatus(Arg.Is<object>(status =>
             status is OrchestrationStatus
             && ((OrchestrationStatus)status).LastCompletedStage == nameof(SearchActivityFunctions.PrepareAndDispatchParallelMatchPredictionBatches)));
+
+        // The aggregator owns everything after dispatch: no inline match prediction, result persistence,
+        // log upload, or completion tracking from the orchestrator
+        await context.DidNotReceive().CallActivityAsync<TimedResultSet<IList<string>>>(
+            Arg.Any<TaskName>(), Arg.Any<object>(), Arg.Any<TaskOptions>());
+        await AssertActivityNotCalled(nameof(SearchActivityFunctions.PersistSearchResults));
+        await AssertActivityNotCalled(nameof(SearchActivityFunctions.UploadSearchLog));
+        await AssertActivityNotCalled(nameof(SearchActivityFunctions.SendMatchPredictionProcessCompleted));
     }
 
     [Test]
@@ -116,23 +118,6 @@ internal class SearchOrchestrationFunctionsTests
     }
 
     [Test]
-    public async Task SearchOrchestrator_ParallelPath_DoesNotRunSequentialMatchPredictionOrCompletionSteps()
-    {
-        var notification = CreateNotification(parallelMatchPrediction: true);
-        SetUpSearchOrchestratorInput(notification);
-
-        await functions.SearchOrchestrator(context);
-
-        // The aggregator owns everything after dispatch: no inline match prediction, result persistence,
-        // log upload, or completion tracking from the orchestrator
-        await context.DidNotReceive().CallActivityAsync<TimedResultSet<IList<string>>>(
-            Arg.Any<TaskName>(), Arg.Any<object>(), Arg.Any<TaskOptions>());
-        await AssertActivityNotCalled(nameof(SearchActivityFunctions.PersistSearchResults));
-        await AssertActivityNotCalled(nameof(SearchActivityFunctions.UploadSearchLog));
-        await AssertActivityNotCalled(nameof(SearchActivityFunctions.SendMatchPredictionProcessCompleted));
-    }
-
-    [Test]
     public async Task SearchOrchestrator_ParallelPath_WhenDispatchFails_SendsFailureNotificationAndThrowsHandledException()
     {
         var notification = CreateNotification(parallelMatchPrediction: true);
@@ -143,9 +128,9 @@ internal class SearchOrchestrationFunctionsTests
                 Arg.Any<TaskOptions>())
             .Returns(Task.FromException(new InvalidOperationException(fixture.Create<string>())));
 
-        await functions.Invoking(f => f.SearchOrchestrator(context))
-            .Should().ThrowAsync<HandledOrchestrationException>();
+        var act = () => functions.SearchOrchestrator(context);
 
+        await act.Should().ThrowAsync<HandledOrchestrationException>();
         await AssertActivityCalled<SendFailureNotificationParameters>(
             nameof(SearchActivityFunctions.SendFailureNotification),
             p => p.StageReached == nameof(SearchActivityFunctions.PrepareAndDispatchParallelMatchPredictionBatches)
@@ -190,9 +175,9 @@ internal class SearchOrchestrationFunctionsTests
                 Arg.Any<TaskOptions>())
             .Returns(Task.FromException<TimedResultSet<IList<string>>>(new InvalidOperationException(fixture.Create<string>())));
 
-        await functions.Invoking(f => f.SearchOrchestrator(context))
-            .Should().ThrowAsync<HandledOrchestrationException>();
+        var act = () => functions.SearchOrchestrator(context);
 
+        await act.Should().ThrowAsync<HandledOrchestrationException>();
         await AssertActivityCalled<SendFailureNotificationParameters>(
             nameof(SearchActivityFunctions.SendFailureNotification),
             p => p.StageReached == nameof(SearchActivityFunctions.PrepareMatchPredictionBatches));

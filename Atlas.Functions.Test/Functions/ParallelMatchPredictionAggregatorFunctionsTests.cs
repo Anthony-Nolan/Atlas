@@ -57,10 +57,11 @@ internal class ParallelMatchPredictionAggregatorFunctionsTests
         repository.GetRunIdsToAbandon(Arg.Any<DateTime>()).Returns(runIds);
         completionService.AbandonRun(runIds[1]).Returns(Task.FromException(new InvalidOperationException(fixture.Create<string>())));
 
+        var act = () => functions.MarkRunsAsAbandoned(null);
+
         // A single failure does not block the other runs, but the invocation is still reported as failed so the
         // partial failure surfaces in monitoring rather than being silently swallowed.
-        var thrown = await functions.Invoking(f => f.MarkRunsAsAbandoned(null))
-            .Should().ThrowAsync<AggregateException>();
+        var thrown = await act.Should().ThrowAsync<AggregateException>();
         thrown.Which.InnerExceptions.Should().HaveCount(1);
 
         await completionService.Received(1).AbandonRun(runIds[0]);
@@ -100,10 +101,11 @@ internal class ParallelMatchPredictionAggregatorFunctionsTests
         repository.TryClaimFinalisationLease(Arg.Any<int>(), Arg.Any<Guid>()).Returns(true);
         completionService.FinaliseRun(runIds[1]).Returns(Task.FromException(new InvalidOperationException(fixture.Create<string>())));
 
+        var act = () => functions.FinaliseCompletedParallelMatchPredictionRuns(null);
+
         // A single failure does not block the other runs, but the invocation is still reported as failed so the
         // partial failure surfaces in monitoring rather than being silently swallowed.
-        var thrown = await functions.Invoking(f => f.FinaliseCompletedParallelMatchPredictionRuns(null))
-            .Should().ThrowAsync<AggregateException>();
+        var thrown = await act.Should().ThrowAsync<AggregateException>();
         thrown.Which.InnerExceptions.Should().HaveCount(1);
 
         await completionService.Received(1).FinaliseRun(runIds[0]);
@@ -164,8 +166,9 @@ internal class ParallelMatchPredictionAggregatorFunctionsTests
         var message = fixture.Build<ParallelMatchPredictionBatchResult>().With(m => m.IsSuccessful, true).Create();
         repository.RecordBatchResult(Arg.Any<int>(), Arg.Any<string>()).Returns(false);
 
-        await functions.Invoking(f => f.StoreParallelMatchPredictionBatchResult(message)).Should().NotThrowAsync();
+        var act = () => functions.StoreParallelMatchPredictionBatchResult(message);
 
+        await act.Should().NotThrowAsync();
         await repository.Received(1).RecordBatchResult(message.BatchId, message.MatchPredictionResultLocation);
         await repository.DidNotReceiveWithAnyArgs().RecordBatchFailure(default, default, default);
     }
@@ -188,8 +191,9 @@ internal class ParallelMatchPredictionAggregatorFunctionsTests
         var message = fixture.Build<ParallelMatchPredictionBatchResult>().With(m => m.IsSuccessful, false).Create();
         repository.RecordBatchFailure(Arg.Any<int>(), Arg.Any<string>(), Arg.Any<string>()).Returns(false);
 
-        await functions.Invoking(f => f.StoreParallelMatchPredictionBatchResult(message)).Should().NotThrowAsync();
+        var act = () => functions.StoreParallelMatchPredictionBatchResult(message);
 
+        await act.Should().NotThrowAsync();
         await repository.Received(1).RecordBatchFailure(message.BatchId, message.FailureMessage, message.FailureException);
         await repository.DidNotReceiveWithAnyArgs().RecordBatchResult(default, default);
     }
