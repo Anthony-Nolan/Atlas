@@ -297,14 +297,15 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         );
 
         logger.SendTrace(
-            $"Failure notification sent for search {run.SearchIdentifier}: {failureMessage}",
+            $"Failure notification sent for search {run.SearchIdentifier}: {failureDetail}",
             LogLevel.Error
         );
 
         // Raise an operational alert so a batch-worker failure does not fail silently for support.
         await notificationSender.SendAlert(
             $"Parallel match prediction failed for search {run.SearchIdentifier}",
-            $"{failureMessage} (parallel run id: {runId}). Full exception detail has been logged to Application Insights.",
+            $"{failureMessage} (parallel run id: {runId}). Full exception detail is available in Application Insights "
+          + "and in Search Tracking (match-prediction completion FailureInfo.ExceptionStacktrace).",
             Priority.High,
             ParallelMatchPredictionNotificationSource
         );

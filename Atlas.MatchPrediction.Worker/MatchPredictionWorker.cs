@@ -45,7 +45,7 @@ public class MatchPredictionWorker(
 
             if (request is null)
             {
-                throw new InvalidOperationException("Parallel match prediction batch request could not be deserialized (null body).");
+                throw new InvalidOperationException("Parallel match prediction batch request deserialized to null.");
             }
 
             await using var scope = serviceScopeFactory.CreateAsyncScope();

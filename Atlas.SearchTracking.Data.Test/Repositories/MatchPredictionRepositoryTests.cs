@@ -120,6 +120,43 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
                 .Excluding(a => a.SearchRequest));
         }
 
+        [Test]
+        public async Task TrackMatchPredictionCompletedEvent_WhenFailed_PersistsFailureInfoToDb()
+        {
+            await CreateDefaultMatchPrediction();
+            var expectedMatchPredictionEntity = MatchPredictionEntityBuilder.Completed
+                .With(m => m.IsSuccessful, false)
+                .With(m => m.FailureInfo_Type, MatchPredictionFailureType.BatchWorkerFailure)
+                .With(m => m.FailureInfo_Message, "2 out of 3 match prediction batch(es) failed during processing.")
+                .With(m => m.FailureInfo_ExceptionStacktrace, "System.Exception: batch worker failed\n---\nSystem.Exception: batch worker failed")
+                .Build();
+
+            var expectedSearchRequestGuid = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000");
+
+            var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
+            {
+                SearchIdentifier = expectedSearchRequestGuid,
+                CompletionTimeUtc = expectedMatchPredictionEntity.CompletionTimeUtc.Value,
+                CompletionDetails = new MatchPredictionCompletionDetails
+                {
+                    IsSuccessful = false,
+                    FailureInfo = new MatchPredictionFailureInfo
+                    {
+                        Type = expectedMatchPredictionEntity.FailureInfo_Type,
+                        Message = expectedMatchPredictionEntity.FailureInfo_Message,
+                        ExceptionStacktrace = expectedMatchPredictionEntity.FailureInfo_ExceptionStacktrace,
+                    }
+                }
+            };
+
+            await matchPredictionRepository.TrackCompletedEvent(matchPredictionCompletedEvent);
+
+            var actualMatchPredictionEntity = await matchPredictionRepository.GetSearchRequestMatchPredictionById(expectedMatchPredictionEntity.SearchRequestId);
+
+            expectedMatchPredictionEntity.Should().BeEquivalentTo(actualMatchPredictionEntity, options => options
+                .Excluding(a => a.SearchRequest));
+        }
+
         private async Task CreateDefaultMatchPrediction()
         {
             var matchPrediction = MatchPredictionEntityBuilder.Default.Build();
