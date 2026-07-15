@@ -91,13 +91,13 @@ Non-Functions projects use `appsettings.json` + user secrets. Functions apps use
 
 ## Branching
 
-**Current practice (until release 4.0 is cut):** feature/fix branches are created from `master` and PR'd directly back into `master`, matching `README_Contribution_Versioning.md`'s Contributing section.
+Based on Anthony Nolan's org-wide [Git Standards](https://anthonynolan.atlassian.net/wiki/spaces/NPDWS/pages/532185178/Git+Standards) (Confluence, NPDWS space), adapted for Atlas: **`master` is the primary branch** most changes are merged into (Atlas has no separate `develop` branch).
 
-**From release 4.0 onward**, the repo moves to release/hotfix-based development instead of trunk-based development off `master`:
+- **Release candidate branches**: prefix `rc/`, named for the target minor version (e.g. `rc/3.4.0`), cut from `master` when a version is ready to test/release. Once cut, no new features land on it — only bug fixes. One `rc/` branch is active per in-progress minor version; delete it once no longer used in any environment.
+- **Hotfix branches**: prefix `hotfix/` (e.g. `hotfix/3.1.1`), cut from the corresponding already-released `rc/` branch, for patching a version already live.
+- **Feature/fix branches**: write changes on a feature branch first, then PR it in for review.
+  - **Target branch rule**: if there's no `rc/`/`hotfix/` branch currently open for the release you're targeting, PR into `master`; if one is already open, PR into that `rc/`/`hotfix/` branch instead.
+  - **Naming**: lowercase, hyphenated, starting with the Jira story card ID (use the story number even if a subtask is involved) followed by a short description — e.g. `atl-1234-add-search-patient-endpoint`. Avoid mixed case, a missing description, or a missing ticket ID.
+- Any change merged into an `rc/`/`hotfix/` branch must also be merged back down through every subsequent `rc/`/`hotfix/` branch and into `master`, so it's present in all future versions too. Use a real merge (not rebase) for this propagation, to keep a readable record of which release each fix came from — feature branches merging *into* `master`/`rc/`/`hotfix/`, by contrast, should be rebased or squashed to keep history linear (via GitHub's "Rebase and merge"/"Squash and merge"; this repo doesn't use reviewable.io).
 
-- **Release branches**: prefix `rc/` (e.g. `rc/4.0.0`), created from `master`. One is active per in-progress minor version.
-- **Hotfix branches**: prefix `hotfix/` (e.g. `hotfix/4.0.1`), created from the corresponding `rc/` release branch (not from `master`), for patching an already-cut release.
-- **Feature/fix branches**: branch from the `rc/` or `hotfix/` branch that the change is targeting, and PR back into that same `rc/`/`hotfix/` branch — not into `master` directly.
-- `master` is only advanced by the release/hotfix process itself (e.g. `post_release_candidate_branch_creation.yml` bumps the version on `master` when a new `rc/*` branch is cut), not by regular feature work.
-
-When creating a branch or opening a PR, confirm whether release 4.0 has been cut yet — if it has, target the relevant `rc/`/`hotfix/` branch instead of `master`.
+When creating a branch or opening a PR, check whether an `rc/`/`hotfix/` branch is currently open for the release you're targeting — if so, PR into that branch; otherwise `master` is correct.
