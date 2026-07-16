@@ -10,6 +10,7 @@
     "MatchingAlgorithmFunction:ApiKey": "override-this",
 
     "AtlasFunction:Search:DefaultParallelMatchPrediction": false,
+    "AtlasFunction:Search:ParallelMatchPredictionRequestPercentage": 100,
 
     "Matching:MessagingServiceBus:ConnectionString": "override-this",
     "Matching:MessagingServiceBus:SearchRequestsTopic": "matching-requests",

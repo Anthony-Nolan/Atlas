@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
@@ -24,6 +25,7 @@ namespace Atlas.Functions.PublicApi.Functions
         private readonly IRepeatSearchDispatcher repeatSearchDispatcher;
         private readonly IMatchPredictionValidator matchPredictionValidator;
         private readonly bool defaultParallelMatchPrediction;
+        private readonly int parallelMatchPredictionRequestPercentage;
 
         public SearchFunctions(
             ISearchDispatcher searchDispatcher,
@@ -35,6 +37,7 @@ namespace Atlas.Functions.PublicApi.Functions
             this.repeatSearchDispatcher = repeatSearchDispatcher;
             this.matchPredictionValidator = matchPredictionValidator;
             defaultParallelMatchPrediction = searchFunctionSettings.Value.DefaultParallelMatchPrediction;
+            parallelMatchPredictionRequestPercentage = Math.Clamp(searchFunctionSettings.Value.ParallelMatchPredictionRequestPercentage, 0, 100);
         }
 
         [Function(nameof(Search))]
@@ -58,7 +61,7 @@ namespace Atlas.Functions.PublicApi.Functions
                 return BuildValidationResponse(probabilityValidationResult);
             }
 
-            searchRequest.ParallelMatchPrediction ??= defaultParallelMatchPrediction;
+            ResolveParallelMatchPrediction(searchRequest);
 
             var id = await searchDispatcher.DispatchSearch(searchRequest);
             await searchDispatcher.DispatchSearchTrackingEvent(searchRequest, id);
@@ -87,7 +90,7 @@ namespace Atlas.Functions.PublicApi.Functions
                 return BuildValidationResponse(probabilityValidationResult);
             }
 
-            repeatSearchRequest.SearchRequest.ParallelMatchPrediction ??= defaultParallelMatchPrediction;
+            ResolveParallelMatchPrediction(repeatSearchRequest.SearchRequest);
 
             var repeatSearchId = await repeatSearchDispatcher.DispatchSearch(repeatSearchRequest);
             await repeatSearchDispatcher.DispatchSearchTrackingEvent(repeatSearchRequest, repeatSearchId);
@@ -97,6 +100,25 @@ namespace Atlas.Functions.PublicApi.Functions
                 SearchIdentifier = repeatSearchRequest.OriginalSearchId,
                 RepeatSearchIdentifier = repeatSearchId
             });
+        }
+
+        /// <summary>
+        /// Resolves <see cref="SearchRequest.ParallelMatchPrediction"/> to a concrete value and then applies the canary
+        /// throttle. A request with no explicit value falls back to <see cref="SearchFunctionSettings.DefaultParallelMatchPrediction"/>.
+        /// Once resolved to <c>true</c>, only <see cref="SearchFunctionSettings.ParallelMatchPredictionRequestPercentage"/>
+        /// percent of those requests keep the parallel ("Containers") path; the remainder are demoted to <c>false</c> so
+        /// they take the legacy sequential Durable orchestrator path. A request that resolves to <c>false</c> is never
+        /// promoted onto the parallel path.
+        /// </summary>
+        private void ResolveParallelMatchPrediction(SearchRequest searchRequest)
+        {
+            searchRequest.ParallelMatchPrediction ??= defaultParallelMatchPrediction;
+
+            if (searchRequest.ParallelMatchPrediction == true
+                && Random.Shared.Next(100) >= parallelMatchPredictionRequestPercentage)
+            {
+                searchRequest.ParallelMatchPrediction = false;
+            }
         }
 
         private static IActionResult BuildValidationResponse(ValidationResult validationResult) =>

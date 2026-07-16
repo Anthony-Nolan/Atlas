@@ -539,6 +539,12 @@ variable "DEFAULT_PARALLEL_MATCH_PREDICTION" {
   description = "Default value for ParallelMatchPrediction on incoming search requests. When true, uses the parallel ACA Worker path; when false, uses the legacy sequential Durable orchestrator path."
 }
 
+variable "PARALLEL_MATCH_PREDICTION_REQUEST_PERCENTAGE" {
+  type        = number
+  default     = 100
+  description = "Canary throttle (0-100) for the parallel ACA Worker path. Once a request has resolved to ParallelMatchPrediction=true, only this percentage of those requests actually take the parallel path; the rest fall back to the legacy sequential Durable orchestrator path. Defaults to 100 (no throttling)."
+}
+
 variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE" {
   type        = number
   default     = 10000
