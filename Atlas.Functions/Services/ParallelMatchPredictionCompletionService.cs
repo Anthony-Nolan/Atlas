@@ -74,7 +74,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
     private readonly AzureStorageSettings azureStorageSettings;
     private readonly int parallelMatchPredictionBatchSize;
 
-    private const string AbandonmentNotificationSource = "Atlas.Functions.ParallelMatchPrediction";
+    private const string ParallelMatchPredictionNotificationSource = "Atlas.Functions.ParallelMatchPrediction";
     private const string MatchPredictionBatchProcessingStage = "MatchPredictionBatchProcessing";
 
     public ParallelMatchPredictionCompletionService(
@@ -201,7 +201,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
             $"Parallel match prediction run abandoned (search {header.SearchIdentifier})",
             failureMessage,
             Priority.Medium,
-            AbandonmentNotificationSource
+            ParallelMatchPredictionNotificationSource
         );
 
         logger.SendTrace(
@@ -277,19 +277,37 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
             )
         );
 
+        var batchFailureReasons = runResults.FailedBatches
+            .Select(b => b.FailureMessage)
+            .Where(m => !string.IsNullOrWhiteSpace(m))
+            .Distinct()
+            .ToList();
+        var failureDetail = batchFailureReasons.Count > 0
+            ? $"{failureMessage} Reason(s): {string.Join("; ", batchFailureReasons)}"
+            : failureMessage;
+
         // Emit failure notification, carrying the failure detail in the shared payload.
         await searchCompletionMessageSender.PublishFailureMessage(new SendFailureNotificationParameters
             {
                 SearchRequestId = run.SearchIdentifier.ToString(),
                 RepeatSearchRequestId = run.RepeatSearchIdentifier?.ToString(),
                 StageReached = MatchPredictionBatchProcessingStage,
-                FailureDetail = failureMessage,
+                FailureDetail = failureDetail,
             }
         );
 
         logger.SendTrace(
-            $"Failure notification sent for search {run.SearchIdentifier}: {failureMessage}",
+            $"Failure notification sent for search {run.SearchIdentifier}: {failureDetail}",
             LogLevel.Error
+        );
+
+        // Raise an operational alert so a batch-worker failure does not fail silently for support.
+        await notificationSender.SendAlert(
+            $"Parallel match prediction failed for search {run.SearchIdentifier}",
+            $"{failureMessage} (parallel run id: {runId}). Full exception detail is available in Application Insights "
+          + "and in Search Tracking (match-prediction completion FailureInfo.ExceptionStacktrace).",
+            Priority.High,
+            ParallelMatchPredictionNotificationSource
         );
 
         await repository.MarkRunFailed(runId, DateTime.UtcNow);

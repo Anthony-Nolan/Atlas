@@ -5,6 +5,7 @@ using Atlas.SearchTracking.Data.Models;
 using Atlas.SearchTracking.Data.Repositories;
 using Atlas.SearchTracking.Data.Test.Builders;
 using Atlas.SearchTracking.Data.Test.TestHelpers;
+using AutoFixture;
 using AwesomeAssertions;
 using NUnit.Framework;
 
@@ -15,6 +16,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
     {
         private IMatchPredictionRepository matchPredictionRepository;
         private SearchRequestMatchPrediction defaultMatchPrediction;
+        private Fixture fixture;
 
         [SetUp]
         public async Task SetUp()
@@ -23,6 +25,7 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
             matchPredictionRepository = new MatchPredictionRepository(SearchTrackingContext);
             await InitiateData();
             defaultMatchPrediction = MatchPredictionEntityBuilder.Default.Build();
+            fixture = new Fixture();
         }
 
         [TearDown]
@@ -109,6 +112,43 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
                 CompletionDetails = new MatchPredictionCompletionDetails()
                 {
                     IsSuccessful = true
+                }
+            };
+
+            await matchPredictionRepository.TrackCompletedEvent(matchPredictionCompletedEvent);
+
+            var actualMatchPredictionEntity = await matchPredictionRepository.GetSearchRequestMatchPredictionById(expectedMatchPredictionEntity.SearchRequestId);
+
+            expectedMatchPredictionEntity.Should().BeEquivalentTo(actualMatchPredictionEntity, options => options
+                .Excluding(a => a.SearchRequest));
+        }
+
+        [Test]
+        public async Task TrackMatchPredictionCompletedEvent_WhenFailed_PersistsFailureInfoToDb()
+        {
+            await CreateDefaultMatchPrediction();
+            var expectedMatchPredictionEntity = MatchPredictionEntityBuilder.Completed
+                .With(m => m.IsSuccessful, false)
+                .With(m => m.FailureInfo_Type, MatchPredictionFailureType.BatchWorkerFailure)
+                .With(m => m.FailureInfo_Message, fixture.Create<string>())
+                .With(m => m.FailureInfo_ExceptionStacktrace, fixture.Create<string>())
+                .Build();
+
+            var expectedSearchRequestGuid = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000");
+
+            var matchPredictionCompletedEvent = new MatchPredictionCompletedEvent
+            {
+                SearchIdentifier = expectedSearchRequestGuid,
+                CompletionTimeUtc = expectedMatchPredictionEntity.CompletionTimeUtc.Value,
+                CompletionDetails = new MatchPredictionCompletionDetails
+                {
+                    IsSuccessful = false,
+                    FailureInfo = new MatchPredictionFailureInfo
+                    {
+                        Type = expectedMatchPredictionEntity.FailureInfo_Type,
+                        Message = expectedMatchPredictionEntity.FailureInfo_Message,
+                        ExceptionStacktrace = expectedMatchPredictionEntity.FailureInfo_ExceptionStacktrace,
+                    }
                 }
             };
 
