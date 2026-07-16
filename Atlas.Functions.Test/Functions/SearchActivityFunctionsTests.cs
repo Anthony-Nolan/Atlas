@@ -85,7 +85,7 @@ internal class SearchActivityFunctionsTests
     // Success path for the non-repeat parallel dispatch: builds inputs at the configured batch size, creates the run
     // record (before publishing), publishes one sequence-aligned request per uploaded blob, and brackets the work
     // with prepare-batches tracking events. Facets that need a different arrange (repeat search, the batched-results
-    // branch) have their own tests below.
+    // branch, dispatch-failure handling — ATL-151) have their own tests below.
     [Test]
     public async Task PrepareAndDispatchParallelMatchPredictionBatches_SuccessPath_CreatesRunThenPublishesAlignedRequestsAndTracksProgress()
     {
@@ -166,6 +166,75 @@ internal class SearchActivityFunctionsTests
 
         var expectedBatchFolder = resultsBatched ? notification.BatchFolderName : null;
         await matchingResultsDownloader.Received(1).Download(notification.ResultsFileName, false, expectedBatchFolder);
+    }
+
+    [Test]
+    public async Task PrepareAndDispatchParallelMatchPredictionBatches_OnSuccessfulDispatch_DoesNotMarkRunAsDispatchFailed()
+    {
+        var notification = CreateNotification(isRepeat: false);
+        var (parameters, _, _) = ArrangeDispatchPipeline(notification);
+
+        await functions.PrepareAndDispatchParallelMatchPredictionBatches(parameters);
+
+        await parallelMatchPredictionRepository.DidNotReceiveWithAnyArgs().MarkRunAsDispatchFailed(default, default, default, default);
+    }
+
+    [Test]
+    public async Task PrepareAndDispatchParallelMatchPredictionBatches_WhenPublishThrows_MarksRunAsDispatchFailedAndDoesNotThrow()
+    {
+        var notification = CreateNotification(isRepeat: false);
+        var (parameters, runResult, _) = ArrangeDispatchPipeline(notification);
+        var publishException = new InvalidOperationException(fixture.Create<string>());
+        parallelBatchPublisher.BatchPublish(Arg.Any<IEnumerable<ParallelMatchPredictionBatchRequest>>())
+            .Returns(Task.FromException(publishException));
+
+        // The exception is deliberately swallowed after being recorded: the finaliser performs the failure
+        // processing, and rethrowing would make the durable framework retry the activity (duplicating the run).
+        var act = () => functions.PrepareAndDispatchParallelMatchPredictionBatches(parameters);
+        await act.Should().NotThrowAsync();
+
+        await parallelMatchPredictionRepository.Received(1).MarkRunAsDispatchFailed(
+            runResult.RunId,
+            Arg.Is<string>(message => message.Contains(publishException.Message)),
+            Arg.Is<string>(exception => exception.Contains(publishException.Message)),
+            Arg.Any<DateTime>());
+    }
+
+    [Test]
+    public async Task PrepareAndDispatchParallelMatchPredictionBatches_WhenMarkingDispatchFailureAlsoThrows_ThatExceptionPropagates()
+    {
+        var notification = CreateNotification(isRepeat: false);
+        var (parameters, _, _) = ArrangeDispatchPipeline(notification);
+        parallelBatchPublisher.BatchPublish(Arg.Any<IEnumerable<ParallelMatchPredictionBatchRequest>>())
+            .Returns(Task.FromException(new InvalidOperationException(fixture.Create<string>())));
+        var markFailureException = new ApplicationException(fixture.Create<string>());
+        parallelMatchPredictionRepository.MarkRunAsDispatchFailed(Arg.Any<int>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTime>())
+            .Returns(Task.FromException(markFailureException));
+
+        // The DB write failing means the dispatch failure was NOT recorded — propagate so the durable retry,
+        // abandonment sweep and ops alerting safety net take over.
+        var act = () => functions.PrepareAndDispatchParallelMatchPredictionBatches(parameters);
+        var thrown = await act.Should().ThrowAsync<ApplicationException>();
+        thrown.Which.Should().BeSameAs(markFailureException);
+    }
+
+    [Test]
+    public async Task PrepareAndDispatchParallelMatchPredictionBatches_WhenCreateRunThrows_ExceptionPropagatesAndDispatchFailureIsNotMarked()
+    {
+        var notification = CreateNotification(isRepeat: false);
+        var (parameters, _, _) = ArrangeDispatchPipeline(notification);
+        var createRunException = new InvalidOperationException(fixture.Create<string>());
+        parallelMatchPredictionRepository.CreateRun(Arg.Any<CreateParallelMatchPredictionRunInfo>())
+            .Returns(Task.FromException<CreateParallelMatchPredictionRunResult>(createRunException));
+
+        // CreateRun failures stay on the existing orchestrator retry/notification path — the dispatch-failure
+        // handling only covers publishing, once run and batch rows exist to record the failure against.
+        var act = () => functions.PrepareAndDispatchParallelMatchPredictionBatches(parameters);
+        var thrown = await act.Should().ThrowAsync<InvalidOperationException>();
+        thrown.Which.Should().BeSameAs(createRunException);
+
+        await parallelBatchPublisher.DidNotReceiveWithAnyArgs().BatchPublish(default);
+        await parallelMatchPredictionRepository.DidNotReceiveWithAnyArgs().MarkRunAsDispatchFailed(default, default, default, default);
     }
 
     [TestCase(false)]
@@ -250,7 +319,9 @@ internal class SearchActivityFunctionsTests
     /// passed to the repository (<see cref="capturedRunInfo"/>) and the batch requests published
     /// (<see cref="publishedRequests"/>).
     /// </summary>
-    private (PrepareAndDispatchParallelMatchPredictionBatchesParameters Parameters, CreateParallelMatchPredictionRunResult RunResult, List<string> BlobLocations)
+    private (PrepareAndDispatchParallelMatchPredictionBatchesParameters Parameters,
+        CreateParallelMatchPredictionRunResult RunResult,
+        List<string> BlobLocations)
         ArrangeDispatchPipeline(MatchingResultsNotification notification, int batchCount = 3)
     {
         var parameters = new PrepareAndDispatchParallelMatchPredictionBatchesParameters
