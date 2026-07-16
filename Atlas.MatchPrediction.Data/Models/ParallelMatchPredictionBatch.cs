@@ -14,6 +14,8 @@ namespace Atlas.MatchPrediction.Data.Models;
 [Index(nameof(RunId), nameof(BatchSequenceNumber), IsUnique = true)]
 public class ParallelMatchPredictionBatch
 {
+    public const int FailureMessageMaxLength = 1024;
+
     [Key]
     public int Id { get; set; }
 
@@ -34,7 +36,11 @@ public class ParallelMatchPredictionBatch
     [MaxLength(32)]
     public ParallelMatchPredictionBatchStatus BatchStatus { get; set; } = ParallelMatchPredictionBatchStatus.Requested;
 
-    /// <summary>UTC time at which the result (success or failure) was first received. <c>null</c> until a result arrives.</summary>
+    /// <summary>
+    /// UTC time at which the batch first reached a terminal result state: the time its result (success or failure)
+    /// was received, or the time the batch was marked <see cref="ParallelMatchPredictionBatchStatus.Failed"/>
+    /// because its request message could not be dispatched. <c>null</c> until then.
+    /// </summary>
     public DateTime? ResultReceivedTimeUtc { get; set; }
 
     /// <summary>
@@ -48,7 +54,7 @@ public class ParallelMatchPredictionBatch
     /// Human-readable failure message from the Worker exception.
     /// Populated only when <see cref="BatchStatus"/> is <see cref="ParallelMatchPredictionBatchStatus.Failed"/>.
     /// </summary>
-    [MaxLength(1024)]
+    [MaxLength(FailureMessageMaxLength)]
     public string FailureMessage { get; set; }
 
     /// <summary>
