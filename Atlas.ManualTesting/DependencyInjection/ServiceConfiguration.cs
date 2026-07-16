@@ -20,6 +20,8 @@ using Atlas.ManualTesting.Services.ServiceBus;
 using Atlas.ManualTesting.Settings;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
+using Atlas.SearchTracking.Data.Context;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Atlas.ManualTesting.Services.WmdaConsensusResults;
@@ -41,6 +43,7 @@ namespace Atlas.ManualTesting.DependencyInjection
                 OptionsReaderFor<AzureStorageSettings>()
             );
             services.RegisterDatabaseServices(ConnectionStringReader("ActiveMatchingSql"), ConnectionStringReader("DonorImportSql"));
+            services.RegisterSearchTrackingReplayServices(ConnectionStringReader("SearchTrackingSql"));
             services.RegisterLifeTimeScopedCacheTypes();
             services.RegisterDebugClients(
                 OptionsReaderFor<DonorImportHttpFunctionSettings>(),
@@ -155,7 +158,7 @@ namespace Atlas.ManualTesting.DependencyInjection
         }
 
         private static void RegisterDatabaseServices(
-            this IServiceCollection services, 
+            this IServiceCollection services,
             Func<IServiceProvider, string> fetchActiveMatchingSqlConnectionString,
             Func<IServiceProvider, string> fetchDonorImportSqlConnectionString)
         {
@@ -163,6 +166,15 @@ namespace Atlas.ManualTesting.DependencyInjection
                 new ActiveMatchingDatabaseConnectionStringProvider(fetchActiveMatchingSqlConnectionString(sp)));
             services.AddScoped<IDonorReadRepository, DonorReadRepository>(sp =>
                 new DonorReadRepository(fetchDonorImportSqlConnectionString(sp)));
+        }
+
+        private static void RegisterSearchTrackingReplayServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, string> fetchSearchTrackingSqlConnectionString)
+        {
+            services.AddDbContext<ISearchTrackingContext, SearchTrackingContext>((sp, options) =>
+                options.UseSqlServer(fetchSearchTrackingSqlConnectionString(sp)));
+            services.AddScoped<IFailedParallelSearchReplayer, FailedParallelSearchReplayer>();
         }
     }
 }

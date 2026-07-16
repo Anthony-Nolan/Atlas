@@ -43,6 +43,7 @@
   },
   "ConnectionStrings": {
     "ActiveMatchingSql": "Data Source=(local);Initial Catalog=AtlasMatchingA;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;",
-    "DonorImportSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;trustServerCertificate=true"
+    "DonorImportSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;trustServerCertificate=true",
+    "SearchTrackingSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;trustServerCertificate=true"
   }
 }
