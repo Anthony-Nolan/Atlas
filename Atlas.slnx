@@ -128,6 +128,9 @@
     <Project Path="Atlas.MatchPrediction.Test/Atlas.MatchPrediction.Test.csproj">
       <BuildType Solution="Development|*" Project="Debug" />
     </Project>
+    <Project Path="Atlas.MatchPrediction.Worker.Test/Atlas.MatchPrediction.Worker.Test.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
     <Project Path="Atlas.MatchPrediction.Worker/Atlas.MatchPrediction.Worker.csproj">
       <BuildType Solution="Development|*" Project="Debug" />
     </Project>
