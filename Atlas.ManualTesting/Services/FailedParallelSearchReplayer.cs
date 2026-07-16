@@ -169,8 +169,7 @@ namespace Atlas.ManualTesting.Services
             OriginalSearchIdentifier = x.OriginalSearchIdentifier,
             RequestTimeUtc = x.RequestTimeUtc,
             MatchPredictionIsSuccessful = x.MatchPrediction?.IsSuccessful,
-            MatchPredictionFailureType = x.MatchPrediction?.FailureInfo_Type?.ToString(),
-            ResultsSent = x.ResultsSent == true
+            MatchPredictionFailureType = x.MatchPrediction?.FailureInfo_Type?.ToString()
         };
     }
 }

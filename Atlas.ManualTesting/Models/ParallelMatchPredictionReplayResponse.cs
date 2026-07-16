@@ -37,8 +37,6 @@ namespace Atlas.ManualTesting.Models
         public bool? MatchPredictionIsSuccessful { get; set; }
 
         public string MatchPredictionFailureType { get; set; }
-
-        public bool ResultsSent { get; set; }
     }
 
     /// <summary>The outcome of a single replay attempt.</summary>
