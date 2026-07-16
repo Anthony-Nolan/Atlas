@@ -513,9 +513,9 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
 
         await context.ExecuteInTransactionAsync(async () =>
             {
-                // Status compare-and-swap: dispatch failure happens moments after CreateRun, so the run is expected
-                // to still be Running. Status/StatusDateUtc are deliberately not touched — the run must stay Running
-                // for the finaliser to pick it up.
+                // Forced overwrite: unconditionally flag the run unsuccessful. Dispatch failure happens moments after
+                // CreateRun, so the run is expected to still be Running. Status/StatusDateUtc are deliberately not
+                // touched — the run must stay Running for the finaliser to pick it up.
                 await context.ParallelMatchPredictionRuns
                     .Where(r => r.Id == runId)
                     .ExecuteUpdateAsync(s => s

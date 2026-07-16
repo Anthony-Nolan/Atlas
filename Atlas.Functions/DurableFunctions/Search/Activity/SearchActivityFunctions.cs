@@ -187,21 +187,23 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 )
             );
 
+            // Materialised before the try so request-construction bugs (e.g. a BatchIdsBySequence index mismatch)
+            // propagate as real failures instead of being swallowed by the dispatch-failure catch below.
+            var batchRequests = blobLocations.Select((location, index) => new ParallelMatchPredictionBatchRequest
+            {
+                BlobLocation = location,
+                SearchRequestId = matchingResultsNotification.SearchRequestId,
+                IsRepeatSearch = matchingResultsNotification.IsRepeatSearch,
+                RepeatSearchRequestId = matchingResultsNotification.IsRepeatSearch
+                    ? matchingResultsNotification.RepeatSearchRequestId
+                    : null,
+                ParallelRunId = runCreationResult.RunId,
+                BatchId = runCreationResult.BatchIdsBySequence[index],
+                BatchSequenceNumber = index,
+            }).ToList();
+
             try
             {
-                var batchRequests = blobLocations.Select((location, index) => new ParallelMatchPredictionBatchRequest
-                {
-                    BlobLocation = location,
-                    SearchRequestId = matchingResultsNotification.SearchRequestId,
-                    IsRepeatSearch = matchingResultsNotification.IsRepeatSearch,
-                    RepeatSearchRequestId = matchingResultsNotification.IsRepeatSearch
-                        ? matchingResultsNotification.RepeatSearchRequestId
-                        : null,
-                    ParallelRunId = runCreationResult.RunId,
-                    BatchId = runCreationResult.BatchIdsBySequence[index],
-                    BatchSequenceNumber = index,
-                });
-
                 await parallelBatchPublisher.BatchPublish(batchRequests);
             }
             catch (Exception e)
