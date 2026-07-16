@@ -97,6 +97,9 @@ public class ParallelMatchPredictionRun
     /// Whether this run completed successfully.
     /// <c>null</c> until all batches have been processed (either <c>ResultsReceived</c> or <c>Failed</c>).
     /// <c>true</c> when every batch succeeded; <c>false</c> when at least one batch failed.
+    /// Also set to <c>false</c> at dispatch time when the batch-request messages could not be published to
+    /// Service Bus; the run remains <see cref="ParallelMatchPredictionRunStatus.Running"/> until the finaliser
+    /// transitions it to <see cref="ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing"/>.
     /// </summary>
     public bool? IsSuccessful { get; set; }
 

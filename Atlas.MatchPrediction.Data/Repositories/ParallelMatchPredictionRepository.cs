@@ -159,6 +159,17 @@ public interface IParallelMatchPredictionRepository
     /// </summary>
     /// <returns>The run header if this call performed the transition; <c>null</c> if the run was no longer Running or had already been leased.</returns>
     Task<AbandonedRunHeader> TryMarkRunAsAbandoned(int runId, DateTime nowUtc);
+
+    /// <summary>
+    /// Marks a run as failed during dispatch: 
+    /// <see cref="ParallelMatchPredictionRun.IsSuccessful"/> is set to <c>false</c>;
+    /// <see cref="ParallelMatchPredictionRun.Status"/> is left as <see cref="ParallelMatchPredictionRunStatus.Running"/> for the finaliser.
+    /// All batches are set to <see cref="ParallelMatchPredictionBatchStatus.Failed"/> with the dispatch failure detail.
+    /// Leaving the run Running with no Requested/Abandoned batches makes it immediately eligible for the finalisation timer, which performs the full
+    /// downstream failure processing and transitions the run to <see cref="ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing"/>.
+    /// <paramref name="failureMessage"/> is truncated to the column limit (1024).
+    /// </summary>
+    Task MarkRunAsDispatchFailed(int runId, string failureMessage, string failureException, DateTime nowUtc);
 }
 
 public class ParallelMatchPredictionRepository : IParallelMatchPredictionRepository
@@ -227,7 +238,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         var rowsUpdated = await context.ParallelMatchPredictionBatches
             .Where(b => b.Id == batchId
                      && (b.BatchStatus == ParallelMatchPredictionBatchStatus.Requested
-                        || b.BatchStatus == ParallelMatchPredictionBatchStatus.Abandoned)
+                      || b.BatchStatus == ParallelMatchPredictionBatchStatus.Abandoned)
             )
             .ExecuteUpdateAsync(s => s
                 .SetProperty(b => b.BatchStatus, ParallelMatchPredictionBatchStatus.ResultsReceived)
@@ -266,7 +277,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         var rowsUpdated = await context.ParallelMatchPredictionBatches
             .Where(b => b.Id == batchId
                      && (b.BatchStatus == ParallelMatchPredictionBatchStatus.Requested
-                        || b.BatchStatus == ParallelMatchPredictionBatchStatus.Abandoned)
+                      || b.BatchStatus == ParallelMatchPredictionBatchStatus.Abandoned)
             )
             .ExecuteUpdateAsync(s => s
                 .SetProperty(b => b.BatchStatus, ParallelMatchPredictionBatchStatus.Failed)
@@ -489,6 +500,36 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
                     .Where(r => r.Id == runId)
                     .Select(r => new AbandonedRunHeader(r.SearchIdentifier, r.RepeatSearchIdentifier, r.IsRepeatSearch, r.TotalBatchCount))
                     .FirstAsync();
+            }
+        );
+    }
+
+    public async Task MarkRunAsDispatchFailed(int runId, string failureMessage, string failureException, DateTime nowUtc)
+    {
+        // An untruncated overlong message would fail the whole update with a SQL truncation error.
+        var truncatedMessage = failureMessage?.Length > ParallelMatchPredictionBatch.FailureMessageMaxLength
+            ? failureMessage[..ParallelMatchPredictionBatch.FailureMessageMaxLength]
+            : failureMessage;
+
+        await context.ExecuteInTransactionAsync(async () =>
+            {
+                // Status compare-and-swap: dispatch failure happens moments after CreateRun, so the run is expected
+                // to still be Running. Status/StatusDateUtc are deliberately not touched — the run must stay Running
+                // for the finaliser to pick it up.
+                await context.ParallelMatchPredictionRuns
+                    .Where(r => r.Id == runId)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(r => r.IsSuccessful, false)
+                    );
+
+                return await context.ParallelMatchPredictionBatches
+                    .Where(b => b.RunId == runId)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(b => b.BatchStatus, ParallelMatchPredictionBatchStatus.Failed)
+                        .SetProperty(b => b.ResultReceivedTimeUtc, nowUtc)
+                        .SetProperty(b => b.FailureMessage, truncatedMessage)
+                        .SetProperty(b => b.FailureException, failureException)
+                    );
             }
         );
     }

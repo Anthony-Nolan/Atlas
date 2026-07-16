@@ -131,6 +131,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         /// publishes one <see cref="ParallelMatchPredictionBatchRequest"/> message per blob to
         /// <c>parallel-match-prediction-requests</c>.  The ACA Worker processes each batch and publishes results
         /// to <c>parallel-match-prediction-results</c>; the aggregator function handles final persistence.
+        /// If publishing fails, the run is marked as failed in the repository (run unsuccessful, all batches Failed) and the exception is swallowed:
+        /// the finaliser timer then performs the failure processing.
         /// </summary>
         [Function(nameof(PrepareAndDispatchParallelMatchPredictionBatches))]
         public async Task PrepareAndDispatchParallelMatchPredictionBatches(
@@ -185,20 +187,41 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 )
             );
 
-            var batchRequests = blobLocations.Select((location, index) => new ParallelMatchPredictionBatchRequest
+            try
             {
-                BlobLocation = location,
-                SearchRequestId = matchingResultsNotification.SearchRequestId,
-                IsRepeatSearch = matchingResultsNotification.IsRepeatSearch,
-                RepeatSearchRequestId = matchingResultsNotification.IsRepeatSearch
-                    ? matchingResultsNotification.RepeatSearchRequestId
-                    : null,
-                ParallelRunId = runCreationResult.RunId,
-                BatchId = runCreationResult.BatchIdsBySequence[index],
-                BatchSequenceNumber = index,
-            });
+                var batchRequests = blobLocations.Select((location, index) => new ParallelMatchPredictionBatchRequest
+                {
+                    BlobLocation = location,
+                    SearchRequestId = matchingResultsNotification.SearchRequestId,
+                    IsRepeatSearch = matchingResultsNotification.IsRepeatSearch,
+                    RepeatSearchRequestId = matchingResultsNotification.IsRepeatSearch
+                        ? matchingResultsNotification.RepeatSearchRequestId
+                        : null,
+                    ParallelRunId = runCreationResult.RunId,
+                    BatchId = runCreationResult.BatchIdsBySequence[index],
+                    BatchSequenceNumber = index,
+                });
 
-            await parallelBatchPublisher.BatchPublish(batchRequests);
+                await parallelBatchPublisher.BatchPublish(batchRequests);
+            }
+            catch (Exception e)
+            {
+                logger.SendException(e, LogLevel.Error, new Dictionary<string, string>
+                {
+                    { "Stage", nameof(PrepareAndDispatchParallelMatchPredictionBatches) },
+                    { "SearchRequestId", matchingResultsNotification.SearchRequestId },
+                    { "ParallelRunId", runCreationResult.RunId.ToString() },
+                });
+
+                await parallelMatchPredictionRepository.MarkRunAsDispatchFailed(
+                    runCreationResult.RunId,
+                    $"Failed to dispatch parallel match prediction batch requests to Service Bus: {e.Message}",
+                    e.ToString(),
+                    DateTime.UtcNow);
+
+                // Exception is not rethrown in order for Durable Function to complete "successfully" and let the finaliser process the now failed run.
+                // All the necessary failure processing is performed there.
+            }
         }
 
         [Function(nameof(RunMatchPredictionBatch))]
