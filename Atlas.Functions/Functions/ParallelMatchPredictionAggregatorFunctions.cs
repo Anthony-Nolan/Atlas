@@ -102,8 +102,11 @@ public class ParallelMatchPredictionAggregatorFunctions
     }
 
     /// <summary>
-    /// Timer-triggered finaliser. Scans for unclaimed runs that have received all expected batches and are still in the
-    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.Running"/> state, then atomically
+    /// Timer-triggered finaliser. Scans for unclaimed runs that are ready to (re-)finalise — a
+    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.Running"/> or replayed
+    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.Abandoned"/> run whose batches have
+    /// all reported, or a <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing"/>
+    /// run whose every failed batch has since fully recovered to success via dead-letter replay — then atomically
     /// claims each run with a per-invocation lease GUID before driving the persistence pipeline via
     /// <see cref="IParallelMatchPredictionCompletionService.FinaliseRun"/>. The lease prevents concurrent invocations
     /// from processing the same run: only the invocation that wins the compare-and-swap claim will proceed.

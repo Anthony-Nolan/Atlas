@@ -415,6 +415,13 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
             )
         );
 
+        await notificationSender.SendNotification(
+            $"Parallel match prediction completed for search {run.SearchIdentifier}",
+            $"Parallel match prediction run {runId} (search {run.SearchIdentifier}) finalised successfully "
+          + $"across {run.TotalBatchCount} batch(es).",
+            ParallelMatchPredictionNotificationSource
+        );
+
         await repository.MarkRunFinalised(runId, DateTime.UtcNow);
     }
 
