@@ -98,6 +98,20 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Repository
             run.IsSuccessful.Should().BeNull();
         }
 
+        [Test]
+        public async Task MarkRunFinalised_FailedDuringBatchProcessingRun_FlipsToFinalisedAndSuccessful()
+        {
+            var created = await CreateRun(totalBatchCount: 1);
+            await repository.MarkRunFailed(created.RunId, DateTime.UtcNow); // FailedDuringBatchProcessing, IsSuccessful false
+
+            await repository.MarkRunFinalised(created.RunId, DateTime.UtcNow);
+
+            var run = await LoadRun(created.RunId);
+            run.Status.Should().Be(ParallelMatchPredictionRunStatus.Finalised);
+            run.IsSuccessful.Should().BeTrue();
+            run.FinalisedTimeUtc.Should().NotBeNull();
+        }
+
         // ── MarkRunFailed ────────────────────────────────────────────────────────────
 
         [Test]
@@ -121,6 +135,21 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Repository
             await repository.MarkRunFailed(runId, DateTime.UtcNow);
 
             (await LoadRun(runId)).Status.Should().Be(ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing);
+        }
+
+        [Test]
+        public async Task MarkRunFailed_ReleasesFinalisationLease()
+        {
+            var created = await CreateRun(totalBatchCount: 1);
+            (await repository.TryClaimFinalisationLease(created.RunId, fixture.Create<Guid>())).Should().BeTrue();
+
+            await repository.MarkRunFailed(created.RunId, DateTime.UtcNow);
+
+            var run = await LoadRun(created.RunId);
+            run.Status.Should().Be(ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing);
+            run.IsSuccessful.Should().BeFalse();
+            // The lease must be released so a later full recovery can re-claim the run.
+            run.FinalisationLeaseOwner.Should().BeNull();
         }
 
         // ── MarkRunFailedDuringCompletion ────────────────────────────────────────────
@@ -184,6 +213,37 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Repository
             await act.Should().ThrowAsync<InvalidOperationException>();
         }
 
+        [Test]
+        public async Task RecordBatchResult_ForFailedBatch_RecoversToResultsReceivedAndClearsFailureDetail()
+        {
+            var created = await CreateRun(totalBatchCount: 1);
+            // The batch first fails (e.g. an OOM in the Worker), recording failure detail on the row.
+            await repository.RecordBatchFailure(created.BatchIdsBySequence[0], fixture.Create<string>(), fixture.Create<string>());
+
+            // Dead-letter replay of the batch: the re-processed batch now succeeds.
+            var resultLocation = fixture.Create<string>();
+            var recorded = await repository.RecordBatchResult(created.BatchIdsBySequence[0], resultLocation);
+
+            recorded.Should().BeTrue();
+            var batch = await GetSingleBatch(created.RunId);
+            batch.BatchStatus.Should().Be(ParallelMatchPredictionBatchStatus.ResultsReceived);
+            batch.ResultLocation.Should().Be(resultLocation);
+            // The recovery script relies on the failure columns being cleared (expects NULL).
+            batch.FailureMessage.Should().BeNull();
+            batch.FailureException.Should().BeNull();
+        }
+
+        [Test]
+        public async Task RecordBatchResult_ForFailedBatchReplayedTwice_SecondCallIsIdempotentDuplicate()
+        {
+            var created = await CreateRun(totalBatchCount: 1);
+            await repository.RecordBatchFailure(created.BatchIdsBySequence[0], fixture.Create<string>(), fixture.Create<string>());
+
+            (await repository.RecordBatchResult(created.BatchIdsBySequence[0], fixture.Create<string>())).Should().BeTrue();
+            // A duplicate delivery of the (now recovered) result must be a no-op, not a second overwrite.
+            (await repository.RecordBatchResult(created.BatchIdsBySequence[0], fixture.Create<string>())).Should().BeFalse();
+        }
+
         // ── RecordBatchFailure ───────────────────────────────────────────────────────
 
         [Test]
@@ -229,6 +289,22 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Repository
             Func<Task> act = () => repository.RecordBatchFailure(created.BatchIdsBySequence[0], fixture.Create<string>(), fixture.Create<string>());
 
             await act.Should().ThrowAsync<InvalidOperationException>();
+        }
+
+        [Test]
+        public async Task RecordBatchFailure_ForResultsReceivedBatch_DoesNotRegressSuccessToFailure()
+        {
+            var created = await CreateRun(totalBatchCount: 1);
+            var resultLocation = fixture.Create<string>();
+            await repository.RecordBatchResult(created.BatchIdsBySequence[0], resultLocation);
+
+            // A stale failure replayed onto an already-successful batch must not overwrite the success.
+            var recorded = await repository.RecordBatchFailure(created.BatchIdsBySequence[0], fixture.Create<string>(), fixture.Create<string>());
+
+            recorded.Should().BeFalse();
+            var batch = await GetSingleBatch(created.RunId);
+            batch.BatchStatus.Should().Be(ParallelMatchPredictionBatchStatus.ResultsReceived);
+            batch.ResultLocation.Should().Be(resultLocation);
         }
 
         // ── GetRunWithResults ────────────────────────────────────────────────────────
@@ -378,6 +454,26 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Repository
             awaiting.Should().NotContain(cleanedUpRunId);
         }
 
+        [Test]
+        public async Task GetRunIdsAwaitingFinalisationAndNotLeased_FailedRun_BecomesEligibleOnlyOnceEveryBatchRecovers()
+        {
+            var created = await CreateRun(totalBatchCount: 2);
+            await repository.RecordBatchFailure(created.BatchIdsBySequence[0], fixture.Create<string>(), fixture.Create<string>());
+            await repository.RecordBatchFailure(created.BatchIdsBySequence[1], fixture.Create<string>(), fixture.Create<string>());
+            await repository.MarkRunFailed(created.RunId, DateTime.UtcNow); // run -> FailedDuringBatchProcessing (lease released)
+
+            // Both batches still Failed — a reported failure must not be re-picked (and re-notified) every tick.
+            (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().NotContain(created.RunId);
+
+            // One of two failed batches recovers; a partial recovery is still not finalisation-eligible.
+            await repository.RecordBatchResult(created.BatchIdsBySequence[0], fixture.Create<string>());
+            (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().NotContain(created.RunId);
+
+            // Only once EVERY failed batch has been replayed to success does the run become re-finalisable.
+            await repository.RecordBatchResult(created.BatchIdsBySequence[1], fixture.Create<string>());
+            (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().Contain(created.RunId);
+        }
+
         // ── CleanupBatchesForRunsInitiatedBefore ─────────────────────────────────────
 
         [Test]
@@ -463,6 +559,81 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Repository
             (await IsCleanedUp(leasedRunId)).Should().BeFalse();
         }
 
+        [Test]
+        public async Task CleanupBatchesForRunsInitiatedBefore_SkipsFailedDuringBatchProcessingRunClaimedForReFinalisation()
+        {
+            var cutoff = DateTime.UtcNow;
+            var leasedRunId = await CreateRunInitiatedAt(
+                cutoff.AddDays(-1),
+                batchCount: 2,
+                status: ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing,
+                finalisationLeaseOwner: Guid.NewGuid());
+
+            var deletedCount = await repository.CleanupBatchesForRunsInitiatedBefore(cutoff);
+
+            // A FailedDuringBatchProcessing run currently claimed for re-finalisation (a full dead-letter recovery in
+            // flight) must not have its batches pulled out from under the completion pipeline, or it would be wrongly
+            // finalised as a success against an empty batch set.
+            deletedCount.Should().Be(0);
+            (await RemainingBatchCountFor(leasedRunId)).Should().Be(2);
+            (await IsCleanedUp(leasedRunId)).Should().BeFalse();
+        }
+
+        [Test]
+        public async Task CleanupBatchesForRunsInitiatedBefore_SkipsAbandonedRunClaimedForFinalisation()
+        {
+            var cutoff = DateTime.UtcNow;
+            var leasedRunId = await CreateRunInitiatedAt(
+                cutoff.AddDays(-1),
+                batchCount: 2,
+                status: ParallelMatchPredictionRunStatus.Abandoned,
+                finalisationLeaseOwner: Guid.NewGuid());
+
+            var deletedCount = await repository.CleanupBatchesForRunsInitiatedBefore(cutoff);
+
+            // An Abandoned run leased for late-result finalisation is likewise protected while the pipeline is in flight.
+            deletedCount.Should().Be(0);
+            (await RemainingBatchCountFor(leasedRunId)).Should().Be(2);
+            (await IsCleanedUp(leasedRunId)).Should().BeFalse();
+        }
+
+        // ── TryClaimFinalisationLease ────────────────────────────────────────────────
+
+        [Test]
+        public async Task TryClaimFinalisationLease_FailedDuringBatchProcessingRun_CanBeReclaimedThenNotDoubleClaimed()
+        {
+            var created = await CreateRun(totalBatchCount: 1);
+            await repository.MarkRunFailed(created.RunId, DateTime.UtcNow); // FailedDuringBatchProcessing, lease released
+
+            (await repository.TryClaimFinalisationLease(created.RunId, fixture.Create<Guid>())).Should().BeTrue();
+            // A second invocation cannot steal a run already claimed for re-finalisation.
+            (await repository.TryClaimFinalisationLease(created.RunId, fixture.Create<Guid>())).Should().BeFalse();
+        }
+
+        // ── full dead-letter recovery (end-to-end) ───────────────────────────────────
+
+        [Test]
+        public async Task FailedRun_FullDeadLetterRecovery_IsReClaimedAndReFinalisedToSuccess()
+        {
+            // End-to-end at the repository layer: a run fails during batch processing, every failed batch is later
+            // replayed to success, and the finaliser re-claims and re-finalises the run to a successful outcome.
+            var created = await CreateRun(totalBatchCount: 2);
+            await repository.RecordBatchFailure(created.BatchIdsBySequence[0], fixture.Create<string>(), fixture.Create<string>());
+            await repository.RecordBatchResult(created.BatchIdsBySequence[1], fixture.Create<string>());
+            await repository.MarkRunFailed(created.RunId, DateTime.UtcNow);
+
+            // Dead-letter replay of the failed batch.
+            await repository.RecordBatchResult(created.BatchIdsBySequence[0], fixture.Create<string>());
+
+            (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().Contain(created.RunId);
+            (await repository.TryClaimFinalisationLease(created.RunId, fixture.Create<Guid>())).Should().BeTrue();
+            await repository.MarkRunFinalised(created.RunId, DateTime.UtcNow);
+
+            var run = await LoadRun(created.RunId);
+            run.Status.Should().Be(ParallelMatchPredictionRunStatus.Finalised);
+            run.IsSuccessful.Should().BeTrue();
+        }
+
         // ── helpers ──────────────────────────────────────────────────────────────────
 
         private async Task<CreateParallelMatchPredictionRunResult> CreateRun(int totalBatchCount)
@@ -534,6 +705,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Repository
                 .Select(b => b.BatchStatus)
                 .ToListAsync();
         }
+
+        private async Task<ParallelMatchPredictionBatch> GetSingleBatch(int runId) =>
+            await context.ParallelMatchPredictionBatches.AsNoTracking().SingleAsync(b => b.RunId == runId);
 
         private async Task<int> RemainingBatchCountFor(int runId) =>
             await context.ParallelMatchPredictionBatches.AsNoTracking().CountAsync(b => b.RunId == runId);
