@@ -103,22 +103,18 @@ namespace Atlas.Functions.PublicApi.Functions
         }
 
         /// <summary>
-        /// Resolves <see cref="SearchRequest.ParallelMatchPrediction"/> to a concrete value and then applies the canary
-        /// throttle. A request with no explicit value falls back to <see cref="SearchFunctionSettings.DefaultParallelMatchPrediction"/>.
-        /// Once resolved to <c>true</c>, only <see cref="SearchFunctionSettings.ParallelMatchPredictionRequestPercentage"/>
-        /// percent of those requests keep the parallel ("Containers") path; the remainder are demoted to <c>false</c> so
-        /// they take the legacy sequential Durable orchestrator path. A request that resolves to <c>false</c> is never
-        /// promoted onto the parallel path.
+        /// Resolves <see cref="SearchRequest.ParallelMatchPrediction"/> from the two server-side controls; the value
+        /// supplied on the request itself is not used, so routing is controlled entirely by configuration.
+        /// <see cref="SearchFunctionSettings.DefaultParallelMatchPrediction"/> is the master switch: when <c>false</c>,
+        /// the request always takes the legacy sequential Durable path, regardless of the percentage. When <c>true</c>,
+        /// <see cref="SearchFunctionSettings.ParallelMatchPredictionRequestPercentage"/> percent of requests take the
+        /// parallel ("Containers") path and the remainder fall back to the sequential path.
         /// </summary>
         private void ResolveParallelMatchPrediction(SearchRequest searchRequest)
         {
-            searchRequest.ParallelMatchPrediction ??= defaultParallelMatchPrediction;
-
-            if (searchRequest.ParallelMatchPrediction == true
-                && Random.Shared.Next(100) >= parallelMatchPredictionRequestPercentage)
-            {
-                searchRequest.ParallelMatchPrediction = false;
-            }
+            searchRequest.ParallelMatchPrediction =
+                defaultParallelMatchPrediction
+                && Random.Shared.Next(100) < parallelMatchPredictionRequestPercentage;
         }
 
         private static IActionResult BuildValidationResponse(ValidationResult validationResult) =>
