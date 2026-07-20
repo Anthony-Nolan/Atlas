@@ -166,7 +166,9 @@ public class ParallelMatchPredictionRepositoryTests
             batch.BatchStatus.Should().Be(ParallelMatchPredictionBatchStatus.Failed);
             batch.FailureMessage.Should().Be(failureMessage);
             batch.FailureException.Should().Be(failureException);
-            batch.ResultReceivedTimeUtc.Should().BeCloseTo(nowUtc, TimeSpan.FromSeconds(1));
+            batch.BatchStatusDate.Should().BeCloseTo(nowUtc, TimeSpan.FromSeconds(1));
+            // No result was received for a batch that never dispatched, so the result timestamp stays null.
+            batch.ResultReceivedTimeUtc.Should().BeNull();
         });
 
         // The run must stay Running so the finaliser picks it up (all batches now Failed) and runs the failure
@@ -190,7 +192,7 @@ public class ParallelMatchPredictionRepositoryTests
     }
 
     [Test]
-    public async Task MarkRunAsDispatchFailed_CalledTwice_OverwritesFirstFailureDetail()
+    public async Task MarkRunAsDispatchFailed_CalledTwice_KeepsFirstFailureDetail()
     {
         var runId = (await CreateRun(totalBatchCount: 1)).RunId;
         var firstMessage = fixture.Create<string>();
@@ -202,8 +204,10 @@ public class ParallelMatchPredictionRepositoryTests
         var run = await LoadRun(runId);
         run.IsSuccessful.Should().BeFalse();
         run.Status.Should().Be(ParallelMatchPredictionRunStatus.Running);
+        // The batch reached the terminal Failed state on the first call; the compare-and-swap guard leaves it
+        // untouched thereafter, so the second call is a no-op and the original detail is preserved.
         (await GetBatches(runId)).Should().ContainSingle()
-            .Which.FailureMessage.Should().Be(secondMessage);
+            .Which.FailureMessage.Should().Be(firstMessage);
     }
 
     [Test]
@@ -216,6 +220,45 @@ public class ParallelMatchPredictionRepositoryTests
 
         (await GetBatches(runId)).Should().ContainSingle()
             .Which.FailureMessage.Should().Be(overlongMessage[..ParallelMatchPredictionBatch.FailureMessageMaxLength]);
+    }
+
+    [Test]
+    public async Task MarkRunAsDispatchFailed_LeavesAlreadyReportedBatchesUntouched()
+    {
+        // Partial dispatch: batch 0 was dispatched and the Worker already reported its result before the publish of a
+        // later physical batch failed. That genuine terminal result must survive the dispatch-failure sweep.
+        var created = await CreateRun(totalBatchCount: 2);
+        var resultLocation = fixture.Create<string>();
+        await repository.RecordBatchResult(created.BatchIdsBySequence[0], resultLocation);
+
+        await repository.MarkRunAsDispatchFailed(created.RunId, fixture.Create<string>(), fixture.Create<string>(), DateTime.UtcNow);
+
+        var batches = await GetBatches(created.RunId);
+        var reported = batches.Single(b => b.Id == created.BatchIdsBySequence[0]);
+        reported.BatchStatus.Should().Be(ParallelMatchPredictionBatchStatus.ResultsReceived);
+        reported.ResultLocation.Should().Be(resultLocation);
+        reported.FailureMessage.Should().BeNull();
+
+        // The batch that never dispatched (still Requested) is the only one flipped to Failed.
+        var notDispatched = batches.Single(b => b.Id == created.BatchIdsBySequence[1]);
+        notDispatched.BatchStatus.Should().Be(ParallelMatchPredictionBatchStatus.Failed);
+    }
+
+    [Test]
+    public async Task MarkRunAsDispatchFailed_WhenRunNoLongerRunning_LeavesRunUntouched()
+    {
+        var runId = (await CreateRun(totalBatchCount: 1)).RunId;
+        // The finaliser has already taken the run to a terminal, successful state.
+        await repository.MarkRunFinalised(runId, DateTime.UtcNow);
+
+        await repository.MarkRunAsDispatchFailed(runId, fixture.Create<string>(), fixture.Create<string>(), DateTime.UtcNow);
+
+        // Compare-and-swap guard: a late dispatch-failure call must not flip a finalised run back to unsuccessful,
+        // nor touch its batches.
+        var run = await LoadRun(runId);
+        run.IsSuccessful.Should().BeTrue();
+        run.Status.Should().Be(ParallelMatchPredictionRunStatus.Finalised);
+        (await GetBatchStatuses(runId)).Should().NotContain(ParallelMatchPredictionBatchStatus.Failed);
     }
 
     // ── RecordBatchResult ────────────────────────────────────────────────────────

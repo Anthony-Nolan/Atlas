@@ -161,11 +161,15 @@ public interface IParallelMatchPredictionRepository
     Task<AbandonedRunHeader> TryMarkRunAsAbandoned(int runId, DateTime nowUtc);
 
     /// <summary>
-    /// Marks a run as failed during dispatch: 
-    /// <see cref="ParallelMatchPredictionRun.IsSuccessful"/> is set to <c>false</c>;
+    /// Marks a run as failed during dispatch: while the run is still <see cref="ParallelMatchPredictionRunStatus.Running"/>
+    /// (a compare-and-swap guard), <see cref="ParallelMatchPredictionRun.IsSuccessful"/> is set to <c>false</c>;
     /// <see cref="ParallelMatchPredictionRun.Status"/> is left as <see cref="ParallelMatchPredictionRunStatus.Running"/> for the finaliser.
-    /// All batches are set to <see cref="ParallelMatchPredictionBatchStatus.Failed"/> with the dispatch failure detail.
-    /// Leaving the run Running with no Requested/Abandoned batches makes it immediately eligible for the finalisation timer, which performs the full
+    /// Only batches still in the <see cref="ParallelMatchPredictionBatchStatus.Requested"/> state are set to
+    /// <see cref="ParallelMatchPredictionBatchStatus.Failed"/> with the dispatch-failure detail — batches already reported by the
+    /// Worker (a partial dispatch can leave some dispatched and reported before the failure) are left intact.
+    /// <see cref="ParallelMatchPredictionBatch.ResultReceivedTimeUtc"/> is deliberately left <c>null</c> (no result was received);
+    /// only <see cref="ParallelMatchPredictionBatch.BatchStatusDate"/> is stamped.
+    /// Leaving the run Running with no Requested batches makes it immediately eligible for the finalisation timer, which performs the full
     /// downstream failure processing and transitions the run to <see cref="ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing"/>.
     /// <paramref name="failureMessage"/> is truncated to the column limit (1024).
     /// </summary>
@@ -214,6 +218,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
                         Run = entity,
                         BatchSequenceNumber = seq,
                         BatchStatus = ParallelMatchPredictionBatchStatus.Requested,
+                        BatchStatusDate = now,
                     };
                     batches.Add(matchPredictionBatch);
                     context.ParallelMatchPredictionBatches.Add(matchPredictionBatch);
@@ -242,6 +247,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
             )
             .ExecuteUpdateAsync(s => s
                 .SetProperty(b => b.BatchStatus, ParallelMatchPredictionBatchStatus.ResultsReceived)
+                .SetProperty(b => b.BatchStatusDate, now)
                 .SetProperty(b => b.ResultReceivedTimeUtc, now)
                 .SetProperty(b => b.ResultLocation, resultLocation)
             );
@@ -281,6 +287,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
             )
             .ExecuteUpdateAsync(s => s
                 .SetProperty(b => b.BatchStatus, ParallelMatchPredictionBatchStatus.Failed)
+                .SetProperty(b => b.BatchStatusDate, now)
                 .SetProperty(b => b.ResultReceivedTimeUtc, now)
                 .SetProperty(b => b.FailureMessage, failureMessage)
                 .SetProperty(b => b.FailureException, failureException)
@@ -493,6 +500,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
                     .Where(b => b.RunId == runId && b.BatchStatus == ParallelMatchPredictionBatchStatus.Requested)
                     .ExecuteUpdateAsync(s => s
                         .SetProperty(b => b.BatchStatus, ParallelMatchPredictionBatchStatus.Abandoned)
+                        .SetProperty(b => b.BatchStatusDate, nowUtc)
                     );
 
                 return await context.ParallelMatchPredictionRuns
@@ -513,20 +521,34 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
 
         await context.ExecuteInTransactionAsync(async () =>
             {
-                // Forced overwrite: unconditionally flag the run unsuccessful. Dispatch failure happens moments after
-                // CreateRun, so the run is expected to still be Running. Status/StatusDateUtc are deliberately not
-                // touched — the run must stay Running for the finaliser to pick it up.
-                await context.ParallelMatchPredictionRuns
-                    .Where(r => r.Id == runId)
+                // Compare-and-swap on status: only flag the run unsuccessful while it is still Running. Dispatch failure
+                // happens moments after CreateRun, so the run is expected to be Running; the guard is defensive against a
+                // late/retried call clobbering a run the finaliser has already taken to a terminal state. Status/StatusDateUtc
+                // are deliberately not touched — the run must stay Running for the finaliser to pick it up.
+                var runsUpdated = await context.ParallelMatchPredictionRuns
+                    .Where(r => r.Id == runId
+                             && r.Status == ParallelMatchPredictionRunStatus.Running
+                    )
                     .ExecuteUpdateAsync(s => s
                         .SetProperty(r => r.IsSuccessful, false)
                     );
 
+                if (runsUpdated == 0)
+                {
+                    // The run is no longer Running — a finaliser has already taken it to a terminal state. Leave both the
+                    // run and its batches untouched so a genuine outcome is never overwritten by a late dispatch-failure call.
+                    return 0;
+                }
+
+                // Only flip batches that are still Requested. BatchPublish dispatches in successive physical Service Bus
+                // batches, so a failure partway can leave earlier batches already dispatched and possibly already reported
+                // by the Worker (ResultsReceived/Failed) — those terminal rows must be left intact rather than clobbered
+                // back to a synthetic dispatch failure (which would drop their genuine result and mis-count the run).
                 return await context.ParallelMatchPredictionBatches
-                    .Where(b => b.RunId == runId)
+                    .Where(b => b.RunId == runId && b.BatchStatus == ParallelMatchPredictionBatchStatus.Requested)
                     .ExecuteUpdateAsync(s => s
                         .SetProperty(b => b.BatchStatus, ParallelMatchPredictionBatchStatus.Failed)
-                        .SetProperty(b => b.ResultReceivedTimeUtc, nowUtc)
+                        .SetProperty(b => b.BatchStatusDate, nowUtc)
                         .SetProperty(b => b.FailureMessage, truncatedMessage)
                         .SetProperty(b => b.FailureException, failureException)
                     );

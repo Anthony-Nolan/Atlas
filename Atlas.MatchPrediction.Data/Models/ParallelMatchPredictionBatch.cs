@@ -37,9 +37,18 @@ public class ParallelMatchPredictionBatch
     public ParallelMatchPredictionBatchStatus BatchStatus { get; set; } = ParallelMatchPredictionBatchStatus.Requested;
 
     /// <summary>
-    /// UTC time at which the batch first reached a terminal result state: the time its result (success or failure)
-    /// was received, or the time the batch was marked <see cref="ParallelMatchPredictionBatchStatus.Failed"/>
-    /// because its request message could not be dispatched. <c>null</c> until then.
+    /// UTC time at which <see cref="BatchStatus"/> was last set: stamped on initial creation
+    /// (<see cref="ParallelMatchPredictionBatchStatus.Requested"/>) and updated on every subsequent transition,
+    /// including when the batch is marked <see cref="ParallelMatchPredictionBatchStatus.Failed"/> because its request
+    /// message could not be dispatched. Unlike <see cref="ResultReceivedTimeUtc"/>, this is set whether or not a
+    /// Worker result was ever received.
+    /// </summary>
+    public DateTime? BatchStatusDate { get; set; }
+
+    /// <summary>
+    /// UTC time at which the batch's result (success or failure) was received from the Worker. <c>null</c> until then,
+    /// and remains <c>null</c> for a batch that never dispatched (a dispatch failure records no result) — use
+    /// <see cref="BatchStatusDate"/> for the time such a batch was marked <see cref="ParallelMatchPredictionBatchStatus.Failed"/>.
     /// </summary>
     public DateTime? ResultReceivedTimeUtc { get; set; }
 
