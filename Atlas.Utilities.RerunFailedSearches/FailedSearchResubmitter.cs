@@ -58,7 +58,9 @@ namespace Atlas.Utilities.RerunFailedSearches
         {
             var repeatSearchRequest = JsonConvert.DeserializeObject<RepeatSearchRequest>(requestJson)
                 ?? throw new InvalidOperationException($"Stored RequestJson for repeat search {repeatSearchIdentifier} did not deserialize to a RepeatSearchRequest.");
-            repeatSearchRequest.SearchRequest.ParallelMatchPrediction = forcedParallelMatchPrediction;
+            var searchRequest = repeatSearchRequest.SearchRequest
+                ?? throw new InvalidOperationException($"Stored RequestJson for repeat search {repeatSearchIdentifier} did not contain a SearchRequest.");
+            searchRequest.ParallelMatchPrediction = forcedParallelMatchPrediction;
 
             var identifiedRequest = new IdentifiedRepeatSearchRequest
             {

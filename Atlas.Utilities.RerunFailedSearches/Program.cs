@@ -4,7 +4,7 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Configuration;
 
 // Usage:
-//   Atlas.Utilities.RerunFailedSearches --from <UTC date> [--only-parallel-failures] [--forced-parallel true|false] [--execute]
+//   Atlas.Utilities.RerunFailedSearches --from <UTC date> [--only-parallel-failures] [--forced-parallel true|false]
 // Connection strings + topic names are read from appsettings.json (see appsettings.template.json) or
 // environment variables under the "Rerun" section.
 
@@ -19,6 +19,7 @@ var configuration = new ConfigurationBuilder()
 var settings = configuration.GetSection("Rerun").Get<RerunSettings>() ?? new RerunSettings();
 
 if (string.IsNullOrWhiteSpace(settings.ServiceBusConnectionString) ||
+    settings.ServiceBusConnectionString.Equals("override-this", StringComparison.OrdinalIgnoreCase) ||
     string.IsNullOrWhiteSpace(settings.SearchTrackingConnectionString))
 {
     throw new InvalidOperationException(

@@ -11,7 +11,7 @@ namespace Atlas.Utilities.RerunFailedSearches
     {
         /// <summary>
         /// Peeks the given topic/subscription and returns every <see cref="SearchResultsNotification"/> that
-        /// was unsuccessful and enqueued at or after <paramref name="fromUtc"/>. Peeking does not consume the
+        /// was unsuccessful and enqueued strictly after <paramref name="fromUtc"/>. Peeking does not consume the
         /// messages, so this is a safe read-only operation.
         /// </summary>
         Task<IReadOnlyCollection<FailedNotification>> GetFailedSince(string topic, string subscription, DateTimeOffset fromUtc);
