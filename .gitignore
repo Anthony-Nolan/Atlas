@@ -8,6 +8,7 @@
 *.csproj.user
 
 **/local.settings.json
+Atlas.Utilities.RerunFailedSearches/appsettings.json
 
 # Visual Studio 2015 cache/options directory
 .vs/
