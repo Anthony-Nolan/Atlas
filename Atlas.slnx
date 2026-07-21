@@ -189,9 +189,6 @@
     <Project Path="Atlas.Utilities.RerunFailedSearches/Atlas.Utilities.RerunFailedSearches.csproj">
       <BuildType Solution="Development|*" Project="Debug" />
     </Project>
-    <Project Path="Atlas.Utilities.RerunFailedSearches.Test/Atlas.Utilities.RerunFailedSearches.Test.csproj">
-      <BuildType Solution="Development|*" Project="Debug" />
-    </Project>
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
