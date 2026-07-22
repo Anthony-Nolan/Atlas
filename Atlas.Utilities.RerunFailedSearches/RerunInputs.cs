@@ -21,13 +21,14 @@ namespace Atlas.Utilities.RerunFailedSearches
         public bool OnlyReplayMatchPredictionParallelFailures { get; set; }
 
         /// <summary>
-        /// The value written to <c>SearchRequest.ParallelMatchPrediction</c> on each re-submitted request.
+        /// Required. The value written to <c>SearchRequest.ParallelMatchPrediction</c> on each re-submitted request.
+        /// Must be supplied explicitly (<c>--forced-parallel true|false</c>) so the re-run routing is a deliberate choice.
         /// </summary>
         public bool ForcedParallelMatchPredictionInRequest { get; set; }
 
         /// <summary>
         /// Parses command-line arguments of the form:
-        /// <c>--from 2026-07-01 [--only-parallel-failures] [--forced-parallel true|false]</c>.
+        /// <c>--from 2026-07-01 --forced-parallel true|false [--only-parallel-failures]</c>.
         /// </summary>
         public static RerunInputs Parse(string[] args)
         {
@@ -48,14 +49,21 @@ namespace Atlas.Utilities.RerunFailedSearches
             {
                 throw new ArgumentException(
                     "Required argument --from <UTC date/time> is missing. " +
-                    "Example: --from 2026-07-01 --forced-parallel false --only-parallel-failures");
+                    "Example: --from 2026-07-01 --forced-parallel false [--only-parallel-failures]");
+            }
+
+            if (!lookup.TryGetValue("forced-parallel", out var forcedRaw) || !bool.TryParse(forcedRaw, out var forcedParallel))
+            {
+                throw new ArgumentException(
+                    "Required argument --forced-parallel <true|false> is missing or invalid. " +
+                    "It must be supplied explicitly so the re-run routing is a deliberate choice.");
             }
 
             return new RerunInputs
             {
                 FromDateUtc = ParseUtc(fromRaw),
                 OnlyReplayMatchPredictionParallelFailures = FlagIsSet(lookup, "only-parallel-failures"),
-                ForcedParallelMatchPredictionInRequest = FlagIsSet(lookup, "forced-parallel")
+                ForcedParallelMatchPredictionInRequest = forcedParallel
             };
         }
 
@@ -66,7 +74,7 @@ namespace Atlas.Utilities.RerunFailedSearches
                 System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal);
 
         // A bare flag (e.g. "--only-parallel-failures") is present-with-null and means true;
-        // an explicit "--forced-parallel false" is honoured too.
+        // an explicit "--only-parallel-failures false" is honoured too.
         private static bool FlagIsSet(IReadOnlyDictionary<string, string?> lookup, string key) =>
             lookup.TryGetValue(key, out var value) && (value is null || bool.Parse(value));
     }

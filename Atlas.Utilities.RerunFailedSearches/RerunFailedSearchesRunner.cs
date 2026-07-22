@@ -50,9 +50,16 @@ namespace Atlas.Utilities.RerunFailedSearches
 
             foreach (var search in tracked)
             {
-                output.WriteLine($"[Searches] re-submitting {search.SearchIdentifier}");
-                await resubmitter.ResubmitSearch(
-                    search.SearchIdentifier.ToString(), search.RequestJson, inputs.ForcedParallelMatchPredictionInRequest);
+                try
+                {
+                    output.WriteLine($"[Searches] re-submitting {search.SearchIdentifier}");
+                    await resubmitter.ResubmitSearch(
+                        search.SearchIdentifier.ToString(), search.RequestJson, inputs.ForcedParallelMatchPredictionInRequest);
+                }
+                catch (Exception ex)
+                {
+                    output.WriteLine($"[Searches] FAILED to re-submit {search.SearchIdentifier}: {ex.Message}");
+                }
             }
         }
 
@@ -76,10 +83,17 @@ namespace Atlas.Utilities.RerunFailedSearches
 
             foreach (var search in tracked)
             {
-                var originalSearchId = search.OriginalSearchIdentifier?.ToString() ?? string.Empty;
-                output.WriteLine($"[RepeatSearches] re-submitting repeat {search.SearchIdentifier} (original {originalSearchId})");
-                await resubmitter.ResubmitRepeatSearch(
-                    search.SearchIdentifier.ToString(), originalSearchId, search.RequestJson, inputs.ForcedParallelMatchPredictionInRequest);
+                try
+                {
+                    var originalSearchId = search.OriginalSearchIdentifier.Value.ToString();
+                    output.WriteLine($"[RepeatSearches] re-submitting repeat {search.SearchIdentifier} (original {originalSearchId})");
+                    await resubmitter.ResubmitRepeatSearch(
+                        search.SearchIdentifier.ToString(), originalSearchId, search.RequestJson, inputs.ForcedParallelMatchPredictionInRequest);
+                }
+                catch (Exception ex)
+                {
+                    output.WriteLine($"[RepeatSearches] FAILED to re-submit repeat {search.SearchIdentifier}: {ex.Message}");
+                }
             }
         }
 

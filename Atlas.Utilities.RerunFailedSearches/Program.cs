@@ -4,7 +4,7 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Configuration;
 
 // Usage:
-//   Atlas.Utilities.RerunFailedSearches --from <UTC date> [--only-parallel-failures] [--forced-parallel true|false]
+//   Atlas.Utilities.RerunFailedSearches --from <UTC date> --forced-parallel <true|false> [--only-parallel-failures]
 // Connection strings + topic names are read from appsettings.json (see appsettings.template.json) or
 // environment variables under the "Rerun" section.
 
