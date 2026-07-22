@@ -11,7 +11,7 @@ namespace Atlas.Utilities.RerunFailedSearches
     {
         /// <summary>
         /// First-time searches: <c>[SearchRequests]</c> rows filtered by <c>SearchIdentifier</c> and
-        /// <c>IsRepeatSearch = 0</c>.
+        /// <c>IsRepeatSearch = 0</c>, ordered oldest first.
         /// </summary>
         Task<IReadOnlyList<TrackedSearchRequest>> GetSearches(
             IReadOnlyCollection<Guid> searchIdentifiers,
@@ -19,7 +19,7 @@ namespace Atlas.Utilities.RerunFailedSearches
 
         /// <summary>
         /// Repeat searches: <c>[SearchRequests]</c> rows filtered by <c>SearchIdentifier</c>,
-        /// <c>OriginalSearchIdentifier</c> and <c>IsRepeatSearch = 1</c>.
+        /// <c>OriginalSearchIdentifier</c> and <c>IsRepeatSearch = 1</c>, ordered oldest first.
         /// </summary>
         Task<IReadOnlyList<TrackedSearchRequest>> GetRepeatSearches(
             IReadOnlyCollection<RepeatSearchIdentifiers> identifiers,
@@ -52,7 +52,7 @@ namespace Atlas.Utilities.RerunFailedSearches
 
             query = ApplyParallelFailureFilter(query, onlyParallelMatchPredictionFailures);
 
-            return await query.ToListAsync();
+            return await query.OrderBy(x => x.RequestTimeUtc).ToListAsync();
         }
 
         public async Task<IReadOnlyList<TrackedSearchRequest>> GetRepeatSearches(
@@ -81,6 +81,7 @@ namespace Atlas.Utilities.RerunFailedSearches
             return rows
                 .Where(x => x.OriginalSearchIdentifier.HasValue
                             && expectedPairs.Contains((x.SearchIdentifier, x.OriginalSearchIdentifier.Value)))
+                .OrderBy(x => x.RequestTimeUtc)
                 .ToList();
         }
 
