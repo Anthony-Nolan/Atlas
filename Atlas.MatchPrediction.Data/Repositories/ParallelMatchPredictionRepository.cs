@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Sql;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Models;
@@ -515,8 +516,8 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
     public async Task MarkRunAsDispatchFailed(int runId, string failureMessage, string failureException, DateTime nowUtc)
     {
         // An untruncated overlong message would fail the whole update with a SQL truncation error.
-        var truncatedMessage = failureMessage?.Length > ParallelMatchPredictionBatch.FailureMessageMaxLength
-            ? failureMessage[..ParallelMatchPredictionBatch.FailureMessageMaxLength]
+        var truncatedMessage = failureMessage?.Length > StringColumnLengths.LongText
+            ? failureMessage[..StringColumnLengths.LongText]
             : failureMessage;
 
         await context.ExecuteInTransactionAsync(async () =>

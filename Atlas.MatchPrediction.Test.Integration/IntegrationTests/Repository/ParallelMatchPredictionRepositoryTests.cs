@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Sql;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Models;
@@ -214,12 +215,12 @@ public class ParallelMatchPredictionRepositoryTests
     public async Task MarkRunAsDispatchFailed_TruncatesFailureMessageToColumnLimit()
     {
         var runId = (await CreateRun(totalBatchCount: 1)).RunId;
-        var overlongMessage = string.Join(string.Empty, fixture.CreateMany<char>(ParallelMatchPredictionBatch.FailureMessageMaxLength * 2));
+        var overlongMessage = string.Join(string.Empty, fixture.CreateMany<char>(StringColumnLengths.LongText * 2));
 
         await repository.MarkRunAsDispatchFailed(runId, overlongMessage, fixture.Create<string>(), DateTime.UtcNow);
 
         (await GetBatches(runId)).Should().ContainSingle()
-            .Which.FailureMessage.Should().Be(overlongMessage[..ParallelMatchPredictionBatch.FailureMessageMaxLength]);
+            .Which.FailureMessage.Should().Be(overlongMessage[..StringColumnLengths.LongText]);
     }
 
     [Test]

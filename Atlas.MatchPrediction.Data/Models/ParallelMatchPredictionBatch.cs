@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Atlas.Common.Sql;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchPrediction.Data.Models;
@@ -14,8 +15,6 @@ namespace Atlas.MatchPrediction.Data.Models;
 [Index(nameof(RunId), nameof(BatchSequenceNumber), IsUnique = true)]
 public class ParallelMatchPredictionBatch
 {
-    public const int FailureMessageMaxLength = 1024;
-
     [Key]
     public int Id { get; set; }
 
@@ -56,14 +55,14 @@ public class ParallelMatchPredictionBatch
     /// Blob filename of the single file holding this batch's donor → MPA result map. <c>null</c> until a successful
     /// result arrives (or when the batch had no donors).
     /// </summary>
-    [MaxLength(1024)]
+    [MaxLength(StringColumnLengths.LongText)]
     public string ResultLocation { get; set; }
 
     /// <summary>
     /// Human-readable failure message from the Worker exception.
     /// Populated only when <see cref="BatchStatus"/> is <see cref="ParallelMatchPredictionBatchStatus.Failed"/>.
     /// </summary>
-    [MaxLength(FailureMessageMaxLength)]
+    [MaxLength(StringColumnLengths.LongText)]
     public string FailureMessage { get; set; }
 
     /// <summary>
