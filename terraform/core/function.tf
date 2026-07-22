@@ -187,6 +187,7 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
 
     "AutoMapper:LicenseKey" = var.AUTOMAPPER_LICENSE_KEY
     "AtlasFunction:Search:DefaultParallelMatchPrediction" = var.DEFAULT_PARALLEL_MATCH_PREDICTION
+    "AtlasFunction:Search:ParallelMatchPredictionRequestPercentage" = var.PARALLEL_MATCH_PREDICTION_REQUEST_PERCENTAGE
 
     "MatchingAlgorithmFunction:BaseUrl" = module.matching_algorithm.function_app.base_url
     "MatchingAlgorithmFunction:ApiKey"  = module.matching_algorithm.function_app.api_key
