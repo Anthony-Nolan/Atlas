@@ -185,6 +185,11 @@
       <BuildType Solution="Development|*" Project="Debug" />
     </Project>
   </Folder>
+  <Folder Name="/Utilities/">
+    <Project Path="Atlas.Utilities.RerunFailedSearches/Atlas.Utilities.RerunFailedSearches.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
