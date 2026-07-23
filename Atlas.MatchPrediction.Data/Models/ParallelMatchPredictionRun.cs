@@ -92,12 +92,10 @@ public class ParallelMatchPredictionRun
     public DateTime? FinalisedTimeUtc { get; set; }
 
     /// <summary>
-    /// Whether this run completed successfully.
-    /// <c>null</c> until all batches have been processed (either <c>ResultsReceived</c> or <c>Failed</c>).
-    /// <c>true</c> when every batch succeeded; <c>false</c> when at least one batch failed.
-    /// Also set to <c>false</c> at dispatch time when the batch-request messages could not be published to
-    /// Service Bus; the run remains <see cref="ParallelMatchPredictionRunStatus.Running"/> until the finaliser
-    /// transitions it to <see cref="ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing"/>.
+    /// Whether this run completed successfully. <c>null</c> until every batch has been processed
+    /// (<see cref="ParallelMatchPredictionBatchStatus.ResultsReceived"/> or
+    /// <see cref="ParallelMatchPredictionBatchStatus.Failed"/>); <c>true</c> when all succeeded, <c>false</c> when
+    /// any failed — including a dispatch failure (see <see cref="ParallelMatchPredictionRunStatus"/>).
     /// </summary>
     public bool? IsSuccessful { get; set; }
 

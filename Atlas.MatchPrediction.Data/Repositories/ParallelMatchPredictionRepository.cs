@@ -54,11 +54,14 @@ public interface IParallelMatchPredictionRepository
     Task<CreateParallelMatchPredictionRunResult> CreateRun(CreateParallelMatchPredictionRunInfo info);
 
     /// <summary>
-    /// Records a batch's successful result on its pre-created row: moves the batch to ResultsReceived from any
-    /// not-yet-succeeded state (Requested, Abandoned, or Failed), clearing any recorded failure detail. Idempotent —
-    /// if the batch already succeeded the call is a no-op returning <c>false</c>. Accepting Abandoned/Failed (not just
-    /// Requested) is what lets a late result or a dead-letter replay recover the batch; an already-recorded success is
-    /// never regressed by a later <see cref="RecordBatchFailure"/>.
+    /// Records a batch's successful result on its pre-created row: moves the batch to
+    /// <see cref="ParallelMatchPredictionBatchStatus.ResultsReceived"/> from any not-yet-succeeded state
+    /// (<see cref="ParallelMatchPredictionBatchStatus.Requested"/>,
+    /// <see cref="ParallelMatchPredictionBatchStatus.Abandoned"/> or
+    /// <see cref="ParallelMatchPredictionBatchStatus.Failed"/> — the latter two enable replay recovery, see
+    /// <see cref="ParallelMatchPredictionRunStatus"/>), clearing any recorded failure detail. Idempotent — an
+    /// already-succeeded batch is a no-op returning <c>false</c>, and a success is never regressed by a later
+    /// <see cref="RecordBatchFailure"/>.
     /// </summary>
     /// <returns><c>true</c> on first record; <c>false</c> if it was a duplicate.</returns>
     /// <exception cref="InvalidOperationException">Thrown when no batch row exists for the given id.</exception>
@@ -73,18 +76,16 @@ public interface IParallelMatchPredictionRepository
     Task<bool> RecordBatchFailure(int batchId, string failureMessage, string failureException);
 
     /// <summary>
-    /// Returns the ids of unleased, not-cleaned-up runs the finalisation timer should (re-)process: a Running or
-    /// replayed-Abandoned run whose every batch now has a result (success or failure); or a FailedDuringBatchProcessing
-    /// run whose every batch has since recovered to ResultsReceived (a full dead-letter replay). The second case is
-    /// deliberately stricter — a failed run has already reported its failure downstream, so it is only re-picked on a
-    /// full recovery to success, never re-notified while any batch is still Failed.
+    /// Returns the ids of unleased, not-cleaned-up runs the finalisation timer should (re-)process. See
+    /// <see cref="ParallelMatchPredictionRunStatus"/> for which states are eligible and the replay rule that governs
+    /// re-processing.
     /// </summary>
     Task<IReadOnlyList<int>> GetRunIdsAwaitingFinalisationAndNotLeased();
 
     /// <summary>
-    /// Attempts to atomically claim the run for finalisation by <paramref name="leaseOwner"/>: sets the lease only when
-    /// the run is Running, Abandoned (replay) or FailedDuringBatchProcessing (re-finalisation after a full dead-letter
-    /// recovery), currently unleased, and not cleaned up.
+    /// Attempts to atomically claim the run for finalisation by <paramref name="leaseOwner"/> (compare-and-swap): sets
+    /// the lease only when the run is in a claimable state (see <see cref="ParallelMatchPredictionRunStatus"/>),
+    /// currently unleased, and not cleaned up.
     /// </summary>
     /// <returns><c>true</c> if this call acquired the lease; <c>false</c> if another holds it or the run is not claimable.</returns>
     Task<bool> TryClaimFinalisationLease(int runId, Guid leaseOwner);
@@ -96,24 +97,24 @@ public interface IParallelMatchPredictionRepository
     Task<ParallelMatchPredictionRunResults> GetRunWithResults(int runId);
 
     /// <summary>
-    /// Flips a Running, Abandoned or FailedDuringBatchProcessing run to Finalised with IsSuccessful = true. The
-    /// Abandoned and FailedDuringBatchProcessing cases are replays: once every batch has a result — late results, or a
-    /// full dead-letter recovery of the failed batches — the finaliser re-picks the run and finalises it here.
+    /// Flips a claimable run to <see cref="ParallelMatchPredictionRunStatus.Finalised"/> with
+    /// <see cref="ParallelMatchPredictionRun.IsSuccessful"/> = <c>true</c>. Reached directly, or as the replay endpoint
+    /// once an abandoned/failed run has every batch result (see <see cref="ParallelMatchPredictionRunStatus"/>).
     /// </summary>
     Task MarkRunFinalised(int runId, DateTime finalisedTimeUtc);
 
     /// <summary>
-    /// Flips a Running or Abandoned run to FailedDuringBatchProcessing (IsSuccessful = false) when a batch failed in
-    /// the Worker; the completion pipeline still runs. Non-terminal: the finalisation lease is released so that, if
-    /// every failed batch is later recovered via dead-letter replay, the finaliser can re-claim and re-finalise the
-    /// run to success.
+    /// Flips a <see cref="ParallelMatchPredictionRunStatus.Running"/> or
+    /// <see cref="ParallelMatchPredictionRunStatus.Abandoned"/> run to
+    /// <see cref="ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing"/>
+    /// (<see cref="ParallelMatchPredictionRun.IsSuccessful"/> = <c>false</c>) when a batch failed in the Worker. Non-terminal:
+    /// the finalisation lease is released so the run can be replayed (see <see cref="ParallelMatchPredictionRunStatus"/>).
     /// </summary>
     Task MarkRunFailed(int runId, DateTime nowUtc);
 
     /// <summary>
-    /// Flips an actively-finalisable run (Running, Abandoned or FailedDuringBatchProcessing) to FailedDuringCompletion
-    /// when the persistence pipeline throws. Terminal: the finalisation timer will not re-pick the run, and the lease
-    /// is intentionally left in place.
+    /// Flips an actively-finalisable run to <see cref="ParallelMatchPredictionRunStatus.FailedDuringCompletion"/> when
+    /// the persistence pipeline throws. Terminal (see <see cref="ParallelMatchPredictionRunStatus"/>).
     /// </summary>
     Task MarkRunFailedDuringCompletion(int runId, DateTime nowUtc);
 
@@ -133,26 +134,27 @@ public interface IParallelMatchPredictionRepository
     Task<IReadOnlyList<int>> GetRunIdsToAbandon(DateTime cutoffUtc);
 
     /// <summary>
-    /// Atomically flips a single Running run to Abandoned (IsSuccessful = false) and marks its still-Requested batches
-    /// Abandoned; batches that already have a result are left for research. The status compare-and-swap is the
-    /// concurrency guard (only the first caller wins), and a run already leased by a finaliser is left to that finaliser
-    /// rather than abandoned. The lease is left null so a late-result replay can still finalise the run.
+    /// Atomically flips a single <see cref="ParallelMatchPredictionRunStatus.Running"/> run to
+    /// <see cref="ParallelMatchPredictionRunStatus.Abandoned"/> (<see cref="ParallelMatchPredictionRun.IsSuccessful"/> =
+    /// <c>false</c>) and marks its still-<see cref="ParallelMatchPredictionBatchStatus.Requested"/> batches
+    /// <see cref="ParallelMatchPredictionBatchStatus.Abandoned"/>; batches that already have a result are left for
+    /// research. The status compare-and-swap is the concurrency guard (only the first caller wins); a run already
+    /// leased by a finaliser is left to it, and the lease is left null so a late-result replay can still finalise the
+    /// run (see <see cref="ParallelMatchPredictionRunStatus"/>).
     /// </summary>
     /// <returns>The run header if this call performed the transition; <c>null</c> if the run was no longer Running or already leased.</returns>
     Task<AbandonedRunHeader> TryMarkRunAsAbandoned(int runId, DateTime nowUtc);
 
     /// <summary>
-    /// Marks a run as failed during dispatch: while the run is still <see cref="ParallelMatchPredictionRunStatus.Running"/>
-    /// (a compare-and-swap guard), <see cref="ParallelMatchPredictionRun.IsSuccessful"/> is set to <c>false</c>;
-    /// <see cref="ParallelMatchPredictionRun.Status"/> is left as <see cref="ParallelMatchPredictionRunStatus.Running"/> for the finaliser.
-    /// Only batches still in the <see cref="ParallelMatchPredictionBatchStatus.Requested"/> state are set to
-    /// <see cref="ParallelMatchPredictionBatchStatus.Failed"/> with the dispatch-failure detail — batches already reported by the
-    /// Worker (a partial dispatch can leave some dispatched and reported before the failure) are left intact.
-    /// <see cref="ParallelMatchPredictionBatch.ResultReceivedTimeUtc"/> is deliberately left <c>null</c> (no result was received);
-    /// only <see cref="ParallelMatchPredictionBatch.BatchStatusDate"/> is stamped.
-    /// Leaving the run Running with no Requested batches makes it immediately eligible for the finalisation timer, which performs the full
-    /// downstream failure processing and transitions the run to <see cref="ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing"/>.
-    /// <paramref name="failureMessage"/> is truncated to the column limit (1024).
+    /// Records a dispatch failure (publishing the batch-request messages failed). Compare-and-swap on status: only
+    /// while the run is still <see cref="ParallelMatchPredictionRunStatus.Running"/> is
+    /// <see cref="ParallelMatchPredictionRun.IsSuccessful"/> set to <c>false</c> and every still-
+    /// <see cref="ParallelMatchPredictionBatchStatus.Requested"/> batch flipped to
+    /// <see cref="ParallelMatchPredictionBatchStatus.Failed"/> with the dispatch-failure detail; batches already
+    /// reported by the Worker are left intact, and <see cref="ParallelMatchPredictionRun.Status"/> is left
+    /// <see cref="ParallelMatchPredictionRunStatus.Running"/> for the finaliser (see
+    /// <see cref="ParallelMatchPredictionRunStatus"/> for the resulting flow).
+    /// <paramref name="failureMessage"/> is truncated to the column limit.
     /// </summary>
     Task MarkRunAsDispatchFailed(int runId, string failureMessage, string failureException, DateTime nowUtc);
 }

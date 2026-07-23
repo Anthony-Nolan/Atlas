@@ -26,37 +26,27 @@ namespace Atlas.Functions.Services;
 public interface IParallelMatchPredictionCompletionService
 {
     /// <summary>
-    /// Performs the final persistence pipeline for a single completed parallel match-prediction run:
-    /// combines per-batch MPA results with matching results, uploads the combined result set to blob storage,
-    /// sends the completion notification, uploads the search log, marks the run as finalised in the
-    /// <see cref="IParallelMatchPredictionRepository"/>, and emits the match-prediction completion tracking event.
+    /// Runs the final persistence pipeline for a single completed run: combines per-batch MPA results with matching
+    /// results, uploads the combined result set to blob storage, sends the completion notification, uploads the search
+    /// log, marks the run finalised in the <see cref="IParallelMatchPredictionRepository"/>, and emits the
+    /// match-prediction completion tracking event.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// If all batches succeeded the run is marked <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.Finalised"/>
-    /// and <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRun.IsSuccessful"/> is set to <c>true</c>.
-    /// </para>
-    /// <para>
-    /// If any batch failed the run is marked <see cref="ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing"/>
-    /// and <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRun.IsSuccessful"/> is set to <c>false</c>.
-    /// Performance metrics, the failure notification, search logs and the tracking event are still emitted.
-    /// </para>
-    /// <para>
-    /// If any step of the pipeline throws unexpectedly, the run is marked
-    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.FailedDuringCompletion"/>
-    /// and the exception is rethrown. The finalisation timer will not re-pick a failed run.
-    /// </para>
+    /// All batches succeeded → <see cref="ParallelMatchPredictionRunStatus.Finalised"/>
+    /// (<see cref="ParallelMatchPredictionRun.IsSuccessful"/> = <c>true</c>). Any batch failed →
+    /// <see cref="ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing"/>
+    /// (<see cref="ParallelMatchPredictionRun.IsSuccessful"/> = <c>false</c>), with performance metrics, failure
+    /// notification, search log and tracking event still emitted. Any pipeline step throwing →
+    /// <see cref="ParallelMatchPredictionRunStatus.FailedDuringCompletion"/> and the exception is rethrown. See
+    /// <see cref="ParallelMatchPredictionRunStatus"/> for how the finaliser then handles each terminal state.
     /// </remarks>
     Task FinaliseRun(int runId);
 
     /// <summary>
-    /// Abandons a single parallel match-prediction run whose batches never all returned within the configured
-    /// timeout: transitions the run to <see cref="ParallelMatchPredictionRunStatus.Abandoned"/> (marking its
-    /// still-pending batches <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionBatchStatus.Abandoned"/>
-    /// and setting <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRun.IsSuccessful"/> to
-    /// <c>false</c>) and publishes a single downstream failure notification (<c>WasSuccessful=false</c>).
-    /// The status compare-and-swap in the repository guards against double-processing; if the run is no longer
-    /// <c>Running</c> (already abandoned/finalised by another tick) this is a no-op.
+    /// Abandons a single run whose batches did not all return within the configured timeout: transitions it to
+    /// <see cref="ParallelMatchPredictionRunStatus.Abandoned"/> and publishes a single downstream failure notification
+    /// (<c>WasSuccessful=false</c>). The repository status compare-and-swap guards against double-processing, so an
+    /// overlapping tick that finds the run no longer <see cref="ParallelMatchPredictionRunStatus.Running"/> is a no-op.
     /// </summary>
     Task AbandonRun(int runId);
 }
@@ -76,6 +66,8 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
 
     private const string ParallelMatchPredictionNotificationSource = "Atlas.Functions.ParallelMatchPrediction";
     private const string MatchPredictionBatchProcessingStage = "MatchPredictionBatchProcessing";
+
+    private const string AbandonmentReason = "one or more batches did not return a result within the configured timeout.";
 
     public ParallelMatchPredictionCompletionService(
         IParallelMatchPredictionRepository repository,
@@ -123,15 +115,13 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
 
             if (runResults.FailedBatches.Count > 0)
             {
-                // A run that was previously Abandoned can be re-picked here once all of its late batch results have
-                // finally arrived. If any of those late results is a failure, we deliberately run the failure path
-                // again rather than suppressing it: the abandonment failure is only provisional (the late-all-success
-                // path below likewise supersedes it with a result message), so once every batch has reported we send
-                // the definitive outcome. The replayed failure is strictly more informative than the abandonment one —
-                // it carries the real BatchWorkerFailure cause and exception detail, and ProcessCompleted supersedes
-                // the provisional Abandoned tracking with the true failure. The run lands in FailedDuringBatchProcessing,
-                // identical to any normal failed run. Consumers may therefore receive the provisional abandonment
-                // failure followed by this confirmed failure — accepted and documented, mirroring the success replay.
+                // On replay (see ParallelMatchPredictionRunStatus) a previously-Abandoned run reaches here once its
+                // late batch results arrive. If any late result is a failure we deliberately re-run the failure path:
+                // the abandonment failure was only provisional, so ProcessCompleted supersedes the provisional
+                // Abandoned tracking with the definitive, more-informative failure (real BatchWorkerFailure cause and
+                // exception detail). The run lands in FailedDuringBatchProcessing like any normal failed run.
+                // Consumers may therefore see the provisional abandonment failure followed by this confirmed failure —
+                // accepted and documented, mirroring the success replay.
                 await CompleteFailedRun(runId, run, runResults, trackingSearchIdentifier, originalSearchIdentifier);
                 return;
             }
@@ -166,8 +156,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
             : (Guid?)null;
 
         var failureMessage =
-            $"Parallel match prediction run {runId} (search {header.SearchIdentifier}) was abandoned: "
-          + "one or more batches did not return a result within the configured timeout.";
+            $"Parallel match prediction run {runId} (search {header.SearchIdentifier}) was abandoned: {AbandonmentReason}";
 
         // Emit the completion tracking event so search tracking records the run as an abandonment (rather than never
         // recording a terminal state). Uses the dedicated Abandoned failure type to distinguish it from a batch failure.
@@ -205,8 +194,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         );
 
         logger.SendTrace(
-            $"Abandoned parallel match prediction run {runId} (search {header.SearchIdentifier}): "
-          + "one or more batches did not return within the configured timeout. "
+            $"Abandoned parallel match prediction run {runId} (search {header.SearchIdentifier}): {AbandonmentReason} "
           + "Failure notification, tracking event and alert sent.",
             LogLevel.Warn
         );
