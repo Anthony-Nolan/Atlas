@@ -427,10 +427,14 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         await foreach (var matchingResults in matchingResultsDownloader.DownloadResults(isRepeatSearch, batchFolder))
         {
             var matchingAlgorithmResults = matchingResults.ToList();
-            var matchPredictionResultsForCurrentDonors = matchingAlgorithmResults
-                .Select(r => r.AtlasDonorId)
-                .Where(matchPredictionResults.ContainsKey)
-                .ToDictionary(donorId => donorId, donorId => matchPredictionResults[donorId]);
+            var matchPredictionResultsForCurrentDonors = new Dictionary<int, MatchProbabilityResponse>();
+            foreach (var result in matchingAlgorithmResults)
+            {
+                if (matchPredictionResults.TryGetValue(result.AtlasDonorId, out var matchPredictionResult))
+                {
+                    matchPredictionResultsForCurrentDonors[result.AtlasDonorId] = matchPredictionResult;
+                }
+            }
             var currentSearchResults =
                 resultsCombiner.CombineResults(searchRequestId, matchingAlgorithmResults, matchPredictionResultsForCurrentDonors);
 

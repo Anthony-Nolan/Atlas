@@ -65,16 +65,12 @@ namespace Atlas.RepeatSearch.Services.Search
             var previousCanonicalDonorsInDonorStore = await donorReader.GetDonorsByExternalDonorCodes(previousCanonicalDonors);
             var deletedDonors = previousCanonicalDonors.Where(d => !previousCanonicalDonorsInDonorStore.ContainsKey(d)).ToList();
 
-            var atlasIdByDonorCode = new Dictionary<string, int>(results.Count);
-            foreach (var result in results)
-            {
-                atlasIdByDonorCode.TryAdd(result.DonorCode, result.AtlasDonorId);
-            }
+            var atlasIdsByDonorCode = results.ToDictionary(r => r.DonorCode, r => r.AtlasDonorId);
 
             return new SearchResultDifferential
             {
-                NewResults = newDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, atlasIdByDonorCode)).ToList(),
-                UpdatedResults = updatedDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, atlasIdByDonorCode)).ToList(),
+                NewResults = newDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, atlasIdsByDonorCode)).ToList(),
+                UpdatedResults = updatedDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, atlasIdsByDonorCode)).ToList(),
                 RemovedResults = noLongerMatchingDonors.Concat(deletedDonors).ToList()
             };
         }

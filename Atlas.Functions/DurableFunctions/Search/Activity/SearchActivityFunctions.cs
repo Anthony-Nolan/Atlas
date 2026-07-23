@@ -348,10 +348,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 
             await foreach (var matchingResults in matchingResultsDownloader.DownloadResults(isRepeatSearch, batchFolder))
             {
-                var matchPredictionResultLocationsForCurrentDonors = matchingResults
-                    .Select(r => r.AtlasDonorId)
-                    .Where(matchPredictionResultLocations.ContainsKey)
-                    .ToDictionary(donorId => donorId, donorId => matchPredictionResultLocations[donorId]);
+                var matchPredictionResultLocationsForCurrentDonors = new Dictionary<int, string>();
+                foreach (var result in matchingResults)
+                {
+                    if (matchPredictionResultLocations.TryGetValue(result.AtlasDonorId, out var location))
+                    {
+                        matchPredictionResultLocationsForCurrentDonors[result.AtlasDonorId] = location;
+                    }
+                }
                 var currentSearchResults = await ProcessSearchResults(searchRequestId, matchingResults, matchPredictionResultLocationsForCurrentDonors);
                 if (resultsShouldBeBatched)
                 {
