@@ -46,7 +46,8 @@ internal class MatchPredictionInputBuilderTests
 
         builder.BuildMatchPredictionInputs(resultSet);
 
-        donorInputBatcher.Received(1).BatchDonorInputs(Arg.Any<IdentifiedMatchProbabilityRequest>(), Arg.Any<IEnumerable<DonorInput>>(), ConfiguredBatchSize);
+        donorInputBatcher.Received(1)
+            .BatchDonorInputs(Arg.Any<IdentifiedMatchProbabilityRequest>(), Arg.Any<IEnumerable<DonorInput>>(), ConfiguredBatchSize);
     }
 
     [Test]
@@ -57,7 +58,8 @@ internal class MatchPredictionInputBuilderTests
 
         builder.BuildMatchPredictionInputs(resultSet, overrideBatchSize);
 
-        donorInputBatcher.Received(1).BatchDonorInputs(Arg.Any<IdentifiedMatchProbabilityRequest>(), Arg.Any<IEnumerable<DonorInput>>(), overrideBatchSize);
+        donorInputBatcher.Received(1)
+            .BatchDonorInputs(Arg.Any<IdentifiedMatchProbabilityRequest>(), Arg.Any<IEnumerable<DonorInput>>(), overrideBatchSize);
     }
 
     // The override is applied only when strictly positive; a zero override (the sequential path's unset default)
@@ -70,7 +72,8 @@ internal class MatchPredictionInputBuilderTests
 
         builder.BuildMatchPredictionInputs(resultSet, nonPositiveOverride);
 
-        donorInputBatcher.Received(1).BatchDonorInputs(Arg.Any<IdentifiedMatchProbabilityRequest>(), Arg.Any<IEnumerable<DonorInput>>(), ConfiguredBatchSize);
+        donorInputBatcher.Received(1)
+            .BatchDonorInputs(Arg.Any<IdentifiedMatchProbabilityRequest>(), Arg.Any<IEnumerable<DonorInput>>(), ConfiguredBatchSize);
     }
 
     private OriginalMatchingAlgorithmResultSet BuildResultSet() =>

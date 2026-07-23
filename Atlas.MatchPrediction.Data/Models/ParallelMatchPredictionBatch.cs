@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Atlas.Common.Sql;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchPrediction.Data.Models;
@@ -34,21 +35,34 @@ public class ParallelMatchPredictionBatch
     [MaxLength(32)]
     public ParallelMatchPredictionBatchStatus BatchStatus { get; set; } = ParallelMatchPredictionBatchStatus.Requested;
 
-    /// <summary>UTC time at which the result (success or failure) was first received. <c>null</c> until a result arrives.</summary>
+    /// <summary>
+    /// UTC time at which <see cref="BatchStatus"/> was last set: stamped on initial creation
+    /// (<see cref="ParallelMatchPredictionBatchStatus.Requested"/>) and updated on every subsequent transition,
+    /// including when the batch is marked <see cref="ParallelMatchPredictionBatchStatus.Failed"/> because its request
+    /// message could not be dispatched. Unlike <see cref="ResultReceivedTimeUtc"/>, this is set whether or not a
+    /// Worker result was ever received.
+    /// </summary>
+    public DateTime? BatchStatusDate { get; set; }
+
+    /// <summary>
+    /// UTC time at which the batch's result (success or failure) was received from the Worker. <c>null</c> until then,
+    /// and remains <c>null</c> for a batch that never dispatched (a dispatch failure records no result) — use
+    /// <see cref="BatchStatusDate"/> for the time such a batch was marked <see cref="ParallelMatchPredictionBatchStatus.Failed"/>.
+    /// </summary>
     public DateTime? ResultReceivedTimeUtc { get; set; }
 
     /// <summary>
     /// Blob filename of the single file holding this batch's donor → MPA result map. <c>null</c> until a successful
     /// result arrives (or when the batch had no donors).
     /// </summary>
-    [MaxLength(1024)]
+    [MaxLength(StringColumnLengths.LongText)]
     public string ResultLocation { get; set; }
 
     /// <summary>
     /// Human-readable failure message from the Worker exception.
     /// Populated only when <see cref="BatchStatus"/> is <see cref="ParallelMatchPredictionBatchStatus.Failed"/>.
     /// </summary>
-    [MaxLength(1024)]
+    [MaxLength(StringColumnLengths.LongText)]
     public string FailureMessage { get; set; }
 
     /// <summary>

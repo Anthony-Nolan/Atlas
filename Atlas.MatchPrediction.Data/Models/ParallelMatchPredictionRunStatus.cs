@@ -5,7 +5,13 @@ namespace Atlas.MatchPrediction.Data.Models;
 /// </summary>
 public enum ParallelMatchPredictionRunStatus
 {
-    /// <summary>The run has been created and batches have been dispatched; results are still being received.</summary>
+    /// <summary>
+    /// The run has been created and batches have been dispatched; results are still being received.
+    /// Also covers the brief dispatch-failed state: when publishing the batch requests fails, the run keeps this
+    /// status (with <see cref="ParallelMatchPredictionRun.IsSuccessful"/> already <c>false</c> and every batch
+    /// marked <see cref="ParallelMatchPredictionBatchStatus.Failed"/>) until the finaliser picks it up and
+    /// transitions it to <see cref="FailedDuringBatchProcessing"/>.
+    /// </summary>
     Running,
 
     /// <summary>
