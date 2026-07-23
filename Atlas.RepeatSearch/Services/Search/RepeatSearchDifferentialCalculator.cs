@@ -65,20 +65,26 @@ namespace Atlas.RepeatSearch.Services.Search
             var previousCanonicalDonorsInDonorStore = await donorReader.GetDonorsByExternalDonorCodes(previousCanonicalDonors);
             var deletedDonors = previousCanonicalDonors.Where(d => !previousCanonicalDonorsInDonorStore.ContainsKey(d)).ToList();
 
+            var atlasIdByDonorCode = new Dictionary<string, int>();
+            foreach (var result in results)
+            {
+                atlasIdByDonorCode.TryAdd(result.DonorCode, result.AtlasDonorId);
+            }
+
             return new SearchResultDifferential
             {
-                NewResults = newDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, results)).ToList(),
-                UpdatedResults = updatedDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, results)).ToList(),
+                NewResults = newDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, atlasIdByDonorCode)).ToList(),
+                UpdatedResults = updatedDonors.Select(donorCode => LookupDonorIdFromCode(donorCode, atlasIdByDonorCode)).ToList(),
                 RemovedResults = noLongerMatchingDonors.Concat(deletedDonors).ToList()
             };
         }
 
-        private static DonorIdPair LookupDonorIdFromCode(string externalDonorCode, List<MatchingAlgorithmResult> results)
+        private static DonorIdPair LookupDonorIdFromCode(string externalDonorCode, IReadOnlyDictionary<string, int> atlasIdByDonorCode)
         {
             return new DonorIdPair
             {
                 ExternalDonorCode = externalDonorCode,
-                AtlasId = results.First(r => r.DonorCode == externalDonorCode).AtlasDonorId
+                AtlasId = atlasIdByDonorCode[externalDonorCode]
             };
         }
     }
