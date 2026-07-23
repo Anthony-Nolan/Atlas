@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.ResultSet;
+using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
@@ -28,10 +31,16 @@ namespace Atlas.Functions.Test.Services
         // because it is a downstream contract value, not incidental test data — so it is deliberately not randomised.
         private const string MatchPredictionBatchProcessingStage = "MatchPredictionBatchProcessing";
 
+        // The notification source the parallel match-prediction path stamps on alerts/notifications. Mirrors the private
+        // const in ParallelMatchPredictionCompletionService; asserted as a literal for the same contract reason.
+        private const string ParallelMatchPredictionNotificationSource = "Atlas.Functions.ParallelMatchPrediction";
+
         private IParallelMatchPredictionRepository repository;
         private ISearchCompletionMessageSender searchCompletionMessageSender;
         private IMatchPredictionSearchTrackingDispatcher trackingDispatcher;
         private INotificationSender notificationSender;
+        private IMatchingResultsDownloader matchingResultsDownloader;
+        private IResultsCombiner resultsCombiner;
         private ParallelMatchPredictionCompletionService completionService;
 
         private Fixture fixture;
@@ -44,11 +53,13 @@ namespace Atlas.Functions.Test.Services
             searchCompletionMessageSender = Substitute.For<ISearchCompletionMessageSender>();
             trackingDispatcher = Substitute.For<IMatchPredictionSearchTrackingDispatcher>();
             notificationSender = Substitute.For<INotificationSender>();
+            matchingResultsDownloader = Substitute.For<IMatchingResultsDownloader>();
+            resultsCombiner = Substitute.For<IResultsCombiner>();
 
             completionService = new ParallelMatchPredictionCompletionService(
                 repository,
-                Substitute.For<IMatchingResultsDownloader>(),
-                Substitute.For<IResultsCombiner>(),
+                matchingResultsDownloader,
+                resultsCombiner,
                 Substitute.For<ISearchResultsBlobStorageClient>(),
                 searchCompletionMessageSender,
                 trackingDispatcher,
@@ -57,6 +68,22 @@ namespace Atlas.Functions.Test.Services
                 Options.Create(new AzureStorageSettings()),
                 Options.Create(new OrchestrationSettings())
             );
+        }
+
+        /// <summary>
+        /// Stubs the collaborators the success path dereferences so <see cref="ParallelMatchPredictionCompletionService.FinaliseRun"/>
+        /// can run end-to-end for a run with no failed batches (the downloaders/combiner are otherwise substitutes
+        /// returning null, which would NRE inside the pipeline).
+        /// </summary>
+        private void StubSuccessfulCompletionPipeline()
+        {
+            matchingResultsDownloader.DownloadSummary(Arg.Any<string>(), Arg.Any<bool>())
+                .Returns(new OriginalMatchingAlgorithmResultSet());
+            resultsCombiner.BuildResultsSummary(
+                    Arg.Any<ResultSet<MatchingAlgorithmResult>>(),
+                    Arg.Any<TimeSpan>(),
+                    Arg.Any<TimeSpan>())
+                .Returns(new OriginalSearchResultSet { SearchRequestId = fixture.Create<Guid>().ToString() });
         }
 
         [Test]
@@ -246,6 +273,64 @@ namespace Atlas.Functions.Test.Services
             await searchCompletionMessageSender.Received(1).PublishFailureMessage(
                 Arg.Is<SendFailureNotificationParameters>(p => p.FailureDetail.Contains(batchFailureMessage))
             );
+        }
+
+        [Test]
+        public async Task FinaliseRun_SuccessfulRun_SendsSuccessNotificationToNotificationsTopic()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(
+                status: ParallelMatchPredictionRunStatus.Running,
+                failedBatch: false
+            ));
+            StubSuccessfulCompletionPipeline();
+
+            await completionService.FinaliseRun(runId);
+
+            // The success path must emit a notification (the positive counterpart to the failure alert) and finalise.
+            await notificationSender.Received(1).SendNotification(
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                ParallelMatchPredictionNotificationSource
+            );
+            await repository.Received(1).MarkRunFinalised(runId, Arg.Any<DateTime>());
+        }
+
+        [Test]
+        public async Task FinaliseRun_RecoveredRunFullyReplayedToSuccess_SendsSuccessNotification()
+        {
+            var runId = fixture.Create<int>();
+            // A run that had previously failed during batch processing, whose every failed batch has since been replayed
+            // to success (no failed batches remain), is driven to success and must notify like any other success.
+            repository.GetRunWithResults(runId).Returns(RunResults(
+                status: ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing,
+                failedBatch: false
+            ));
+            StubSuccessfulCompletionPipeline();
+
+            await completionService.FinaliseRun(runId);
+
+            await notificationSender.Received(1).SendNotification(
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                ParallelMatchPredictionNotificationSource
+            );
+            await repository.Received(1).MarkRunFinalised(runId, Arg.Any<DateTime>());
+        }
+
+        [Test]
+        public async Task FinaliseRun_FailedRun_DoesNotSendSuccessNotification()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(
+                status: ParallelMatchPredictionRunStatus.Running,
+                failedBatch: true
+            ));
+
+            await completionService.FinaliseRun(runId);
+
+            // A failed run raises a High-priority alert, never a success notification.
+            await notificationSender.DidNotReceiveWithAnyArgs().SendNotification(default, default, default);
         }
 
         private ParallelMatchPredictionRunResults RunResults(

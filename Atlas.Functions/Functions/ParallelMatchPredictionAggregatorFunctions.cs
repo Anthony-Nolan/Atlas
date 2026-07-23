@@ -102,15 +102,12 @@ public class ParallelMatchPredictionAggregatorFunctions
     }
 
     /// <summary>
-    /// Timer-triggered finaliser. Scans for unclaimed runs that have received all expected batches and are still in the
-    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.Running"/> state, then atomically
-    /// claims each run with a per-invocation lease GUID before driving the persistence pipeline via
-    /// <see cref="IParallelMatchPredictionCompletionService.FinaliseRun"/>. The lease prevents concurrent invocations
-    /// from processing the same run: only the invocation that wins the compare-and-swap claim will proceed.
-    /// On failure the completion service moves the run to
-    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.FailedDuringCompletion"/>
-    /// and rethrows; this trigger collects the exceptions so other runs in the same tick still get processed, then
-    /// re-throws them as an <see cref="AggregateException"/> at the end so the invocation is recorded as Failed.
+    /// Timer-triggered finaliser. Scans for unclaimed runs ready to (re-)finalise (see
+    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus"/> for eligibility and the replay
+    /// rule), atomically claims each with a per-invocation lease GUID so concurrent invocations cannot double-process,
+    /// then drives the persistence pipeline via <see cref="IParallelMatchPredictionCompletionService.FinaliseRun"/>.
+    /// Failures are collected so the other runs in the tick still get processed, then rethrown as an
+    /// <see cref="AggregateException"/> so the invocation is recorded as Failed.
     /// </summary>
     [Function(nameof(FinaliseCompletedParallelMatchPredictionRuns))]
     public async Task FinaliseCompletedParallelMatchPredictionRuns(
@@ -172,13 +169,11 @@ public class ParallelMatchPredictionAggregatorFunctions
     }
 
     /// <summary>
-    /// Timer-triggered abandonment sweep. Finds runs whose batches were initiated more than
-    /// <c>AbandonBatchAfterMinutes</c> minutes ago but that still have un-returned batches, then for each one marks the
-    /// run and its missing batches as
-    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.Abandoned"/> and publishes a
-    /// failure notification (<c>WasSuccessful=false</c>) downstream. The per-batch rows are retained for research until
-    /// the clean-up timer purges them. If the missing batch results arrive later (before cleanup) the finaliser replays
-    /// the run to <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.Finalised"/>.
+    /// Timer-triggered abandonment sweep. Finds runs initiated more than <c>AbandonBatchAfterMinutes</c> minutes ago
+    /// that still have un-returned batches and abandons each via
+    /// <see cref="IParallelMatchPredictionCompletionService.AbandonRun"/> (see
+    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.Abandoned"/>). Per-run failures
+    /// are collected and rethrown as an <see cref="AggregateException"/> so the invocation is recorded as Failed.
     /// </summary>
     [Function(nameof(MarkRunsAsAbandoned))]
     public async Task MarkRunsAsAbandoned(
@@ -215,7 +210,7 @@ public class ParallelMatchPredictionAggregatorFunctions
         // Every run above was still attempted; a run that failed here stays Running and is re-selected on the next
         // sweep (AbandonRun is an idempotent status compare-and-swap, so a retry cannot double-notify). Re-throw the
         // collected failures so the invocation is recorded as Failed for monitoring/alerting and is easy to research —
-        // a swallowed abandonment can otherwise leave no durable trace beyond this log line.
+        // swallowed abandonment can otherwise leave no durable trace beyond this log line.
         if (failures.Count > 0)
         {
             throw new AggregateException(
@@ -226,13 +221,10 @@ public class ParallelMatchPredictionAggregatorFunctions
     }
 
     /// <summary>
-    /// Timer-triggered clean-up. Deletes per-batch rows belonging to <em>any</em> run that has been in the
-    /// database for more than <c>ParallelBatchRetentionDays</c> (measured from <c>MatchPredictionRunInitiatedUtc</c>),
-    /// regardless of status — this includes abandoned runs still in
-    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRunStatus.Running"/>,
-    /// finalised runs, and failed runs — and marks each such run with
-    /// <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRun.IsCleanedUp"/> = <c>true</c>.
-    /// The run's <c>Status</c> is left unchanged. The parent <c>ParallelMatchPredictionRun</c> rows are kept
+    /// Timer-triggered clean-up. Deletes per-batch rows for <em>any</em> run older than
+    /// <c>ParallelBatchRetentionDays</c> (measured from <c>MatchPredictionRunInitiatedUtc</c>) regardless of status,
+    /// and flags each run <see cref="Atlas.MatchPrediction.Data.Models.ParallelMatchPredictionRun.IsCleanedUp"/> =
+    /// <c>true</c> (leaving <c>Status</c> unchanged). Parent <c>ParallelMatchPredictionRun</c> rows are kept
     /// indefinitely so historic searches remain visible in dashboards/audits.
     /// </summary>
     [Function(nameof(CleanupOldParallelMatchPredictionBatches))]

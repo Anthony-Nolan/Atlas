@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Atlas.MatchPrediction.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchPrediction.Data.Models;
@@ -75,12 +76,9 @@ public class ParallelMatchPredictionRun
 
     /// <summary>
     /// The id of the finalisation-function invocation that has claimed this run for processing.
-    /// Set atomically (compare-and-swap via a conditional UPDATE) before the finalisation pipeline starts;
-    /// remains set until the run reaches a terminal status (<see cref="ParallelMatchPredictionRunStatus.Finalised"/>,
-    /// <see cref="ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing"/>, or
-    /// <see cref="ParallelMatchPredictionRunStatus.FailedDuringCompletion"/>).
-    /// <c>null</c> means unclaimed and available for the next scheduled invocation to pick up.
-    /// No expiry is required: the claiming invocation always drives the run to completion or failure before releasing.
+    /// <see cref="IParallelMatchPredictionRepository.TryClaimFinalisationLease"/>
+    /// <see cref="IParallelMatchPredictionRepository.MarkRunFinalised"/>
+    /// <see cref="IParallelMatchPredictionRepository.MarkRunFailed"/>
     /// </summary>
     public Guid? FinalisationLeaseOwner { get; set; }
 
@@ -94,12 +92,10 @@ public class ParallelMatchPredictionRun
     public DateTime? FinalisedTimeUtc { get; set; }
 
     /// <summary>
-    /// Whether this run completed successfully.
-    /// <c>null</c> until all batches have been processed (either <c>ResultsReceived</c> or <c>Failed</c>).
-    /// <c>true</c> when every batch succeeded; <c>false</c> when at least one batch failed.
-    /// Also set to <c>false</c> at dispatch time when the batch-request messages could not be published to
-    /// Service Bus; the run remains <see cref="ParallelMatchPredictionRunStatus.Running"/> until the finaliser
-    /// transitions it to <see cref="ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing"/>.
+    /// Whether this run completed successfully. <c>null</c> until every batch has been processed
+    /// (<see cref="ParallelMatchPredictionBatchStatus.ResultsReceived"/> or
+    /// <see cref="ParallelMatchPredictionBatchStatus.Failed"/>); <c>true</c> when all succeeded, <c>false</c> when
+    /// any failed — including a dispatch failure (see <see cref="ParallelMatchPredictionRunStatus"/>).
     /// </summary>
     public bool? IsSuccessful { get; set; }
 

@@ -125,14 +125,13 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 
         /// <summary>
         /// Parallel match-prediction path: downloads matching results, builds batched inputs using
-        /// <see cref="OrchestrationSettings.ParallelMatchPredictionBatchSize"/>,
-        /// uploads blobs, then creates the run record and pre-creates one batch row per blob in the repository
-        /// (ensuring <c>BatchSequenceNumber</c> 0 … N−1 matches the order in <c>blobLocations</c>), and finally
-        /// publishes one <see cref="ParallelMatchPredictionBatchRequest"/> message per blob to
-        /// <c>parallel-match-prediction-requests</c>.  The ACA Worker processes each batch and publishes results
-        /// to <c>parallel-match-prediction-results</c>; the aggregator function handles final persistence.
-        /// If publishing fails, the run is marked as failed in the repository (run unsuccessful, all batches Failed) and the exception is swallowed:
-        /// the finaliser timer then performs the failure processing.
+        /// <see cref="OrchestrationSettings.ParallelMatchPredictionBatchSize"/>, uploads blobs, then creates the run
+        /// record and pre-creates one batch row per blob (<c>BatchSequenceNumber</c> 0 … N−1 matching the order in
+        /// <c>blobLocations</c>), and finally publishes one <see cref="ParallelMatchPredictionBatchRequest"/> message
+        /// per blob to <c>parallel-match-prediction-requests</c>. The ACA Worker processes each batch and publishes
+        /// results to <c>parallel-match-prediction-results</c>; the aggregator handles final persistence. If publishing
+        /// fails the run is recorded as a dispatch failure and the exception swallowed — see
+        /// <see cref="IParallelMatchPredictionRepository.MarkRunAsDispatchFailed"/>.
         /// </summary>
         [Function(nameof(PrepareAndDispatchParallelMatchPredictionBatches))]
         public async Task PrepareAndDispatchParallelMatchPredictionBatches(
