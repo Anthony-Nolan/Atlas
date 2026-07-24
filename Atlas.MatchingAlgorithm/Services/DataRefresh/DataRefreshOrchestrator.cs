@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -292,8 +293,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             switch (incompleteJobs.Count)
             {
                 case 0:
-                    throw new InvalidDataRefreshRequestHttpException($"{errorMessagePrefix}There is no record of an initiated job. " +
-                                                                 "Please submit a new data refresh request.");
+                    throw new InvalidDataRefreshRequestHttpException($"{errorMessagePrefix}There is no record of an initiated job. "
+                                                                   + "Please submit a new data refresh request."
+                    );
                 case 1:
                     var incompleteJob = incompleteJobs.Single();
                     if (incompleteJob.Id != dataRefreshRecordId)
@@ -305,8 +307,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     return incompleteJob;
 
                 default:
-                    throw new InvalidDataRefreshRequestHttpException($"{errorMessagePrefix}More than one open job record found. " +
-                                                                 "Please manually clean up refresh records.");
+                    throw new InvalidDataRefreshRequestHttpException($"{errorMessagePrefix}More than one open job record found. "
+                                                                   + "Please manually clean up refresh records."
+                    );
             }
         }
 
@@ -336,12 +339,25 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             }
             catch (SqlException e)
             {
-                logger.SendTrace($"Data Refresh Error: ${e}", LogLevel.Error);
+                // Rethrown so the Service Bus message is redelivered and the job resumes from its checkpoint. Emitted as
+                // queryable Exception telemetry (not a Trace) so the retry is visible; at Error because this is the
+                // designed transient-recovery path, not a terminal failure.
+                logger.SendException(e, LogLevel.Error, new Dictionary<string, string>
+                    {
+                        ["DataRefreshRecordId"] = dataRefreshRecordId.ToString(),
+                        ["Disposition"] = "SqlException - rethrowing for Service Bus redelivery / checkpoint resume"
+                    }
+                );
                 throw; // we are re-throwing the exception to allow automatic retry of the job
             }
             catch (Exception e)
             {
-                logger.SendTrace($"Data Refresh Failed: ${e}", LogLevel.Critical);
+                logger.SendException(e, LogLevel.Critical, new Dictionary<string, string>
+                    {
+                        ["DataRefreshRecordId"] = dataRefreshRecordId.ToString(),
+                        ["Disposition"] = "Terminal failure - marking record failed and notifying"
+                    }
+                );
                 await dataRefreshCompletionNotifier.NotifyOfFailure(dataRefreshRecordId);
                 await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, false, null);
             }

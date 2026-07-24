@@ -56,6 +56,15 @@ namespace Atlas.Common.Test.SharedTestHelpers
             nLogger.Log(GetSeverityLevel(messageLogLevel), messageText);
         }
 
+        public virtual void SendMetric(string metricName, double value, Dictionary<string, string> dimensions = null)
+        {
+            var dimsString = dimensions?.Select(kvp => $"{kvp.Key}: {kvp.Value}").StringJoin(" | ");
+            var messageText = dimensions == null
+                ? $"METRIC {metricName} = {value}"
+                : $"METRIC {metricName} = {value}. Dimensions: {dimsString}";
+            nLogger.Log(NLogLevel.Info, messageText);
+        }
+
         private static NLogLevel GetSeverityLevel(AtlasLogLevel logLevel)
         {
             switch (logLevel)
