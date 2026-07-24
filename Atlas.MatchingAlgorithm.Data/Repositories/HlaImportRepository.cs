@@ -3,12 +3,12 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Common.Config;
+using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
@@ -34,59 +34,97 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
     {
         private readonly IHlaNamesRepository hlaNamesRepository;
         private readonly IPGroupRepository pGroupRepository;
+        private readonly IAtlasLogger logger;
 
         private LociInfo<ISet<int>> processedHlaIds;
 
         public HlaImportRepository(
             IHlaNamesRepository hlaNamesRepository,
             IPGroupRepository pGroupRepository,
-            IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
+            IConnectionStringProvider connectionStringProvider,
+            IAtlasLogger logger) : base(connectionStringProvider)
         {
             this.hlaNamesRepository = hlaNamesRepository;
             this.pGroupRepository = pGroupRepository;
+            this.logger = logger;
         }
 
         public async Task<IDictionary<string, int>> ImportHla(IList<DonorInfoWithExpandedHla> donorsToImport)
         {
-            await EnsureProcessedHlaCacheIsUpToDate();
+            using (logger.TimeOperationAsMetric(
+                       DataRefreshMetrics.DurationMsMetric,
+                       DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_EnsureProcessedHlaCache)
+                   ))
+            {
+                await EnsureProcessedHlaCacheIsUpToDate();
+            }
 
-            var pGroupLookup = await pGroupRepository.EnsureAllPGroupsExist(donorsToImport.AllPGroupNames());
-            var hlaNameLookup = await hlaNamesRepository.EnsureAllHlaNamesExist(donorsToImport.AllHlaNames());
-
-            var hlaToInsert = donorsToImport.Select(donor => new PhenotypeInfo<IList<HlaNamePGroupRelation>>((locus, position) =>
-                    donor?.MatchingHla?.GetPosition(locus, position)?.MatchingPGroups
-                        .Select(pGroup =>
-                        {
-                            var hlaName = donor.MatchingHla.GetPosition(locus, position).LookupName;
-                            var hlaNameId = hlaNameLookup.GetValueOrDefault(hlaName);
-                            return hlaName == null || processedHlaIds.GetLocus(locus).Contains(hlaNameId)
-                                ? null
-                                : new HlaNamePGroupRelation
-                                {
-                                    HlaNameId = hlaNameId,
-                                    PGroupId = pGroupLookup[pGroup]
-                                };
-                        })
-                        .Where(relation => relation != null)
-                        .ToList()
-                )
+            // EnsureAll*Exist insert any brand-new names / p-groups and then re-read the WHOLE respective table to refresh
+            // the in-memory id map. Per the spike profile (Finding #1) this per-batch full-table re-cache is the dominant
+            // stage-50 cost, so each is timed on its own - both are DB-read bound and grow ~quadratically with table size.
+            var pGroupLookup = await logger.RunTimedAsMetricAsync(
+                DataRefreshMetrics.DurationMsMetric,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_EnsurePGroupsExist),
+                () => pGroupRepository.EnsureAllPGroupsExist(donorsToImport.AllPGroupNames())
+            );
+            var hlaNameLookup = await logger.RunTimedAsMetricAsync(
+                DataRefreshMetrics.DurationMsMetric,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_EnsureHlaNamesExist),
+                () => hlaNamesRepository.EnsureAllHlaNamesExist(donorsToImport.AllHlaNames())
             );
 
-            var flattenedHlaToInsert = new LociInfo<IList<HlaNamePGroupRelation>>(
-                l =>
-                {
-                    return hlaToInsert.SelectMany(h =>
-                        {
-                            var position1Relations = h.GetPosition(l, LocusPosition.One) ?? new List<HlaNamePGroupRelation>();
-                            var position2Relations = h.GetPosition(l, LocusPosition.Two) ?? new List<HlaNamePGroupRelation>();
-                            return position1Relations.Concat(position2Relations);
-                        })
-                        .Where(x => x != null)
-                        .Distinct()
-                        .ToList();
-                });
+            // The LociInfo(Func<>) ctor is eager (it invokes the factory for every locus in its constructor), so the entire
+            // relation build - including the PhenotypeInfo / LociInfo allocations that are Finding #3 - is realised here on
+            // the calling thread, NOT lazily during the insert below. Timed as CPU.
+            LociInfo<IList<HlaNamePGroupRelation>> flattenedHlaToInsert;
+            using (logger.TimeOperationAsMetric(
+                       DataRefreshMetrics.DurationMsMetric,
+                       DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_BuildHlaRelations)
+                   ))
+            {
+                var hlaToInsert = donorsToImport.Select(donor => new PhenotypeInfo<IList<HlaNamePGroupRelation>>((locus, position) =>
+                        donor?.MatchingHla?.GetPosition(locus, position)?.MatchingPGroups
+                            .Select(pGroup =>
+                                {
+                                    var hlaName = donor.MatchingHla.GetPosition(locus, position).LookupName;
+                                    var hlaNameId = hlaNameLookup.GetValueOrDefault(hlaName);
+                                    return hlaName == null || processedHlaIds.GetLocus(locus).Contains(hlaNameId)
+                                        ? null
+                                        : new HlaNamePGroupRelation
+                                        {
+                                            HlaNameId = hlaNameId,
+                                            PGroupId = pGroupLookup[pGroup]
+                                        };
+                                }
+                            )
+                            .Where(relation => relation != null)
+                            .ToList()
+                    )
+                );
 
-            await ImportHla(flattenedHlaToInsert);
+                flattenedHlaToInsert = new LociInfo<IList<HlaNamePGroupRelation>>(l =>
+                    {
+                        return hlaToInsert.SelectMany(h =>
+                                {
+                                    var position1Relations = h.GetPosition(l, LocusPosition.One) ?? new List<HlaNamePGroupRelation>();
+                                    var position2Relations = h.GetPosition(l, LocusPosition.Two) ?? new List<HlaNamePGroupRelation>();
+                                    return position1Relations.Concat(position2Relations);
+                                }
+                            )
+                            .Where(x => x != null)
+                            .Distinct()
+                            .ToList();
+                    }
+                );
+            }
+
+            using (logger.TimeOperationAsMetric(
+                       DataRefreshMetrics.DurationMsMetric,
+                       DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_InsertHlaRelations)
+                   ))
+            {
+                await ImportHla(flattenedHlaToInsert);
+            }
 
             return hlaNameLookup;
         }
@@ -108,7 +146,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             // Therefore, we check for an open transaction here and either allow parallel execution across loci (via WhenAll), or do not (via WhenEach)
             var shouldRestrictParallelism = Transaction.Current != null;
             await new LociInfo<int>().WhenEachLocusWithOptionalParallelism(
-                async (l, _) => { processedHlaIds = processedHlaIds.SetLocus(l, await GetExistingHlaAtLocus(l)); }, shouldRestrictParallelism);
+                async (l, _) => { processedHlaIds = processedHlaIds.SetLocus(l, await GetExistingHlaAtLocus(l)); }, shouldRestrictParallelism
+            );
         }
 
         private async Task ImportHla(LociInfo<IList<HlaNamePGroupRelation>> hlaNamesToImport)
@@ -120,7 +159,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             await hlaNamesToImport.WhenEachLocusWithOptionalParallelism(async (l, v) => await ImportHlaAtLocus(l, v), shouldRestrictParallelism);
 
             processedHlaIds = processedHlaIds.Map((l, existing) =>
-                (ISet<int>) existing.Concat(hlaNamesToImport.GetLocus(l).Select(hla => hla.HlaNameId)).ToHashSet()
+                (ISet<int>)existing.Concat(hlaNamesToImport.GetLocus(l).Select(hla => hla.HlaNameId)).ToHashSet()
             );
         }
 

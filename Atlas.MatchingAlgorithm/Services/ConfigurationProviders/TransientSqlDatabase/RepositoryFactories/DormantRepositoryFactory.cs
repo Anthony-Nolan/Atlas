@@ -1,4 +1,3 @@
-using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
@@ -9,7 +8,9 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
     public interface IDormantRepositoryFactory : ITransientRepositoryFactory
     {
         IDonorImportRepository GetDonorImportRepository();
+
         IDataRefreshRepository GetDataRefreshRepository();
+
         IDonorManagementLogRepository GetDonorManagementLogRepository();
     }
 
@@ -19,14 +20,14 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         public DormantRepositoryFactory(
             DormantTransientSqlConnectionStringProvider dormantConnectionStringProvider,
             IMatchingAlgorithmImportLogger logger
-            )
+        )
             : base(dormantConnectionStringProvider, logger)
         {
         }
 
         public IDonorImportRepository GetDonorImportRepository()
         {
-            return new DonorImportRepository(GetHlaNamesRepository(), ConnectionStringProvider, logger);
+            return new DonorImportRepository(GetHlaNamesRepository(), ConnectionStringProvider, Logger);
         }
 
         public IDataRefreshRepository GetDataRefreshRepository()

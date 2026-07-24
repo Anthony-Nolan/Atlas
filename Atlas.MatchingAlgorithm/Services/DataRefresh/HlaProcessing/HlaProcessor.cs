@@ -14,6 +14,7 @@ using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Settings;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -37,6 +38,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
     public class HlaProcessor : IHlaProcessor
     {
         private const int BatchSize = 2000; // At 1k this definitely works fine. At 4k it's been seen throwing OOM Exceptions
+        private const int BatchProgressReportingPeriod = 10; // Emit a human-readable progress/ETA trace every N batches.
         private const string HlaFailureEventName = "Imported Donor Hla Processing Failure(s) in the Matching Algorithm's DataRefresh";
 
         private readonly IMatchingAlgorithmImportLogger logger;
@@ -47,7 +49,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IPGroupRepository pGroupRepository;
-        private readonly IHlaNamesRepository hlaNamesRepository;
         private readonly IHlaImportRepository hlaImportRepository;
 
         public const int NumberOfBatchesOverlapOnRestart = 3;
@@ -68,7 +69,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
             pGroupRepository = repositoryFactory.GetPGroupRepository();
-            hlaNamesRepository = repositoryFactory.GetHlaNamesRepository();
             hlaImportRepository = repositoryFactory.GetHlaImportRepository();
         }
 
@@ -104,7 +104,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 ? await dataRefreshRepository.GetOrderedDonorBatches(NumberOfBatchesOverlapOnRestart, BatchSize, lastProcessedDonor ?? 0)
                 : new List<List<DonorInfo>>();
 
-            var (donorsPreviouslyProcessed, lastDonorIdSuspectedOfBeingReprocessed) = continueExistingProcessing
+            var (donorsPreviouslyProcessed, _) = continueExistingProcessing
                 ? await DetermineProgressAndReprocessingBoundaries(overlapBatches)
                 : (0, 0);
             var failedDonors = new List<FailedDonorInfo>();
@@ -115,41 +115,19 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 logger.SendTrace($"Hla Processing continuing. {donorsPreviouslyProcessed} donors previously processed. {donorsToImport} remain.");
             }
 
-            var progressReports = new LongLoggingSettings
-            {
-                ExpectedNumberOfIterations = totalDonorCount / BatchSize,
-                InnerOperationLoggingPeriod = 10, // Note this is every 10 *Batches*
-                ReportPercentageCompletion = true,
-                ReportProjectedCompletionTime = true
-            };
-            var summaryReportOnly = new LongLoggingSettings {InnerOperationLoggingPeriod = int.MaxValue, ReportOuterTimerStart = false};
-            var summaryReportWithThreadingCount = new LongLoggingSettings
-                {InnerOperationLoggingPeriod = int.MaxValue, ReportOuterTimerStart = false, ReportThreadCount = true, ReportPerThreadTime = false};
+            // Timings below are emitted as pre-aggregated Application Insights metrics (DataRefreshMetrics.DurationMsMetric)
+            // rather than as Trace summaries. The old LongStopwatchCollection wrote all of its summaries as Traces in one
+            // synchronous burst when this using-block unwound at stage completion; the isolated worker's adaptive sampling
+            // (which host.json's excludedTypes does NOT govern for direct-to-App-Insights worker logs) then dropped them,
+            // since they shared one OperationId. Metrics are never sampled, so they always survive.
+            var totalBatches = totalDonorCount / BatchSize;
+            long batchesProcessed = 0;
+            var stageStartTimestamp = Stopwatch.GetTimestamp();
 
-            var timerCollection = new LongStopwatchCollection((text, milliseconds) =>
-                logger.SendTrace(text, props: new Dictionary<string, string> {{"Milliseconds", milliseconds.ToString()}}), summaryReportOnly);
-
-            // @formatter:off
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.BatchProgress_TimerKey, "Hla Batch Overall Processing. Inner Operation is UpdateDonorBatch", null, progressReports)) 
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaExpansion_TimerKey, " * Hla Expansion, during HlaProcessing")) 
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_Overall_TimerKey, " * Ensuring all PGroups exist in the DB, during HlaProcessing (no actual DB writing, just processing)")) 
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_Flattening_TimerKey, " * * Flatten the donors' PGroups, during EnsureAllPGroupsExist, during HlaProcessing")) 
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_FindNew_TimerKey, " * * Check PGroups against known dictionary, during EnsureAllPGroupsExist, during HlaProcessing"))
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewHlaNameInsertion_Overall_TimerKey, " * * Check HLA Names against known dictionary, during HlaProcessing"))
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewHlaNameInsertion_Flattening_TimerKey, " * * Flatten HLA Names, during HlaProcessing"))
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewHlaNameInsertion_FindNew_TimerKey, " * * Check HLA Names against known dictionary, during EnsureAllHlaNamesExist, during HlaProcessing"))
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_Overall_TimerKey, " * UpsertMatchingPGroupsAtSpecifiedLoci, during HlaProcessing")) 
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_Overall_TimerKey, " * * Time setting up Hla BulkInsert statements, during HlaProcessing")) 
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_Overall_TimerKey, " * * * Data Table Build, in Hla BulkInsert SETUP, during HlaProcessing"))
-            using (timerCollection.InitialiseDisabledStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_CreateDtObject_TimerKey, " * * * * Creating blank DataTable object, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing"))
-            using (timerCollection.InitialiseDisabledStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_OutsideForeach_TimerKey, " * * * * Outside the innermost foreach of method, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing"))
-            using (timerCollection.InitialiseDisabledStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_InsideForeach_TimerKey, " * * * * Inside the innermost foreach of method, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing"))
-            using (timerCollection.InitialiseDisabledStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_FetchPGroupId_TimerKey, " * * * * Fetch PGroup Id, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing") )
-            using (timerCollection.InitialiseDisabledStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_AddRowToDt_TimerKey, " * * * * Raw DataTable Row Add, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing") )
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_DeleteExistingRecords_TimerKey, " * * * Delete Existing records, in Hla BulkInsert SETUP, during HlaProcessing") )
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BlockingWait_TimerKey, " * * Time spent in `Task.WhenAll`, JUST waiting on HlaInsert tasks to Complete, during HlaProcessing") )
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_DtWriteExecution_TimerKey, " * * * Total Time spent across all threads, writing BulkInserts during HlaInsert operation, during HlaProcessing", null, summaryReportWithThreadingCount))
-                // @formatter:on
+            using (logger.TimeOperationAsMetric(
+                       DataRefreshMetrics.DurationMsMetric,
+                       DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_HlaProcessingStageTotal)
+                   ))
             {
                 // We only store the last Id in each batch so we only need to keep one Id per batch.
                 var completedDonors = new FixedSizedQueue<int>(NumberOfBatchesOverlapOnRestart);
@@ -161,18 +139,17 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                         continue;
                     }
 
-                    // When continuing a donor import there will be some overlap of donors to ensure all donors are processed. 
+                    // When continuing a donor import there will be some overlap of donors to ensure all donors are processed.
                     // In this case, we will end up with duplicate p-groups in the matching hla tables.
                     // Deleting p-groups is not suitably performant (as it involves deleting from an un-indexed table with potentially billions of rows)
-                    // The only downside to allowing duplicate p-groups is that the table has some redundant data and is slightly larger than necessary - 
+                    // The only downside to allowing duplicate p-groups is that the table has some redundant data and is slightly larger than necessary -
                     // But this is insignificant compared to the full size of this table regardless.
-                    using (timerCollection.TimeInnerOperation(DataRefreshTimingKeys.BatchProgress_TimerKey))
+                    using (logger.TimeOperationAsMetric(
+                               DataRefreshMetrics.DurationMsMetric,
+                               DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_BatchProcessing)
+                           ))
                     {
-                        var failedDonorsFromBatch = await UpdateDonorBatch(
-                            donorBatch,
-                            hlaNomenclatureVersion,
-                            timerCollection
-                        );
+                        var failedDonorsFromBatch = await UpdateDonorBatch(donorBatch, hlaNomenclatureVersion);
                         failedDonors.AddRange(failedDonorsFromBatch);
                     }
 
@@ -181,6 +158,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                     if (completedDonors.Count >= NumberOfBatchesOverlapOnRestart)
                     {
                         await updateLastSafelyProcessedDonorId(completedDonors.Peek());
+                    }
+
+                    if (++batchesProcessed % BatchProgressReportingPeriod == 0)
+                    {
+                        LogHlaProcessingProgress(batchesProcessed, totalBatches, stageStartTimestamp);
                     }
                 }
             }
@@ -210,29 +192,56 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         /// </summary>
         /// <param name="donorBatch">The collection of donors to update</param>
         /// <param name="hlaNomenclatureVersion">The version of the HLA Nomenclature to use to fetch expanded HLA information</param>
-        /// <param name="timerCollection"></param>
         /// <returns>A collection of donors that failed the import process.</returns>
         private async Task<IEnumerable<FailedDonorInfo>> UpdateDonorBatch(
             List<DonorInfo> donorBatch,
-            string hlaNomenclatureVersion,
-            LongStopwatchCollection timerCollection)
+            string hlaNomenclatureVersion)
         {
             var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersion);
 
-            var timedInnerOperation = timerCollection.TimeInnerOperation(DataRefreshTimingKeys.HlaExpansion_TimerKey);
-            var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName);
-            timedInnerOperation.Dispose();
+            var hlaExpansionResults = await logger.RunTimedAsMetricAsync(
+                DataRefreshMetrics.DurationMsMetric,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_HlaExpansion),
+                () => donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName)
+            );
 
-            var hlaNameLookup = await hlaImportRepository.ImportHla(hlaExpansionResults.ProcessingResults);
+            // ImportHla is (per the spike profile) the largest single slice of stage-50 user-code, so time the whole call
+            // as one operation here; IHlaImportRepository decomposes it further into its DB-read / CPU / DB-write parts.
+            var hlaNameLookup = await logger.RunTimedAsMetricAsync(
+                DataRefreshMetrics.DurationMsMetric,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_ImportHlaOverall),
+                () => hlaImportRepository.ImportHla(hlaExpansionResults.ProcessingResults)
+            );
 
             var donorEntries = hlaExpansionResults.ProcessingResults.Select(r => r.ToDonorInfoForPreProcessing(hlaName => hlaNameLookup[hlaName]));
 
             await donorImportRepository.AddMatchingRelationsForExistingDonorBatch(
                 donorEntries,
-                settings.DataRefreshDonorUpdatesShouldBeFullyTransactional,
-                timerCollection);
+                settings.DataRefreshDonorUpdatesShouldBeFullyTransactional
+            );
 
             return hlaExpansionResults.FailedDonors;
+        }
+
+        /// <summary>
+        /// Emits a low-frequency, human-readable progress line (with a linearly-extrapolated ETA) as a Trace.
+        /// This is a genuine log line - unlike the timing measurements, it is fine for it to be sampled - and replaces
+        /// the old LongOperationLoggingStopwatch "Progress:" reporting.
+        /// </summary>
+        private void LogHlaProcessingProgress(long batchesProcessed, long totalBatches, long stageStartTimestamp)
+        {
+            var elapsed = Stopwatch.GetElapsedTime(stageStartTimestamp);
+            var fractionComplete = totalBatches > 0 ? (double)batchesProcessed / totalBatches : 0;
+
+            var message = $"HLA Processing progress: {batchesProcessed}/{totalBatches} batches";
+            if (fractionComplete > 0)
+            {
+                var projectedTotal = TimeSpan.FromTicks((long)(elapsed.Ticks / fractionComplete));
+                var projectedCompletion = DateTime.UtcNow.Add(projectedTotal - elapsed);
+                message += $" ({fractionComplete:P1}). Projected completion: {projectedCompletion:u}.";
+            }
+
+            logger.SendTrace(message);
         }
 
         private async Task PerformUpfrontSetup(string hlaNomenclatureVersion)
