@@ -147,9 +147,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
                 // overlap, this total no longer decomposes into read + write: it is roughly max(read, write), and the
                 // DonorStreamRead and DonorImportBatch metrics give the occupancy of each side.
                 using (logger.TimeOperationAsMetric(
-                           DataRefreshMetrics.DurationMsMetric,
-                           DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DonorImportStageTotal)
-                       ))
+                    DataRefreshMetrics.DurationMsMetric,
+                    DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DonorImportStageTotal)))
                 {
                     allFailedDonors = await RunImportPipeline(shouldMarkDonorsAsUpdated, cancellationToken);
                 }
