@@ -55,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             var record = DataRefreshRecordBuilder.New
                 .With(r => r.Id, DefaultRecordId)
                 .Build();
-            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new[] {record});
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new[] { record });
         }
 
         private DataRefreshOrchestrator BuildDataRefreshOrchestrator(DataRefreshSettings dataRefreshSettings = null)
@@ -105,7 +105,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .With(r => r.Id, recordId)
                 .With(r => r.RefreshAttemptedCount, currentAttemptNumber - 1)
                 .Build();
-            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new[] {record});
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new[] { record });
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(recordId);
 
@@ -150,7 +150,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.ReceivedWithAnyArgs().UpdateExecutionDetails(default, default, default);
+            await dataRefreshHistoryRepository.ReceivedWithAnyArgs().UpdateExecutionDetails(default, default);
         }
 
         [Test]
@@ -161,7 +161,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            logger.Received().SendTrace(Arg.Is<string>(e => e.Contains(exceptionMessage)), LogLevel.Critical);
+            logger.Received().SendException(
+                Arg.Is<Exception>(e => e.Message.Contains(exceptionMessage)),
+                LogLevel.Critical,
+                Arg.Any<Dictionary<string, string>>()
+            );
         }
 
         [Test]
@@ -172,7 +176,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.ReceivedWithAnyArgs().UpdateExecutionDetails(default, default, default);
+            await dataRefreshHistoryRepository.ReceivedWithAnyArgs().UpdateExecutionDetails(default, default);
         }
 
         [Test]
@@ -214,10 +218,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
 
             // Marking refresh record as complete will switch over which database is considered "active". Emulating this with mocks here.
-            dataRefreshHistoryRepository.WhenForAnyArgs(r => r.UpdateSuccessFlag(0, true)).Do(x =>
-            {
-                activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
-            });
+            dataRefreshHistoryRepository.WhenForAnyArgs(r => r.UpdateSuccessFlag(0, true)).Do(_ =>
+                {
+                    activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
+                }
+            );
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 

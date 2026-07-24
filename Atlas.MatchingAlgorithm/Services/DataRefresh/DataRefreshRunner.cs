@@ -20,6 +20,7 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Settings;
 using EnumStringValues;
+using Microsoft.Data.SqlClient;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 {
@@ -63,36 +64,36 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IDictionary<DataRefreshStage, bool> canStageBeSkipped = new Dictionary<DataRefreshStage, bool>
         {
             // We MUST skip the Metadata Refresh step, if we've already progressed past it, as we have to ensure that the Version doesn't change mid-refresh. 
-            {DataRefreshStage.MetadataDictionaryRefresh, true},
+            { DataRefreshStage.MetadataDictionaryRefresh, true },
 
             // Index removal *must* be skipped for certain continued updates to work.
             // If we have re-created donor HLA Indexes, but then failed later, then we should not delete those Indexes.
-            {DataRefreshStage.IndexRemoval, true},
+            { DataRefreshStage.IndexRemoval, true },
 
             // Data deletion *must* be skipped for continued updates to work.
             // If we have imported donor data but dropped out during HLA refresh, we should not delete the donor data.
-            {DataRefreshStage.DataDeletion, true},
+            { DataRefreshStage.DataDeletion, true },
 
             // Failing to scale up the Database will cause the refresh to take a VERY long time, and it is possible for someone to manually scale the DB back down between interruption and retry.
             // Re-performing this stage if the database is already at the required level is very quick.
-            {DataRefreshStage.DatabaseScalingSetup, false},
+            { DataRefreshStage.DatabaseScalingSetup, false },
 
             // Re-importing of Donors deletion *must* be skipped if we want to continue a partial processing of Donor HLAs, since we need to be certain that the already-processed donors haven't changed underneath us.
-            {DataRefreshStage.DonorImport, true},
+            { DataRefreshStage.DonorImport, true },
 
             // If the step that failed was Index recreation, then we definitely don't want to re-process all the HLA just to do the final steps.
-            {DataRefreshStage.DonorHlaProcessing, true},
+            { DataRefreshStage.DonorHlaProcessing, true },
 
             // The respective processing times make it pretty unlikely that an interruption would occur after Index recreation completes.
             // But if it *were* to occur then we definitely don't want to have to *re*-re-create them just to do the final 2 steps.
-            {DataRefreshStage.IndexRecreation, true},
+            { DataRefreshStage.IndexRecreation, true },
 
             // Failing to scale down the Database has a cost impact, and it is possible for someone to manually scale the DB back up between interruption and retry.
             // Re-performing this stage if the database is already at the required level is very quick.
-            {DataRefreshStage.DatabaseScalingTearDown, false},
+            { DataRefreshStage.DatabaseScalingTearDown, false },
 
             // Donor updates will still be posted if the refresh quits after this stage. This stage should always be performed last, and the refresh only marked as success when it is fully complete. 
-            {DataRefreshStage.QueuedDonorUpdateProcessing, false},
+            { DataRefreshStage.QueuedDonorUpdateProcessing, false },
         };
 
         public DataRefreshRunner(
@@ -134,15 +135,18 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         public async Task<string> RefreshData(int refreshRecordId)
         {
+            DataRefreshStage? currentStage = null;
             try
             {
                 var refreshRecord = await dataRefreshHistoryRepository.GetRecord(refreshRecordId);
                 var stageExecutionModes = DetermineStageExecutionModes(refreshRecord);
 
+                currentStage = DataRefreshStage.MetadataDictionaryRefresh;
                 await RefreshHlaMetadataDictionary(refreshRecord);
 
-                foreach (var dataRefreshStage in orderedRefreshStages.Except(new[] {DataRefreshStage.MetadataDictionaryRefresh}))
+                foreach (var dataRefreshStage in orderedRefreshStages.Except(new[] { DataRefreshStage.MetadataDictionaryRefresh }))
                 {
+                    currentStage = dataRefreshStage;
                     var executionMode = stageExecutionModes[dataRefreshStage];
                     await ExecuteDataRefreshStage(dataRefreshStage, executionMode, refreshRecord);
                 }
@@ -151,7 +155,24 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             }
             catch (Exception ex)
             {
-                logger.SendTrace($"{LoggingPrefix} Refresh failed. Exception: {ex}");
+                // Surface WHICH stage failed as queryable Exception telemetry. Previously this was only a default-level
+                // Trace, which does not populate the App Insights `exceptions` table and is easy to lose in the noise.
+                // SqlExceptions are the designed "rethrow -> Service Bus redelivery -> resume from checkpoint" path, so
+                // they are logged at Error to avoid crying wolf on every retryable blip; anything else is a genuine
+                // terminal failure and is logged Critical. Behaviour (teardown + rethrow) is otherwise unchanged.
+                var isRetryableSqlException = ex is SqlException;
+                logger.SendException(
+                    ex,
+                    isRetryableSqlException ? LogLevel.Error : LogLevel.Critical,
+                    new Dictionary<string, string>
+                    {
+                        ["DataRefreshStage"] = currentStage?.ToString() ?? "(before first stage)",
+                        ["DataRefreshRecordId"] = refreshRecordId.ToString(),
+                        ["Disposition"] = isRetryableSqlException
+                            ? "Transient SqlException - will resume from checkpoint on Service Bus redelivery"
+                            : "Terminal failure"
+                    }
+                );
                 await FailureTearDown(refreshRecordId);
                 throw;
             }
@@ -210,7 +231,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private void AvoidScalingDbUpAndImmediatelyBackDown(Dictionary<DataRefreshStage, DataRefreshStageExecutionMode> modes)
         {
             var stagesBetweenDbScaling = orderedRefreshStages.Where(stage =>
-                stage > DataRefreshStage.DatabaseScalingSetup && stage < DataRefreshStage.DatabaseScalingTearDown);
+                stage > DataRefreshStage.DatabaseScalingSetup && stage < DataRefreshStage.DatabaseScalingTearDown
+            );
             var areWeSkippingEveryStageBetweenDbScaling = stagesBetweenDbScaling.All(stage => modes[stage] == DataRefreshStageExecutionMode.Skip);
             if (areWeSkippingEveryStageBetweenDbScaling)
             {
@@ -244,7 +266,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 //Note the distinction between `break`s and `return`s here!
                 case DataRefreshStageExecutionMode.NotApplicable:
                     logger.SendTrace($"{LoggingPrefix} Stage {dataRefreshStage} is not Applicable to the 'All Stages' execution loop.",
-                        LogLevel.Verbose);
+                        LogLevel.Verbose
+                    );
                     return;
                 case DataRefreshStageExecutionMode.Skip:
                     logger.SendTrace($"{LoggingPrefix} Stage {dataRefreshStage} is already complete and can be skipped. Skipping.");
@@ -290,7 +313,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                         refreshRecord.HlaNomenclatureVersion,
                         donorId => dataRefreshHistoryRepository.UpdateLastSafelyProcessedDonor(refreshRecord.Id, donorId),
                         refreshRecord.LastSafelyProcessedDonor,
-                        isContinuation);
+                        isContinuation
+                    );
                     break;
                 case DataRefreshStage.IndexRecreation:
                     await donorImportRepository.CreateHlaTableIndexes();
@@ -299,12 +323,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 case DataRefreshStage.DatabaseScalingTearDown:
                     await ScaleDatabase(
                         dataRefreshSettings.ActiveDatabaseSize.ParseToEnum<AzureDatabaseSize>(),
-                        dataRefreshSettings.ActiveDatabaseAutoPauseTimeout);
+                        dataRefreshSettings.ActiveDatabaseAutoPauseTimeout
+                    );
                     break;
                 case DataRefreshStage.QueuedDonorUpdateProcessing:
                     var dbBeingRefreshed = refreshRecord.Database.ParseToEnum<TransientDatabase>();
                     await differentialDonorUpdateProcessor.ApplyDifferentialDonorUpdatesDuringRefresh(dbBeingRefreshed,
-                        refreshRecord.HlaNomenclatureVersion);
+                        refreshRecord.HlaNomenclatureVersion
+                    );
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dataRefreshStage), dataRefreshStage, null);
@@ -325,7 +351,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             {
                 await ScaleDatabase(
                     dataRefreshSettings.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>(),
-                    dataRefreshSettings.DormantDatabaseAutoPauseTimeout);
+                    dataRefreshSettings.DormantDatabaseAutoPauseTimeout
+                );
             }
             catch (Exception e)
             {

@@ -3,7 +3,6 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
@@ -77,20 +76,20 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
         public async Task AddMatchingRelationsForExistingDonorBatch(
             IEnumerable<DonorInfoForHlaPreProcessing> donorInfos,
-            bool runAllHlaInsertionsInASingleTransactionScope,
-            LongStopwatchCollection timerCollection = null)
+            bool runAllHlaInsertionsInASingleTransactionScope)
         {
             var donorsWithUpdatesAtEveryLocus = donorInfos
                 .Select(info => new DonorWithChangedMatchingLoci(info, LocusSettings.MatchingOnlyLoci))
                 .ToList();
 
-            using (timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_Overall_TimerKey))
+            using (logger.TimeOperationAsMetric(
+                DataRefreshMetrics.DurationMsMetric,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_UpsertOverall)))
             {
                 await UpsertMatchingPGroupsAtSpecifiedLoci(
                     donorsWithUpdatesAtEveryLocus,
                     true,
-                    runAllHlaInsertionsInASingleTransactionScope,
-                    timerCollection);
+                    runAllHlaInsertionsInASingleTransactionScope);
             }
         }
 
@@ -109,8 +108,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         protected async Task UpsertMatchingPGroupsAtSpecifiedLoci(
             List<DonorWithChangedMatchingLoci> donors,
             bool isKnownToBeCreate,
-            bool runAllHlaInsertionsInASingleTransactionScope,
-            LongStopwatchCollection timerCollection = null)
+            bool runAllHlaInsertionsInASingleTransactionScope)
         {
             using (var transactionScope = new OptionalAsyncTransactionScope(runAllHlaInsertionsInASingleTransactionScope))
             {
@@ -124,15 +122,17 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
                     if (donorsWhichChangedAtThisLocus.Any())
                     {
-                        var insertSetupOperationTimer =
-                            timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_Overall_TimerKey);
-                        var upsertTask = UpsertMatchingPGroupsAtLocus(
-                            donorsWhichChangedAtThisLocus,
-                            locus,
-                            isKnownToBeCreate,
-                            timerCollection);
-                        perLocusUpsertTasks.Add(upsertTask);
-                        insertSetupOperationTimer?.Dispose();
+                        Task upsertTask;
+                        using (logger.TimeOperationAsMetric(
+                            DataRefreshMetrics.DurationMsMetric,
+                            DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_BulkInsertSetup, locus.ToString())))
+                        {
+                            upsertTask = UpsertMatchingPGroupsAtLocus(
+                                donorsWhichChangedAtThisLocus,
+                                locus,
+                                isKnownToBeCreate);
+                            perLocusUpsertTasks.Add(upsertTask);
+                        }
 
                         // This is a bit sad.
                         // BulkInserting to unrelated tables, should be an easy win for
@@ -144,13 +144,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                         //
                         // Due to the nature of MARS, if you WhenAll() with a shared transaction you lose all
                         // the perf benefits.
-                        // 
+                        //
                         // See here for more detail of the tests done, the perf results achieved and the probable
                         // cause of the problem.
                         // https://stackoverflow.com/questions/62970038/performance-of-multiple-parallel-async-sqlbulkcopy-inserts-against-different
                         if (runAllHlaInsertionsInASingleTransactionScope)
                         {
-                            using (timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BlockingWait_TimerKey))
+                            using (logger.TimeOperationAsMetric(
+                                DataRefreshMetrics.DurationMsMetric,
+                                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_BlockingWaitOnDbInsert, locus.ToString())))
                             {
                                 await upsertTask;
                             }
@@ -161,7 +163,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 // Note that we may have already awaited these tasks to support TransactionScope.
                 // In that case this `WhenAll` is a no-op. But it makes the difference
                 // between the two cases easy to define.
-                using (timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BlockingWait_TimerKey))
+                using (logger.TimeOperationAsMetric(
+                    DataRefreshMetrics.DurationMsMetric,
+                    DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_BlockingWaitOnDbInsert)))
                 {
                     await Task.WhenAll(perLocusUpsertTasks);
                 }
@@ -173,19 +177,23 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         private async Task UpsertMatchingPGroupsAtLocus(
             List<DonorInfoForHlaPreProcessing> donors,
             Locus locus,
-            bool isKnownToBeCreate,
-            LongStopwatchCollection timerCollection = null)
+            bool isKnownToBeCreate)
         {
             var matchingTableName = MatchingHla.TableName(locus);
 
-            var buildDataTableTimer =
-                timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_Overall_TimerKey);
-            var dataTable = BuildPerLocusPGroupDataTable(donors, locus, timerCollection);
-            buildDataTableTimer?.Dispose();
+            DataTable dataTable;
+            using (logger.TimeOperationAsMetric(
+                DataRefreshMetrics.DurationMsMetric,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_BuildDataTable, locus.ToString())))
+            {
+                dataTable = BuildPerLocusPGroupDataTable(donors, locus);
+            }
 
             using (var transactionScope = new AsyncTransactionScope())
             {
-                using (timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_DeleteExistingRecords_TimerKey))
+                using (logger.TimeOperationAsMetric(
+                    DataRefreshMetrics.DurationMsMetric,
+                    DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DeleteExistingRecords, locus.ToString())))
                 {
                     if (!isKnownToBeCreate)
                     {
@@ -200,12 +208,16 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     }
                 }
 
-                await BulkInsertDataTable(
-                    matchingTableName,
-                    dataTable,
-                    donorPGroupDataTableColumnNames,
-                    timeout: 14400,
-                    timerCollection?.GetStopwatch(DataRefreshTimingKeys.HlaUpsert_DtWriteExecution_TimerKey));
+                using (logger.TimeOperationAsMetric(
+                    DataRefreshMetrics.DurationMsMetric,
+                    DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DbBulkInsert, locus.ToString())))
+                {
+                    await BulkInsertDataTable(
+                        matchingTableName,
+                        dataTable,
+                        donorPGroupDataTableColumnNames,
+                        timeout: 14400);
+                }
 
                 transactionScope.Complete();
             }
@@ -251,47 +263,37 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// <remarks>
         /// This is actually the pinch point of DataRefresh!
         /// Largely because we will be adding >1B rows to the DataTable over the course of the Refresh.
+        /// So this method needs to be very aggressively tuned.
         ///
-        /// So this method needs to be very aggressively tuned. Note that by default the timing is all
-        /// turned off, as it introduces a significant overhead!
-        /// When it's surpassing 1B operations, the timing an operation appears to take nearly 20 minutes!
-        /// See HlaProcessor to re-enable it.
+        /// The whole-method duration is timed by the caller as the <c>BuildDataTable</c> operation of the
+        /// <see cref="DataRefreshMetrics.DurationMsMetric"/> metric. Per-row timing is deliberately NOT done here:
+        /// at &gt;1B rows even a near-free timing call adds up to tens of minutes, and a pre-aggregated metric per
+        /// batch already gives the distribution we need without instrumenting the innermost loop.
         /// </remarks>
         protected DataTable BuildPerLocusPGroupDataTable(
             List<DonorInfoForHlaPreProcessing> donors,
-            Locus locus,
-            LongStopwatchCollection timers = null)
+            Locus locus)
         {
-            var createDataTableObjectTimer =
-                timers?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_CreateDtObject_TimerKey);
             var dataTable = new DataTable();
             foreach (var columnName in donorPGroupDataTableColumnNames)
             {
                 dataTable.Columns.Add(columnName);
             }
 
-            createDataTableObjectTimer?.Dispose();
-
             dataTable.BeginLoadData();
-            //During a 2M donor dataRefresh. This line (outside the loop) is run ~5.6K times.
             foreach (var donor in donors)
             {
                 donor.HlaNameIds.GetLocus(locus).EachPosition((position, hlaNameId) =>
                 {
-                    //During a 2M donor dataRefresh. This line (inside all these loops, but before the filter) is run ~22.2M times.
                     if (hlaNameId == null)
                     {
                         return;
                     }
-                    //During a 2M donor dataRefresh. This line (after the filter) is run ~18.1M times.
 
                     // Data should be written as "TypePosition" so we can guarantee control over the backing int values for this enum
                     var positionId = (int) position.ToTypePosition();
 
-                    using (timers?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_AddRowToDt_TimerKey))
-                    {
-                        dataTable.Rows.Add(0, donor.DonorId, positionId, hlaNameId);
-                    }
+                    dataTable.Rows.Add(0, donor.DonorId, positionId, hlaNameId);
                 });
             }
 
@@ -310,10 +312,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             string tableName,
             DataTable dataTable,
             string[] columnNames,
-            int timeout = 3600,
-            ILongOperationLoggingStopwatch longLoopDbWriteTimer = null)
+            int timeout = 3600)
         {
-            using (longLoopDbWriteTimer?.TimeInnerOperation())
             using (var sqlBulk = BuildSqlBulkCopy(tableName, columnNames, timeout))
             {
                 await sqlBulk.WriteToServerAsync(dataTable);

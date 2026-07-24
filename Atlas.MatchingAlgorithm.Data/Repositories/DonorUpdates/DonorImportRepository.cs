@@ -53,8 +53,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// </summary>
         Task AddMatchingRelationsForExistingDonorBatch(
             IEnumerable<DonorInfoForHlaPreProcessing> donors,
-            bool runAllHlaInsertionsInASingleTransactionScope,
-            LongStopwatchCollection timerCollection = null);
+            bool runAllHlaInsertionsInASingleTransactionScope);
     }
 
     public class DonorImportRepository : DonorUpdateRepositoryBase, IDonorImportRepository
