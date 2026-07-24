@@ -1,4 +1,3 @@
-using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
@@ -9,22 +8,26 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 {
     public interface ITransientRepositoryFactory
     {
-        IHlaNamesRepository GetHlaNamesRepository(); 
-        IHlaImportRepository GetHlaImportRepository(); 
+        IHlaNamesRepository GetHlaNamesRepository();
+
+        IHlaImportRepository GetHlaImportRepository();
+
         IPGroupRepository GetPGroupRepository();
+
         IDonorInspectionRepository GetDonorInspectionRepository();
+
         IDonorUpdateRepository GetDonorUpdateRepository();
     }
-    
+
     public abstract class TransientRepositoryFactoryBase : ITransientRepositoryFactory
     {
         protected readonly IConnectionStringProvider ConnectionStringProvider;
-        protected readonly IMatchingAlgorithmImportLogger logger;
+        protected readonly IMatchingAlgorithmImportLogger Logger;
 
         protected TransientRepositoryFactoryBase(IConnectionStringProvider connectionStringProvider, IMatchingAlgorithmImportLogger logger)
         {
             this.ConnectionStringProvider = connectionStringProvider;
-            this.logger = logger;
+            this.Logger = logger;
         }
 
         public IHlaNamesRepository GetHlaNamesRepository()
@@ -35,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         /// <inheritdoc />
         public IHlaImportRepository GetHlaImportRepository()
         {
-            return new HlaImportRepository(GetHlaNamesRepository(), GetPGroupRepository(), ConnectionStringProvider);
+            return new HlaImportRepository(GetHlaNamesRepository(), GetPGroupRepository(), ConnectionStringProvider, Logger);
         }
 
         public IPGroupRepository GetPGroupRepository()
@@ -50,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 
         public IDonorUpdateRepository GetDonorUpdateRepository()
         {
-            return new DonorUpdateRepository(GetHlaImportRepository(), ConnectionStringProvider, logger);
+            return new DonorUpdateRepository(GetHlaImportRepository(), ConnectionStringProvider, Logger);
         }
     }
 }
