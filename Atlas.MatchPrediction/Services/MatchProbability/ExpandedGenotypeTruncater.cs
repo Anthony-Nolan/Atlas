@@ -24,7 +24,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         ///
         /// This "acceptable" number is configurable per environment via <see cref="Atlas.MatchPrediction.ExternalInterface.Settings.GenotypeImputationSettings.MaximumExpandedGenotypesPerInput"/>
         /// and must be kept identical across every host that runs this code (see that settings class for details).
-        /// Note: increasing it beyond the historical default of 2000 trades accuracy for performance/memory - validate any
+        /// Note: increasing it beyond the historical default of 2000 trades performance/memory for accuracy - validate any
         /// change via the Match Prediction validation (Gherkin) suite.
         ///
         /// There are two oversights to this approach that could be improved:

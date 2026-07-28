@@ -29,7 +29,7 @@ variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
   type = number
 }
 
-variable "MAX_EXPANDED_GENOTYPES_PER_INPUT" {
+variable "MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT" {
   type = number
 }
 
