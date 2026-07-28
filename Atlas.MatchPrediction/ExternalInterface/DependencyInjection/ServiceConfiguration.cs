@@ -35,10 +35,11 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, GenotypeImputationSettings> fetchGenotypeImputationSettings,
             Func<IServiceProvider, string> fetchSqlConnectionString
         )
         {
-            services.RegisterSettings(fetchNotificationsServiceBusSettings, fetchAzureStorageSettings);
+            services.RegisterSettings(fetchNotificationsServiceBusSettings, fetchAzureStorageSettings, fetchGenotypeImputationSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices();
             services.RegisterDatabaseServices(fetchSqlConnectionString);
@@ -148,10 +149,12 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
         private static void RegisterSettings(
             this IServiceCollection services,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, GenotypeImputationSettings> fetchGenotypeImputationSettings)
         {
             services.MakeSettingsAvailableForUse(fetchNotificationsServiceBusSettings);
             services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
+            services.MakeSettingsAvailableForUse(fetchGenotypeImputationSettings);
         }
 
         private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)

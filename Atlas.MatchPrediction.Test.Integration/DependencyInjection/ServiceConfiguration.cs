@@ -33,6 +33,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
                 MacDictionarySettingsReader,
                 _ => new NotificationsServiceBusSettings(),
                 AzureStorageSettingsReader,
+                _ => new GenotypeImputationSettings(),
                 ConnectionStringReader(MatchPredictionSqlConnectionString)
             );
             services.RegisterIntegrationTestServices();

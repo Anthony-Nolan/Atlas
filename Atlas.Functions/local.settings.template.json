@@ -64,6 +64,7 @@
 
     "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 5,
 
+    "MatchPrediction:GenotypeImputation:MaximumExpandedGenotypesPerInput": 2000,
     "MatchPrediction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer": "match-prediction-results",
 

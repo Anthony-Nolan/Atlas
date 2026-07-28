@@ -70,6 +70,7 @@ namespace Atlas.Functions
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<MatchPrediction.ExternalInterface.Settings.AzureStorageSettings>(),
+                OptionsReaderFor<MatchPrediction.ExternalInterface.Settings.GenotypeImputationSettings>(),
                 ConnectionStringReader("MatchPrediction:Sql")
             );
         }
@@ -99,6 +100,7 @@ namespace Atlas.Functions
             // Match Prediction Algorithm
             services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.AzureStorageSettings>("MatchPrediction:AzureStorage");
             services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
+            services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.GenotypeImputationSettings>("MatchPrediction:GenotypeImputation");
         }
 
         private static void RegisterTopLevelFunctionServices(IServiceCollection services)

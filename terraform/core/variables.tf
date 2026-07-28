@@ -269,6 +269,12 @@ variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
   description = "Maximum number of match prediction requests processed in parallel per function instance. Keep this aligned with worker batch sizing."
 }
 
+variable "MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT" {
+  type        = number
+  default     = 2000
+  description = "Genotype-truncation limit: the maximum number of expanded genotypes retained per patient/donor before match calculation. Must be identical across every host that runs imputation; increasing it beyond 2000 trades accuracy for performance/memory."
+}
+
 variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
   type        = number
   default     = 3

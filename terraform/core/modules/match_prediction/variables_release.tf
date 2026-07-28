@@ -29,6 +29,10 @@ variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
   type = number
 }
 
+variable "MAX_EXPANDED_GENOTYPES_PER_INPUT" {
+  type = number
+}
+
 variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
   type = number
 }
