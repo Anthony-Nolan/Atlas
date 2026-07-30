@@ -30,6 +30,7 @@ public static class Startup
             OptionsReaderFor<MacDictionarySettings>(),
             OptionsReaderFor<NotificationsServiceBusSettings>(),
             OptionsReaderFor<AzureStorageSettings>(),
+            OptionsReaderFor<GenotypeImputationSettings>(),
             ConnectionStringReader("MatchPredictionSql")
         );
 

@@ -22,21 +22,25 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         /// The simplest truncation approach is to determine an "acceptable" number of genotypes to expand to for each of patient/donor.
         /// The higher this number, the higher the accuracy of the prediction results, but the slower the algorithm will be.
         ///
+        /// This "acceptable" number is configurable per environment via <see cref="Atlas.MatchPrediction.ExternalInterface.Settings.GenotypeImputationSettings.MaximumExpandedGenotypesPerInput"/>
+        /// and must be kept identical across every host that runs this code (see that settings class for details).
+        /// Note: increasing it beyond the historical default of 2000 trades performance/memory for accuracy - validate any
+        /// change via the Match Prediction validation (Gherkin) suite.
+        ///
         /// There are two oversights to this approach that could be improved:
         /// * Patient/Donor may not need to be treated independently
         ///     e.g. if the patient has only a small number of possibilities, the donor can afford to include more possible genotypes
         /// * Relative likelihoods are ignored. e.g. we may fare better asking for a fixed number of orders of magnitude of genotype likelihoods, rather than a fixed number.
         ///     This could allow some searches to run even faster, in the case of a relatively small number of genotypes being significantly more likely
         ///     It would also allow us to have more faith in the accuracy of the results - as we'd confirm that we're only ever discarding statistically insignificant values
-        ///     However this would come at a cost of not being able to guarantee the necessary performance of the match prediction algorithm. 
+        ///     However this would come at a cost of not being able to guarantee the necessary performance of the match prediction algorithm.
         /// </summary>
-        private const int MaximumExpandedGenotypesPerInput = 2000;
-
         public static ImputedGenotypes TruncateGenotypes(
             Dictionary<PhenotypeInfo<string>, decimal> likelihoods,
-            ISet<PhenotypeInfo<HlaAtKnownTypingCategory>> genotypes)
+            ISet<PhenotypeInfo<HlaAtKnownTypingCategory>> genotypes,
+            int maximumExpandedGenotypesPerInput)
         {
-            var truncatedLikelihoods = likelihoods.OrderByDescending(g => g.Value).Take(MaximumExpandedGenotypesPerInput).ToDictionary();
+            var truncatedLikelihoods = likelihoods.OrderByDescending(g => g.Value).Take(maximumExpandedGenotypesPerInput).ToDictionary();
             var truncatedGenotypes = genotypes.Where(p => truncatedLikelihoods.ContainsKey(p.ToHlaNames())).ToHashSet();
 
             return new ImputedGenotypes

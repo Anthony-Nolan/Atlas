@@ -8,6 +8,7 @@ using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
+using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 using PhenotypeOfStrings = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
@@ -39,15 +40,18 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         private readonly ICompressedPhenotypeExpander compressedPhenotypeExpander;
         private readonly IDiplotypeLikelihoodCalculator diplotypeLikelihoodCalculator;
         private readonly IAtlasLogger logger;
+        private readonly GenotypeImputationSettings settings;
 
         public GenotypeImputationService(
             ICompressedPhenotypeExpander compressedPhenotypeExpander,
             IDiplotypeLikelihoodCalculator diplotypeLikelihoodCalculator,
-            IMatchPredictionLogger<MatchProbabilityLoggingContext> logger)
+            IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
+            GenotypeImputationSettings settings)
         {
             this.compressedPhenotypeExpander = compressedPhenotypeExpander;
             this.diplotypeLikelihoodCalculator = diplotypeLikelihoodCalculator;
             this.logger = logger;
+            this.settings = settings;
         }
 
         /// <inheritdoc />
@@ -66,7 +70,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var genotypeLikelihoods = await CalculateGenotypeLikelihoods(
                 genotypes, input.SubjectData.SubjectFrequencySet.FrequencySet, input.MatchPredictionParameters.AllowedLoci);
 
-            return ExpandedGenotypeTruncater.TruncateGenotypes(genotypeLikelihoods, genotypes);
+            return ExpandedGenotypeTruncater.TruncateGenotypes(genotypeLikelihoods, genotypes, settings.MaximumExpandedGenotypesPerInput);
         }
 
         private async Task<ISet<GenotypeOfKnownTypingCategory>> ExpandToGenotypes(ImputationInput input)

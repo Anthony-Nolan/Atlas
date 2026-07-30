@@ -118,6 +118,10 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         value = tostring(var.MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM)
       }
       env {
+        name  = "GenotypeImputation__MaximumExpandedGenotypesPerInput"
+        value = tostring(var.MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT)
+      }
+      env {
         name  = "MatchPredictionWorker__MaxConcurrentCalls"
         value = tostring(var.MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS)
       }

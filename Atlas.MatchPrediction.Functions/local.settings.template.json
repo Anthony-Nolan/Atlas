@@ -7,6 +7,7 @@
     "AzureStorage:MatchPredictionResultsBlobContainer": "match-prediction-results",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "GenotypeImputation:MaximumExpandedGenotypesPerInput": 2000,
     "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 5,
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds": 300,
