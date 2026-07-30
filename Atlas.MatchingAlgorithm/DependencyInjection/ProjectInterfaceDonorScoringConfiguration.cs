@@ -17,7 +17,6 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.MatchingAlgorithm.DependencyInjection
@@ -80,7 +79,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 Persistent = fetchPersistentSqlConnectionString(sp)
             });
 
-            services.AddSingleton<IMemoryCache, MemoryCache>(sp => new MemoryCache(new MemoryCacheOptions()));
             services.RegisterLifeTimeScopedCacheTypes();
             services.AddScoped<IScoringCache, ScoringCache>();
 
