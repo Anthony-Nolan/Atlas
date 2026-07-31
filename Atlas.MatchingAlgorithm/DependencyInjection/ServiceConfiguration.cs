@@ -49,7 +49,6 @@ using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Azure.Identity;
 using Microsoft.Extensions.Azure;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -509,8 +508,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 TransientA = fetchTransientASqlConnectionString(sp),
                 TransientB = fetchTransientBSqlConnectionString(sp),
             });
-
-            services.AddSingleton<IMemoryCache, MemoryCache>(sp => new MemoryCache(new MemoryCacheOptions()));
 
             services.AddSingleton(sp => AutoMapperConfig.CreateMapper(
             sp.GetRequiredService<IConfiguration>()["AutoMapper:LicenseKey"] ?? throw new InvalidOperationException("AutoMapper license key is required"),
