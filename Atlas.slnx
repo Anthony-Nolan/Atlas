@@ -233,6 +233,9 @@
   <Project Path="Atlas.Functions.PublicApi/Atlas.Functions.PublicApi.csproj">
     <BuildType Solution="Development|*" Project="Debug" />
   </Project>
+  <Project Path="Atlas.Functions.PublicApi.Test/Atlas.Functions.PublicApi.Test.csproj">
+    <BuildType Solution="Development|*" Project="Debug" />
+  </Project>
   <Project Path="Atlas.Functions.Test/Atlas.Functions.Test.csproj">
     <BuildType Solution="Development|*" Project="Debug" />
   </Project>

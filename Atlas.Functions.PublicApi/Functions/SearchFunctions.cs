@@ -103,16 +103,20 @@ namespace Atlas.Functions.PublicApi.Functions
         }
 
         /// <summary>
-        /// Resolves <see cref="SearchRequest.ParallelMatchPrediction"/> from the two server-side controls; the value
-        /// supplied on the request itself is not used, so routing is controlled entirely by configuration.
-        /// <see cref="SearchFunctionSettings.DefaultParallelMatchPrediction"/> is the master switch: when <c>false</c>,
-        /// the request always takes the legacy sequential Durable path, regardless of the percentage. When <c>true</c>,
+        /// Resolves <see cref="SearchRequest.ParallelMatchPrediction"/> for the request. An explicit value supplied on
+        /// the request is honoured as-is: <c>true</c> always takes the parallel ACA Worker ("Containers") path and
+        /// <c>false</c> always takes the legacy sequential Durable path, regardless of the server-side controls.
+        /// <para>
+        /// Only when the request leaves the value <c>null</c> is it derived from the two server-side controls:
+        /// <see cref="SearchFunctionSettings.DefaultParallelMatchPrediction"/> is the master switch — when <c>false</c>,
+        /// the request takes the legacy sequential path, regardless of the percentage; when <c>true</c>,
         /// <see cref="SearchFunctionSettings.ParallelMatchPredictionRequestPercentage"/> percent of requests take the
-        /// parallel ("Containers") path and the remainder fall back to the sequential path.
+        /// parallel path and the remainder fall back to the sequential path.
+        /// </para>
         /// </summary>
         private void ResolveParallelMatchPrediction(SearchRequest searchRequest)
         {
-            searchRequest.ParallelMatchPrediction =
+            searchRequest.ParallelMatchPrediction ??=
                 defaultParallelMatchPrediction
                 && Random.Shared.Next(100) < parallelMatchPredictionRequestPercentage;
         }
