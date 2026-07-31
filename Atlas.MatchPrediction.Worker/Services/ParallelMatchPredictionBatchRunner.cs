@@ -68,14 +68,17 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
                 FailureException = ex.ToString(),
             };
 
-            // Publish the failure result so the aggregator can record it and the run can still be finalised.
-            // If publishing itself throws the exception propagates to the outer worker loop, which abandons the message for retry.
+            // Publish the failure result so the aggregator records the batch as Failed and the run can still be finalised.
             await resultPublisher.PublishWithSession(failureResult, sessionId: request.SearchRequestId);
 
             logger.LogInformation(
                 "Published failure result for batch {BatchSequenceNumber}, run {ParallelRunId}, search {SearchRequestId}.",
                 request.BatchSequenceNumber, request.ParallelRunId, request.SearchRequestId
             );
+            
+            // Rethrow so the worker's message handler abandons the Service Bus message (for redelivery/dead-lettering)
+            // instead of completing it; a later successful retry overwrites the recorded failure. See ATL-251.
+            throw;
         }
     }
 
