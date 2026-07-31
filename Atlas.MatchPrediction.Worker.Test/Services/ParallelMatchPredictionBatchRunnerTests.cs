@@ -114,6 +114,7 @@ internal class ParallelMatchPredictionBatchRunnerTests
             Arg.Is<ParallelMatchPredictionBatchResult>(r =>
                 !r.IsSuccessful
                 && r.FailureMessage == thrown.Message
+                && r.FailureException.Contains(thrown.GetType().FullName!)
                 && r.FailureException.Contains(thrown.Message)
                 && r.BatchId == request.BatchId
                 && r.ParallelRunId == request.ParallelRunId
