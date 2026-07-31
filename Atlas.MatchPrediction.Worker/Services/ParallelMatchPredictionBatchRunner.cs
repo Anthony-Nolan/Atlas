@@ -76,6 +76,8 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
                 "Published failure result for batch {BatchSequenceNumber}, run {ParallelRunId}, search {SearchRequestId}.",
                 request.BatchSequenceNumber, request.ParallelRunId, request.SearchRequestId
             );
+            
+            throw;
         }
     }
 

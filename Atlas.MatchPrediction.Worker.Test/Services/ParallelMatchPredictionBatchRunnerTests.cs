@@ -101,7 +101,7 @@ internal class ParallelMatchPredictionBatchRunnerTests
     }
 
     [Test]
-    public async Task RunBatch_WhenProcessingThrows_PublishesFailureResult_AndDoesNotRethrow()
+    public async Task RunBatch_WhenProcessingThrows_PublishesFailureResult_AndRethrows()
     {
         var request = BuildRequest(isRepeatSearch: false);
         var thrown = new InvalidOperationException(fixture.Create<string>());
@@ -109,12 +109,12 @@ internal class ParallelMatchPredictionBatchRunnerTests
 
         var act = () => runner.RunBatch(request);
 
-        await act.Should().NotThrowAsync();
+        await act.Should().ThrowAsync<InvalidOperationException>();
         await resultPublisher.Received(1).PublishWithSession(
             Arg.Is<ParallelMatchPredictionBatchResult>(r =>
                 !r.IsSuccessful
                 && r.FailureMessage == thrown.Message
-                && r.FailureException == thrown.ToString()
+                && r.FailureException.Contains(thrown.Message)
                 && r.BatchId == request.BatchId
                 && r.ParallelRunId == request.ParallelRunId
                 && r.BatchSequenceNumber == request.BatchSequenceNumber),
