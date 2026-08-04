@@ -71,4 +71,19 @@ public class ParallelMatchPredictionBatch
     /// </summary>
     [MaxLength]
     public string FailureException { get; set; }
+
+    /// <summary>
+    /// Post-truncation patient imputed genotype count captured by the Worker. Identical for every batch in a run (one
+    /// patient per search), stored per batch so the row is self-describing. <c>null</c> until a successful result
+    /// arrives (a failed batch records no count); bounded by <c>GenotypeImputationSettings.MaximumExpandedGenotypesPerInput</c>.
+    /// </summary>
+    public int? PatientGenotypeCount { get; set; }
+
+    /// <summary>
+    /// JSON-serialised donorId → post-truncation imputed genotype count map, covering every donor in the batch.
+    /// <c>null</c> until a successful result arrives (a failed batch records no counts); each count is bounded by
+    /// <c>GenotypeImputationSettings.MaximumExpandedGenotypesPerInput</c>.
+    /// </summary>
+    [MaxLength]
+    public string DonorGenotypeCounts { get; set; }
 }

@@ -65,7 +65,9 @@ public interface IParallelMatchPredictionRepository
     /// </summary>
     /// <returns><c>true</c> on first record; <c>false</c> if it was a duplicate.</returns>
     /// <exception cref="InvalidOperationException">Thrown when no batch row exists for the given id.</exception>
-    Task<bool> RecordBatchResult(int batchId, string resultLocation);
+    /// <param name="patientGenotypeCount">Post-truncation patient imputed genotype count captured by the Worker.</param>
+    /// <param name="donorGenotypeCountsJson">JSON-serialised donorId → post-truncation genotype count map for the batch.</param>
+    Task<bool> RecordBatchResult(int batchId, string resultLocation, int patientGenotypeCount = 0, string donorGenotypeCountsJson = null);
 
     /// <summary>
     /// Records a batch failure by updating the pre-created batch row identified by <paramref name="batchId"/>.
@@ -216,7 +218,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         );
     }
 
-    public async Task<bool> RecordBatchResult(int batchId, string resultLocation)
+    public async Task<bool> RecordBatchResult(int batchId, string resultLocation, int patientGenotypeCount = 0, string donorGenotypeCountsJson = null)
     {
         var now = DateTime.UtcNow;
 
@@ -231,6 +233,8 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
                 .SetProperty(b => b.BatchStatusDate, now)
                 .SetProperty(b => b.ResultReceivedTimeUtc, now)
                 .SetProperty(b => b.ResultLocation, resultLocation)
+                .SetProperty(b => b.PatientGenotypeCount, patientGenotypeCount)
+                .SetProperty(b => b.DonorGenotypeCounts, donorGenotypeCountsJson)
                 .SetProperty(b => b.FailureMessage, (string)null)
                 .SetProperty(b => b.FailureException, (string)null)
             );

@@ -45,7 +45,8 @@ namespace Atlas.MatchPrediction.Test.Services
             var patientGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions>(), 0.1m);
             genotypeSetService.GetPatientGenotypeSet(default).ReturnsForAnyArgs(patientGenotypeSet);
 
-            matchProbabilityService.CalculateMatchProbability(default, default).ReturnsForAnyArgs(new MatchProbabilityResponse(null, new HashSet<Locus>()));
+            matchProbabilityService.CalculateMatchProbability(default, default).ReturnsForAnyArgs(
+                new MatchProbabilityResult(new MatchProbabilityResponse(null, new HashSet<Locus>()), 0));
             resultUploader.UploadMatchPredictionBatchResult(default, default, default).ReturnsForAnyArgs("batch-result.json");
 
             serviceScopeFactory.CreateScope().Returns(_ => CreateMockScope());
@@ -150,14 +151,47 @@ namespace Atlas.MatchPrediction.Test.Services
                 }
             };
 
-            var resultLocation = await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 42);
+            var output = await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 42);
 
-            Assert.That(resultLocation, Is.EqualTo("batch-result.json"));
+            Assert.That(output.ResultLocation, Is.EqualTo("batch-result.json"));
             await resultUploader.Received(1).UploadMatchPredictionBatchResult(
                 "search-request-id",
                 42,
                 Arg.Is<IReadOnlyDictionary<int, MatchProbabilityResponse>>(d =>
                     d.Count == 2 && d.ContainsKey(1) && d.ContainsKey(2)));
+        }
+
+        [Test]
+        public async Task RunBatch_CapturesPatientAndPerDonorGenotypeCounts()
+        {
+            var patientGenotypeSet = new SubjectGenotypeSet(
+                false, new List<GenotypeAtDesiredResolutions> { null, null, null }, 0.1m);
+            genotypeSetService.GetPatientGenotypeSet(default).ReturnsForAnyArgs(patientGenotypeSet);
+
+            const int donorGenotypeCount = 12;
+            matchProbabilityService.CalculateMatchProbability(default, default).ReturnsForAnyArgs(
+                new MatchProbabilityResult(new MatchProbabilityResponse(null, new HashSet<Locus>()), donorGenotypeCount));
+
+            var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest
+            {
+                SearchRequestId = "search-request-id",
+                PatientHla = new PhenotypeInfo<string>("patient-hla").ToPhenotypeInfoTransfer()
+            })
+            {
+                Donors = new List<DonorInput>
+                {
+                    DonorInputBuilder.Default.WithDonorIds(1, 2).Build(), // one phenotype shared by two donor ids
+                    DonorInputBuilder.Default.WithDonorIds(3).Build()
+                }
+            };
+
+            var output = await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 1);
+
+            Assert.That(output.PatientGenotypeCount, Is.EqualTo(3));
+            Assert.That(output.DonorGenotypeCounts.Count, Is.EqualTo(3));
+            Assert.That(output.DonorGenotypeCounts[1], Is.EqualTo(donorGenotypeCount));
+            Assert.That(output.DonorGenotypeCounts[2], Is.EqualTo(donorGenotypeCount));
+            Assert.That(output.DonorGenotypeCounts[3], Is.EqualTo(donorGenotypeCount));
         }
 
         [Test]
@@ -172,9 +206,11 @@ namespace Atlas.MatchPrediction.Test.Services
                 Donors = new List<DonorInput>()
             };
 
-            var resultLocation = await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 42);
+            var output = await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 42);
 
-            Assert.That(resultLocation, Is.Null);
+            Assert.That(output.ResultLocation, Is.Null);
+            Assert.That(output.PatientGenotypeCount, Is.EqualTo(0));
+            Assert.That(output.DonorGenotypeCounts, Is.Empty);
             await resultUploader.DidNotReceiveWithAnyArgs().UploadMatchPredictionBatchResult(default, default, default);
         }
     }

@@ -7,6 +7,7 @@ using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -152,11 +153,13 @@ internal class ParallelMatchPredictionAggregatorFunctionsTests
     public async Task StoreParallelMatchPredictionBatchResult_WhenSuccessful_RecordsBatchResultAndNotFailure()
     {
         var message = fixture.Build<ParallelMatchPredictionBatchResult>().With(m => m.IsSuccessful, true).Create();
-        repository.RecordBatchResult(Arg.Any<int>(), Arg.Any<string>()).Returns(true);
+        repository.RecordBatchResult(Arg.Any<int>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string>()).Returns(true);
 
         await functions.StoreParallelMatchPredictionBatchResult(message);
 
-        await repository.Received(1).RecordBatchResult(message.BatchId, message.MatchPredictionResultLocation);
+        var expectedDonorGenotypeCountsJson = JsonConvert.SerializeObject(message.DonorGenotypeCounts);
+        await repository.Received(1).RecordBatchResult(
+            message.BatchId, message.MatchPredictionResultLocation, message.PatientGenotypeCount, expectedDonorGenotypeCountsJson);
         await repository.DidNotReceiveWithAnyArgs().RecordBatchFailure(default, default, default);
     }
 
@@ -164,12 +167,14 @@ internal class ParallelMatchPredictionAggregatorFunctionsTests
     public async Task StoreParallelMatchPredictionBatchResult_WhenSuccessfulButDuplicate_RecordsBatchResultOnce_DoesNotThrow()
     {
         var message = fixture.Build<ParallelMatchPredictionBatchResult>().With(m => m.IsSuccessful, true).Create();
-        repository.RecordBatchResult(Arg.Any<int>(), Arg.Any<string>()).Returns(false);
+        repository.RecordBatchResult(Arg.Any<int>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string>()).Returns(false);
 
         var act = () => functions.StoreParallelMatchPredictionBatchResult(message);
 
         await act.Should().NotThrowAsync();
-        await repository.Received(1).RecordBatchResult(message.BatchId, message.MatchPredictionResultLocation);
+        var expectedDonorGenotypeCountsJson = JsonConvert.SerializeObject(message.DonorGenotypeCounts);
+        await repository.Received(1).RecordBatchResult(
+            message.BatchId, message.MatchPredictionResultLocation, message.PatientGenotypeCount, expectedDonorGenotypeCountsJson);
         await repository.DidNotReceiveWithAnyArgs().RecordBatchFailure(default, default, default);
     }
 

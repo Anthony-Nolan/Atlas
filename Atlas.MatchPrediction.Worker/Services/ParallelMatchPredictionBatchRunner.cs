@@ -105,13 +105,15 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
 
         await trackingDispatcher.ProcessRunningBatchesStarted(searchIdentifier, originalSearchIdentifier);
 
-        var resultLocation = await parallelMatchPredictionAlgorithm.RunBatch(batchInput, maxDegreeOfParallelism, request.BatchId);
+        var batchOutput = await parallelMatchPredictionAlgorithm.RunBatch(batchInput, maxDegreeOfParallelism, request.BatchId);
 
         await trackingDispatcher.ProcessRunningBatchesEnded(searchIdentifier, originalSearchIdentifier);
 
         logger.LogInformation(
-            "Completed match prediction for batch {BatchId} ({DonorCount} donors) for search {SearchRequestId}; stored results in single blob {ResultLocation}",
-            request.BatchId, batchInput.Donors?.Count, request.SearchRequestId, resultLocation
+            "Completed match prediction for batch {BatchId} ({DonorCount} donors) for search {SearchRequestId}; stored results in single blob {ResultLocation}. "
+          + "Patient genotype count {PatientGenotypeCount}; captured genotype counts for {DonorGenotypeCountCount} donor(s).",
+            request.BatchId, batchInput.Donors?.Count, request.SearchRequestId, batchOutput.ResultLocation,
+            batchOutput.PatientGenotypeCount, batchOutput.DonorGenotypeCounts.Count
         );
 
         var batchResult = new ParallelMatchPredictionBatchResult
@@ -119,10 +121,12 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
             SearchIdentifier = new Guid(request.SearchRequestId),
             RepeatSearchIdentifier = request.RepeatSearchRequestId == null ? null : new Guid(request.RepeatSearchRequestId),
             IsSuccessful = true,
-            MatchPredictionResultLocation = resultLocation,
+            MatchPredictionResultLocation = batchOutput.ResultLocation,
             ParallelRunId = request.ParallelRunId,
             BatchId = request.BatchId,
             BatchSequenceNumber = request.BatchSequenceNumber,
+            PatientGenotypeCount = batchOutput.PatientGenotypeCount,
+            DonorGenotypeCounts = new Dictionary<int, int>(batchOutput.DonorGenotypeCounts),
         };
 
         await resultPublisher.PublishWithSession(batchResult, sessionId: request.SearchRequestId);

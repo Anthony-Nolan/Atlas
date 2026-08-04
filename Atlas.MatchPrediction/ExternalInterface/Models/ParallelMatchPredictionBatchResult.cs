@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models;
 
@@ -31,6 +32,19 @@ public class ParallelMatchPredictionBatchResult
 
     /// <summary>Sequence number of this batch within the run. Retained for logging and ordering.</summary>
     public int BatchSequenceNumber { get; set; }
+
+    /// <summary>
+    /// Post-truncation patient imputed genotype count. Identical for every batch in a run (one patient per search),
+    /// carried on each batch so its row is self-describing. Populated only when <see cref="IsSuccessful"/> is
+    /// <c>true</c> (0 for a batch that contained no donors).
+    /// </summary>
+    public int PatientGenotypeCount { get; set; }
+
+    /// <summary>
+    /// Post-truncation imputed genotype count per donor id, covering every donor in the batch. Populated only when
+    /// <see cref="IsSuccessful"/> is <c>true</c>. Persisted as a JSON-serialised donorId → count map on the batch row.
+    /// </summary>
+    public Dictionary<int, int> DonorGenotypeCounts { get; set; }
 
     /// <summary>
     /// Human-readable failure message. Populated only when <see cref="IsSuccessful"/> is <c>false</c>.

@@ -8,6 +8,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace Atlas.Functions.Functions;
 
@@ -56,9 +57,15 @@ public class ParallelMatchPredictionAggregatorFunctions
     {
         if (message.IsSuccessful)
         {
+            var donorGenotypeCountsJson = message.DonorGenotypeCounts == null
+                ? null
+                : JsonConvert.SerializeObject(message.DonorGenotypeCounts);
+
             var wasBatchResultRecordedSuccessfully = await repository.RecordBatchResult(
                 message.BatchId,
-                message.MatchPredictionResultLocation
+                message.MatchPredictionResultLocation,
+                message.PatientGenotypeCount,
+                donorGenotypeCountsJson
             );
 
             if (wasBatchResultRecordedSuccessfully)
