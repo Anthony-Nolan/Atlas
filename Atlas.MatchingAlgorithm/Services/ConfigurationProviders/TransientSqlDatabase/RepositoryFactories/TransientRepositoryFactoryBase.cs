@@ -3,6 +3,7 @@ using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Data.Services;
+using Atlas.MatchingAlgorithm.Data.Settings;
 
 namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories
 {
@@ -23,16 +24,21 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
     {
         protected readonly IConnectionStringProvider ConnectionStringProvider;
         protected readonly IMatchingAlgorithmImportLogger Logger;
+        protected readonly DataRefreshRepositorySettings RepositorySettings;
 
-        protected TransientRepositoryFactoryBase(IConnectionStringProvider connectionStringProvider, IMatchingAlgorithmImportLogger logger)
+        protected TransientRepositoryFactoryBase(
+            IConnectionStringProvider connectionStringProvider,
+            IMatchingAlgorithmImportLogger logger,
+            DataRefreshRepositorySettings repositorySettings)
         {
             this.ConnectionStringProvider = connectionStringProvider;
             this.Logger = logger;
+            this.RepositorySettings = repositorySettings;
         }
 
         public IHlaNamesRepository GetHlaNamesRepository()
         {
-            return new HlaNamesRepository(ConnectionStringProvider);
+            return new HlaNamesRepository(ConnectionStringProvider, Logger);
         }
 
         /// <inheritdoc />
@@ -43,7 +49,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 
         public IPGroupRepository GetPGroupRepository()
         {
-            return new PGroupRepository(ConnectionStringProvider);
+            return new PGroupRepository(ConnectionStringProvider, Logger);
         }
 
         public IDonorInspectionRepository GetDonorInspectionRepository()
@@ -53,7 +59,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 
         public IDonorUpdateRepository GetDonorUpdateRepository()
         {
-            return new DonorUpdateRepository(GetHlaImportRepository(), ConnectionStringProvider, Logger);
+            return new DonorUpdateRepository(GetHlaImportRepository(), ConnectionStringProvider, Logger, RepositorySettings);
         }
     }
 }

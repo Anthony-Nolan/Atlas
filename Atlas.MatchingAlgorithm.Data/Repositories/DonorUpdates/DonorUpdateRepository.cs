@@ -4,6 +4,7 @@ using Atlas.MatchingAlgorithm.Data.Extensions;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
+using Atlas.MatchingAlgorithm.Data.Settings;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
@@ -26,8 +27,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         public DonorUpdateRepository(
             IHlaImportRepository hlaImportRepository,
             IConnectionStringProvider connectionStringProvider,
-            IAtlasLogger logger)
-            : base(connectionStringProvider, logger)
+            IAtlasLogger logger,
+            DataRefreshRepositorySettings settings)
+            : base(connectionStringProvider, logger, settings)
         {
             this.hlaImportRepository = hlaImportRepository;
         }
