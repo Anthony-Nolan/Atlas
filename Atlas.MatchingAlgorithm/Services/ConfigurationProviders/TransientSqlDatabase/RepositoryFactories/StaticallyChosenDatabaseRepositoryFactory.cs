@@ -6,6 +6,7 @@ using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Data.Services;
+using Atlas.MatchingAlgorithm.Data.Settings;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 using static EnumStringValues.EnumExtensions;
 
@@ -26,14 +27,17 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
     {
         private readonly StaticallyChosenTransientSqlConnectionStringProviderFactory connectionStringProviderFactory;
         private readonly IMatchingAlgorithmImportLogger logger;
+        private readonly DataRefreshRepositorySettings repositorySettings;
 
         public StaticallyChosenDatabaseRepositoryFactory(
             StaticallyChosenTransientSqlConnectionStringProviderFactory connectionStringProviderFactory,
-            IMatchingAlgorithmImportLogger logger
+            IMatchingAlgorithmImportLogger logger,
+            DataRefreshRepositorySettings repositorySettings
         )
         {
             this.connectionStringProviderFactory = connectionStringProviderFactory;
             this.logger = logger;
+            this.repositorySettings = repositorySettings;
         }
 
         private class AvailableRepositories
@@ -67,7 +71,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         {
             var available = cachedRepositories[targetDatabase];
             return available.DonorManagementLog
-                ?? (available.DonorManagementLog = new DonorManagementLogRepository(GetConnectionStringProvider(targetDatabase)));
+                ?? (available.DonorManagementLog = new DonorManagementLogRepository(GetConnectionStringProvider(targetDatabase), logger));
         }
 
         public IDonorInspectionRepository GetDonorInspectionRepositoryForDatabase(TransientDatabase targetDatabase)
@@ -80,7 +84,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         public IPGroupRepository GetPGroupRepositoryForDatabase(TransientDatabase targetDatabase)
         {
             var available = cachedRepositories[targetDatabase];
-            return available.PGroup ?? (available.PGroup = new PGroupRepository(GetConnectionStringProvider(targetDatabase)));
+            return available.PGroup ?? (available.PGroup = new PGroupRepository(GetConnectionStringProvider(targetDatabase), logger));
         }
 
         public IHlaImportRepository GetHlaImportRepositoryForDatabase(TransientDatabase targetDatabase)
@@ -88,7 +92,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
             var available = cachedRepositories[targetDatabase];
             return available.HlaImport
                 ?? (available.HlaImport = new HlaImportRepository(
-                       new HlaNamesRepository(GetConnectionStringProvider(targetDatabase)),
+                       new HlaNamesRepository(GetConnectionStringProvider(targetDatabase), logger),
                        GetPGroupRepositoryForDatabase(targetDatabase),
                        GetConnectionStringProvider(targetDatabase),
                        logger
@@ -100,7 +104,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
             var available = cachedRepositories[targetDatabase];
             return available.DonorUpdate
                 ?? (available.DonorUpdate = new DonorUpdateRepository(GetHlaImportRepositoryForDatabase(targetDatabase),
-                       GetConnectionStringProvider(targetDatabase), logger
+                       GetConnectionStringProvider(targetDatabase), logger, repositorySettings
                    ));
         }
     }

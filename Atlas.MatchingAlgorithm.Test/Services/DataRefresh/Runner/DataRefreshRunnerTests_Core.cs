@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
@@ -43,6 +45,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         private IDataRefreshRunner dataRefreshRunner;
         private IMatchingAlgorithmImportLogger logger;
         private IDormantRepositoryFactory transientRepositoryFactory;
+        private IDataRefreshRuntimeSampler runtimeSampler;
 
         [SetUp]
         public void SetUp()
@@ -58,6 +61,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             dataRefreshNotificationSender = Substitute.For<IDataRefreshSupportNotificationSender>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
+            runtimeSampler = Substitute.For<IDataRefreshRuntimeSampler>();
+            runtimeSampler.StartSampling().Returns(Substitute.For<IAsyncDisposable>());
 
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.Build());
             transientRepositoryFactory.GetDonorImportRepository().Returns(donorImportRepository);
@@ -147,6 +152,72 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             }
         }
 
+        [Test]
+        public async Task RefreshData_EmitsAStageDurationMetricForEveryStageThatRan()
+        {
+            await dataRefreshRunner.RefreshData(default);
+
+            // Nine stages, all running from scratch on a fresh record.
+            logger.Received(9).SendMetric(
+                DataRefreshMetrics.StageDurationMsMetric,
+                Arg.Any<double>(),
+                Arg.Any<Dictionary<string, string>>());
+
+            logger.Received(1).SendMetric(
+                DataRefreshMetrics.StageDurationMsMetric,
+                Arg.Any<double>(),
+                Arg.Is<Dictionary<string, string>>(d =>
+                    d[DataRefreshMetrics.StageDimension] == nameof(DataRefreshStage.DonorHlaProcessing)));
+        }
+
+        [Test]
+        public async Task RefreshData_WhenAStageIsSkipped_DoesNotEmitADurationForIt()
+        {
+            // A record whose donor import already completed: stage 40 is skippable, so it must not report a
+            // near-zero "execution" that would drag its average down and misrepresent a continuation as a fast run.
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.With(r => r.DonorImportCompleted, DateTime.UtcNow).Build());
+
+            await dataRefreshRunner.RefreshData(default);
+
+            logger.DidNotReceive().SendMetric(
+                DataRefreshMetrics.StageDurationMsMetric,
+                Arg.Any<double>(),
+                Arg.Is<Dictionary<string, string>>(d =>
+                    d[DataRefreshMetrics.StageDimension] == nameof(DataRefreshStage.DonorImport)));
+        }
+
+        [Test]
+        public async Task RefreshData_RecordsARunManifestDescribingTheRunsConfiguration()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.HlaProcessingBatchSize, 1234)
+                .Build();
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
+
+            await dataRefreshRunner.RefreshData(default);
+
+            logger.Received(1).SendEvent(
+                DataRefreshRunner.RunManifestEventName,
+                Arg.Any<LogLevel>(),
+                // The EFFECTIVE batch geometry, so a later run can be compared against this one.
+                Arg.Is<Dictionary<string, string>>(d => d["HlaProcessingBatchSize"] == "1234"),
+                Arg.Any<Dictionary<string, double>>());
+        }
+
+        [Test]
+        public async Task RefreshData_WhenRefreshFails_StillStopsTheRuntimeSampler()
+        {
+            var samplingSession = Substitute.For<IAsyncDisposable>();
+            runtimeSampler.StartSampling().Returns(samplingSession);
+            hlaProcessor.UpdateDonorHla(default, default).ThrowsForAnyArgs(new Exception());
+
+            var act = async () => await dataRefreshRunner.RefreshData(default);
+
+            await act.Should().ThrowAsync<Exception>();
+            await samplingSession.Received(1).DisposeAsync();
+        }
+
         private IDataRefreshRunner BuildDataRefreshRunner(DataRefreshSettings dataRefreshSettings = null)
         {
             var settings = dataRefreshSettings ?? DataRefreshSettingsBuilder.New.Build();
@@ -164,7 +235,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 logger,
                 dataRefreshNotificationSender,
                 dataRefreshHistoryRepository,
-                new MatchingAlgorithmImportLoggingContext()
+                new MatchingAlgorithmImportLoggingContext(),
+                runtimeSampler
             );
         }
     }

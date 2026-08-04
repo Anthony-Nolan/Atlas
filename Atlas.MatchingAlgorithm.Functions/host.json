@@ -12,7 +12,7 @@
         "excludedTypes": "Request;Event;Trace;Exception"
       },
       "snapshotConfiguration": {
-        "isEnabled": true
+        "isEnabled": false
       }
     }
   },

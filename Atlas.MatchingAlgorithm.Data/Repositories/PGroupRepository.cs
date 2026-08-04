@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Sql;
 using Atlas.MatchingAlgorithm.Data.Helpers;
@@ -27,11 +28,20 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
     {
         private IDictionary<string, int> pGroupNameToIdDictionary;
 
-        public PGroupRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
+        private readonly IAtlasLogger logger;
+
+        public PGroupRepository(IConnectionStringProvider connectionStringProvider, IAtlasLogger logger) : base(connectionStringProvider)
         {
+            this.logger = logger;
         }
 
         public async Task InsertPGroups(IEnumerable<string> pGroups)
+        {
+            await InsertPGroupsAndCount(pGroups);
+        }
+
+        /// <returns>The number of p-groups actually inserted (i.e. after de-duplication against the cache).</returns>
+        private async Task<int> InsertPGroupsAndCount(IEnumerable<string> pGroups)
         {
             EnsurePGroupDictionaryCacheIsPopulated();
 
@@ -40,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             if (!newPGroups.Any())
             {
                 //Nothing needs doing.
-                return;
+                return 0;
             }
 
             var dt = new DataTable();
@@ -63,6 +73,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             }
             // We need to get the new Ids back out.
             ForceCachePGroupDictionary();
+
+            return newPGroups.Count;
         }
 
         public async Task<IEnumerable<int>> GetPGroupIds(IEnumerable<string> pGroupNames)
@@ -110,10 +122,19 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             var newPGroups = allPGroups.Where(pGrp => !pGroupNameToIdDictionary.ContainsKey(pGrp)).ToList();
             dictionaryCheckTimer?.Dispose();
 
+            var insertedCount = 0;
             if (newPGroups.Any())
             {
-                await InsertPGroups(newPGroups); //This method refreshes the Cache after adding.
+                insertedCount = await InsertPGroupsAndCount(newPGroups); //This method refreshes the Cache after adding.
             }
+
+            // Emitted for EVERY batch, including the (expected) zeros. Per the remarks above this is believed to be a
+            // no-op in prod - every p-group is pre-inserted upfront - so a run where this is not flat zero is itself
+            // the finding.
+            logger.SendMetric(
+                DataRefreshMetrics.CountMetric,
+                insertedCount,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_NewPGroupsPerBatch));
 
             return pGroupNameToIdDictionary;
         }
@@ -162,6 +183,12 @@ SELECT CAST(SCOPE_IDENTITY() as int)
                 var innerPGroups = conn.Query<PGroupName>($"SELECT {nameof(PGroupName.Id)}, {nameof(PGroupName.Name)} FROM PGroupNames", commandTimeout: 300);
                 pGroupNameToIdDictionary = innerPGroups.DistinctBy(pGrp => pGrp.Name).ToDictionary(p => p.Name, pGrp => pGrp.Id);
             }
+
+            // See HlaNamesRepository.ForceCacheHlaNameDictionary - sizes the table this full-table re-read scans.
+            logger.SendMetric(
+                DataRefreshMetrics.CountMetric,
+                pGroupNameToIdDictionary.Count,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_PGroupTableRows));
         }
     }
 }

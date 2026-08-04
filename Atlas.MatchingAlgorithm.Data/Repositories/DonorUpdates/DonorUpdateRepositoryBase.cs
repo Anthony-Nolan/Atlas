@@ -11,11 +11,11 @@ using Atlas.Common.Utils;
 using Atlas.Common.Utils.Disposable;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Common.Config;
-using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
+using Atlas.MatchingAlgorithm.Data.Settings;
 using Dapper;
 using Microsoft.Data.SqlClient;
 
@@ -26,16 +26,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
     public abstract class DonorUpdateRepositoryBase : Repository
     {
         protected readonly IAtlasLogger logger;
+        private readonly DataRefreshRepositorySettings settings;
 
         private const string DonorsTableName = "Donors";
 
         private const int DefaultBulkInsertTimeoutInSeconds = 3600;
-
-        /// <summary>
-        /// Rows per bulk-copy batch. With <see cref="SqlBulkCopyOptions.UseInternalTransaction"/> this is also the unit
-        /// of atomicity, which is why <see cref="UpsertMatchingPGroupsAtLocus"/> checks a write against it.
-        /// </summary>
-        private const int BulkCopyBatchSize = 10000;
 
         /// <summary>
         /// The matching HLA tables are the largest writes in the system, hence a far longer timeout than
@@ -81,9 +76,13 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             "HlaNameId"
         };
 
-        protected DonorUpdateRepositoryBase(IConnectionStringProvider connectionStringProvider, IAtlasLogger logger) : base(connectionStringProvider)
+        protected DonorUpdateRepositoryBase(
+            IConnectionStringProvider connectionStringProvider,
+            IAtlasLogger logger,
+            DataRefreshRepositorySettings settings) : base(connectionStringProvider)
         {
             this.logger = logger;
+            this.settings = settings ?? new DataRefreshRepositorySettings();
         }
 
         /// <summary>
@@ -259,7 +258,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             // Skipping it is also what leaves the reusable bulk copies usable - see GetReusableBulkCopy. Where a
             // caller asked for the whole upsert to be transactional, the outer scope opened by
             // UpsertMatchingPGroupsAtSpecifiedLoci is ambient regardless, and this scope only ever joined it.
-            var writeIsAtomicWithoutAScope = isKnownToBeCreate && dataTable.Rows.Count <= BulkCopyBatchSize;
+            var writeIsAtomicWithoutAScope = isKnownToBeCreate && dataTable.Rows.Count <= settings.SqlBulkCopyBatchSize;
 
             using (var transactionScope = new OptionalAsyncTransactionScope(!writeIsAtomicWithoutAScope))
             {
@@ -279,6 +278,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                         }
                     }
                 }
+
+                // Counting the rows as well as timing the write is what turns "DbBulkInsert took N ms" into
+                // "ms per million rows" - the only form in which this number is comparable between loci, between
+                // runs, and between DEV and LIVE. It also finally pins the MatchingHlaAt* row counts, open since
+                // Phase A. dataTable.Rows.Count is already materialised; this costs nothing.
+                logger.SendMetric(
+                    DataRefreshMetrics.CountMetric,
+                    dataTable.Rows.Count,
+                    DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_MatchingHlaRowsWritten, locus.ToString()));
 
                 using (logger.TimeOperationAsMetric(
                     DataRefreshMetrics.DurationMsMetric,
@@ -434,7 +442,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
             var bulkCopy = new SqlBulkCopy(ConnectionStringProvider.GetConnectionString(), options)
             {
-                BatchSize = BulkCopyBatchSize,
+                BatchSize = settings.SqlBulkCopyBatchSize,
                 DestinationTableName = tableName,
                 BulkCopyTimeout = timeout
             };

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
@@ -24,8 +25,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
     {
         private IDictionary<string, int> hlaNameToIdDictionary;
 
-        public HlaNamesRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
+        private readonly IAtlasLogger logger;
+
+        public HlaNamesRepository(IConnectionStringProvider connectionStringProvider, IAtlasLogger logger) : base(connectionStringProvider)
         {
+            this.logger = logger;
         }
 
         public async Task<IDictionary<string, int>> EnsureAllHlaNamesExist(IList<string> allHlaNames, LongStopwatchCollection timerCollection)
@@ -37,15 +41,26 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             var newHlaNames = allHlaNames.Where(hlaName => hlaName != null && !hlaNameToIdDictionary.ContainsKey(hlaName)).ToList();
             dictionaryCheckTimer?.Dispose();
 
+            var insertedCount = 0;
             if (newHlaNames.Any())
             {
-                await InsertHlaNames(newHlaNames); //This method refreshes the Cache after adding.
+                insertedCount = await InsertHlaNames(newHlaNames); //This method refreshes the Cache after adding.
             }
+
+            // Emitted for EVERY batch, including the (expected) zeros - the zeros ARE the finding. The nomenclature has
+            // a fixed name set that tens of millions of donors re-use, so if novelty dies out early then everything the
+            // ImportHla path does per batch thereafter is pure waste. A counter only emitted on the insert path could
+            // never show that, because it would simply stop being emitted.
+            logger.SendMetric(
+                DataRefreshMetrics.CountMetric,
+                insertedCount,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_NewHlaNamesPerBatch));
 
             return hlaNameToIdDictionary;
         }
 
-        private async Task InsertHlaNames(IList<string> hlaNames)
+        /// <returns>The number of names actually inserted (i.e. after de-duplication against the cache).</returns>
+        private async Task<int> InsertHlaNames(IList<string> hlaNames)
         {
             EnsureHlaNameDictionaryCacheIsPopulated();
 
@@ -53,7 +68,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
             if (!newHlaNames.Any())
             {
-                return;
+                return 0;
             }
 
             var dt = new DataTable();
@@ -75,6 +90,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
             // We need to get the new Ids back out.
             ForceCacheHlaNameDictionary();
+
+            return newHlaNames.Count;
         }
 
         private void EnsureHlaNameDictionaryCacheIsPopulated()
@@ -96,6 +113,14 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                     .DistinctBy(hla => hla.Name)
                     .ToDictionary(h => h.Name, h => h.Id);
             }
+
+            // Sizes the table that this method re-reads IN FULL every time a new name appears. Pairing the row count
+            // with the EnsureHlaNamesExist duration tests the "cost grows ~quadratically with table size" claim
+            // directly, rather than inferring it from a rising duration alone.
+            logger.SendMetric(
+                DataRefreshMetrics.CountMetric,
+                hlaNameToIdDictionary.Count,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_HlaNamesTableRows));
         }
     }
 }

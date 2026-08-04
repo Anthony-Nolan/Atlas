@@ -1,12 +1,12 @@
-﻿using Atlas.Client.Models.SupportMessages;
+using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Utils;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
-using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Mapping;
@@ -14,6 +14,7 @@ using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
+using Atlas.MatchingAlgorithm.Settings;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
@@ -49,15 +50,17 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
 
     public class DonorImporter : IDonorImporter
     {
-        private const int BatchSize = 10000;
+        /// <summary>Historic hard-coded value; used whenever <see cref="DataRefreshSettings.DonorImportBatchSize"/> is unset.</summary>
+        public const int DefaultBatchSize = 10000;
 
         /// <summary>
         /// How many reified batches the read side may run ahead of the write side. Read and write cost about the same,
         /// so one rung is enough to keep both busy and the rest only absorb variance. Note the memory cost is
-        /// <c>(ChannelDepth + 2) * BatchSize</c> reified donors rather than <c>ChannelDepth * BatchSize</c>: the write
-        /// side holds the batch it is inserting, and the read side the one it has reified and is blocked writing. A
-        /// batch measures ~8MB of donor objects, nearer 16MB of heap once GC overhead is counted, so the default sits
-        /// under 100MB against a stage peaking near 4.6GB of a ~14GB worker. Only worth re-measuring in the hundreds.
+        /// <c>(ChannelDepth + 2) * batchSize</c> reified donors rather than <c>ChannelDepth * batchSize</c>: the write
+        /// side holds the batch it is inserting, and the read side the one it has reified and is blocked writing. At the
+        /// default batch size a batch measures ~8MB of donor objects, nearer 16MB of heap once GC overhead is counted,
+        /// so the default sits under 100MB against a stage peaking near 4.6GB of a ~14GB worker. Only worth
+        /// re-measuring in the hundreds - or if the batch size is raised far above its default.
         /// </summary>
         private const int ChannelDepth = 3;
 
@@ -75,13 +78,15 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
         private readonly IMatchingAlgorithmImportLogger logger;
         private readonly IDonorReader donorReader;
+        private readonly int batchSize;
 
         public DonorImporter(
             IDormantRepositoryFactory repositoryFactory,
             IDonorInfoConverter donorInfoConverter,
             IFailedDonorsNotificationSender failedDonorsNotificationSender,
             IMatchingAlgorithmImportLogger logger,
-            IDonorReader donorReader)
+            IDonorReader donorReader,
+            DataRefreshSettings dataRefreshSettings)
         {
             matchingDonorImportRepository = repositoryFactory.GetDonorImportRepository();
             donorManagementLogRepository = repositoryFactory.GetDonorManagementLogRepository();
@@ -89,6 +94,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             this.failedDonorsNotificationSender = failedDonorsNotificationSender;
             this.logger = logger;
             this.donorReader = donorReader;
+            batchSize = dataRefreshSettings?.DonorImportBatchSize ?? DefaultBatchSize;
         }
 
         public async Task ImportDonors(bool shouldMarkDonorsAsUpdated, CancellationToken cancellationToken)
@@ -104,7 +110,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
                 using (matchingDonorImportRepository.OpenBulkWriteSession())
                 // Whole-stage duration, emitted as a (never-sampled) pre-aggregated metric. Now that read and write
                 // overlap, this total no longer decomposes into read + write: it is roughly max(read, write), and the
-                // ReadBatchTimingMessage traces plus the DonorImportBatch spans give the occupancy of each side.
+                // DonorStreamRead and DonorImportBatch metrics give the occupancy of each side.
                 using (logger.TimeOperationAsMetric(
                            DataRefreshMetrics.DurationMsMetric,
                            DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DonorImportStageTotal)
@@ -126,8 +132,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             {
                 // Surface the full exception (type + stack) as queryable Exception telemetry, not just the message text,
                 // so a stage-40 (DonorImport) failure lands in the App Insights `exceptions` table rather than being
-                // buried in a Trace. Behaviour is otherwise unchanged - we still wrap and rethrow.
-                logger.SendException(ex);
+                // buried in a Trace. Dimensioned so it is picked up by the same query as every other refresh exception -
+                // an undimensioned SendException falls outside it and reads as "it never happened".
+                // Behaviour is otherwise unchanged - we still wrap and rethrow.
+                logger.SendException(ex, LogLevel.Error, new Dictionary<string, string>
+                {
+                    ["DataRefreshStage"] = nameof(DataRefreshStage.DonorImport),
+                    ["Disposition"] = "Wrapped as DonorImportHttpException and rethrown to the stage runner"
+                });
                 throw new DonorImportHttpException("Unable to complete donor import: " + ex.Message, ex);
             }
         }
@@ -171,13 +183,21 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             // pulled out of SQL and the projection above is evaluated, and a foreach would bury that in its own
             // hidden MoveNext. Now that read and write overlap, the read cost can no longer be inferred by
             // subtracting write timings from the stage's wall clock, so it has to be measured directly.
-            using var donorBatches = donorsStream.Batch(BatchSize).GetEnumerator();
+            using var donorBatches = donorsStream.Batch(batchSize).GetEnumerator();
 
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 bool hasNextBatch;
+                // Timed twice deliberately. The metric is the one that always survives - it is pre-aggregated, so it is
+                // never sampled and does not depend on the deployed log level - and it is what the stage's occupancy is
+                // computed from. The Trace beside it is opt-in (Verbose) and only earns its keep when the per-read
+                // distribution is wanted rather than the total.
+                using (logger.TimeOperationAsMetric(
+                           DataRefreshMetrics.DurationMsMetric,
+                           DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DonorStreamRead)
+                       ))
                 using (logger.RunTimed(ReadBatchTimingMessage, LogLevel.Verbose))
                 {
                     hasNextBatch = donorBatches.MoveNext();
@@ -247,11 +267,23 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
                    ))
             using (logger.RunTimed($"Import donor batch (BatchSize: {donors.Count}, QueueDepth: {queueDepth})", LogLevel.Verbose))
             {
+                // Sanity counter: every per-batch average above is only meaningful if the batches are the size we
+                // think they are. A short final batch (or a short-changed stream) shows up here and nowhere else.
+                logger.SendMetric(
+                    DataRefreshMetrics.CountMetric,
+                    donors.Count,
+                    DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DonorsPerImportBatch));
+
                 var donorInfoConversionResult = await logger.RunTimedAsMetricAsync(
                     DataRefreshMetrics.DurationMsMetric,
                     DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DonorInfoConversion),
                     () => donorInfoConverter.ConvertDonorInfoAsync(donors, ImportFailureEventName)
                 );
+
+                logger.SendMetric(
+                    DataRefreshMetrics.CountMetric,
+                    donorInfoConversionResult.FailedDonors.Count,
+                    DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_FailedDonorsPerImportBatch));
 
                 using (logger.TimeOperationAsMetric(
                            DataRefreshMetrics.DurationMsMetric,

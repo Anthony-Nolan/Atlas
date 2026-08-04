@@ -8,7 +8,6 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Common.Config;
-using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
@@ -92,6 +91,13 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                 hlaRelationsToInsert = BuildHlaRelations(donorsToImport, lookups, processedHlaIds);
             }
 
+            // The build's output is counted inside ImportHla, as HlaRelationsInserted - post ATL-280 the build produces
+            // matching-loci relations only, so what it builds and what gets inserted are now the same set.
+            // The two counters that used to sit here have gone with the build they measured: "candidates examined" existed
+            // to expose the ~6x over-traversal of the old lazy-Select / eager-LociInfo build (the batch was walked once per
+            // locus, across all twelve locus/position pairs, to insert only five loci), and "relations built" was its
+            // counterpart output. ATL-280 replaced that with a single pass over the matching loci, so there is no longer a
+            // cost-vs-output ratio to watch, and a separate built count would just duplicate the inserted one.
             using (logger.TimeOperationAsMetric(
                        DataRefreshMetrics.DurationMsMetric,
                        DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_InsertHlaRelations)
@@ -194,8 +200,22 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             );
         }
 
+        /// <summary>
+        /// Total relations across all loci. Post ATL-280 the build only produces relations for
+        /// <see cref="LocusSettings.MatchingOnlyLoci"/>, which is exactly what <see cref="ImportProcessedHla"/> keeps.
+        /// </summary>
+        private static int CountRelationsToImport(LociInfo<ISet<HlaNamePGroupRelation>> relations) =>
+            relations.Reduce((_, value, count) => count + (value?.Count ?? 0), 0);
+
         private async Task ImportHla(LociInfo<ISet<HlaNamePGroupRelation>> hlaNamesToImport)
         {
+            // What the build above actually bought. Expected to collapse to ~0 within the first few hundred batches,
+            // while BuildHlaRelations keeps costing the same - which is the whole of H11.
+            logger.SendMetric(
+                DataRefreshMetrics.CountMetric,
+                CountRelationsToImport(hlaNamesToImport),
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_HlaRelationsInserted));
+
             // Distributed transactions are not yet supported in .Net core - see https://github.com/dotnet/runtime/issues/715
             // Until they are, we cannot update loci in parallel while also in a transaction scope. But if we are not in a transaction, it is quicker to run in parallel.
             // Therefore, we check for an open transaction here and either allow parallel execution across loci (via WhenAll), or do not (via WhenEach)

@@ -14,4 +14,6 @@ internal static class DataRefreshSettingsBuilder
         .With(s => s.LeaseDurationMinutes, 30)
         .With(s => s.LeaseRenewalIntervalSeconds, 60)
         .With(s => s.WatchdogGraceDurationMinutes, 60);
+    // Note FixtureBuilder omits auto-properties, so the nullable batch-size tunables are left unset and every
+    // consumer falls back to its production default. Set them explicitly in a test that cares.
 }

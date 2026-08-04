@@ -22,6 +22,7 @@ using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Config;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
+using Atlas.MatchingAlgorithm.Data.Settings;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
@@ -312,6 +313,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IDataRefreshCleanupService, DataRefreshCleanupService>();
             services.AddScoped<IDataRefreshWatchdog, DataRefreshWatchdog>();
             services.AddScoped<IDataRefreshServiceBusClient, DataRefreshServiceBusClient>();
+            services.AddScoped<IDataRefreshRuntimeSampler, DataRefreshRuntimeSampler>();
 
             services.AddScoped<IHlaProcessor, HlaProcessor>();
             services.AddScoped<IDonorImporter, DonorImporter>();
@@ -545,6 +547,16 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>()
             );
+
+            // Projects the data-layer slice of DataRefreshSettings across an assembly boundary the data layer cannot
+            // see. Registered here (rather than alongside the rest of the refresh settings) because the repository
+            // factories below are shared with search and ongoing donor management, neither of which registers
+            // DataRefreshSettings at all - hence GetService, and the fall back to the historic hard-coded default.
+            services.AddScoped(sp => new DataRefreshRepositorySettings
+            {
+                SqlBulkCopyBatchSize = sp.GetService<DataRefreshSettings>()?.SqlBulkCopyBatchSize
+                                       ?? DataRefreshRepositorySettings.DefaultSqlBulkCopyBatchSize
+            });
 
             services.AddScoped<IActiveRepositoryFactory, ActiveRepositoryFactory>();
             services.AddScoped<IDormantRepositoryFactory, DormantRepositoryFactory>();
