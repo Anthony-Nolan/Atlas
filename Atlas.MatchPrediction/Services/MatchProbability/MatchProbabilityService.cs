@@ -80,7 +80,7 @@ internal class MatchProbabilityService : IMatchProbabilityService
             }
         );
 
-        // Captured whether or not the phenotype is represented (0 when unrepresented), so it is read before the guard below.
+        // Capture the donor genotype count (0 when unrepresented), so it is read before the guard below.
         var donorGenotypeCount = matcherResult.DonorResult.GenotypeCount;
 
         if (matcherResult.PatientResult.IsUnrepresented || matcherResult.DonorResult.IsUnrepresented)
