@@ -1,6 +1,7 @@
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
+using Atlas.MatchingAlgorithm.Data.Settings;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 
 namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories
@@ -19,15 +20,16 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         // ReSharper disable once SuggestBaseTypeForParameter
         public DormantRepositoryFactory(
             DormantTransientSqlConnectionStringProvider dormantConnectionStringProvider,
-            IMatchingAlgorithmImportLogger logger
+            IMatchingAlgorithmImportLogger logger,
+            DataRefreshRepositorySettings repositorySettings
         )
-            : base(dormantConnectionStringProvider, logger)
+            : base(dormantConnectionStringProvider, logger, repositorySettings)
         {
         }
 
         public IDonorImportRepository GetDonorImportRepository()
         {
-            return new DonorImportRepository(GetHlaNamesRepository(), ConnectionStringProvider, Logger);
+            return new DonorImportRepository(GetHlaNamesRepository(), ConnectionStringProvider, Logger, RepositorySettings);
         }
 
         public IDataRefreshRepository GetDataRefreshRepository()
@@ -38,7 +40,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         /// <inheritdoc />
         public IDonorManagementLogRepository GetDonorManagementLogRepository()
         {
-            return new DonorManagementLogRepository(ConnectionStringProvider);
+            return new DonorManagementLogRepository(ConnectionStringProvider, Logger);
         }
     }
 }

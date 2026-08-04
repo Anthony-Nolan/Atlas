@@ -1,10 +1,10 @@
-﻿using Atlas.Client.Models.SupportMessages;
+using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
-using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Mapping;
@@ -12,6 +12,7 @@ using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
+using Atlas.MatchingAlgorithm.Settings;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
@@ -41,7 +42,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
 
     public class DonorImporter : IDonorImporter
     {
-        private const int BatchSize = 10000;
+        /// <summary>Historic hard-coded value; used whenever <see cref="DataRefreshSettings.DonorImportBatchSize"/> is unset.</summary>
+        public const int DefaultBatchSize = 10000;
+
         private const string ImportFailureEventName = "Donor Import Failure(s) in the Matching Algorithm's DataRefresh";
 
         private readonly IDonorImportRepository matchingDonorImportRepository;
@@ -50,13 +53,15 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
         private readonly IMatchingAlgorithmImportLogger logger;
         private readonly IDonorReader donorReader;
+        private readonly int batchSize;
 
         public DonorImporter(
             IDormantRepositoryFactory repositoryFactory,
             IDonorInfoConverter donorInfoConverter,
             IFailedDonorsNotificationSender failedDonorsNotificationSender,
             IMatchingAlgorithmImportLogger logger,
-            IDonorReader donorReader)
+            IDonorReader donorReader,
+            DataRefreshSettings dataRefreshSettings)
         {
             matchingDonorImportRepository = repositoryFactory.GetDonorImportRepository();
             donorManagementLogRepository = repositoryFactory.GetDonorManagementLogRepository();
@@ -64,6 +69,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             this.failedDonorsNotificationSender = failedDonorsNotificationSender;
             this.logger = logger;
             this.donorReader = donorReader;
+            batchSize = dataRefreshSettings?.DonorImportBatchSize ?? DefaultBatchSize;
         }
 
         public async Task ImportDonors(bool shouldMarkDonorsAsUpdated)
@@ -73,16 +79,40 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
                 var allFailedDonors = new List<FailedDonorInfo>();
                 var donorsStream = donorReader.StreamAllDonors().Select(d => d.MapImportDonorToMatchingUpdateDonor());
 
-                // Whole-stage duration, emitted as a (never-sampled) pre-aggregated metric. The cross-DB donor
-                // stream read is not timed directly, but is recoverable as this total minus the DonorImportBatch spans.
+                // Whole-stage duration, emitted as a (never-sampled) pre-aggregated metric.
                 using (logger.TimeOperationAsMetric(
                            DataRefreshMetrics.DurationMsMetric,
                            DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DonorImportStageTotal)
                        ))
                 {
-                    foreach (var streamedDonorBatch in donorsStream.Batch(BatchSize))
+                    // Deliberately an explicit enumerator rather than a foreach. StreamAllDonors() is a synchronous,
+                    // unbuffered IEnumerable over one open cross-DB connection, so the cost of actually reading donors
+                    // out of SQL lands on the OUTER enumerator's MoveNext - not on the .ToList() below, and not
+                    // anywhere else we already measure. Timing MoveNext is therefore the only way to see it; before
+                    // this it was the single largest unmeasured slice of the whole job, visible only as the residual
+                    // between DonorImportStageTotal and the sum of the DonorImportBatch spans.
+                    //
+                    // Note this span also covers the lazy MapImportDonorToMatchingUpdateDonor projection above, which
+                    // is evaluated per donor during MoveNext. That is a small CPU cost sitting inside a
+                    // predominantly-IO measurement; the §2.3 reconciliation is what proves the split, not this comment.
+                    using var donorBatches = donorsStream.Batch(batchSize).GetEnumerator();
+
+                    while (true)
                     {
-                        var reifiedDonorBatch = streamedDonorBatch.ToList();
+                        bool hasNextBatch;
+                        using (logger.TimeOperationAsMetric(
+                            DataRefreshMetrics.DurationMsMetric,
+                            DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DonorStreamRead)))
+                        {
+                            hasNextBatch = donorBatches.MoveNext();
+                        }
+
+                        if (!hasNextBatch)
+                        {
+                            break;
+                        }
+
+                        var reifiedDonorBatch = donorBatches.Current.ToList();
                         var failedDonors = await InsertDonorBatch(reifiedDonorBatch, shouldMarkDonorsAsUpdated);
                         allFailedDonors.AddRange(failedDonors);
                     }
@@ -95,8 +125,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             {
                 // Surface the full exception (type + stack) as queryable Exception telemetry, not just the message text,
                 // so a stage-40 (DonorImport) failure lands in the App Insights `exceptions` table rather than being
-                // buried in a Trace. Behaviour is otherwise unchanged - we still wrap and rethrow.
-                logger.SendException(ex);
+                // buried in a Trace. Dimensioned so it is picked up by the same query as every other refresh exception -
+                // an undimensioned SendException falls outside it and reads as "it never happened".
+                // Behaviour is otherwise unchanged - we still wrap and rethrow.
+                logger.SendException(ex, LogLevel.Error, new Dictionary<string, string>
+                {
+                    ["DataRefreshStage"] = nameof(DataRefreshStage.DonorImport),
+                    ["Disposition"] = "Wrapped as DonorImportHttpException and rethrown to the stage runner"
+                });
                 throw new DonorImportHttpException("Unable to complete donor import: " + ex.Message, ex);
             }
         }
@@ -116,11 +152,23 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
                        DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DonorImportBatch)
                    ))
             {
+                // Sanity counter: every per-batch average above is only meaningful if the batches are the size we
+                // think they are. A short final batch (or a short-changed stream) shows up here and nowhere else.
+                logger.SendMetric(
+                    DataRefreshMetrics.CountMetric,
+                    donors.Count,
+                    DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DonorsPerImportBatch));
+
                 var donorInfoConversionResult = await logger.RunTimedAsMetricAsync(
                     DataRefreshMetrics.DurationMsMetric,
                     DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DonorInfoConversion),
                     () => donorInfoConverter.ConvertDonorInfoAsync(donors, ImportFailureEventName)
                 );
+
+                logger.SendMetric(
+                    DataRefreshMetrics.CountMetric,
+                    donorInfoConversionResult.FailedDonors.Count,
+                    DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_FailedDonorsPerImportBatch));
 
                 using (logger.TimeOperationAsMetric(
                            DataRefreshMetrics.DurationMsMetric,

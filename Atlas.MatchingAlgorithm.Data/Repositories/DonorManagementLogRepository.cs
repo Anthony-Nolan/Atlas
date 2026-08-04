@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 
@@ -49,8 +50,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         private const string SequenceNumberColumnName = "SequenceNumberOfLastUpdate";
         private const string UpdateDateTimeColumnName = "LastUpdateDateTime";
 
-        public DonorManagementLogRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
+        private readonly IAtlasLogger logger;
+
+        public DonorManagementLogRepository(IConnectionStringProvider connectionStringProvider, IAtlasLogger logger) : base(connectionStringProvider)
         {
+            this.logger = logger;
         }
 
         public async Task<IEnumerable<DonorManagementLog>> GetDonorManagementLogBatch(IEnumerable<int> donorIds)
@@ -59,6 +63,14 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                 SELECT * FROM {LogTableName}
                 WHERE {DonorIdColumnName} IN ({string.Join(",", donorIds)})
                 ";
+
+            // The IN clause is built from raw literals, so on a data refresh batch this is ~10,000 of them - a couple
+            // of hundred KB of unique, non-parameterised SQL text per call, ~4,400 times. Sizing that is what prices
+            // the parse cost and the plan-cache pollution it causes.
+            logger.SendMetric(
+                DataRefreshMetrics.CountMetric,
+                sql.Length,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_ManagementLogSqlTextLength));
 
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
@@ -76,10 +88,24 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                 return;
             }
 
-            var donorIdsWithLogs = (await GetDonorIdsWithExistingLogs(infos.Select(i => i.DonorId))).ToList();
+            // Split into its read and write halves. On a data refresh, stage 20 TRUNCATEs this table, so the read
+            // below can only ever return an empty set - every donor resolves to "create". Timing the two separately
+            // is what turns "the read is provably useless" into a number of minutes that can be weighed against the
+            // cost of removing it. Note that ongoing (non-refresh) donor management shares this path, where the read
+            // is NOT useless - the refresh-window scoping of the queries is what keeps the two apart.
+            List<int> donorIdsWithLogs;
+            using (logger.TimeOperationAsMetric(
+                       DataRefreshMetrics.DurationMsMetric,
+                       DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DonorManagementLogRead)))
+            {
+                donorIdsWithLogs = (await GetDonorIdsWithExistingLogs(infos.Select(i => i.DonorId))).ToList();
+            }
 
             var (logsToUpdate, logsToCreate) = infos.ReifyAndSplit(i => donorIdsWithLogs.Contains(i.DonorId));
 
+            using (logger.TimeOperationAsMetric(
+                       DataRefreshMetrics.DurationMsMetric,
+                       DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DonorManagementLogInsert)))
             using (var transactionScope = new AsyncTransactionScope())
             {
                 await UpdateLogBatch(logsToUpdate);

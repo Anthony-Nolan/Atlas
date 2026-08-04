@@ -53,7 +53,27 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services
 
             // Either the store has not been warmed, or this MAC was published after it was.
             // Either way, one point lookup, and then remember it.
-            var mac = await macRepository.GetMac(macCode);
+            //
+            // Instrumented on this MISS path only, because it is the only path that costs anything: a hit is a dictionary
+            // lookup, a miss is a Table Storage point lookup, and Table Storage dependency auto-collection is inactive in
+            // the isolated worker, so this is the only way those round trips are visible at all.
+            //
+            // Before ATL-281 pre-warmed the store, every distinct MAC's first touch during a data refresh landed here, and
+            // the counter measured the size of that flood. It now measures the residual after pre-warming - which should be
+            // ~0 for a refresh, so a non-trivial count is the signal that the pre-warm did not take.
+            logger.SendMetric(
+                DataRefreshMetrics.CountMetric,
+                1,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_MacCacheMisses));
+
+            Mac mac;
+            using (logger.TimeOperationAsMetric(
+                       DataRefreshMetrics.DurationMsMetric,
+                       DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_MacLookup)))
+            {
+                mac = await macRepository.GetMac(macCode);
+            }
+
             if (mac != null)
             {
                 macStore.AddMac(mac.Code, new MacValue(mac.Hla, mac.IsGeneric));

@@ -1,6 +1,7 @@
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
+using Atlas.MatchingAlgorithm.Data.Settings;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 
 namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories
@@ -19,8 +20,9 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         public ActiveRepositoryFactory(
             ActiveTransientSqlConnectionStringProvider activeConnectionStringProvider,
             IMatchingAlgorithmImportLogger logger,
-            IMatchingAlgorithmSearchLogger searchLogger)
-            : base(activeConnectionStringProvider, logger)
+            IMatchingAlgorithmSearchLogger searchLogger,
+            DataRefreshRepositorySettings repositorySettings)
+            : base(activeConnectionStringProvider, logger, repositorySettings)
         {
             this.searchLogger = searchLogger;
         }
@@ -32,7 +34,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 
         public IDonorManagementLogRepository GetDonorManagementLogRepository()
         {
-            return new DonorManagementLogRepository(ConnectionStringProvider);
+            return new DonorManagementLogRepository(ConnectionStringProvider, Logger);
         }
     }
 }

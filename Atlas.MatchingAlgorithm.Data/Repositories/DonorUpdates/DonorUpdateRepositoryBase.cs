@@ -7,11 +7,11 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Common.Config;
-using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
+using Atlas.MatchingAlgorithm.Data.Settings;
 using Dapper;
 using Microsoft.Data.SqlClient;
 
@@ -22,6 +22,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
     public abstract class DonorUpdateRepositoryBase : Repository
     {
         protected readonly IAtlasLogger logger;
+        private readonly DataRefreshRepositorySettings settings;
 
         // The order of these matters when setting up the datatable - if re-ordering, also re-order datatable contents
         private readonly string[] donorInsertDataTableColumnNames =
@@ -55,9 +56,13 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             "HlaNameId"
         };
 
-        protected DonorUpdateRepositoryBase(IConnectionStringProvider connectionStringProvider, IAtlasLogger logger) : base(connectionStringProvider)
+        protected DonorUpdateRepositoryBase(
+            IConnectionStringProvider connectionStringProvider,
+            IAtlasLogger logger,
+            DataRefreshRepositorySettings settings) : base(connectionStringProvider)
         {
             this.logger = logger;
+            this.settings = settings ?? new DataRefreshRepositorySettings();
         }
 
         public async Task InsertBatchOfDonors(IEnumerable<DonorInfo> donors)
@@ -208,6 +213,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     }
                 }
 
+                // Counting the rows as well as timing the write is what turns "DbBulkInsert took N ms" into
+                // "ms per million rows" - the only form in which this number is comparable between loci, between
+                // runs, and between DEV and LIVE. It also finally pins the MatchingHlaAt* row counts, open since
+                // Phase A. dataTable.Rows.Count is already materialised; this costs nothing.
+                logger.SendMetric(
+                    DataRefreshMetrics.CountMetric,
+                    dataTable.Rows.Count,
+                    DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_MatchingHlaRowsWritten, locus.ToString()));
+
                 using (logger.TimeOperationAsMetric(
                     DataRefreshMetrics.DurationMsMetric,
                     DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DbBulkInsert, locus.ToString())))
@@ -324,7 +338,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         {
             var bulkCopy = new SqlBulkCopy(ConnectionStringProvider.GetConnectionString(), SqlBulkCopyOptions.UseInternalTransaction)
             {
-                BatchSize = 10000,
+                BatchSize = settings.SqlBulkCopyBatchSize,
                 DestinationTableName = tableName,
                 BulkCopyTimeout = timeout
             };

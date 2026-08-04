@@ -11,4 +11,6 @@ internal static class DataRefreshSettingsBuilder
         .With(s => s.ActiveDatabaseSize, "S4")
         .With(s => s.RefreshDatabaseSize, "P15")
         .With(s => s.DataRefreshDonorUpdatesShouldBeFullyTransactional, false);
+    // Note FixtureBuilder omits auto-properties, so the nullable batch-size tunables are left unset and every
+    // consumer falls back to its production default. Set them explicitly in a test that cares.
 }

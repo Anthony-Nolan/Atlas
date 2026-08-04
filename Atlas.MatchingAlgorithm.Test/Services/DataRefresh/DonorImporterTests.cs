@@ -1,20 +1,27 @@
 ﻿using Atlas.Client.Models.SupportMessages;
+using Atlas.Common.ApplicationInsights;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
+using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.Donors;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Data.Models;
 using AutoFixture;
+using AwesomeAssertions;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,7 +41,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IFailedDonorsNotificationSender failedDonorsNotificationSender;
         private IMatchingAlgorithmImportLogger logger;
         private IDonorReader donorReader;
-
         private Fixture fixture;
 
         [SetUp]
@@ -58,7 +64,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             donorReader = Substitute.For<IDonorReader>();
 
-            donorImporter = new DonorImporter(repositoryFactory, donorInfoConverter, failedDonorsNotificationSender, logger, donorReader);
+            donorImporter = new DonorImporter(
+                repositoryFactory,
+                donorInfoConverter,
+                failedDonorsNotificationSender,
+                logger,
+                donorReader,
+                DataRefreshSettingsBuilder.New.Build());
         }
 
         [Test]
@@ -186,5 +198,69 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             await donorManagementLogRepository.DidNotReceive()
                 .CreateOrUpdateDonorManagementLogBatch(Arg.Any<IEnumerable<DonorManagementInfo>>());
         }
+
+        [Test]
+        public async Task ImportDonors_TimesTheDonorStreamReadOncePerBatchPlusOnceForTheEmptyRead()
+        {
+            donorReader.StreamAllDonors().Returns(fixture.CreateMany<Donor>(3));
+
+            await donorImporter.ImportDonors();
+
+            // The stream read is timed on the batch enumerator's MoveNext, so a single batch of donors costs two
+            // MoveNext calls: one that yields the batch, and the one that reports the stream is exhausted.
+            logger.Received(2).SendMetric(
+                DataRefreshMetrics.DurationMsMetric,
+                Arg.Any<double>(),
+                Arg.Is<Dictionary<string, string>>(d => IsOperation(d, DataRefreshMetrics.Operation_DonorStreamRead)));
+        }
+
+        [Test]
+        public async Task ImportDonors_CountsTheDonorsInEachBatch()
+        {
+            const int donorCount = 4;
+            donorReader.StreamAllDonors().Returns(fixture.CreateMany<Donor>(donorCount));
+
+            await donorImporter.ImportDonors();
+
+            logger.Received(1).SendMetric(
+                DataRefreshMetrics.CountMetric,
+                donorCount,
+                Arg.Is<Dictionary<string, string>>(d => IsOperation(d, DataRefreshMetrics.Operation_DonorsPerImportBatch)));
+        }
+
+        [Test]
+        public async Task ImportDonors_WhenBatchSizeIsConfigured_SplitsDonorsIntoBatchesOfThatSize()
+        {
+            const int batchSize = 2;
+            var settings = DataRefreshSettingsBuilder.New.With(s => s.DonorImportBatchSize, batchSize).Build();
+            donorReader.StreamAllDonors().Returns(fixture.CreateMany<Donor>(5));
+
+            IDonorImporter importer = new DonorImporter(
+                repositoryFactory, donorInfoConverter, failedDonorsNotificationSender, logger, donorReader, settings);
+
+            await importer.ImportDonors();
+
+            // 5 donors at a batch size of 2 = three batches (2, 2, 1).
+            await donorInfoConverter.Received(3).ConvertDonorInfoAsync(
+                Arg.Any<IEnumerable<SearchableDonorInformation>>(), Arg.Any<string>());
+        }
+
+        [Test]
+        public async Task ImportDonors_WhenTheStreamThrows_SurfacesADimensionedException()
+        {
+            donorReader.StreamAllDonors().Throws(new Exception("stream is down"));
+
+            var act = async () => await donorImporter.ImportDonors();
+
+            await act.Should().ThrowAsync<DonorImportHttpException>();
+            // Undimensioned exceptions fall outside the runbook's exception query, and so read as "it never happened".
+            logger.Received(1).SendException(
+                Arg.Any<Exception>(),
+                Arg.Any<LogLevel>(),
+                Arg.Is<Dictionary<string, string>>(d => d["DataRefreshStage"] == nameof(DataRefreshStage.DonorImport)));
+        }
+
+        private static bool IsOperation(Dictionary<string, string> dimensions, string operation) =>
+            dimensions[DataRefreshMetrics.OperationDimension] == operation;
     }
 }

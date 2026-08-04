@@ -1,11 +1,10 @@
 ﻿using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Utils;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
-using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Models;
@@ -38,8 +37,16 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 
     public class HlaProcessor : IHlaProcessor
     {
-        private const int BatchSize = 2000; // At 1k this definitely works fine. At 4k it's been seen throwing OOM Exceptions
-        private const int BatchProgressReportingPeriod = 10; // Emit a human-readable progress/ETA trace every N batches.
+        /// <summary>
+        /// Historic hard-coded value; used whenever <see cref="DataRefreshSettings.HlaProcessingBatchSize"/> is unset.
+        /// At 1k this definitely works fine. At 4k it's been seen throwing OOM Exceptions - though that claim is
+        /// undated folklore, which the runtime sampler's WorkingSetMb finally makes checkable.
+        /// </summary>
+        public const int DefaultBatchSize = 2000;
+
+        /// <summary>Emit a human-readable progress/ETA trace every N batches.</summary>
+        public const int DefaultBatchProgressReportingPeriod = 10;
+
         private const string HlaFailureEventName = "Imported Donor Hla Processing Failure(s) in the Matching Algorithm's DataRefresh";
 
         private readonly IMatchingAlgorithmImportLogger logger;
@@ -52,6 +59,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         private readonly IPGroupRepository pGroupRepository;
         private readonly IHlaImportRepository hlaImportRepository;
         private readonly IMacDictionary macDictionary;
+        private readonly int batchSize;
+        private readonly int batchProgressReportingPeriod;
 
         public const int NumberOfBatchesOverlapOnRestart = 3;
 
@@ -74,6 +83,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
             pGroupRepository = repositoryFactory.GetPGroupRepository();
             hlaImportRepository = repositoryFactory.GetHlaImportRepository();
+            batchSize = settings?.HlaProcessingBatchSize ?? DefaultBatchSize;
+            batchProgressReportingPeriod = settings?.BatchProgressReportingPeriod ?? DefaultBatchProgressReportingPeriod;
         }
 
         public async Task UpdateDonorHla(
@@ -90,7 +101,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             }
             catch (Exception e)
             {
-                logger.SendException(e, LogLevel.Critical);
+                // Dimensioned so this lands in the same exception query as every other refresh failure - an
+                // undimensioned SendException falls outside it and reads as "it never happened".
+                logger.SendException(e, LogLevel.Critical, new Dictionary<string, string>
+                {
+                    ["DataRefreshStage"] = nameof(DataRefreshStage.DonorHlaProcessing),
+                    ["Disposition"] = "Rethrown to the stage runner"
+                });
                 throw;
             }
         }
@@ -102,10 +119,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             bool continueExistingProcessing)
         {
             var totalDonorCount = await dataRefreshRepository.GetDonorCount();
-            var batchedDonors = dataRefreshRepository.NewOrderedDonorBatchesToImport(BatchSize, lastProcessedDonor);
+            var batchedDonors = dataRefreshRepository.NewOrderedDonorBatchesToImport(batchSize, lastProcessedDonor);
 
             var overlapBatches = continueExistingProcessing
-                ? await dataRefreshRepository.GetOrderedDonorBatches(NumberOfBatchesOverlapOnRestart, BatchSize, lastProcessedDonor ?? 0)
+                ? await dataRefreshRepository.GetOrderedDonorBatches(NumberOfBatchesOverlapOnRestart, batchSize, lastProcessedDonor ?? 0)
                 : new List<List<DonorInfo>>();
 
             var (donorsPreviouslyProcessed, _) = continueExistingProcessing
@@ -124,7 +141,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             // synchronous burst when this using-block unwound at stage completion; the isolated worker's adaptive sampling
             // (which host.json's excludedTypes does NOT govern for direct-to-App-Insights worker logs) then dropped them,
             // since they shared one OperationId. Metrics are never sampled, so they always survive.
-            var totalBatches = totalDonorCount / BatchSize;
+            var totalBatches = totalDonorCount / batchSize;
             long batchesProcessed = 0;
             var stageStartTimestamp = Stopwatch.GetTimestamp();
 
@@ -153,7 +170,20 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_BatchProcessing)
                            ))
                     {
-                        var failedDonorsFromBatch = await UpdateDonorBatch(donorBatch, hlaNomenclatureVersion);
+                        // Sanity counter - see DonorsPerImportBatch. Named distinctly from stage 40's so a short
+                        // final batch in one loop cannot skew the other loop's per-batch distribution.
+                        logger.SendMetric(
+                            DataRefreshMetrics.CountMetric,
+                            donorBatch.Count,
+                            DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DonorsPerHlaBatch));
+
+                        var failedDonorsFromBatch = (await UpdateDonorBatch(donorBatch, hlaNomenclatureVersion)).ToList();
+
+                        logger.SendMetric(
+                            DataRefreshMetrics.CountMetric,
+                            failedDonorsFromBatch.Count,
+                            DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_FailedDonorsPerHlaBatch));
+
                         failedDonors.AddRange(failedDonorsFromBatch);
                     }
 
@@ -164,7 +194,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                         await updateLastSafelyProcessedDonorId(completedDonors.Peek());
                     }
 
-                    if (++batchesProcessed % BatchProgressReportingPeriod == 0)
+                    if (++batchesProcessed % batchProgressReportingPeriod == 0)
                     {
                         LogHlaProcessingProgress(batchesProcessed, totalBatches, stageStartTimestamp);
                     }
@@ -252,14 +282,21 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         {
             try
             {
-                using (logger.RunTimed("HLA PROCESSOR: Caching HlaMetadataDictionary tables", LogLevel.Info, true))
+                // The only two stage-50 setup numbers there are. They used to be RunTimed Traces, i.e. sampleable -
+                // and the worker's adaptive sampling is exactly what lost the old timing traces. As metrics they
+                // always survive, and they can be read in the same query as everything else in the stage.
+                using (logger.TimeOperationAsMetric(
+                           DataRefreshMetrics.DurationMsMetric,
+                           DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_HmdPreWarm)))
                 {
                     // Cloud tables are cached for performance reasons
                     var dictionaryCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaNomenclatureVersion);
                     await dictionaryCacheControl.PreWarmAllCaches();
                 }
 
-                using (logger.RunTimed("HLA PROCESSOR: Caching all MACs", LogLevel.Info, true))
+                using (logger.TimeOperationAsMetric(
+                           DataRefreshMetrics.DurationMsMetric,
+                           DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_MacPreWarm)))
                 {
                     // Donor HLA is riddled with MACs, and expanding one requires its definition. Without this, each
                     // distinct MAC costs its own storage request during expansion - ~567k of them on a full refresh.
@@ -267,7 +304,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                     await macDictionary.PreWarmAllMacs();
                 }
 
-                using (logger.RunTimed("HLA PROCESSOR: Inserting new P-Groups to database", LogLevel.Info, true))
+                using (logger.TimeOperationAsMetric(
+                           DataRefreshMetrics.DurationMsMetric,
+                           DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_UpfrontPGroupInsert)))
                 {
                     // P Groups are inserted upfront, for performance reasons. All groups are extracted from the
                     // HlaMetadataDictionary, and any that are new are added to the SQL database.
@@ -289,7 +328,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             }
             catch (Exception e)
             {
-                logger.SendException(e, LogLevel.Critical);
+                logger.SendException(e, LogLevel.Critical, new Dictionary<string, string>
+                {
+                    ["DataRefreshStage"] = nameof(DataRefreshStage.DonorHlaProcessing),
+                    ["Disposition"] = "Failed during upfront setup (HMD pre-warm / p-group insert); rethrown"
+                });
                 throw;
             }
         }

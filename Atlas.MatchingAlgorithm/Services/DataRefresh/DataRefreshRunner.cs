@@ -9,6 +9,7 @@ using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
+using Atlas.MatchingAlgorithm.Data.Settings;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
@@ -55,8 +56,15 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IHlaProcessor hlaProcessor;
         private readonly IDonorUpdateProcessor differentialDonorUpdateProcessor;
         private readonly IMatchingAlgorithmImportLogger logger;
+        private readonly IDataRefreshRuntimeSampler runtimeSampler;
 
         private const string LoggingPrefix = "DATA REFRESH:";
+
+        /// <summary>
+        /// Name of the customEvent carrying the run manifest. A run that cannot describe its own configuration cannot
+        /// be compared with another run, so this is emitted before any work starts.
+        /// </summary>
+        internal const string RunManifestEventName = "Data Refresh Run Manifest";
 
         private readonly List<DataRefreshStage> orderedRefreshStages = EnumExtensions.EnumerateValues<DataRefreshStage>().OrderBy(x => x).ToList();
 
@@ -113,8 +121,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IMatchingAlgorithmImportLogger logger,
             IDataRefreshSupportNotificationSender dataRefreshNotificationSender,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
-            MatchingAlgorithmImportLoggingContext loggingContext)
+            MatchingAlgorithmImportLoggingContext loggingContext,
+            IDataRefreshRuntimeSampler runtimeSampler)
         {
+            this.runtimeSampler = runtimeSampler;
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
             this.azureDatabaseManager = azureDatabaseManager;
@@ -139,9 +149,16 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         public async Task<string> RefreshData(int refreshRecordId)
         {
             DataRefreshStage? currentStage = null;
+
+            // Started here and disposed in the finally, so utilisation is sampled across every exit path - including
+            // the failure path, which is precisely when knowing what the process was doing matters most.
+            await using var runtimeSampling = runtimeSampler.StartSampling();
+
             try
             {
                 var refreshRecord = await dataRefreshHistoryRepository.GetRecord(refreshRecordId);
+                SendRunManifest(refreshRecord);
+
                 var stageExecutionModes = DetermineStageExecutionModes(refreshRecord);
 
                 currentStage = DataRefreshStage.MetadataDictionaryRefresh;
@@ -248,11 +265,19 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             if (string.IsNullOrEmpty(refreshRecord.HlaNomenclatureVersion))
             {
-                var newHlaNomenclatureVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
-                refreshRecord.HlaNomenclatureVersion = newHlaNomenclatureVersion; //Later steps will make use of this value.
-                loggingContext.HlaNomenclatureVersion = newHlaNomenclatureVersion;
-                await dataRefreshHistoryRepository.UpdateExecutionDetails(refreshRecord.Id, newHlaNomenclatureVersion);
-                await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecord, DataRefreshStage.MetadataDictionaryRefresh);
+                // Timed inside the guard, so a continuation - which correctly skips this stage - does not emit a
+                // near-zero sample and drag the stage's average down. See the note in ExecuteDataRefreshStage.
+                using (logger.TimeOperationAsMetric(
+                           DataRefreshMetrics.StageDurationMsMetric,
+                           DataRefreshMetrics.StageDims(nameof(DataRefreshStage.MetadataDictionaryRefresh))))
+                {
+                    var newHlaNomenclatureVersion =
+                        await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
+                    refreshRecord.HlaNomenclatureVersion = newHlaNomenclatureVersion; //Later steps will make use of this value.
+                    loggingContext.HlaNomenclatureVersion = newHlaNomenclatureVersion;
+                    await dataRefreshHistoryRepository.UpdateExecutionDetails(refreshRecord.Id, newHlaNomenclatureVersion);
+                    await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecord, DataRefreshStage.MetadataDictionaryRefresh);
+                }
             }
 
             // If the Hla version is already populated, then we are continuing an existing run and we already have an HLA Nomenclature for this run.
@@ -285,6 +310,28 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     throw new ArgumentOutOfRangeException(nameof(executionMode), executionMode, null);
             }
 
+            // Every stage passes through this one choke point, so one timer here gives all nine stages a real,
+            // never-sampled duration. This supersedes deriving stage durations by DATEDIFF-ing the DataRefreshHistory
+            // completion columns: those are last-write-wins, so they are only meaningful when the job ran exactly
+            // once, and they give the short stages no number at all. The span covers MarkStageAsComplete too, so the
+            // two substrates measure the same thing and can be cross-checked against each other.
+            //
+            // Skipped / not-applicable stages return above without emitting: a zero-length "execution" that never
+            // happened would drag every average down and misrepresent a continuation as a fast run.
+            using (logger.TimeOperationAsMetric(
+                       DataRefreshMetrics.StageDurationMsMetric,
+                       DataRefreshMetrics.StageDims(dataRefreshStage.ToString())))
+            {
+                await RunDataRefreshStage(dataRefreshStage, executionMode, refreshRecord);
+                await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecord, dataRefreshStage);
+            }
+        }
+
+        private async Task RunDataRefreshStage(
+            DataRefreshStage dataRefreshStage,
+            DataRefreshStageExecutionMode executionMode,
+            DataRefreshRecord refreshRecord)
+        {
             switch (dataRefreshStage)
             {
                 case DataRefreshStage.MetadataDictionaryRefresh:
@@ -342,8 +389,48 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dataRefreshStage), dataRefreshStage, null);
             }
+        }
 
-            await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecord, dataRefreshStage);
+        /// <summary>
+        /// Records everything about this run that a later comparison needs and cannot recover afterwards: which
+        /// nomenclature, which database, which tiers, which batch geometry, which host. Emitted as an Event rather
+        /// than a Trace so it is queryable by field rather than by string-matching a message.
+        /// </summary>
+        /// <remarks>
+        /// The lease owner and a first-class attempt identity belong here too, and arrive with the run-lease work;
+        /// until then <see cref="DataRefreshRecord.RefreshAttemptedCount"/> is the only attempt signal there is.
+        /// </remarks>
+        private void SendRunManifest(DataRefreshRecord refreshRecord)
+        {
+            logger.SendEvent(RunManifestEventName, LogLevel.Info, new Dictionary<string, string>
+            {
+                ["DataRefreshRecordId"] = refreshRecord.Id.ToString(),
+                ["RefreshAttemptedCount"] = refreshRecord.RefreshAttemptedCount.ToString(),
+                ["TargetDatabase"] = refreshRecord.Database,
+                ["HlaNomenclatureVersion"] = refreshRecord.HlaNomenclatureVersion ?? "(to be determined this run)",
+                ["ShouldMarkAllDonorsAsUpdated"] = refreshRecord.ShouldMarkAllDonorsAsUpdated.ToString(),
+
+                ["DatabaseAName"] = dataRefreshSettings.DatabaseAName,
+                ["DatabaseBName"] = dataRefreshSettings.DatabaseBName,
+                ["ActiveDatabaseSize"] = dataRefreshSettings.ActiveDatabaseSize,
+                ["DormantDatabaseSize"] = dataRefreshSettings.DormantDatabaseSize,
+                ["RefreshDatabaseSize"] = dataRefreshSettings.RefreshDatabaseSize,
+                ["FullyTransactionalDonorUpdates"] = dataRefreshSettings.DataRefreshDonorUpdatesShouldBeFullyTransactional.ToString(),
+
+                // The EFFECTIVE values, i.e. after the fallback to each historic default - not the raw settings.
+                ["DonorImportBatchSize"] = (dataRefreshSettings.DonorImportBatchSize ?? DonorImporter.DefaultBatchSize).ToString(),
+                ["HlaProcessingBatchSize"] = (dataRefreshSettings.HlaProcessingBatchSize ?? HlaProcessor.DefaultBatchSize).ToString(),
+                ["SqlBulkCopyBatchSize"] =
+                    (dataRefreshSettings.SqlBulkCopyBatchSize ?? DataRefreshRepositorySettings.DefaultSqlBulkCopyBatchSize).ToString(),
+                ["BatchProgressReportingPeriod"] =
+                    (dataRefreshSettings.BatchProgressReportingPeriod ?? HlaProcessor.DefaultBatchProgressReportingPeriod).ToString(),
+
+                ["MachineName"] = Environment.MachineName,
+                ["ProcessorCount"] = Environment.ProcessorCount.ToString(),
+                ["SiteName"] = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") ?? "(not an app service)",
+                ["PlanSku"] = Environment.GetEnvironmentVariable("WEBSITE_SKU") ?? "(unknown)",
+                ["InstanceId"] = Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID") ?? "(unknown)"
+            });
         }
 
         private async Task ScaleDatabase(AzureDatabaseSize targetSize, int? autoPauseDuration = null)
