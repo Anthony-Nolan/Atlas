@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Atlas.Common.Sql;
@@ -80,10 +81,10 @@ public class ParallelMatchPredictionBatch
     public int? PatientGenotypeCount { get; set; }
 
     /// <summary>
-    /// JSON-serialised donorId → post-truncation imputed genotype count map, covering every donor in the batch.
-    /// <c>null</c> until a successful result arrives (a failed batch records no counts); each count is bounded by
+    /// DonorId → post-truncation imputed genotype count map, covering every donor in the batch. Persisted as JSON in an
+    /// <c>nvarchar(max)</c> column via a value converter (see <c>MatchPredictionContext</c>). <c>null</c> until a
+    /// successful result arrives (a failed batch records no counts); each count is bounded by
     /// <c>GenotypeImputationSettings.MaximumExpandedGenotypesPerInput</c>.
     /// </summary>
-    [MaxLength]
-    public string DonorGenotypeCounts { get; set; }
+    public Dictionary<int, int> DonorGenotypeCounts { get; set; }
 }

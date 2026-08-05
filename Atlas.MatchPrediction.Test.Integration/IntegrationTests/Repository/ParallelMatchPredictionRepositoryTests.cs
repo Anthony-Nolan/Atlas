@@ -354,14 +354,14 @@ public class ParallelMatchPredictionRepositoryTests
         {
             var created = await CreateRun(totalBatchCount: 1);
             const int patientGenotypeCount = 42;
-            const string donorGenotypeCountsJson = "{\"1\":12,\"2\":34}";
+            var donorGenotypeCounts = new Dictionary<int, int> { { 1, 12 }, { 2, 34 } };
 
             await repository.RecordBatchResult(
-                created.BatchIdsBySequence[0], fixture.Create<string>(), patientGenotypeCount, donorGenotypeCountsJson);
+                created.BatchIdsBySequence[0], fixture.Create<string>(), patientGenotypeCount, donorGenotypeCounts);
 
             var batch = await GetSingleBatch(created.RunId);
             batch.PatientGenotypeCount.Should().Be(patientGenotypeCount);
-            batch.DonorGenotypeCounts.Should().Be(donorGenotypeCountsJson);
+            batch.DonorGenotypeCounts.Should().BeEquivalentTo(donorGenotypeCounts);
         }
 
         [Test]
