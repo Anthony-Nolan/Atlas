@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
@@ -44,8 +45,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
     {
         public const int NumberOfBatchesOverlapOnRestart = 2;
 
-        public DataRefreshRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
+        private readonly IAtlasLogger logger;
+
+        public DataRefreshRepository(IConnectionStringProvider connectionStringProvider, IAtlasLogger logger)
+            : base(connectionStringProvider)
         {
+            this.logger = logger;
         }
 
         public async Task<int> GetDonorCount()
@@ -85,12 +90,31 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
                 await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
                 {
+                    // Both timers close BEFORE the yield, so neither can absorb the consumer's batch processing.
+                    // Together they should account for the caller's HlaDonorBatchRead span (which is timed on this
+                    // enumerator's MoveNextAsync) less the iterator plumbing and the connection dispose.
                     var pageQuery = new CommandDefinition(
                         sql,
                         parameters: new {batchSize, lastProcessedDonor},
                         cancellationToken: cancellationToken);
-                    var orderedDbDonorBatch = await conn.QueryAsync<Donor>(pageQuery);
-                    var donorInfoBatch = orderedDbDonorBatch.Select(donor => donor.ToDonorInfo()).ToList();
+
+                    IEnumerable<Donor> orderedDbDonorBatch;
+                    using (logger.TimeOperationAsMetric(
+                               DataRefreshMetrics.DurationMsMetric,
+                               DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_HlaDonorBatchQuery)))
+                    {
+                        orderedDbDonorBatch = await conn.QueryAsync<Donor>(pageQuery);
+                    }
+
+                    DonorBatch donorInfoBatch;
+                    using (logger.TimeOperationAsMetric(
+                               DataRefreshMetrics.DurationMsMetric,
+                               DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_HlaDonorBatchMapping)))
+                    {
+                        donorInfoBatch = orderedDbDonorBatch.Select(donor => donor.ToDonorInfo()).ToList();
+                    }
+
+
                     lastProcessedDonor = donorInfoBatch.LastOrDefault()?.DonorId;
                     hasFoundAllDonors = !donorInfoBatch.Any();
                     yield return donorInfoBatch;

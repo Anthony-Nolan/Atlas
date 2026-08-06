@@ -272,6 +272,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 var depthBeforeRead = queueDepth();
 
                 bool hasNextBatch;
+                // Timed twice deliberately. The metric always survives - pre-aggregated, so never sampled and
+                // independent of the deployed log level - and is what the stage's occupancy is computed from. The
+                // Verbose Trace beside it adds the queue depth, which a low-cardinality metric dimension cannot carry.
+                using (logger.TimeOperationAsMetric(
+                           DataRefreshMetrics.DurationMsMetric,
+                           DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_HlaDonorBatchRead)
+                       ))
                 using (logger.RunTimed($"{ReadBatchTimingMessage} (QueueDepth: {depthBeforeRead})", LogLevel.Verbose))
                 {
                     hasNextBatch = await donorBatches.MoveNextAsync();

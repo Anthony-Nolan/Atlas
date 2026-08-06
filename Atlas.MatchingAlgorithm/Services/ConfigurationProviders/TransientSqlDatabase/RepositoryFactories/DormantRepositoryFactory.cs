@@ -34,7 +34,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 
         public IDataRefreshRepository GetDataRefreshRepository()
         {
-            return new DataRefreshRepository(ConnectionStringProvider);
+            return new DataRefreshRepository(ConnectionStringProvider, Logger);
         }
 
         /// <inheritdoc />

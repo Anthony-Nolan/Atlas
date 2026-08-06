@@ -249,6 +249,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 dataTable = BuildPerLocusPGroupDataTable(donors, locus);
             }
 
+            // Read BEFORE the scope is opened, so it describes what this write inherited rather than what it created.
+            // See Operation_AmbientTransactionOnEntry: on the refresh path a 1 here means a sibling locus' scope has
+            // leaked into our execution context, so `Required` silently joins it instead of starting a transaction of
+            // our own - which would put all five bulk-copy connections in one transaction and promote it.
+            logger.SendMetric(
+                DataRefreshMetrics.CountMetric,
+                Transaction.Current == null ? 0 : 1,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_AmbientTransactionOnEntry, locus.ToString()));
+
             // The scope is here to make the DELETE below and the insert that follows it one atomic unit. On the create
             // path there is no DELETE to be atomic with, and a write that fits in a single bulk-copy batch is already
             // atomic in its own right, because UseInternalTransaction commits per batch. So the scope is skipped only
@@ -260,7 +269,19 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             // UpsertMatchingPGroupsAtSpecifiedLoci is ambient regardless, and this scope only ever joined it.
             var writeIsAtomicWithoutAScope = isKnownToBeCreate && dataTable.Rows.Count <= settings.SqlBulkCopyBatchSize;
 
-            using (var transactionScope = new OptionalAsyncTransactionScope(!writeIsAtomicWithoutAScope))
+            // Timed on its own because it is one of the three candidate homes for the time that BulkInsertSetup
+            // measures as a block but does not attribute - the others being BuildSqlBulkCopy and BulkCopySyncPrologue.
+            // Constructing the scope is what makes a transaction ambient, so it is not self-evidently free. A skipped
+            // scope should report ~0 here, which is also how the skip itself shows up in telemetry.
+            OptionalAsyncTransactionScope transactionScope;
+            using (logger.TimeOperationAsMetric(
+                DataRefreshMetrics.DurationMsMetric,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_TransactionScopeSetup, locus.ToString())))
+            {
+                transactionScope = new OptionalAsyncTransactionScope(!writeIsAtomicWithoutAScope);
+            }
+
+            using (transactionScope)
             {
                 using (logger.TimeOperationAsMetric(
                     DataRefreshMetrics.DurationMsMetric,
@@ -296,8 +317,17 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                         matchingTableName,
                         dataTable,
                         donorPGroupDataTableColumnNames,
-                        timeout: MatchingHlaBulkInsertTimeoutInSeconds);
+                        timeout: MatchingHlaBulkInsertTimeoutInSeconds,
+                        locus: locus.ToString());
                 }
+
+                // Read AFTER the write, because a transaction promotes when a SECOND connection enlists in it -
+                // reading this any earlier would report 0 whether or not it went on to promote.
+                var distributedId = Transaction.Current?.TransactionInformation.DistributedIdentifier ?? Guid.Empty;
+                logger.SendMetric(
+                    DataRefreshMetrics.CountMetric,
+                    distributedId == Guid.Empty ? 0 : 1,
+                    DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DistributedTransactionPromotions, locus.ToString()));
 
                 transactionScope.Complete();
             }
@@ -389,23 +419,67 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// one it can use, and otherwise over a newly built one on a new connection.
         /// If columnNames provided, sets up a map from dataTable to SQL, assuming a 1:1 mapping between dataTable and SQL column names  
         /// </summary>
+        /// <param name="locus">
+        /// Locus dimension for the two timings below. Defaults to <see cref="DataRefreshMetrics.Locus_All"/>, which is
+        /// what the stage-40 Donors insert reports under - so this method decomposes that write for free as well.
+        /// </param>
         private async Task BulkInsertDataTable(
             string tableName,
             DataTable dataTable,
             string[] columnNames,
-            int timeout = DefaultBulkInsertTimeoutInSeconds)
+            int timeout = DefaultBulkInsertTimeoutInSeconds,
+            string locus = DataRefreshMetrics.Locus_All)
         {
             var reusableBulkCopy = GetReusableBulkCopy(tableName);
             if (reusableBulkCopy != null)
             {
-                await reusableBulkCopy.WriteToServerAsync(dataTable);
+                // The sync prologue is timed on the reused instance too, and that is the point of measuring it: reuse
+                // is meant to remove the connection open and the bulk-load metadata exchange from this path, so a
+                // BulkCopySyncPrologue that collapses here while BuildSqlBulkCopy disappears is what proves it did.
+                await WriteTimingTheSyncPrologue(reusableBulkCopy, dataTable, locus);
                 return;
             }
 
-            using (var sqlBulk = BuildSqlBulkCopy(tableName, columnNames, timeout))
+            SqlBulkCopy sqlBulk;
+            using (logger.TimeOperationAsMetric(
+                DataRefreshMetrics.DurationMsMetric,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_BuildSqlBulkCopy, locus)))
             {
-                await sqlBulk.WriteToServerAsync(dataTable);
+                sqlBulk = BuildSqlBulkCopy(tableName, columnNames, timeout);
             }
+
+            using (sqlBulk)
+            {
+                await WriteTimingTheSyncPrologue(sqlBulk, dataTable, locus);
+            }
+        }
+
+        /// <summary>
+        /// Writes the table, isolating the synchronous head of <see cref="SqlBulkCopy.WriteToServerAsync(DataTable)"/>
+        /// as its own measurement.
+        /// </summary>
+        private async Task WriteTimingTheSyncPrologue(SqlBulkCopy sqlBulk, DataTable dataTable, string locus)
+        {
+            // Deliberately NOT `using (timer) { await sqlBulk.WriteToServerAsync(dataTable); }`. That would close
+            // the timer after the await and simply re-measure DbBulkInsert, which the caller already has.
+            //
+            // What is missing is the part of WriteToServerAsync that runs SYNCHRONOUSLY on the calling thread
+            // before its first true await - connection open, enlistment in the ambient transaction, and the
+            // bulk-load metadata exchange. That part is exactly what the caller's BulkInsertSetup span captures
+            // and cannot attribute, because BulkInsertSetup times the task-CREATING call and so ends at this
+            // method's first true await. Capturing the task and closing the timer before awaiting it isolates it.
+            //
+            // `var t = X(); await t;` is precisely what `await X()` compiles to, so this is a measurement, not a
+            // behaviour change.
+            Task writeToServer;
+            using (logger.TimeOperationAsMetric(
+                DataRefreshMetrics.DurationMsMetric,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_BulkCopySyncPrologue, locus)))
+            {
+                writeToServer = sqlBulk.WriteToServerAsync(dataTable);
+            }
+
+            await writeToServer;
         }
 
         /// <summary>

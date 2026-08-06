@@ -28,11 +28,16 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
     /// been *written* rather than what has been read, and that the refresh aborts on a batch boundary when it loses its
     /// run-level lease - stopping mid-batch, or checkpointing a merely-prefetched page, would leave the
     /// last-safely-processed donor marker ahead of what was actually written, silently skipping donors on resume.
+    /// <para>
+    /// The read itself happens on the enumerator's <c>MoveNextAsync</c> - previously stage 50's largest unmeasured
+    /// slice - so the #Metrics region pins that it is measured once per page, including the final exhausted read, and
+    /// as a metric rather than only as a Verbose Trace.
+    /// </para>
     /// </summary>
     [TestFixture]
     public class HlaProcessorTests
     {
-        private const string HlaNomenclatureVersion = "version";
+        private const string HlaNomenclatureVersion = "3650";
         private const int BatchSize = 2000;
 
         private IDataRefreshRepository dataRefreshRepository;
@@ -77,6 +82,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
+<<<<<<< HEAD
         public async Task UpdateDonorHla_WhenCancelledMidProcessing_StopsOnABatchBoundary()
         {
             // Cancelled while the first batch is being written, with four batches available. The check sits at the top
@@ -380,5 +386,58 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             Enumerable.Range(batchIndex * BatchSize, BatchSize).Select(id => new DonorInfo {DonorId = id}).ToList();
 
         private static int LastDonorIdOfBatch(int batchIndex) => BuildBatch(batchIndex).Last().DonorId;
+
+        #region Metrics
+
+        [Test]
+        public async Task UpdateDonorHla_TimesEveryDonorBatchReadAsAMetric()
+        {
+            // The companion to TracesTheDurationOfEveryDonorBatchRead, and the one that can be relied on: the Trace is
+            // Verbose, so it is absent on a default deployment and sampled when it is not, while a pre-aggregated
+            // metric always arrives. The stage's occupancy is computed from this, so it has to exist per page.
+            const int batchCount = 4;
+            GivenDonorBatches(batchCount);
+
+            await hlaProcessor.UpdateDonorHla(HlaNomenclatureVersion, _ => Task.CompletedTask);
+
+            // Once per page, plus the read that reports the stream exhausted.
+            logger.Received(batchCount + 1).SendMetric(
+                DataRefreshMetrics.DurationMsMetric,
+                Arg.Any<double>(),
+                Arg.Is<Dictionary<string, string>>(d => IsOperation(d, DataRefreshMetrics.Operation_HlaDonorBatchRead)));
+        }
+
+        [Test]
+        public async Task UpdateDonorHla_WhenThereAreNoDonors_ProcessesNothingAndStillTimesTheRead()
+        {
+            GivenDonorBatches(0);
+
+            await hlaProcessor.UpdateDonorHla(HlaNomenclatureVersion, _ => Task.CompletedTask);
+
+            await donorImportRepository.DidNotReceiveWithAnyArgs()
+                .AddMatchingRelationsForExistingDonorBatch(default, default, default);
+            logger.Received(1).SendMetric(
+                DataRefreshMetrics.DurationMsMetric,
+                Arg.Any<double>(),
+                Arg.Is<Dictionary<string, string>>(d => IsOperation(d, DataRefreshMetrics.Operation_HlaDonorBatchRead)));
+        }
+
+        [Test]
+        public async Task UpdateDonorHla_CountsTheDonorsInEachBatch()
+        {
+            GivenDonorBatches(1);
+
+            await hlaProcessor.UpdateDonorHla(HlaNomenclatureVersion, _ => Task.CompletedTask);
+
+            logger.Received(1).SendMetric(
+                DataRefreshMetrics.CountMetric,
+                BatchSize,
+                Arg.Is<Dictionary<string, string>>(d => IsOperation(d, DataRefreshMetrics.Operation_DonorsPerHlaBatch)));
+        }
+
+        private static bool IsOperation(Dictionary<string, string> dimensions, string operation) =>
+            dimensions[DataRefreshMetrics.OperationDimension] == operation;
+
+        #endregion
     }
 }

@@ -33,6 +33,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         /// <summary>
         /// Creates a batch of donor management logs, *without* first reading the existing logs for these donors.
         /// </summary>
+        /// <param name="bulkCopyBatchSize">
+        /// Rows per <c>SqlBulkCopy</c> server round trip. Defaults to the historic hard-coded value, so every caller
+        /// that does not care behaves exactly as before. The data refresh varies it deliberately - see
+        /// <c>DonorImporter.MgmtLogBulkCopyBatchSizeLadder</c>.
+        /// </param>
         /// <remarks>
         /// PRECONDITION: none of the given donors may already have a log entry. There is a unique index on
         /// <see cref="DonorManagementLog.DonorId"/>, so this will throw rather than update if any of them do.
@@ -40,11 +45,19 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         /// refresh's donor import stage, which always runs against a freshly truncated log table.
         /// Use <see cref="CreateOrUpdateDonorManagementLogBatch"/> everywhere else.
         /// </remarks>
-        Task CreateDonorManagementLogBatch(IEnumerable<DonorManagementInfo> donorManagementInfos);
+        Task CreateDonorManagementLogBatch(
+            IEnumerable<DonorManagementInfo> donorManagementInfos,
+            int bulkCopyBatchSize = DonorManagementLogRepository.DefaultBulkCopyBatchSize);
     }
 
     public class DonorManagementLogRepository : Repository, IDonorManagementLogRepository
     {
+        /// <summary>
+        /// The value <c>SqlBulkCopy.BatchSize</c> was hard-coded at on this path before it became a parameter.
+        /// Ten times as many round trips per row as the donor insert next to it, which is what makes it interesting.
+        /// </summary>
+        public const int DefaultBulkCopyBatchSize = 1000;
+
         private const string LogTableName = "DonorManagementLogs";
         private const string DonorIdColumnName = "DonorId";
         private const string SequenceNumberColumnName = "SequenceNumberOfLastUpdate";
@@ -117,9 +130,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         /// <inheritdoc />
         // No transaction scope here, unlike the create-or-update path: there is only one operation to perform, and the
         // bulk copy manages its own transaction.
-        public async Task CreateDonorManagementLogBatch(IEnumerable<DonorManagementInfo> donorManagementInfos)
+        public async Task CreateDonorManagementLogBatch(
+            IEnumerable<DonorManagementInfo> donorManagementInfos,
+            int bulkCopyBatchSize = DefaultBulkCopyBatchSize)
         {
-            await CreateLogBatch(donorManagementInfos);
+            await CreateLogBatch(donorManagementInfos, bulkCopyBatchSize);
         }
 
         private async Task<IEnumerable<int>> GetDonorIdsWithExistingLogs(IEnumerable<int> donorIdsToCheck)
@@ -177,7 +192,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                     $"'{info.UpdateDateTime.ToString("O")}' AS {UpdateDateTimeColumnName}"; //Formatter needed to avoid culture date format bugs.
         }
 
-        private async Task CreateLogBatch(IEnumerable<DonorManagementInfo> donorManagementInfos)
+        private async Task CreateLogBatch(
+            IEnumerable<DonorManagementInfo> donorManagementInfos,
+            int bulkCopyBatchSize = DefaultBulkCopyBatchSize)
         {
             var infos = donorManagementInfos.ToList();
 
@@ -204,7 +221,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             using (var sqlBulk = new SqlBulkCopy(ConnectionStringProvider.GetConnectionString(), SqlBulkCopyOptions.UseInternalTransaction))
             {
                 sqlBulk.BulkCopyTimeout = 600;
-                sqlBulk.BatchSize = 1000;
+                // Rows per server round trip. UseInternalTransaction makes each of those round trips its own
+                // transaction, so a larger value means fewer, larger transactions - fewer commits and more log per
+                // commit. That trade is the whole point of varying it.
+                sqlBulk.BatchSize = bulkCopyBatchSize;
                 sqlBulk.DestinationTableName = LogTableName;
                 await sqlBulk.WriteToServerAsync(dt);
             }
