@@ -45,6 +45,33 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         /// <summary>Historic hard-coded value; used whenever <see cref="DataRefreshSettings.DonorImportBatchSize"/> is unset.</summary>
         public const int DefaultBatchSize = 10000;
 
+        /// <summary>
+        /// THROWAWAY, ATL-216 hypothesis H22. Rows per <c>SqlBulkCopy</c> round trip for the donor-management-log
+        /// write, rotated round-robin across stage-40 batches so that ONE refresh measures the whole curve instead of
+        /// one point on it.
+        ///
+        /// <para>
+        /// Record 25 wrote 43.9M log rows at 1,000 rows per round trip - ~43,400 round trips, against 4,340 for the
+        /// donor insert next to it writing the same donors into a wider table, on a run whose dominant SQL wait was
+        /// <c>ASYNC_NETWORK_IO</c>. ~31 of that slice's 40.1 min was attributed to round-trip overhead rather than
+        /// database work, but never measured against an alternative.
+        /// </para>
+        ///
+        /// <para>
+        /// The ladder stops at 10,000 because the log write only ever receives one stage-40 batch of donors, so any
+        /// value at or above <see cref="DefaultBatchSize"/> collapses to a single round trip and larger values would
+        /// be indistinguishable. Round trips per call, per rung: 10 / 4 / 2 / 1.
+        /// </para>
+        ///
+        /// <para>
+        /// ROUND-ROBIN PER BATCH, not blocked into quarters: every rung then sees the same table growth, the same
+        /// database state and the same hours of the run, so the arms are comparable without correcting for drift.
+        /// Rung <c>1000</c> is the unchanged production configuration and is what verifies ATL-278 against record 25 -
+        /// which is why the ladder starts there and why it must not be removed from the list.
+        /// </para>
+        /// </summary>
+        internal static readonly int[] MgmtLogBulkCopyBatchSizeLadder = {1000, 2500, 5000, 10000};
+
         private const string ImportFailureEventName = "Donor Import Failure(s) in the Matching Algorithm's DataRefresh";
 
         private readonly IDonorImportRepository matchingDonorImportRepository;
@@ -54,6 +81,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         private readonly IMatchingAlgorithmImportLogger logger;
         private readonly IDonorReader donorReader;
         private readonly int batchSize;
+
+        /// <summary>
+        /// Which rung of <see cref="MgmtLogBulkCopyBatchSizeLadder"/> the next log write uses. An instance field, not a
+        /// static: DonorImporter resolves one repository in its constructor and holds it for the whole stage, and the
+        /// batch loop is strictly sequential - so this counts stage-40 batches and nothing else. Advanced only when a
+        /// log write actually happens, so a run that does not mark donors as updated leaves the ladder untouched.
+        /// </summary>
+        private int mgmtLogBatchIndex;
 
         public DonorImporter(
             IDormantRepositoryFactory repositoryFactory,
@@ -180,10 +215,21 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
 
                 if (shouldMarkDonorsAsUpdated)
                 {
+                    // THROWAWAY, H22. The Locus dimension carries which rung of the ladder this write used - it is the
+                    // only free dimension on this metric, it stays at four low-cardinality values, and no query filters
+                    // DonorManagementLogWrite by Locus. Consequence for reading the run: DonorManagementLogWrite is no
+                    // longer one number but four, and everything CONTAINING it (DonorImportBatch,
+                    // DonorImportStageTotal, the stage-40 StageDurationMs, the job's wall clock) is a blend of four
+                    // configurations. Locus == "1000" is the unchanged production arm and is the one to compare
+                    // against record 25.
+                    var mgmtLogBulkCopyBatchSize =
+                        MgmtLogBulkCopyBatchSizeLadder[mgmtLogBatchIndex++ % MgmtLogBulkCopyBatchSizeLadder.Length];
+
                     using (logger.TimeOperationAsMetric(
-                               DataRefreshMetrics.DurationMsMetric,
-                               DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DonorManagementLogWrite)
-                           ))
+                        DataRefreshMetrics.DurationMsMetric,
+                        DataRefreshMetrics.Dims(
+                            DataRefreshMetrics.Operation_DonorManagementLogWrite,
+                            mgmtLogBulkCopyBatchSize.ToString())))
                     {
                         // Deliberately create-only, rather than upsert. The donor management log table is always truncated before this stage runs -
                         // either by DataRefreshStage.DataDeletion, or, when continuing an interrupted refresh, by this stage restarting from scratch
@@ -193,15 +239,17 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
                         // ~88KB of SQL text each, every one of them a fresh parse and plan.
                         // If a future change lets this stage run against a log table that was NOT truncated, this must go back to being an upsert -
                         // there is a unique index on DonorId, so a create-only write would throw instead of updating.
-                        await donorManagementLogRepository.CreateDonorManagementLogBatch(donors.Select(d => new DonorManagementInfo
-                            {
-                                DonorId = d.DonorId,
-                                UpdateDateTime = d.LastUpdated,
-                                // This assumes that all updates come from a service bus message, which is incorrect for the initial donor import
-                                // TODO: ATLAS-972: Confirm this is unused and remove
-                                UpdateSequenceNumber = -1
-                            }
-                        ));
+                        await donorManagementLogRepository.CreateDonorManagementLogBatch(
+                            donors.Select(d => new DonorManagementInfo
+                                {
+                                    DonorId = d.DonorId,
+                                    UpdateDateTime = d.LastUpdated,
+                                    // This assumes that all updates come from a service bus message, which is incorrect for the initial donor import
+                                    // TODO: ATLAS-972: Confirm this is unused and remove
+                                    UpdateSequenceNumber = -1
+                                }
+                            ),
+                            mgmtLogBulkCopyBatchSize);
                     }
                 }
 

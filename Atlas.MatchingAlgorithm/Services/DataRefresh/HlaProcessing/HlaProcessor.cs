@@ -153,8 +153,35 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 // We only store the last Id in each batch so we only need to keep one Id per batch.
                 var completedDonors = new FixedSizedQueue<int>(NumberOfBatchesOverlapOnRestart);
 
-                await foreach (var donorBatch in batchedDonors)
+                // Deliberately an explicit enumerator rather than an `await foreach`, for the same reason DonorImporter
+                // uses one (see DonorImporter.cs:85-95). NewOrderedDonorBatchesToImport pages the donor table with
+                // `SELECT top(@batchSize) * FROM Donors WHERE DonorId > @lastProcessedDonor`, and that query runs on
+                // MoveNextAsync - i.e. before the BatchProcessing span below opens, which cannot start until the batch
+                // is already in hand. Timing MoveNextAsync is therefore the only way to see it; before this it was
+                // stage 50's largest unmeasured slice, visible only as the residual between HlaProcessingStageTotal and
+                // the sum of the BatchProcessing spans.
+                await using var donorBatches = batchedDonors.GetAsyncEnumerator();
+
+                while (true)
                 {
+                    bool hasNextBatch;
+                    using (logger.TimeOperationAsMetric(
+                               DataRefreshMetrics.DurationMsMetric,
+                               DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_HlaDonorBatchRead)
+                           ))
+                    {
+                        hasNextBatch = await donorBatches.MoveNextAsync();
+                    }
+
+                    if (!hasNextBatch)
+                    {
+                        break;
+                    }
+
+                    var donorBatch = donorBatches.Current;
+
+                    // The paging enumerator signals exhaustion by yielding one final empty batch, so this is the
+                    // normal end-of-stream path rather than an anomaly.
                     if (!donorBatch.Any())
                     {
                         continue;

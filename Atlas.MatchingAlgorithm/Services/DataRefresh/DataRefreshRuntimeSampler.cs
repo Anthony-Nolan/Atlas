@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Threading;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -57,6 +59,7 @@ public class DataRefreshRuntimeSampler : IDataRefreshRuntimeSampler
         private readonly IMatchingAlgorithmImportLogger logger;
         private readonly CancellationTokenSource cancellation = new();
         private readonly Task samplingLoop;
+        private readonly SqlClientCounterListener sqlClientCounters;
 
         private long previousTimestamp;
         private TimeSpan previousProcessorTime;
@@ -67,6 +70,7 @@ public class DataRefreshRuntimeSampler : IDataRefreshRuntimeSampler
         {
             this.logger = logger;
             CaptureBaseline();
+            sqlClientCounters = StartSqlClientCounterListener(logger);
             samplingLoop = RunSamplingLoop(cancellation.Token);
         }
 
@@ -84,7 +88,27 @@ public class DataRefreshRuntimeSampler : IDataRefreshRuntimeSampler
             }
             finally
             {
+                // Disposed before the CTS so that no counter callback can outlive the session and emit into the next
+                // refresh's series. An EventListener left attached to a long-lived Functions host would do exactly that.
+                sqlClientCounters?.Dispose();
                 cancellation.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Attaching the listener must never be able to fail the refresh - it is strictly a measurement - so a host
+        /// that will not let us subscribe simply costs us the SQL counters and nothing else.
+        /// </summary>
+        private static SqlClientCounterListener StartSqlClientCounterListener(IMatchingAlgorithmImportLogger logger)
+        {
+            try
+            {
+                return new SqlClientCounterListener(logger);
+            }
+            catch (Exception e)
+            {
+                logger.SendTrace($"DATA REFRESH: could not attach the SqlClient counter listener: {e}", LogLevel.Warn);
+                return null;
             }
         }
 
@@ -174,6 +198,124 @@ public class DataRefreshRuntimeSampler : IDataRefreshRuntimeSampler
         {
             using var process = Process.GetCurrentProcess();
             return process.TotalProcessorTime;
+        }
+    }
+
+    /// <summary>
+    /// Forwards a small, fixed subset of Microsoft.Data.SqlClient's own EventCounters into
+    /// <see cref="DataRefreshMetrics.RuntimeMetric"/>, for the lifetime of one <see cref="SamplingSession"/>.
+    ///
+    /// <para>
+    /// This answers a question no duration timer can. The per-locus bulk-insert prologue costs ~40 ms per call, which
+    /// has been read as connection establishment - but a POOLED open costs microseconds; 40 ms is the shape of a
+    /// PHYSICAL connect, or of a transaction enlistment. <c>hard-connects</c> against <c>soft-connects</c> distinguishes
+    /// them directly, so the connection-reuse fix can be chosen (or dropped) on evidence rather than on arithmetic that
+    /// merely happens to divide out.
+    /// </para>
+    /// </summary>
+    private sealed class SqlClientCounterListener : EventListener
+    {
+        private const string SqlClientEventSourceName = "Microsoft.Data.SqlClient.EventSource";
+
+        /// <summary>Matches the sampling loop's interval, so both halves of a sample line up on the same timeline.</summary>
+        private const string CounterIntervalSeconds = "30";
+
+        /// <summary>
+        /// SqlClient publishes sixteen counters; these are the ones that bear on the question. Static, and read in
+        /// <see cref="OnEventSourceCreated"/>, because that callback fires from the base constructor - BEFORE this
+        /// class's own field initialisers run - so it must not touch instance state.
+        /// </summary>
+        private static readonly Dictionary<string, string> ForwardedCounters = new()
+        {
+            ["hard-connects"] = DataRefreshMetrics.Counter_SqlHardConnects,
+            ["soft-connects"] = DataRefreshMetrics.Counter_SqlSoftConnects,
+            ["number-of-non-pooled-connections"] = DataRefreshMetrics.Counter_SqlNonPooledConnections,
+            ["number-of-active-connections"] = DataRefreshMetrics.Counter_SqlActiveConnections,
+            ["number-of-free-connections"] = DataRefreshMetrics.Counter_SqlFreeConnections,
+            ["number-of-stasis-connections"] = DataRefreshMetrics.Counter_SqlStasisConnections
+        };
+
+        private readonly IMatchingAlgorithmImportLogger logger;
+        private bool hasReportedFailure;
+
+        public SqlClientCounterListener(IMatchingAlgorithmImportLogger logger)
+        {
+            this.logger = logger;
+        }
+
+        protected override void OnEventSourceCreated(EventSource eventSource)
+        {
+            if (eventSource.Name != SqlClientEventSourceName)
+            {
+                return;
+            }
+
+            // EventKeywords.None is load-bearing. SqlClient's keywords turn on per-command execution traces and SNI
+            // tracing; enabling them across a fifteen-hour run of tens of millions of commands would be ruinous, and
+            // would perturb the very thing being measured. Counters arrive regardless of keywords, but ONLY if
+            // EventCounterIntervalSec is supplied.
+            EnableEvents(
+                eventSource,
+                EventLevel.Informational,
+                EventKeywords.None,
+                new Dictionary<string, string> { ["EventCounterIntervalSec"] = CounterIntervalSeconds });
+        }
+
+        protected override void OnEventWritten(EventWrittenEventArgs eventData)
+        {
+            // logger can legitimately be null here: EnableEvents above runs from the base constructor, so an event
+            // could in principle arrive before this class's fields are assigned.
+            if (logger == null || eventData.EventName != "EventCounters" || eventData.Payload == null)
+            {
+                return;
+            }
+
+            try
+            {
+                foreach (var payload in eventData.Payload)
+                {
+                    ForwardCounter(payload);
+                }
+            }
+            catch (Exception e) when (!hasReportedFailure)
+            {
+                hasReportedFailure = true;
+                logger.SendTrace($"DATA REFRESH: SqlClient counter listener failed to read a sample: {e}", LogLevel.Warn);
+            }
+            catch (Exception)
+            {
+                // Already reported once. A callback on the EventSource's timer must not throw, and must not flood.
+            }
+        }
+
+        private void ForwardCounter(object payload)
+        {
+            if (payload is not IDictionary<string, object> counter
+                || !counter.TryGetValue("Name", out var name)
+                || name is not string counterName
+                || !ForwardedCounters.TryGetValue(counterName, out var counterDimension))
+            {
+                return;
+            }
+
+            // Rate counters (hard-connects, soft-connects) report "Increment" - the delta over the interval, which is
+            // the same delta-not-running-total convention the rest of this sampler uses. Polling counters report "Mean".
+            if (TryReadValue(counter, "Increment", out var value) || TryReadValue(counter, "Mean", out value))
+            {
+                logger.SendMetric(DataRefreshMetrics.RuntimeMetric, value, DataRefreshMetrics.RuntimeDims(counterDimension));
+            }
+        }
+
+        private static bool TryReadValue(IDictionary<string, object> counter, string key, out double value)
+        {
+            if (counter.TryGetValue(key, out var raw) && raw is double read)
+            {
+                value = read;
+                return true;
+            }
+
+            value = 0;
+            return false;
         }
     }
 }

@@ -80,6 +80,54 @@ public static class DataRefreshMetrics
     public const string Operation_BlockingWaitOnDbInsert = "BlockingWaitOnDbInsert";
     public const string Operation_DbBulkInsert = "DbBulkInsert";
 
+    /// <summary>
+    /// The paged donor read that feeds stage 50's batch loop - i.e. the stage-50 counterpart of
+    /// <see cref="Operation_DonorStreamRead"/>. The cost lands on the async enumerator's <c>MoveNextAsync</c>, which is
+    /// outside the <see cref="Operation_BatchProcessing"/> span, so before this it was recoverable only as the residual
+    /// between <see cref="Operation_HlaProcessingStageTotal"/> and the sum of its measured children.
+    /// </summary>
+    public const string Operation_HlaDonorBatchRead = "HlaDonorBatchRead";
+
+    // The two halves of HlaDonorBatchRead, measured inside the repository rather than at the consumer.
+    // Record 25 could only bound this split by cross-referencing Query Store, which put the paging SELECT at 76.4 min
+    // of the read's ~93 - leaving ~17 min of per-donor client work that no in-process measurement could see. These
+    // separate it directly, and they nest under HlaDonorBatchRead so the two form their own reconciliation.
+
+    /// <summary>
+    /// The paged donor query. Dapper buffers by default, so this covers the round trip AND Dapper's materialisation of
+    /// the <c>Donor</c> entities - the two are not separable at this boundary without going to a raw reader. It also
+    /// covers the connection open, which Dapper performs on a closed connection.
+    /// </summary>
+    public const string Operation_HlaDonorBatchQuery = "HlaDonorBatchQuery";
+
+    /// <summary>
+    /// Our own per-donor projection of the queried entities to <c>DonorInfo</c>. Pure client-side CPU, ~2,000 donors
+    /// per call, and the half that Query Store can never see.
+    /// </summary>
+    public const string Operation_HlaDonorBatchMapping = "HlaDonorBatchMapping";
+
+    // The interior of BulkInsertSetup. That span measures the whole synchronous prologue of the per-locus upsert (it
+    // wraps the *task-creating call*, so it ends at the method's first true await), and BuildDataTable +
+    // DeleteExistingRecords accounted for only a small part of it. These three complete the decomposition:
+    //   BulkInsertSetup = BuildDataTable + TransactionScopeSetup + DeleteExistingRecords + BuildSqlBulkCopy + BulkCopySyncPrologue
+    // Which of them holds the time decides which fix is the right one, so none of them presumes an attribution.
+    // BuildSqlBulkCopy / BulkCopySyncPrologue are also emitted (with Locus = all) by the stage-40 Donors insert, which
+    // shares the same helper.
+
+    /// <summary>Constructing the ambient <c>AsyncTransactionScope</c> that wraps one per-locus write.</summary>
+    public const string Operation_TransactionScopeSetup = "TransactionScopeSetup";
+
+    /// <summary>Constructing the <c>SqlBulkCopy</c> and its column mappings. No connection is opened here.</summary>
+    public const string Operation_BuildSqlBulkCopy = "BuildSqlBulkCopy";
+
+    /// <summary>
+    /// The portion of <c>SqlBulkCopy.WriteToServerAsync</c> that runs synchronously on the calling thread before its
+    /// first true await - connection open, enlistment in the ambient transaction, and the bulk-load metadata exchange.
+    /// Deliberately named for the mechanism (a synchronous prologue) rather than for its suspected contents, which are
+    /// exactly what this measurement exists to establish.
+    /// </summary>
+    public const string Operation_BulkCopySyncPrologue = "BulkCopySyncPrologue";
+
     // Stage 50 ImportHla operations. This is the HLA-name / p-group import path (HlaProcessor -> IHlaImportRepository.ImportHla)
     // that the spike profile (Phase B, Finding #1) identified as the single largest slice of stage-50 user-code (~55%),
     // yet which previously lived entirely UNMEASURED inside the BatchProcessing span. These break it into its cost centres so
@@ -171,6 +219,38 @@ public static class DataRefreshMetrics
     /// <summary>MAC cache misses - i.e. distinct MACs touched, which is the size of the decode flood.</summary>
     public const string Operation_MacCacheMisses = "MacCacheMisses";
 
+    /// <summary>
+    /// MACs loaded into the in-memory store by one pre-warm. The denominator <see cref="Operation_MacPreWarm"/> needs:
+    /// a duration without a count cannot distinguish a slow load from a large one, and those imply different fixes.
+    ///
+    /// <para>
+    /// It also bounds the memory question. The store is a process-wide singleton with no expiry, in a host that also
+    /// serves search, so whatever it holds is resident for the life of the process - on top of the 3,002 MB the
+    /// stage-50 batch loop already peaked at in a 14 GB plan. MACs held x per-entry cost is that footprint.
+    /// </para>
+    /// </summary>
+    public const string Operation_MacsPreWarmed = "MacsPreWarmed";
+
+    // The two transaction-mechanism probes. Timers say WHICH statement in the bulk-insert prologue is slow; these say
+    // WHY, and they are the difference between choosing the connection-reuse fix on evidence and choosing it on a
+    // plausible story. Both are emitted on every per-locus write, INCLUDING the zeros - a counter that is only emitted
+    // when it fires cannot distinguish "never happened" from "never measured".
+
+    /// <summary>
+    /// 1 when a transaction was already ambient as a per-locus write began, 0 otherwise. Each write opens its own
+    /// <c>TransactionScope</c> with the default <c>Required</c>, so an ambient transaction means it JOINS rather than
+    /// starts one - putting several bulk-copy connections in one transaction, which promotes it. On the refresh path
+    /// the outer scope is a no-op, so any 1 here is a leak between sibling loci; on the fully-transactional path it is
+    /// 1 by design and says nothing.
+    /// </summary>
+    public const string Operation_AmbientTransactionOnEntry = "AmbientTransactionOnEntry";
+
+    /// <summary>
+    /// 1 when the ambient transaction had promoted to a distributed transaction by the time the write completed, 0
+    /// otherwise. Promotion happens on the SECOND enlistment, so this can only be read after the write, not before it.
+    /// </summary>
+    public const string Operation_DistributedTransactionPromotions = "DistributedTransactionPromotions";
+
     // Batch-size sanity counters. Named per stage rather than sharing one Operation value, so a short final batch in
     // one loop cannot skew the other loop's per-batch distribution.
     public const string Operation_DonorsPerImportBatch = "DonorsPerImportBatch";
@@ -194,6 +274,30 @@ public static class DataRefreshMetrics
 
     /// <summary>Percentage of the sampling interval spent in GC pauses.</summary>
     public const string Counter_GcPauseTimePercent = "GcPauseTimePercent";
+
+    // Microsoft.Data.SqlClient's own EventCounters, forwarded by the runtime sampler.
+    //
+    // These exist for one question. The per-locus bulk-insert prologue costs ~40 ms per call, and that has been read
+    // as connection establishment - but a POOLED open costs microseconds. 40 ms is the shape of a PHYSICAL connect, or
+    // of a transaction enlistment. HardConnects vs SoftConnects settles which, and therefore whether reusing the
+    // connection is the right fix or a red herring, without spending another fifteen-hour run to find out.
+
+    /// <summary>Physical connections opened to the server during the interval (a delta). Expensive: TLS + auth.</summary>
+    public const string Counter_SqlHardConnects = "SqlHardConnects";
+
+    /// <summary>Connections taken from the pool during the interval (a delta). Cheap. The ratio against
+    /// <see cref="Counter_SqlHardConnects"/> is the pooling hit rate.</summary>
+    public const string Counter_SqlSoftConnects = "SqlSoftConnects";
+
+    /// <summary>Live connections bypassing the pool. Enlistment in a transaction is one way to end up here.</summary>
+    public const string Counter_SqlNonPooledConnections = "SqlNonPooledConnections";
+
+    public const string Counter_SqlActiveConnections = "SqlActiveConnections";
+    public const string Counter_SqlFreeConnections = "SqlFreeConnections";
+
+    /// <summary>Connections awaiting completion of an action and unavailable for reuse - where a connection whose
+    /// transaction has not yet resolved parks.</summary>
+    public const string Counter_SqlStasisConnections = "SqlStasisConnections";
 
     #endregion
 

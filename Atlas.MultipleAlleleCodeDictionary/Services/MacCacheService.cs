@@ -98,6 +98,15 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services
             }
 
             logger.SendTrace($"MAC DICTIONARY: {macStore.Count} MACs held in memory.");
+
+            // The same number as a metric, not just a trace. It is the denominator for the MacPreWarm duration - a
+            // load that is slow because the table is large and one that is slow per row want different fixes - and it
+            // is how the store's resident memory gets priced, since this dictionary outlives the refresh that filled
+            // it. Emitted after the load rather than per MAC: one value, once, is the whole measurement.
+            logger.SendMetric(
+                DataRefreshMetrics.CountMetric,
+                macStore.Count,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_MacsPreWarmed));
         }
     }
 }

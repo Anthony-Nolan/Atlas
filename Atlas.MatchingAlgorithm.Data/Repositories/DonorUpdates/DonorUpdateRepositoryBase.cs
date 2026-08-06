@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils;
@@ -194,7 +196,27 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 dataTable = BuildPerLocusPGroupDataTable(donors, locus);
             }
 
-            using (var transactionScope = new AsyncTransactionScope())
+            // Read BEFORE the scope is opened, so it describes what this write inherited rather than what it created.
+            // See Operation_AmbientTransactionOnEntry: on the refresh path a 1 here means a sibling locus' scope has
+            // leaked into our execution context, so `Required` silently joins it instead of starting a transaction of
+            // our own - which would put all five bulk-copy connections in one transaction and promote it.
+            logger.SendMetric(
+                DataRefreshMetrics.CountMetric,
+                Transaction.Current == null ? 0 : 1,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_AmbientTransactionOnEntry, locus.ToString()));
+
+            // Timed on its own because it is one of the three candidate homes for the time that BulkInsertSetup
+            // measures as a block but does not attribute - the others being BuildSqlBulkCopy and BulkCopySyncPrologue.
+            // Constructing the scope is what makes a transaction ambient, so it is not self-evidently free.
+            AsyncTransactionScope transactionScope;
+            using (logger.TimeOperationAsMetric(
+                DataRefreshMetrics.DurationMsMetric,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_TransactionScopeSetup, locus.ToString())))
+            {
+                transactionScope = new AsyncTransactionScope();
+            }
+
+            using (transactionScope)
             {
                 using (logger.TimeOperationAsMetric(
                     DataRefreshMetrics.DurationMsMetric,
@@ -230,8 +252,17 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                         matchingTableName,
                         dataTable,
                         donorPGroupDataTableColumnNames,
-                        timeout: 14400);
+                        timeout: 14400,
+                        locus: locus.ToString());
                 }
+
+                // Read AFTER the write, because a transaction promotes when a SECOND connection enlists in it -
+                // reading this any earlier would report 0 whether or not it went on to promote.
+                var distributedId = Transaction.Current?.TransactionInformation.DistributedIdentifier ?? Guid.Empty;
+                logger.SendMetric(
+                    DataRefreshMetrics.CountMetric,
+                    distributedId == Guid.Empty ? 0 : 1,
+                    DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_DistributedTransactionPromotions, locus.ToString()));
 
                 transactionScope.Complete();
             }
@@ -322,15 +353,47 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// Opens a new connection and performs a bulk insert wrapped in a transaction.
         /// If columnNames provided, sets up a map from dataTable to SQL, assuming a 1:1 mapping between dataTable and SQL column names  
         /// </summary>
+        /// <param name="locus">
+        /// Locus dimension for the two timings below. Defaults to <see cref="DataRefreshMetrics.Locus_All"/>, which is
+        /// what the stage-40 Donors insert reports under - so this method decomposes that write for free as well.
+        /// </param>
         private async Task BulkInsertDataTable(
             string tableName,
             DataTable dataTable,
             string[] columnNames,
-            int timeout = 3600)
+            int timeout = 3600,
+            string locus = DataRefreshMetrics.Locus_All)
         {
-            using (var sqlBulk = BuildSqlBulkCopy(tableName, columnNames, timeout))
+            SqlBulkCopy sqlBulk;
+            using (logger.TimeOperationAsMetric(
+                DataRefreshMetrics.DurationMsMetric,
+                DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_BuildSqlBulkCopy, locus)))
             {
-                await sqlBulk.WriteToServerAsync(dataTable);
+                sqlBulk = BuildSqlBulkCopy(tableName, columnNames, timeout);
+            }
+
+            using (sqlBulk)
+            {
+                // Deliberately NOT `using (timer) { await sqlBulk.WriteToServerAsync(dataTable); }`. That would close
+                // the timer after the await and simply re-measure DbBulkInsert, which the caller already has.
+                //
+                // What is missing is the part of WriteToServerAsync that runs SYNCHRONOUSLY on the calling thread
+                // before its first true await - connection open, enlistment in the ambient transaction, and the
+                // bulk-load metadata exchange. That part is exactly what the caller's BulkInsertSetup span captures
+                // and cannot attribute, because BulkInsertSetup times the task-CREATING call and so ends at this
+                // method's first true await. Capturing the task and closing the timer before awaiting it isolates it.
+                //
+                // `var t = X(); await t;` is precisely what `await X()` compiles to, so this is a measurement, not a
+                // behaviour change.
+                Task writeToServer;
+                using (logger.TimeOperationAsMetric(
+                    DataRefreshMetrics.DurationMsMetric,
+                    DataRefreshMetrics.Dims(DataRefreshMetrics.Operation_BulkCopySyncPrologue, locus)))
+                {
+                    writeToServer = sqlBulk.WriteToServerAsync(dataTable);
+                }
+
+                await writeToServer;
             }
         }
 

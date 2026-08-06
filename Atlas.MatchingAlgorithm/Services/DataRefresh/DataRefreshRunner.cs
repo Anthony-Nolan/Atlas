@@ -425,6 +425,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 ["BatchProgressReportingPeriod"] =
                     (dataRefreshSettings.BatchProgressReportingPeriod ?? HlaProcessor.DefaultBatchProgressReportingPeriod).ToString(),
 
+                // THROWAWAY, ATL-216 H22. Recorded because it is the one thing about this run that makes its stage-40
+                // wall clock non-comparable with record 25's: the mgmt-log write rotates through these rows-per-round-
+                // trip values, so the stage total is a blend of them. A run whose manifest does not say which ladder it
+                // used cannot be reconstructed at a single rung afterwards.
+                ["MgmtLogBulkCopyBatchSizeLadder"] = string.Join(",", DonorImporter.MgmtLogBulkCopyBatchSizeLadder),
+
                 ["MachineName"] = Environment.MachineName,
                 ["ProcessorCount"] = Environment.ProcessorCount.ToString(),
                 ["SiteName"] = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") ?? "(not an app service)",

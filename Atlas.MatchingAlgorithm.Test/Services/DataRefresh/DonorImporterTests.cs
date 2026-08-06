@@ -164,7 +164,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             await donorImporter.ImportDonors(true);
 
             await donorManagementLogRepository.Received(1).CreateDonorManagementLogBatch(
-                Arg.Is<IEnumerable<DonorManagementInfo>>(x => x.Single().DonorId == donorId));
+                Arg.Is<IEnumerable<DonorManagementInfo>>(x => x.Single().DonorId == donorId),
+                Arg.Any<int>());
         }
 
         /// <summary>
@@ -194,7 +195,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await donorImporter.ImportDonors(false);
 
-            await donorManagementLogRepository.DidNotReceive().CreateDonorManagementLogBatch(Arg.Any<IEnumerable<DonorManagementInfo>>());
+            await donorManagementLogRepository.DidNotReceive()
+                .CreateDonorManagementLogBatch(Arg.Any<IEnumerable<DonorManagementInfo>>(), Arg.Any<int>());
             await donorManagementLogRepository.DidNotReceive()
                 .CreateOrUpdateDonorManagementLogBatch(Arg.Any<IEnumerable<DonorManagementInfo>>());
         }
@@ -243,6 +245,53 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             // 5 donors at a batch size of 2 = three batches (2, 2, 1).
             await donorInfoConverter.Received(3).ConvertDonorInfoAsync(
                 Arg.Any<IEnumerable<SearchableDonorInformation>>(), Arg.Any<string>());
+        }
+
+        /// <summary>
+        /// THROWAWAY, ATL-216 H22. A rotation that silently sticks at one value would produce four identical arms and
+        /// waste a nine-hour run, and nothing else in the job would look wrong - so it is worth a test of its own.
+        /// </summary>
+        [Test]
+        public async Task ImportDonors_WhenMarkingDonorsAsUpdated_RotatesTheManagementLogBulkCopyBatchSize()
+        {
+            var ladder = DonorImporter.MgmtLogBulkCopyBatchSizeLadder;
+            var batches = ladder.Length * 2;
+            var settings = DataRefreshSettingsBuilder.New.With(s => s.DonorImportBatchSize, 1).Build();
+            donorReader.StreamAllDonors().Returns(fixture.CreateMany<Donor>(batches));
+
+            IDonorImporter importer = new DonorImporter(
+                repositoryFactory, donorInfoConverter, failedDonorsNotificationSender, logger, donorReader, settings);
+
+            await importer.ImportDonors(true);
+
+            var usedSizes = donorManagementLogRepository.ReceivedCalls()
+                .Where(c => c.GetMethodInfo().Name == nameof(IDonorManagementLogRepository.CreateDonorManagementLogBatch))
+                .Select(c => (int) c.GetArguments()[1])
+                .ToList();
+
+            // Two full cycles, in order - not merely "all four appeared". Round-robin is what makes the arms
+            // comparable without correcting for drift; a shuffled or blocked order would not be.
+            usedSizes.Should().Equal(ladder.Concat(ladder));
+        }
+
+        /// <summary>
+        /// The arm each write ran under is carried on the Locus dimension, and a write that does not report its arm is
+        /// unattributable after the fact - which would leave the stage-40 total a blend that cannot be taken apart.
+        /// </summary>
+        [Test]
+        public async Task ImportDonors_WhenMarkingDonorsAsUpdated_TagsTheLogWriteMetricWithItsBulkCopyBatchSize()
+        {
+            donorReader.StreamAllDonors().Returns(fixture.CreateMany<Donor>(1));
+
+            await donorImporter.ImportDonors(true);
+
+            var firstRung = DonorImporter.MgmtLogBulkCopyBatchSizeLadder.First().ToString();
+            logger.Received(1).SendMetric(
+                DataRefreshMetrics.DurationMsMetric,
+                Arg.Any<double>(),
+                Arg.Is<Dictionary<string, string>>(d =>
+                    IsOperation(d, DataRefreshMetrics.Operation_DonorManagementLogWrite)
+                    && d[DataRefreshMetrics.LocusDimension] == firstRung));
         }
 
         [Test]

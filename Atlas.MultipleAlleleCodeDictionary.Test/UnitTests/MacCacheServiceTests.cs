@@ -21,6 +21,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
         private IMacRepository mockRepository;
         private IMacExpander mockExpander;
         private IMacStore macStore;
+        private IAtlasLogger mockLogger;
         private IMacCacheService macCacheService;
 
         [SetUp]
@@ -29,9 +30,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
             fixture = new Fixture();
             mockRepository = Substitute.For<IMacRepository>();
             mockExpander = Substitute.For<IMacExpander>();
+            mockLogger = Substitute.For<IAtlasLogger>();
             // The store is a dependency free data structure, so the real one is used - these tests care about what ends up in it.
             macStore = new MacStore();
-            macCacheService = new MacCacheService(Substitute.For<IAtlasLogger>(), macStore, mockRepository, mockExpander);
+            macCacheService = new MacCacheService(mockLogger, macStore, mockRepository, mockExpander);
         }
 
         [Test]
@@ -119,6 +121,26 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
             await macCacheService.PreWarmAllMacs();
 
             await mockRepository.DidNotReceive().GetAllMacs();
+        }
+
+        /// <summary>
+        /// The pre-warm's duration is uninterpretable without its size: a slow load because the table is large and a
+        /// slow load per row imply different fixes. The count is also how the store's resident memory gets priced -
+        /// it is a process-wide singleton with no expiry, so it outlives the refresh that filled it.
+        /// </summary>
+        [Test]
+        public async Task PreWarmAllMacs_RecordsHowManyMacsWereLoaded()
+        {
+            var macs = MacBuilder.New.CreateMany(10).ToList();
+            mockRepository.StreamAllMacs().Returns(macs.ToAsyncEnumerable());
+
+            await macCacheService.PreWarmAllMacs();
+
+            mockLogger.Received(1).SendMetric(
+                DataRefreshMetrics.CountMetric,
+                macs.Count,
+                Arg.Is<Dictionary<string, string>>(d =>
+                    d[DataRefreshMetrics.OperationDimension] == DataRefreshMetrics.Operation_MacsPreWarmed));
         }
 
         [Test]
