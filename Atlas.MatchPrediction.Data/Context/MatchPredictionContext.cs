@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using Atlas.MatchPrediction.Data.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Atlas.MatchPrediction.Data.Context;
@@ -43,16 +41,13 @@ public class MatchPredictionContext : DbContext
             .HasMaxLength(32)
             .HasDefaultValue(ParallelMatchPredictionBatchStatus.Requested);
 
-        // EF serialises the dictionary to/from JSON; the comparer gives it by-value change-tracking semantics.
+        // EF serialises the dictionary to/from JSON. No value comparer: rows are written via ExecuteUpdate (never a
+        // tracked in-place update), so change tracking never needs to snapshot or compare this property.
         modelBuilder.Entity<ParallelMatchPredictionBatch>()
             .Property(x => x.DonorGenotypeCounts)
             .HasConversion(
                 counts => JsonSerializer.Serialize(counts, (JsonSerializerOptions)null),
-                json => JsonSerializer.Deserialize<Dictionary<int, int>>(json, (JsonSerializerOptions)null),
-                new ValueComparer<Dictionary<int, int>>(
-                    (left, right) => left == null ? right == null : right != null && left.Count == right.Count && !left.Except(right).Any(),
-                    counts => counts == null ? 0 : counts.Aggregate(0, (hash, kvp) => System.HashCode.Combine(hash, kvp.Key, kvp.Value)),
-                    counts => counts == null ? null : new Dictionary<int, int>(counts)))
+                json => JsonSerializer.Deserialize<Dictionary<int, int>>(json, (JsonSerializerOptions)null))
             .HasColumnType("nvarchar(max)");
 
         base.OnModelCreating(modelBuilder);

@@ -19,11 +19,11 @@ namespace Atlas.MatchPrediction.ExternalInterface
     /// <see cref="Atlas.MatchPrediction.ExternalInterface.Settings.GenotypeImputationSettings.MaximumExpandedGenotypesPerInput"/>.
     /// </summary>
     /// <param name="ResultLocation">Blob filename holding the batch's donor → result map, or <c>null</c> when the batch had no donors.</param>
-    /// <param name="PatientGenotypeCount">Patient imputed genotype count (same across a run's batches; 0 when the batch had no donors).</param>
+    /// <param name="PatientGenotypeCount">Patient imputed genotype count (same across a run's batches). <c>null</c> when the batch had no donors, as no patient imputation is performed then; <c>0</c> only when the patient phenotype was unrepresented.</param>
     /// <param name="DonorGenotypeCounts">Per-donor imputed genotype count, keyed by donor id, covering every donor in the batch.</param>
     public record ParallelMatchPredictionBatchOutput(
         string ResultLocation,
-        int PatientGenotypeCount,
+        int? PatientGenotypeCount,
         IReadOnlyDictionary<int, int> DonorGenotypeCounts);
 
     public interface IParallelMatchPredictionAlgorithm
@@ -72,7 +72,8 @@ namespace Atlas.MatchPrediction.ExternalInterface
                 var matchProbabilityInputs = multipleDonorMatchProbabilityInput.SingleDonorMatchProbabilityInputs.ToList();
                 if (matchProbabilityInputs.Count == 0)
                 {
-                    return new ParallelMatchPredictionBatchOutput(null, 0, new Dictionary<int, int>());
+                    // No donors ⇒ no patient imputation happens, so the patient count is absent (null), not a real zero.
+                    return new ParallelMatchPredictionBatchOutput(null, null, new Dictionary<int, int>());
                 }
 
                 var patientGenotypeSet = await genotypeSetService.GetPatientGenotypeSet(matchProbabilityInputs.First());

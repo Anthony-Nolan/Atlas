@@ -209,7 +209,7 @@ namespace Atlas.MatchPrediction.Test.Services
             var output = await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 42);
 
             Assert.That(output.ResultLocation, Is.Null);
-            Assert.That(output.PatientGenotypeCount, Is.EqualTo(0));
+            Assert.That(output.PatientGenotypeCount, Is.Null);
             Assert.That(output.DonorGenotypeCounts, Is.Empty);
             await resultUploader.DidNotReceiveWithAnyArgs().UploadMatchPredictionBatchResult(default, default, default);
         }

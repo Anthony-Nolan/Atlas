@@ -353,8 +353,8 @@ public class ParallelMatchPredictionRepositoryTests
         public async Task RecordBatchResult_PersistsPatientAndDonorGenotypeCounts()
         {
             var created = await CreateRun(totalBatchCount: 1);
-            const int patientGenotypeCount = 42;
-            var donorGenotypeCounts = new Dictionary<int, int> { { 1, 12 }, { 2, 34 } };
+            var patientGenotypeCount = fixture.Create<int>();
+            var donorGenotypeCounts = fixture.Create<Dictionary<int, int>>();
 
             await repository.RecordBatchResult(
                 created.BatchIdsBySequence[0], fixture.Create<string>(), patientGenotypeCount, donorGenotypeCounts);

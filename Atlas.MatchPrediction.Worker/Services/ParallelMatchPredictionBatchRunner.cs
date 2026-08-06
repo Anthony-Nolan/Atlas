@@ -110,10 +110,8 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
         await trackingDispatcher.ProcessRunningBatchesEnded(searchIdentifier, originalSearchIdentifier);
 
         logger.LogInformation(
-            "Completed match prediction for batch {BatchId} ({DonorCount} donors) for search {SearchRequestId}; stored results in single blob {ResultLocation}. "
-          + "Patient genotype count {PatientGenotypeCount}; captured genotype counts for {DonorGenotypeCountCount} donor(s).",
-            request.BatchId, batchInput.Donors?.Count, request.SearchRequestId, batchOutput.ResultLocation,
-            batchOutput.PatientGenotypeCount, batchOutput.DonorGenotypeCounts.Count
+            "Completed match prediction for batch {BatchId} ({DonorCount} donors) for search {SearchRequestId}; stored results in single blob {ResultLocation}",
+            request.BatchId, batchInput.Donors?.Count, request.SearchRequestId, batchOutput.ResultLocation
         );
 
         var batchResult = new ParallelMatchPredictionBatchResult

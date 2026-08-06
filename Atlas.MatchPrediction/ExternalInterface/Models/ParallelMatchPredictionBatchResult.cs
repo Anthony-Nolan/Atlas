@@ -36,9 +36,10 @@ public class ParallelMatchPredictionBatchResult
     /// <summary>
     /// Post-truncation patient imputed genotype count. Identical for every batch in a run (one patient per search),
     /// carried on each batch so its row is self-describing. Populated only when <see cref="IsSuccessful"/> is
-    /// <c>true</c> (0 for a batch that contained no donors).
+    /// <c>true</c>; <c>null</c> for a batch that contained no donors (no patient imputation is performed), and
+    /// <c>0</c> only when the patient phenotype was unrepresented.
     /// </summary>
-    public int PatientGenotypeCount { get; set; }
+    public int? PatientGenotypeCount { get; set; }
 
     /// <summary>
     /// Post-truncation imputed genotype count per donor id, covering every donor in the batch. Populated only when
