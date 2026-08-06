@@ -59,8 +59,7 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
     "FailureLogs:DeletionCronSchedule" = var.FAILURE_LOGS_CRONTAB
     "FailureLogs:ExpiryInDays"         = var.FAILURE_LOGS_EXPIRY_IN_DAYS
 
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = var.MAX_INSTANCES
-    "WEBSITE_RUN_FROM_PACKAGE"                  = "1"
+    "WEBSITE_RUN_FROM_PACKAGE" = "1"
   }
 
   site_config {
@@ -81,6 +80,8 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
 
     health_check_path                 = "/api/HealthCheck"
     health_check_eviction_time_in_min = 10
+
+    app_scale_limit = var.MAX_INSTANCES
 
     ftps_state              = "AllAllowed"
     scm_minimum_tls_version = "1.2"
