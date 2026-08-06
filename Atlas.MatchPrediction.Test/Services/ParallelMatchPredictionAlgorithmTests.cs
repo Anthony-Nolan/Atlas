@@ -15,6 +15,7 @@ using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using Microsoft.Extensions.DependencyInjection;
@@ -153,7 +154,7 @@ namespace Atlas.MatchPrediction.Test.Services
 
             var output = await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 42);
 
-            Assert.That(output.ResultLocation, Is.EqualTo("batch-result.json"));
+            output.ResultLocation.Should().Be("batch-result.json");
             await resultUploader.Received(1).UploadMatchPredictionBatchResult(
                 "search-request-id",
                 42,
@@ -187,11 +188,11 @@ namespace Atlas.MatchPrediction.Test.Services
 
             var output = await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 1);
 
-            Assert.That(output.PatientGenotypeCount, Is.EqualTo(3));
-            Assert.That(output.DonorGenotypeCounts.Count, Is.EqualTo(3));
-            Assert.That(output.DonorGenotypeCounts[1], Is.EqualTo(donorGenotypeCount));
-            Assert.That(output.DonorGenotypeCounts[2], Is.EqualTo(donorGenotypeCount));
-            Assert.That(output.DonorGenotypeCounts[3], Is.EqualTo(donorGenotypeCount));
+            output.PatientGenotypeCount.Should().Be(3);
+            output.DonorGenotypeCounts.Should().HaveCount(3);
+            output.DonorGenotypeCounts[1].Should().Be(donorGenotypeCount);
+            output.DonorGenotypeCounts[2].Should().Be(donorGenotypeCount);
+            output.DonorGenotypeCounts[3].Should().Be(donorGenotypeCount);
         }
 
         [Test]
@@ -208,9 +209,9 @@ namespace Atlas.MatchPrediction.Test.Services
 
             var output = await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 42);
 
-            Assert.That(output.ResultLocation, Is.Null);
-            Assert.That(output.PatientGenotypeCount, Is.Null);
-            Assert.That(output.DonorGenotypeCounts, Is.Empty);
+            output.ResultLocation.Should().BeNull();
+            output.PatientGenotypeCount.Should().BeNull();
+            output.DonorGenotypeCounts.Should().BeEmpty();
             await resultUploader.DidNotReceiveWithAnyArgs().UploadMatchPredictionBatchResult(default, default, default);
         }
     }
