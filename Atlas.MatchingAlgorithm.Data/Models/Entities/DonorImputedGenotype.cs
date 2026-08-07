@@ -12,8 +12,9 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
         public int Id { get; set; }
 
         /// <summary>
-        /// Logical reference to the internal Atlas donor id (<c>Donors.Id</c>). Not a DB-level FK —
-        /// the matching transient databases deliberately hold no foreign key constraints.
+        /// The Atlas donor id (<c>Donors.DonorId</c>), NOT the <c>Donors.Id</c> identity PK — same key the
+        /// <c>MatchingHlaAt*</c> tables use and that search joins on (<c>m.DonorId = d.DonorId</c>).
+        /// No DB-level FK, so the writer (ATL-272) must populate it with the correct <c>Donors.DonorId</c>.
         /// </summary>
         public int DonorId { get; set; }
 
