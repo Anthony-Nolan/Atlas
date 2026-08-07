@@ -65,7 +65,9 @@ public interface IParallelMatchPredictionRepository
     /// </summary>
     /// <returns><c>true</c> on first record; <c>false</c> if it was a duplicate.</returns>
     /// <exception cref="InvalidOperationException">Thrown when no batch row exists for the given id.</exception>
-    Task<bool> RecordBatchResult(int batchId, string resultLocation);
+    /// <param name="patientGenotypeCount">Post-truncation patient imputed genotype count captured by the Worker; <c>null</c> when not provided (leaves the column <c>NULL</c> rather than recording a spurious <c>0</c>).</param>
+    /// <param name="donorGenotypeCounts">DonorId → post-truncation genotype count map for the batch; EF serialises it to JSON. <c>null</c> when not provided.</param>
+    Task<bool> RecordBatchResult(int batchId, string resultLocation, int? patientGenotypeCount = null, Dictionary<int, int> donorGenotypeCounts = null);
 
     /// <summary>
     /// Records a batch failure by updating the pre-created batch row identified by <paramref name="batchId"/>.
@@ -216,7 +218,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
         );
     }
 
-    public async Task<bool> RecordBatchResult(int batchId, string resultLocation)
+    public async Task<bool> RecordBatchResult(int batchId, string resultLocation, int? patientGenotypeCount = null, Dictionary<int, int> donorGenotypeCounts = null)
     {
         var now = DateTime.UtcNow;
 
@@ -231,6 +233,8 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
                 .SetProperty(b => b.BatchStatusDate, now)
                 .SetProperty(b => b.ResultReceivedTimeUtc, now)
                 .SetProperty(b => b.ResultLocation, resultLocation)
+                .SetProperty(b => b.PatientGenotypeCount, patientGenotypeCount)
+                .SetProperty(b => b.DonorGenotypeCounts, donorGenotypeCounts)
                 .SetProperty(b => b.FailureMessage, (string)null)
                 .SetProperty(b => b.FailureException, (string)null)
             );

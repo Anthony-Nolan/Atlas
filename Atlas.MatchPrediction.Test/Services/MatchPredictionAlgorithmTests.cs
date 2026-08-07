@@ -52,7 +52,8 @@ namespace Atlas.MatchPrediction.Test.Services
             var patientGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions>(), 0.1m);
             genotypeSetService.GetPatientGenotypeSet(default).ReturnsForAnyArgs(patientGenotypeSet);
 
-            matchProbabilityService.CalculateMatchProbability(default, default).ReturnsForAnyArgs(new MatchProbabilityResponse(null, new HashSet<Locus>()));
+            matchProbabilityService.CalculateMatchProbability(default, default).ReturnsForAnyArgs(
+                new MatchProbabilityResult(new MatchProbabilityResponse(null, new HashSet<Locus>()), 0));
             resultUploader.UploadSearchDonorResults(default, default, default).ReturnsForAnyArgs(call =>
                 ((IEnumerable<int>)call[1]).ToDictionary(id => id, id => $"{id}.json"));
 

@@ -58,7 +58,9 @@ public class ParallelMatchPredictionAggregatorFunctions
         {
             var wasBatchResultRecordedSuccessfully = await repository.RecordBatchResult(
                 message.BatchId,
-                message.MatchPredictionResultLocation
+                message.MatchPredictionResultLocation,
+                message.PatientGenotypeCount,
+                message.DonorGenotypeCounts
             );
 
             if (wasBatchResultRecordedSuccessfully)

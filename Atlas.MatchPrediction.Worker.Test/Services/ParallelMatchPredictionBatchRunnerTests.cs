@@ -41,7 +41,7 @@ internal class ParallelMatchPredictionBatchRunnerTests
         blobDownloader.Download<MultipleDonorMatchProbabilityInput>(Arg.Any<string>(), Arg.Any<string>())
             .Returns(new MultipleDonorMatchProbabilityInput());
         algorithm.RunBatch(Arg.Any<MultipleDonorMatchProbabilityInput>(), Arg.Any<int>(), Arg.Any<int>())
-            .Returns(fixture.Create<string>());
+            .Returns(new ParallelMatchPredictionBatchOutput(fixture.Create<string>(), fixture.Create<int>(), new Dictionary<int, int>()));
 
         runner = new ParallelMatchPredictionBatchRunner(
             blobDownloader,
@@ -58,7 +58,8 @@ internal class ParallelMatchPredictionBatchRunnerTests
     {
         var request = BuildRequest(isRepeatSearch: false);
         var resultLocation = fixture.Create<string>();
-        algorithm.RunBatch(Arg.Any<MultipleDonorMatchProbabilityInput>(), MaxParallelism, request.BatchId).Returns(resultLocation);
+        algorithm.RunBatch(Arg.Any<MultipleDonorMatchProbabilityInput>(), MaxParallelism, request.BatchId)
+            .Returns(new ParallelMatchPredictionBatchOutput(resultLocation, fixture.Create<int>(), new Dictionary<int, int>()));
 
         await runner.RunBatch(request);
 
@@ -69,6 +70,27 @@ internal class ParallelMatchPredictionBatchRunnerTests
                 && r.BatchId == request.BatchId
                 && r.ParallelRunId == request.ParallelRunId
                 && r.BatchSequenceNumber == request.BatchSequenceNumber),
+            request.SearchRequestId);
+    }
+
+    [Test]
+    public async Task RunBatch_WhenSuccessful_PublishesGenotypeCountsFromAlgorithmOutput()
+    {
+        var request = BuildRequest(isRepeatSearch: false);
+        const int patientGenotypeCount = 7;
+        var donorGenotypeCounts = new Dictionary<int, int> { { 1, 12 }, { 2, 34 } };
+        algorithm.RunBatch(Arg.Any<MultipleDonorMatchProbabilityInput>(), MaxParallelism, request.BatchId)
+            .Returns(new ParallelMatchPredictionBatchOutput(fixture.Create<string>(), patientGenotypeCount, donorGenotypeCounts));
+
+        await runner.RunBatch(request);
+
+        await resultPublisher.Received(1).PublishWithSession(
+            Arg.Is<ParallelMatchPredictionBatchResult>(r =>
+                r.IsSuccessful
+                && r.PatientGenotypeCount == patientGenotypeCount
+                && r.DonorGenotypeCounts.Count == 2
+                && r.DonorGenotypeCounts[1] == 12
+                && r.DonorGenotypeCounts[2] == 34),
             request.SearchRequestId);
     }
 

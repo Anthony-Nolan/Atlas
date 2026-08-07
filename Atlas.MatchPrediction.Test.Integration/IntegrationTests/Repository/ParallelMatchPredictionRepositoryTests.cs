@@ -350,6 +350,21 @@ public class ParallelMatchPredictionRepositoryTests
         }
 
         [Test]
+        public async Task RecordBatchResult_PersistsPatientAndDonorGenotypeCounts()
+        {
+            var created = await CreateRun(totalBatchCount: 1);
+            var patientGenotypeCount = fixture.Create<int>();
+            var donorGenotypeCounts = fixture.Create<Dictionary<int, int>>();
+
+            await repository.RecordBatchResult(
+                created.BatchIdsBySequence[0], fixture.Create<string>(), patientGenotypeCount, donorGenotypeCounts);
+
+            var batch = await GetSingleBatch(created.RunId);
+            batch.PatientGenotypeCount.Should().Be(patientGenotypeCount);
+            batch.DonorGenotypeCounts.Should().BeEquivalentTo(donorGenotypeCounts);
+        }
+
+        [Test]
         public async Task RecordBatchResult_ForFailedBatchReplayedTwice_SecondCallIsIdempotentDuplicate()
         {
             var created = await CreateRun(totalBatchCount: 1);

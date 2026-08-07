@@ -55,7 +55,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
             {
                 var patientGenotypeSet = await genotypeSetService.GetPatientGenotypeSet(singleDonorMatchProbabilityInput);
                 var result = await matchProbabilityService.CalculateMatchProbability(singleDonorMatchProbabilityInput, patientGenotypeSet);
-                return result.Round(4);
+                return result.Response.Round(4);
             }
         }
 
@@ -80,7 +80,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
                     using (logger.RunTimed("Run Match Prediction Algorithm per donor"))
                     {
                         var result = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput, patientGenotypeSet);
-                        var matchProbabilityInputFileNames = await resultUploader.UploadSearchDonorResults(searchRequestId, matchProbabilityInput.Donor.DonorIds, result);
+                        var matchProbabilityInputFileNames = await resultUploader.UploadSearchDonorResults(searchRequestId, matchProbabilityInput.Donor.DonorIds, result.Response);
                         fileNames = fileNames.Merge(matchProbabilityInputFileNames);
                     }
                 }
