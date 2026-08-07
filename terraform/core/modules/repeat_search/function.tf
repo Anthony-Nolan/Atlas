@@ -81,7 +81,8 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
     // maximum running instances of the algorithm = maximum_worker_count * maxConcurrentCalls (in host.json).
     // together, alongside the non-repeat matching processes, these must ensure that the number of allowed concurrent SQL connections to the matching SQL DB is not exceeded.
     // See README_Integration.md for more details on concurrency configuration.
-    app_scale_limit = var.MAX_SCALE_OUT
+    pre_warmed_instance_count = 1
+    app_scale_limit           = var.MAX_SCALE_OUT
 
     ftps_state              = "AllAllowed"
     scm_minimum_tls_version = "1.2"
