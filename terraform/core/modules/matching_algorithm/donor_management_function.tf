@@ -19,14 +19,13 @@ locals {
     "MessagingServiceBus:SendRetryCount"                                                            = var.SERVICE_BUS_SEND_RETRY_COUNT
     "MessagingServiceBus:SendRetryCooldownSeconds"                                                  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "NotificationsServiceBus:ConnectionString"           = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
-    "NotificationsServiceBus:AlertsTopic"                = var.servicebus_topics.alerts.name
-    "NotificationsServiceBus:NotificationsTopic"         = var.servicebus_topics.notifications.name
-    "NotificationsServiceBus:SendRetryCount"             = var.SERVICE_BUS_SEND_RETRY_COUNT
-    "NotificationsServiceBus:SendRetryCooldownSeconds"   = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+    "NotificationsServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:AlertsTopic"              = var.servicebus_topics.alerts.name
+    "NotificationsServiceBus:NotificationsTopic"       = var.servicebus_topics.notifications.name
+    "NotificationsServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "NotificationsServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "1"
-    "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
+    "WEBSITE_RUN_FROM_PACKAGE" = var.WEBSITE_RUN_FROM_PACKAGE
   }
   donor_management_function_app_name = "${var.general.environment}-ATLAS-MATCHING-DONOR-MANAGEMENT-FUNCTION"
 }
@@ -60,6 +59,9 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_donor_manageme
 
     health_check_path                 = "/api/HealthCheck"
     health_check_eviction_time_in_min = 10
+
+    pre_warmed_instance_count = 1
+    app_scale_limit           = 1
 
     ftps_state              = "AllAllowed"
     scm_minimum_tls_version = "1.2"

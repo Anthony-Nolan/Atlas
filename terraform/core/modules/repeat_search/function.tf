@@ -56,11 +56,7 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
     "StoreOriginalSearchResultsBulkCopy:BatchSize"             = var.STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE
     "StoreOriginalSearchResultsBulkCopy:Timeout"               = var.STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT
 
-    // maximum running instances of the algorithm = maximum_worker_count * maxConcurrentCalls (in host.json).
-    // together, alongside the non-repeat matching processes, these must ensure that the number of allowed concurrent SQL connections to the matching SQL DB is not exceeded.
-    // See README_Integration.md for more details on concurrency configuration.
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = var.MAX_SCALE_OUT
-    "WEBSITE_RUN_FROM_PACKAGE"                  = "1"
+    "WEBSITE_RUN_FROM_PACKAGE" = "1"
   }
 
   site_config {
@@ -81,6 +77,12 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
 
     health_check_path                 = "/api/HealthCheck"
     health_check_eviction_time_in_min = 10
+
+    // maximum running instances of the algorithm = maximum_worker_count * maxConcurrentCalls (in host.json).
+    // together, alongside the non-repeat matching processes, these must ensure that the number of allowed concurrent SQL connections to the matching SQL DB is not exceeded.
+    // See README_Integration.md for more details on concurrency configuration.
+    pre_warmed_instance_count = 1
+    app_scale_limit           = var.MAX_SCALE_OUT
 
     ftps_state              = "AllAllowed"
     scm_minimum_tls_version = "1.2"
