@@ -1,4 +1,6 @@
-﻿using Atlas.MatchPrediction.Data.Models;
+﻿using System.Collections.Generic;
+using System.Text.Json;
+using Atlas.MatchPrediction.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
@@ -38,6 +40,15 @@ public class MatchPredictionContext : DbContext
             .HasConversion<string>()
             .HasMaxLength(32)
             .HasDefaultValue(ParallelMatchPredictionBatchStatus.Requested);
+
+        // EF serialises the dictionary to/from JSON. No value comparer: rows are written via ExecuteUpdate (never a
+        // tracked in-place update), so change tracking never needs to snapshot or compare this property.
+        modelBuilder.Entity<ParallelMatchPredictionBatch>()
+            .Property(x => x.DonorGenotypeCounts)
+            .HasConversion(
+                counts => JsonSerializer.Serialize(counts, (JsonSerializerOptions)null),
+                json => JsonSerializer.Deserialize<Dictionary<int, int>>(json, (JsonSerializerOptions)null))
+            .HasColumnType("nvarchar(max)");
 
         base.OnModelCreating(modelBuilder);
     }

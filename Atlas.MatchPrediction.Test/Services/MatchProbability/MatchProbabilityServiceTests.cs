@@ -148,7 +148,7 @@ public class MatchProbabilityServiceTests
         });
 
         var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
-        var result = await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet);
+        var result = (await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet)).Response;
 
         result.IsPatientPhenotypeUnrepresented.Should().BeTrue();
         result.IsDonorPhenotypeUnrepresented.Should().BeFalse();
@@ -194,7 +194,7 @@ public class MatchProbabilityServiceTests
         });
 
         var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
-        var result = await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet);
+        var result = (await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet)).Response;
 
         result.IsPatientPhenotypeUnrepresented.Should().BeFalse();
         result.IsDonorPhenotypeUnrepresented.Should().BeTrue();
@@ -247,7 +247,7 @@ public class MatchProbabilityServiceTests
             });
 
         var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
-        var result = await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet);
+        var result = (await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet)).Response;
 
         result.IsPatientPhenotypeUnrepresented.Should().BeFalse();
         result.IsDonorPhenotypeUnrepresented.Should().BeFalse();
@@ -269,7 +269,7 @@ public class MatchProbabilityServiceTests
         );
 
         var input = SingleDonorMatchProbabilityInputBuilder.Default.Build();
-        var result = await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet);
+        var result = (await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet)).Response;
 
         result.DonorHaplotypeFrequencySet.Id.Should().Be(donorSet.Id);
         result.DonorHaplotypeFrequencySet.RegistryCode.Should().Be(donorSet.RegistryCode);
@@ -284,5 +284,40 @@ public class MatchProbabilityServiceTests
         result.PatientHaplotypeFrequencySet.HlaNomenclatureVersion.Should().Be(patientSet.HlaNomenclatureVersion);
         result.PatientHaplotypeFrequencySet.PopulationId.Should().Be(patientSet.PopulationId);
         result.PatientHaplotypeFrequencySet.HlaNomenclatureVersion.Should().Be(patientSet.HlaNomenclatureVersion);
+    }
+
+    [Test]
+    public async Task CalculateMatchProbability_SurfacesDonorGenotypeCountFromMatcher()
+    {
+        const int donorGenotypeCount = 37;
+
+        genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(new GenotypeMatcherResult
+        {
+            PatientResult = new GenotypeMatcherResult.SubjectResult(false, 5, 0.1m),
+            DonorResult = new GenotypeMatcherResult.SubjectResult(false, donorGenotypeCount, 0.1m),
+            GenotypeMatchDetails = new List<GenotypeMatchDetails>()
+        });
+
+        var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
+        var result = await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet);
+
+        result.DonorGenotypeCount.Should().Be(donorGenotypeCount);
+    }
+
+    [Test]
+    public async Task CalculateMatchProbability_DonorIsUnrepresented_SurfacesDonorGenotypeCount()
+    {
+        genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(new GenotypeMatcherResult
+        {
+            PatientResult = new GenotypeMatcherResult.SubjectResult(false, 1, 0.1m),
+            DonorResult = new GenotypeMatcherResult.SubjectResult(true, 0, 0m),
+            GenotypeMatchDetails = new List<GenotypeMatchDetails>()
+        });
+
+        var input = SingleDonorMatchProbabilityInputBuilder.Valid.Build();
+        var result = await matchProbabilityService.CalculateMatchProbability(input, defaultPatientGenotypeSet);
+
+        result.Response.IsDonorPhenotypeUnrepresented.Should().BeTrue();
+        result.DonorGenotypeCount.Should().Be(0);
     }
 }

@@ -23,7 +23,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability;
 
 public interface IMatchProbabilityService
 {
-    public Task<MatchProbabilityResponse> CalculateMatchProbability(
+    /// <returns>
+    /// The <see cref="MatchProbabilityResponse"/> together with the post-truncation donor imputed genotype count
+    /// (see <see cref="MatchProbabilityResult"/>).
+    /// </returns>
+    public Task<MatchProbabilityResult> CalculateMatchProbability(
         SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput,
         SubjectGenotypeSet patientGenotypeSet);
 }
@@ -53,7 +57,7 @@ internal class MatchProbabilityService : IMatchProbabilityService
         this.matchProbabilityLoggingContext = matchProbabilityLoggingContext;
     }
 
-    public async Task<MatchProbabilityResponse> CalculateMatchProbability(
+    public async Task<MatchProbabilityResult> CalculateMatchProbability(
         SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput,
         SubjectGenotypeSet patientGenotypeSet)
     {
@@ -76,18 +80,24 @@ internal class MatchProbabilityService : IMatchProbabilityService
             }
         );
 
+        // Capture the donor genotype count (0 when unrepresented), so it is read before the guard below.
+        var donorGenotypeCount = matcherResult.DonorResult.GenotypeCount;
+
         if (matcherResult.PatientResult.IsUnrepresented || matcherResult.DonorResult.IsUnrepresented)
         {
-            return new MatchProbabilityResponse(null, allowedLoci)
+            var unrepresentedResponse = new MatchProbabilityResponse(null, allowedLoci)
             {
                 IsPatientPhenotypeUnrepresented = matcherResult.PatientResult.IsUnrepresented,
                 IsDonorPhenotypeUnrepresented = matcherResult.DonorResult.IsUnrepresented,
                 DonorHaplotypeFrequencySet = frequencySets.Donor.FrequencySet.ToClientHaplotypeFrequencySet(),
                 PatientHaplotypeFrequencySet = frequencySets.Patient.FrequencySet.ToClientHaplotypeFrequencySet()
             };
+
+            return new MatchProbabilityResult(unrepresentedResponse, donorGenotypeCount);
         }
 
-        return CalculateMatchProbabilityFromMatcherResult(matcherResult, allowedLoci, frequencySets);
+        var response = CalculateMatchProbabilityFromMatcherResult(matcherResult, allowedLoci, frequencySets);
+        return new MatchProbabilityResult(response, donorGenotypeCount);
     }
 
     private async Task<FrequencySets> GetFrequencySets(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput)

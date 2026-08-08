@@ -72,7 +72,7 @@ public class MatchProbabilityTestsBase
         SingleDonorMatchProbabilityInput input)
     {
         var patientGenotypeSet = await GenotypeSetService.GetPatientGenotypeSet(input);
-        return await MatchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet);
+        return (await MatchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet)).Response;
     }
 
     protected static PhenotypeInfoBuilder<string> DefaultUnambiguousAllelesBuilder => new(Alleles.UnambiguousAlleleDetails.Alleles());
