@@ -16,7 +16,9 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         /// </summary>
         IndexRemoval = 10,
         /// <summary>
-        /// Deletion of all existing donor data 
+        /// Deletion of all existing donor data.
+        /// This includes truncating the donor management log table, which <see cref="DonorImport"/> relies upon - it writes log entries
+        /// create-only, so it must never run against a log table still holding entries for the donors being imported.
         /// </summary>
         DataDeletion = 20,
         /// <summary>
