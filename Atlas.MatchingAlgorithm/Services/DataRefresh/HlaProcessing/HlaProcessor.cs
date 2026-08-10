@@ -12,6 +12,7 @@ using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Settings;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,6 +50,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         private readonly IPGroupRepository pGroupRepository;
         private readonly IHlaNamesRepository hlaNamesRepository;
         private readonly IHlaImportRepository hlaImportRepository;
+        private readonly IMacDictionary macDictionary;
 
         public const int NumberOfBatchesOverlapOnRestart = 3;
 
@@ -58,13 +60,15 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             IFailedDonorsNotificationSender failedDonorsNotificationSender,
             IDormantRepositoryFactory repositoryFactory,
-            DataRefreshSettings settings)
+            DataRefreshSettings settings,
+            IMacDictionary macDictionary)
         {
             this.logger = logger;
             this.donorHlaExpanderFactory = donorHlaExpanderFactory;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
             this.failedDonorsNotificationSender = failedDonorsNotificationSender;
             this.settings = settings;
+            this.macDictionary = macDictionary;
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
             pGroupRepository = repositoryFactory.GetPGroupRepository();
@@ -244,6 +248,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                     // Cloud tables are cached for performance reasons
                     var dictionaryCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaNomenclatureVersion);
                     await dictionaryCacheControl.PreWarmAllCaches();
+                }
+
+                using (logger.RunTimed("HLA PROCESSOR: Caching all MACs", LogLevel.Info, true))
+                {
+                    // Donor HLA is riddled with MACs, and expanding one requires its definition. Without this, each
+                    // distinct MAC costs its own storage request during expansion - ~567k of them on a full refresh.
+                    // One streamed pass over the MAC table up front replaces the lot.
+                    await macDictionary.PreWarmAllMacs();
                 }
 
                 using (logger.RunTimed("HLA PROCESSOR: Inserting new P-Groups to database", LogLevel.Info, true))
