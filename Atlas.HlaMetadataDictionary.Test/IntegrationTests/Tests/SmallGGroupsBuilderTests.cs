@@ -88,7 +88,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             new object[] { "02:02:01:01", "02:02:01:02", "02:02:01:03", "02:02:01:04", "02:02:01:05", "02:02:01:06", "02:02:01:07", "547:01" },
             Description = "Changes allele family within small g group")]
         [TestCase(Locus.Drb1, "01:03",
-            new object[] { "01:03:01", "01:03:02" },
+            new object[] { "01:03:01:01", "01:03:01:02", "01:03:02", "01:03:03", "01:03:04", "01:03:05" },
             Description = "Returned small g group is locus specific")]
         public void BuildSmallGGroups_SmallGGroupIsAsExpected(Locus locus, string name, object[] expectedAlleles)
         {

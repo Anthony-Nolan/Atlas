@@ -60,7 +60,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
         [Test]
         public void SerologyToAlleleMatching_AssociatedWithNotSplit_PGroupsAreCorrect()
         {
-            Approvals.Verify(GetPGroupsAsString(Locus.Drb1, "103"));
+            Approvals.Verify(GetPGroupsAsString(Locus.Drb1, "0103"));
         }
 
         [Test]
@@ -118,6 +118,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
         {
             return GetSingleMatchingTyping(locus, serologyName)
                 .MatchingPGroups
+                .Where(p => !string.IsNullOrEmpty(p))
                 .OrderBy(p => p)
                 .StringJoinWithNewline();
         }

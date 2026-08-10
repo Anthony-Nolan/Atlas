@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+﻿using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
+using System.Collections.Generic;
 
 namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
 {
@@ -31,6 +31,6 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
             MatchingGGroups = matchingGGroups;
             MatchingSerologies = matchedSerology.MatchingSerologies;
             SerologyToAlleleMappings = serologyToAlleleMappings;
-        }     
+        }
     }
 }

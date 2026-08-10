@@ -17,7 +17,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
 
         [TestCase("DQ", "1")]
         [TestCase("A", "29")]
-        [TestCase("B", "703")]
+        [TestCase("B", "0703")]
         [TestCase("DR", "1404")]
         public void WmdaDataRepository_WhenValidSerology_SuccessfullyCaptured(string locus, string serologyName)
         {

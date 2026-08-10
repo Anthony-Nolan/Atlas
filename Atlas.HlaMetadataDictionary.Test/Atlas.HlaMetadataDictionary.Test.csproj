@@ -13,37 +13,28 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="UnitTests\Data\wmda-v3330\Allelelist_history.txt">
+    <Content Include="UnitTests\Data\wmda-v3650\Allelelist_history.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UnitTests\Data\wmda-v3330\Allele_status.txt">
+    <Content Include="UnitTests\Data\wmda-v3650\Allele_status.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UnitTests\Data\wmda-v3330\version_report.txt">
+    <Content Include="UnitTests\Data\wmda-v3650\version_report.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UnitTests\Data\wmda-v3330\wmda\hla_nom.txt">
+    <Content Include="UnitTests\Data\wmda-v3650\wmda\hla_nom.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UnitTests\Data\wmda-v3330\wmda\hla_nom_g.txt">
+    <Content Include="UnitTests\Data\wmda-v3650\wmda\hla_nom_g.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UnitTests\Data\wmda-v3330\wmda\hla_nom_p.txt">
+    <Content Include="UnitTests\Data\wmda-v3650\wmda\hla_nom_p.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UnitTests\Data\wmda-v3330\wmda\pre2026\hla_nom.txt">
+    <Content Include="UnitTests\Data\wmda-v3650\wmda\rel_dna_ser.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UnitTests\Data\wmda-v3330\wmda\pre2026\rel_dna_ser.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="UnitTests\Data\wmda-v3330\wmda\pre2026\rel_ser_ser.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="UnitTests\Data\wmda-v3330\wmda\rel_dna_ser.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="UnitTests\Data\wmda-v3330\wmda\rel_ser_ser.txt">
+    <Content Include="UnitTests\Data\wmda-v3650\wmda\rel_ser_ser.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="UnitTests\Repositories\Wmda\SerologiesTest.WmdaDataRepository_SerologiesCollection_ContainsAllExpectedSerologies.approved.txt">
@@ -118,7 +109,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="UnitTests\Data\wmda-v3330\tce\dpb_tce.csv">
+    <None Update="UnitTests\Data\wmda-v3650\tce\dpb_tce.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
