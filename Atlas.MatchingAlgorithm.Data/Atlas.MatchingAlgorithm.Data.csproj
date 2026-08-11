@@ -27,6 +27,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <InternalsVisibleTo Include="Atlas.MatchingAlgorithm.Test" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
       <ProjectReference Include="..\Atlas.HlaMetadataDictionary\Atlas.HlaMetadataDictionary.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Common\Atlas.MatchingAlgorithm.Common.csproj" />

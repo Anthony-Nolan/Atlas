@@ -53,26 +53,66 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             var pGroupLookup = await pGroupRepository.EnsureAllPGroupsExist(donorsToImport.AllPGroupNames());
             var hlaNameLookup = await hlaNamesRepository.EnsureAllHlaNamesExist(donorsToImport.AllHlaNames());
 
-            var hlaToInsert = donorsToImport.Select(donor => new PhenotypeInfo<IList<HlaNamePGroupRelation>>((locus, position) =>
-                    donor?.MatchingHla?.GetPosition(locus, position)?.MatchingPGroups
-                        .Select(pGroup =>
-                        {
-                            var hlaName = donor.MatchingHla.GetPosition(locus, position).LookupName;
-                            var hlaNameId = hlaNameLookup.GetValueOrDefault(hlaName);
-                            return hlaName == null || processedHlaIds.GetLocus(locus).Contains(hlaNameId)
-                                ? null
-                                : new HlaNamePGroupRelation
-                                {
-                                    HlaNameId = hlaNameId,
-                                    PGroupId = pGroupLookup[pGroup]
-                                };
-                        })
-                        .Where(relation => relation != null)
-                        .ToList()
-                )
-            );
+            var flattenedHlaToInsert = BuildHlaRelations(donorsToImport, hlaNameLookup, pGroupLookup, processedHlaIds);
 
-            var flattenedHlaToInsert = new LociInfo<IList<HlaNamePGroupRelation>>(
+            await ImportHla(flattenedHlaToInsert);
+
+            return hlaNameLookup;
+        }
+
+        /// <summary>
+        /// Builds the HLA name to p-group relations that need inserting for a batch of donors, keyed by locus.
+        /// Relations are not built for HLA names that have already been processed - as an HLA to p-group relation cannot
+        /// change without a nomenclature change, i.e. a full data refresh.
+        /// </summary>
+        /// <remarks>
+        /// The <see cref="PhenotypeInfo{T}"/> and <see cref="LociInfo{T}"/> factory constructors are both eager - they invoke
+        /// their factory for every (locus, position) pair / every locus respectively, at construction time.
+        /// The <c>ToList</c> on the per-donor projection is therefore load bearing, and NOT a redundant materialisation:
+        /// without it, the lazy projection is re-run once per locus, i.e. six times, rebuilding all twelve positions of every
+        /// donor on each pass, when only two positions of one locus are consumed per pass.
+        /// </remarks>
+        internal static LociInfo<IList<HlaNamePGroupRelation>> BuildHlaRelations(
+            IList<DonorInfoWithExpandedHla> donorsToImport,
+            IDictionary<string, int> hlaNameLookup,
+            IDictionary<string, int> pGroupLookup,
+            LociInfo<ISet<int>> processedHlaIds)
+        {
+            var hlaToInsert = donorsToImport.Select(donor => new PhenotypeInfo<IList<HlaNamePGroupRelation>>((locus, position) =>
+                    {
+                        var hla = donor?.MatchingHla?.GetPosition(locus, position);
+                        if (hla == null)
+                        {
+                            return null;
+                        }
+
+                        // Neither the HLA name, nor whether it has already been processed, depends on the p-group - so both are
+                        // resolved once per (donor, locus, position), rather than once per candidate p-group. In particular, an
+                        // already processed HLA name costs a single set lookup, instead of walking every one of its p-groups.
+                        var hlaName = hla.LookupName;
+                        if (hlaName == null)
+                        {
+                            return new List<HlaNamePGroupRelation>();
+                        }
+
+                        var hlaNameId = hlaNameLookup.GetValueOrDefault(hlaName);
+                        if (processedHlaIds.GetLocus(locus).Contains(hlaNameId))
+                        {
+                            return new List<HlaNamePGroupRelation>();
+                        }
+
+                        return hla.MatchingPGroups
+                            .Select(pGroup => new HlaNamePGroupRelation
+                            {
+                                HlaNameId = hlaNameId,
+                                PGroupId = pGroupLookup[pGroup]
+                            })
+                            .ToList();
+                    }
+                ))
+                .ToList();
+
+            return new LociInfo<IList<HlaNamePGroupRelation>>(
                 l =>
                 {
                     return hlaToInsert.SelectMany(h =>
@@ -81,14 +121,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                             var position2Relations = h.GetPosition(l, LocusPosition.Two) ?? new List<HlaNamePGroupRelation>();
                             return position1Relations.Concat(position2Relations);
                         })
-                        .Where(x => x != null)
                         .Distinct()
                         .ToList();
                 });
-
-            await ImportHla(flattenedHlaToInsert);
-
-            return hlaNameLookup;
         }
 
         private async Task EnsureProcessedHlaCacheIsUpToDate()
