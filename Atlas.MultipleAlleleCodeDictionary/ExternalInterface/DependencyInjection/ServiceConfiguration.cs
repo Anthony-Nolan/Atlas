@@ -7,6 +7,7 @@ using Atlas.MultipleAlleleCodeDictionary.Services;
 using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection
 {
@@ -80,6 +81,9 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjecti
         {
             services.RegisterSharedServices();
 
+            // Deliberately a singleton, rather than an entry per MAC in the shared expiring cache: MAC data is append-only,
+            // so it wants one process-wide lookup table with no expiry. See MacStore.
+            services.TryAddSingleton<IMacStore, MacStore>();
             services.AddScoped<IMacCacheService, MacCacheService>();
             services.AddScoped<IMacDictionary, MacDictionary>();
             services.AddScoped<IMacExpander, MacExpander>();

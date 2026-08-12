@@ -57,6 +57,15 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
             return Task.FromResult(macs);
         }
 
+        // The file is small enough that there is nothing to stream - the whole thing is in the cache already.
+        public async IAsyncEnumerable<Mac> StreamAllMacs()
+        {
+            foreach (var mac in await GetAllMacs())
+            {
+                yield return mac;
+            }
+        }
+
         private void CacheAllMacs()
         {
             var macs = ReadMacsFromFile().Select(macEnt => new Mac(macEnt)).ToList().AsReadOnly();

@@ -25,6 +25,13 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         public Task InsertMacs(IEnumerable<Mac> macCodes);
         public Task<Mac> GetMac(string macCode);
         public Task<IReadOnlyCollection<Mac>> GetAllMacs();
+
+        /// <summary>
+        /// Streams every MAC one page at a time, without materialising the whole table.
+        /// Use this rather than <see cref="GetAllMacs"/> when warming an in-memory cache.
+        /// </summary>
+        public IAsyncEnumerable<Mac> StreamAllMacs();
+
         public Task TruncateMacTable();
     }
 
@@ -84,6 +91,16 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         {
             var result = await Table.ExecuteQueryAsync<MacEntity>(NonMetaDataFilter);
             return result.Select(x => new Mac(x)).ToList().AsReadOnly();
+        }
+
+        /// <inheritdoc />
+        public async IAsyncEnumerable<Mac> StreamAllMacs()
+        {
+            // QueryAsync returns a streaming AsyncPageable, so only one page of entities is held at a time.
+            await foreach (var entity in Table.QueryAsync<MacEntity>(NonMetaDataFilter))
+            {
+                yield return new Mac(entity);
+            }
         }
 
         private async Task StoreLatestMacRecord(string latestMac)

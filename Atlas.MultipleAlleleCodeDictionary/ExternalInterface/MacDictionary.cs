@@ -30,6 +30,17 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         /// Should be in the format "01:AB". Where 01 is the first field.
         /// </param>
         public Task<IEnumerable<string>> GetHlaFromMac(string macWithFirstField);
+
+        /// <summary>
+        /// Loads every known MAC into memory up front, in a single streamed pass over the storage account, so that
+        /// subsequent lookups are served without a storage request. Repeat calls are no-ops.
+        /// </summary>
+        /// <remarks>
+        /// Intended for bulk workloads that will see a large proportion of all MACs - notably the matching algorithm's
+        /// data refresh, where the alternative is one storage request per distinct MAC (~567k of them, ~43 minutes).
+        /// Not worthwhile for request-scoped work, which touches only a handful of MACs.
+        /// </remarks>
+        public Task PreWarmAllMacs();
     }
 
     public class MacDictionary : IMacDictionary
@@ -64,6 +75,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
             var mac = parts[1];
 
             return await macCacheService.GetHlaFromMac(mac, firstField);
+        }
+
+        /// <inheritdoc />
+        public async Task PreWarmAllMacs()
+        {
+            await macCacheService.PreWarmAllMacs();
         }
     }
 }
