@@ -71,6 +71,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
             // Data deletion *must* be skipped for continued updates to work.
             // If we have imported donor data but dropped out during HLA refresh, we should not delete the donor data.
+            // Note: DonorImport writes donor management log entries create-only, on the assumption that this stage has emptied that table
+            // beforehand. Skipping this stage is only safe because DonorImport is itself either skipped, or restarted from scratch with its own
+            // deletion, whenever this stage is skipped. See the DonorImport case in ExecuteDataRefreshStage.
             {DataRefreshStage.DataDeletion, true},
 
             // Failing to scale up the Database will cause the refresh to take a VERY long time, and it is possible for someone to manually scale the DB back down between interruption and retry.
@@ -280,6 +283,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                         await donorImportRepository.RemoveAllDonorInformation();
                     }
 
+                    // This deletion must not be removed, and this stage must not gain a mid-stage resume: the importer writes donor management log
+                    // entries create-only, which relies on the log table being empty of the donors being imported. In FromScratch mode that is
+                    // guaranteed by DataRefreshStage.DataDeletion having just run, or by this stage never having written anything in the interrupted
+                    // run it is following. See DonorImporter.InsertDonorBatch.
                     await donorImporter.ImportDonors(refreshRecord.ShouldMarkAllDonorsAsUpdated);
                     break;
                 case DataRefreshStage.DonorHlaProcessing:

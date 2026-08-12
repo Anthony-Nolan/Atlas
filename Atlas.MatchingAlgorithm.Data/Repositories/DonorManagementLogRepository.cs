@@ -16,7 +16,30 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
     public interface IDonorManagementLogRepository
     {
         Task<IEnumerable<DonorManagementLog>> GetDonorManagementLogBatch(IEnumerable<int> donorIds);
+
+        /// <summary>
+        /// Upserts a batch of donor management logs, reading the existing logs for these donors first, to determine which
+        /// need creating and which need updating.
+        /// This is the general purpose entry point, for use in ongoing donor management, where a donor may or may not
+        /// already have a log entry.
+        /// </summary>
+        /// <remarks>
+        /// The existence read is expensive - see <see cref="CreateDonorManagementLogBatch"/> for the cheaper create-only
+        /// alternative, usable when the donors are known not to have log entries yet.
+        /// </remarks>
         Task CreateOrUpdateDonorManagementLogBatch(IEnumerable<DonorManagementInfo> donorManagementInfos);
+
+        /// <summary>
+        /// Creates a batch of donor management logs, *without* first reading the existing logs for these donors.
+        /// </summary>
+        /// <remarks>
+        /// PRECONDITION: none of the given donors may already have a log entry. There is a unique index on
+        /// <see cref="DonorManagementLog.DonorId"/>, so this will throw rather than update if any of them do.
+        /// Only use this where the log table is known to hold no entries for these donors - currently only the data
+        /// refresh's donor import stage, which always runs against a freshly truncated log table.
+        /// Use <see cref="CreateOrUpdateDonorManagementLogBatch"/> everywhere else.
+        /// </remarks>
+        Task CreateDonorManagementLogBatch(IEnumerable<DonorManagementInfo> donorManagementInfos);
     }
 
     public class DonorManagementLogRepository : Repository, IDonorManagementLogRepository
@@ -43,6 +66,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             }
         }
 
+        /// <inheritdoc />
         public async Task CreateOrUpdateDonorManagementLogBatch(IEnumerable<DonorManagementInfo> donorManagementInfos)
         {
             var infos = donorManagementInfos.ToList();
@@ -62,6 +86,14 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                 await CreateLogBatch(logsToCreate);
                 transactionScope.Complete();
             }
+        }
+
+        /// <inheritdoc />
+        // No transaction scope here, unlike the create-or-update path: there is only one operation to perform, and the
+        // bulk copy manages its own transaction.
+        public async Task CreateDonorManagementLogBatch(IEnumerable<DonorManagementInfo> donorManagementInfos)
+        {
+            await CreateLogBatch(donorManagementInfos);
         }
 
         private async Task<IEnumerable<int>> GetDonorIdsWithExistingLogs(IEnumerable<int> donorIdsToCheck)
