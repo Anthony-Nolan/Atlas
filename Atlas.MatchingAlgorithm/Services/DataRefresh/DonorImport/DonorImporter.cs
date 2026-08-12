@@ -112,7 +112,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
                     // either by DataRefreshStage.DataDeletion, or, when continuing an interrupted refresh, by this stage restarting from scratch
                     // (see DataRefreshRunner.ExecuteDataRefreshStage). So every donor in a refresh resolves to a "create", and asking the
                     // database which donors already have log entries can only ever return none.
-                    // That read used to cost ~1hr of an ~15hr refresh: one non-parameterised `WHERE DonorId IN (<10,000 ids>)` query per batch,
+                    // That read used to cost ~1hr of a ~15hr refresh: one non-parameterised `WHERE DonorId IN (<10,000 ids>)` query per batch,
                     // ~88KB of SQL text each, every one of them a fresh parse and plan.
                     // If a future change lets this stage run against a log table that was NOT truncated, this must go back to being an upsert -
                     // there is a unique index on DonorId, so a create-only write would throw instead of updating.
