@@ -31,7 +31,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         {
             return await ProcessBatchAsyncWithAnticipatedExceptions<ValidationException>(
                 donorInfos,
-                async info => await ConvertDonorInfo(info),
+                info => Task.FromResult(ConvertDonorInfo(info)),
                 info => new FailedDonorInfo(info)
                 {
                     AtlasDonorId = info.DonorId
@@ -39,9 +39,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
                 failureEventName);
         }
 
-        private static async Task<DonorInfo> ConvertDonorInfo(SearchableDonorInformation donorInfo)
+        // Deliberately not SearchableDonorInformationValidator: identical outcome, but this runs once per donor in the registry, and
+        // building a FluentValidation rule tree per call dominated the cost of the entire conversion. See the remarks on
+        // SearchableDonorInformationFastValidator.
+        private static DonorInfo ConvertDonorInfo(SearchableDonorInformation donorInfo)
         {
-            await new SearchableDonorInformationValidator().ValidateAndThrowAsync(donorInfo);
+            SearchableDonorInformationFastValidator.ValidateAndThrow(donorInfo);
             return donorInfo.ToDonorInfo();
         }
     }
