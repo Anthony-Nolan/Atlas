@@ -37,7 +37,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
             Assert.AreEqual(expectedAllele, actualAllele);
         }
 
-        [TestCase("DRB1*", "08:01:03", true, "08:01:01")]
+        [TestCase("DRB1*", "08:01:03", true, "08:01:01:01")]
         public void WmdaDataRepository_WhenDeletedAlleleWithIdenticalHla_SuccessfullyCaptured(string locus, string alleleName, bool isDeleted, string identicalHla)
         {
             var expectedAllele = new HlaNom(TypingMethod.Molecular, locus, alleleName, isDeleted, identicalHla);
