@@ -15,7 +15,10 @@ namespace Atlas.MatchingAlgorithm.Test.Repositories;
 [TestFixture]
 public class HlaImportRepositoryTests
 {
-    private const int TypedPositionCount = 12;
+    /// <summary>
+    /// Two positions at each of the five matching loci - the positions a fully typed donor contributes relations for.
+    /// </summary>
+    private const int MatchingPositionCount = 10;
 
     private Fixture fixture;
 
@@ -87,11 +90,11 @@ public class HlaImportRepositoryTests
     }
 
     /// <summary>
-    /// DPB1 relations are deliberately still built, even though <c>ImportProcessedHla</c> discards everything outside
-    /// <c>LocusSettings.MatchingOnlyLoci</c> at insert time.
+    /// <c>ImportProcessedHla</c> discards everything outside <c>LocusSettings.MatchingOnlyLoci</c> at insert time, so building
+    /// DPB1 relations would be a sixth of the work done for nothing.
     /// </summary>
     [Test]
-    public void BuildHlaRelations_BuildsRelationsAtDpb1()
+    public void BuildHlaRelations_BuildsNoRelationsAtDpb1()
     {
         var hlaName = fixture.Create<string>();
         var pGroups = fixture.CreateMany<string>(3).ToList();
@@ -103,7 +106,7 @@ public class HlaImportRepositoryTests
             LookupOf(pGroups),
             NothingProcessed());
 
-        relations.Dpb1.Should().HaveCount(pGroups.Count);
+        relations.Dpb1.Should().BeEmpty();
     }
 
     [Test]
@@ -126,11 +129,11 @@ public class HlaImportRepositoryTests
     }
 
     /// <summary>
-    /// Every donor's HLA must be read in a single pass. A per-locus pass over the batch would read all twelve positions of
-    /// every donor six times over, to consume two positions of one locus each time.
+    /// Every donor's HLA must be read in a single pass. A per-locus pass over the batch would read every position of every
+    /// donor once per locus, to consume two positions of one locus each time.
     /// </summary>
     [Test]
-    public void BuildHlaRelations_ReadsEachPGroupListOnce()
+    public void BuildHlaRelations_ReadsEachPGroupListAtMostOncePerPosition()
     {
         var hlaName = fixture.Create<string>();
         var pGroups = fixture.CreateMany<string>(3).ToList();
@@ -142,7 +145,7 @@ public class HlaImportRepositoryTests
             LookupOf(pGroups),
             NothingProcessed());
 
-        hla.MatchingPGroupsReads.Should().Be(TypedPositionCount);
+        hla.MatchingPGroupsReads.Should().BeLessThanOrEqualTo(MatchingPositionCount);
     }
 
     [Test]
@@ -167,7 +170,7 @@ public class HlaImportRepositoryTests
     /// resolved per position, not per candidate p-group.
     /// </summary>
     [Test]
-    public void BuildHlaRelations_ReadsHlaNameOncePerPosition()
+    public void BuildHlaRelations_ReadsHlaNameAtMostOncePerPosition()
     {
         var hlaName = fixture.Create<string>();
         var pGroups = fixture.CreateMany<string>(20).ToList();
@@ -179,7 +182,7 @@ public class HlaImportRepositoryTests
             LookupOf(pGroups),
             NothingProcessed());
 
-        hla.LookupNameReads.Should().Be(TypedPositionCount);
+        hla.LookupNameReads.Should().BeLessThanOrEqualTo(MatchingPositionCount);
     }
 
     private static LociInfo<ISet<HlaNamePGroupRelation>> BuildRelations(
@@ -188,7 +191,8 @@ public class HlaImportRepositoryTests
         IDictionary<string, int> pGroupLookup,
         LociInfo<ISet<int>> processedHlaIds)
     {
-        return HlaImportRepository.BuildHlaRelations(donors.ToList(), hlaNameLookup, pGroupLookup, processedHlaIds);
+        var lookups = new HlaImportLookups(HlaNames: hlaNameLookup, PGroups: pGroupLookup);
+        return HlaImportRepository.BuildHlaRelations(donors.ToList(), lookups, processedHlaIds);
     }
 
     private static DonorInfoWithExpandedHla DonorWithHlaAt(Locus locus, LocusPosition position, INullHandledHlaMatchingMetadata hla)

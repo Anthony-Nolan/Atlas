@@ -31,6 +31,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         Task<IDictionary<string, int>> ImportHla(IList<DonorInfoWithExpandedHla> donorsToImport);
     }
 
+    /// <summary>
+    /// The Atlas id lookups needed to build HLA relations. Named, rather than passed as two identically typed dictionaries,
+    /// so that they cannot be transposed at a call site without the compiler noticing.
+    /// </summary>
+    internal record HlaImportLookups(IDictionary<string, int> HlaNames, IDictionary<string, int> PGroups);
+
     public class HlaImportRepository : Repository, IHlaImportRepository
     {
         private readonly IHlaNamesRepository hlaNamesRepository;
@@ -54,7 +60,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             var pGroupLookup = await pGroupRepository.EnsureAllPGroupsExist(donorsToImport.AllPGroupNames());
             var hlaNameLookup = await hlaNamesRepository.EnsureAllHlaNamesExist(donorsToImport.AllHlaNames());
 
-            var hlaRelationsToInsert = BuildHlaRelations(donorsToImport, hlaNameLookup, pGroupLookup, processedHlaIds);
+            var lookups = new HlaImportLookups(HlaNames: hlaNameLookup, PGroups: pGroupLookup);
+            var hlaRelationsToInsert = BuildHlaRelations(donorsToImport, lookups, processedHlaIds);
 
             await ImportHla(hlaRelationsToInsert);
 
@@ -67,19 +74,19 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         /// change without a nomenclature change, i.e. a full data refresh.
         /// </summary>
         /// <remarks>
-        /// Each donor's HLA is read exactly once, and relations are accumulated straight into the per-locus sets they will be
-        /// inserted from. Duplicates - which are the norm, as HLA is heavily shared across donors - are therefore discarded as
-        /// they are found, rather than being retained for a later de-duplication pass. This matters because HLA processing runs
-        /// on batches of thousands of expanded donors, on a path with a history of running out of memory
-        /// (see <c>HlaProcessor.BatchSize</c>).
+        /// The batch is traversed once, and relations are accumulated straight into the per-locus sets they will be inserted
+        /// from, so duplicates - which are the norm, as HLA is heavily shared across donors - are discarded as they are found.
+        /// A per-locus traversal would instead re-read every position of every donor once per locus, to consume two positions
+        /// each time, allocating a throwaway relation list per position on every pass. Avoiding that churn is the point of the
+        /// single pass, on a path that processes thousands of expanded donors per batch (see <c>HlaProcessor.BatchSize</c>).
         /// </remarks>
         internal static LociInfo<ISet<HlaNamePGroupRelation>> BuildHlaRelations(
             IList<DonorInfoWithExpandedHla> donorsToImport,
-            IDictionary<string, int> hlaNameLookup,
-            IDictionary<string, int> pGroupLookup,
+            HlaImportLookups lookups,
             LociInfo<ISet<int>> processedHlaIds)
         {
-            var loci = EnumerateValues<Locus>().ToList();
+            // Relations outside the matching loci are discarded at insert time by ImportProcessedHla, so are not built at all.
+            var loci = LocusSettings.MatchingOnlyLoci.ToList();
             var positions = EnumerateValues<LocusPosition>().ToList();
             var relationsByLocus = loci.ToDictionary(l => l, _ => new HashSet<HlaNamePGroupRelation>());
 
@@ -108,7 +115,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                             continue;
                         }
 
-                        var hlaNameId = hlaNameLookup.GetValueOrDefault(hlaName);
+                        var hlaNameId = lookups.HlaNames.GetValueOrDefault(hlaName);
                         if (processedAtLocus.Contains(hlaNameId))
                         {
                             continue;
@@ -119,14 +126,16 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                             relationsAtLocus.Add(new HlaNamePGroupRelation
                             {
                                 HlaNameId = hlaNameId,
-                                PGroupId = pGroupLookup[pGroup]
+                                PGroupId = lookups.PGroups[pGroup]
                             });
                         }
                     }
                 }
             }
 
-            return new LociInfo<ISet<HlaNamePGroupRelation>>(l => relationsByLocus[l]);
+            return new LociInfo<ISet<HlaNamePGroupRelation>>(
+                l => relationsByLocus.TryGetValue(l, out var relations) ? relations : []
+            );
         }
 
         private async Task EnsureProcessedHlaCacheIsUpToDate()
