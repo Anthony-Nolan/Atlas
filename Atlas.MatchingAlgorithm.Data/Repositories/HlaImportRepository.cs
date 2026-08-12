@@ -14,6 +14,7 @@ using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
 using Microsoft.Data.SqlClient;
+using static EnumStringValues.EnumExtensions;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
 {
@@ -53,9 +54,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             var pGroupLookup = await pGroupRepository.EnsureAllPGroupsExist(donorsToImport.AllPGroupNames());
             var hlaNameLookup = await hlaNamesRepository.EnsureAllHlaNamesExist(donorsToImport.AllHlaNames());
 
-            var flattenedHlaToInsert = BuildHlaRelations(donorsToImport, hlaNameLookup, pGroupLookup, processedHlaIds);
+            var hlaRelationsToInsert = BuildHlaRelations(donorsToImport, hlaNameLookup, pGroupLookup, processedHlaIds);
 
-            await ImportHla(flattenedHlaToInsert);
+            await ImportHla(hlaRelationsToInsert);
 
             return hlaNameLookup;
         }
@@ -66,64 +67,66 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         /// change without a nomenclature change, i.e. a full data refresh.
         /// </summary>
         /// <remarks>
-        /// The <see cref="PhenotypeInfo{T}"/> and <see cref="LociInfo{T}"/> factory constructors are both eager - they invoke
-        /// their factory for every (locus, position) pair / every locus respectively, at construction time.
-        /// The <c>ToList</c> on the per-donor projection is therefore load bearing, and NOT a redundant materialisation:
-        /// without it, the lazy projection is re-run once per locus, i.e. six times, rebuilding all twelve positions of every
-        /// donor on each pass, when only two positions of one locus are consumed per pass.
+        /// Each donor's HLA is read exactly once, and relations are accumulated straight into the per-locus sets they will be
+        /// inserted from. Duplicates - which are the norm, as HLA is heavily shared across donors - are therefore discarded as
+        /// they are found, rather than being retained for a later de-duplication pass. This matters because HLA processing runs
+        /// on batches of thousands of expanded donors, on a path with a history of running out of memory
+        /// (see <c>HlaProcessor.BatchSize</c>).
         /// </remarks>
-        internal static LociInfo<IList<HlaNamePGroupRelation>> BuildHlaRelations(
+        internal static LociInfo<ISet<HlaNamePGroupRelation>> BuildHlaRelations(
             IList<DonorInfoWithExpandedHla> donorsToImport,
             IDictionary<string, int> hlaNameLookup,
             IDictionary<string, int> pGroupLookup,
             LociInfo<ISet<int>> processedHlaIds)
         {
-            var hlaToInsert = donorsToImport.Select(donor => new PhenotypeInfo<IList<HlaNamePGroupRelation>>((locus, position) =>
-                    {
-                        var hla = donor?.MatchingHla?.GetPosition(locus, position);
-                        if (hla == null)
-                        {
-                            return null;
-                        }
+            var loci = EnumerateValues<Locus>().ToList();
+            var positions = EnumerateValues<LocusPosition>().ToList();
+            var relationsByLocus = loci.ToDictionary(l => l, _ => new HashSet<HlaNamePGroupRelation>());
 
+            foreach (var donor in donorsToImport)
+            {
+                var matchingHla = donor?.MatchingHla;
+                if (matchingHla == null)
+                {
+                    continue;
+                }
+
+                foreach (var locus in loci)
+                {
+                    var relationsAtLocus = relationsByLocus[locus];
+                    var processedAtLocus = processedHlaIds.GetLocus(locus);
+
+                    foreach (var position in positions)
+                    {
                         // Neither the HLA name, nor whether it has already been processed, depends on the p-group - so both are
                         // resolved once per (donor, locus, position), rather than once per candidate p-group. In particular, an
                         // already processed HLA name costs a single set lookup, instead of walking every one of its p-groups.
-                        var hlaName = hla.LookupName;
+                        var hla = matchingHla.GetPosition(locus, position);
+                        var hlaName = hla?.LookupName;
                         if (hlaName == null)
                         {
-                            return new List<HlaNamePGroupRelation>();
+                            continue;
                         }
 
                         var hlaNameId = hlaNameLookup.GetValueOrDefault(hlaName);
-                        if (processedHlaIds.GetLocus(locus).Contains(hlaNameId))
+                        if (processedAtLocus.Contains(hlaNameId))
                         {
-                            return new List<HlaNamePGroupRelation>();
+                            continue;
                         }
 
-                        return hla.MatchingPGroups
-                            .Select(pGroup => new HlaNamePGroupRelation
+                        foreach (var pGroup in hla.MatchingPGroups)
+                        {
+                            relationsAtLocus.Add(new HlaNamePGroupRelation
                             {
                                 HlaNameId = hlaNameId,
                                 PGroupId = pGroupLookup[pGroup]
-                            })
-                            .ToList();
+                            });
+                        }
                     }
-                ))
-                .ToList();
+                }
+            }
 
-            return new LociInfo<IList<HlaNamePGroupRelation>>(
-                l =>
-                {
-                    return hlaToInsert.SelectMany(h =>
-                        {
-                            var position1Relations = h.GetPosition(l, LocusPosition.One) ?? new List<HlaNamePGroupRelation>();
-                            var position2Relations = h.GetPosition(l, LocusPosition.Two) ?? new List<HlaNamePGroupRelation>();
-                            return position1Relations.Concat(position2Relations);
-                        })
-                        .Distinct()
-                        .ToList();
-                });
+            return new LociInfo<ISet<HlaNamePGroupRelation>>(l => relationsByLocus[l]);
         }
 
         private async Task EnsureProcessedHlaCacheIsUpToDate()
@@ -146,7 +149,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                 async (l, _) => { processedHlaIds = processedHlaIds.SetLocus(l, await GetExistingHlaAtLocus(l)); }, shouldRestrictParallelism);
         }
 
-        private async Task ImportHla(LociInfo<IList<HlaNamePGroupRelation>> hlaNamesToImport)
+        private async Task ImportHla(LociInfo<ISet<HlaNamePGroupRelation>> hlaNamesToImport)
         {
             // Distributed transactions are not yet supported in .Net core - see https://github.com/dotnet/runtime/issues/715
             // Until they are, we cannot update loci in parallel while also in a transaction scope. But if we are not in a transaction, it is quicker to run in parallel.
@@ -159,16 +162,16 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             );
         }
 
-        private async Task ImportHlaAtLocus(Locus locus, IList<HlaNamePGroupRelation> hla)
+        private async Task ImportHlaAtLocus(Locus locus, ISet<HlaNamePGroupRelation> hla)
         {
             // Use known new Hla strings to determine which relations to ignore! i.e. if not new, ignore it
             // This is safe as hla -> pgroup relation cannot change without a nomenclature change i.e. full data refresh
             await ImportProcessedHla(locus, hla);
         }
 
-        private async Task ImportProcessedHla(Locus locus, IList<HlaNamePGroupRelation> newHlaRelations)
+        private async Task ImportProcessedHla(Locus locus, ISet<HlaNamePGroupRelation> newHlaRelations)
         {
-            if (!newHlaRelations.Any() || !LocusSettings.MatchingOnlyLoci.Contains(locus))
+            if (newHlaRelations.Count == 0 || !LocusSettings.MatchingOnlyLoci.Contains(locus))
             {
                 return;
             }

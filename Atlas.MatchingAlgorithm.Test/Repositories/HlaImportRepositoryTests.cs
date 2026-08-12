@@ -126,8 +126,8 @@ public class HlaImportRepositoryTests
     }
 
     /// <summary>
-    /// The eager <c>LociInfo</c> factory constructor consumes the per-donor projection once per locus, so a lazy projection
-    /// would rebuild all twelve positions of every donor six times over.
+    /// Every donor's HLA must be read in a single pass. A per-locus pass over the batch would read all twelve positions of
+    /// every donor six times over, to consume two positions of one locus each time.
     /// </summary>
     [Test]
     public void BuildHlaRelations_ReadsEachPGroupListOnce()
@@ -182,7 +182,7 @@ public class HlaImportRepositoryTests
         hla.LookupNameReads.Should().Be(TypedPositionCount);
     }
 
-    private static LociInfo<IList<HlaNamePGroupRelation>> BuildRelations(
+    private static LociInfo<ISet<HlaNamePGroupRelation>> BuildRelations(
         IEnumerable<DonorInfoWithExpandedHla> donors,
         IDictionary<string, int> hlaNameLookup,
         IDictionary<string, int> pGroupLookup,
