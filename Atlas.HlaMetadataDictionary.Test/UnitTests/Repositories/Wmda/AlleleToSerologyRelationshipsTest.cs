@@ -18,7 +18,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
             )]
         [TestCase(
             "B*",
-            "07:31",
+            "07:31:01",
             new object[]
             {
                 new object[] { "42", Assignment.Possible },
@@ -33,11 +33,15 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
         [TestCase(
             "C*",
             "14:02:01:01",
-            new object[] { new object[] { "1", Assignment.Expert } }
+            new object[]
+            {
+                new object[] { "14", Assignment.Unambiguous },
+                new object[] { "1", Assignment.Expert }
+            }
             )]
         [TestCase(
             "A*",
-            "02:55",
+            "02:55:01",
             new object[]
             {
                 new object[] { "2", Assignment.Assumed },
@@ -57,7 +61,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
         [TestCase(
             "B*",
             "44:02:01:02S",
-            new object[] { new object[] { "44", Assignment.Expert } }
+            new object[] { new object[] { "4402", Assignment.Expert } }
             )]
         public void WmdaDataRepository_WhenAlleleHasRelatedSerology_SerologyAssignmentsSuccessfullyCaptured(
             string molecularLocus,
@@ -84,13 +88,13 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
             actualRelationship.Assignments.Should().BeEquivalentTo(new List<SerologyAssignment>());
         }
 
-        [Test]
-        public void WmdaDataRepository_WhenDpb1Allele_NoSerologyAssignmentsAreCaptured()
+        [TestCase("32:01")]
+        public void WmdaDataRepository_WhenDpb1Allele_NoSerologyAssignmentsAreCaptured(
+            string alleleName)
         {
-            WmdaHlaTypings
-                .Where(hla => hla.TypingLocus.Equals("DPB1*"))
-                .SelectMany(hla => hla.Assignments)
-                .Should().BeEquivalentTo(new List<SerologyAssignment>());
+            var actualRelationship = GetSingleWmdaHlaTyping("DPB1*", alleleName);
+
+            actualRelationship.Assignments.Should().BeEquivalentTo(new List<SerologyAssignment>());
         }
     }
 }

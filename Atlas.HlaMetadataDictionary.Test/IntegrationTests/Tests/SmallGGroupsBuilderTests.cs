@@ -70,25 +70,25 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             new object[] { "04:94:01N" },
             Description = "Single null allele with more than 2 fields")]
         [TestCase(Locus.A, "02:04g",
-            new object[] { "02:04", "02:664", "02:710N" },
+            new object[] { "02:04:01", "02:04:02", "02:664", "02:710N" },
             Description = "One Null allele within small g group")]
-        [TestCase(Locus.B, "38:01g",
-            new object[] { "38:01:01:01", "38:01:01:02", "38:01:02", "38:01:03", "38:01:04", "38:01:05", "38:01:06", "38:01:07", "38:01:08", "38:01:09", "38:01:10", "38:01:11", "38:01:12", "38:68Q" },
+        [TestCase(Locus.A, "34:01g",
+            new object[] { "34:01:01:01", "34:01:01:02", "34:01:01:03", "34:01:01:04", "34:01:02", "34:01:03", "34:01:04", "34:01:05", "34:01:06Q", "34:01:07", "34:01:08", "34:18" },
             Description = "Other Expression Letters within small g group")]
         [TestCase(Locus.A, "02:22g",
-            new object[] { "02:22:01:01", "02:22:01:02", "02:22:02", "02:104" },
+            new object[] { "02:22:01:01", "02:22:01:02", "02:22:02", "02:104", "02:929" },
             Description = "Mixture of 2,3 and 4 field typing resolutions within small g group")]
         [TestCase(Locus.B, "44:192",
-            new object[] { "44:192:01", "44:192:02", "44:192:03" },
+            new object[] { "44:192:01", "44:192:02", "44:192:03", "44:192:04" },
             Description = "Changes in third field typing within small g group")]
         [TestCase(Locus.C, "04:13",
             new object[] { "04:13:01:01", "04:13:01:02" },
             Description = "Changes in fourth field typing within small g group")]
-        [TestCase(Locus.Dpb1, "02:02g",
-            new object[] { "02:02:01:01", "02:02:01:02", "02:02:01:03", "02:02:01:04", "02:02:01:05", "02:02:01:06", "02:02:01:07", "547:01" },
+        [TestCase(Locus.Dpb1, "26:01g",
+            new object[] { "26:01:01", "26:01:02:01", "26:01:02:02", "26:01:02:03", "26:01:02:04", "26:01:02:05", "26:01:03", "1088:01" },
             Description = "Changes allele family within small g group")]
-        [TestCase(Locus.Drb1, "01:03",
-            new object[] { "01:03:01", "01:03:02" },
+        [TestCase(Locus.Drb1, "01:03g",
+            new object[] { "01:03:01:01", "01:03:01:02", "01:03:02", "01:03:03", "01:03:04", "01:03:05", "01:102", "01:155" },
             Description = "Returned small g group is locus specific")]
         public void BuildSmallGGroups_SmallGGroupIsAsExpected(Locus locus, string name, object[] expectedAlleles)
         {

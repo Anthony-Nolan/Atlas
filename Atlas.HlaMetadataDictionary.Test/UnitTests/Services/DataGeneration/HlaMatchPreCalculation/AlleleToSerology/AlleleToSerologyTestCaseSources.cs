@@ -29,11 +29,12 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
             },
             new object[]
             {
-                // questionable Allele
+                // questionable Allele with Associated serology
                 Locus.C, "07:01:01:14Q",
                 new[]
                 {
-                    new object[] {"Cw", "7", SerologySubtype.NotSplit, true}
+                    new object[] {"Cw", "7", SerologySubtype.NotSplit, false},
+                    new object[] {"Cw", "0701", SerologySubtype.Associated, true}
                 }
 
             },
@@ -43,8 +44,9 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
                 Locus.B, "44:02:01:02S",
                 new[]
                 {
-                    new object[] {"B", "44", SerologySubtype.Split, true},
-                    new object[] {"B", "12", SerologySubtype.Broad, false}
+                    new object[] {"B", "44", SerologySubtype.Split, false},
+                    new object[] {"B", "12", SerologySubtype.Broad, false},
+                    new object[] {"B", "4402", SerologySubtype.Associated, true}
                 }
             }
         };
@@ -82,14 +84,12 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
             new object[]
             {
                 // Broad with no Associated
-                Locus.A, "26:10",
+                Locus.B, "14:03",
                 new[]
                 {
-                    new object[] {"A", "10", SerologySubtype.Broad, true },
-                    new object[] {"A", "25", SerologySubtype.Split, false },
-                    new object[] {"A", "26", SerologySubtype.Split, false },
-                    new object[] {"A", "34", SerologySubtype.Split, false },
-                    new object[] {"A", "66", SerologySubtype.Split, false }
+                    new object[] {"B", "14", SerologySubtype.Broad, true },
+                    new object[] {"B", "64", SerologySubtype.Split, false },
+                    new object[] {"B", "65", SerologySubtype.Split, false },
                 }
             },
             new object[]
@@ -99,34 +99,41 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
                 new[]
                 {
                     new object[] {"B", "21", SerologySubtype.Broad, true },
-                    new object[] {"B", "4005", SerologySubtype.Associated, false },
                     new object[] {"B", "49", SerologySubtype.Split, false },
                     new object[] {"B", "50", SerologySubtype.Split, false },
                     new object[] {"B", "40", SerologySubtype.Broad, true },
                     new object[] {"B", "60", SerologySubtype.Split, false },
-                    new object[] {"B", "61", SerologySubtype.Split, false }
+                    new object[] {"B", "61", SerologySubtype.Split, false },
+                    new object[] {"B", "4005", SerologySubtype.Associated, false },
+                    new object[] {"B", "4002", SerologySubtype.Associated, false },
+                    new object[] {"B", "4004", SerologySubtype.Associated, false },
+                    new object[] {"B", "4008", SerologySubtype.Associated, false },
+                    new object[] {"B", "4001", SerologySubtype.Associated, false },
+                    new object[] {"B", "4016", SerologySubtype.Associated, false },
+                    new object[] {"B", "4021", SerologySubtype.Associated, false },
+                    new object[] {"B", "4023", SerologySubtype.Associated, false },
+                    new object[] {"B", "4047", SerologySubtype.Associated, false }
                 }
             },
             new object[]
             {
                 // Split with no Associated
-                Locus.C, "03:02:01",
+                Locus.C, "03:03:02",
                 new[]
                 {
-                    new object[] {"Cw", "10", SerologySubtype.Split, true },
+                    new object[] {"Cw", "9", SerologySubtype.Split, true },
                     new object[] {"Cw", "3", SerologySubtype.Broad, false }
                 }
             },
             new object[]
             {
                 // Split with Associated
-                Locus.Drb1, "14:01:01",
+                Locus.Drb1, "14:01:01:01",
                 new[]
                 {
-                    new object[] {"DR", "14", SerologySubtype.Split, true },
+                    new object[] {"DR", "14", SerologySubtype.Split, false },
                     new object[] {"DR", "6", SerologySubtype.Broad, false },
-                    new object[] {"DR", "1403", SerologySubtype.Associated, false },
-                    new object[] {"DR", "1404", SerologySubtype.Associated, false }
+                    new object[] {"DR", "1401", SerologySubtype.Associated, true }
                 }
             },
             new object[]
@@ -135,11 +142,19 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
                 Locus.B, "40:05:01:01",
                 new[]
                 {
+                    new object[] {"B", "21", SerologySubtype.Broad, false },
+                    new object[] {"B", "4005", SerologySubtype.Associated, true },
                     new object[] {"B", "40", SerologySubtype.Broad, true },
                     new object[] {"B", "60", SerologySubtype.Split, false },
                     new object[] {"B", "61", SerologySubtype.Split, false },
-                    new object[] {"B", "4005", SerologySubtype.Associated, true },
-                    new object[] {"B", "21", SerologySubtype.Broad, false }
+                    new object[] {"B", "4001", SerologySubtype.Associated, false },
+                    new object[] {"B", "4016", SerologySubtype.Associated, false },
+                    new object[] {"B", "4021", SerologySubtype.Associated, false },
+                    new object[] {"B", "4023", SerologySubtype.Associated, false },
+                    new object[] {"B", "4047", SerologySubtype.Associated, false },
+                    new object[] {"B", "4002", SerologySubtype.Associated, false },
+                    new object[] {"B", "4004", SerologySubtype.Associated, false },
+                    new object[] {"B", "4008", SerologySubtype.Associated, false }
                 }
             },
             new object[]
@@ -159,7 +174,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
                 Locus.Drb1, "01:03:02",
                 new[]
                 {
-                    new object[] {"DR", "103", SerologySubtype.Associated, true },
+                    new object[] {"DR", "0103", SerologySubtype.Associated, true },
                     new object[] {"DR", "1", SerologySubtype.NotSplit, false }
                 }
             },
@@ -169,8 +184,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
                 Locus.B, "07:02:27",
                 new[]
                 {
-                    new object[] {"B", "7", SerologySubtype.NotSplit, true },
-                    new object[] {"B", "703", SerologySubtype.Associated, false }
+                    new object[] {"B", "7", SerologySubtype.NotSplit, false },
+                    new object[] {"B", "0702", SerologySubtype.Associated, true }
                 }
             },
             new object[]
@@ -202,7 +217,18 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
                     new object[] {"B", "63", SerologySubtype.Split, false },
                     new object[] {"B", "75", SerologySubtype.Split, false },
                     new object[] {"B", "76", SerologySubtype.Split, false },
-                    new object[] {"B", "77", SerologySubtype.Split, false }
+                    new object[] {"B", "77", SerologySubtype.Split, false },
+                    new object[] {"B", "1501", SerologySubtype.Associated, false },
+                    new object[] {"B", "1520", SerologySubtype.Associated, false },
+                    new object[] {"B", "1524", SerologySubtype.Associated, false },
+                    new object[] {"B", "1538", SerologySubtype.Associated, false },
+                    new object[] {"B", "1540", SerologySubtype.Associated, false },
+                    new object[] {"B", "1542", SerologySubtype.Associated, false },
+                    new object[] {"B", "1548", SerologySubtype.Associated, false },
+                    new object[] {"B", "1516", SerologySubtype.Associated, false },
+                    new object[] {"B", "1517", SerologySubtype.Associated, false },
+                    new object[] {"B", "1502", SerologySubtype.Associated, false },
+                    new object[] {"B", "1511", SerologySubtype.Associated, false }
                 }
             },
             new object[]
@@ -210,8 +236,9 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
                 B15SplitAlleleTestCase,
                 new[]
                 {
-                    new object[] {"B", "62", SerologySubtype.Split, true },
-                    new object[] {"B", "15", SerologySubtype.Broad, false }
+                    new object[] {"B", "62", SerologySubtype.Split, false },
+                    new object[] {"B", "15", SerologySubtype.Broad, false },
+                    new object[] {"B", "1501", SerologySubtype.Associated, true }
                 }
             },
             new object[]
@@ -221,7 +248,15 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
                 {
                     new object[] {"B", "70", SerologySubtype.Broad, true },
                     new object[] {"B", "71", SerologySubtype.Split, false },
-                    new object[] {"B", "72", SerologySubtype.Split, false }
+                    new object[] {"B", "72", SerologySubtype.Split, false },
+                    new object[] {"B", "1510", SerologySubtype.Associated, false },
+                    new object[] {"B", "1523", SerologySubtype.Associated, false },
+                    new object[] {"B", "1529", SerologySubtype.Associated, false },
+                    new object[] {"B", "1537", SerologySubtype.Associated, false },
+                    new object[] {"B", "1552", SerologySubtype.Associated, false },
+                    new object[] {"B", "1503", SerologySubtype.Associated, false },
+                    new object[] {"B", "1547", SerologySubtype.Associated, false },
+                    new object[] {"B", "4802", SerologySubtype.Associated, false }
                 }
             },
             new object[]
@@ -229,8 +264,9 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
                 B70SplitAlleleTestCase,
                 new[]
                 {
-                    new object[] {"B", "72", SerologySubtype.Split, true },
-                    new object[] {"B", "70", SerologySubtype.Broad, false }
+                    new object[] {"B", "72", SerologySubtype.Split, false },
+                    new object[] {"B", "70", SerologySubtype.Broad, false },
+                    new object[] {"B", "1503", SerologySubtype.Associated, true }
                 }
             },
             new object[]
@@ -246,7 +282,26 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
                     new object[] {"B", "77", SerologySubtype.Split, false },
                     new object[] {"B", "70", SerologySubtype.Broad, true },
                     new object[] {"B", "71", SerologySubtype.Split, false },
-                    new object[] {"B", "72", SerologySubtype.Split, false }
+                    new object[] {"B", "72", SerologySubtype.Split, false },
+                    new object[] {"B", "1501", SerologySubtype.Associated, false },
+                    new object[] {"B", "1520", SerologySubtype.Associated, false },
+                    new object[] {"B", "1524", SerologySubtype.Associated, false },
+                    new object[] {"B", "1538", SerologySubtype.Associated, false },
+                    new object[] {"B", "1540", SerologySubtype.Associated, false },
+                    new object[] {"B", "1542", SerologySubtype.Associated, false },
+                    new object[] {"B", "1548", SerologySubtype.Associated, false },
+                    new object[] {"B", "1516", SerologySubtype.Associated, false },
+                    new object[] {"B", "1517", SerologySubtype.Associated, false },
+                    new object[] {"B", "1502", SerologySubtype.Associated, false },
+                    new object[] {"B", "1511", SerologySubtype.Associated, false },
+                    new object[] {"B", "1510", SerologySubtype.Associated, false },
+                    new object[] {"B", "1523", SerologySubtype.Associated, false },
+                    new object[] {"B", "1529", SerologySubtype.Associated, false },
+                    new object[] {"B", "1537", SerologySubtype.Associated, false },
+                    new object[] {"B", "1552", SerologySubtype.Associated, false },
+                    new object[] {"B", "1503", SerologySubtype.Associated, false },
+                    new object[] {"B", "1547", SerologySubtype.Associated, false },
+                    new object[] {"B", "4802", SerologySubtype.Associated, false }
                 }
             }
         };
@@ -256,7 +311,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
             new object[]
             {
                 // No assignments
-                Locus.C, "12:02:02:01",
+                Locus.Dpb1, "32:01",
                 new object[][]{}
             },
             new object[]
@@ -267,13 +322,19 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
             },
             new object[]
             {
-                // Only has expert assignment
-                Locus.C, "15:07",
+                // Only has assumed and expert assignment
+                Locus.C, "15:21",
                 new[]
                 {
                     new object[] {"Cw", "3", SerologySubtype.Broad, true},
                     new object[] {"Cw", "9", SerologySubtype.Split, false},
-                    new object[] {"Cw", "10", SerologySubtype.Split, false}
+                    new object[] {"Cw", "10", SerologySubtype.Split, false},
+                    new object[] {"Cw", "15", SerologySubtype.NotSplit, true},
+                    new object[] {"Cw", "0304", SerologySubtype.Associated, false },
+                    new object[] {"Cw", "0307", SerologySubtype.Associated, false },
+                    new object[] {"Cw", "0308", SerologySubtype.Associated, false },
+                    new object[] {"Cw", "1502", SerologySubtype.Associated, false },
+                    new object[] {"Cw", "1507", SerologySubtype.Associated, false }
                 }
             }
         };
