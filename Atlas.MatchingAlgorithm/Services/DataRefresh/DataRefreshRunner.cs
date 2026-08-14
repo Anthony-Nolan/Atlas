@@ -99,12 +99,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             // But if it *were* to occur then we definitely don't want to have to *re*-re-create them just to do the final 2 steps.
             { DataRefreshStage.IndexRecreation, true },
 
+            // Donor updates will still be posted if the refresh quits after this stage, so it must always be re-performed on a continuation,
+            // and the refresh only marked as success once every stage has completed.
+            { DataRefreshStage.QueuedDonorUpdateProcessing, false },
+
             // Failing to scale down the Database has a cost impact, and it is possible for someone to manually scale the DB back up between interruption and retry.
             // Re-performing this stage if the database is already at the required level is very quick.
             { DataRefreshStage.DatabaseScalingTearDown, false },
-
-            // Donor updates will still be posted if the refresh quits after this stage. This stage should always be performed last, and the refresh only marked as success when it is fully complete. 
-            { DataRefreshStage.QueuedDonorUpdateProcessing, false },
         };
 
         public DataRefreshRunner(
@@ -248,12 +249,19 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// If we detect that's the case, we can save the time by skipping the scale up.
         /// We still scale it down though, because the DB might have been left in a ScaledUp state, in which case it's really bad if we *leave* it up.
         /// </summary>
+        /// <remarks>
+        /// <see cref="DataRefreshStage.QueuedDonorUpdateProcessing"/> now also sits between the two scaling stages, but is deliberately excluded
+        /// from this test. It can never be skipped, so including it would disable this optimisation outright - and a queue drain on its own is not
+        /// worth a full scale-up/scale-down cycle. It still benefits from a database left scaled up, which is why it runs before the scale-down.
+        /// </remarks>
         private void AvoidScalingDbUpAndImmediatelyBackDown(Dictionary<DataRefreshStage, DataRefreshStageExecutionMode> modes)
         {
-            var stagesBetweenDbScaling = orderedRefreshStages.Where(stage =>
-                stage > DataRefreshStage.DatabaseScalingSetup && stage < DataRefreshStage.DatabaseScalingTearDown
+            var stagesRequiringAScaledUpDatabase = orderedRefreshStages.Where(stage =>
+                stage > DataRefreshStage.DatabaseScalingSetup
+                && stage < DataRefreshStage.DatabaseScalingTearDown
+                && stage != DataRefreshStage.QueuedDonorUpdateProcessing
             );
-            var areWeSkippingEveryStageBetweenDbScaling = stagesBetweenDbScaling.All(stage => modes[stage] == DataRefreshStageExecutionMode.Skip);
+            var areWeSkippingEveryStageBetweenDbScaling = stagesRequiringAScaledUpDatabase.All(stage => modes[stage] == DataRefreshStageExecutionMode.Skip);
             if (areWeSkippingEveryStageBetweenDbScaling)
             {
                 modes[DataRefreshStage.DatabaseScalingSetup] = DataRefreshStageExecutionMode.Skip;

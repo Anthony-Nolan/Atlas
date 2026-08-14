@@ -11,7 +11,10 @@ locals {
     "AzureManagement:Authentication:OAuthBaseUrl" = var.AZURE_OAUTH_BASEURL
     "AzureManagement:Authentication:TenantId"     = var.AZURE_TENANT_ID
 
-    "AzureManagement:Database:ServerName"                       = var.sql_server.name
+    // Must resolve to the server the transient connection strings actually point at - see sql_database.tf.
+    // NB the resource group below is assumed to be shared with that server; an external server in a different
+    // resource group would fail the scale call loudly (AzureManagementException), not silently.
+    "AzureManagement:Database:ServerName"                       = local.matching_sql_server_name
     "AzureManagement:Database:PollingRetryIntervalMilliseconds" = var.DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS
     "AzureManagement:Database:ResourceGroupName"                = var.resource_group.name
     "AzureManagement:Database:SubscriptionId"                   = var.general.subscription_id
@@ -33,8 +36,8 @@ locals {
     "DataRefresh:RequestsTopicSubscription"                                                 = azurerm_servicebus_subscription.matching-algorithm-data-refresh-requests.name
     "DataRefresh:CompletionTopic"                                                           = azurerm_servicebus_topic.completed-data-refresh-jobs.name
     "DataRefresh:CronTab"                                                                   = var.DATA_REFRESH_CRONTAB
-    "DataRefresh:DatabaseAName"                                                             = azurerm_mssql_database.atlas-matching-transient-a.name
-    "DataRefresh:DatabaseBName"                                                             = azurerm_mssql_database.atlas-matching-transient-b.name
+    "DataRefresh:DatabaseAName"                                                             = local.matching_transient_database_a_name
+    "DataRefresh:DatabaseBName"                                                             = local.matching_transient_database_b_name
     "DataRefresh:DataRefreshDonorUpdatesShouldBeFullyTransactional"                         = var.DONOR_WRITE_TRANSACTIONALITY__DATA_REFRESH
     "DataRefresh:DonorManagement:BatchSize"                                                 = var.MESSAGING_BUS_DONOR_BATCH_SIZE
     "DataRefresh:DonorManagement:CronSchedule"                                              = "NotActuallyUsedInThisFunction"

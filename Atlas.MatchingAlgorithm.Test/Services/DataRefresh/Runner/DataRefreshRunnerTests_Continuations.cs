@@ -188,7 +188,7 @@ public partial class DataRefreshRunnerTests
     }
 
     [Test]
-    public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToDatabaseScaling_RedoesDownScaling_AndContinuesToDonorUpdates()
+    public async Task ContinuedRefreshData_WhenEveryStageIsAlreadyComplete_RedoesDownScaling_AndRedoesDonorUpdates()
     {
         var settings = DataRefreshSettingsBuilder.New
             .With(s => s.ActiveDatabaseSize, AzureDatabaseSize.S4.ToString())
