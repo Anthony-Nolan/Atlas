@@ -82,7 +82,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-<<<<<<< HEAD
         public async Task UpdateDonorHla_WhenCancelledMidProcessing_StopsOnABatchBoundary()
         {
             // Cancelled while the first batch is being written, with four batches available. The check sits at the top
