@@ -56,8 +56,12 @@ namespace Atlas.MatchingAlgorithm.Data.Context
             modelBuilder.Entity<Donor>()
                 .HasIndex(x => new { x.DonorType, x.RegistryCode });
 
-            modelBuilder.Entity<DonorImputedGenotype>()
+            modelBuilder.Entity<DonorSubjectGenotypeSet>()
                 .HasIndex(x => new { x.DonorId, x.AllowedLociKey })
+                .IsUnique();
+
+            modelBuilder.Entity<SubjectGenotypeSetValue>()
+                .HasIndex(x => new { x.HlaTypingKey, x.HaplotypeFrequencySetId, x.MatchingAlgorithmHlaNomenclatureVersion, x.AllowedLociKey })
                 .IsUnique();
 
             base.OnModelCreating(modelBuilder);
@@ -79,7 +83,8 @@ namespace Atlas.MatchingAlgorithm.Data.Context
 
         public DbSet<DonorManagementLog> DonorManagementLogs { get; set; }
 
-        public DbSet<DonorImputedGenotype> DonorImputedGenotypes { get; set; }
+        public DbSet<SubjectGenotypeSetValue> SubjectGenotypeSetValues { get; set; }
+        public DbSet<DonorSubjectGenotypeSet> DonorSubjectGenotypeSets { get; set; }
 
         public DbSet<PGroupName> PGroupNames { get; set; }
         public DbSet<HlaName> HlaNames { get; set; }

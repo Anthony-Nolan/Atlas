@@ -1,8 +1,8 @@
 namespace Atlas.MatchingAlgorithm.Data.Models.Entities
 {
     /// <summary>
-    /// Identifies which of the 4 confirmed allowed-loci combinations a
-    /// <see cref="DonorImputedGenotype"/> row was computed for. Persisted as an int.
+    /// Identifies which of the 4 confirmed allowed-loci combinations a <see cref="SubjectGenotypeSetValue"/> /
+    /// <see cref="DonorSubjectGenotypeSet"/> row is for. Persisted as an int.
     /// </summary>
     public enum AllowedLociKey
     {
