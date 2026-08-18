@@ -27,6 +27,9 @@ namespace Atlas.Common.GeneticData.Hla.Services
     internal class HlaCategorisationService : IHlaCategorisationService
     {
         private const string SingleFieldPattern = "\\d+";
+        // Matches WMDA associated antigen codes from v3.65 onwards: always exactly 4 digits, zero-padded
+        // where needed (e.g. rel_ser_ser.txt's 0702/0703/...), so a leading zero is valid here.
+        private const string AssociatedAntigenPattern = "\\d{4}";
         private static readonly string OptionalExpressionSuffixPattern = MolecularTypingNameConstants.ExpressionSuffixesRegexCharacterGroup + "?";
         private static readonly string MolecularFirstFieldPattern = $"\\{MolecularTypingNameConstants.Prefix}?{SingleFieldPattern}";
         private static readonly string AlleleFinalFieldPattern = SingleFieldPattern + OptionalExpressionSuffixPattern;
@@ -58,7 +61,7 @@ namespace Atlas.Common.GeneticData.Hla.Services
                 HlaTypingCategory.SmallGGroup
             ),
             (
-                CompiledRegex($"^(?!0){SingleFieldPattern}$"),
+                CompiledRegex($"^(?!0){SingleFieldPattern}$|^{AssociatedAntigenPattern}$"),
                 HlaTypingCategory.Serology
             ),
             (
