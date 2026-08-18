@@ -681,6 +681,12 @@ variable "MATCH_PREDICTION_CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS" {
   description = "The interval in seconds used by the match prediction container app for polling KEDA scale rules."
 }
 
+variable "MATCH_PREDICTION_CONTAINER_REQUESTS_MAX_PARALLELISM" {
+  type        = number
+  default     = 2
+  description = "Maximum number of match prediction requests processed in parallel per Container App replica. Override via TF_VAR_MATCH_PREDICTION_CONTAINER_REQUESTS_MAX_PARALLELISM."
+}
+
 # --- External SQL variables (for retargeting function app connection strings) ---
 
 variable "USE_EXTERNAL_SQL" {

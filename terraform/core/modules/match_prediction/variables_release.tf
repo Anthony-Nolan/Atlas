@@ -99,6 +99,11 @@ variable "CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS" {
   default = 30
 }
 
+variable "CONTAINER_REQUESTS_MAX_PARALLELISM" {
+  type    = number
+  default = 2
+}
+
 // External SQL variables
 variable "USE_EXTERNAL_SQL" {
   type    = bool
