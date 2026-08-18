@@ -7,15 +7,15 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
     public enum AllowedLociKey
     {
         /// <summary>{A, B, C, DRB1, DQB1}</summary>
-        ABCDrb1Dqb1 = 0,
+        ABCDrb1Dqb1 = 1,
 
         /// <summary>{A, B, C, DRB1}</summary>
-        ABCDrb1 = 1,
+        ABCDrb1 = 2,
 
         /// <summary>{A, B, DRB1, DQB1}</summary>
-        ABDrb1Dqb1 = 2,
+        ABDrb1Dqb1 = 3,
 
         /// <summary>{A, B, DRB1}</summary>
-        ABDrb1 = 3,
+        ABDrb1 = 4,
     }
 }
