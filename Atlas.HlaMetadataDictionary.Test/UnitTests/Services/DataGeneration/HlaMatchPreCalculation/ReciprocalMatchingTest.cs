@@ -9,7 +9,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
 {
     internal class ReciprocalMatchingTest : MatchedOnTestBase<IMatchedHla>
     {
-        [TestCase(Locus.A, "02:01:100", "2")]
+        [TestCase(Locus.A, "02:12", "2")]
         [TestCase(Locus.B, "39:55", "39")]
         [TestCase(Locus.C, "01:80", "1")]
         [TestCase(Locus.Dqb1, "03:01:15", "7")]

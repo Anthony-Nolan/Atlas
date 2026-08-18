@@ -23,7 +23,7 @@ namespace Atlas.Common.AzureStorage.TableStorage
 
 
         //ExecuteBatchAsync has a limit on how many operations can be put in a single batch. :(
-        private const int BatchSize = 100;
+        private const int BatchSize = 50;
 
         /*
          * Note that the internet recommends the following settings for optimal AzureTableStorage Insert performance.
@@ -43,8 +43,8 @@ namespace Atlas.Common.AzureStorage.TableStorage
             // List<List<List<TEntities>>> 
             // This construct is:
             // * A List of Partitions, each containing
-            //   * List of 100-entity-batches within that partition, each containing
-            //     * List of (100) Entities within that batch (all of which have a single PartitionKey)
+            //   * List of 50-entity-batches within that partition, each containing
+            //     * List of (50) Entities within that batch (all of which have a single PartitionKey)
             //
             // We start from this construct as it allows easy refactors of how we divvy these inserts up, in the future.
             List<List<List<TEntity>>> entitiesPartitionedWithSubBatches = entities

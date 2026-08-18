@@ -3,7 +3,6 @@ using ApprovalTests;
 using ApprovalTests.Namers;
 using ApprovalTests.Reporters;
 using ApprovalTests.Reporters.TestFrameworks;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
@@ -60,7 +59,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
         [Test]
         public void SerologyToAlleleMatching_AssociatedWithNotSplit_PGroupsAreCorrect()
         {
-            Approvals.Verify(GetPGroupsAsString(Locus.Drb1, "103"));
+            Approvals.Verify(GetPGroupsAsString(Locus.Drb1, "0103"));
         }
 
         [Test]
