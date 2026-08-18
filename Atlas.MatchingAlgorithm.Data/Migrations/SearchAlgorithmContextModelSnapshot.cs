@@ -111,37 +111,6 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                     b.ToTable("Donors");
                 });
 
-            modelBuilder.Entity("Atlas.MatchingAlgorithm.Data.Models.Entities.DonorImputedGenotype", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AllowedLociKey")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DonorId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("HaplotypeFrequencySetId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ImputedGenotypeData")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsUnrepresented")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DonorId", "AllowedLociKey")
-                        .IsUnique();
-
-                    b.ToTable("DonorImputedGenotypes");
-                });
-
             modelBuilder.Entity("Atlas.MatchingAlgorithm.Data.Models.Entities.DonorManagementLog", b =>
                 {
                     b.Property<int>("Id")
@@ -169,6 +138,31 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                     SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("LastUpdateDateTime"), new[] { "DonorId" });
 
                     b.ToTable("DonorManagementLogs");
+                });
+
+            modelBuilder.Entity("Atlas.MatchingAlgorithm.Data.Models.Entities.DonorSubjectGenotypeSet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AllowedLociKey")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DonorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubjectGenotypeSetValueId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DonorId", "AllowedLociKey")
+                        .IsUnique();
+
+                    b.ToTable("DonorSubjectGenotypeSets");
                 });
 
             modelBuilder.Entity("Atlas.MatchingAlgorithm.Data.Models.Entities.HlaName", b =>
@@ -406,6 +400,44 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("PGroupNames");
+                });
+
+            modelBuilder.Entity("Atlas.MatchingAlgorithm.Data.Models.Entities.SubjectGenotypeSetValue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AllowedLociKey")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HaplotypeFrequencySetId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("HlaTypingKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<bool>("IsUnrepresented")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MatchingAlgorithmHlaNomenclatureVersion")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<byte[]>("SubjectGenotypeSetData")
+                        .HasColumnType("varbinary(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HlaTypingKey", "HaplotypeFrequencySetId", "MatchingAlgorithmHlaNomenclatureVersion", "AllowedLociKey")
+                        .IsUnique();
+
+                    b.ToTable("SubjectGenotypeSetValues");
                 });
 #pragma warning restore 612, 618
         }
