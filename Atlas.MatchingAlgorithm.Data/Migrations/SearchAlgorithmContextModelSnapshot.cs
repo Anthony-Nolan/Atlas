@@ -148,8 +148,10 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AllowedLociKey")
-                        .HasColumnType("int");
+                    b.Property<string>("AllowedLociKey")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
 
                     b.Property<int>("DonorId")
                         .HasColumnType("int");
@@ -410,8 +412,10 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AllowedLociKey")
-                        .HasColumnType("int");
+                    b.Property<string>("AllowedLociKey")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
 
                     b.Property<int>("HaplotypeFrequencySetId")
                         .HasColumnType("int");
@@ -424,17 +428,12 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                     b.Property<bool>("IsUnrepresented")
                         .HasColumnType("bit");
 
-                    b.Property<string>("MatchingAlgorithmHlaNomenclatureVersion")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
                     b.Property<byte[]>("SubjectGenotypeSetData")
                         .HasColumnType("varbinary(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("HlaTypingKey", "HaplotypeFrequencySetId", "MatchingAlgorithmHlaNomenclatureVersion", "AllowedLociKey")
+                    b.HasIndex("HlaTypingKey", "HaplotypeFrequencySetId", "AllowedLociKey")
                         .IsUnique();
 
                     b.ToTable("SubjectGenotypeSetValues");

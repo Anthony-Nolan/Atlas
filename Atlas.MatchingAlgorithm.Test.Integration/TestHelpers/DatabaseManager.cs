@@ -94,6 +94,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
                 TRUNCATE TABLE [Donors]
 
                 TRUNCATE TABLE [DonorManagementLogs]
+
+                TRUNCATE TABLE [DonorSubjectGenotypeSets]
+                TRUNCATE TABLE [SubjectGenotypeSetValues]
                 ");
             }
 

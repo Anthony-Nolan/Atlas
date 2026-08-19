@@ -17,7 +17,7 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     DonorId = table.Column<int>(type: "int", nullable: false),
-                    AllowedLociKey = table.Column<int>(type: "int", nullable: false),
+                    AllowedLociKey = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
                     SubjectGenotypeSetValueId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -32,9 +32,8 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     HlaTypingKey = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
-                    AllowedLociKey = table.Column<int>(type: "int", nullable: false),
+                    AllowedLociKey = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
                     HaplotypeFrequencySetId = table.Column<int>(type: "int", nullable: false),
-                    MatchingAlgorithmHlaNomenclatureVersion = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
                     IsUnrepresented = table.Column<bool>(type: "bit", nullable: false),
                     SubjectGenotypeSetData = table.Column<byte[]>(type: "varbinary(max)", nullable: true)
                 },
@@ -50,9 +49,9 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_SubjectGenotypeSetValues_HlaTypingKey_HaplotypeFrequencySetId_MatchingAlgorithmHlaNomenclatureVersion_AllowedLociKey",
+                name: "IX_SubjectGenotypeSetValues_HlaTypingKey_HaplotypeFrequencySetId_AllowedLociKey",
                 table: "SubjectGenotypeSetValues",
-                columns: new[] { "HlaTypingKey", "HaplotypeFrequencySetId", "MatchingAlgorithmHlaNomenclatureVersion", "AllowedLociKey" },
+                columns: new[] { "HlaTypingKey", "HaplotypeFrequencySetId", "AllowedLociKey" },
                 unique: true);
         }
 
