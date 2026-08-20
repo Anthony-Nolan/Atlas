@@ -6,13 +6,12 @@ using System.Threading.Tasks;
 using Atlas.Common.Utils;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
-using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
-namespace Atlas.MatchingAlgorithm.Functions.Functions
+namespace Atlas.MatchingAlgorithm.Functions.DataRefresh.Functions
 {
     public class DataRefreshFunctions
     {
@@ -36,7 +35,6 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         [Function(nameof(SubmitDataRefreshRequestManual))]
         public async Task<IActionResult> SubmitDataRefreshRequestManual(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(DataRefreshRequest), nameof(DataRefreshRequest))]
             HttpRequest httpRequest)
         {
             try
