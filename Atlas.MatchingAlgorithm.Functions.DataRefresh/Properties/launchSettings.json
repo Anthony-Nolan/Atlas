@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Atlas.MatchingAlgorithm.Functions.DataRefresh": {
+      "commandName": "Project",
+      "commandLineArgs": "host start --port 7084 --nodeDebugPort 5860"
+    }
+  }
+}
