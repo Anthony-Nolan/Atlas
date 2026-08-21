@@ -71,8 +71,8 @@ jobs:
         id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ secrets.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.RELEASE_CASCADE_BOT_APP_ID }}
+          private-key: ${{ secrets.RELEASE_CASCADE_BOT_APP_PRIVATE_KEY }}
 
       - name: Merge and push
         if: steps.next.outputs.target != ''
