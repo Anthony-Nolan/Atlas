@@ -56,6 +56,26 @@ namespace Atlas.MatchingAlgorithm.Data.Context
             modelBuilder.Entity<Donor>()
                 .HasIndex(x => new { x.DonorType, x.RegistryCode });
 
+            // Persist AllowedLociKey as its member name rather than its int value, so the stored table data is
+            // self-describing without needing to cross-reference the enum in code. Longest name is 11 chars.
+            modelBuilder.Entity<DonorSubjectGenotypeSet>()
+                .Property(x => x.AllowedLociKey)
+                .HasConversion<string>()
+                .HasMaxLength(16);
+
+            modelBuilder.Entity<SubjectGenotypeSetValue>()
+                .Property(x => x.AllowedLociKey)
+                .HasConversion<string>()
+                .HasMaxLength(16);
+
+            modelBuilder.Entity<DonorSubjectGenotypeSet>()
+                .HasIndex(x => new { x.DonorId, x.AllowedLociKey })
+                .IsUnique();
+
+            modelBuilder.Entity<SubjectGenotypeSetValue>()
+                .HasIndex(x => new { x.HlaTypingKey, x.HaplotypeFrequencySetId, x.AllowedLociKey })
+                .IsUnique();
+
             base.OnModelCreating(modelBuilder);
         }
 
@@ -74,6 +94,9 @@ namespace Atlas.MatchingAlgorithm.Data.Context
         public DbSet<HlaNamePGroupRelationAtDqb1> HlaNamePGroupRelationAtDqb1 { get; set; }
 
         public DbSet<DonorManagementLog> DonorManagementLogs { get; set; }
+
+        public DbSet<SubjectGenotypeSetValue> SubjectGenotypeSetValues { get; set; }
+        public DbSet<DonorSubjectGenotypeSet> DonorSubjectGenotypeSets { get; set; }
 
         public DbSet<PGroupName> PGroupNames { get; set; }
         public DbSet<HlaName> HlaNames { get; set; }
