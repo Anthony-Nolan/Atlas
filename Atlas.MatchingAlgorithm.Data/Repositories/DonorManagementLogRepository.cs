@@ -35,8 +35,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         /// </summary>
         /// <param name="bulkCopyBatchSize">
         /// Rows per <c>SqlBulkCopy</c> server round trip. Defaults to the historic hard-coded value, so every caller
-        /// that does not care behaves exactly as before. The data refresh varies it deliberately - see
-        /// <c>DonorImporter.MgmtLogBulkCopyBatchSizeLadder</c>.
+        /// that does not care behaves exactly as before. The data refresh passes its own donor-import batch size, so
+        /// its writes always take exactly one round trip - measured on record 29 at 208.2 ms/call against 582.9 for
+        /// the historic 1,000 (ten round trips). See the log-write call site in <c>DonorImporter</c>.
         /// </param>
         /// <remarks>
         /// PRECONDITION: none of the given donors may already have a log entry. There is a unique index on

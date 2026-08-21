@@ -64,32 +64,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         /// </summary>
         private const int ChannelDepth = 3;
 
-        /// <summary>
-        /// THROWAWAY, ATL-216 hypothesis H22. Rows per <c>SqlBulkCopy</c> round trip for the donor-management-log
-        /// write, rotated round-robin across stage-40 batches so that ONE refresh measures the whole curve instead of
-        /// one point on it.
-        ///
-        /// <para>
-        /// Record 25 wrote 43.9M log rows at 1,000 rows per round trip - ~43,400 round trips, against 4,340 for the
-        /// donor insert next to it writing the same donors into a wider table, on a run whose dominant SQL wait was
-        /// <c>ASYNC_NETWORK_IO</c>. ~31 of that slice's 40.1 min was attributed to round-trip overhead rather than
-        /// database work, but never measured against an alternative.
-        /// </para>
-        ///
-        /// <para>
-        /// The ladder stops at 10,000 because the log write only ever receives one stage-40 batch of donors, so any
-        /// value at or above <see cref="DefaultBatchSize"/> collapses to a single round trip and larger values would
-        /// be indistinguishable. Round trips per call, per rung: 10 / 4 / 2 / 1.
-        /// </para>
-        ///
-        /// <para>
-        /// ROUND-ROBIN PER BATCH, not blocked into quarters: every rung then sees the same table growth, the same
-        /// database state and the same hours of the run, so the arms are comparable without correcting for drift.
-        /// Rung <c>1000</c> is the unchanged production configuration and is what verifies ATL-278 against record 25 -
-        /// which is why the ladder starts there and why it must not be removed from the list.
-        /// </para>
-        /// </summary>
-        internal static readonly int[] MgmtLogBulkCopyBatchSizeLadder = {1000, 2500, 5000, 10000};
 
         private const string ImportFailureEventName = "Donor Import Failure(s) in the Matching Algorithm's DataRefresh";
 
@@ -106,14 +80,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         private readonly IMatchingAlgorithmImportLogger logger;
         private readonly IDonorReader donorReader;
         private readonly int batchSize;
-
-        /// <summary>
-        /// Which rung of <see cref="MgmtLogBulkCopyBatchSizeLadder"/> the next log write uses. An instance field, not a
-        /// static: DonorImporter resolves one repository in its constructor and holds it for the whole stage, and the
-        /// batch loop is strictly sequential - so this counts stage-40 batches and nothing else. Advanced only when a
-        /// log write actually happens, so a run that does not mark donors as updated leaves the ladder untouched.
-        /// </summary>
-        private int mgmtLogBatchIndex;
 
         public DonorImporter(
             IDormantRepositoryFactory repositoryFactory,
@@ -329,15 +295,27 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
 
                 if (shouldMarkDonorsAsUpdated)
                 {
-                    // THROWAWAY, H22. The Locus dimension carries which rung of the ladder this write used - it is the
-                    // only free dimension on this metric, it stays at four low-cardinality values, and no query filters
-                    // DonorManagementLogWrite by Locus. Consequence for reading the run: DonorManagementLogWrite is no
-                    // longer one number but four, and everything CONTAINING it (DonorImportBatch,
-                    // DonorImportStageTotal, the stage-40 StageDurationMs, the job's wall clock) is a blend of four
-                    // configurations. Locus == "1000" is the unchanged production arm and is the one to compare
-                    // against record 25.
-                    var mgmtLogBulkCopyBatchSize =
-                        MgmtLogBulkCopyBatchSizeLadder[mgmtLogBatchIndex++ % MgmtLogBulkCopyBatchSizeLadder.Length];
+                    // H22 ANSWERED, LADDER RETIRED (2026-08-17). Record 29 measured the whole curve in one run, with
+                    // the rungs interleaved per batch so table growth and hours-of-run cancelled out. It is monotone:
+                    //     1,000 -> 582.9 ms/call (10 round trips)   2,500 -> 353.9 (4)
+                    //     5,000 -> 256.4 (2)                       10,000 -> 208.2 (1)
+                    // and it bottoms out AT the stage's own batch size, by construction: this write only ever receives
+                    // one stage-40 batch of donors, so any value >= batchSize is a single round trip and nothing larger
+                    // is distinguishable. So the answer is "always one round trip", which is what passing batchSize
+                    // expresses - and it stays correct if DonorImportBatchSize is ever reconfigured, where a literal
+                    // 10,000 would silently start splitting again.
+                    //
+                    // Retiring it also matters for the NEXT run's comparability: while the ladder rotated,
+                    // DonorManagementLogWrite was not one number but four, and everything containing it
+                    // (DonorImportBatch, DonorImportStageTotal, the stage-40 StageDurationMs, the wall clock) was a
+                    // blend of four configurations.
+                    //
+                    // The remaining open knob is DonorImportBatchSize itself (10,000), which caps this round trip AND
+                    // sizes the donor insert next to it. That is a separate experiment, not another rung here.
+                    //
+                    // The Locus dimension still carries the batch size actually used, so query-pack section 14b keeps
+                    // working - it now reports a single rung, which is the point.
+                    var mgmtLogBulkCopyBatchSize = batchSize;
 
                     using (logger.TimeOperationAsMetric(
                         DataRefreshMetrics.DurationMsMetric,

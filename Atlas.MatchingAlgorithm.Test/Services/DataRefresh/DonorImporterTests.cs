@@ -462,16 +462,19 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         /// <summary>
-        /// THROWAWAY, ATL-216 H22. A rotation that silently sticks at one value would produce four identical arms and
-        /// waste a nine-hour run, and nothing else in the job would look wrong - so it is worth a test of its own.
+        /// ATL-216 H22 is answered and the ladder is retired: the mgmt-log write now always takes ONE round trip per
+        /// donor batch, expressed as "bulk copy batch size == the stage's own batch size". A regression to a smaller
+        /// literal would silently reintroduce 10 round trips per batch (record 29 measured that at 582.9 ms/call
+        /// against 208.2 for one round trip) and nothing else in the job would look wrong, so it keeps a test.
+        /// It is asserted against the CONFIGURED batch size rather than 10,000, because the whole point of the fix is
+        /// that it tracks that setting instead of hard-coding a value that only happens to match it today.
         /// </summary>
         [Test]
-        public async Task ImportDonors_WhenMarkingDonorsAsUpdated_RotatesTheManagementLogBulkCopyBatchSize()
+        public async Task ImportDonors_WhenMarkingDonorsAsUpdated_WritesTheManagementLogInOneRoundTripPerBatch()
         {
-            var ladder = DonorImporter.MgmtLogBulkCopyBatchSizeLadder;
-            var batches = ladder.Length * 2;
-            var settings = DataRefreshSettingsBuilder.New.With(s => s.DonorImportBatchSize, 1).Build();
-            donorReader.StreamAllDonors().Returns(fixture.CreateMany<Donor>(batches));
+            const int configuredBatchSize = 2;
+            var settings = DataRefreshSettingsBuilder.New.With(s => s.DonorImportBatchSize, configuredBatchSize).Build();
+            donorReader.StreamAllDonors().Returns(fixture.CreateMany<Donor>(configuredBatchSize * 3));
 
             IDonorImporter importer = new DonorImporter(
                 repositoryFactory, donorInfoConverter, failedDonorsNotificationSender, logger, donorReader, settings);
@@ -483,14 +486,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Select(c => (int) c.GetArguments()[1])
                 .ToList();
 
-            // Two full cycles, in order - not merely "all four appeared". Round-robin is what makes the arms
-            // comparable without correcting for drift; a shuffled or blocked order would not be.
-            usedSizes.Should().Equal(ladder.Concat(ladder));
+            usedSizes.Should().OnlyContain(size => size == configuredBatchSize);
+            usedSizes.Should().HaveCount(3);
         }
 
         /// <summary>
-        /// The arm each write ran under is carried on the Locus dimension, and a write that does not report its arm is
-        /// unattributable after the fact - which would leave the stage-40 total a blend that cannot be taken apart.
+        /// The batch size each write ran at is carried on the Locus dimension, and a write that does not report it is
+        /// unattributable after the fact. Kept from the ladder work: the dimension is now single-valued, but
+        /// query-pack section 14b still reads it, and it is what proves the round-trip count on the next run.
         /// </summary>
         [Test]
         public async Task ImportDonors_WhenMarkingDonorsAsUpdated_TagsTheLogWriteMetricWithItsBulkCopyBatchSize()
@@ -499,13 +502,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await donorImporter.ImportDonors(true);
 
-            var firstRung = DonorImporter.MgmtLogBulkCopyBatchSizeLadder.First().ToString();
+            var expectedBatchSize = DonorImporter.DefaultBatchSize.ToString();
             logger.Received(1).SendMetric(
                 DataRefreshMetrics.DurationMsMetric,
                 Arg.Any<double>(),
                 Arg.Is<Dictionary<string, string>>(d =>
                     IsOperation(d, DataRefreshMetrics.Operation_DonorManagementLogWrite)
-                    && d[DataRefreshMetrics.LocusDimension] == firstRung));
+                    && d[DataRefreshMetrics.LocusDimension] == expectedBatchSize));
         }
 
         [Test]

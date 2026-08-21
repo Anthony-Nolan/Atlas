@@ -72,6 +72,15 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// </summary>
         internal const string RunManifestEventName = "Data Refresh Run Manifest";
 
+        /// <summary>
+        /// Distinguishes the two manifest emissions - see the remarks on <see cref="SendRunManifest"/>. The
+        /// post-stage-0 one is the one to read, because it is the only one that can name the nomenclature version.
+        /// </summary>
+        internal const string ManifestPhaseKey = "ManifestPhase";
+
+        internal const string ManifestPhaseAtEntry = "AtEntry";
+        internal const string ManifestPhaseNomenclatureResolved = "NomenclatureResolved";
+
         private readonly List<DataRefreshStage> orderedRefreshStages = EnumExtensions.EnumerateValues<DataRefreshStage>().OrderBy(x => x).ToList();
 
 
@@ -164,12 +173,17 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             try
             {
                 var refreshRecord = await dataRefreshHistoryRepository.GetRecord(refreshRecordId);
-                SendRunManifest(refreshRecord);
+                SendRunManifest(refreshRecord, ManifestPhaseAtEntry);
 
                 var stageExecutionModes = DetermineStageExecutionModes(refreshRecord);
 
                 currentStage = DataRefreshStage.MetadataDictionaryRefresh;
                 await RefreshHlaMetadataDictionary(refreshRecord);
+
+                // Again, now that stage 0 has resolved HlaNomenclatureVersion. The entry manifest cannot know it, and a
+                // run that cannot name its own nomenclature version cannot be compared with any other run - which is
+                // what happened to records 25, 28 and 29.
+                SendRunManifest(refreshRecord, ManifestPhaseNomenclatureResolved);
 
                 foreach (var dataRefreshStage in orderedRefreshStages.Except(new[] { DataRefreshStage.MetadataDictionaryRefresh }))
                 {
@@ -422,18 +436,39 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// than a Trace so it is queryable by field rather than by string-matching a message.
         /// </summary>
         /// <remarks>
+        /// <para>
+        /// Sent TWICE, and the second one is the one to read. At entry the nomenclature version is not known yet -
+        /// stage 0 is what resolves it - so an entry-only manifest recorded the literal string
+        /// "(to be determined this run)" on records 25, 28 and 29 alike, i.e. the manifest could not name the one
+        /// thing the whole run is defined by. Emitting it again after stage 0 fixes that without losing the entry
+        /// copy, which is what describes a run that dies before stage 0 finishes.
+        /// <see cref="ManifestPhaseKey"/> distinguishes them; query-pack section 01 expects one or two rows and reads
+        /// the later one.
+        /// </para>
+        /// <para>
         /// The lease owner and a first-class attempt identity belong here too, and arrive with the run-lease work;
         /// until then <see cref="DataRefreshRecord.RefreshAttemptedCount"/> is the only attempt signal there is.
+        /// </para>
         /// </remarks>
-        private void SendRunManifest(DataRefreshRecord refreshRecord)
+        private void SendRunManifest(DataRefreshRecord refreshRecord, string manifestPhase)
         {
             logger.SendEvent(RunManifestEventName, LogLevel.Info, new Dictionary<string, string>
             {
+                [ManifestPhaseKey] = manifestPhase,
                 ["DataRefreshRecordId"] = refreshRecord.Id.ToString(),
                 ["RefreshAttemptedCount"] = refreshRecord.RefreshAttemptedCount.ToString(),
                 ["TargetDatabase"] = refreshRecord.Database,
-                ["HlaNomenclatureVersion"] = refreshRecord.HlaNomenclatureVersion ?? "(to be determined this run)",
+                ["HlaNomenclatureVersion"] = refreshRecord.HlaNomenclatureVersion ?? "(not yet resolved - see the post-stage-0 manifest)",
                 ["ShouldMarkAllDonorsAsUpdated"] = refreshRecord.ShouldMarkAllDonorsAsUpdated.ToString(),
+
+                // The CONTROL-PLANE name of the database this run will scale, resolved exactly as ScaleDatabase
+                // resolves it. Record 28 scaled dev-atlas-matching-b while writing 388.9M rows to
+                // live-wmda-atlas-matching-b, silently, for 14.3 hours, because the scaling settings and the
+                // connection strings are independent and nothing compared them. This does not fix that - the runtime
+                // assert is a separate ticket - but it makes the mismatch VISIBLE, by giving telemetry the
+                // control-plane half to set against the data-plane half that C2_PostRun.sql §0b/§2 now stamps as
+                // DB_NAME(). Two substrates, and if they disagree the run is void.
+                ["ScalingTargetDatabaseName"] = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetDormantDatabase()),
 
                 ["DatabaseAName"] = dataRefreshSettings.DatabaseAName,
                 ["DatabaseBName"] = dataRefreshSettings.DatabaseBName,
@@ -450,11 +485,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 ["BatchProgressReportingPeriod"] =
                     (dataRefreshSettings.BatchProgressReportingPeriod ?? HlaProcessor.DefaultBatchProgressReportingPeriod).ToString(),
 
-                // THROWAWAY, ATL-216 H22. Recorded because it is the one thing about this run that makes its stage-40
-                // wall clock non-comparable with record 25's: the mgmt-log write rotates through these rows-per-round-
-                // trip values, so the stage total is a blend of them. A run whose manifest does not say which ladder it
-                // used cannot be reconstructed at a single rung afterwards.
-                ["MgmtLogBulkCopyBatchSizeLadder"] = string.Join(",", DonorImporter.MgmtLogBulkCopyBatchSizeLadder),
+                // ATL-216 H22, ANSWERED and the ladder retired - see the comment at the log-write call site in
+                // DonorImporter. The mgmt-log write now always takes one round trip per donor batch, so this equals
+                // DonorImportBatchSize by construction. Kept as its own key rather than dropped, because a run whose
+                // manifest is silent about it is indistinguishable from one still rotating the old ladder.
+                ["MgmtLogBulkCopyBatchSize"] = (dataRefreshSettings.DonorImportBatchSize ?? DonorImporter.DefaultBatchSize).ToString(),
 
                 ["MachineName"] = Environment.MachineName,
                 ["ProcessorCount"] = Environment.ProcessorCount.ToString(),

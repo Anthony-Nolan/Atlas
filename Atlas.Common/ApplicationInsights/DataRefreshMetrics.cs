@@ -198,6 +198,22 @@ public static class DataRefreshMetrics
     /// </summary>
     public const string Operation_HlaRelationsInserted = "HlaRelationsInserted";
 
+    /// <summary>
+    /// Relation bulk copies NOT issued because the batch produced no new relations for that locus, per batch.
+    /// </summary>
+    /// <remarks>
+    /// The acceptance test for the "skip the empty relation insert" ticket, and it needs its own counter because the
+    /// thing being verified is an ABSENCE. Record 29: <see cref="Operation_InsertHlaRelations"/> cost 38.1 min over
+    /// 21,945 calls, flat at ~104 ms/batch, while relations discovered per batch collapsed 9,972 -> 455 over the run
+    /// and the same inserts cost the SERVER 1.92 min in total. A 20:1 client-to-server ratio is per-call overhead, so
+    /// the calls that produce nothing are pure waste - but "we issued fewer bulk copies" is invisible in a duration
+    /// and only partly visible in Query Store (which under AUTO capture mode may simply not have recorded the calls
+    /// that stopped happening). Emit it every batch, zeros included, for the same reason
+    /// <see cref="Operation_NewPGroupsPerBatch"/> does: a counter that stops being emitted cannot be distinguished
+    /// from a fix that stopped working.
+    /// </remarks>
+    public const string Operation_RelationInsertsSkipped = "RelationInsertsSkipped";
+
     /// <summary>New HLA names actually inserted, per batch. Emitted EVERY batch (including zero) - the zeros are the finding.</summary>
     public const string Operation_NewHlaNamesPerBatch = "NewHlaNamesPerBatch";
 
@@ -298,6 +314,48 @@ public static class DataRefreshMetrics
     /// <summary>Connections awaiting completion of an action and unavailable for reuse - where a connection whose
     /// transaction has not yet resolved parks.</summary>
     public const string Counter_SqlStasisConnections = "SqlStasisConnections";
+
+    // Pipeline observability. These exist for the two pipelining tickets (stage 40 read/write, stage 50 batch
+    // prefetch), and they must land WITH those fixes rather than after them.
+    //
+    // The reason: occupancy - sum of leaf durations over stage wall clock - proves that a stage overlapped, but it
+    // cannot say WHERE a pipeline stalled, and the two failure modes look identical from the outside. Record 29's
+    // stage 40 scored 0.999 (perfectly serial) with a 128.2 min read against a 126.1 min write, so a working pipeline
+    // should land near max(128.2, 126.1) = 128.2 min. If it instead lands at 180, the question is immediately "was the
+    // producer starved, or was the consumer?" - and with only a duration to look at, answering it costs another
+    // nine-hour run. A queue-depth distribution answers it for free:
+    //
+    //   depth pinned at the channel bound      -> the CONSUMER is the bottleneck. Correct and expected here: the read
+    //                                             is the slower arm, so a full buffer means we are reading ahead fine.
+    //   depth pinned at zero, starvation high  -> the PRODUCER is the bottleneck; the consumer is idle waiting for
+    //                                             rows. If the wall clock did not improve, this is why.
+    //   depth oscillating with low starvation  -> healthy; the arms are balanced and the pipeline is doing its job.
+    //
+    // Sampled by the runtime sampler on its existing interval rather than emitted per batch: at ~4,400 stage-40 and
+    // ~22,000 stage-50 batches, per-batch emission would be tens of thousands of SendMetric calls to describe a queue
+    // that only moves slowly. Registered as gauges the pipeline updates and the sampler reads.
+
+    /// <summary>
+    /// Batches sitting in the stage-40 donor-import pipeline's buffer at sample time. Bounded by the channel's
+    /// capacity, so it is read against that bound, not in absolute terms.
+    /// </summary>
+    public const string Counter_DonorImportQueueDepth = "DonorImportQueueDepth";
+
+    /// <summary>
+    /// Times the stage-40 consumer found the buffer empty and had to wait for the reader, since the last sample.
+    /// A delta. Non-trivially above zero means the pipeline is producer-bound and T1's prize is capped by the read.
+    /// </summary>
+    public const string Counter_DonorImportConsumerStarved = "DonorImportConsumerStarved";
+
+    /// <summary>Batches prefetched and not yet processed by the stage-50 HLA batch loop, at sample time.</summary>
+    public const string Counter_HlaBatchPrefetchDepth = "HlaBatchPrefetchDepth";
+
+    /// <summary>
+    /// Times the stage-50 batch loop found no prefetched batch ready, since the last sample. A delta. The stage-50
+    /// read is 79.0 min against 170.1 min of processing, so on a working prefetch this should be near zero - if it is
+    /// not, the prefetch depth is too shallow or the read got slower.
+    /// </summary>
+    public const string Counter_HlaBatchPrefetchStarved = "HlaBatchPrefetchStarved";
 
     #endregion
 

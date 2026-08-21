@@ -197,11 +197,42 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            logger.Received(1).SendEvent(
+            logger.Received(2).SendEvent(
                 DataRefreshRunner.RunManifestEventName,
                 Arg.Any<LogLevel>(),
                 // The EFFECTIVE batch geometry, so a later run can be compared against this one.
                 Arg.Is<Dictionary<string, string>>(d => d["HlaProcessingBatchSize"] == "1234"),
+                Arg.Any<Dictionary<string, double>>());
+        }
+
+        /// <summary>
+        /// The manifest is emitted twice on purpose. At entry the nomenclature version does not exist yet - stage 0 is
+        /// what resolves it - so an entry-only manifest can never name the one thing the run is defined by, which is
+        /// how records 25, 28 and 29 all ended up recording a placeholder. The entry copy is still needed: it is what
+        /// describes a run that dies before stage 0 completes.
+        /// </summary>
+        [Test]
+        public async Task RefreshData_SendsASecondRunManifestOnceTheNomenclatureVersionIsResolved()
+        {
+            const string resolvedVersion = "3660";
+            hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest).Returns(resolvedVersion);
+
+            await dataRefreshRunner.RefreshData(default);
+
+            logger.Received(1).SendEvent(
+                DataRefreshRunner.RunManifestEventName,
+                Arg.Any<LogLevel>(),
+                Arg.Is<Dictionary<string, string>>(d =>
+                    d[DataRefreshRunner.ManifestPhaseKey] == DataRefreshRunner.ManifestPhaseAtEntry
+                    && d["HlaNomenclatureVersion"] != resolvedVersion),
+                Arg.Any<Dictionary<string, double>>());
+
+            logger.Received(1).SendEvent(
+                DataRefreshRunner.RunManifestEventName,
+                Arg.Any<LogLevel>(),
+                Arg.Is<Dictionary<string, string>>(d =>
+                    d[DataRefreshRunner.ManifestPhaseKey] == DataRefreshRunner.ManifestPhaseNomenclatureResolved
+                    && d["HlaNomenclatureVersion"] == resolvedVersion),
                 Arg.Any<Dictionary<string, double>>());
         }
 
