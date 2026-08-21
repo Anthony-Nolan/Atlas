@@ -1,4 +1,10 @@
 {
+  "extensions": {
+    "serviceBus": {
+      "maxAutoLockRenewalDuration": "02:30:00"
+    }
+  },
+  "functionTimeout": "02:00:00",
   "logging": {
     "applicationInsights": {
       "samplingSettings": {
