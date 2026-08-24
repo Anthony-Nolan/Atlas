@@ -59,6 +59,7 @@ This sign-off process should involve ensuring:
 
 ### Other Tags
 * The `unverified/x.y.z` tag will be used occasionally to manage the release of versions to non-production environments.
+* The `released/an/x.y.z` and `released/wmda/x.y.z` tags are applied automatically by the release pipeline when version `x.y.z` is successfully deployed to Anthony Nolan's LIVE and WMDA's LIVE environments respectively. Each is created once per version and never moved, so these tags are only meaningful as long as a version number is never redeployed with different code (i.e. version bumps happen before every deploy, as semver already requires).
 
 ## Contributing
 

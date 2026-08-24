@@ -187,8 +187,8 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
   app_settings = {
     "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
-    "AutoMapper:LicenseKey" = var.AUTOMAPPER_LICENSE_KEY
-    "AtlasFunction:Search:DefaultParallelMatchPrediction" = var.DEFAULT_PARALLEL_MATCH_PREDICTION
+    "AutoMapper:LicenseKey"                                         = var.AUTOMAPPER_LICENSE_KEY
+    "AtlasFunction:Search:DefaultParallelMatchPrediction"           = var.DEFAULT_PARALLEL_MATCH_PREDICTION
     "AtlasFunction:Search:ParallelMatchPredictionRequestPercentage" = var.PARALLEL_MATCH_PREDICTION_REQUEST_PERCENTAGE
 
     "MatchingAlgorithmFunction:BaseUrl" = module.matching_algorithm.function_app.base_url
