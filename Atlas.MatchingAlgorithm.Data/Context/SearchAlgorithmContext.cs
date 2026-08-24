@@ -33,28 +33,40 @@ namespace Atlas.MatchingAlgorithm.Data.Context
                 .HasIndex(d => d.LastUpdateDateTime)
                 .IncludeProperties(x => x.DonorId);
 
-            // Note: The Model Builder seems to have a bug
-            // where it will drop the Locus C filtered index
-            // when generating the DQB1 filtered index.
-            // Ensure that the migrations are created correctly
-            // when making changes to the following index definitions,
-            // or if adding new filtered indexes to the same table.
+            // Note: three indexes below share DonorId as their key column, so each one passes a name to
+            // HasIndex. Unnamed HasIndex calls on the same property configure ONE index rather than several -
+            // this is documented EF Core behaviour, not a bug - so before ATL-310 the unnamed DQB1 call
+            // overwrote the unnamed Locus C call, and FI_DonorIdsWithoutLocusC was silently absent from the
+            // model while still existing in the database. The name is also used as the database name, so
+            // HasName/HasDatabaseName is not needed on top.
             modelBuilder.Entity<Donor>()
-                .HasIndex(d => d.DonorId)
+                .HasIndex(d => d.DonorId, "FI_DonorIdsWithoutLocusC")
                 .IncludeProperties(d => new { d.C_1, d.C_2 })
-                .HasFilter("[C_1] IS NULL AND [C_2] IS NULL")
-                .HasName("FI_DonorIdsWithoutLocusC");
+                .HasFilter("[C_1] IS NULL AND [C_2] IS NULL");
 
             modelBuilder.Entity<Donor>()
-                .HasIndex(d => d.DonorId)
+                .HasIndex(d => d.DonorId, "FI_DonorIdsWithoutLocusDQB1")
                 .IncludeProperties(d => new { d.DQB1_1, d.DQB1_2 })
-                .HasFilter("[DQB1_1] IS NULL AND [DQB1_2] IS NULL")
-                .HasName("FI_DonorIdsWithoutLocusDQB1");
+                .HasFilter("[DQB1_1] IS NULL AND [DQB1_2] IS NULL");
+
+            // ATL-310: the donor join in DonorSearchRepository.MatchAtLocusSql needs DonorId, DonorType and
+            // RegistryCode together. Without the included columns below, SQL Server seeks IX_DonorId and then
+            // does a clustered-index lookup for every candidate donor row - two random reads per row into a
+            // table that is tens of GB at live donor volumes, which saturates read IO and times searches out.
+            modelBuilder.Entity<Donor>()
+                .HasIndex(d => d.DonorId, "IX_DonorId")
+                .IncludeProperties(d => new { d.DonorType, d.RegistryCode });
 
             modelBuilder.Entity<Donor>().HasIndex(d => d.ExternalDonorCode);
 
+            // Covers searches that pass no registry codes, where the join needs DonorType only.
             modelBuilder.Entity<Donor>()
-                .HasIndex(x => new { x.DonorType, x.RegistryCode });
+                .HasIndex(d => d.DonorType, "IX_DonorType__DonorId")
+                .IncludeProperties(d => d.DonorId);
+
+            modelBuilder.Entity<Donor>()
+                .HasIndex(d => new { d.DonorType, d.RegistryCode })
+                .IncludeProperties(d => d.DonorId);
 
             // Persist AllowedLociKey as its member name rather than its int value, so the stored table data is
             // self-describing without needing to cross-reference the enum in code. Longest name is 11 chars.

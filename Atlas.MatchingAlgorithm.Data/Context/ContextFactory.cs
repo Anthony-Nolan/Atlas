@@ -8,6 +8,9 @@ namespace Atlas.MatchingAlgorithm.Data.Context
 {
     public class ContextFactory : IDesignTimeDbContextFactory<SearchAlgorithmContext>
     {
+        private const int migrationCommandTimeoutInSeconds = 3600;
+
+
         // This method is called by entity framework to create a context when generating/running migrations
         public SearchAlgorithmContext CreateDbContext(string[] args)
         {
@@ -39,7 +42,16 @@ namespace Atlas.MatchingAlgorithm.Data.Context
 
             var optionsBuilder = new DbContextOptionsBuilder<SearchAlgorithmContext>();
 
-            optionsBuilder.UseSqlServer(connectionString, builder => { builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null); });
+            optionsBuilder.UseSqlServer(connectionString, builder =>
+            {
+                builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null);
+
+                // This context is used for migrations and for seeding test data, never for the Dapper query
+                // paths that serve search. The default command timeout is 30 seconds, which is not enough to
+                // build an index over the Donors table at live donor volumes, so a migration that rebuilds one
+                // would fail part way through.
+                builder.CommandTimeout(migrationCommandTimeoutInSeconds);
+            });
 
             return new SearchAlgorithmContext(optionsBuilder.Options);
         }
