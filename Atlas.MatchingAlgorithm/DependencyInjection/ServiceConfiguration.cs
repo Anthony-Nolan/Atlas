@@ -291,6 +291,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchMessagingServiceBusSettings
             );
 
+            // ActiveRepositoryFactory depends on the search logger, which is otherwise only registered by the search path.
+            services.AddScoped<MatchingAlgorithmSearchLoggingContext>();
+            services.AddScoped<IMatchingAlgorithmSearchLogger, MatchingAlgorithmSearchLogger>();
+
             // Azure interaction services
             services.AddScoped<IThreadSleeper, ThreadSleeper>();
             services.AddScoped<IAzureDatabaseManagementClient, AzureDatabaseManagementClient>();
