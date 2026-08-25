@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData;
@@ -46,14 +47,21 @@ internal class HlaConverterTests
 
         hfSetHmd = Substitute.For<IHlaMetadataDictionary>();
         hfSetHmd.HlaNomenclatureVersion.Returns(HfSetHlaVersion);
-        hfSetHmd.ConvertHla(default, default, default).ReturnsForAnyArgs(HfSetHmdResult);
+        hfSetHmd.TryConvertHla(default, default, default).ReturnsForAnyArgs((true, HfSetHmdResult));
 
         matchingHmd = Substitute.For<IHlaMetadataDictionary>();
         matchingHmd.HlaNomenclatureVersion.Returns(MatchingAlgorithmHlaVersion);
-        matchingHmd.ConvertHla(default, default, default).ReturnsForAnyArgs(MatchingHmdResult);
+        matchingHmd.TryConvertHla(default, default, default).ReturnsForAnyArgs((true, MatchingHmdResult));
 
         inputBuilder = FixtureBuilder.For<HlaConverterInput>();
     }
+
+    /// <summary>
+    /// A name with no data is <c>(false, null)</c>, not an exception. Every "arrange lookup failure"
+    /// below used to be <c>ThrowsForAnyArgs(new HlaMetadataDictionaryException(...))</c>; the assertions are unchanged.
+    /// </summary>
+    private static void ArrangeLookupFailure(IHlaMetadataDictionary hmd) =>
+        hmd.TryConvertHla(default, default, default).ReturnsForAnyArgs((false, (IReadOnlyCollection<string>)null));
 
     #region DoesNotTryLookupUsingMatchingAlgorithmHmd tests
 
@@ -105,7 +113,7 @@ internal class HlaConverterTests
 
         await converter.ConvertHlaWithLoggingAndRetryOnFailure(input, DefaultLocus, HlaName);
 
-        await hfSetHmd.Received().ConvertHla(DefaultLocus, HlaName, target);
+        await hfSetHmd.Received().TryConvertHla(DefaultLocus, HlaName, target);
     }
 
     [Test]
@@ -150,7 +158,7 @@ internal class HlaConverterTests
 
         await converter.ConvertHlaWithLoggingAndRetryOnFailure(input, DefaultLocus, HlaName);
 
-        await matchingHmd.DidNotReceiveWithAnyArgs().ConvertHla(default, default, default);
+        await matchingHmd.DidNotReceiveWithAnyArgs().TryConvertHla(default, default, default);
     }
 
     [Test]
@@ -168,17 +176,14 @@ internal class HlaConverterTests
 
         await converter.ConvertHlaWithLoggingAndRetryOnFailure(input, DefaultLocus, HlaName);
 
-        await matchingHmd.DidNotReceiveWithAnyArgs().ConvertHla(default, default, default);
+        await matchingHmd.DidNotReceiveWithAnyArgs().TryConvertHla(default, default, default);
     }
 
     [Test]
     public async Task ConvertHlaWithLoggingAndRetryOnFailure_FirstLookupFails_LogsFailure(
         [Values] TargetHlaCategory target)
     {
-        // arrange first lookup failure
-        hfSetHmd
-            .ConvertHla(default, default, default)
-            .ThrowsForAnyArgs(new HlaMetadataDictionaryException(default, default, default));
+        ArrangeLookupFailure(hfSetHmd);
 
         var input = inputBuilder
             .With(x => x.HfSetHmd, hfSetHmd)
@@ -195,10 +200,7 @@ internal class HlaConverterTests
     public async Task ConvertHlaWithLoggingAndRetryOnFailure_FirstLookupFails_AndRetryEnabled_RetriesLookupUsingMatchingHmd(
         [Values] TargetHlaCategory target)
     {
-        // arrange first lookup failure
-        hfSetHmd
-            .ConvertHla(default, default, default)
-            .ThrowsForAnyArgs(new HlaMetadataDictionaryException(default, default, default));
+        ArrangeLookupFailure(hfSetHmd);
 
         var input = inputBuilder
             .With(x => x.HfSetHmd, hfSetHmd)
@@ -208,17 +210,14 @@ internal class HlaConverterTests
 
         await converter.ConvertHlaWithLoggingAndRetryOnFailure(input, DefaultLocus, HlaName);
 
-        await matchingHmd.Received().ConvertHla(DefaultLocus, HlaName, target);
+        await matchingHmd.Received().TryConvertHla(DefaultLocus, HlaName, target);
     }
 
     [Test]
     public async Task ConvertHlaWithLoggingAndRetryOnFailure_FirstLookupFails_AndRetryEnabled_ReturnsResults(
         [Values] TargetHlaCategory target)
     {
-        // arrange first lookup failure
-        hfSetHmd
-            .ConvertHla(default, default, default)
-            .ThrowsForAnyArgs(new HlaMetadataDictionaryException(default, default, default));
+        ArrangeLookupFailure(hfSetHmd);
 
         var input = inputBuilder
             .With(x => x.HfSetHmd, hfSetHmd)
@@ -235,10 +234,7 @@ internal class HlaConverterTests
     public async Task ConvertHlaWithLoggingAndRetryOnFailure_FirstLookupFails_AndRetryDisabled_DoesNotRetryLookup(
         [Values] TargetHlaCategory target)
     {
-        // arrange first lookup failure
-        hfSetHmd
-            .ConvertHla(default, default, default)
-            .ThrowsForAnyArgs(new HlaMetadataDictionaryException(default, default, default));
+        ArrangeLookupFailure(hfSetHmd);
 
         // disables retry
         matchingHmd.HlaNomenclatureVersion.Returns(HfSetHlaVersion);
@@ -251,17 +247,14 @@ internal class HlaConverterTests
 
         await converter.ConvertHlaWithLoggingAndRetryOnFailure(input, DefaultLocus, HlaName);
 
-        await matchingHmd.DidNotReceiveWithAnyArgs().ConvertHla(default, default, default);
+        await matchingHmd.DidNotReceiveWithAnyArgs().TryConvertHla(default, default, default);
     }
 
     [Test]
     public async Task ConvertHlaWithLoggingAndRetryOnFailure_FirstLookupFails_AndRetryDisabled_ReturnsEmptyCollection(
         [Values] TargetHlaCategory target)
     {
-        // arrange first lookup failure
-        hfSetHmd
-            .ConvertHla(default, default, default)
-            .ThrowsForAnyArgs(new HlaMetadataDictionaryException(default, default, default));
+        ArrangeLookupFailure(hfSetHmd);
 
         // disables retry
         matchingHmd.HlaNomenclatureVersion.Returns(HfSetHlaVersion);
@@ -281,15 +274,9 @@ internal class HlaConverterTests
     public async Task ConvertHlaWithLoggingAndRetryOnFailure_SecondLookupFails_LogsFirstAndSecondFailure(
         [Values] TargetHlaCategory target)
     {
-        // arrange first lookup failure
-        hfSetHmd
-            .ConvertHla(default, default, default)
-            .ThrowsForAnyArgs(new HlaMetadataDictionaryException(default, default, default));
+        ArrangeLookupFailure(hfSetHmd);
 
-        // arrange second lookup failure
-        matchingHmd
-            .ConvertHla(default, default, default)
-            .ThrowsForAnyArgs(new HlaMetadataDictionaryException(default, default, default));
+        ArrangeLookupFailure(matchingHmd);
 
         var input = inputBuilder
             .With(x => x.HfSetHmd, hfSetHmd)
@@ -306,15 +293,9 @@ internal class HlaConverterTests
     public async Task ConvertHlaWithLoggingAndRetryOnFailure_SecondLookupFails_ReturnsEmptyCollection(
         [Values] TargetHlaCategory target)
     {
-        // arrange first lookup failure
-        hfSetHmd
-            .ConvertHla(default, default, default)
-            .ThrowsForAnyArgs(new HlaMetadataDictionaryException(default, default, default));
+        ArrangeLookupFailure(hfSetHmd);
 
-        // arrange second lookup failure
-        matchingHmd
-            .ConvertHla(default, default, default)
-            .ThrowsForAnyArgs(new HlaMetadataDictionaryException(default, default, default));
+        ArrangeLookupFailure(matchingHmd);
 
         var input = inputBuilder
             .With(x => x.HfSetHmd, hfSetHmd)
@@ -325,6 +306,33 @@ internal class HlaConverterTests
         var results = await converter.ConvertHlaWithLoggingAndRetryOnFailure(input, DefaultLocus, HlaName);
 
         results.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task ConvertHlaWithLoggingAndRetryOnFailure_WhenTheLookupFaults_PropagatesInsteadOfReportingNoData(
+        [Values] TargetHlaCategory target)
+    {
+        // A failed storage request is not a missing name, and this is the case that used to be
+        // indistinguishable: both arrived as HlaMetadataDictionaryException, both were swallowed into an empty result,
+        // so a transient blip silently read as "this HLA does not exist" and match prediction ran on an incomplete
+        // expansion with nothing logged as an error. Only a name with no data returns (false, null) now; anything else
+        // escapes, and the caller can tell them apart for the first time.
+        hfSetHmd.TryConvertHla(default, default, default)
+            .ThrowsForAnyArgs(new TimeoutException("storage is having a moment"));
+
+        var input = inputBuilder
+            .With(x => x.HfSetHmd, hfSetHmd)
+            .With(x => x.MatchingAlgorithmHmd, matchingHmd)
+            .With(x => x.TargetHlaCategory, target)
+            .Build();
+
+        var convert = async () => await converter.ConvertHlaWithLoggingAndRetryOnFailure(input, DefaultLocus, HlaName);
+
+        await convert.Should().ThrowAsync<TimeoutException>();
+
+        // And it is not reported as a conversion failure, because it is not one.
+        logger.DidNotReceiveWithAnyArgs().SendEvent(
+            Arg.Any<string>(), Arg.Any<LogLevel>(), Arg.Any<Dictionary<string, string>>(), Arg.Any<Dictionary<string, double>>());
     }
 
     #endregion

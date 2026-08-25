@@ -15,6 +15,16 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         /// reliant on the fact that each small g Group will only have 0 or 1 corresponding P Groups.
         /// </summary>
         Task<string> ConvertSmallGGroupToPGroup(Locus locus, string smallGGroupLookupName, string hlaNomenclatureVersion);
+
+        /// <summary>
+        /// <see cref="ConvertSmallGGroupToPGroup"/> for a caller that treats an unrecognised small g group as an answer
+        /// rather than an error
+        /// </summary>
+        /// <returns>
+        /// <c>(false, null)</c> where the small g group is not in the data. <c>(true, null)</c> is distinct and
+        /// legitimate: a small g group of null-expressing alleles is recognised and has no P group.
+        /// </returns>
+        Task<(bool WasFound, string PGroup)> TryConvertSmallGGroupToPGroup(Locus locus, string smallGGroupLookupName, string hlaNomenclatureVersion);
     }
 
     internal class SmallGGroupToPGroupMetadataService : MetadataServiceBase<string>, ISmallGGroupToPGroupMetadataService
@@ -56,6 +66,20 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             }
 
             return await GetMetadata(locus, smallGGroupLookupName, hlaNomenclatureVersion);
+        }
+
+        /// <inheritdoc />
+        public async Task<(bool WasFound, string PGroup)> TryConvertSmallGGroupToPGroup(
+            Locus locus,
+            string smallGGroupLookupName,
+            string hlaNomenclatureVersion)
+        {
+            if (smallGGroupLookupName == null)
+            {
+                return (true, null);
+            }
+
+            return await TryGetMetadata(locus, smallGGroupLookupName, hlaNomenclatureVersion);
         }
     }
 }

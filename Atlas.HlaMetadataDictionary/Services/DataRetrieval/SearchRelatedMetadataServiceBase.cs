@@ -19,6 +19,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     internal interface ISearchRelatedMetadataService<THlaMetadata> where THlaMetadata : IHlaMetadata
     {
         Task<THlaMetadata> GetHlaMetadata(Locus locus, string hlaName, string hlaNomenclatureVersion);
+
+        /// <summary>
+        /// <see cref="GetHlaMetadata"/> for a caller that treats an unknown HLA name as an answer.
+        /// see <c>MetadataServiceBase.TryGetMetadata</c> for why an infrastructure fault still throws.
+        /// </summary>
+        Task<(bool WasFound, THlaMetadata Metadata)> TryGetHlaMetadata(Locus locus, string hlaName, string hlaNomenclatureVersion);
     }
 
     /// <summary>
@@ -65,6 +71,15 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         public async Task<THlaMetadata> GetHlaMetadata(Locus locus, string hlaName, string hlaNomenclatureVersion)
         {
             return await GetMetadata(locus, hlaName, hlaNomenclatureVersion);
+        }
+
+        /// <inheritdoc />
+        public async Task<(bool WasFound, THlaMetadata Metadata)> TryGetHlaMetadata(
+            Locus locus,
+            string hlaName,
+            string hlaNomenclatureVersion)
+        {
+            return await TryGetMetadata(locus, hlaName, hlaNomenclatureVersion);
         }
 
         protected override bool LookupNameIsValid(string lookupName)

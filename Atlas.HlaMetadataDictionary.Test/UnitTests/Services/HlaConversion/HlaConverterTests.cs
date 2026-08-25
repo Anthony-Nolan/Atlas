@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
@@ -14,6 +15,7 @@ using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders.ScoringInfoBuilders;
 using AwesomeAssertions;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
@@ -211,6 +213,150 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
 
             result.Should().BeEquivalentTo(serologyName);
         }
+
+        #region TryConvertHla
+
+        [TestCase(null)]
+        [TestCase("")]
+        public async Task TryConvertHla_HlaNameIsNullOrEmpty_ExceptionThrown(string hlaName)
+        {
+            // A missing argument is still a programming fault, not a name with no data. Parity with ConvertHla.
+            await hlaConverter.Invoking(provider => provider.TryConvertHla(DefaultLocus, hlaName, new HlaConversionBehaviour()))
+                .Should().ThrowAsync<ArgumentNullException>();
+        }
+
+        [TestCase(TargetHlaCategory.GGroup)]
+        [TestCase(TargetHlaCategory.PGroup)]
+        [TestCase(TargetHlaCategory.SmallGGroup)]
+        public async Task TryConvertHla_WhenTheNameHasNoData_ReportsNotFoundWithoutTakingTheThrowingPath(TargetHlaCategory targetHla)
+        {
+            // The three categories match prediction converts to, which is why they are the three with a non-throwing route
+            ArrangeNoDataForTheName();
+
+            var (wasFound, hla) = await hlaConverter.TryConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
+            {
+                TargetHlaCategory = targetHla
+            });
+
+            wasFound.Should().BeFalse();
+            hla.Should().BeNull();
+
+            await scoringMetadataService.DidNotReceiveWithAnyArgs().GetHlaMetadata(default, default, default);
+            await smallGGroupMetadataService.DidNotReceiveWithAnyArgs().GetSmallGGroups(default, default, default);
+        }
+
+        [Test]
+        public async Task TryConvertHla_TargetIsGGroup_ReturnsMatchingGGroups()
+        {
+            var gGroups = new List<string> {"g-group-1", "g-group-2"};
+            var info = new ConsolidatedMolecularScoringInfoBuilder().WithMatchingGGroups(gGroups).Build();
+            scoringMetadataService.TryGetHlaMetadata(default, default, default)
+                .ReturnsForAnyArgs((true, BuildHlaScoringMetadata(info)));
+
+            var (wasFound, hla) = await hlaConverter.TryConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
+            {
+                TargetHlaCategory = TargetHlaCategory.GGroup
+            });
+
+            wasFound.Should().BeTrue();
+            hla.Should().BeEquivalentTo(gGroups);
+        }
+
+        [Test]
+        public async Task TryConvertHla_TargetIsPGroup_ReturnsMatchingPGroups()
+        {
+            var pGroups = new List<string> {"p-group-1", "p-group-2"};
+            var info = new ConsolidatedMolecularScoringInfoBuilder().WithMatchingPGroups(pGroups).Build();
+            scoringMetadataService.TryGetHlaMetadata(default, default, default)
+                .ReturnsForAnyArgs((true, BuildHlaScoringMetadata(info)));
+
+            var (wasFound, hla) = await hlaConverter.TryConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
+            {
+                TargetHlaCategory = TargetHlaCategory.PGroup
+            });
+
+            wasFound.Should().BeTrue();
+            hla.Should().BeEquivalentTo(pGroups);
+        }
+
+        [Test]
+        public async Task TryConvertHla_TargetIsSmallGGroup_ReturnsSmallGGroups()
+        {
+            var smallGGroups = new List<string> {"small-g-group-1", "small-g-group-2"};
+            smallGGroupMetadataService.TryGetSmallGGroups(default, default, default).ReturnsForAnyArgs((true, smallGGroups));
+
+            var (wasFound, hla) = await hlaConverter.TryConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
+            {
+                TargetHlaCategory = TargetHlaCategory.SmallGGroup
+            });
+
+            wasFound.Should().BeTrue();
+            hla.Should().BeEquivalentTo(smallGGroups);
+        }
+
+        [Test]
+        public async Task TryConvertHla_ForANewAllele_ReportsFoundWithNoGroups()
+        {
+            // The NEW short-circuit of the throwing path, kept: a new allele is a known answer with no groups, and it
+            // must not reach a lookup service or be reported as a name with no data.
+            var (wasFound, hla) = await hlaConverter.TryConvertHla(DefaultLocus, "NEW", new HlaConversionBehaviour
+            {
+                TargetHlaCategory = TargetHlaCategory.GGroup
+            });
+
+            wasFound.Should().BeTrue();
+            hla.Should().BeEmpty();
+
+            await scoringMetadataService.DidNotReceiveWithAnyArgs().TryGetHlaMetadata(default, default, default);
+        }
+
+        [Test]
+        public async Task TryConvertHla_TargetHasNoNonThrowingRoute_AndTheNameHasNoData_ReportsNotFound()
+        {
+            // Serology keeps the throwing path behind a catch: same answer, and its failures are too rare to be worth
+            // widening the surface for.
+            scoringMetadataService.GetHlaMetadata(default, default, default).ThrowsForAnyArgs(
+                new HlaMetadataDictionaryException(DefaultLocus, DefaultHlaName, $"Failed to lookup '{DefaultHlaName}'."));
+
+            var (wasFound, hla) = await hlaConverter.TryConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
+            {
+                TargetHlaCategory = TargetHlaCategory.Serology
+            });
+
+            wasFound.Should().BeFalse();
+            hla.Should().BeNull();
+        }
+
+        [TestCase(TargetHlaCategory.GGroup)]
+        [TestCase(TargetHlaCategory.SmallGGroup)]
+        [TestCase(TargetHlaCategory.Serology)]
+        public async Task TryConvertHla_WhenTheLookupFaults_PropagatesInsteadOfReportingNoData(TargetHlaCategory targetHla)
+        {
+            // The boundary this method exists to draw, and it has to hold on both routes: a name with no data is an
+            // answer, a failed storage request is not. Swallowing the second as the first would convert an incomplete
+            // expansion into a prediction, silently.
+            var fault = new TimeoutException("storage is having a moment");
+
+            scoringMetadataService.TryGetHlaMetadata(default, default, default).ThrowsForAnyArgs(fault);
+            scoringMetadataService.GetHlaMetadata(default, default, default).ThrowsForAnyArgs(fault);
+            smallGGroupMetadataService.TryGetSmallGGroups(default, default, default).ThrowsForAnyArgs(fault);
+
+            await hlaConverter.Invoking(provider => provider.TryConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
+                {
+                    TargetHlaCategory = targetHla
+                }))
+                .Should().ThrowAsync<TimeoutException>();
+        }
+
+        private void ArrangeNoDataForTheName()
+        {
+            scoringMetadataService.TryGetHlaMetadata(default, default, default)
+                .ReturnsForAnyArgs((false, (IHlaScoringMetadata)null));
+            smallGGroupMetadataService.TryGetSmallGGroups(default, default, default)
+                .ReturnsForAnyArgs((false, (IEnumerable<string>)null));
+        }
+
+        #endregion
 
         private static IHlaScoringMetadata BuildHlaScoringMetadata(IHlaScoringInfo scoringInfo)
         {

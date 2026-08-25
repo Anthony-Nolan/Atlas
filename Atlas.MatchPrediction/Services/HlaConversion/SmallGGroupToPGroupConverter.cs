@@ -19,10 +19,14 @@ namespace Atlas.MatchPrediction.Services.HlaConversion
         {
         }
 
-        protected override async Task<IEnumerable<string>> ConvertHla(
+        protected override async Task<(bool WasFound, IEnumerable<string> ConvertedHla)> TryConvert(
             TargetHlaCategory? targetHlaCategory, Locus locus, string hla, IHlaMetadataDictionary hmd)
         {
-            return new[] { await hmd.ConvertSmallGGroupToPGroup(locus, hla) };
+            var (wasFound, pGroup) = await hmd.TryConvertSmallGGroupToPGroup(locus, hla);
+
+            // As in GGroupToPGroupConverter: found-with-no-P-group is a real outcome for a group of null-expressing
+            // alleles, and must stay FOUND rather than be logged as a failure and retried at the other version.
+            return (wasFound, wasFound ? new[] { pGroup } : null);
         }
     }
 }

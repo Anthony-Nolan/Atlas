@@ -19,6 +19,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         /// </summary>
         Task<IEnumerable<string>> GetSmallGGroups(Locus locus, string hlaName, string hlaNomenclatureVersion);
 
+        /// <summary>
+        /// <see cref="GetSmallGGroups"/> for a caller that treats an unknown HLA name as an answer
+        /// </summary>
+        Task<(bool WasFound, IEnumerable<string> SmallGGroups)> TryGetSmallGGroups(Locus locus, string hlaName, string hlaNomenclatureVersion);
+
         Task<IDictionary<Locus, ISet<string>>> GetAllSmallGGroups(string hlaNomenclatureVersion);
     }
 
@@ -63,6 +68,22 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             }
             var metadata = await GetHlaMetadata(locus, hlaName, hlaNomenclatureVersion);
             return metadata.SmallGGroups;
+        }
+
+        /// <inheritdoc />
+        public async Task<(bool WasFound, IEnumerable<string> SmallGGroups)> TryGetSmallGGroups(
+            Locus locus,
+            string hlaName,
+            string hlaNomenclatureVersion)
+        {
+            if (hlaName == NewAllele)
+            {
+                return (true, new List<string>());
+            }
+
+            var (wasFound, metadata) = await TryGetHlaMetadata(locus, hlaName, hlaNomenclatureVersion);
+
+            return (wasFound, wasFound ? metadata.SmallGGroups : null);
         }
 
         public async Task<IDictionary<Locus, ISet<string>>> GetAllSmallGGroups(string hlaNomenclatureVersion)
