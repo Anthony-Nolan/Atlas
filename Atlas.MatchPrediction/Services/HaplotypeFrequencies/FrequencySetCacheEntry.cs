@@ -35,7 +35,7 @@ public sealed class FrequencySetCacheEntry
     // racing the first access can both project - but a FrozenDictionary enumerates in a stable order, so the two
     // results are element-for-element identical and either may win. A reference write has release semantics, so the
     // collection is fully built before any thread can observe it.
-    private volatile DataByResolution<IReadOnlyCollection<LociInfo<string>>> projectedPool;
+    private volatile DataByResolution<HaplotypeKey[]> projectedPool;
 
     /// <summary>
     /// The set's haplotypes in the string form phenotype expansion filters against, grouped by typing category.
@@ -57,21 +57,32 @@ public sealed class FrequencySetCacheEntry
     /// </para>
     ///
     /// <para>
-    /// <b>Cost.</b> This trades per-donor allocation churn for resident memory - roughly 80 bytes per haplotype
-    /// against ~55 for a <see cref="SetFrequencies"/> entry, so about 2.5x the footprint of a cached set. Deliberate:
-    /// GC Wait was measured at 44.3% of CPU-active time against 15.6% for user code, so removing the churn is
-    /// expected to pay for the residency. It is nevertheless a real claim on a 4Gi replica's memory budget, and one
-    /// that grows with the number of distinct sets a replica touches.
+    /// <b>ATL-233 T1 follow-up: the pool is the set's own interned keys, not their name form.</b> T1 cached this as
+    /// <c>LociInfo&lt;string&gt;</c> - ~80 bytes per haplotype against ~55 for a <see cref="SetFrequencies"/> entry, so
+    /// about 2.5x the footprint of a cached set, ~22 MB for the largest and a real claim on a 4Gi replica. A
+    /// <see cref="HaplotypeKey"/> is 20 bytes in a flat array, which hands most of that back (~5.5 MB), and building it
+    /// no longer calls <c>ReverseLookup</c> per haplotype: the keys are already what the frozen dictionary holds. The
+    /// filter then compares ids instead of hashing allele names, and only the survivors are resolved back to names.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>The ids never leave this object.</b> They are meaningful only against <see cref="Interner"/>, and a second
+    /// entry for the same set - built after eviction or expiry - has a different id space. That is safe here because
+    /// the pool, the frequencies and the interner are fields of one immutable entry, exactly as the class remark above
+    /// states; it is <i>not</i> safe to pass an id to anything that re-enters the cache, such as
+    /// <c>HaplotypeFrequencyService.GetFrequencyForHla</c>, which fetches the entry again and may hold a different
+    /// instance. Survivors are therefore carried onwards as names, as they always were.
     /// </para>
     /// </summary>
-    internal DataByResolution<IReadOnlyCollection<LociInfo<string>>> ProjectedPool => projectedPool ??= ProjectPool();
+    internal DataByResolution<HaplotypeKey[]> ProjectedPool => projectedPool ??= ProjectPool();
 
     /// <summary>
-    /// Deliberately the shipped expression, moved rather than rewritten.
+    /// The shipped expression's <b>enumeration</b>, unchanged - same source, same grouping, same order. Only what it
+    /// yields per haplotype changed, from the <c>ReverseLookup</c>'d name form to the key the dictionary already holds.
     ///
     /// <para>
     /// It is tempting to build this straight from the SQL rows in <c>BuildEntryFromDatabase</c>'s existing loop, which
-    /// would delete the <c>ReverseLookup</c> entirely. Do not. The pool's order sets the survivor order, which sets
+    /// would skip this pass altogether. Do not. The pool's order sets the survivor order, which sets
     /// the pairing order, which sets the genotype set's insertion order - and
     /// <c>ExpandedGenotypeTruncater.TruncateGenotypes</c> keeps the top N with an <c>OrderByDescending</c> that has
     /// <b>no secondary key</b> (the only <c>OrderBy</c> in this project, with no genotype comparer anywhere). So a
@@ -80,16 +91,16 @@ public sealed class FrequencySetCacheEntry
     /// exactly as before, keeps the order identical.
     /// </para>
     /// </summary>
-    private DataByResolution<IReadOnlyCollection<LociInfo<string>>> ProjectPool()
+    private DataByResolution<HaplotypeKey[]> ProjectPool()
     {
         var groupedFrequencies = SetFrequencies
             .GroupBy(f => f.Value.TypingCategory)
             .ToDictionary(
                 key => key.Key,
-                value => value.Select(f => Interner.ReverseLookup(f.Key)).ToList()
+                value => value.Select(f => f.Key).ToArray()
             );
 
-        return new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
+        return new DataByResolution<HaplotypeKey[]>
         {
             GGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.GGroup, []),
             PGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.PGroup, []),
