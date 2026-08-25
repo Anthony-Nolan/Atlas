@@ -10,6 +10,7 @@ using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using AutoFixture;
 using AwesomeAssertions;
+using Atlas.MatchPrediction.Test.TestHelpers;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -102,13 +103,13 @@ internal class PoolFilterAlleleIdTests
     }
 
     /// <summary>
-    /// Survivor count (S) for a subject and pool, taken from the trace rather than inferred from genotypes. A null
+    /// Survivor count (S) for a subject and pool - the size of the pool the pairing loop is quadratic in. A null
     /// <paramref name="subjectB"/> means untyped at B - passed explicitly by every caller, because defaulting it would
     /// make "untyped" indistinguishable from "not mentioned", which is the very distinction two of these tests turn on.
     /// </summary>
     private async Task<int> Survivors(string[] subjectA, (string A, string B)[] pool, string[] subjectB)
     {
-        converter.ConvertPhenotype(null).ReturnsForAnyArgs(SubjectGroups(subjectA, subjectB));
+        converter.StubGroups(SubjectGroups(subjectA, subjectB));
         haplotypeFrequencyService.GetAllHaplotypeFrequencies(FrequencySetId).Returns(Pool(pool));
 
         var expanded = await sut.ExpandCompressedPhenotype(new CompressedPhenotypeExpanderInput
@@ -119,7 +120,6 @@ internal class PoolFilterAlleleIdTests
             MatchPredictionParameters = new MatchPredictionParameters(new HashSet<Locus> { Locus.A, Locus.B })
         });
 
-        // The pool after the filter, which is what the pairing loop is quadratic in.
         return expanded.Haplotypes.Count;
     }
 

@@ -16,6 +16,7 @@ using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using AutoFixture;
 using AwesomeAssertions;
+using Atlas.MatchPrediction.Test.TestHelpers;
 using NSubstitute;
 using NUnit.Framework;
 using HfSet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
@@ -174,7 +175,7 @@ internal class ImputationEquivalenceTests
     public async Task Impute_WhenUnambiguousAtEveryAllowedLocus_ReturnsOneGenotypeOfLikelihoodOneAndTouchesNoFrequency()
     {
         ArrangeFiveLocusSet();
-        converter.ConvertPhenotype(null).ReturnsForAnyArgs(SmallGGroupOnly(
+        converter.StubGroups(SmallGGroupOnly(
             a: ["a1"], b: ["b1"], c: ["c1"], dqb1: ["q1"], drb1: ["r1"]));
 
         var result = await BuildService().Impute(AmbiguousAtAAndB(AllFiveLoci));
@@ -194,7 +195,7 @@ internal class ImputationEquivalenceTests
     public async Task Impute_WhenNoHaplotypeExplainsTheTyping_ReturnsEmpty()
     {
         ArrangeFiveLocusSet();
-        converter.ConvertPhenotype(null).ReturnsForAnyArgs(SmallGGroupOnly(
+        converter.StubGroups(SmallGGroupOnly(
             a: ["unrepresented-1", "unrepresented-2"], b: ["b1", "b2"], c: ["c1"], dqb1: ["q1"], drb1: ["r1"]));
 
         var result = await BuildService().Impute(AmbiguousAtAAndB(AllFiveLoci));
@@ -245,7 +246,7 @@ internal class ImputationEquivalenceTests
         frequencies[Haplotype("a1", "b1")] = 0.4m;
         frequencies[Haplotype("gA", "gB")] = 0.1m;
 
-        converter.ConvertPhenotype(null).ReturnsForAnyArgs(new DataByResolution<PhenotypeInfo<ISet<string>>>
+        converter.StubGroups(new DataByResolution<PhenotypeInfo<ISet<string>>>
         {
             PGroup = new PhenotypeInfo<ISet<string>>(),
             GGroup = Groups(a: ["gA"], b: ["gB"]),
@@ -294,7 +295,7 @@ internal class ImputationEquivalenceTests
         frequencies[Haplotype("a1", "b1", c: null, dqb1: null, drb1: "r1")] = 0.6m;
         frequencies[Haplotype("a2", "b2", c: null, dqb1: null, drb1: "r1")] = 0.1m;
 
-        converter.ConvertPhenotype(null).ReturnsForAnyArgs(new DataByResolution<PhenotypeInfo<ISet<string>>>
+        converter.StubGroups(new DataByResolution<PhenotypeInfo<ISet<string>>>
         {
             PGroup = new PhenotypeInfo<ISet<string>>(),
             GGroup = Groups(a: ["a1"], b: ["b1"], drb1: ["r1"]),
@@ -360,7 +361,7 @@ internal class ImputationEquivalenceTests
         frequencies[Haplotype("a1", "b1", "c1", "q1", "r1")] = 0.4m;
         frequencies[Haplotype("a2", "b2", "c1", "q1", "r1")] = 0.1m;
 
-        converter.ConvertPhenotype(null).ReturnsForAnyArgs(SmallGGroupOnly(
+        converter.StubGroups(SmallGGroupOnly(
             a: ["a1", "a2"], b: ["b1", "b2"], c: ["c1"], dqb1: ["q1"], drb1: ["r1"]));
     }
 
@@ -385,7 +386,7 @@ internal class ImputationEquivalenceTests
         frequencies[Haplotype("a2", "b2", c: null, dqb1: null, drb1: "r1")] = 0.1m;
 
         // C and DQB1 left null, so the pool filter treats them as a wildcard - the untyped-locus case.
-        converter.ConvertPhenotype(null).ReturnsForAnyArgs(SmallGGroupOnly(
+        converter.StubGroups(SmallGGroupOnly(
             a: ["a1", "a2"], b: ["b1", "b2"], drb1: ["r1"]));
     }
 

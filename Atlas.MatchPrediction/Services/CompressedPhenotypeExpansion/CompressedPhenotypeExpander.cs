@@ -128,11 +128,44 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         this.haplotypeFrequencyService = haplotypeFrequencyService;
     }
 
+    /// <summary>
+    /// ATL-233 T5: the phenotype is converted to the typing categories that will be <b>read</b>, and no others. It used
+    /// to be converted to all three, always - up to 3 x 5 loci x 2 positions = 30 HMD lookups per donor - and at A1h
+    /// that conversion was <b>39.5% of the whole of Impute</b>, and 98.7% of the unambiguous class's.
+    ///
+    /// <para>
+    /// Two separate reasons the other two categories are dead work, and they are not equally safe:
+    /// <list type="number">
+    /// <item>
+    /// <b>The short circuit reads SmallGGroup alone.</b> <see cref="IsUnambiguousAtAllowedLoci"/> and
+    /// <see cref="BuildSingleSmallGGenotype"/> touch nothing else, so for the 59.1% of donors that return there the
+    /// GGroup and PGroup conversions could never have been read. Deferring them is laziness, not a change of behaviour.
+    /// </item>
+    /// <item>
+    /// <b>A category the set holds no haplotypes in cannot affect the expansion.</b> The pool yields an empty array for
+    /// such a category and <c>CollectSurvivors</c> returns on an empty array, so no survivor can carry that category and
+    /// nothing ever reads its groups. This one <i>is</i> a change in which lookups happen: it is read from the set, not
+    /// assumed, because a future GGroup import must still work. All 216 DEV sets hold SmallGGroup only
+    /// (<c>scratch/ATL-233_HfSetTypingCategories.sql</c>), so today it removes 20 of the 30 lookups.
+    /// </item>
+    /// </list>
+    /// </para>
+    ///
+    /// <para>
+    /// The pool is therefore fetched <b>before</b> the second conversion. That reorders nothing that matters - the
+    /// categories convert independently of each other and the survivor order is set by <c>CollectSurvivors</c>' fixed
+    /// visit order - but it does move the "no haplotypes for set" throw ahead of those conversions, and it leaves the
+    /// unambiguous branch's property intact: those donors still never resolve the set.
+    /// </para>
+    /// </summary>
     public async Task<ExpandedGenotypes> ExpandCompressedPhenotype(CompressedPhenotypeExpanderInput input)
     {
         var allowedLoci = input.MatchPredictionParameters.AllowedLoci;
 
-        var groupsPerPosition = await converter.ConvertPhenotype(input);
+        var groupsPerPosition = new DataByResolution<PhenotypeInfo<ISet<string>>>
+        {
+            SmallGGroup = await converter.ConvertPhenotype(input, HaplotypeTypingCategory.SmallGGroup)
+        };
 
         if (IsUnambiguousAtAllowedLoci(allowedLoci, groupsPerPosition))
         {
@@ -140,7 +173,21 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
             return BuildSingleSmallGGenotype(groupsPerPosition);
         }
 
-        return await ExpandToPotentialDiplotypes(input.HfSetId, allowedLoci, groupsPerPosition);
+        var (pool, interner) = await FetchHaplotypesGroupedByTypingCategory(input.HfSetId);
+
+        // SmallGGroup is already converted whether the set holds it or not, because the short circuit above needed it.
+        // The other two are converted only if some pooled haplotype is typed at that category.
+        if (pool.GGroup.Length > 0)
+        {
+            groupsPerPosition.GGroup = await converter.ConvertPhenotype(input, HaplotypeTypingCategory.GGroup);
+        }
+
+        if (pool.PGroup.Length > 0)
+        {
+            groupsPerPosition.PGroup = await converter.ConvertPhenotype(input, HaplotypeTypingCategory.PGroup);
+        }
+
+        return await ExpandToPotentialDiplotypes(input.HfSetId, allowedLoci, groupsPerPosition, pool, interner);
     }
 
     private static ExpandedGenotypes BuildSingleSmallGGenotype(DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
@@ -195,14 +242,21 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// </summary>
     /// <param name="hfSetId">Id of haplotype frequency set</param>
     /// <param name="allowedLoci">List of loci that are being considered.</param>
-    /// <param name="groupsPerPosition">Allele groups present in the phenotype being expanded.</param>
+    /// <param name="groupsPerPosition">
+    /// Allele groups present in the phenotype being expanded, for the categories the set holds - null for the others
+    /// (ATL-233 T5).
+    /// </param>
+    /// <param name="pool">The set's haplotypes as interned keys, grouped by typing category.</param>
+    /// <param name="interner">The interner <paramref name="pool"/>'s ids belong to.</param>
     /// <returns>Set of diplotypes (pairs of haplotypes) which are possible for an input phenotype</returns>
     private async Task<ExpandedGenotypes> ExpandToPotentialDiplotypes(
         int hfSetId,
         ISet<Locus> allowedLoci,
-        DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
+        DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition,
+        DataByResolution<HaplotypeKey[]> pool,
+        HaplotypeInterner interner)
     {
-        var haplotypes = await GetHaplotypesForAllowedLoci(hfSetId, allowedLoci, groupsPerPosition);
+        var haplotypes = GetHaplotypesForAllowedLoci(pool, interner, allowedLoci, groupsPerPosition);
         var haplotypeList = haplotypes.ToList();
 
         // Materialise the allowed loci once: iterating the ISet directly inside the per-diplotype loop would box an enumerator on every pair.
@@ -219,6 +273,8 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
 
         bool IsRepresentedInTargetPhenotype(HlaAtKnownTypingCategory hla, Locus locus, LocusPosition position)
         {
+            // GetByCategory cannot be null here, however few categories T5 converted: a survivor's category is the
+            // category of the pool array it came from, and an unconverted category's array is empty by construction.
             var groups = groupsPerPosition.GetByCategory(hla.TypingCategory).GetPosition(locus, position);
             return groups == null || groups.Contains(hla.Hla);
         }
@@ -443,15 +499,14 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// this method - which is also the form <c>GetFrequencyForHla</c> needs, since it re-enters the cache.
     /// </para>
     /// </summary>
-    private async Task<IEnumerable<LociInfo<HlaAtKnownTypingCategory>>> GetHaplotypesForAllowedLoci(
-        int frequencySetId,
+    private static IEnumerable<LociInfo<HlaAtKnownTypingCategory>> GetHaplotypesForAllowedLoci(
+        DataByResolution<HaplotypeKey[]> pool,
+        HaplotypeInterner interner,
         ISet<Locus> allowedLoci,
         DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
     {
-        var (pool, interner) = await FetchHaplotypesGroupedByTypingCategory(frequencySetId);
-
+        // The fetch happens in the caller, which needs the pool to decide which conversions to make (ATL-233 T5).
         var groupsPerLocus = groupsPerPosition.Map(CombineSetsAtLoci);
-
         var allowedLociArray = allowedLoci.ToArray();
 
         // Insertion order is the survivor order, which is the pairing order, which is what the truncater's
@@ -581,7 +636,14 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
 
     private static LociInfo<ISet<string>> CombineSetsAtLoci(PhenotypeInfo<ISet<string>> phenotypeInfo)
     {
-        return phenotypeInfo.ToLociInfo((_, set1, set2) => 
+        // Null for a category ATL-233 T5 did not convert, which is a category the set holds no haplotypes in. Its pool
+        // array is empty, so CollectSurvivors returns before it would read this - the null goes nowhere.
+        if (phenotypeInfo == null)
+        {
+            return null;
+        }
+
+        return phenotypeInfo.ToLociInfo((_, set1, set2) =>
             set1 != null && set2 != null
                 ? (ISet<string>)new HashSet<string>(set1.Concat(set2))
                 : null);
