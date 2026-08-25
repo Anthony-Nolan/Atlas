@@ -159,35 +159,145 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         return diplotypes;
     }
 
+    /// <summary>
+    /// The pooled haplotypes the subject's own allele groups can explain, in pool order.
+    ///
+    /// <para>
+    /// ATL-233 T1 follow-up. This is the second-largest phase and 89.6% of it was one line: 531.6M
+    /// <c>ISet&lt;string&gt;.Contains</c> calls across the corpus, at 29.0 ns each, of which <b>0.20% passed</b>. Each
+    /// was a hash of a 7-15 character allele name, a bucket probe and an ordinal compare - and the pool already knew
+    /// the answer as an integer, because <c>SetFrequencies</c> is keyed by interned ids.
+    /// </para>
+    ///
+    /// <para>
+    /// So the subject's groups are resolved into the set's own id space once per (category, locus), into a
+    /// <c>bool[]</c> indexed by allele id - dense, because <c>AlleleInterner</c> mints ids from 0 - and the per
+    /// haplotype test becomes an array read. Not even a <c>HashSet&lt;int&gt;</c>: nothing is hashed at all.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Ids stop here.</b> They mean nothing outside <c>entry.Interner</c>, and a later fetch of the same set id can
+    /// return a different entry with a different id space, so survivors are resolved back to names before they leave
+    /// this method - which is also the form <c>GetFrequencyForHla</c> needs, since it re-enters the cache.
+    /// </para>
+    /// </summary>
     private async Task<IEnumerable<LociInfo<HlaAtKnownTypingCategory>>> GetHaplotypesForAllowedLoci(
         int frequencySetId,
         ISet<Locus> allowedLoci,
         DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
     {
-        var allHaplotypes = await FetchHaplotypesGroupedByTypingCategory(frequencySetId);
+        var (pool, interner) = await FetchHaplotypesGroupedByTypingCategory(frequencySetId);
 
         var groupsPerLocus = groupsPerPosition.Map(CombineSetsAtLoci);
 
-        var haplotypesFilteredBySubjectHla = allHaplotypes.Map((category, haplotypes) =>
+        var allowedLociArray = allowedLoci.ToArray();
+
+        // Insertion order is the survivor order, which is the pairing order, which is what the truncater's
+        // tie-break reads - so the three categories are visited in the order the shipped Concat produced, and each
+        // pool array is in the order ProjectPool produced. Nothing here may reorder.
+        var survivors = new HashSet<LociInfo<HlaAtKnownTypingCategory>>();
+
+        CollectSurvivors(HaplotypeTypingCategory.GGroup, pool.GGroup);
+        CollectSurvivors(HaplotypeTypingCategory.PGroup, pool.PGroup);
+        CollectSurvivors(HaplotypeTypingCategory.SmallGGroup, pool.SmallGGroup);
+
+        return survivors;
+
+        void CollectSurvivors(HaplotypeTypingCategory category, HaplotypeKey[] haplotypes)
         {
-            return haplotypes.Where(haplotype => allowedLoci.All(locus =>
+            if (haplotypes.Length == 0)
+            {
+                return;
+            }
+
+            var allowedAlleles = BuildAllowedAlleleMasks(interner, groupsPerLocus.GetByCategory(category), allowedLociArray);
+
+            foreach (var haplotype in haplotypes)
+            {
+                if (!IsExplicableBySubject(haplotype, allowedAlleles, allowedLociArray))
                 {
-                    var hlaGroups = groupsPerLocus.GetByCategory(category).GetLocus(locus);
-                    return hlaGroups == null || hlaGroups.Contains(haplotype.GetLocus(locus));
-                }))
-                .Select(haplotype => haplotype.Map(hla => new HlaAtKnownTypingCategory(hla, category)))
-                .ToList();
-        });
+                    continue;
+                }
 
-        var mergedHaplotypes = haplotypesFilteredBySubjectHla.GGroup
-            .Concat(haplotypesFilteredBySubjectHla.PGroup)
-            .Concat(haplotypesFilteredBySubjectHla.SmallGGroup);
+                // Only now is a name needed, and only for a survivor: S is 55.5 on average against an H of up to
+                // 274,606. The two Maps the shipped code did per surviving haplotype - one to attach the category,
+                // one to null the excluded loci - are folded into this one.
+                var names = interner.ReverseLookup(haplotype);
 
-        return new HashSet<LociInfo<HlaAtKnownTypingCategory>>(mergedHaplotypes.Select(h =>
-            h.Map((l, hla) => allowedLoci.Contains(l) ? hla : null)));
+                survivors.Add(names.Map((locus, hla) =>
+                    allowedLoci.Contains(locus) ? new HlaAtKnownTypingCategory(hla, category) : null));
+            }
+        }
     }
 
-    private async Task<DataByResolution<IReadOnlyCollection<LociInfo<string>>>> FetchHaplotypesGroupedByTypingCategory(int frequencySetId)
+    /// <summary>
+    /// Which allele ids the subject's groups admit, per allowed locus: <c>mask[l][id]</c>, or a null mask where the
+    /// subject has no groups at that locus and therefore admits everything - the <c>hlaGroups == null</c> branch.
+    ///
+    /// <para>
+    /// An allele the set has never seen resolves to <see cref="AlleleInterner.NotFound"/> and is simply not marked, so
+    /// it can match nothing - which is what <c>Contains</c> did with it. A null or empty group name resolves to 0, the
+    /// id of an untyped locus, matching the shipped <c>Contains(null)</c> against an untyped pooled haplotype; the
+    /// storage layer conflated null with the empty string when it interned the set, so this cannot tell them apart
+    /// either, and neither could the frozen dictionary it is derived from.
+    /// </para>
+    /// </summary>
+    private static bool[][] BuildAllowedAlleleMasks(
+        HaplotypeInterner interner,
+        LociInfo<ISet<string>> groupsPerLocus,
+        Locus[] allowedLoci)
+    {
+        var masks = new bool[allowedLoci.Length][];
+
+        for (var l = 0; l < allowedLoci.Length; l++)
+        {
+            var groups = groupsPerLocus.GetLocus(allowedLoci[l]);
+
+            if (groups == null)
+            {
+                continue;
+            }
+
+            var alleles = interner.ForLocus(allowedLoci[l]);
+            var mask = new bool[alleles.IdCount];
+
+            foreach (var group in groups)
+            {
+                var id = alleles.Resolve(group);
+
+                if (id != AlleleInterner.NotFound)
+                {
+                    mask[id] = true;
+                }
+            }
+
+            masks[l] = mask;
+        }
+
+        return masks;
+    }
+
+    /// <summary>
+    /// The 531.6M-times-per-corpus test, now one array read per allowed locus. A null mask is the subject being
+    /// untyped there, which admits every haplotype.
+    /// </summary>
+    private static bool IsExplicableBySubject(HaplotypeKey haplotype, bool[][] allowedAlleles, Locus[] allowedLoci)
+    {
+        for (var l = 0; l < allowedLoci.Length; l++)
+        {
+            var mask = allowedAlleles[l];
+
+            if (mask != null && !mask[haplotype.GetLocus(allowedLoci[l])])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private async Task<(DataByResolution<HaplotypeKey[]> Pool, HaplotypeInterner Interner)> FetchHaplotypesGroupedByTypingCategory(
+        int frequencySetId)
     {
         // This piece of code doesn't even need dictionary, it just needs typingCategory => List<Hla> mapping from it
         // Huge on the first touch of a set (a whole set out of SQL, then interned), ~0 on every subsequent donor.
@@ -201,7 +311,10 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         // ATL-233 T1: the projection this used to perform per donor now lives on the cache entry, which owns both of
         // its inputs and has the per-set lifetime it wants. It is therefore paid by the first donor to touch a set,
         // and is ~0 for every donor after it.
-        return haplotypeFrequencies.ProjectedPool;
+        //
+        // The interner travels with the pool because the pool is now ids: they are two halves of one value, and
+        // reading them off the same entry instance is what makes the ids meaningful.
+        return (haplotypeFrequencies.ProjectedPool, haplotypeFrequencies.Interner);
     }
 
     private static LociInfo<ISet<string>> CombineSetsAtLoci(PhenotypeInfo<ISet<string>> phenotypeInfo)
