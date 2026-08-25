@@ -12,6 +12,7 @@ using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using AutoFixture;
 using AwesomeAssertions;
+using Atlas.MatchPrediction.Test.TestHelpers;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -82,7 +83,7 @@ internal class PairRepresentationMaskTests
             [Locus.Drb1] = (new HashSet<string> { drb1Alleles[0], drb1Alleles[1] }, new HashSet<string> { drb1Alleles[0] })
         };
 
-        converter.ConvertPhenotype(null).ReturnsForAnyArgs(SubjectGroups());
+        converter.StubGroups(SubjectGroups());
         haplotypeFrequencyService.GetAllHaplotypeFrequencies(FrequencySetId).Returns(Pool());
 
         sut = new CompressedPhenotypeExpander(converter, haplotypeFrequencyService);
