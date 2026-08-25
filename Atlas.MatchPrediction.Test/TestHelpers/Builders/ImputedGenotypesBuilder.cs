@@ -65,11 +65,12 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 
         public GenotypeAtDesiredResolutionsBuilder Default()
         {
-            var haplotypeResolutions = new KnownTypingCategoryGenotypeBuilder(BuilderDefaults.HlaName).Build();
-            genotypeAtDesiredResolutions = new GenotypeAtDesiredResolutions(
-                haplotypeResolutions, 
-                new PhenotypeInfo<string>(BuilderDefaults.HlaName),
-                BuilderDefaults.Likelihood);
+            genotypeAtDesiredResolutions = new GenotypeAtDesiredResolutions
+            {
+                HaplotypeResolution = new PhenotypeInfoBuilder<string>(BuilderDefaults.HlaName).Build(),
+                StringMatchableResolution = new PhenotypeInfo<string>(BuilderDefaults.HlaName),
+                GenotypeLikelihood = BuilderDefaults.Likelihood
+            };
 
             return this;
         }

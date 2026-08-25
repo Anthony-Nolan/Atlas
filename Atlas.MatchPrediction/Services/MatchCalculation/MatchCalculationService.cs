@@ -41,11 +41,11 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
         /// groups. <c>README_HlaMetadataDictionary.md</c> line 60 says the same.
         /// </para>
         /// <para>
-        /// 3. <b>The code.</b> The one production producer is
-        /// <c>GenotypeConverter.ConvertGenotypeToPGroups</c>, whose every branch either passes through an
-        /// already-P-group name or converts to a P group, and which then runs
-        /// <c>CopyExpressingAllelesToNullPositions</c>. So it emits a P group or a null, never a G group; a locus
-        /// null at both positions stays null and is treated as untyped downstream.
+        /// 3. <b>The code.</b> The one production producer is <c>GenotypeConverter</c>, whose every conversion branch
+        /// either passes through an already-P-group name or converts to a P group, and which then applies the
+        /// null-allele rule - the paired allele's P group where a position has none - in the same per-locus step. So it
+        /// emits a P group or a null, never a G group; a locus null at both positions stays null and is treated as
+        /// untyped downstream.
         /// </para>
         /// <para>
         /// 4. <b>What can mislead a reader into the wrong rule.</b> Two things, and both are the same mistake.

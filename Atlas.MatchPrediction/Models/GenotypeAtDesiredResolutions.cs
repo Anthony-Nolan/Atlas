@@ -1,7 +1,4 @@
-﻿using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
-using Atlas.MatchPrediction.ExternalInterface.Models;
-
-// The two resolutions this type exists to hold, named. Both are PhenotypeInfo<string> and nothing but these aliases
+﻿// The two resolutions this type exists to hold, named. Both are PhenotypeInfo<string> and nothing but these aliases
 // tells them apart.
 //
 //   HfSetGenotypeNames - names at the resolution the haplotype frequency set stores (per row: P group, or G group
@@ -12,6 +9,11 @@ using PGroupGenotype = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.Phen
 
 namespace Atlas.MatchPrediction.Models;
 
+/// <remarks>
+/// Built through an object initialiser rather than a constructor. <see cref="HaplotypeResolution"/> and
+/// <see cref="StringMatchableResolution"/> are both <c>PhenotypeInfo&lt;string&gt;</c>, so as constructor arguments a
+/// caller could transpose them and the compiler would not notice. Named at the initialiser, it cannot happen silently.
+/// </remarks>
 public class GenotypeAtDesiredResolutions
 {
     /// <summary>
@@ -26,7 +28,7 @@ public class GenotypeAtDesiredResolutions
     /// a per-row column and one set can hold both resolutions.
     /// </para>
     /// </summary>
-    public HfSetGenotypeNames HaplotypeResolution { get; }
+    public HfSetGenotypeNames HaplotypeResolution { get; init; }
 
     /// <summary>
     /// HLA at a resolution at which it is possible to calculate match counts using string comparison only, no expansion.
@@ -37,7 +39,7 @@ public class GenotypeAtDesiredResolutions
     /// says what it holds. <c>IMatchCalculationService.CalculateMatchCounts_Fast</c> carries the evidence.
     /// </para>
     /// </summary>
-    public PGroupGenotype StringMatchableResolution { get; }
+    public PGroupGenotype StringMatchableResolution { get; init; }
 
     /// <summary>
     /// Likelihood of this genotype.
@@ -45,15 +47,5 @@ public class GenotypeAtDesiredResolutions
     /// Stored with the genotype to avoid dictionary lookups when calculating final likelihoods, as looking up the same genotype multiple times
     /// for different patient/donor pairs is inefficient 
     /// </summary>
-    public decimal GenotypeLikelihood { get; }
-
-    public GenotypeAtDesiredResolutions(
-        PhenotypeInfo<HlaAtKnownTypingCategory> haplotypeResolution,
-        PGroupGenotype stringMatchableResolution,
-        decimal genotypeLikelihood)
-    {
-        HaplotypeResolution = haplotypeResolution.ToHlaNames();
-        StringMatchableResolution = stringMatchableResolution;
-        GenotypeLikelihood = genotypeLikelihood;
-    }
+    public decimal GenotypeLikelihood { get; init; }
 }

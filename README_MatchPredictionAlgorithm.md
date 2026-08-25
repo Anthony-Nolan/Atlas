@@ -89,10 +89,16 @@ Four choices follow from that, and each is load-bearing rather than incidental:
 4. **A genotype is carried as two pool indices and built only if truncation keeps it.** A `PhenotypeInfo<T>` is seven
    objects. Building one per candidate pair, when 2,000 of a million survive, is the bulk of the allocation.
 
-The same reasoning applies to typing categories: the phenotype is converted only to the categories that will be read.
-A category the frequency set holds no haplotypes in cannot affect the result, and the unambiguous short circuit reads
-`SmallGGroup` alone. Today every frequency set in DEV holds `SmallGGroup` only, so most of that conversion work is
-dead — but this is read from the set rather than assumed, so a future GGroup or PGroup import still works.
+The same "resolve once, where the inputs are still in hand" reasoning applies twice more:
+
+* **Typing categories.** The phenotype is converted only to the categories that will be read. A category the frequency
+  set holds no haplotypes in cannot affect the result, and the unambiguous short circuit reads `SmallGGroup` alone.
+  Today every frequency set in DEV holds `SmallGGroup` only, so most of that conversion work is dead — but this is read
+  from the set rather than assumed, so a future GGroup or PGroup import still works.
+* **P group conversion.** A P group is a pure function of `(locus, group name, typing category)` once both HLA
+  nomenclature versions are fixed, and genotypes are pairs drawn from the survivor pool — so the same triple recurs
+  across genotypes. `GenotypeConverter` resolves each distinct triple once and then reads a dictionary per position,
+  rather than issuing a conversion per genotype position.
 
 ### Invariants
 
