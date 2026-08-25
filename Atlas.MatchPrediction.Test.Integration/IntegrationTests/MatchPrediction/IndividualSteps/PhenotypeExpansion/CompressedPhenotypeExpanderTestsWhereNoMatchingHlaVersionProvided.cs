@@ -36,7 +36,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             };
 
             // Act
-            var genotypes = await Expander.ExpandCompressedPhenotype(input);
+            var genotypes = (await Expander.ExpandCompressedPhenotype(input)).Genotypes;
 
             // Expect the HLA lookup to fail, but HMD exception should be suppressed and instead no genotypes should be returned
             genotypes.Should().BeEmpty();

@@ -65,7 +65,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             };
 
             // Act
-            var genotypes = await Expander.ExpandCompressedPhenotype(input);
+            var genotypes = (await Expander.ExpandCompressedPhenotype(input)).Genotypes;
 
             // Expect (a,b) to only be returned once - homozygous correction factor takes care of this.
             genotypes.Count.Should().Be(1);
@@ -88,7 +88,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             };
 
             // Act
-            var genotypes = await Expander.ExpandCompressedPhenotype(input);
+            var genotypes = (await Expander.ExpandCompressedPhenotype(input)).Genotypes;
 
             // Expect (a,a) not to be duplicated
             genotypes.Count.Should().Be(1);
@@ -117,7 +117,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             };
 
             // Act
-            var genotypes = await Expander.ExpandCompressedPhenotype(input);
+            var genotypes = (await Expander.ExpandCompressedPhenotype(input)).Genotypes;
 
             // This G Group is represented by the patient HLA (01:XX), but is not present in the HF set 
             const string expectedAbsentGGroup = "01:01:02";
@@ -145,7 +145,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             };
 
             // Act
-            var genotypes = await Expander.ExpandCompressedPhenotype(input);
+            var genotypes = (await Expander.ExpandCompressedPhenotype(input)).Genotypes;
 
             genotypes.Count.Should().Be(1);
         }
@@ -194,7 +194,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             };
 
             // Act
-            var genotypes = await Expander.ExpandCompressedPhenotype(input);
+            var genotypes = (await Expander.ExpandCompressedPhenotype(input)).Genotypes;
 
             // Of two matching haplotypes, four possible combinations as diplotypes: x & y => (xx)/(xy)/(yy)
             genotypes.Count.Should().Be(3);
@@ -244,7 +244,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             };
 
             // Act
-            var genotypes = await Expander.ExpandCompressedPhenotype(input);
+            var genotypes = (await Expander.ExpandCompressedPhenotype(input)).Genotypes;
 
             genotypes.Count.Should().Be(3);
         }
@@ -279,7 +279,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             };
 
             // Act
-            var genotypes = await Expander.ExpandCompressedPhenotype(input);
+            var genotypes = (await Expander.ExpandCompressedPhenotype(input)).Genotypes;
 
             genotypes.Count.Should().Be(1);
             genotypes.Single().GetLocus(excludedLocus).Position1And2Null().Should().BeTrue();
@@ -323,9 +323,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             };
 
             // Act - empty locus
-            var genotypes = await Expander.ExpandCompressedPhenotype(input);
+            var genotypes = (await Expander.ExpandCompressedPhenotype(input)).Genotypes;
             // Act - no empty loci
-            var genotypesWithoutMissingLoci = await Expander.ExpandCompressedPhenotype(inputWithoutMissingLoci);
+            var genotypesWithoutMissingLoci = (await Expander.ExpandCompressedPhenotype(inputWithoutMissingLoci)).Genotypes;
 
             genotypes.Count.Should().Be(4);
 
