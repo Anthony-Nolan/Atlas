@@ -167,25 +167,48 @@ internal class ExpandedGenotypeTruncaterTests
     {
         var haplotypes = new List<LociInfo<HlaAtKnownTypingCategory>>();
         var genotypePairs = new List<GenotypePair>();
-        var genotypeHlaNames = new List<PhenotypeInfo<string>>();
-        var likelihoods = new Dictionary<PhenotypeInfo<string>, decimal>();
+        var genotypeNameKeys = new List<GenotypeNameKey>();
+        var likelihoods = new Dictionary<GenotypeNameKey, decimal>();
+
+        // The interning the pairing loop does, reproduced here rather than stubbed. An id per DISTINCT haplotype name
+        // form is what makes the collapse case below land on one key without this helper arranging it.
+        var idByName = new Dictionary<LociInfo<string>, int>();
+        var haplotypeNamesById = new List<LociInfo<string>>();
+
+        int IdOf(LociInfo<HlaAtKnownTypingCategory> haplotype)
+        {
+            var names = haplotype.Map(hla => hla?.Hla);
+
+            if (!idByName.TryGetValue(names, out var id))
+            {
+                id = haplotypeNamesById.Count;
+                idByName[names] = id;
+                haplotypeNamesById.Add(names);
+            }
+
+            return id;
+        }
 
         foreach (var (genotype, likelihood) in keptPairs)
         {
-            var hlaNames = genotype.ToHlaNames();
-
             // The truncater is handed pool indices rather than genotypes, so a fixture genotype is split into the two
             // haplotypes it would have been paired from. PhenotypeInfo equality is positional, so re-combining them
             // yields the same value - which is what the assertions above compare against.
-            haplotypes.Add(genotype.ToLociInfo((_, position1, _) => position1));
-            haplotypes.Add(genotype.ToLociInfo((_, _, position2) => position2));
+            var position1 = genotype.ToLociInfo((_, p1, _) => p1);
+            var position2 = genotype.ToLociInfo((_, _, p2) => p2);
+
+            haplotypes.Add(position1);
+            haplotypes.Add(position2);
+
+            var nameKey = new GenotypeNameKey(IdOf(position1), IdOf(position2));
 
             genotypePairs.Add(new GenotypePair(haplotypes.Count - 2, haplotypes.Count - 1));
-            genotypeHlaNames.Add(hlaNames);
-            likelihoods[hlaNames] = likelihood;
+            genotypeNameKeys.Add(nameKey);
+            likelihoods[nameKey] = likelihood;
         }
 
-        var expanded = new ExpandedGenotypes(haplotypes, genotypePairs, genotypeHlaNames, likelihoods);
+        var expanded = new ExpandedGenotypes(
+            haplotypes, genotypePairs, genotypeNameKeys, likelihoods, haplotypeNamesById);
 
         return ExpandedGenotypeTruncater.TruncateGenotypes(likelihoods, expanded, cap);
     }

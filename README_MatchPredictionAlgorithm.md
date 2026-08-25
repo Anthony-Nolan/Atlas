@@ -75,7 +75,7 @@ The cost of expanding one subject is driven by two numbers: **H**, the number of
 the tail). Pairing is O(S²), so a subject in the tail can produce over a million candidate genotypes, of which
 truncation keeps 2,000 (see [ADR Phase2/006](ArchitecturalDecisionRecord/Phase2/006-MatchPredictionAmbiguousGenotypeApproximation.md)).
 
-Four choices follow from that, and each is load-bearing rather than incidental:
+Five choices follow from that, and each is load-bearing rather than incidental:
 
 1. **The projected pool is cached per frequency set, not rebuilt per subject.** Grouping a set's haplotypes by typing
    category depends only on the set, so it belongs to the set's cache entry (`FrequencySetCacheEntry.ProjectedPool`).
@@ -86,8 +86,13 @@ Four choices follow from that, and each is load-bearing rather than incidental:
 3. **A frequency is resolved once per survivor, not once per genotype.** A genotype's likelihood is the product of its
    two haplotype frequencies, and a frequency is a pure function of `(set, haplotype, excluded loci)`. Resolving per
    genotype does O(S²) awaited cache lookups where O(S) suffice.
-4. **A genotype is carried as two pool indices and built only if truncation keeps it.** A `PhenotypeInfo<T>` is seven
-   objects. Building one per candidate pair, when 2,000 of a million survive, is the bulk of the allocation.
+4. **A genotype is carried as two pool indices and an eight-byte name key, and nothing is built until truncation has
+   chosen.** A `PhenotypeInfo<T>` is seven objects. Building one per candidate pair, when 2,000 of a million survive,
+   is the bulk of the allocation. Both `GenotypePair` and `GenotypeNameKey` are eight bytes in a contiguous list.
+5. **A genotype's name identity is two interned haplotype ids, not its name form.** The likelihood dictionary is keyed
+   by `GenotypeNameKey`, which indexes one entry per *distinct* haplotype name form. There are only S of those, against
+   up to a million kept pairs, so the name forms are interned once per survivor and the pairing loop keys on integers.
+   This is the same equality as the name form, not an approximation of it — see the type's own remarks for why.
 
 The same "resolve once, where the inputs are still in hand" reasoning applies twice more:
 
@@ -123,7 +128,7 @@ pinned by `ImputationEquivalenceTests`, `ExpandedGenotypeTruncaterTests`, `PairR
 * **The likelihood multiplication order is fixed:** position 1, then position 2, then the homozygosity correction.
   `decimal` multiplication carries scale, and these likelihoods are compared for exact equality.
 * **`ExpandedGenotypes.GenotypePairs` is a list, not a set, and cannot lose an entry to de-duplication.** It is kept
-  index-aligned with `GenotypeHlaNames`; anything that appends to one without the other mis-pairs a genotype with
+  index-aligned with `GenotypeNameKeys`; anything that appends to one without the other mis-pairs a genotype with
   another genotype's likelihood.
 
 ## HLA versioning

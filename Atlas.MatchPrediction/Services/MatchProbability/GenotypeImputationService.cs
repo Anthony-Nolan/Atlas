@@ -7,8 +7,6 @@ using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
-// The imputation output key - group names at the resolution the HF set stored, typing category erased.
-using HfSetGenotypeNames = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
 using Atlas.MatchPrediction.ApplicationInsights;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
@@ -70,7 +68,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             // If there is no ambiguity for an input genotype, we do not need to use haplotype frequencies to work out the likelihood of said genotype - it is already guaranteed!
             if (genotypeLikelihoods.Count == 1)
             {
-                genotypeLikelihoods = new Dictionary<HfSetGenotypeNames, decimal> { [genotypeLikelihoods.Keys.Single()] = 1 };
+                genotypeLikelihoods = new Dictionary<GenotypeNameKey, decimal> { [genotypeLikelihoods.Keys.Single()] = 1 };
             }
 
             // The names come back from the expansion, index-aligned with the pairs, so truncation derives none of its

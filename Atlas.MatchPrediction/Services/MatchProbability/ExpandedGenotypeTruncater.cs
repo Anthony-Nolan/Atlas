@@ -40,16 +40,15 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         ///     It would also allow us to have more faith in the accuracy of the results - as we'd confirm that we're only ever discarding statistically insignificant values
         ///     However this would come at a cost of not being able to guarantee the necessary performance of the match prediction algorithm.
         /// </summary>
-        /// <param name="likelihoods">The likelihood of each distinct genotype, keyed by its HLA names.</param>
+        /// <param name="likelihoods">The likelihood of each distinct genotype, keyed by its name identity.</param>
         /// <param name="expanded">
-        /// The expansion, which carries each genotype as a pair of pool indices plus its HLA-name form, index for
-        /// index. The pairing loop has already built that name form in order to key <paramref name="likelihoods"/>, so
-        /// membership of the kept key set is tested without re-deriving it. The genotype itself is built <b>here</b>,
-        /// for the survivors only - a capped donor keeps 2,000 of up to 1.65M.
+        /// The expansion, which carries each genotype as a pair of pool indices plus its <c>GenotypeNameKey</c>, index
+        /// for index, so membership of the kept key set is tested without deriving a name form. Both the name form and
+        /// the genotype are built <b>here</b>, for the survivors only - a capped donor keeps 2,000 of up to 1.65M.
         /// </param>
         /// <param name="maximumExpandedGenotypesPerInput">The cap - at most this many genotypes are kept.</param>
         public static ImputedGenotypes TruncateGenotypes(
-            Dictionary<HfSetGenotypeNames, decimal> likelihoods,
+            Dictionary<GenotypeNameKey, decimal> likelihoods,
             ExpandedGenotypes expanded,
             int maximumExpandedGenotypesPerInput)
         {
@@ -63,17 +62,29 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var truncatedGenotypes = new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>>();
             for (var i = 0; i < expanded.GenotypeCount; i++)
             {
-                if (truncatedLikelihoods.ContainsKey(expanded.GenotypeHlaNames[i]))
+                if (truncatedLikelihoods.ContainsKey(expanded.GenotypeNameKeys[i]))
                 {
                     truncatedGenotypes.Add(expanded.Materialise(i));
                 }
             }
 
+            // The name forms are built HERE, one per surviving key, because this is the first point at which
+            // which-keys-survive is known - at most the cap, rather than one per pair the expansion kept.
+            //
+            // Built by enumerating truncatedLikelihoods in order and inserting in that order, which is what preserves
+            // the property MostLikelyFirst exists to guarantee: the kept dictionary enumerates by descending
+            // likelihood, so SumDecimals below adds in a fixed sequence, and decimal addition is order-sensitive.
+            var namedLikelihoods = new Dictionary<HfSetGenotypeNames, decimal>(truncatedLikelihoods.Count);
+            foreach (var (nameKey, likelihood) in truncatedLikelihoods)
+            {
+                namedLikelihoods[expanded.MaterialiseNames(nameKey)] = likelihood;
+            }
+
             return new ImputedGenotypes
             {
-                GenotypeLikelihoods = truncatedLikelihoods,
+                GenotypeLikelihoods = namedLikelihoods,
                 Genotypes = truncatedGenotypes,
-                SumOfLikelihoods = truncatedLikelihoods.Values.SumDecimals()
+                SumOfLikelihoods = namedLikelihoods.Values.SumDecimals()
             };
         }
 
@@ -93,8 +104,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         /// arbitrary eviction. <c>ExpandedGenotypeTruncaterTests</c> pins it.
         /// </para>
         /// </summary>
-        private static Dictionary<HfSetGenotypeNames, decimal> MostLikelyFirst(
-            Dictionary<HfSetGenotypeNames, decimal> likelihoods,
+        private static Dictionary<GenotypeNameKey, decimal> MostLikelyFirst(
+            Dictionary<GenotypeNameKey, decimal> likelihoods,
             int maximum)
         {
             if (likelihoods.Count <= maximum)
@@ -111,7 +122,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             // the head becomes the new minimum and leaves again immediately, which is precisely "of two tied keys, the
             // earlier one survives".
             var mostLikely =
-                new PriorityQueue<HfSetGenotypeNames, (decimal Likelihood, int NegatedInsertionIndex)>(maximum);
+                new PriorityQueue<GenotypeNameKey, (decimal Likelihood, int NegatedInsertionIndex)>(maximum);
             var insertionIndex = 0;
 
             foreach (var (genotype, likelihood) in likelihoods)
