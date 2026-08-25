@@ -34,9 +34,17 @@ public interface IHaplotypeFrequencyCache
     void RemoveActiveHaplotypeFrequencySets();
 
     /// <summary>
-    /// Returns the cached entry for the set, loading it from the database on first access. Loading also kicks off
-    /// the (slower) background pre-consolidation, which populates <see cref="FrequencySetCacheEntry.ConsolidatedFrequencies"/>
-    /// on the same entry once complete.
+    /// Returns the cached entry for the set, loading it from the database on first access. Loading also runs the
+    /// (slower) missing-loci pre-consolidation, which populates <see cref="FrequencySetCacheEntry.ConsolidatedFrequencies"/>
+    /// on the same entry.
+    ///
+    /// <para>
+    /// Whether this method <b>waits</b> for that is
+    /// <c>HaplotypeFrequencySetCacheSettings.AwaitConsolidatedFrequencyWarm</c>. False - the default - returns as soon
+    /// as the set is loaded and lets the pre-consolidation finish in the background, so a caller arriving during the
+    /// warm falls back to a direct per-haplotype scan. True returns only once the collection is ready, which is what a
+    /// precompute wants and a search does not.
+    /// </para>
     /// </summary>
     Task<FrequencySetCacheEntry> GetAllHaplotypeFrequencies(int setId);
 
@@ -111,10 +119,24 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
             {
                 var entry = await BuildEntryFromDatabase(setId);
 
-                // The same entry instance is what gets cached, so the background task populates exactly the object
-                // future callers will read. It is deliberately not awaited - the full pre-consolidation is slow and
-                // must not delay the first lookup, which falls back to a direct calculation while ConsolidatedFrequencies is null.
-                _ = Task.Run(() => WarmConsolidatedFrequencies(setId, entry));
+                // The same entry instance is what gets warmed either way, so the pre-consolidation populates exactly
+                // the object future callers will read. Exactly one writer in both modes - the branch decides only
+                // whether that writer is on the critical path.
+                if (cacheSettings.AwaitConsolidatedFrequencyWarm)
+                {
+                    // Inside the GetOrAddAsync factory, so the wait happens once per set and every concurrent caller
+                    // for the same set awaits the same lazy task rather than racing it. When this returns,
+                    // ConsolidatedFrequencies is populated and no caller can reach the direct-scan fallback, which is
+                    // the whole point - a scan costs roughly a thousand times a warm read.
+                    WarmConsolidatedFrequencies(setId, entry);
+                }
+                else
+                {
+                    // The right behaviour where a request is waiting: the full pre-consolidation is slow and must not
+                    // delay the first lookup, which falls back to a direct calculation while ConsolidatedFrequencies
+                    // is null.
+                    _ = Task.Run(() => WarmConsolidatedFrequencies(setId, entry));
+                }
 
                 return entry;
             }

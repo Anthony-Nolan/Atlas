@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Caching;
 using Atlas.Common.Public.Models.GeneticData;
@@ -40,11 +41,19 @@ internal class HaplotypeFrequencyCacheTests
         frequencyConsolidator = Substitute.For<IFrequencyConsolidator>();
         logger = Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
 
+        // Pinned rather than left to AutoFixture: AwaitConsolidatedFrequencyWarm decides whether the pre-consolidation
+        // is on the critical path, so every test below would otherwise be exercising whichever mode the fixture picked.
+        sut = BuildSut(awaitConsolidatedFrequencyWarm: false);
+    }
+
+    private HaplotypeFrequencyCache BuildSut(bool awaitConsolidatedFrequencyWarm)
+    {
         var cacheSettings = fixture.Build<HaplotypeFrequencySetCacheSettings>()
             .With(x => x.ActiveSetCacheExpiryMinutes, 5)
+            .With(x => x.AwaitConsolidatedFrequencyWarm, awaitConsolidatedFrequencyWarm)
             .Create();
 
-        sut = new HaplotypeFrequencyCache(
+        return new HaplotypeFrequencyCache(
             AppCacheBuilder.NewPersistentCacheProvider(),
             frequencyRepository,
             frequencySetRepository,
@@ -174,6 +183,66 @@ internal class HaplotypeFrequencyCacheTests
         // Once warmed, the value is read from the collection - no per-haplotype direct calculation.
         frequencyConsolidator.DidNotReceive().ConsolidateFrequenciesForHaplotype(
             Arg.Any<FrequencySetCacheEntry>(), Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>());
+    }
+
+    // ---- AwaitConsolidatedFrequencyWarm ----------------------------------------------------------------------------
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenAwaitingTheWarm_ReturnsWithConsolidatedFrequenciesAlreadyPopulated()
+    {
+        const int setId = 6;
+        var awaitingSut = BuildSut(awaitConsolidatedFrequencyWarm: true);
+        frequencyRepository.GetAllHaplotypeFrequencies(setId).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.5m)]);
+        frequencyConsolidator.PreConsolidateFrequenciesForCommonMissingLoci(Arg.Any<FrequencySetCacheEntry>())
+            .Returns(FrozenDictionary<HaplotypeKey, decimal>.Empty);
+
+        var entry = await awaitingSut.GetAllHaplotypeFrequencies(setId);
+
+        // No WaitUntil, deliberately: the point of the setting is that this holds the instant the call returns, so a
+        // poll here would hide the very thing being asserted.
+        entry.ConsolidatedFrequencies.Should().NotBeNull();
+    }
+
+    [Test]
+    public async Task GetConsolidatedFrequency_WhenAwaitingTheWarm_NeverFallsBackToADirectScan()
+    {
+        const int setId = 7;
+        const decimal expectedFrequency = 0.77m;
+        var awaitingSut = BuildSut(awaitConsolidatedFrequencyWarm: true);
+        var hla = new HfSetHaplotypeNames(valueA: "a", valueB: "b", valueC: "c", valueDqb1: "dqb1", valueDrb1: "drb1");
+
+        frequencyRepository.GetAllHaplotypeFrequencies(setId).Returns([Record("a", "b", "c", "dqb1", "drb1", expectedFrequency)]);
+        frequencyConsolidator.PreConsolidateFrequenciesForCommonMissingLoci(Arg.Any<FrequencySetCacheEntry>())
+            .Returns(ci =>
+            {
+                var entry = ci.Arg<FrequencySetCacheEntry>();
+                var key = entry.Interner.ConvertWherePossible("a", "b", "c", "dqb1", "drb1").RemoveLoci([Locus.C]);
+                return new Dictionary<HaplotypeKey, decimal> { [key] = expectedFrequency }.ToFrozenDictionary();
+            });
+
+        // The very first consolidated read of the set - which is exactly the one that loses the race when the warm is
+        // not awaited, and which costs a full per-haplotype scan rather than a dictionary read.
+        var result = await awaitingSut.GetConsolidatedFrequency(setId, hla, new HashSet<Locus> { Locus.C });
+
+        result.Should().Be(expectedFrequency);
+        frequencyConsolidator.DidNotReceive().ConsolidateFrequenciesForHaplotype(
+            Arg.Any<FrequencySetCacheEntry>(), Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>());
+    }
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenAwaitingTheWarm_ConsolidatesOncePerSet()
+    {
+        const int setId = 8;
+        var awaitingSut = BuildSut(awaitConsolidatedFrequencyWarm: true);
+        frequencyRepository.GetAllHaplotypeFrequencies(setId).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.5m)]);
+        frequencyConsolidator.PreConsolidateFrequenciesForCommonMissingLoci(Arg.Any<FrequencySetCacheEntry>())
+            .Returns(FrozenDictionary<HaplotypeKey, decimal>.Empty);
+
+        await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => awaitingSut.GetAllHaplotypeFrequencies(setId)));
+
+        // The standing hazard is a second writer of ConsolidatedFrequencies. Awaiting inside the GetOrAddAsync
+        // factory is what prevents it: concurrent callers share one lazy task rather than each starting a warm.
+        frequencyConsolidator.Received(1).PreConsolidateFrequenciesForCommonMissingLoci(Arg.Any<FrequencySetCacheEntry>());
     }
 
     private async Task WaitForConsolidation(int setId) =>

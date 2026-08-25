@@ -171,3 +171,19 @@ The following settings require real values to run locally:
 ```
 All other settings have safe defaults for local development (Azurite for storage, local SQL Server for the database).
 
+### `HaplotypeFrequencySetCache.AwaitConsolidatedFrequencyWarm`
+
+Loading a haplotype frequency set also runs a missing-loci pre-consolidation, which is three passes over the whole set
+(up to ~275,000 haplotypes). This setting decides whether the load **waits** for it.
+
+* `false` (the default, and what every host did before the setting existed) — the load returns as soon as the set is in
+  memory and the pre-consolidation finishes in the background. A caller arriving during the warm falls back to a direct
+  per-haplotype scan, which is roughly a thousand times the cost of a warm read but affects only the few callers that
+  lose the race. **Leave it false for anything serving a search**, where one request's latency is what matters.
+* `true` — the load returns only once the consolidated collection is ready, so no caller can reach the fallback. **Set
+  it true for a precompute**, where no single request's latency matters and the same set serves thousands of subjects.
+
+The pre-consolidation runs either way, and there is exactly one writer of `FrequencySetCacheEntry.ConsolidatedFrequencies`
+in both modes — the setting moves that work on to or off the critical path, nothing more. Note that a machine with spare
+cores will show `true` as a wall-clock regression, because the warm no longer overlaps the first subjects.
+
