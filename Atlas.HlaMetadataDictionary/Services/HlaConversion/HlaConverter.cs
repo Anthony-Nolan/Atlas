@@ -1,5 +1,6 @@
 ﻿using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils.Extensions;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
@@ -13,6 +14,15 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
     internal interface IHlaConverter
     {
         Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, HlaConversionBehaviour conversionBehaviour);
+
+        /// <summary>
+        /// <see cref="ConvertHla"/> for a caller that treats an unknown HLA name as an answer. See
+        /// <c><seealso cref="MetadataServiceBase{T}.TryGetMetadata"/>MetadataServiceBase.TryGetMetadata</c> for why an infrastructure fault still throws.
+        /// </summary>
+        Task<(bool WasFound, IReadOnlyCollection<string> Hla)> TryConvertHla(
+            Locus locus,
+            string hlaName,
+            HlaConversionBehaviour conversionBehaviour);
     }
 
     internal class HlaConverter : IHlaConverter
@@ -64,6 +74,62 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
                 default:
                     throw new ArgumentOutOfRangeException(nameof(conversionBehaviour), conversionBehaviour, null);
             }
+        }
+
+        /// <inheritdoc />
+        public async Task<(bool WasFound, IReadOnlyCollection<string> Hla)> TryConvertHla(
+            Locus locus,
+            string hlaName,
+            HlaConversionBehaviour conversionBehaviour)
+        {
+            if (hlaName.IsNullOrEmpty() || conversionBehaviour == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            switch (conversionBehaviour.TargetHlaCategory)
+            {
+                case TargetHlaCategory.GGroup:
+                {
+                    var (wasFound, scoringInfo) = await TryGetHlaScoringInfo(locus, hlaName, conversionBehaviour.HlaNomenclatureVersion);
+                    return (wasFound, wasFound ? scoringInfo.MatchingGGroups.ToList() : null);
+                }
+                case TargetHlaCategory.PGroup:
+                {
+                    var (wasFound, scoringInfo) = await TryGetHlaScoringInfo(locus, hlaName, conversionBehaviour.HlaNomenclatureVersion);
+                    return (wasFound, wasFound ? scoringInfo.MatchingPGroups.ToList() : null);
+                }
+                case TargetHlaCategory.SmallGGroup:
+                {
+                    var (wasFound, smallGGroups) = await smallGGroupMetadataService.TryGetSmallGGroups(
+                        locus, hlaName, conversionBehaviour.HlaNomenclatureVersion);
+                    return (wasFound, wasFound ? smallGGroups.ToList() : null);
+                }
+                default:
+                    try
+                    {
+                        return (true, await ConvertHla(locus, hlaName, conversionBehaviour));
+                    }
+                    catch (HlaMetadataDictionaryException)
+                    {
+                        return (false, null);
+                    }
+            }
+        }
+
+        private async Task<(bool WasFound, IHlaScoringInfo ScoringInfo)> TryGetHlaScoringInfo(
+            Locus locus,
+            string hlaName,
+            string hlaNomenclatureVersion)
+        {
+            if (hlaName == NewAllele)
+            {
+                return (true, new NewAlleleScoringInfo());
+            }
+
+            var (wasFound, metadata) = await scoringMetadataService.TryGetHlaMetadata(locus, hlaName, hlaNomenclatureVersion);
+
+            return (wasFound, wasFound ? metadata.HlaScoringInfo : null);
         }
 
         private async Task<IHlaScoringInfo> GetHlaScoringInfo(Locus locus, string hlaName, string hlaNomenclatureVersion)
