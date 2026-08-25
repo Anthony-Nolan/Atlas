@@ -7,6 +7,12 @@ using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Services.HlaConversion;
 using MoreLinq.Extensions;
 
+// The submitted typing expanded to the set of every group name each position COULD be, in one typing category - an
+// ambiguous typing (MAC, XX code, serology) yields many per position. One of the several distinct things a
+// PhenotypeInfo<string...> means in this codebase.
+using PossibleGroupsPerPosition =
+    Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<System.Collections.Generic.ISet<string>>;
+
 namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
 {
     internal interface ICompressedPhenotypeConverter
@@ -25,7 +31,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
         /// Excluded loci will not be converted, and will be set to `null`.
         /// Provided `null`s will be preserved.
         /// </returns>
-        Task<PhenotypeInfo<ISet<string>>> ConvertPhenotype(
+        Task<PossibleGroupsPerPosition> ConvertPhenotype(
             CompressedPhenotypeExpanderInput input,
             HaplotypeTypingCategory category);
     }
@@ -43,7 +49,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
         }
 
         /// <inheritdoc />
-        public async Task<PhenotypeInfo<ISet<string>>> ConvertPhenotype(
+        public async Task<PossibleGroupsPerPosition> ConvertPhenotype(
             CompressedPhenotypeExpanderInput input,
             HaplotypeTypingCategory category)
         {
@@ -57,7 +63,7 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
             return await ConvertPhenotypeToTargetCategory(input, hfSetHmd, matchingHmd, category);
         }
 
-        private async Task<PhenotypeInfo<ISet<string>>> ConvertPhenotypeToTargetCategory(
+        private async Task<PossibleGroupsPerPosition> ConvertPhenotypeToTargetCategory(
             CompressedPhenotypeExpanderInput expanderInput,
             IHlaMetadataDictionary hfSetHmd,
             IHlaMetadataDictionary matchingHmd,

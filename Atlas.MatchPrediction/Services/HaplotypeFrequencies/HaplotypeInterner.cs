@@ -3,6 +3,8 @@ using System;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Data.Models;
+// One haplotype's group names, one per locus - the same alias the three HaplotypeFrequency* files in this folder use.
+using HfSetHaplotypeNames = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 
@@ -93,7 +95,7 @@ public sealed class HaplotypeInterner
         _ => throw new ArgumentOutOfRangeException(nameof(locus), locus, "Haplotypes carry no allele at this locus.")
     };
 
-    public LociInfo<string> ReverseLookup(HaplotypeKey key)
+    public HfSetHaplotypeNames ReverseLookup(HaplotypeKey key)
         // Named args are essential: LociInfo's positional constructor is (A, B, C, Dpb1, Dqb1, Drb1) - haplotypes have no
         // Dpb1, so passing five positional values would shift Dqb1/Drb1 into the wrong loci and drop Drb1 entirely.
         => new(valueA: A.GetName(key.A), valueB: B.GetName(key.B), valueC: C.GetName(key.C), valueDqb1: Dqb1.GetName(key.Dqb1), valueDrb1: Drb1.GetName(key.Drb1));

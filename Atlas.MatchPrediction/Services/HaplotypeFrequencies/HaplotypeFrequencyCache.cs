@@ -14,7 +14,9 @@ using LazyCache;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
-using HaplotypeHla = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
+// ONE haplotype's names - one per locus, at the resolution the frequency set stored them. A LociInfo, not a
+// PhenotypeInfo: the genotype form (HfSetGenotypeNames) holds two names per locus, being a pair of these.
+using HfSetHaplotypeNames = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 
@@ -44,7 +46,7 @@ public interface IHaplotypeFrequencyCache
     /// Otherwise calculates this single value directly from the (already in-memory) frequency set,
     /// so the first caller is not blocked on the significantly slower full pre-consolidation.
     /// </summary>
-    Task<decimal> GetConsolidatedFrequency(int setId, HaplotypeHla hla, ISet<Locus> excludedLoci);
+    Task<decimal> GetConsolidatedFrequency(int setId, HfSetHaplotypeNames hla, ISet<Locus> excludedLoci);
 }
 
 internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
@@ -120,7 +122,7 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
     }
 
     /// <inheritdoc />
-    public async Task<decimal> GetConsolidatedFrequency(int setId, HaplotypeHla hla, ISet<Locus> excludedLoci)
+    public async Task<decimal> GetConsolidatedFrequency(int setId, HfSetHaplotypeNames hla, ISet<Locus> excludedLoci)
     {
         var entry = await GetAllHaplotypeFrequencies(setId);
 
@@ -168,7 +170,7 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
         }
     }
 
-    private decimal ReadConsolidatedFrequency(FrequencySetCacheEntry entry, HaplotypeHla hla, ISet<Locus> excludedLoci)
+    private decimal ReadConsolidatedFrequency(FrequencySetCacheEntry entry, HfSetHaplotypeNames hla, ISet<Locus> excludedLoci)
     {
         var keyToSeek = entry.Interner.ConvertWherePossible(hla.A, hla.B, hla.C, hla.Dqb1, hla.Drb1);
         keyToSeek = keyToSeek.RemoveLoci(excludedLoci.ToArray());

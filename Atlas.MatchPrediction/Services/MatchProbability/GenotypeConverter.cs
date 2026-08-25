@@ -17,15 +17,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GenotypeOfKnownTypingCategory = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<Atlas.MatchPrediction.ExternalInterface.Models.HlaAtKnownTypingCategory>;
+// This class holds two PhenotypeInfo<string> that mean different things, one field apart - the typing as submitted,
+// and the imputation output named at the resolution the frequency set stores.
+using SubmittedPhenotype = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
+using HfSetGenotypeNames = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
     internal class GenotypeConverterInput
     {
-        public PhenotypeInfo<string> CompressedPhenotype { get; set; }
+        public SubmittedPhenotype CompressedPhenotype { get; set; }
         public ISet<Locus> AllowedLoci { get; set; }
         public ISet<GenotypeOfKnownTypingCategory> Genotypes { get; set; }
-        public IReadOnlyDictionary<PhenotypeInfo<string>, decimal> GenotypeLikelihoods { get; set; }
+        public IReadOnlyDictionary<HfSetGenotypeNames, decimal> GenotypeLikelihoods { get; set; }
         public string HfSetHlaNomenclatureVersion { get; set; }
         public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
         public string SubjectLogDescription { get; set; }

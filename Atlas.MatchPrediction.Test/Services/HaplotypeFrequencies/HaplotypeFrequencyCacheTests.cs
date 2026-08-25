@@ -15,7 +15,7 @@ using AwesomeAssertions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
-using HaplotypeHla = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
+using HfSetHaplotypeNames = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies;
 
@@ -135,11 +135,11 @@ internal class HaplotypeFrequencyCacheTests
         // Leaving PreConsolidate... unconfigured returns null, so ConsolidatedFrequencies stays null and the direct path is taken.
         frequencyConsolidator.ConsolidateFrequenciesForHaplotype(
                 Arg.Any<FrequencySetCacheEntry>(),
-                Arg.Any<HaplotypeHla>(),
+                Arg.Any<HfSetHaplotypeNames>(),
                 Arg.Any<ISet<Locus>>())
             .Returns(expectedFrequency);
 
-        var hla = new HaplotypeHla(valueA: "a", valueB: "b", valueC: "c", valueDqb1: "dqb1", valueDrb1: "drb1");
+        var hla = new HfSetHaplotypeNames(valueA: "a", valueB: "b", valueC: "c", valueDqb1: "dqb1", valueDrb1: "drb1");
 
         var result = await sut.GetConsolidatedFrequency(setId, hla, new HashSet<Locus> { Locus.C });
 
@@ -151,7 +151,7 @@ internal class HaplotypeFrequencyCacheTests
     {
         const int setId = 5;
         const decimal expectedFrequency = 0.42m;
-        var hla = new HaplotypeHla(valueA: "a", valueB: "b", valueC: "c", valueDqb1: "dqb1", valueDrb1: "drb1");
+        var hla = new HfSetHaplotypeNames(valueA: "a", valueB: "b", valueC: "c", valueDqb1: "dqb1", valueDrb1: "drb1");
         var excludedLoci = new HashSet<Locus> { Locus.C };
 
         frequencyRepository.GetAllHaplotypeFrequencies(setId).Returns([Record("a", "b", "c", "dqb1", "drb1", expectedFrequency)]);
@@ -173,7 +173,7 @@ internal class HaplotypeFrequencyCacheTests
         result.Should().Be(expectedFrequency);
         // Once warmed, the value is read from the collection - no per-haplotype direct calculation.
         frequencyConsolidator.DidNotReceive().ConsolidateFrequenciesForHaplotype(
-            Arg.Any<FrequencySetCacheEntry>(), Arg.Any<HaplotypeHla>(), Arg.Any<ISet<Locus>>());
+            Arg.Any<FrequencySetCacheEntry>(), Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>());
     }
 
     private async Task WaitForConsolidation(int setId) =>

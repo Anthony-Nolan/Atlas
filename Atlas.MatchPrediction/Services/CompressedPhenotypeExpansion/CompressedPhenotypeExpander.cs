@@ -10,6 +10,27 @@ using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 
+// Aliases, not wrapper types, and the difference is the point. This file is where three of the several meanings of
+// PhenotypeInfo<string> meet, one method apart, and nothing but these names tells them apart:
+//
+//   SubmittedPhenotype        - the subject's typing as submitted: allele, MAC, XX code or serology. Any resolution,
+//                               honestly so, which is why it gets an alias and never a wrapper type.
+//   PossibleGroupsPerPosition - that typing expanded to the set of every group name each position COULD be, one
+//                               typing category at a time. An ambiguous typing yields many per position.
+//   HfSetGenotypeNames        - a genotype's names at the resolution the haplotype frequency set stores them, which
+//                               is per row: P group, or G group where a null allele meant no P group existed. The
+//                               typing category is ERASED, so two survivors differing only in category MUST
+//                               collapse to one key.
+//   HfSetHaplotypeNames       - the same, for ONE haplotype: one name per locus rather than two.
+//
+// An alias is file-scoped and erases to string, so it buys documentation at the declaration and no type safety at
+// all. What it buys is that a reader of a declaration learns what the value is without leaving the file.
+using SubmittedPhenotype = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
+using HfSetGenotypeNames = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
+using HfSetHaplotypeNames = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
+using PossibleGroupsPerPosition =
+    Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<System.Collections.Generic.ISet<string>>;
+
 namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 
 internal class CompressedPhenotypeExpanderInput
@@ -17,7 +38,7 @@ internal class CompressedPhenotypeExpanderInput
     /// <summary>
     /// Given phenotype. Can be of any supported HLA resolution.
     /// </summary>
-    public PhenotypeInfo<string> Phenotype { get; set; }
+    public SubmittedPhenotype Phenotype { get; set; }
 
     /// <summary>
     /// Haplotype Frequency Set Id - used to fetch haplotypes, if needed
@@ -84,8 +105,8 @@ internal interface ICompressedPhenotypeExpander
 internal readonly record struct ExpandedGenotypes(
     IReadOnlyList<LociInfo<HlaAtKnownTypingCategory>> Haplotypes,
     List<GenotypePair> GenotypePairs,
-    List<PhenotypeInfo<string>> GenotypeHlaNames,
-    Dictionary<PhenotypeInfo<string>, decimal> Likelihoods)
+    List<HfSetGenotypeNames> GenotypeHlaNames,
+    Dictionary<HfSetGenotypeNames, decimal> Likelihoods)
 {
     /// <summary>Pre-truncation genotype count - the number of pairs the expansion kept.</summary>
     public int GenotypeCount => GenotypePairs?.Count ?? 0;
@@ -154,7 +175,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     {
         var allowedLoci = input.MatchPredictionParameters.AllowedLoci;
 
-        var groupsPerPosition = new DataByResolution<PhenotypeInfo<ISet<string>>>
+        var groupsPerPosition = new DataByResolution<PossibleGroupsPerPosition>
         {
             SmallGGroup = await converter.ConvertPhenotype(input, HaplotypeTypingCategory.SmallGGroup)
         };
@@ -182,7 +203,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         return await ExpandToPotentialDiplotypes(input.HfSetId, allowedLoci, groupsPerPosition, pool, interner);
     }
 
-    private static ExpandedGenotypes BuildSingleSmallGGenotype(DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
+    private static ExpandedGenotypes BuildSingleSmallGGenotype(DataByResolution<PossibleGroupsPerPosition> groupsPerPosition)
     {
         // The one certain genotype is still a pair - of the subject's own two positions rather than of two pool
         // haplotypes - so it goes down the same (haplotypes, pair) road as the expanded path, and every consumer sees
@@ -190,7 +211,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         var position1 = SingleGroupPerLocus(groupsPerPosition, LocusPosition.One);
         var position2 = SingleGroupPerLocus(groupsPerPosition, LocusPosition.Two);
 
-        var hlaNames = new PhenotypeInfo<string>(position1.Map(hla => hla?.Hla), position2.Map(hla => hla?.Hla));
+        var hlaNames = new HfSetGenotypeNames(position1.Map(hla => hla?.Hla), position2.Map(hla => hla?.Hla));
 
         // No frequency is resolved on this path and none is needed: one genotype is already certain, so
         // GenotypeImputationService replaces this placeholder with a likelihood of 1.
@@ -198,7 +219,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
             [position1, position2],
             [new GenotypePair(0, 1)],
             [hlaNames],
-            new Dictionary<PhenotypeInfo<string>, decimal> { [hlaNames] = 0m });
+            new Dictionary<HfSetGenotypeNames, decimal> { [hlaNames] = 0m });
     }
 
     /// <summary>
@@ -206,7 +227,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// behind <see cref="IsUnambiguousAtAllowedLoci"/>, which is what makes <c>Single()</c> safe.
     /// </summary>
     private static LociInfo<HlaAtKnownTypingCategory> SingleGroupPerLocus(
-        DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition,
+        DataByResolution<PossibleGroupsPerPosition> groupsPerPosition,
         LocusPosition position)
     {
         return groupsPerPosition.SmallGGroup.ToLociInfo((_, atPosition1, atPosition2) =>
@@ -219,7 +240,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
 
     private static bool IsUnambiguousAtAllowedLoci(
         ISet<Locus> allowedLoci,
-        DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
+        DataByResolution<PossibleGroupsPerPosition> groupsPerPosition)
     {
         return allowedLoci.All(l =>
         {
@@ -242,7 +263,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     private async Task<ExpandedGenotypes> ExpandToPotentialDiplotypes(
         int hfSetId,
         ISet<Locus> allowedLoci,
-        DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition,
+        DataByResolution<PossibleGroupsPerPosition> groupsPerPosition,
         DataByResolution<HaplotypeKey[]> pool,
         HaplotypeInterner interner)
     {
@@ -272,7 +293,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         // The name form of each survivor, once. The pairing loop then builds a genotype's name form - the one
         // PhenotypeInfo it cannot avoid, because it keys the likelihood - straight from two of these, rather than
         // building the category form first and mapping it.
-        var haplotypeNames = new LociInfo<string>[haplotypeList.Count];
+        var haplotypeNames = new HfSetHaplotypeNames[haplotypeList.Count];
         for (var h = 0; h < haplotypeList.Count; h++)
         {
             haplotypeNames[h] = haplotypeList[h].Map(hla => hla?.Hla);
@@ -295,8 +316,8 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         // Note also that Dictionary growth does NOT re-hash these keys expensively: LociInfo precomputes its hash in
         // its constructor and GetHashCode returns the cached value, so a resize re-reads an int per entry.
         var genotypePairs = new List<GenotypePair>();
-        var genotypeHlaNames = new List<PhenotypeInfo<string>>();
-        var likelihoods = new Dictionary<PhenotypeInfo<string>, decimal>();
+        var genotypeHlaNames = new List<HfSetGenotypeNames>();
+        var likelihoods = new Dictionary<HfSetGenotypeNames, decimal>();
 
         // Only keep diplotypes where, at every allowed locus, both haplotypes' HLA are represented within the target
         // phenotype (in either phase). This is the O(n^2) hot path, so it is written as an explicit loop to avoid the
@@ -329,7 +350,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
                     var names1 = haplotypeNames[i];
                     var names2 = haplotypeNames[j];
 
-                    var hlaNames = new PhenotypeInfo<string>(names1, names2);
+                    var hlaNames = new HfSetGenotypeNames(names1, names2);
 
                     // Appended together, on purpose adjacent: the two lists are read by index in lockstep
                     // downstream, so anything that adds to one without the other silently mis-pairs a genotype with
@@ -469,8 +490,8 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// </para>
     /// </summary>
     private static int HomozygosityCorrectionFactor(
-        LociInfo<string> haplotype1,
-        LociInfo<string> haplotype2,
+        HfSetHaplotypeNames haplotype1,
+        HfSetHaplotypeNames haplotype2,
         Locus[] allowedLoci)
     {
         foreach (var locus in allowedLoci)
@@ -509,7 +530,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         DataByResolution<HaplotypeKey[]> pool,
         HaplotypeInterner interner,
         ISet<Locus> allowedLoci,
-        DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
+        DataByResolution<PossibleGroupsPerPosition> groupsPerPosition)
     {
         // The fetch happens in the caller, which needs the pool to decide which conversions to make.
         var groupsPerLocus = groupsPerPosition.Map(CombineSetsAtLoci);
@@ -638,7 +659,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         return (haplotypeFrequencies.ProjectedPool, haplotypeFrequencies.Interner);
     }
 
-    private static LociInfo<ISet<string>> CombineSetsAtLoci(PhenotypeInfo<ISet<string>> phenotypeInfo)
+    private static LociInfo<ISet<string>> CombineSetsAtLoci(PossibleGroupsPerPosition phenotypeInfo)
     {
         // Null for a category that was not converted, which is a category the set holds no haplotypes in. Its pool
         // array is empty, so CollectSurvivors returns before it would read this - the null goes nowhere.

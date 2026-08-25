@@ -6,6 +6,10 @@ using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 
+// The truncation key. Group names at the resolution the HF set stored, typing category erased - which is why two
+// genotypes differing only in category share a slot here, and why the cap counts NAME forms, not genotypes.
+using HfSetGenotypeNames = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
+
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
     /// <summary>
@@ -45,7 +49,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         /// </param>
         /// <param name="maximumExpandedGenotypesPerInput">The cap - at most this many genotypes are kept.</param>
         public static ImputedGenotypes TruncateGenotypes(
-            Dictionary<PhenotypeInfo<string>, decimal> likelihoods,
+            Dictionary<HfSetGenotypeNames, decimal> likelihoods,
             ExpandedGenotypes expanded,
             int maximumExpandedGenotypesPerInput)
         {
@@ -89,8 +93,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         /// arbitrary eviction. <c>ExpandedGenotypeTruncaterTests</c> pins it.
         /// </para>
         /// </summary>
-        private static Dictionary<PhenotypeInfo<string>, decimal> MostLikelyFirst(
-            Dictionary<PhenotypeInfo<string>, decimal> likelihoods,
+        private static Dictionary<HfSetGenotypeNames, decimal> MostLikelyFirst(
+            Dictionary<HfSetGenotypeNames, decimal> likelihoods,
             int maximum)
         {
             if (likelihoods.Count <= maximum)
@@ -107,7 +111,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             // the head becomes the new minimum and leaves again immediately, which is precisely "of two tied keys, the
             // earlier one survives".
             var mostLikely =
-                new PriorityQueue<PhenotypeInfo<string>, (decimal Likelihood, int NegatedInsertionIndex)>(maximum);
+                new PriorityQueue<HfSetGenotypeNames, (decimal Likelihood, int NegatedInsertionIndex)>(maximum);
             var insertionIndex = 0;
 
             foreach (var (genotype, likelihood) in likelihoods)
