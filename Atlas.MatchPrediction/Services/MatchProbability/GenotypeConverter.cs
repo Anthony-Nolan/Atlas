@@ -27,8 +27,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     {
         public SubmittedPhenotype CompressedPhenotype { get; set; }
         public ISet<Locus> AllowedLoci { get; set; }
-        public ISet<GenotypeOfKnownTypingCategory> Genotypes { get; set; }
-        public IReadOnlyDictionary<HfSetGenotypeNames, decimal> GenotypeLikelihoods { get; set; }
+
+        /// <summary>
+        /// Each kept genotype arrives with its name form and its likelihood, so this class neither rebuilds the one nor
+        /// looks the other up. <see cref="ImputedGenotype"/> says why.
+        /// </summary>
+        public IReadOnlyList<ImputedGenotype> Genotypes { get; set; }
+
         public string HfSetHlaNomenclatureVersion { get; set; }
         public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
         public string SubjectLogDescription { get; set; }
@@ -101,22 +106,21 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
                 var converted = new List<GenotypeAtDesiredResolutions>(input.Genotypes.Count);
 
-                foreach (var genotype in input.Genotypes)
+                // No ToHlaNames() and no likelihood lookup: the truncater built that name form in order to select this
+                // genotype, and hands it over with the likelihood it selected it by. A phenotype-keyed probe here would
+                // be a twelve-object hash - and on collision a twelve-position equality - per kept genotype, for a
+                // value that was never in doubt.
+                foreach (var imputed in input.Genotypes)
                 {
                     var genotypeToConvert = noNullAllelesInCompressedPhenotype
-                        ? genotype
-                        : AccountForNullAlleleInCompressedPhenotype(genotype, nullAlleleInfoByPosition);
-
-                    // One ToHlaNames() per genotype, not two: it keys the likelihood here, and it is what
-                    // GenotypeAtDesiredResolutions stores as HaplotypeResolution, which is why that type takes the name
-                    // form rather than re-deriving it from the same genotype.
-                    var haplotypeResolution = genotype.ToHlaNames();
+                        ? imputed.Genotype
+                        : AccountForNullAlleleInCompressedPhenotype(imputed.Genotype, nullAlleleInfoByPosition);
 
                     converted.Add(new GenotypeAtDesiredResolutions
                     {
-                        HaplotypeResolution = haplotypeResolution,
+                        HaplotypeResolution = imputed.Names,
                         StringMatchableResolution = genotypeToConvert.MapByLocus(toPGroupsAtLocus),
-                        GenotypeLikelihood = input.GenotypeLikelihoods[haplotypeResolution]
+                        GenotypeLikelihood = imputed.Likelihood
                     });
                 }
 
@@ -153,11 +157,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 }
             };
 
-            foreach (var genotype in input.Genotypes)
+            foreach (var imputed in input.Genotypes)
             {
                 var genotypeToConvert = noNullAllelesInCompressedPhenotype
-                    ? genotype
-                    : AccountForNullAlleleInCompressedPhenotype(genotype, nullAlleleInfoByPosition);
+                    ? imputed.Genotype
+                    : AccountForNullAlleleInCompressedPhenotype(imputed.Genotype, nullAlleleInfoByPosition);
 
                 genotypeToConvert.EachPosition(collect);
             }

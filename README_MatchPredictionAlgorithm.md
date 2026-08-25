@@ -75,7 +75,7 @@ The cost of expanding one subject is driven by two numbers: **H**, the number of
 the tail). Pairing is O(S²), so a subject in the tail can produce over a million candidate genotypes, of which
 truncation keeps 2,000 (see [ADR Phase2/006](ArchitecturalDecisionRecord/Phase2/006-MatchPredictionAmbiguousGenotypeApproximation.md)).
 
-Five choices follow from that, and each is load-bearing rather than incidental:
+Six choices follow from that, and each is load-bearing rather than incidental:
 
 1. **The projected pool is cached per frequency set, not rebuilt per subject.** Grouping a set's haplotypes by typing
    category depends only on the set, so it belongs to the set's cache entry (`FrequencySetCacheEntry.ProjectedPool`).
@@ -93,6 +93,10 @@ Five choices follow from that, and each is load-bearing rather than incidental:
    by `GenotypeNameKey`, which indexes one entry per *distinct* haplotype name form. There are only S of those, against
    up to a million kept pairs, so the name forms are interned once per survivor and the pairing loop keys on integers.
    This is the same equality as the name form, not an approximation of it — see the type's own remarks for why.
+6. **Each kept genotype is handed over with its name form and its likelihood.** `ExpandedGenotypeTruncater` builds the
+   name form once per *surviving* key, at the first point at which which-keys-survive is known, and returns
+   `ImputedGenotype` triples. `GenotypeConverter` therefore neither re-derives a name form nor probes a
+   phenotype-keyed dictionary for a likelihood the truncater already had in hand.
 
 The same "resolve once, where the inputs are still in hand" reasoning applies twice more:
 
@@ -130,6 +134,12 @@ pinned by `ImputationEquivalenceTests`, `ExpandedGenotypeTruncaterTests`, `PairR
 * **`ExpandedGenotypes.GenotypePairs` is a list, not a set, and cannot lose an entry to de-duplication.** It is kept
   index-aligned with `GenotypeNameKeys`; anything that appends to one without the other mis-pairs a genotype with
   another genotype's likelihood.
+* **`ImputedGenotypes.SumOfLikelihoods` is summed over surviving name forms, not over genotypes.** Two genotypes that
+  differ only in typing category share one name form and one likelihood, so summing `Genotypes` would double-count.
+  The sum is also folded in descending-likelihood order, because `decimal` addition is order-sensitive and this number
+  is what the whole prediction is normalised against.
+* **`ImputedGenotypes.Genotypes` is ordered, and that order is the expansion's.** It is pairing order, hence survivor
+  order, hence the projected pool's order. Downstream sums run over this sequence.
 
 ## HLA versioning
 - There are two places in the algorithm where HLA typings have to be converted to a specific HLA category:

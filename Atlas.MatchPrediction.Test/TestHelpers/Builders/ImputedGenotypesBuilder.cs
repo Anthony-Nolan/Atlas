@@ -24,21 +24,23 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
         {
             imputedGenotypes = new ImputedGenotypes
             {
-                GenotypeLikelihoods = new Dictionary<PhenotypeInfo<string>, decimal>(),
-                Genotypes = new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>>(),
+                Genotypes = new List<ImputedGenotype>(),
                 SumOfLikelihoods = 0m
             };
         }
 
+        // One genotype carrying its own name form and likelihood - the shape a consumer reads, with nothing to rejoin.
         public ImputedGenotypesBuilder Default()
         {
             imputedGenotypes = new ImputedGenotypes
             {
-                GenotypeLikelihoods = new Dictionary<PhenotypeInfo<string>, decimal>
+                Genotypes = new List<ImputedGenotype>
                 {
-                    {new PhenotypeInfoBuilder<string>(BuilderDefaults.HlaName).Build(), BuilderDefaults.Likelihood}
+                    new(
+                        new KnownTypingCategoryGenotypeBuilder(BuilderDefaults.HlaName).Build(),
+                        new PhenotypeInfoBuilder<string>(BuilderDefaults.HlaName).Build(),
+                        BuilderDefaults.Likelihood)
                 },
-                Genotypes = new[] { new KnownTypingCategoryGenotypeBuilder(BuilderDefaults.HlaName).Build() }.ToHashSet(),
                 SumOfLikelihoods = BuilderDefaults.Likelihood
             };
 

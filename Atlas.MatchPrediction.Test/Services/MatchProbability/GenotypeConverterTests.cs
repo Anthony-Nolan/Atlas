@@ -269,8 +269,7 @@ internal class GenotypeConverterTests
         {
             CompressedPhenotype = new HfSetGenotypeNames(valueA: new LocusInfo<string>("01:01", nullAllele)),
             AllowedLoci = AllFiveLoci,
-            Genotypes = new HashSet<GenotypeOfKnownTypingCategory> { genotype },
-            GenotypeLikelihoods = new Dictionary<HfSetGenotypeNames, decimal> { [genotype.ToHlaNames()] = fixture.Create<decimal>() },
+            Genotypes = [new ImputedGenotype(genotype, genotype.ToHlaNames(), fixture.Create<decimal>())],
             HfSetHlaNomenclatureVersion = HfSetNomenclatureVersion,
             SubjectLogDescription = fixture.Create<string>()
         });
@@ -328,6 +327,10 @@ internal class GenotypeConverterTests
         return (await sut.ConvertGenotypesForMatchCalculation(Input(genotypes, likelihoods))).ToList();
     }
 
+    /// <summary>
+    /// The name form and the likelihood arrive attached to each genotype, so this helper does what the truncater does
+    /// in production: the converter itself never derives a genotype's name form.
+    /// </summary>
     private GenotypeConverterInput Input(
         IEnumerable<GenotypeOfKnownTypingCategory> genotypes,
         IReadOnlyDictionary<HfSetGenotypeNames, decimal> likelihoods) =>
@@ -337,8 +340,9 @@ internal class GenotypeConverterTests
             // one test that needs it builds its own input.
             CompressedPhenotype = new HfSetGenotypeNames(),
             AllowedLoci = AllFiveLoci,
-            Genotypes = genotypes.ToHashSet(),
-            GenotypeLikelihoods = likelihoods,
+            Genotypes = genotypes
+                .Select(genotype => new ImputedGenotype(genotype, genotype.ToHlaNames(), likelihoods[genotype.ToHlaNames()]))
+                .ToList(),
             HfSetHlaNomenclatureVersion = HfSetNomenclatureVersion,
             SubjectLogDescription = fixture.Create<string>()
         };

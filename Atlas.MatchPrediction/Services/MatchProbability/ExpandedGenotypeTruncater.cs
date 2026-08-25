@@ -54,37 +54,61 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         {
             var truncatedLikelihoods = MostLikelyFirst(likelihoods, maximumExpandedGenotypesPerInput);
 
+            // The name forms are built HERE, one per surviving key, because this is the first point at which
+            // which-keys-survive is known - at most the cap, rather than one per pair the expansion kept.
+            //
+            // Each is stored against its key rather than used AS a key. Keyed on the eight bytes of a GenotypeNameKey,
+            // one lookup yields both the name form and the likelihood, so a consumer needs neither to rebuild a name
+            // form nor to probe a phenotype-keyed dictionary with it.
+            //
+            // The key maps to a dense INDEX into two parallel lists, rather than to a (name form, likelihood) tuple,
+            // and that matters: a 24-byte dictionary value puts the entries array over the 85 KB large-object threshold
+            // at exactly the 2,000-genotype cap, which costs a Gen2 collection per capped donor. Two lists of the same
+            // length stay below it.
+            //
+            // Enumerated in MostLikelyFirst's order and summed in that order, which is the property that method exists
+            // to guarantee: descending likelihood, and therefore a fixed decimal addition order. The sum is over KEYS,
+            // not over genotypes - two genotypes differing only in typing category share one key and must not be
+            // counted twice.
+            var indexByKey = new Dictionary<GenotypeNameKey, int>(truncatedLikelihoods.Count);
+            var namesByIndex = new List<HfSetGenotypeNames>(truncatedLikelihoods.Count);
+            var likelihoodByIndex = new List<decimal>(truncatedLikelihoods.Count);
+            var sumOfLikelihoods = 0m;
+
+            foreach (var (nameKey, likelihood) in truncatedLikelihoods)
+            {
+                indexByKey[nameKey] = namesByIndex.Count;
+                namesByIndex.Add(expanded.MaterialiseNames(nameKey));
+                likelihoodByIndex.Add(likelihood);
+                sumOfLikelihoods += likelihood;
+            }
+
             // An indexed loop over the two parallel lists, rather than LINQ over the genotypes: this runs once per
             // PRE-truncation genotype, so a lambda and an enumerator here are paid up to 1.65M times per donor.
             //
             // Materialise() is inside the branch, so the seven objects a PhenotypeInfo costs are spent on the genotypes
             // that survive - at most the cap, plus any that share a surviving name key - rather than on all 1.65M.
-            var truncatedGenotypes = new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>>();
+            //
+            // A List, not a HashSet. Distinct (i, j) always give a distinct genotype - PhenotypeInfo equality is
+            // positional, the pool the indices address comes out of a HashSet so its members are distinct, and
+            // HlaAtKnownTypingCategory's equality includes the typing category - so a set here would have nothing to
+            // de-duplicate and would hash a twelve-object phenotype per survivor to find that out. Insertion order is
+            // what a HashSet enumerated in anyway, so every downstream sequence - GenotypeConverter's output, the
+            // cartesian product, its decimal sums - is unaffected.
+            var survivors = new List<ImputedGenotype>(truncatedLikelihoods.Count);
             for (var i = 0; i < expanded.GenotypeCount; i++)
             {
-                if (truncatedLikelihoods.ContainsKey(expanded.GenotypeNameKeys[i]))
+                if (indexByKey.TryGetValue(expanded.GenotypeNameKeys[i], out var index))
                 {
-                    truncatedGenotypes.Add(expanded.Materialise(i));
+                    survivors.Add(new ImputedGenotype(
+                        expanded.Materialise(i), namesByIndex[index], likelihoodByIndex[index]));
                 }
-            }
-
-            // The name forms are built HERE, one per surviving key, because this is the first point at which
-            // which-keys-survive is known - at most the cap, rather than one per pair the expansion kept.
-            //
-            // Built by enumerating truncatedLikelihoods in order and inserting in that order, which is what preserves
-            // the property MostLikelyFirst exists to guarantee: the kept dictionary enumerates by descending
-            // likelihood, so SumDecimals below adds in a fixed sequence, and decimal addition is order-sensitive.
-            var namedLikelihoods = new Dictionary<HfSetGenotypeNames, decimal>(truncatedLikelihoods.Count);
-            foreach (var (nameKey, likelihood) in truncatedLikelihoods)
-            {
-                namedLikelihoods[expanded.MaterialiseNames(nameKey)] = likelihood;
             }
 
             return new ImputedGenotypes
             {
-                GenotypeLikelihoods = namedLikelihoods,
-                Genotypes = truncatedGenotypes,
-                SumOfLikelihoods = namedLikelihoods.Values.SumDecimals()
+                Genotypes = survivors,
+                SumOfLikelihoods = sumOfLikelihoods
             };
         }
 
