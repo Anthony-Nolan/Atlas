@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
@@ -14,7 +15,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     ///
     /// When the number of genotypes is sufficiently large, it has been observed that many of the frequencies of expanded genotypes are significantly
     /// less likely than others (several orders of magnitude), and so this truncation works on the assumption that taking only the most common genotypes,
-    /// truncated to a number the algorithm can run in a reasonable timeframe, will not significantly affect the final probability outputs.  
+    /// truncated to a number the algorithm can run in a reasonable timeframe, will not significantly affect the final probability outputs.
     /// </summary>
     internal static class ExpandedGenotypeTruncater
     {
@@ -35,13 +36,33 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         ///     It would also allow us to have more faith in the accuracy of the results - as we'd confirm that we're only ever discarding statistically insignificant values
         ///     However this would come at a cost of not being able to guarantee the necessary performance of the match prediction algorithm.
         /// </summary>
+        /// <param name="expanded">
+        /// The expansion, which carries each genotype as a pair of pool indices plus its HLA-name form, index for
+        /// index. ATL-233 T3: the pairing loop already built the name form to key <paramref name="likelihoods"/>, and
+        /// re-deriving it here cost a second <c>ToHlaNames()</c> - six <c>LocusInfo</c> objects and a hash - for every
+        /// genotype <i>before</i> truncation, of which a capped donor keeps 2,000 out of up to 1,648,833. T3's strong
+        /// form goes further: the genotype itself is built <b>here</b>, for the survivors only.
+        /// </param>
         public static ImputedGenotypes TruncateGenotypes(
             Dictionary<PhenotypeInfo<string>, decimal> likelihoods,
-            ISet<PhenotypeInfo<HlaAtKnownTypingCategory>> genotypes,
+            ExpandedGenotypes expanded,
             int maximumExpandedGenotypesPerInput)
         {
-            var truncatedLikelihoods = likelihoods.OrderByDescending(g => g.Value).Take(maximumExpandedGenotypesPerInput).ToDictionary();
-            var truncatedGenotypes = genotypes.Where(p => truncatedLikelihoods.ContainsKey(p.ToHlaNames())).ToHashSet();
+            var truncatedLikelihoods = MostLikelyFirst(likelihoods, maximumExpandedGenotypesPerInput);
+
+            // An indexed loop over the two parallel lists, rather than LINQ over the genotypes: this runs once per
+            // PRE-truncation genotype, so a lambda and an enumerator here are paid up to 1.65M times per donor.
+            //
+            // Materialise() is inside the branch, so the seven objects a PhenotypeInfo costs are spent on the genotypes
+            // that survive - at most the cap, plus any that share a surviving name key - rather than on all 1.65M.
+            var truncatedGenotypes = new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>>();
+            for (var i = 0; i < expanded.GenotypeCount; i++)
+            {
+                if (truncatedLikelihoods.ContainsKey(expanded.GenotypeHlaNames[i]))
+                {
+                    truncatedGenotypes.Add(expanded.Materialise(i));
+                }
+            }
 
             return new ImputedGenotypes
             {
@@ -49,6 +70,69 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 Genotypes = truncatedGenotypes,
                 SumOfLikelihoods = truncatedLikelihoods.Values.SumDecimals()
             };
+        }
+
+        /// <summary>
+        /// The most likely <paramref name="maximum"/> genotypes, in descending order of likelihood.
+        ///
+        /// <para>
+        /// ATL-233 T3. This replaces <c>likelihoods.OrderByDescending(g =&gt; g.Value).Take(maximum)</c>, which sorted up
+        /// to 1,648,833 entries to keep 2,000 - and to do it, buffered every one of them. Above the cap the work is now
+        /// O(N log maximum) with a bounded queue instead of O(N log N) with an unbounded buffer.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>The selection is identical, ties included, and that is the point.</b> The shipped sort was <i>stable</i>
+        /// over a <see cref="Dictionary{TKey,TValue}"/> that never has an entry removed, i.e. over insertion order, so its
+        /// rule was <c>(likelihood descending, insertion order ascending)</c> - and insertion order is pairing order,
+        /// which is survivor order, which is the order <c>FrequencySetCacheEntry.ProjectPool</c> exists to preserve. Which
+        /// genotypes a capped donor keeps when likelihoods tie is a clinical output, so this reproduces that rule exactly
+        /// rather than leaving it to a heap's arbitrary eviction. <c>ExpandedGenotypeTruncaterTests</c> pins it.
+        /// </para>
+        /// </summary>
+        private static Dictionary<PhenotypeInfo<string>, decimal> MostLikelyFirst(
+            Dictionary<PhenotypeInfo<string>, decimal> likelihoods,
+            int maximum)
+        {
+            if (likelihoods.Count <= maximum)
+            {
+                // Nothing is discarded, so there is nothing to select - and N is at most the cap here, so the shipped
+                // expression is already cheap. Kept verbatim because it also fixes the enumeration order of the result,
+                // which the bounded path below reproduces.
+                return likelihoods.OrderByDescending(g => g.Value).ToDictionary();
+            }
+
+            // Priority is (likelihood, -insertionIndex) and PriorityQueue dequeues the MINIMUM, so the head is always
+            // the entry the cap should drop first: least likely, and among equals the one inserted latest. That is what
+            // lets EnqueueDequeue carry the whole tie-break rule with no comparison of its own - a candidate worse than
+            // the head becomes the new minimum and leaves again immediately, which is precisely "of two tied keys, the
+            // earlier one survives".
+            var mostLikely =
+                new PriorityQueue<PhenotypeInfo<string>, (decimal Likelihood, int NegatedInsertionIndex)>(maximum);
+            var insertionIndex = 0;
+
+            foreach (var (genotype, likelihood) in likelihoods)
+            {
+                var priority = (likelihood, -insertionIndex);
+
+                if (mostLikely.Count < maximum)
+                {
+                    mostLikely.Enqueue(genotype, priority);
+                }
+                else
+                {
+                    mostLikely.EnqueueDequeue(genotype, priority);
+                }
+
+                insertionIndex++;
+            }
+
+            // Descending by the same priority tuple gives (likelihood descending, insertion order ascending): the exact
+            // order the shipped Take(maximum) produced, so the kept dictionary enumerates - and therefore SumDecimals
+            // adds - in the same order as before.
+            return mostLikely.UnorderedItems
+                .OrderByDescending(item => item.Priority)
+                .ToDictionary(item => item.Element, item => item.Priority.Likelihood);
         }
     }
 }

@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
+using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using AwesomeAssertions;
 using NUnit.Framework;
 using static Atlas.MatchPrediction.Test.Integration.Resources.Alleles.Alleles;
@@ -36,7 +37,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             };
 
             // Act
-            var genotypes = (await Expander.ExpandCompressedPhenotype(input)).Genotypes;
+            var genotypes = (await Expander.ExpandCompressedPhenotype(input)).MaterialiseAll();
 
             // Expect the HLA lookup to fail, but HMD exception should be suppressed and instead no genotypes should be returned
             genotypes.Should().BeEmpty();

@@ -36,9 +36,9 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         private readonly IAtlasLogger logger;
         private readonly GenotypeImputationSettings settings;
 
-        // IDiplotypeLikelihoodCalculator is deliberately gone from this constructor rather than kept and unused:
-        // ATL-233 T2 moved likelihood calculation into the expansion, where each genotype's haplotype pair is still
-        // in hand. The service remains registered for its other (public interface) consumers.
+        // ATL-233 T2 moved likelihood calculation into the expansion, where each genotype's haplotype pair is still in
+        // hand, which left IDiplotypeLikelihoodCalculator with no callers anywhere; T3 deleted it rather than leaving a
+        // second, divergent implementation of the same arithmetic registered and reachable.
         public GenotypeImputationService(
             ICompressedPhenotypeExpander compressedPhenotypeExpander,
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
@@ -53,15 +53,18 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         public async Task<ImputedGenotypes> Impute(ImputationInput input)
         {
             var expanded = await ExpandToGenotypes(input);
-            var genotypes = expanded.Genotypes;
 
-            if (genotypes.IsNullOrEmpty())
+            // ATL-233 T3 strong form: a count of pairs, not of materialised genotypes - nothing between here and
+            // truncation reads a genotype, so nothing between here and truncation builds one.
+            var genotypeCount = expanded.GenotypeCount;
+
+            if (genotypeCount == 0)
             {
                 logger.SendTrace($"{LoggingPrefix}{input.SubjectData.SubjectFrequencySet.SubjectLogDescription} genotype unrepresented.", LogLevel.Verbose);
                 return ImputedGenotypes.Empty();
             }
 
-            logger.SendTrace($"Filtered expanded genotypes: {genotypes.Count}");
+            logger.SendTrace($"Filtered expanded genotypes: {genotypeCount}");
 
             // ATL-233 T2: the likelihoods were computed where the pair that produced each genotype was still in hand,
             // at one frequency resolution per survivor instead of two awaited lookups per genotype. What is left here
@@ -74,7 +77,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 genotypeLikelihoods = new Dictionary<PhenotypeOfStrings, decimal> { [genotypeLikelihoods.Keys.Single()] = 1 };
             }
 
-            return ExpandedGenotypeTruncater.TruncateGenotypes(genotypeLikelihoods, genotypes, settings.MaximumExpandedGenotypesPerInput);
+            // ATL-233 T3 took the sort of up to 1.7M entries down to a bounded queue of 2,000, and the second
+            // ToHlaNames() per pre-truncation genotype down to none - the names come back from the expansion,
+            // index-aligned.
+            return ExpandedGenotypeTruncater.TruncateGenotypes(
+                genotypeLikelihoods, expanded, settings.MaximumExpandedGenotypesPerInput);
         }
 
         private async Task<ExpandedGenotypes> ExpandToGenotypes(ImputationInput input)
