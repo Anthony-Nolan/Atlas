@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.MatchPrediction;
+using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -38,8 +39,31 @@ internal interface ICompressedPhenotypeExpander
     /// Expands an ambiguous phenotype to GGroup resolution, then transforms into all possible permutations of the given hla representations.
     /// Does not consider phase - so the results cannot necessarily be considered Diplotypes.
     /// </summary>
-    public Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandCompressedPhenotype(CompressedPhenotypeExpanderInput input);
+    public Task<ExpandedGenotypes> ExpandCompressedPhenotype(CompressedPhenotypeExpanderInput input);
 }
+
+/// <summary>
+/// The genotypes an expansion produced, and the likelihood of each.
+///
+/// <para>
+/// ATL-233 T2: the likelihoods come back <b>with</b> the genotypes because this is the only place they are cheap. A
+/// genotype is a pair of pooled haplotypes, so its likelihood is the product of their two frequencies - and a
+/// frequency is a pure function of (set, haplotype, excluded loci), needing one resolution per <i>survivor</i>. The
+/// shipped code instead resolved two per <i>genotype</i>, downstream, after the pairing had thrown the pair away:
+/// 136,879 awaited lookups for a tail donor against 465.7 survivors, each re-entering LazyCache's
+/// <c>GetOrAddAsync</c>. That machinery, not the arithmetic, was 39 of the 40.9 s the Likelihood phase measured.
+/// </para>
+///
+/// <para>
+/// <see cref="Likelihoods"/> is keyed by the genotype's HLA <i>names</i>, matching
+/// <c>ImputedGenotypes.GenotypeLikelihoods</c>, so its count is the DISTINCT genotype count while
+/// <see cref="Genotypes"/> keeps typing category and so may hold more. Keying it here also spares one
+/// <c>ToHlaNames()</c> per pre-truncation genotype downstream.
+/// </para>
+/// </summary>
+internal readonly record struct ExpandedGenotypes(
+    ISet<PhenotypeInfo<HlaAtKnownTypingCategory>> Genotypes,
+    Dictionary<PhenotypeInfo<string>, decimal> Likelihoods);
 
 internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
 {
@@ -54,7 +78,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         this.haplotypeFrequencyService = haplotypeFrequencyService;
     }
 
-    public async Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandCompressedPhenotype(CompressedPhenotypeExpanderInput input)
+    public async Task<ExpandedGenotypes> ExpandCompressedPhenotype(CompressedPhenotypeExpanderInput input)
     {
         var allowedLoci = input.MatchPredictionParameters.AllowedLoci;
 
@@ -69,13 +93,17 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         return await ExpandToPotentialDiplotypes(input.HfSetId, allowedLoci, groupsPerPosition);
     }
 
-    private static ISet<PhenotypeInfo<HlaAtKnownTypingCategory>> BuildSingleSmallGGenotype(DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
+    private static ExpandedGenotypes BuildSingleSmallGGenotype(DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
     {
-        return new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>>
-        {
-            groupsPerPosition.SmallGGroup.Map((_, __, v) =>
-                v == null ? null : new HlaAtKnownTypingCategory(v.Single(), HaplotypeTypingCategory.SmallGGroup))
-        };
+        var genotype = groupsPerPosition.SmallGGroup.Map((_, __, v) =>
+            v == null ? null : new HlaAtKnownTypingCategory(v.Single(), HaplotypeTypingCategory.SmallGGroup));
+
+        // No frequency is resolved on this path and none is needed: one genotype is already certain, so
+        // GenotypeImputationService replaces this placeholder with a likelihood of 1. The shipped code reached the
+        // same answer the same way - by counting distinct genotypes, never by looking a frequency up.
+        return new ExpandedGenotypes(
+            new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>> { genotype },
+            new Dictionary<PhenotypeInfo<string>, decimal> { [genotype.ToHlaNames()] = 0m });
     }
 
     private static bool IsUnambiguousAtAllowedLoci(
@@ -96,7 +124,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// <param name="allowedLoci">List of loci that are being considered.</param>
     /// <param name="groupsPerPosition">Allele groups present in the phenotype being expanded.</param>
     /// <returns>Set of diplotypes (pairs of haplotypes) which are possible for an input phenotype</returns>
-    private async Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandToPotentialDiplotypes(
+    private async Task<ExpandedGenotypes> ExpandToPotentialDiplotypes(
         int hfSetId,
         ISet<Locus> allowedLoci,
         DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
@@ -106,6 +134,15 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
 
         // Materialise the allowed loci once: iterating the ISet directly inside the per-diplotype loop would box an enumerator on every pair.
         var allowedLociArray = allowedLoci.ToArray();
+
+        // ATL-233 T2. This selects WHICH frequency a haplotype has - with loci excluded, a haplotype stands for a
+        // group of stored haplotypes whose frequencies are consolidated - and it is constant for the whole request.
+        // DiplotypeLikelihoodCalculator rebuilt it per genotype, twice over, because LocusSettings.MatchPredictionLoci
+        // is an expression-bodied property that re-enumerates the enum and allocates a fresh HashSet on every read.
+        var excludedLoci = LocusSettings.MatchPredictionLoci.Except(allowedLoci).ToHashSet();
+
+        // One resolution per survivor, instead of two per genotype further downstream.
+        var frequencies = await ResolveHaplotypeFrequencies(hfSetId, haplotypeList, excludedLoci);
 
         bool IsRepresentedInTargetPhenotype(HlaAtKnownTypingCategory hla, Locus locus, LocusPosition position)
         {
@@ -141,6 +178,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         }
 
         var diplotypes = new HashSet<PhenotypeInfo<HlaAtKnownTypingCategory>>();
+        var likelihoods = new Dictionary<PhenotypeInfo<string>, decimal>();
 
         for (var i = 0; i < haplotypeList.Count; i++)
         {
@@ -151,12 +189,86 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
                 var haplotype2 = haplotypeList[j];
                 if (IsRepresentedDiplotype(haplotype1, haplotype2))
                 {
-                    diplotypes.Add(new PhenotypeInfo<HlaAtKnownTypingCategory>(haplotype1, haplotype2));
+                    var genotype = new PhenotypeInfo<HlaAtKnownTypingCategory>(haplotype1, haplotype2);
+                    diplotypes.Add(genotype);
+
+                    // The multiplication order matches the shipped DiplotypeLikelihoodCalculator exactly -
+                    // position 1's frequency, then position 2's, then the correction. decimal multiplication
+                    // carries scale, so re-ordering these could shift the result in the last digits, and these
+                    // likelihoods are compared for exact equality.
+                    //
+                    // An indexer assignment, not Add: two survivors can share HLA names while differing in typing
+                    // category (they differ only at an excluded locus), so distinct genotypes can collapse to one
+                    // key here. Their likelihoods are then necessarily equal, because a frequency is keyed on the
+                    // names - so which write lands does not matter, but throwing would.
+                    likelihoods[genotype.ToHlaNames()] =
+                        frequencies[i] * frequencies[j] * HomozygosityCorrectionFactor(haplotype1, haplotype2, allowedLociArray);
                 }
             }
         }
 
-        return diplotypes;
+        return new ExpandedGenotypes(diplotypes, likelihoods);
+    }
+
+    /// <summary>
+    /// One frequency per survivor, through the unchanged <see cref="IHaplotypeFrequencyService.GetFrequencyForHla"/>.
+    ///
+    /// <para>
+    /// ATL-233 T2. Calling the same method with the same arguments is the point: it keeps the
+    /// direct → consolidated-warm → consolidated-cold cascade, and with it the fact that on any key with excluded loci
+    /// a survivor's frequency is the <b>sum</b> over the stored haplotypes it collapsed - not any individual stored
+    /// frequency. That is 74.0% of the precompute's rows, and the reason this memoises the lookup rather than
+    /// reimplementing it or carrying a value off the pool.
+    /// </para>
+    ///
+    /// <para>
+    /// It resolves for every survivor, including any that no kept pair ends up using - so a donor whose typing is not
+    /// representable at all now pays S lookups where it previously paid none. Accepted rather than overlooked: filling
+    /// the array lazily would put a branch on the O(S²) pairing path, which is a worse trade than S lookups, and those
+    /// donors are 1.28% of the corpus with a near-zero <c>Pair</c> share (§4), i.e. a small S.
+    /// </para>
+    /// </summary>
+    private async Task<decimal[]> ResolveHaplotypeFrequencies(
+        int hfSetId,
+        List<LociInfo<HlaAtKnownTypingCategory>> survivors,
+        ISet<Locus> excludedLoci)
+    {
+        var frequencies = new decimal[survivors.Count];
+
+        for (var i = 0; i < survivors.Count; i++)
+        {
+            frequencies[i] = await haplotypeFrequencyService.GetFrequencyForHla(
+                hfSetId, survivors[i].Map(hla => hla?.Hla), excludedLoci);
+        }
+
+        return frequencies;
+    }
+
+    /// <summary>
+    /// 1 when the genotype is homozygous at every allowed locus, else 2.
+    ///
+    /// <para>
+    /// The same predicate <c>DiplotypeLikelihoodCalculator.GetHeterozygousLoci</c> applied, which compared the string
+    /// genotype's two positions at allowed loci only - i.e. haplotype 1's name against haplotype 2's. Computed here
+    /// without materialising a <c>List&lt;Locus&gt;</c>, a <c>Diplotype</c> or the string phenotype.
+    /// </para>
+    /// </summary>
+    private static int HomozygosityCorrectionFactor(
+        LociInfo<HlaAtKnownTypingCategory> haplotype1,
+        LociInfo<HlaAtKnownTypingCategory> haplotype2,
+        Locus[] allowedLoci)
+    {
+        foreach (var locus in allowedLoci)
+        {
+            // ?. because a stored haplotype may be untyped at an allowed locus. Two nulls compare equal, exactly as
+            // the string comparison this replaces did.
+            if (haplotype1.GetLocus(locus)?.Hla != haplotype2.GetLocus(locus)?.Hla)
+            {
+                return 2;
+            }
+        }
+
+        return 1;
     }
 
     /// <summary>

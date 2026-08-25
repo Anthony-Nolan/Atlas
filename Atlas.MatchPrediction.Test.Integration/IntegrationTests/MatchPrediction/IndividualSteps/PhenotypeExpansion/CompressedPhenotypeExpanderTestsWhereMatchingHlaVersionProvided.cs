@@ -42,7 +42,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             };
 
             // Act
-            var genotypes = await Expander.ExpandCompressedPhenotype(input);
+            var genotypes = (await Expander.ExpandCompressedPhenotype(input)).Genotypes;
 
             // Not asserting the exact genotypes generated
             // Rather, it is enough to assert that genotypes are returned, as if the HLA lookup fails, no genotypes would be returned
@@ -71,7 +71,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             };
 
             // Act
-            var genotypes = await Expander.ExpandCompressedPhenotype(input);
+            var genotypes = (await Expander.ExpandCompressedPhenotype(input)).Genotypes;
 
             // Expect the HLA lookup to fail, but HMD exceptions should be suppressed and instead no genotypes should be returned
             genotypes.Should().BeEmpty();
