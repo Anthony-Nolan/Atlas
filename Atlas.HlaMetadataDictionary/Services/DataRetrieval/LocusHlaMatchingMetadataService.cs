@@ -62,7 +62,10 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         private static INullHandledHlaMatchingMetadata HandleNullAlleles(IHlaMatchingMetadata metadata,
             IHlaMatchingMetadata otherMetadata, Locus locus, LocusInfo<string> locusTyping)
         {
-            if (metadata == null && locusTyping.Position1Or2NewAllele())
+            // ATL-233: was LocusInfo<T>.Position1Or2NewAllele(), which compared a generic T against the string "NEW"
+            // through object.Equals - meaningless for every T but string, and boxing for a value type. "NEW" is HLA
+            // nomenclature, so the check belongs here, next to the newAllele const this class already declared.
+            if (metadata == null && locusTyping.EitherPosition(hla => hla == newAllele))
             {
                 return new NullHandledHlaMatchingMetadata(new HlaMatchingMetadata(locus, newAllele, TypingMethod.Molecular, new List<string>()));
             }

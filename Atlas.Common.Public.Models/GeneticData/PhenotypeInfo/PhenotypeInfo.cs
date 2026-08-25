@@ -29,14 +29,23 @@ namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo
 
         /// <summary>
         /// Creates a new PhenotypeInfo using the provided LociInfo.
+        ///
+        /// <para>
+        /// ATL-233: the six <see cref="LocusInfo{T}"/> are shared with <paramref name="source"/>, not cloned.
+        /// <see cref="LocusInfo{T}"/> is immutable - every member returns a new instance - it pre-computes its hash on
+        /// construction, and nothing in the solution derives from it, so a <c>MemberwiseClone</c> produced an object
+        /// indistinguishable from the one it copied. This constructor is how <see cref="Map{R}(Func{Locus,LocusPosition,T,R})"/>
+        /// and <see cref="SetPosition"/> return, so the clones were six allocations per map and per single-position
+        /// write, against the six live objects they duplicated and immediately made garbage.
+        /// </para>
         /// </summary>
         public PhenotypeInfo(LociInfo<LocusInfo<T>> source) : base(
-            source.A.ShallowCopy(),
-            source.B.ShallowCopy(),
-            source.C.ShallowCopy(),
-            source.Dpb1.ShallowCopy(),
-            source.Dqb1.ShallowCopy(),
-            source.Drb1.ShallowCopy()
+            source.A,
+            source.B,
+            source.C,
+            source.Dpb1,
+            source.Dqb1,
+            source.Drb1
         )
         {
         }
