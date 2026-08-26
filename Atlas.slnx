@@ -93,6 +93,9 @@
     <Project Path="Atlas.MatchingAlgorithm.Data/Atlas.MatchingAlgorithm.Data.csproj">
       <BuildType Solution="Development|*" Project="Debug" />
     </Project>
+    <Project Path="Atlas.MatchingAlgorithm.Functions.DataRefresh/Atlas.MatchingAlgorithm.Functions.DataRefresh.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
     <Project Path="Atlas.MatchingAlgorithm.Functions.DonorManagement/Atlas.MatchingAlgorithm.Functions.DonorManagement.csproj">
       <BuildType Solution="Development|*" Project="Debug" />
     </Project>
