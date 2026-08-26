@@ -18,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
     ///
     /// 1. Skip the work when the covering columns are already there. dbo.Donors holds about 44.6 million rows
     ///    on live, so the rebuild is done ahead of the release by the manual script
-    ///    MiscTestingAndDebuggingResources/ManualTesting/MatchingAlgorithm/SQL_DonorsCoveringIndexes_PreRelease.sql.
+    ///    SqlScripts/20260821-ATL-310-AddCoveringColumnsToDonorsIndexes.sql, in this project.
     ///    Where that script has run, this migration must find the work done and change nothing.
     /// 2. Keep the index in service while it is rebuilt. A scaffolded DropIndex plus CreateIndex pair leaves the
     ///    table without the index until the new one is built, and blocks every query on Donors for that whole
@@ -32,9 +32,19 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // suppressTransaction keeps an index build out of the migration transaction, so a long build holds
-            // no locks and no transaction log until the migration commits. The shape check in RebuildIndexSql
-            // is what makes that safe: if a later statement fails, every statement can simply be run again.
+            // Every statement here passes suppressTransaction: true. What that flag does depends on how the
+            // migration is applied:
+            //
+            // - Through the EF runtime - Database.Migrate() in the integration and validation test projects,
+            //   dotnet ef database update, or a migration bundle - EF puts each migration in its own
+            //   transaction. suppressTransaction keeps these index builds out of it, so a long ONLINE build
+            //   holds no locks and no transaction log until the migration commits.
+            // - From a generated SQL script, which is what the release does - see build-pipeline.yml - the flag
+            //   has no effect. A generated script carries no transaction of its own, so the release task that
+            //   runs the script is what decides.
+            //
+            // Neither path needs a transaction. The shape check in RebuildIndexSql makes each statement
+            // re-runnable, so if a later statement fails, every statement can simply be run again.
 
             // Restores the shape this index had before migration 20200424112903 dropped the RegistryCode
             // column. Migration 20240709124454 recreated it without the included column.
@@ -86,8 +96,9 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
         /// edition - as migration 20240709124454 already does.
         ///
         /// The shape check makes the statement re-runnable, and it is what lets the covering columns be applied
-        /// out of hours, ahead of the release, by SQL_DonorsCoveringIndexes_PreRelease.sql. It compares the
-        /// whole included-column list, so a partly applied index is rebuilt rather than passed over.
+        /// out of hours, ahead of the release, by 20260821-ATL-310-AddCoveringColumnsToDonorsIndexes.sql. It
+        /// compares the whole included-column list, so a partly applied index is rebuilt rather than passed
+        /// over. The script uses the same comparison, so the script and this migration always agree.
         /// </summary>
         /// <param name="indexName">Name of the index, which is also the name the EF model declares.</param>
         /// <param name="keyColumns">Key columns, in key order.</param>
