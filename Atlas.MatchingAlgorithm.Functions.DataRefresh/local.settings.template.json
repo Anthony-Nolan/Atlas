@@ -22,6 +22,8 @@
     "DataRefresh:DatabaseAName": "not-used-locally",
     "DataRefresh:DatabaseBName": "not-used-locally",
     "DataRefresh:DormantDatabaseSize": "S0",
+    "DataRefresh:LeaseDurationMinutes": 30,
+    "DataRefresh:LeaseRenewalIntervalSeconds": 60,
     "DataRefresh:RefreshDatabaseSize": "S4",
     "DataRefresh:SendRetryCount": 5,
     "DataRefresh:SendRetryCooldownSeconds": 20,
