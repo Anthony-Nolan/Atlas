@@ -1,5 +1,6 @@
 ﻿using Atlas.Common.Caching;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
@@ -102,6 +103,13 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             string lookupName,
             List<ISmallGGroupsMetadata> metadata)
         {
+            // No rows is a name with no data, and has to say so: GetMetadata no longer re-labels the Single()
+            // failure as one. See HlaScoringMetadataService.ConsolidateHlaMetadata.
+            if (metadata.Count == 0)
+            {
+                throw new InvalidHlaException(locus, lookupName);
+            }
+
             var typingMethod = metadata.Select(m => m.TypingMethod).Distinct().Single();
 
             var groups = metadata

@@ -7,7 +7,9 @@ using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 
 namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
@@ -49,7 +51,10 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
             ExpressionSuffixBehaviour behaviour,
             string hlaNomenclatureVersion)
         {
-            var inputCategory = hlaCategorisationService.GetHlaTypingCategory(hlaName);
+            // A name whose category cannot be determined has no data, and TryConvertHla promises to report that as
+            // `false` rather than throw. The categoriser says it with an AtlasHttpException, which would escape as
+            // though it were an infrastructure fault.
+            var inputCategory = hlaCategorisationService.GetCategoryOrThrowInvalidHla(locus, hlaName);
 
             switch (inputCategory)
             {
@@ -66,18 +71,31 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
                     var allelesFromAlleleString = alleleNamesExtractor.GetAlleleNamesFromAlleleString(hlaName);
                     return GetTwoFieldAlleleNames(locus, allelesFromAlleleString, behaviour);
                 case HlaTypingCategory.NmdpCode:
-                    var allelesForNmdpCode = await macDictionary.GetHlaFromMac(hlaName);
-                    return GetTwoFieldAlleleNames(locus, allelesForNmdpCode, behaviour);
+                    // See MacLookup.GetAlleleLookupNames: the MAC dictionary reports "not in the store" in its own
+                    // vocabulary, and only a genuine storage failure should leave here as itself.
+                    try
+                    {
+                        var allelesForNmdpCode = await macDictionary.GetHlaFromMac(hlaName);
+                        return GetTwoFieldAlleleNames(locus, allelesForNmdpCode, behaviour);
+                    }
+                    catch (Exception e) when (e is MacNotFoundException or ArgumentException)
+                    {
+                        throw new InvalidHlaException(locus, hlaName);
+                    }
                 case HlaTypingCategory.XxCode:
                     throw new NotImplementedException("XX Code to Two Field Conversion has not been implemented.");
                 case HlaTypingCategory.Serology:
                     throw new NotImplementedException("Serology to Two Field Conversion has not been implemented.");
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    // A category with no two-field conversion is a name this converter cannot answer for, not an
+                    // infrastructure fault. NotImplementedException above is deliberately left alone: those two are
+                    // unbuilt features, not missing data.
+                    throw new InvalidHlaException(locus, hlaName);
             }
         }
 
-        private static IReadOnlyCollection<string> GetTwoFieldAlleleNames(Locus locus, IEnumerable<string> alleleNames, ExpressionSuffixBehaviour behaviour)
+        private static IReadOnlyCollection<string> GetTwoFieldAlleleNames(Locus locus, IEnumerable<string> alleleNames,
+            ExpressionSuffixBehaviour behaviour)
         {
             return alleleNames
                 .Select(allele => GetTwoFieldAlleleName(locus, allele, behaviour))

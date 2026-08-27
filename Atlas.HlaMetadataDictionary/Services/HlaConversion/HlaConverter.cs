@@ -16,8 +16,8 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
         Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, HlaConversionBehaviour conversionBehaviour);
 
         /// <summary>
-        /// <see cref="ConvertHla"/> for a caller that treats an unknown HLA name as an answer. See
-        /// <c><seealso cref="MetadataServiceBase{T}.TryGetMetadata"/>MetadataServiceBase.TryGetMetadata</c> for why an infrastructure fault still throws.
+        /// <see cref="ConvertHla"/> for a caller that treats an unknown HLA name as an answer.
+        /// See <see cref="MetadataServiceBase{T}.TryGetMetadata"/> for why an infrastructure fault still throws.
         /// </summary>
         Task<(bool WasFound, IReadOnlyCollection<string> Hla)> TryConvertHla(
             Locus locus,

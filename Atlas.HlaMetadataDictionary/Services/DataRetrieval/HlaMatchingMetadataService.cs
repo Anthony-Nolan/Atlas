@@ -2,6 +2,7 @@
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
@@ -63,6 +64,13 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             string lookupName,
             List<IHlaMatchingMetadata> metadata)
         {
+            // See HlaScoringMetadataService.ConsolidateHlaMetadata: an empty list is a name with no data, and has to
+            // say so, now that GetMetadata no longer re-labels the First() failure as one.
+            if (metadata.Count == 0)
+            {
+                throw new InvalidHlaException(locus, lookupName);
+            }
+
             var typingMethod = metadata
                 .First()
                 .TypingMethod;

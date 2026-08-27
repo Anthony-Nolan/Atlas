@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
@@ -37,11 +38,20 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             this.hlaMetadataDictionary = hlaMetadataDictionary;
         }
 
+        /// <remarks>
+        /// <c>Exception</c>, not <see cref="HlaMetadataDictionaryException"/>, and deliberately: one donor failing must
+        /// fail only that donor, whatever the reason. That was already the behaviour, but by accident -
+        /// <c>MetadataServiceBase.GetMetadata</c> re-labelled every failure as an
+        /// <see cref="HlaMetadataDictionaryException"/>, so catching that type caught everything. It no longer does,
+        /// which would have made an infrastructure fault on one donor end the whole batch, and with it a data refresh
+        /// that cannot resume. Stating the policy directly keeps it where it belongs - in the caller that decides what
+        /// a failed donor is - rather than depending on how far up the dictionary happens to launder its exceptions.
+        /// </remarks>
         public async Task<DonorBatchProcessingResult<DonorInfoWithExpandedHla>> ExpandDonorHlaBatchAsync(
             IEnumerable<DonorInfo> donorInfos,
             string failureEventName)
         {
-            return await ProcessBatchAsyncWithAnticipatedExceptions<HlaMetadataDictionaryException>(
+            return await ProcessBatchAsyncWithAnticipatedExceptions<Exception>(
                 donorInfos,
                 async d => await ExpandDonorHlaAsync(d),
                 d => d.ToFailedDonorInfo(),

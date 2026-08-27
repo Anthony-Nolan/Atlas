@@ -1,5 +1,6 @@
 ﻿using Atlas.Common.Caching;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
@@ -19,8 +20,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             Locus locus, string serologyName, string hlaNomenclatureVersion);
     }
 
-    internal class SerologyToAllelesMetadataService : 
-        SearchRelatedMetadataServiceBase<ISerologyToAllelesMetadata>, 
+    internal class SerologyToAllelesMetadataService :
+        SearchRelatedMetadataServiceBase<ISerologyToAllelesMetadata>,
         ISerologyToAllelesMetadataService
     {
         private const string CacheKey = nameof(SerologyToAllelesMetadataService);
@@ -43,12 +44,14 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 macDictionary,
                 alleleGroupExpander,
                 CacheKey,
-                cacheProvider, 
-                options)
+                cacheProvider,
+                options
+            )
         {
         }
 
-        public async Task<IEnumerable<SerologyToAlleleMappingSummary>> GetSerologyToAlleleMappings(Locus locus, string serologyName, string hlaNomenclatureVersion)
+        public async Task<IEnumerable<SerologyToAlleleMappingSummary>> GetSerologyToAlleleMappings(Locus locus, string serologyName,
+            string hlaNomenclatureVersion)
         {
             var metadata = await GetHlaMetadata(locus, serologyName, hlaNomenclatureVersion);
             return metadata.SerologyToAlleleMappings;
@@ -66,6 +69,13 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             List<ISerologyToAllelesMetadata> metadata)
         {
             // should only be 1 metadata row per valid serology typing
+            // No rows is a name with no data, and has to say so: GetMetadata no longer re-labels the Single()
+            // failure as one. See HlaScoringMetadataService.ConsolidateHlaMetadata.
+            if (metadata.Count == 0)
+            {
+                throw new InvalidHlaException(locus, lookupName);
+            }
+
             return metadata.Single();
         }
     }

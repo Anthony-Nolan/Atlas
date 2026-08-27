@@ -24,7 +24,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         private readonly IHlaCategorisationService hlaCategorisationService;
 
         public AlleleNamesMetadataService(
-            IAlleleNamesMetadataRepository alleleNamesMetadataRepository, 
+            IAlleleNamesMetadataRepository alleleNamesMetadataRepository,
             IHlaCategorisationService hlaCategorisationService,
             IPersistentCacheProvider cacheProvider)
             : base(CacheKey, cacheProvider)
@@ -40,8 +40,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
         protected override bool LookupNameIsValid(string lookupName)
         {
-            return !string.IsNullOrEmpty(lookupName) &&
-                   hlaCategorisationService.GetHlaTypingCategory(lookupName) == HlaTypingCategory.Allele;
+            // TryGetCategory, not GetHlaTypingCategory: a name this service cannot parse is simply not an allele
+            // name, and must not leave here as the AtlasHttpException the categoriser reports it with.
+            return !string.IsNullOrEmpty(lookupName)
+                && hlaCategorisationService.TryGetCategory(lookupName, out var category)
+                && category == HlaTypingCategory.Allele;
         }
 
         protected override async Task<IEnumerable<string>> PerformLookup(Locus locus, string lookupName, string hlaNomenclatureVersion)
