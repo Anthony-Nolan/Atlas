@@ -4,6 +4,7 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
 {
     [DbContext(typeof(SearchAlgorithmPersistentContext))]
-    partial class SearchAlgorithmPersistentContextModelSnapshot : ModelSnapshot
+    [Migration("20260824135502_AddLeaseColumnsToDataRefreshHistory")]
+    partial class AddLeaseColumnsToDataRefreshHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

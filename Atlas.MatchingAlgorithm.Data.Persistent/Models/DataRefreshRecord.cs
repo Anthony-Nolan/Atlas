@@ -59,6 +59,21 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         /// </summary>
         public bool ShouldMarkAllDonorsAsUpdated { get; set; }
 
+        /// <summary>
+        /// Identifies the invocation currently processing this record. Null when no invocation holds the lease.
+        /// A refresh runs for far longer than the Azure Service Bus lock can be held, so the message lock cannot be
+        /// relied upon to keep two invocations of the same record apart - this lease is what does that.
+        /// </summary>
+        /// <seealso cref="LeaseExpiresUtc"/>
+        public Guid? LeaseOwner { get; set; }
+
+        /// <summary>
+        /// When the current <see cref="LeaseOwner"/>'s claim lapses. The owning invocation renews this periodically for
+        /// as long as it is alive, so an expired lease means the owner died without releasing it, and the record can be
+        /// claimed by a new invocation.
+        /// </summary>
+        public DateTime? LeaseExpiresUtc { get; set; }
+
         public bool IsStageComplete(DataRefreshStage stage) => GetStageCompletionTime(stage) != null;
 
         internal DateTime? GetStageCompletionTime(DataRefreshStage stage) =>
