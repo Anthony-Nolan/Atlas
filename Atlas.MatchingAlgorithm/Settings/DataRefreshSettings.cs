@@ -41,5 +41,23 @@ namespace Atlas.MatchingAlgorithm.Settings
         public string CompletionTopic { get; set; }
         public int SendRetryCount { get; set; }
         public int SendRetryCooldownSeconds { get; set; }
+
+        /// <summary>
+        /// How long the run-level lease on a data refresh record stays valid without renewal.
+        /// Long enough that ordinary GC or CPU contention cannot displace a healthy owner, and short enough that an
+        /// owner that has genuinely died does not block the next legitimate run for long.
+        /// </summary>
+        /// <remarks>
+        /// Defaulted here rather than relying on configuration, so that an installation which has not yet had the
+        /// corresponding app setting deployed still gets a usable lease rather than one that expires immediately.
+        /// </remarks>
+        public int LeaseDurationMinutes { get; set; } = 30;
+
+        /// <summary>
+        /// How often the invocation holding the lease renews it. Must leave room for several consecutive renewal
+        /// failures within one <see cref="LeaseDurationMinutes"/>; see DataRefreshOrchestrator for the exact rule.
+        /// </summary>
+        /// <inheritdoc cref="LeaseDurationMinutes" path="/remarks"/>
+        public int LeaseRenewalIntervalSeconds { get; set; } = 60;
     }
 }
