@@ -10,5 +10,7 @@ internal static class DataRefreshSettingsBuilder
         .With(s => s.DormantDatabaseSize, "S0")
         .With(s => s.ActiveDatabaseSize, "S4")
         .With(s => s.RefreshDatabaseSize, "P15")
-        .With(s => s.DataRefreshDonorUpdatesShouldBeFullyTransactional, false);
+        .With(s => s.DataRefreshDonorUpdatesShouldBeFullyTransactional, false)
+        .With(s => s.LeaseDurationMinutes, 30)
+        .With(s => s.LeaseRenewalIntervalSeconds, 60);
 }
