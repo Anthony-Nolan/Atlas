@@ -42,7 +42,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             hlaConverter = new HlaConverter(
                 hlaNameToTwoFieldAlleleConverter,
                 scoringMetadataService,
-                smallGGroupMetadataService);
+                smallGGroupMetadataService
+            );
         }
 
         [TestCase(null)]
@@ -66,9 +67,10 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             const TargetHlaCategory targetHla = TargetHlaCategory.TwoFieldAlleleIncludingExpressionSuffix;
 
             await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla
-            });
+                {
+                    TargetHlaCategory = targetHla
+                }
+            );
 
             await hlaNameToTwoFieldAlleleConverter.Received()
                 .ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Include, Arg.Any<string>());
@@ -80,9 +82,10 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             const TargetHlaCategory targetHla = TargetHlaCategory.TwoFieldAlleleExcludingExpressionSuffix;
 
             await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla
-            });
+                {
+                    TargetHlaCategory = targetHla
+                }
+            );
 
             await hlaNameToTwoFieldAlleleConverter.Received()
                 .ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Exclude, Arg.Any<string>());
@@ -96,10 +99,11 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             const string version = "version";
 
             await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla,
-                HlaNomenclatureVersion = version
-            });
+                {
+                    TargetHlaCategory = targetHla,
+                    HlaNomenclatureVersion = version
+                }
+            );
 
             await scoringMetadataService.Received()
                 .GetHlaMetadata(DefaultLocus, DefaultHlaName, version);
@@ -109,7 +113,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         [Test]
         public async Task ConvertHla_TargetIsGGroup_ReturnsMatchingGGroups()
         {
-            var gGroups = new List<string> {"g-group1", "g-group-2"};
+            var gGroups = new List<string> { "g-group1", "g-group-2" };
             var info = new ConsolidatedMolecularScoringInfoBuilder().WithMatchingGGroups(gGroups).Build();
             var metadata = BuildHlaScoringMetadata(info);
             scoringMetadataService.GetHlaMetadata(DefaultLocus, DefaultHlaName, Arg.Any<string>()).Returns(metadata);
@@ -117,10 +121,11 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             const TargetHlaCategory targetHla = TargetHlaCategory.GGroup;
             const string version = "version";
             var result = await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla,
-                HlaNomenclatureVersion = version
-            });
+                {
+                    TargetHlaCategory = targetHla,
+                    HlaNomenclatureVersion = version
+                }
+            );
 
             result.Should().BeEquivalentTo(gGroups);
         }
@@ -132,10 +137,11 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             const string version = "version";
 
             await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla,
-                HlaNomenclatureVersion = version
-            });
+                {
+                    TargetHlaCategory = targetHla,
+                    HlaNomenclatureVersion = version
+                }
+            );
 
             await smallGGroupMetadataService.Received()
                 .GetSmallGGroups(DefaultLocus, DefaultHlaName, version);
@@ -144,17 +150,18 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         [Test]
         public async Task ConvertHla_TargetIsSmallGGroup_ReturnsSmallGGroups()
         {
-            var gGroups = new List<string> {"g-group1", "g-group-2"};
+            var gGroups = new List<string> { "g-group1", "g-group-2" };
             smallGGroupMetadataService.GetSmallGGroups(default, default, default).ReturnsForAnyArgs(gGroups);
 
             const TargetHlaCategory targetHla = TargetHlaCategory.SmallGGroup;
             const string version = "version";
 
             var result = await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla,
-                HlaNomenclatureVersion = version
-            });
+                {
+                    TargetHlaCategory = targetHla,
+                    HlaNomenclatureVersion = version
+                }
+            );
 
             result.Should().BeEquivalentTo(gGroups);
         }
@@ -167,10 +174,11 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             const string version = "version";
 
             await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla,
-                HlaNomenclatureVersion = version
-            });
+                {
+                    TargetHlaCategory = targetHla,
+                    HlaNomenclatureVersion = version
+                }
+            );
 
             await scoringMetadataService.Received()
                 .GetHlaMetadata(DefaultLocus, DefaultHlaName, version);
@@ -184,10 +192,11 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             const string version = "version";
 
             await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla,
-                HlaNomenclatureVersion = version
-            });
+                {
+                    TargetHlaCategory = targetHla,
+                    HlaNomenclatureVersion = version
+                }
+            );
 
             await scoringMetadataService.Received()
                 .GetHlaMetadata(DefaultLocus, DefaultHlaName, version);
@@ -198,7 +207,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         public async Task ConvertHla_TargetIsSerology_ReturnsMatchingSerologies()
         {
             const string serologyName = "serology";
-            var serologies = new List<SerologyEntry> {new SerologyEntry(serologyName, SerologySubtype.Associated, false)};
+            var serologies = new List<SerologyEntry> { new SerologyEntry(serologyName, SerologySubtype.Associated, false) };
             var info = new ConsolidatedMolecularScoringInfoBuilder().WithMatchingSerologies(serologies).Build();
             var metadata = BuildHlaScoringMetadata(info);
             scoringMetadataService.GetHlaMetadata(DefaultLocus, DefaultHlaName, Arg.Any<string>()).Returns(metadata);
@@ -206,10 +215,11 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             const TargetHlaCategory targetHla = TargetHlaCategory.Serology;
             const string version = "version";
             var result = await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla,
-                HlaNomenclatureVersion = version
-            });
+                {
+                    TargetHlaCategory = targetHla,
+                    HlaNomenclatureVersion = version
+                }
+            );
 
             result.Should().BeEquivalentTo(serologyName);
         }
@@ -234,9 +244,10 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             ArrangeNoDataForTheName();
 
             var (wasFound, hla) = await hlaConverter.TryConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla
-            });
+                {
+                    TargetHlaCategory = targetHla
+                }
+            );
 
             wasFound.Should().BeFalse();
             hla.Should().BeNull();
@@ -248,15 +259,16 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         [Test]
         public async Task TryConvertHla_TargetIsGGroup_ReturnsMatchingGGroups()
         {
-            var gGroups = new List<string> {"g-group-1", "g-group-2"};
+            var gGroups = new List<string> { "g-group-1", "g-group-2" };
             var info = new ConsolidatedMolecularScoringInfoBuilder().WithMatchingGGroups(gGroups).Build();
             scoringMetadataService.TryGetHlaMetadata(default, default, default)
                 .ReturnsForAnyArgs((true, BuildHlaScoringMetadata(info)));
 
             var (wasFound, hla) = await hlaConverter.TryConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = TargetHlaCategory.GGroup
-            });
+                {
+                    TargetHlaCategory = TargetHlaCategory.GGroup
+                }
+            );
 
             wasFound.Should().BeTrue();
             hla.Should().BeEquivalentTo(gGroups);
@@ -265,15 +277,16 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         [Test]
         public async Task TryConvertHla_TargetIsPGroup_ReturnsMatchingPGroups()
         {
-            var pGroups = new List<string> {"p-group-1", "p-group-2"};
+            var pGroups = new List<string> { "p-group-1", "p-group-2" };
             var info = new ConsolidatedMolecularScoringInfoBuilder().WithMatchingPGroups(pGroups).Build();
             scoringMetadataService.TryGetHlaMetadata(default, default, default)
                 .ReturnsForAnyArgs((true, BuildHlaScoringMetadata(info)));
 
             var (wasFound, hla) = await hlaConverter.TryConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = TargetHlaCategory.PGroup
-            });
+                {
+                    TargetHlaCategory = TargetHlaCategory.PGroup
+                }
+            );
 
             wasFound.Should().BeTrue();
             hla.Should().BeEquivalentTo(pGroups);
@@ -282,13 +295,14 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         [Test]
         public async Task TryConvertHla_TargetIsSmallGGroup_ReturnsSmallGGroups()
         {
-            var smallGGroups = new List<string> {"small-g-group-1", "small-g-group-2"};
+            var smallGGroups = new List<string> { "small-g-group-1", "small-g-group-2" };
             smallGGroupMetadataService.TryGetSmallGGroups(default, default, default).ReturnsForAnyArgs((true, smallGGroups));
 
             var (wasFound, hla) = await hlaConverter.TryConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = TargetHlaCategory.SmallGGroup
-            });
+                {
+                    TargetHlaCategory = TargetHlaCategory.SmallGGroup
+                }
+            );
 
             wasFound.Should().BeTrue();
             hla.Should().BeEquivalentTo(smallGGroups);
@@ -300,9 +314,10 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             // The NEW short-circuit of the throwing path, kept: a new allele is a known answer with no groups, and it
             // must not reach a lookup service or be reported as a name with no data.
             var (wasFound, hla) = await hlaConverter.TryConvertHla(DefaultLocus, "NEW", new HlaConversionBehaviour
-            {
-                TargetHlaCategory = TargetHlaCategory.GGroup
-            });
+                {
+                    TargetHlaCategory = TargetHlaCategory.GGroup
+                }
+            );
 
             wasFound.Should().BeTrue();
             hla.Should().BeEmpty();
@@ -316,25 +331,32 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             // Serology keeps the throwing path behind a catch: same answer, and its failures are too rare to be worth
             // widening the surface for.
             scoringMetadataService.GetHlaMetadata(default, default, default).ThrowsForAnyArgs(
-                new HlaMetadataDictionaryException(DefaultLocus, DefaultHlaName, $"Failed to lookup '{DefaultHlaName}'."));
+                new HlaMetadataDictionaryException(DefaultLocus, DefaultHlaName, $"Failed to lookup '{DefaultHlaName}'.")
+            );
 
             var (wasFound, hla) = await hlaConverter.TryConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = TargetHlaCategory.Serology
-            });
+                {
+                    TargetHlaCategory = TargetHlaCategory.Serology
+                }
+            );
 
             wasFound.Should().BeFalse();
             hla.Should().BeNull();
         }
 
         [TestCase(TargetHlaCategory.GGroup)]
+        [TestCase(TargetHlaCategory.PGroup)]
         [TestCase(TargetHlaCategory.SmallGGroup)]
         [TestCase(TargetHlaCategory.Serology)]
         public async Task TryConvertHla_WhenTheLookupFaults_PropagatesInsteadOfReportingNoData(TargetHlaCategory targetHla)
         {
-            // The boundary this method exists to draw, and it has to hold on both routes: a name with no data is an
+            // The boundary this method exists to draw, and it has to hold on every route: a name with no data is an
             // answer, a failed storage request is not. Swallowing the second as the first would convert an incomplete
             // expansion into a prediction, silently.
+            //
+            // A raw TimeoutException is what the metadata services now emit for this, because GetMetadata no longer
+            // re-labels non-lookup failures as HlaMetadataDictionaryException. While it did, this arrangement was
+            // arranging a fault production could not produce, and the Serology case below proved nothing.
             var fault = new TimeoutException("storage is having a moment");
 
             scoringMetadataService.TryGetHlaMetadata(default, default, default).ThrowsForAnyArgs(fault);
@@ -342,10 +364,51 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             smallGGroupMetadataService.TryGetSmallGGroups(default, default, default).ThrowsForAnyArgs(fault);
 
             await hlaConverter.Invoking(provider => provider.TryConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
+                        {
+                            TargetHlaCategory = targetHla
+                        }
+                    )
+                )
+                .Should().ThrowAsync<TimeoutException>();
+        }
+
+        [TestCase(TargetHlaCategory.TwoFieldAlleleIncludingExpressionSuffix)]
+        [TestCase(TargetHlaCategory.TwoFieldAlleleExcludingExpressionSuffix)]
+        public async Task TryConvertHla_WhenTheTwoFieldConversionFaults_PropagatesInsteadOfReportingNoData(TargetHlaCategory targetHla)
+        {
+            // Its own test rather than another case above: the two-field categories share the fallback `catch` with
+            // Serology but not the service behind it, so arranging the scoring service would leave them untouched
+            // and pass for the wrong reason.
+            hlaNameToTwoFieldAlleleConverter.ConvertHla(default, default, default, default)
+                .ThrowsForAnyArgs(new TimeoutException("storage is having a moment"));
+
+            await hlaConverter.Invoking(provider => provider.TryConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
+                        {
+                            TargetHlaCategory = targetHla
+                        }
+                    )
+                )
+                .Should().ThrowAsync<TimeoutException>();
+        }
+
+        [TestCase(TargetHlaCategory.TwoFieldAlleleIncludingExpressionSuffix)]
+        [TestCase(TargetHlaCategory.TwoFieldAlleleExcludingExpressionSuffix)]
+        public async Task TryConvertHla_WhenTheTwoFieldNameHasNoData_ReportsNotFound(TargetHlaCategory targetHla)
+        {
+            // The other half of the same boundary. Without it, the propagation test above would still pass with the
+            // fallback `catch` deleted outright.
+            hlaNameToTwoFieldAlleleConverter.ConvertHla(default, default, default, default).ThrowsForAnyArgs(
+                new HlaMetadataDictionaryException(DefaultLocus, DefaultHlaName, $"Failed to lookup '{DefaultHlaName}'.")
+            );
+
+            var (wasFound, hla) = await hlaConverter.TryConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
                 {
                     TargetHlaCategory = targetHla
-                }))
-                .Should().ThrowAsync<TimeoutException>();
+                }
+            );
+
+            wasFound.Should().BeFalse();
+            hla.Should().BeNull();
         }
 
         private void ArrangeNoDataForTheName()

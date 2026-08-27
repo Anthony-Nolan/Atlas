@@ -2,6 +2,7 @@
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups;
@@ -44,7 +45,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         private readonly IMacDictionary macDictionary;
         private readonly IAlleleGroupExpander alleleGroupExpander;
 
-        private readonly SearchRelatedMetadataServiceSettings options; 
+        private readonly SearchRelatedMetadataServiceSettings options;
 
         protected SearchRelatedMetadataServiceBase(
             IHlaMetadataRepository hlaMetadataRepository,
@@ -56,7 +57,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             string perTypeCacheKey,
             IPersistentCacheProvider cacheProvider,
             HlaMetadataDictionarySettings options
-            )
+        )
             : base(perTypeCacheKey, cacheProvider)
         {
             this.hlaMetadataRepository = hlaMetadataRepository;
@@ -89,25 +90,30 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
         protected override async Task<THlaMetadata> PerformLookup(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            var dictionaryLookup = GetHlaLookup(lookupName);
+            var dictionaryLookup = GetHlaLookup(locus, lookupName);
             var metadataRows = await dictionaryLookup.PerformLookupAsync(locus, lookupName, hlaNomenclatureVersion);
             var metadata = ConvertMetadataRowsToMetadata(metadataRows).ToList();
 
             return ConsolidateHlaMetadata(locus, lookupName, metadata);
         }
 
-        private HlaLookupBase GetHlaLookup(string lookupName)
+        private HlaLookupBase GetHlaLookup(Locus locus, string lookupName)
         {
-            var hlaTypingCategory = HlaCategorisationService.GetHlaTypingCategory(lookupName);
+            // A name whose category cannot be determined is a name with no data, and has to say so as one: the
+            // categoriser reports it with an AtlasHttpException, which would now escape as an infrastructure fault.
+            var hlaTypingCategory = HlaCategorisationService.GetCategoryOrThrowInvalidHla(locus, lookupName);
 
             return HlaLookupFactory
                 .GetLookupByHlaTypingCategory(
+                    locus,
+                    lookupName,
                     hlaTypingCategory,
                     hlaMetadataRepository,
                     alleleNamesMetadataService,
                     alleleNamesExtractor,
                     macDictionary,
-                    alleleGroupExpander);
+                    alleleGroupExpander
+                );
         }
 
         protected override MemoryCacheEntryOptions GetMemoryCacheOptions() => options.CacheSlidingExpirationInSeconds == null

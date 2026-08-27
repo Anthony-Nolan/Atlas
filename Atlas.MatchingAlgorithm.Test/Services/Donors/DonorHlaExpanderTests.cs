@@ -143,25 +143,32 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             });
         }
 
+        /// <summary>
+        /// Was <c>ExpandDonorHlaBatchAsync_UnanticipatedExpansionFailure_ThrowsException</c>, and asserted the
+        /// opposite. It passed for the wrong reason: nothing was unanticipated here, because
+        /// <c>MetadataServiceBase.GetMetadata</c> re-labelled every failure as an
+        /// <c>HlaMetadataDictionaryException</c> before it could reach the batch processor. Now that it does not, the
+        /// per-donor policy has to be stated at the call site, and this asserts it.
+        /// </summary>
         [Test]
-        public void ExpandDonorHlaBatchAsync_UnanticipatedExpansionFailure_ThrowsException()
+        public async Task ExpandDonorHlaBatchAsync_ExpansionFailsForAReasonOtherThanTheHla_StillFailsOnlyThatDonor()
         {
-            hlaMetadataDictionary
-                .GetLocusHlaMatchingMetadata(Locus.A, Arg.Any<LocusInfo<string>>())
-                .Throws(new Exception("error"));
+            const int failedDonorId = 123;
+            const int successfulDonorId = 456;
 
-            Assert.ThrowsAsync<Exception>(async () =>
+            hlaMetadataDictionary
+                .GetLocusHlaMatchingMetadata(Arg.Any<Locus>(), Arg.Is<LocusInfo<string>>(h => h.Position1 == "faulting-hla"))
+                .Throws(new TimeoutException("the storage request timed out"));
+
+            var result = await donorHlaExpander.ExpandDonorHlaBatchAsync(
+                new List<DonorInfo>
                 {
-                    await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<DonorInfo>
-                    {
-                        new DonorInfo
-                        {
-                            HlaNames = new PhenotypeInfo<string>("hla")
-                        }
-                    },
-                        "event-name");
-                }
-            );
+                    new DonorInfo {DonorId = failedDonorId, HlaNames = new PhenotypeInfo<string>("faulting-hla")},
+                    new DonorInfo {DonorId = successfulDonorId, HlaNames = new PhenotypeInfo<string>("hla")}
+                },
+                "event-name");
+
+            result.FailedDonors.Should().OnlyContain(d => d.AtlasDonorId == failedDonorId);
         }
     }
 }

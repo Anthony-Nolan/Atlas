@@ -7,6 +7,7 @@ using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
+using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
@@ -103,7 +104,6 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
 
             await repository.Received(1).GetAlleleNameIfExists(locus, lookupName, versionOne);
             await repository.Received(1).GetAlleleNameIfExists(locus, lookupName, versionTwo);
-
         }
 
         // ---- A name with no data is remembered; an infrastructure fault is not ------------------------
@@ -157,15 +157,38 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
             repository.GetAlleleNameIfExists(locus, lookupName, version).Returns<IAlleleNameMetadata>(_ =>
                 faulted
                     ? throw new TimeoutException("storage is having a moment")
-                    : new AlleleNameMetadata("A*", default, default));
+                    : new AlleleNameMetadata("A*", default, default)
+            );
 
-            await ShouldFailLookup(locus, lookupName, version);
+            // As ITSELF, not as an HlaMetadataDictionaryException. GetMetadata used to re-label every exception, so a
+            // caller could not tell a blip from a name that is not in the data: the matching algorithm skipped a
+            // donor the storage account had merely hidden, and it looked exactly like invalid HLA in the logs.
+            await metadataService.Invoking(s => s.GetCurrentAlleleNames(locus, lookupName, version))
+                .Should().ThrowAsync<TimeoutException>();
 
             faulted = false;
             var recovered = await metadataService.GetCurrentAlleleNames(locus, lookupName, version);
 
             recovered.Should().NotBeNull();
             await repository.Received(2).GetAlleleNameIfExists(locus, lookupName, version);
+        }
+
+        [Test]
+        public async Task GetMetadata_WhenTheNameIsNotInTheData_ReportsItAsAMissingName()
+        {
+            const Locus locus = Locus.A;
+            const string lookupName = "hla-that-does-not-exist";
+            const string version = "version";
+
+            repository.GetAlleleNameIfExists(locus, lookupName, version).ReturnsNull();
+
+            // The other half of the boundary, and the reason narrowing the catch is safe: a genuine miss still
+            // arrives as the exception DonorHlaExpander, SearchRunner and RepeatSearchRunner treat as an expected
+            // error. Only what is NOT a miss changed.
+            var exception = await ShouldFailLookup(locus, lookupName, version);
+
+            exception.Should().BeOfType<HlaMetadataDictionaryException>();
+            exception.InnerException.Should().BeOfType<InvalidHlaException>();
         }
 
         // ---- The same lookup, with "no data for this name" as a value rather than an exception ---
@@ -276,7 +299,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
                 .Returns<IMolecularTypingToPGroupMetadata>(_ =>
                     faulted
                         ? throw new TimeoutException("storage is having a moment")
-                        : new MolecularTypingToPGroupMetadata(locus, gGroup, expectedPGroup));
+                        : new MolecularTypingToPGroupMetadata(locus, gGroup, expectedPGroup)
+                );
 
             await gGroupToPGroupService.Invoking(s => s.TryConvertGGroupToPGroup(locus, gGroup, version))
                 .Should().ThrowAsync<TimeoutException>();
