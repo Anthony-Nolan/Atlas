@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
@@ -33,8 +34,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// - Processes HLA for imported donors
         /// - Scales down target database
         /// </summary>
+        /// <param name="cancellationToken">
+        /// Cancelled if this invocation loses its run-level lease on the refresh record, meaning another invocation has
+        /// taken the record over. Observed at batch boundaries, so cancellation bounds the damage a displaced invocation
+        /// can do to one batch rather than stopping it instantly.
+        /// </param>
         /// <returns>The version of the HLA Nomenclature used for the new data</returns>
-        Task<string> RefreshData(int refreshRecordId);
+        Task<string> RefreshData(int refreshRecordId, CancellationToken cancellationToken = default);
     }
 
     public class DataRefreshRunner : IDataRefreshRunner
@@ -135,7 +141,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaVersionOrDefault);
         }
 
-        public async Task<string> RefreshData(int refreshRecordId)
+        public async Task<string> RefreshData(int refreshRecordId, CancellationToken cancellationToken)
         {
             try
             {
@@ -146,11 +152,21 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
                 foreach (var dataRefreshStage in orderedRefreshStages.Except(new[] {DataRefreshStage.MetadataDictionaryRefresh}))
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     var executionMode = stageExecutionModes[dataRefreshStage];
-                    await ExecuteDataRefreshStage(dataRefreshStage, executionMode, refreshRecord);
+                    await ExecuteDataRefreshStage(dataRefreshStage, executionMode, refreshRecord, cancellationToken);
                 }
 
                 return refreshRecord.HlaNomenclatureVersion;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // Deliberately no teardown. The run was aborted because the lease was lost, so another invocation now
+                // owns this record - and the dormant database it is refreshing. Scaling that database back down
+                // underneath it would be actively harmful; the invocation that now holds the lease is responsible for
+                // its own teardown.
+                logger.SendTrace($"{LoggingPrefix} Refresh aborted: the lease on record {refreshRecordId} was lost.", LogLevel.Critical);
+                throw;
             }
             catch (Exception ex)
             {
@@ -240,7 +256,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private async Task ExecuteDataRefreshStage(
             DataRefreshStage dataRefreshStage,
             DataRefreshStageExecutionMode executionMode,
-            DataRefreshRecord refreshRecord)
+            DataRefreshRecord refreshRecord,
+            CancellationToken cancellationToken)
         {
             switch (executionMode)
             {
@@ -287,7 +304,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     // entries create-only, which relies on the log table being empty of the donors being imported. In FromScratch mode that is
                     // guaranteed by DataRefreshStage.DataDeletion having just run, or by this stage never having written anything in the interrupted
                     // run it is following. See DonorImporter.InsertDonorBatch.
-                    await donorImporter.ImportDonors(refreshRecord.ShouldMarkAllDonorsAsUpdated);
+                    await donorImporter.ImportDonors(refreshRecord.ShouldMarkAllDonorsAsUpdated, cancellationToken);
                     break;
                 case DataRefreshStage.DonorHlaProcessing:
                     var isContinuation = (executionMode == DataRefreshStageExecutionMode.Continuation);
@@ -297,7 +314,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                         refreshRecord.HlaNomenclatureVersion,
                         donorId => dataRefreshHistoryRepository.UpdateLastSafelyProcessedDonor(refreshRecord.Id, donorId),
                         refreshRecord.LastSafelyProcessedDonor,
-                        isContinuation);
+                        isContinuation,
+                        cancellationToken);
                     break;
                 case DataRefreshStage.IndexRecreation:
                     await donorImportRepository.CreateHlaTableIndexes();

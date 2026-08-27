@@ -16,6 +16,7 @@ using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using IDonorImportRepository = Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates.IDonorImportRepository;
 
@@ -36,7 +37,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         /// These entries are *created*, never updated, so this assumes the log table holds no entries for the donors
         /// being imported. See <see cref="DonorImporter.InsertDonorBatch"/> for why that holds during a data refresh.
         /// </param>
-        Task ImportDonors(bool shouldMarkDonorsAsUpdated = false);
+        /// <param name="cancellationToken">
+        /// Cancelled if the data refresh loses its run-level lease. Observed between batches, never mid-batch, so an
+        /// interrupted import always stops on a batch boundary.
+        /// </param>
+        Task ImportDonors(bool shouldMarkDonorsAsUpdated = false, CancellationToken cancellationToken = default);
     }
 
     public class DonorImporter : IDonorImporter
@@ -66,7 +71,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             this.donorReader = donorReader;
         }
 
-        public async Task ImportDonors(bool shouldMarkDonorsAsUpdated)
+        public async Task ImportDonors(bool shouldMarkDonorsAsUpdated, CancellationToken cancellationToken)
         {
             try
             {
@@ -74,6 +79,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
                 var donorsStream = donorReader.StreamAllDonors().Select(d => d.MapImportDonorToMatchingUpdateDonor());
                 foreach (var streamedDonorBatch in donorsStream.Batch(BatchSize))
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     var reifiedDonorBatch = streamedDonorBatch.ToList();
                     var failedDonors = await InsertDonorBatch(reifiedDonorBatch, shouldMarkDonorsAsUpdated);
                     allFailedDonors.AddRange(failedDonors);
@@ -81,6 +87,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
 
                 await failedDonorsNotificationSender.SendFailedDonorsAlert(allFailedDonors, ImportFailureEventName, Priority.Medium);
                 logger.SendTrace("Donor import is complete");
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // Deliberately not wrapped as a DonorImportHttpException. Cancellation means the refresh lost its lease,
+                // which is recognised and handled distinctly further up the chain, and it is not an import failure.
+                throw;
             }
             catch (Exception ex)
             {
