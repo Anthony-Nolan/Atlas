@@ -16,11 +16,20 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
             var phenotypeInfo_defaultConstructor = new PhenotypeInfo<string>();
             var phenotypeInfo_singleValueConstructor = new PhenotypeInfo<string>("default");
             var phenotypeInfo_locusInfoConstructor = new PhenotypeInfo<string>(valueDqb1: new LocusInfo<string>("a"));
+            var phenotypeInfo_lociInfoConstructor = new PhenotypeInfo<string>(new LociInfo<LocusInfo<string>>());
             // ReSharper restore InconsistentNaming
 
             phenotypeInfo_defaultConstructor.A.Should().NotBeNull();
             phenotypeInfo_singleValueConstructor.A.Should().NotBeNull();
             phenotypeInfo_locusInfoConstructor.A.Should().NotBeNull();
+
+            // ATL-233: the LociInfo constructor normalises each of the six loci independently, so all six are asserted.
+            phenotypeInfo_lociInfoConstructor.A.Should().NotBeNull();
+            phenotypeInfo_lociInfoConstructor.B.Should().NotBeNull();
+            phenotypeInfo_lociInfoConstructor.C.Should().NotBeNull();
+            phenotypeInfo_lociInfoConstructor.Dpb1.Should().NotBeNull();
+            phenotypeInfo_lociInfoConstructor.Dqb1.Should().NotBeNull();
+            phenotypeInfo_lociInfoConstructor.Drb1.Should().NotBeNull();
         }
 
         [Test]

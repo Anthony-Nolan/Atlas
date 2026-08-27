@@ -95,12 +95,22 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
         }
 
         /// <summary>
-        /// The constraint is <c>class?</c>, so it has to admit an interface T. Two live call sites depend on that -
-        /// <c>LocusMatchCalculator</c> over <c>LocusInfo&lt;IEnumerable&lt;string&gt;&gt;</c> and
-        /// <c>PositionalScorerBase</c> over <c>LocusInfo&lt;IHlaScoringMetadata&gt;</c>.
+        /// Every case above uses <c>string</c>. This one pins that the probes are generic over any reference
+        /// <c>T</c>, with <c>IEnumerable&lt;string&gt;</c> chosen because an interface sits furthest from
+        /// <c>string</c>. Two live call sites are of that shape - <c>LocusMatchCalculator</c> over
+        /// <c>LocusInfo&lt;IEnumerable&lt;string&gt;&gt;</c> and <c>PositionalScorerBase</c> over
+        /// <c>LocusInfo&lt;IHlaScoringMetadata&gt;</c>.
+        ///
+        /// <para>
+        /// This says nothing about the <c>class?</c> constraint, and cannot: plain <c>class</c> admits an interface
+        /// too. The <c>?</c> is there because these methods exist to ask whether a position is absent, and
+        /// <c>class</c> would declare <c>T</c> non-nullable - so a nullable-enabled caller holding
+        /// <c>LocusInfo&lt;string?&gt;</c> would take CS8634 for asking exactly that. No call site needs the
+        /// <c>?</c> today; every calling project is nullable-oblivious.
+        /// </para>
         /// </summary>
         [Test]
-        public void NullProbes_WhenTypeParameterIsAnInterface_ProbeTheValues()
+        public void NullProbes_WhenTypeParameterIsAnyReferenceType_ProbeTheValues()
         {
             var locusInfo = new LocusInfo<IEnumerable<string>>(fixture.CreateMany<string>(2), null);
 

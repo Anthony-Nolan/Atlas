@@ -32,20 +32,26 @@ namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo
         ///
         /// <para>
         /// ATL-233: the six <see cref="LocusInfo{T}"/> are shared with <paramref name="source"/>, not cloned.
-        /// <see cref="LocusInfo{T}"/> is immutable - every member returns a new instance - it pre-computes its hash on
-        /// construction, and nothing in the solution derives from it, so a <c>MemberwiseClone</c> produced an object
+        /// <see cref="LocusInfo{T}"/> is immutable by contract - every member returns a new instance, and the hash it
+        /// pre-computes on construction is only sound while that holds - so a <c>MemberwiseClone</c> produced an object
         /// indistinguishable from the one it copied. This constructor is how <see cref="Map{R}(Func{Locus,LocusPosition,T,R})"/>
         /// and <see cref="SetPosition"/> return, so the clones were six allocations per map and per single-position
         /// write, against the six live objects they duplicated and immediately made garbage.
         /// </para>
+        ///
+        /// <para>
+        /// A missing locus is still normalised to an empty <see cref="LocusInfo{T}"/>, as the other public constructors
+        /// do. <see cref="PhenotypeInfo{T}"/> holds every locus non-null, and the clone used to enforce that only as a
+        /// side effect, by throwing on a null.
+        /// </para>
         /// </summary>
         public PhenotypeInfo(LociInfo<LocusInfo<T>> source) : base(
-            source.A,
-            source.B,
-            source.C,
-            source.Dpb1,
-            source.Dqb1,
-            source.Drb1
+            source.A ?? new LocusInfo<T>(),
+            source.B ?? new LocusInfo<T>(),
+            source.C ?? new LocusInfo<T>(),
+            source.Dpb1 ?? new LocusInfo<T>(),
+            source.Dqb1 ?? new LocusInfo<T>(),
+            source.Drb1 ?? new LocusInfo<T>()
         )
         {
         }
