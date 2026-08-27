@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Microsoft.AspNetCore.Http;
@@ -18,15 +19,18 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh.Functions
         private readonly IDataRefreshRequester dataRefreshRequester;
         private readonly IDataRefreshOrchestrator dataRefreshOrchestrator;
         private readonly IDataRefreshCleanupService dataRefreshCleanupService;
+        private readonly IMatchingAlgorithmImportLogger logger;
 
         public DataRefreshFunctions(
             IDataRefreshRequester dataRefreshRequester,
             IDataRefreshOrchestrator dataRefreshOrchestrator,
-            IDataRefreshCleanupService dataRefreshCleanupService)
+            IDataRefreshCleanupService dataRefreshCleanupService,
+            IMatchingAlgorithmImportLogger logger)
         {
             this.dataRefreshRequester = dataRefreshRequester;
             this.dataRefreshOrchestrator = dataRefreshOrchestrator;
             this.dataRefreshCleanupService = dataRefreshCleanupService;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -68,7 +72,15 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh.Functions
                 Connection = "MessagingServiceBus:ConnectionString")]
             ValidatedDataRefreshRequest request)
         {
-            await dataRefreshOrchestrator.OrchestrateDataRefresh(request.DataRefreshRecordId);
+            // Logged before anything else can fail, and before any guard runs, so that every delivery leaves a trace -
+            // including the duplicates the lease turns away. Concurrent invocations of the same record are otherwise
+            // indistinguishable in telemetry; this id is also what the lease is taken under, so the log line and the
+            // record's LeaseOwner column can be read together to establish whether invocations really did overlap.
+            var invocationId = Guid.NewGuid();
+            logger.SendTrace(
+                $"DATA REFRESH: Invocation {invocationId} received a request to run data refresh record {request.DataRefreshRecordId}.");
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(request.DataRefreshRecordId, invocationId);
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
