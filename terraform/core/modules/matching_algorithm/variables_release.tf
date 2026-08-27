@@ -93,6 +93,14 @@ variable "DONOR_WRITE_TRANSACTIONALITY__DONOR_UPDATES" {
   description = "Should the Write for a Donor be entirely Transactional when running DataRefresh. 'false' for greater performance. 'true' for greater reliability"
 }
 
+variable "DATA_REFRESH_LEASE_DURATION_MINUTES" {
+  type = number
+}
+
+variable "DATA_REFRESH_LEASE_RENEWAL_INTERVAL_SECONDS" {
+  type = number
+}
+
 variable "IP_RESTRICTION_SETTINGS" {
   type    = list(string)
   default = []
