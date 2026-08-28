@@ -4,6 +4,7 @@ using Atlas.MatchingAlgorithm.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,16 +12,18 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.MatchingAlgorithm.Data.Migrations
 {
     [DbContext(typeof(SearchAlgorithmContext))]
-    partial class SearchAlgorithmContextModelSnapshot : ModelSnapshot
+    [Migration("20260826104901_Add_Covering_Columns_to_Donors_Indexes")]
+    partial class Add_Covering_Columns_to_Donors_Indexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.3")
+                .HasAnnotation("ProductVersion", "10.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Atlas.MatchingAlgorithm.Data.Models.Entities.Donor", b =>
                 {
@@ -28,7 +31,7 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("A_1")
                         .IsRequired()
@@ -131,7 +134,7 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("DonorId")
                         .HasColumnType("int");
@@ -154,13 +157,40 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                     b.ToTable("DonorManagementLogs");
                 });
 
+            modelBuilder.Entity("Atlas.MatchingAlgorithm.Data.Models.Entities.DonorSubjectGenotypeSet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AllowedLociKey")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<int>("DonorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubjectGenotypeSetValueId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DonorId", "AllowedLociKey")
+                        .IsUnique();
+
+                    b.ToTable("DonorSubjectGenotypeSets");
+                });
+
             modelBuilder.Entity("Atlas.MatchingAlgorithm.Data.Models.Entities.HlaName", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -176,7 +206,7 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("HlaNameId")
                         .HasColumnType("int");
@@ -195,7 +225,7 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("HlaNameId")
                         .HasColumnType("int");
@@ -214,7 +244,7 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("HlaNameId")
                         .HasColumnType("int");
@@ -233,7 +263,7 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("HlaNameId")
                         .HasColumnType("int");
@@ -252,7 +282,7 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("HlaNameId")
                         .HasColumnType("int");
@@ -271,7 +301,7 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("DonorId")
                         .HasColumnType("int");
@@ -293,7 +323,7 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("DonorId")
                         .HasColumnType("int");
@@ -315,7 +345,7 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("DonorId")
                         .HasColumnType("int");
@@ -337,7 +367,7 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("DonorId")
                         .HasColumnType("int");
@@ -359,7 +389,7 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("DonorId")
                         .HasColumnType("int");
@@ -381,7 +411,7 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -389,6 +419,41 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("PGroupNames");
+                });
+
+            modelBuilder.Entity("Atlas.MatchingAlgorithm.Data.Models.Entities.SubjectGenotypeSetValue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AllowedLociKey")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<int>("HaplotypeFrequencySetId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("HlaTypingKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<bool>("IsUnrepresented")
+                        .HasColumnType("bit");
+
+                    b.Property<byte[]>("SubjectGenotypeSetData")
+                        .HasColumnType("varbinary(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HlaTypingKey", "HaplotypeFrequencySetId", "AllowedLociKey")
+                        .IsUnique();
+
+                    b.ToTable("SubjectGenotypeSetValues");
                 });
 #pragma warning restore 612, 618
         }
