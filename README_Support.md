@@ -84,6 +84,34 @@ If request replay fails and Application Insights shows the exception: "Exception
 then find the record for your data refresh attempt with the shared db table, `[MatchingAlgorithmPersistent].[DataRefreshHistory]` and set value of `[RefreshLastContinuedUtc]` to `NULL`.
 This will allow the job to continue from where it left off.
 
+##### Clearing a stale lease
+
+Only one invocation may process a refresh record at a time, enforced by a lease held on the record. A replayed
+message is refused while that lease is held, and completes without running any stage. If the server died, the
+lease was never released, so it remains valid for up to `DataRefresh:LeaseDurationMinutes` (30 by default)
+after the last renewal.
+
+Either wait for it to expire, or - **only if you are certain the original process is gone** - clear it:
+
+```sql
+UPDATE [MatchingAlgorithmPersistent].[DataRefreshHistory]
+SET LeaseOwner = NULL, LeaseExpiresUtc = NULL
+WHERE Id = <record id>
+```
+
+Clearing a live lease lets two refreshes run against one record and the same transient database, each
+independently deciding which stages to skip.
+
+Note that a refused replay is *consumed* - the message is completed, not dead-lettered - so there may be
+nothing left to replay. If so, publish one to the `data-refresh-requests` topic:
+
+```json
+{ "DataRefreshRecordId": <record id> }
+```
+
+The job then continues from its last completed stage, unlike (b), which marks the record failed so that the
+next refresh starts from scratch.
+
 #### (b) Manual cleanup
  
 If you prefer not to continue a refresh, any live request messages must be purged from the `matching-algorithm` subscription, and teardown performed.
