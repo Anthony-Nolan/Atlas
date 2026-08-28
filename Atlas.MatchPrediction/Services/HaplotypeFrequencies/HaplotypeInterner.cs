@@ -1,11 +1,32 @@
 ﻿#nullable enable
+using System;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Data.Models;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 
 // Cannot be null, if ints are zero then allele is absent
-public record struct HaplotypeKey(int A, int B, int C, int Dqb1, int Drb1);
+public record struct HaplotypeKey(int A, int B, int C, int Dqb1, int Drb1)
+{
+    /// <summary>
+    /// The interned allele id at <paramref name="locus"/>. The pool filter compares ids rather than allele names, so
+    /// it reads a key positionally, once per allowed locus per pooled haplotype.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A haplotype is not typed at Dpb1, so it holds no id there. <c>LocusSettings.MatchPredictionLoci</c> excludes it,
+    /// which is why this can throw rather than return "absent" - reaching it means the allowed loci are wrong.
+    /// </exception>
+    internal readonly int GetLocus(Locus locus) => locus switch
+    {
+        Locus.A => A,
+        Locus.B => B,
+        Locus.C => C,
+        Locus.Dqb1 => Dqb1,
+        Locus.Drb1 => Drb1,
+        _ => throw new ArgumentOutOfRangeException(nameof(locus), locus, "Haplotypes carry no allele at this locus.")
+    };
+}
 
 public record struct HaplotypeFrequencyValue(decimal Frequency, HaplotypeTypingCategory TypingCategory);
 
@@ -58,6 +79,20 @@ public sealed class HaplotypeInterner
         return new HaplotypeKey(ia, ib, ic, id1, id2);
     }
     
+    /// <summary>
+    /// The per-locus interner backing <see cref="HaplotypeKey.GetLocus"/>'s ids, so a caller can resolve the subject's
+    /// own allele names into the same id space before it starts comparing.
+    /// </summary>
+    internal AlleleInterner ForLocus(Locus locus) => locus switch
+    {
+        Locus.A => A,
+        Locus.B => B,
+        Locus.C => C,
+        Locus.Dqb1 => Dqb1,
+        Locus.Drb1 => Drb1,
+        _ => throw new ArgumentOutOfRangeException(nameof(locus), locus, "Haplotypes carry no allele at this locus.")
+    };
+
     public LociInfo<string> ReverseLookup(HaplotypeKey key)
         // Named args are essential: LociInfo's positional constructor is (A, B, C, Dpb1, Dqb1, Drb1) - haplotypes have no
         // Dpb1, so passing five positional values would shift Dqb1/Drb1 into the wrong loci and drop Drb1 entirely.

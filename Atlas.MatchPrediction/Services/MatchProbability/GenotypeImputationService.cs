@@ -3,18 +3,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
-using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.MatchPrediction;
-using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Models;
-using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
-using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 using PhenotypeOfStrings = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
-using GenotypeOfKnownTypingCategory = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<Atlas.MatchPrediction.ExternalInterface.Models.HlaAtKnownTypingCategory>;
 using Atlas.MatchPrediction.ApplicationInsights;
-using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
@@ -38,18 +32,15 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     {
         private const string LoggingPrefix = "MatchPrediction: ";
         private readonly ICompressedPhenotypeExpander compressedPhenotypeExpander;
-        private readonly IDiplotypeLikelihoodCalculator diplotypeLikelihoodCalculator;
         private readonly IAtlasLogger logger;
         private readonly GenotypeImputationSettings settings;
 
         public GenotypeImputationService(
             ICompressedPhenotypeExpander compressedPhenotypeExpander,
-            IDiplotypeLikelihoodCalculator diplotypeLikelihoodCalculator,
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
             GenotypeImputationSettings settings)
         {
             this.compressedPhenotypeExpander = compressedPhenotypeExpander;
-            this.diplotypeLikelihoodCalculator = diplotypeLikelihoodCalculator;
             this.logger = logger;
             this.settings = settings;
         }
@@ -57,23 +48,37 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         /// <inheritdoc />
         public async Task<ImputedGenotypes> Impute(ImputationInput input)
         {
-            var genotypes = await ExpandToGenotypes(input);
+            var expanded = await ExpandToGenotypes(input);
 
-            if (genotypes.IsNullOrEmpty())
+            // A count of pairs, not of materialised genotypes - nothing between here and truncation reads a genotype,
+            // so nothing between here and truncation builds one.
+            var genotypeCount = expanded.GenotypeCount;
+
+            if (genotypeCount == 0)
             {
                 logger.SendTrace($"{LoggingPrefix}{input.SubjectData.SubjectFrequencySet.SubjectLogDescription} genotype unrepresented.", LogLevel.Verbose);
                 return ImputedGenotypes.Empty();
             }
 
-            logger.SendTrace($"Filtered expanded genotypes: {genotypes.Count}");
+            logger.SendTrace($"Filtered expanded genotypes: {genotypeCount}");
 
-            var genotypeLikelihoods = await CalculateGenotypeLikelihoods(
-                genotypes, input.SubjectData.SubjectFrequencySet.FrequencySet, input.MatchPredictionParameters.AllowedLoci);
+            // The likelihoods are computed in the expansion, where the pair that produced each genotype is still in
+            // hand. What is left here is the certainty rule, which needs no frequency at all.
+            var genotypeLikelihoods = expanded.Likelihoods;
 
-            return ExpandedGenotypeTruncater.TruncateGenotypes(genotypeLikelihoods, genotypes, settings.MaximumExpandedGenotypesPerInput);
+            // If there is no ambiguity for an input genotype, we do not need to use haplotype frequencies to work out the likelihood of said genotype - it is already guaranteed!
+            if (genotypeLikelihoods.Count == 1)
+            {
+                genotypeLikelihoods = new Dictionary<PhenotypeOfStrings, decimal> { [genotypeLikelihoods.Keys.Single()] = 1 };
+            }
+
+            // The names come back from the expansion, index-aligned with the pairs, so truncation derives none of its
+            // own.
+            return ExpandedGenotypeTruncater.TruncateGenotypes(
+                genotypeLikelihoods, expanded, settings.MaximumExpandedGenotypesPerInput);
         }
 
-        private async Task<ISet<GenotypeOfKnownTypingCategory>> ExpandToGenotypes(ImputationInput input)
+        private async Task<ExpandedGenotypes> ExpandToGenotypes(ImputationInput input)
         {
             using (logger.RunTimed($"{LoggingPrefix}Expand {input.SubjectData.SubjectFrequencySet.SubjectLogDescription} phenotype", LogLevel.Verbose))
             {
@@ -91,41 +96,5 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             }
         }
 
-        private async Task<Dictionary<PhenotypeOfStrings, decimal>> CalculateGenotypeLikelihoods(
-            IEnumerable<GenotypeOfKnownTypingCategory> genotypes,
-            HaplotypeFrequencySet frequencySet,
-            ISet<Locus> allowedLoci)
-        {
-            using (logger.RunTimed($"{LoggingPrefix}Calculate likelihoods for genotypes", LogLevel.Verbose))
-            {
-                var genotypeLikelihoods = new List<KeyValuePair<PhenotypeOfStrings, decimal>>();
-
-                var stringGenotypes = genotypes.Select(g => g.ToHlaNames()).ToHashSet();
-
-                // If there is no ambiguity for an input genotype, we do not need to use haplotype frequencies to work out the likelihood of said genotype - it is already guaranteed! 
-                if (stringGenotypes.Count == 1)
-                {
-                    genotypeLikelihoods.Add(new KeyValuePair<PhenotypeOfStrings, decimal>(stringGenotypes.Single(), 1));
-                }
-                else
-                {
-                    foreach (var genotype in stringGenotypes)
-                    {
-                        genotypeLikelihoods.Add(await CalculateLikelihood(genotype, frequencySet, allowedLoci));
-                    }
-                }
-
-                return genotypeLikelihoods.ToDictionary();
-            }
-        }
-
-        private async Task<KeyValuePair<PhenotypeOfStrings, decimal>> CalculateLikelihood(
-            PhenotypeOfStrings diplotype,
-            HaplotypeFrequencySet frequencySet,
-            ISet<Locus> allowedLoci)
-        {
-            var likelihood = await diplotypeLikelihoodCalculator.CalculateLikelihoodForDiplotype(diplotype, frequencySet, allowedLoci);
-            return new KeyValuePair<PhenotypeOfStrings, decimal>(diplotype, likelihood);
-        }
     }
 }

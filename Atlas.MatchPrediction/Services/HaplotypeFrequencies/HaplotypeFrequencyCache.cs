@@ -132,6 +132,10 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
 
         // Still warming (or warming failed): calculate this single value directly. This is pure in-memory work over
         // the already-cached set - no SQL connection - so it needs no concurrency throttling.
+        //
+        // "Pure in-memory" is not the same as cheap: this is a full linear scan of SetFrequencies with a RemoveLoci
+        // allocation per entry, for every haplotype that lands here. Callers that resolve many frequencies for one
+        // subject can therefore pay it many times over while the warm is still running.
         return frequencyConsolidator.ConsolidateFrequenciesForHaplotype(entry, hla, excludedLoci);
     }
 
@@ -149,11 +153,18 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
                 resultDictionary.Add(haplotypeKey, haplotypeFrequencyValue);
             }
 
-            return new FrequencySetCacheEntry
+            var entry = new FrequencySetCacheEntry
             {
                 SetFrequencies = resultDictionary.ToFrozenDictionary(),
                 Interner = haplotypeInterner
             };
+
+            // Project the pool here, on the one thread that builds the set, rather than leaving the first donor to
+            // touch this set to pay for it. Inside the timed region because it is part of the cost of making a set
+            // usable, and before the entry escapes, so no reader can race the first access.
+            _ = entry.ProjectedPool;
+
+            return entry;
         }
     }
 

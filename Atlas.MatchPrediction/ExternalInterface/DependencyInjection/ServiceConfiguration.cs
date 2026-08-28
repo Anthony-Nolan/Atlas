@@ -192,7 +192,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.AddScoped<IHaplotypeFrequencyCache, HaplotypeFrequencyCache>();
 
             services.AddScoped<IGenotypeLikelihoodService, GenotypeLikelihoodService>();
-            services.AddScoped<IDiplotypeLikelihoodCalculator, DiplotypeLikelihoodCalculator>();
             services.AddScoped<IUnambiguousGenotypeExpander, UnambiguousGenotypeExpander>();
             services.AddScoped<IGenotypeLikelihoodCalculator, GenotypeLikelihoodCalculator>();
             services.AddScoped<IGenotypeAlleleTruncater, GenotypeAlleleTruncater>();

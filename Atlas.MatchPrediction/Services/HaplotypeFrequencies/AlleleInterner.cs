@@ -47,4 +47,8 @@ public sealed class AlleleInterner
 
     // Maps any non-positive id (including the NotFound sentinel) back to "no allele", keeping ReverseLookup total.
     public string? GetName(int id) => id <= 0 ? null : toName[id];
+
+    // One past the highest id this interner has minted - ids are dense from 0, so this sizes an array indexed by id.
+    // That array is what lets the pool filter test an allele without hashing anything.
+    internal int IdCount => toName.Count;
 }
