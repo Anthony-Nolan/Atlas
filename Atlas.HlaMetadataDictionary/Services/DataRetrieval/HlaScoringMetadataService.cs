@@ -2,6 +2,7 @@
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
+using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
@@ -41,20 +42,21 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IAlleleGroupExpander alleleGroupExpander,
             IPersistentCacheProvider cacheProvider,
             HlaMetadataDictionarySettings options
-            ) : base(
-                hlaScoringMetadataRepository,
-                alleleNamesMetadataService,
-                hlaCategorisationService,
-                alleleNamesExtractor,
-                macDictionary,
-                alleleGroupExpander,
-                CacheKey,
-                cacheProvider,
-                options)
+        ) : base(
+            hlaScoringMetadataRepository,
+            alleleNamesMetadataService,
+            hlaCategorisationService,
+            alleleNamesExtractor,
+            macDictionary,
+            alleleGroupExpander,
+            CacheKey,
+            cacheProvider,
+            options
+        )
         {
             this.hlaScoringMetadataRepository = hlaScoringMetadataRepository;
         }
-        
+
         public async Task<IDictionary<Locus, List<string>>> GetAllGGroups(string hlaNomenclatureVersion)
         {
             return await hlaScoringMetadataRepository.GetAllGGroups(hlaNomenclatureVersion);
@@ -70,7 +72,15 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             string lookupName,
             List<IHlaScoringMetadata> metadata)
         {
-            var hlaTypingCategory = HlaCategorisationService.GetHlaTypingCategory(lookupName);
+            // Nothing to consolidate is a name with no data. Said explicitly because the alternative is an
+            // InvalidOperationException out of the Single() below, which GetMetadata used to re-label as a missing
+            // name and no longer does - it would now fail the caller's whole batch instead.
+            if (metadata.Count == 0)
+            {
+                throw new InvalidHlaException(locus, lookupName);
+            }
+
+            var hlaTypingCategory = HlaCategorisationService.GetCategoryOrThrowInvalidHla(locus, lookupName);
             var scoringInfos = metadata.Select(result => result.HlaScoringInfo).ToList();
 
             switch (hlaTypingCategory)
@@ -96,7 +106,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                     return metadata.Single();
 
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    // A category with no scoring strategy is a name this service cannot answer for - not an
+                    // infrastructure fault, and no longer re-labelled as a lookup miss by GetMetadata.
+                    throw new InvalidHlaException(locus, lookupName);
             }
         }
 
@@ -110,7 +122,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
             var multipleAlleleScoringInfo = new MultipleAlleleScoringInfo(
                 alleleScoringInfos,
-                matchingSerologies);
+                matchingSerologies
+            );
 
             return new HlaScoringMetadata(
                 locus,
@@ -134,7 +147,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             var consolidatedMolecularScoringInfo = new ConsolidatedMolecularScoringInfo(
                 matchingPGroups,
                 matchingGGroups,
-                matchingSerologies);
+                matchingSerologies
+            );
 
             return new HlaScoringMetadata(
                 locus,

@@ -15,6 +15,16 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         /// reliant on the fact that each G Group will only have 1 or 0 corresponding P Groups.
         /// </summary>
         Task<string> ConvertGGroupToPGroup(Locus locus, string gGroupLookupName, string hlaNomenclatureVersion);
+
+        /// <summary>
+        /// <see cref="ConvertGGroupToPGroup"/> for a caller that treats an unrecognised G group as an answer rather
+        /// than an error.
+        /// </summary>
+        /// <returns>
+        /// <c>(false, null)</c> where the G group is not in the data. Note that <c>(true, null)</c> is a distinct and
+        /// legitimate outcome: a G group of null-expressing alleles is recognised and has no P group.
+        /// </returns>
+        Task<(bool WasFound, string PGroup)> TryConvertGGroupToPGroup(Locus locus, string gGroupLookupName, string hlaNomenclatureVersion);
     }
 
     internal class GGroupToPGroupMetadataService : MetadataServiceBase<string>, IGGroupToPGroupMetadataService
@@ -56,6 +66,20 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             }
 
             return await GetMetadata(locus, gGroupLookupName, hlaNomenclatureVersion);
+        }
+
+        /// <inheritdoc />
+        public async Task<(bool WasFound, string PGroup)> TryConvertGGroupToPGroup(
+            Locus locus,
+            string gGroupLookupName,
+            string hlaNomenclatureVersion)
+        {
+            if (gGroupLookupName == null)
+            {
+                return (true, null);
+            }
+
+            return await TryGetMetadata(locus, gGroupLookupName, hlaNomenclatureVersion);
         }
     }
 }

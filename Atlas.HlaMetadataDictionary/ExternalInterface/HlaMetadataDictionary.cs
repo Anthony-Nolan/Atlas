@@ -42,6 +42,26 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         /// </summary>
         public Task<string> ConvertSmallGGroupToPGroup(Locus locus, string smallGGroup);
 
+        /// <summary>
+        /// <see cref="ConvertHla"/>, <see cref="ConvertGGroupToPGroup"/> and
+        /// <see cref="ConvertSmallGGroupToPGroup"/> for a caller that treats an HLA name with no data as an <b>answer</b>
+        /// rather than an error - which Match Prediction does.
+        ///
+        /// <para>
+        /// <b>An infrastructure fault still throws.</b> That is the point of having these as well as the methods above:
+        /// a failed storage request and a missing name used to arrive as the same
+        /// <c>HlaMetadataDictionaryException</c>, so a caller that swallowed lookup failures silently treated a
+        /// transient blip as "this HLA does not exist". Here they are distinguishable.
+        /// </para>
+        /// </summary>
+        Task<(bool WasFound, IReadOnlyCollection<string> Hla)> TryConvertHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory);
+
+        /// <inheritdoc cref="TryConvertHla"/>
+        Task<(bool WasFound, string PGroup)> TryConvertGGroupToPGroup(Locus locus, string gGroup);
+
+        /// <inheritdoc cref="TryConvertHla"/>
+        Task<(bool WasFound, string PGroup)> TryConvertSmallGGroupToPGroup(Locus locus, string smallGGroup);
+
         Task<LocusInfo<INullHandledHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
         Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
@@ -219,6 +239,31 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         public async Task<string> ConvertSmallGGroupToPGroup(Locus locus, string smallGGroup)
         {
             return await smallGGroupToPGroupMetadataService.ConvertSmallGGroupToPGroup(locus, smallGGroup, HlaNomenclatureVersion);
+        }
+
+        /// <inheritdoc />
+        public async Task<(bool WasFound, IReadOnlyCollection<string> Hla)> TryConvertHla(
+            Locus locus,
+            string hlaName,
+            TargetHlaCategory targetHlaCategory)
+        {
+            return await hlaConverter.TryConvertHla(locus, hlaName, new HlaConversionBehaviour
+            {
+                HlaNomenclatureVersion = HlaNomenclatureVersion,
+                TargetHlaCategory = targetHlaCategory
+            });
+        }
+
+        /// <inheritdoc />
+        public async Task<(bool WasFound, string PGroup)> TryConvertGGroupToPGroup(Locus locus, string gGroup)
+        {
+            return await gGroupToPGroupMetadataService.TryConvertGGroupToPGroup(locus, gGroup, HlaNomenclatureVersion);
+        }
+
+        /// <inheritdoc />
+        public async Task<(bool WasFound, string PGroup)> TryConvertSmallGGroupToPGroup(Locus locus, string smallGGroup)
+        {
+            return await smallGGroupToPGroupMetadataService.TryConvertSmallGGroupToPGroup(locus, smallGGroup, HlaNomenclatureVersion);
         }
 
         public async Task<IEnumerable<SerologyToAlleleMappingSummary>> GetSerologyToAlleleMappings(Locus locus, string serologyName)

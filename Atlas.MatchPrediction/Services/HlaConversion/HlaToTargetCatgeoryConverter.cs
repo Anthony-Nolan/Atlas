@@ -20,7 +20,7 @@ namespace Atlas.MatchPrediction.Services.HlaConversion
         {
         }
 
-        protected override async Task<IEnumerable<string>> ConvertHla(
+        protected override async Task<(bool WasFound, IEnumerable<string> ConvertedHla)> TryConvert(
             TargetHlaCategory? targetHlaCategory, Locus locus, string hla, IHlaMetadataDictionary hmd)
         {
             if (targetHlaCategory == null)
@@ -28,7 +28,7 @@ namespace Atlas.MatchPrediction.Services.HlaConversion
                 throw new ArgumentNullException(nameof(targetHlaCategory));
             }
 
-            return await hmd.ConvertHla(locus, hla, targetHlaCategory.Value);
+            return await hmd.TryConvertHla(locus, hla, targetHlaCategory.Value);
         }
     }
 }

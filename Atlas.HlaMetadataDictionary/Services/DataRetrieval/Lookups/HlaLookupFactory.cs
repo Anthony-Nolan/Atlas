@@ -1,15 +1,18 @@
 ﻿using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.Public.Models.GeneticData;
+using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
-using System;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 {
     internal static class HlaLookupFactory
     {
         public static HlaLookupBase GetLookupByHlaTypingCategory(
+            Locus locus,
+            string lookupName,
             HlaTypingCategory category,
             IHlaMetadataRepository hlaMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
@@ -29,8 +32,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
                 HlaTypingCategory.GGroup => new AlleleGroupLookup(hlaMetadataRepository, alleleNamesMetadataService, alleleGroupExpander),
                 HlaTypingCategory.SmallGGroup => new AlleleGroupLookup(hlaMetadataRepository, alleleNamesMetadataService, alleleGroupExpander),
                 HlaTypingCategory.NEW => new NewAlleleLookup(hlaMetadataRepository), 
-                _ => throw new ArgumentException(
-                    $"Dictionary lookup cannot be performed for HLA typing category: {category}.")
+                // A category this dictionary cannot look up is a name with no data, not an infrastructure fault. As an
+                // ArgumentException it only reached callers as a missing name because GetMetadata re-labelled it.
+                _ => throw new InvalidHlaException(locus, lookupName)
             };
         }
     }

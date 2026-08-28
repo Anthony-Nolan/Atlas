@@ -28,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository,
             IHlaCategorisationService hlaCategorisationService,
             IPersistentCacheProvider cacheProvider)
-        : base(CacheKey, cacheProvider)
+            : base(CacheKey, cacheProvider)
         {
             this.alleleGroupsMetadataRepository = alleleGroupsMetadataRepository;
             this.hlaCategorisationService = hlaCategorisationService;
@@ -58,8 +58,10 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
         private bool IsAlleleGroup(string lookupName)
         {
-            var category = hlaCategorisationService.GetHlaTypingCategory(lookupName);
-            return new[]{HlaTypingCategory.GGroup, HlaTypingCategory.PGroup, HlaTypingCategory.SmallGGroup}.Contains(category);
+            // TryGetCategory, not GetHlaTypingCategory: a name this service cannot parse is not an allele group, and
+            // is not an infrastructure fault either. See AlleleNamesMetadataService.LookupNameIsValid.
+            return hlaCategorisationService.TryGetCategory(lookupName, out var category)
+                && new[] { HlaTypingCategory.GGroup, HlaTypingCategory.PGroup, HlaTypingCategory.SmallGGroup }.Contains(category);
         }
     }
 }

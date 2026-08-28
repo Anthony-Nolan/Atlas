@@ -1,6 +1,5 @@
 ﻿using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.Common.Public.Models.GeneticData;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchPrediction.ApplicationInsights;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -67,29 +66,44 @@ namespace Atlas.MatchPrediction.Services.HlaConversion
 
             async Task<(bool WasSuccessful, IEnumerable<string> ConvertedHla)> TryConvertHla(IHlaMetadataDictionary hmd)
             {
-                try
+                // No try/catch: the dictionary now answers "this name has no data" as a value, so
+                // the common case costs no throw. What a `catch` would still be needed for is an infrastructure fault, and
+                // those deliberately propagate now rather than being swallowed as a failed conversion: reading a
+                // storage blip as "this HLA does not exist" would predict from an incomplete expansion, silently.
+                var (wasFound, convertedHla) = await TryConvert(input.TargetHlaCategory, locus, hla, hmd);
+
+                if (wasFound)
                 {
-                    var convertedHla = await ConvertHla(input.TargetHlaCategory, locus, hla, hmd);
                     return (true, convertedHla);
                 }
-                catch (HlaMetadataDictionaryException exception)
-                {
-                    logger.SendEvent("HLA Conversion Failed", LogLevel.Warn, new Dictionary<string, string>
-                    {
-                        { "Locus", locus.ToString() },
-                        { "Hla", hla },
-                        { "HlaNomenclatureVersion", hmd.HlaNomenclatureVersion },
-                        { nameof(TargetHlaCategory), input.TargetHlaCategory.ToString() },
-                        { "Stage of Failure", input.StageToLog },
-                        { nameof(HlaMetadataDictionaryException), exception.ToString() }
-                    });
 
-                    return (false, new List<string>());
-                }
+                LogConversionFailure(hmd);
+
+                return (false, new List<string>());
+            }
+
+            void LogConversionFailure(IHlaMetadataDictionary hmd)
+            {
+                // These five dimensions are the whole diagnostic: which name, at which locus, at which
+                // nomenclature version, converting to what, during which stage. `exception.ToString()` used to be a
+                // sixth - a full async stack, multiple kilobytes - and it added nothing they do not already say,
+                // because the exception's own message was "Failed to lookup '<Hla>' at locus <Locus>".
+                //
+                // It was not free. This is not an error path in production: a 248-donor run reached it 11,538 times,
+                // and those strings were possibly a larger cost than the throws they accompanied. There is no longer
+                // an exception here to serialise in any case - see TryConvert below.
+                logger.SendEvent("HLA Conversion Failed", LogLevel.Warn, new Dictionary<string, string>
+                {
+                    { "Locus", locus.ToString() },
+                    { "Hla", hla },
+                    { "HlaNomenclatureVersion", hmd.HlaNomenclatureVersion },
+                    { nameof(TargetHlaCategory), input.TargetHlaCategory.ToString() },
+                    { "Stage of Failure", input.StageToLog }
+                });
             }
         }
 
-        protected abstract Task<IEnumerable<string>> ConvertHla(
+        protected abstract Task<(bool WasFound, IEnumerable<string> ConvertedHla)> TryConvert(
             TargetHlaCategory? targetHlaCategory, Locus locus, string hla, IHlaMetadataDictionary hmd);
     }
 }
