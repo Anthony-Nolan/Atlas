@@ -23,8 +23,6 @@ namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo
         /// </summary>
         private int? PreComputedHash { get; }
 
-        private const string NewAllele = "NEW";
-
         #region Constructors
 
         public LocusInfo()
@@ -56,11 +54,6 @@ namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo
         #endregion
 
         public IEnumerable<T> ToEnumerable() => new[] {Position1, Position2};
-        
-        public LocusInfo<T> ShallowCopy()
-        {
-            return (LocusInfo<T>) MemberwiseClone();
-        }
 
         public T GetAtPosition(LocusPosition position)
         {
@@ -109,26 +102,6 @@ namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo
         public LocusInfo<T> Swap()
         {
             return new LocusInfo<T>(Position2, Position1);
-        }
-
-        public bool Position1And2Null()
-        {
-            return Position1 == null && Position2 == null;
-        }
-
-        public bool Position1And2NotNull()
-        {
-            return Position1 != null && Position2 != null;
-        }
-
-        public bool SinglePositionNull()
-        {
-            return Position1 == null ^ Position2 == null;
-        }
-
-        public bool Position1Or2NewAllele()
-        {
-            return Equals(Position1, NewAllele) || Equals(Position2, NewAllele);
         }
 
         /// <summary>
@@ -190,6 +163,8 @@ namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo
 
         private int CalculateHashCode()
         {
+            // ATL-233: do not hoist EqualityComparer<T>.Default into a static readonly field - measured and rejected.
+            // See LociInfo.CalculateHashCode, which records the measurement and its limit.
             unchecked
             {
                 var hashCode = EqualityComparer<T>.Default.GetHashCode(Position1);

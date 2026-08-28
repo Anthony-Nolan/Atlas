@@ -12,17 +12,20 @@ namespace Atlas.Common.GeneticData.Hla.Models
         Allele,
 
         /// <summary>
-        /// Typed as a P-Group
+        /// Typed as a G-Group - alleles sharing a nucleotide sequence over the antigen binding domain. Includes null
+        /// alleles.
         /// </summary>
         GGroup,
-        
+
         /// <summary>
-        /// Typed as a "small g" group
+        /// Typed as a "small g" group - alleles sharing a protein sequence over the antigen binding domain. Includes
+        /// null alleles.
         /// </summary>
         SmallGGroup,
 
         /// <summary>
-        /// Typed as a G-Group
+        /// Typed as a P-Group - alleles sharing a protein sequence over the antigen binding domain. <b>Excludes</b>
+        /// null alleles, which express no protein, so a null allele has no P group.
         /// </summary>
         PGroup,
 

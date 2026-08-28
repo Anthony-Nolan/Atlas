@@ -13,6 +13,12 @@ This includes both schema and data workflow changes.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### 4.1.0
+* BREAKING CHANGE: Removed `LocusInfo<T>.ShallowCopy()`
+* BREAKING CHANGE: Moved `Position1And2Null()`, `Position1And2NotNull()` and `SinglePositionNull()` off `LocusInfo<T>` and onto
+  `LocusInfoExtensions`, constrained to a reference `T`. 
+* BREAKING CHANGE: Removed `LocusInfo<T>.Position1Or2NewAllele()`
+
 ### 3.0.0
 * Updated .NET version from 6.0 to 8.0
 

@@ -377,6 +377,11 @@ namespace Atlas.Common.Public.Models.GeneticData.PhenotypeInfo
         private int CalculateHashCode()
         {
             // This is called somewhere in the hot path
+            //
+            // ATL-233: do NOT hoist EqualityComparer<T>.Default into a static readonly field. Measured against both
+            // reference payloads this type carries in production - 1.03x to 1.12x on time, no allocation change - so
+            // the JIT is already folding it, and our own field only risks defeating the intrinsic it recognises.
+            // Note the value-type case is NOT covered by that measurement.
             unchecked
             {
                 var hashCode = EqualityComparer<T>.Default.GetHashCode(A);

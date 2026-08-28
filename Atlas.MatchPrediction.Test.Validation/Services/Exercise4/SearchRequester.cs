@@ -2,6 +2,7 @@
 using Atlas.Client.Models.Search;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.ManualTesting.Common.Repositories;
 using Atlas.MatchPrediction.Test.Validation.Data.Models;

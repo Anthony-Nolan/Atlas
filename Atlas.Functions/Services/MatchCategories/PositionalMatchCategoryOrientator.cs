@@ -19,7 +19,10 @@ namespace Atlas.Functions.Services.MatchCategories
         /// </summary>
         public LocusMatchCategories AlignCategoriesToMismatchScore(LocusMatchCategories matchCategories, LocusSearchResult locusScoreResult)
         {
-            if (matchCategories is null || matchCategories.Position1And2Null() ||
+            // ATL-233: BothPositions, not Position1And2Null. A PredictiveMatchCategory? is a value type, so the
+            // reference-constrained null probes in LocusInfoExtensions deliberately do not apply here - see that
+            // class for why they used to, and what they silently returned.
+            if (matchCategories is null || matchCategories.BothPositions(category => category is null) ||
                 locusScoreResult is not { MatchCategory: LocusMatchCategory.Mismatch })
             {
                 return matchCategories;
