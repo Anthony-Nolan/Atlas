@@ -46,45 +46,39 @@ internal interface ICompressedPhenotypeExpander
 /// The genotypes an expansion produced, and the likelihood of each.
 ///
 /// <para>
-/// ATL-233 T2: the likelihoods come back <b>with</b> the genotypes because this is the only place they are cheap. A
-/// genotype is a pair of pooled haplotypes, so its likelihood is the product of their two frequencies - and a
-/// frequency is a pure function of (set, haplotype, excluded loci), needing one resolution per <i>survivor</i>. The
-/// shipped code instead resolved two per <i>genotype</i>, downstream, after the pairing had thrown the pair away:
-/// 136,879 awaited lookups for a tail donor against 465.7 survivors, each re-entering LazyCache's
-/// <c>GetOrAddAsync</c>. That machinery, not the arithmetic, was 39 of the 40.9 s the Likelihood phase measured.
+/// The likelihoods come back <b>with</b> the genotypes because this is the only place they are cheap. A genotype is a
+/// pair of pooled haplotypes, so its likelihood is the product of their two frequencies - and a frequency is a pure
+/// function of (set, haplotype, excluded loci). It therefore needs one resolution per <i>survivor</i>, which is only
+/// possible while the pair is still in hand.
 /// </para>
 ///
 /// <para>
 /// <see cref="Likelihoods"/> is keyed by the genotype's HLA <i>names</i>, matching
 /// <c>ImputedGenotypes.GenotypeLikelihoods</c>, so its count is the DISTINCT genotype count while
-/// <see cref="Genotypes"/> keeps typing category and so may hold more. Keying it here also spares one
+/// <see cref="GenotypePairs"/> keeps typing category and so may hold more. Keying it here also spares one
 /// <c>ToHlaNames()</c> per pre-truncation genotype downstream.
 /// </para>
 ///
 /// <para>
-/// ATL-233 T3: <see cref="GenotypeHlaNames"/> is <see cref="GenotypePairs"/> index for index, so
+/// <see cref="GenotypeHlaNames"/> is <see cref="GenotypePairs"/> index for index, so
 /// <c>ExpandedGenotypeTruncater</c> can test a genotype's membership of the kept key set without re-deriving its name
-/// form. That was the second of two <c>ToHlaNames()</c> calls per pre-truncation genotype, and the pairing loop below
-/// has to build the first one anyway to key the likelihood.
+/// form. The pairing loop below has to build that name form anyway, to key the likelihood.
 /// </para>
 ///
 /// <para>
 /// <b><see cref="GenotypePairs"/> is a list, not a set, and cannot lose an entry to de-duplication.</b> The survivor
 /// list it indexes comes out of a <c>HashSet</c>, so its members are distinct; <c>PhenotypeInfo</c> equality is
-/// positional and <c>HlaAtKnownTypingCategory</c>'s includes the typing category. So distinct <c>(i, j)</c> always give
-/// a distinct genotype, and the <c>HashSet</c> that used to hold these hashed a twelve-object phenotype up to 1.65M
-/// times per donor - plus its bucket and entry arrays doubling all the way - to find nothing to merge. A1d confirms it
-/// at corpus scale: <c>DistinctGenotypes</c> and <c>PreTruncationGenotypes</c> agree to the mean over 19,000 donors.
+/// positional and <c>HlaAtKnownTypingCategory</c>'s includes the typing category. Distinct <c>(i, j)</c> therefore
+/// always give a distinct genotype, and a set here could only hash every genotype to find nothing to merge.
 /// </para>
 ///
 /// <para>
-/// <b>ATL-233 T3, strong form: a genotype is carried as the two pool indices it came from, and built only if it
-/// survives truncation.</b> A <c>PhenotypeInfo&lt;T&gt;</c> is seven objects - itself and one <c>LocusInfo</c> per
-/// locus - so the shipped loop allocated fourteen per kept pair, the category form and the name form, for up to 1.65M
-/// pairs of which a capped donor keeps 2,000. The name form has to exist, because <see cref="Likelihoods"/> is keyed
-/// by it and a collapsed key must occupy one slot rather than two; the category form does not, because nothing reads
-/// it until <c>ExpandedGenotypeTruncater</c> has decided which keys survive. A <see cref="GenotypePair"/> is eight
-/// bytes in a contiguous list and allocates nothing.
+/// <b>A genotype is carried as the two pool indices it came from, and built only if it survives truncation.</b> A
+/// <c>PhenotypeInfo&lt;T&gt;</c> is seven objects - itself and one <c>LocusInfo</c> per locus - and a capped donor
+/// keeps 2,000 genotypes out of up to 1.65M pairs. The name form has to exist, because <see cref="Likelihoods"/> is
+/// keyed by it and a collapsed key must occupy one slot rather than two; the category form does not, because nothing
+/// reads it until <c>ExpandedGenotypeTruncater</c> has decided which keys survive. A <see cref="GenotypePair"/> is
+/// eight bytes in a contiguous list and allocates nothing.
 /// </para>
 /// </summary>
 internal readonly record struct ExpandedGenotypes(
@@ -129,24 +123,22 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     }
 
     /// <summary>
-    /// ATL-233 T5: the phenotype is converted to the typing categories that will be <b>read</b>, and no others. It used
-    /// to be converted to all three, always - up to 3 x 5 loci x 2 positions = 30 HMD lookups per donor - and at A1h
-    /// that conversion was <b>39.5% of the whole of Impute</b>, and 98.7% of the unambiguous class's.
+    /// The phenotype is converted to the typing categories that will be <b>read</b>, and no others. Converting all
+    /// three costs up to 3 x 5 loci x 2 positions = 30 HMD lookups per donor, and most of them can never be read.
     ///
     /// <para>
     /// Two separate reasons the other two categories are dead work, and they are not equally safe:
     /// <list type="number">
     /// <item>
     /// <b>The short circuit reads SmallGGroup alone.</b> <see cref="IsUnambiguousAtAllowedLoci"/> and
-    /// <see cref="BuildSingleSmallGGenotype"/> touch nothing else, so for the 59.1% of donors that return there the
-    /// GGroup and PGroup conversions could never have been read. Deferring them is laziness, not a change of behaviour.
+    /// <see cref="BuildSingleSmallGGenotype"/> touch nothing else, so for the donors that return there the GGroup and
+    /// PGroup conversions could never have been read. Deferring them is laziness, not a change of behaviour.
     /// </item>
     /// <item>
     /// <b>A category the set holds no haplotypes in cannot affect the expansion.</b> The pool yields an empty array for
     /// such a category and <c>CollectSurvivors</c> returns on an empty array, so no survivor can carry that category and
-    /// nothing ever reads its groups. This one <i>is</i> a change in which lookups happen: it is read from the set, not
-    /// assumed, because a future GGroup import must still work. All 216 DEV sets hold SmallGGroup only
-    /// (<c>scratch/ATL-233_HfSetTypingCategories.sql</c>), so today it removes 20 of the 30 lookups.
+    /// nothing ever reads its groups. This one <i>does</i> change which lookups happen, so the category is read from the
+    /// set rather than assumed - a future GGroup or PGroup import must still work.
     /// </item>
     /// </list>
     /// </para>
@@ -154,8 +146,8 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// <para>
     /// The pool is therefore fetched <b>before</b> the second conversion. That reorders nothing that matters - the
     /// categories convert independently of each other and the survivor order is set by <c>CollectSurvivors</c>' fixed
-    /// visit order - but it does move the "no haplotypes for set" throw ahead of those conversions, and it leaves the
-    /// unambiguous branch's property intact: those donors still never resolve the set.
+    /// visit order - but it does put the "no haplotypes for set" throw ahead of those conversions, and it leaves the
+    /// unambiguous branch's property intact: those donors never resolve the set.
     /// </para>
     /// </summary>
     public async Task<ExpandedGenotypes> ExpandCompressedPhenotype(CompressedPhenotypeExpanderInput input)
@@ -169,7 +161,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
 
         if (IsUnambiguousAtAllowedLoci(allowedLoci, groupsPerPosition))
         {
-            // Measured at 59.58% of donors: unambiguous at every allowed locus, so they never touch the pool.
+            // The majority of donors: unambiguous at every allowed locus, so they never touch the pool.
             return BuildSingleSmallGGenotype(groupsPerPosition);
         }
 
@@ -194,15 +186,14 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     {
         // The one certain genotype is still a pair - of the subject's own two positions rather than of two pool
         // haplotypes - so it goes down the same (haplotypes, pair) road as the expanded path, and every consumer sees
-        // one shape. Position by position these are the values the shipped Map produced.
+        // one shape.
         var position1 = SingleGroupPerLocus(groupsPerPosition, LocusPosition.One);
         var position2 = SingleGroupPerLocus(groupsPerPosition, LocusPosition.Two);
 
         var hlaNames = new PhenotypeInfo<string>(position1.Map(hla => hla?.Hla), position2.Map(hla => hla?.Hla));
 
         // No frequency is resolved on this path and none is needed: one genotype is already certain, so
-        // GenotypeImputationService replaces this placeholder with a likelihood of 1. The shipped code reached the
-        // same answer the same way - by counting distinct genotypes, never by looking a frequency up.
+        // GenotypeImputationService replaces this placeholder with a likelihood of 1.
         return new ExpandedGenotypes(
             [position1, position2],
             [new GenotypePair(0, 1)],
@@ -243,8 +234,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// <param name="hfSetId">Id of haplotype frequency set</param>
     /// <param name="allowedLoci">List of loci that are being considered.</param>
     /// <param name="groupsPerPosition">
-    /// Allele groups present in the phenotype being expanded, for the categories the set holds - null for the others
-    /// (ATL-233 T5).
+    /// Allele groups present in the phenotype being expanded, for the categories the set holds - null for the others.
     /// </param>
     /// <param name="pool">The set's haplotypes as interned keys, grouped by typing category.</param>
     /// <param name="interner">The interner <paramref name="pool"/>'s ids belong to.</param>
@@ -262,35 +252,48 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         // Materialise the allowed loci once: iterating the ISet directly inside the per-diplotype loop would box an enumerator on every pair.
         var allowedLociArray = allowedLoci.ToArray();
 
-        // ATL-233 T2. This selects WHICH frequency a haplotype has - with loci excluded, a haplotype stands for a
-        // group of stored haplotypes whose frequencies are consolidated - and it is constant for the whole request.
-        // The pre-T2 DiplotypeLikelihoodCalculator (since deleted) rebuilt it per genotype, twice over, because LocusSettings.MatchPredictionLoci
-        // is an expression-bodied property that re-enumerates the enum and allocates a fresh HashSet on every read.
+        // This selects WHICH frequency a haplotype has - with loci excluded, a haplotype stands for a group of stored
+        // haplotypes whose frequencies are consolidated - and it is constant for the whole request. Hoisted because
+        // LocusSettings.MatchPredictionLoci is an expression-bodied property that re-enumerates the enum and allocates
+        // a fresh HashSet on every read.
         var excludedLoci = LocusSettings.MatchPredictionLoci.Except(allowedLoci).ToHashSet();
 
-        // One resolution per survivor, instead of two per genotype further downstream.
+        // One resolution per survivor.
         var frequencies = await ResolveHaplotypeFrequencies(hfSetId, haplotypeList, excludedLoci);
 
         bool IsRepresentedInTargetPhenotype(HlaAtKnownTypingCategory hla, Locus locus, LocusPosition position)
         {
-            // GetByCategory cannot be null here, however few categories T5 converted: a survivor's category is the
+            // GetByCategory cannot be null here, however few categories were converted: a survivor's category is the
             // category of the pool array it came from, and an unconverted category's array is empty by construction.
             var groups = groupsPerPosition.GetByCategory(hla.TypingCategory).GetPosition(locus, position);
             return groups == null || groups.Contains(hla.Hla);
         }
 
-        // ATL-233 T3 strong form: the name form of each survivor, once. The pairing loop then builds a genotype's name
-        // form - the one PhenotypeInfo it cannot avoid, because it keys the likelihood - straight from two of these,
-        // instead of building the category form first and mapping it. Half the allocation of a kept pair, and the
-        // Map's twelve reads with it.
+        // The name form of each survivor, once. The pairing loop then builds a genotype's name form - the one
+        // PhenotypeInfo it cannot avoid, because it keys the likelihood - straight from two of these, rather than
+        // building the category form first and mapping it.
         var haplotypeNames = new LociInfo<string>[haplotypeList.Count];
         for (var h = 0; h < haplotypeList.Count; h++)
         {
             haplotypeNames[h] = haplotypeList[h].Map(hla => hla?.Hla);
         }
 
-        // ATL-233 T3: a List, not a HashSet - see the ExpandedGenotypes remarks for why this can never de-duplicate.
+        // A List, not a HashSet - see the ExpandedGenotypes remarks for why this can never de-duplicate.
         // genotypeHlaNames is kept index-aligned with it so truncation needs no second ToHlaNames() per genotype.
+        //
+        // These three are left to grow, deliberately. They hold one entry per KEPT pair, and no capacity available
+        // here is the right one:
+        //   - haplotypeList.Count is the SURVIVOR count. The kept-pair count is a fraction of S(S+1)/2, so at a large
+        //     S this hint is smaller than the answer by orders of magnitude and removes almost no growth.
+        //   - S(S+1)/2 itself is a correct upper bound and a useless one: it over-allocates by roughly ten times at
+        //     every S, which for a large subject is worse than the growth it avoids.
+        //   - The exact count needs the mask test, which is the loop below. Running it twice - once to count, once to
+        //     fill - would size all three exactly, at the cost of a second O(S^2) pass.
+        // The last of those is the only real candidate, and whether it wins depends on the growth cost it removes
+        // against the pass it adds. Neither has been measured here, so it is not being guessed at.
+        //
+        // Note also that Dictionary growth does NOT re-hash these keys expensively: LociInfo precomputes its hash in
+        // its constructor and GetHashCode returns the cached value, so a resize re-reads an int per entry.
         var genotypePairs = new List<GenotypePair>();
         var genotypeHlaNames = new List<PhenotypeInfo<string>>();
         var likelihoods = new Dictionary<PhenotypeInfo<string>, decimal>();
@@ -316,14 +319,13 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
                 var mask2 = representationMasks[j];
 
                 // Position 1 of haplotype 1 against position 2 of haplotype 2, and the same the other way round -
-                // the two phases the shipped predicate tested per locus, for every allowed locus at once. Shifting
-                // one operand down by positionShift lines its position-2 lane up with the other's position-1 lane.
+                // the two phases per locus, for every allowed locus at once. Shifting one operand down by
+                // positionShift lines its position-2 lane up with the other's position-1 lane.
                 var represented = (mask1 & (mask2 >> positionShift)) | ((mask1 >> positionShift) & mask2);
 
                 if ((represented & allLociRepresented) == allLociRepresented)
                 {
-                    // Read only for a pair that survives. The shipped code read both for every pair, kept or not,
-                    // and 88.34% of pairs are not (44.4M kept of 380.5M examined).
+                    // Read only for a pair that survives - the large majority of pairs do not.
                     var names1 = haplotypeNames[i];
                     var names2 = haplotypeNames[j];
 
@@ -335,10 +337,9 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
                     genotypePairs.Add(new GenotypePair(i, j));
                     genotypeHlaNames.Add(hlaNames);
 
-                    // The multiplication order matches the pre-T2 DiplotypeLikelihoodCalculator exactly -
-                    // position 1's frequency, then position 2's, then the correction. decimal multiplication
-                    // carries scale, so re-ordering these could shift the result in the last digits, and these
-                    // likelihoods are compared for exact equality.
+                    // The multiplication order is fixed - position 1's frequency, then position 2's, then the
+                    // correction. decimal multiplication carries scale, so re-ordering these could shift the result
+                    // in the last digits, and these likelihoods are compared for exact equality.
                     //
                     // An indexer assignment, not Add: two survivors can share HLA names while differing in typing
                     // category (they differ only at an excluded locus), so distinct genotypes can collapse to one
@@ -354,28 +355,26 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     }
 
     /// <summary>
-    /// ATL-233 T4: which loci and positions of the target phenotype a survivor can occupy, as one integer per survivor.
+    /// Which loci and positions of the target phenotype a survivor can occupy, as one integer per survivor.
     ///
     /// <para>
     /// <c>IsRepresentedInTargetPhenotype(hla, locus, position)</c> reads <b>only</b> the one haplotype - it never looks
-    /// at the other haplotype of the pair - so its value is a property of the survivor alone. The shipped code
-    /// nevertheless re-evaluated it inside the O(S²) loop, at up to four <c>ISet&lt;string&gt;.Contains</c> calls per
-    /// allowed locus per pair, i.e. up to 20 string hash-and-probe operations for every one of the S(S+1)/2 pairs.
-    /// Resolving it S times instead costs 2 × loci probes per survivor and turns the pair test into three integer
-    /// operations that touch no string and allocate nothing.
+    /// at the other haplotype of the pair - so its value is a property of the survivor alone, and belongs outside the
+    /// O(S²) pairing loop. Resolving it S times here turns the pair test into three integer operations that touch no
+    /// string and allocate nothing.
     /// </para>
     ///
     /// <para>
     /// Bit <c>l</c> is position 1 at <c>allowedLoci[l]</c>; bit <c>l + allowedLoci.Length</c> is position 2 at the same
     /// locus. Two lanes of one <c>int</c> rather than two arrays, so the pairing loop reads one array element per
-    /// iteration - at the maximum S of 6,037 the whole thing is 24 KB and stays in L2 across the inner loop.
+    /// iteration and the whole mask array stays in cache across the inner loop.
     /// </para>
     ///
     /// <para>
     /// <b>The predicate is not re-implemented here</b> - the caller's own local function is passed in and called with
-    /// the same arguments, so the mask cannot disagree with what it replaces. The only behavioural difference is that
-    /// every (locus, position) is now evaluated for every survivor, where the pair loop's <c>&amp;&amp;</c> chain could
-    /// stop early; the predicate is pure, so this changes cost and nothing else.
+    /// the same arguments, so the mask cannot disagree with it. Every (locus, position) is evaluated for every
+    /// survivor, where a pair loop's <c>&amp;&amp;</c> chain could stop early; the predicate is pure, so this changes
+    /// cost and nothing else.
     /// </para>
     /// </summary>
     private static int[] BuildRepresentationMasks(
@@ -416,18 +415,18 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// One frequency per survivor, through the unchanged <see cref="IHaplotypeFrequencyService.GetFrequencyForHla"/>.
     ///
     /// <para>
-    /// ATL-233 T2. Calling the same method with the same arguments is the point: it keeps the
+    /// Calling the same method with the same arguments is the point: it keeps the
     /// direct → consolidated-warm → consolidated-cold cascade, and with it the fact that on any key with excluded loci
     /// a survivor's frequency is the <b>sum</b> over the stored haplotypes it collapsed - not any individual stored
-    /// frequency. That is 74.0% of the precompute's rows, and the reason this memoises the lookup rather than
+    /// frequency. That is the majority of a set's rows, and the reason this memoises the lookup rather than
     /// reimplementing it or carrying a value off the pool.
     /// </para>
     ///
     /// <para>
     /// It resolves for every survivor, including any that no kept pair ends up using - so a donor whose typing is not
-    /// representable at all now pays S lookups where it previously paid none. Accepted rather than overlooked: filling
-    /// the array lazily would put a branch on the O(S²) pairing path, which is a worse trade than S lookups, and those
-    /// donors are 1.28% of the corpus with a near-zero <c>Pair</c> share (§4), i.e. a small S.
+    /// representable at all pays S lookups and keeps nothing. Accepted rather than overlooked: filling the array
+    /// lazily would put a branch on the O(S²) pairing path, which is the worse trade, and such donors are a small
+    /// fraction of the corpus with a small S.
     /// </para>
     /// </summary>
     private async Task<decimal[]> ResolveHaplotypeFrequencies(
@@ -450,15 +449,23 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// 1 when the genotype is homozygous at every allowed locus, else 2.
     ///
     /// <para>
-    /// The same predicate the pre-T2 <c>DiplotypeLikelihoodCalculator.GetHeterozygousLoci</c> applied, which compared the string
-    /// genotype's two positions at allowed loci only - i.e. haplotype 1's name against haplotype 2's. Computed here
-    /// without materialising a <c>List&lt;Locus&gt;</c>, a <c>Diplotype</c> or the string phenotype.
+    /// This is the same heterozygosity test as <c>UnambiguousGenotypeExpander.GetHeterozygousLoci</c>, which serves the
+    /// debug likelihood endpoint: a genotype is heterozygous at a locus exactly when its two haplotypes differ there,
+    /// so the two ask one question in two shapes. They are not shared because they need different answers - that one
+    /// returns the <c>List&lt;Locus&gt;</c> it uses to enumerate phase permutations, while this one needs only whether
+    /// the list would be empty, and runs once per kept pair, so it must allocate nothing.
     /// </para>
     ///
     /// <para>
-    /// T3's strong form takes the two haplotypes in their name form, which is what this always compared: the
-    /// <c>?.Hla</c> the category form needed was the only reason it took that form at all. A stored haplotype may be
-    /// untyped at an allowed locus, so a name may be null, and two nulls compare equal exactly as before.
+    /// Neither is pinned to the other; both are pinned to hand-computed likelihoods, which is what stops them drifting
+    /// apart unnoticed. This side is covered by <c>ImputationEquivalenceTests</c> (one test asserts a x1, a x2 and a x1
+    /// case as exact decimals), the other by <c>UnambiguousGenotypeExpanderTests</c> and
+    /// <c>LikelihoodCalculatorTests</c>. A change to either that alters the rule fails its own suite.
+    /// </para>
+    ///
+    /// <para>
+    /// It takes the two haplotypes in their name form, which is the form it compares. A stored haplotype may be
+    /// untyped at an allowed locus, so a name may be null, and two nulls compare equal.
     /// </para>
     /// </summary>
     private static int HomozygosityCorrectionFactor(
@@ -481,14 +488,13 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// The pooled haplotypes the subject's own allele groups can explain, in pool order.
     ///
     /// <para>
-    /// ATL-233 T1 follow-up. This is the second-largest phase and 89.6% of it was one line: 531.6M
-    /// <c>ISet&lt;string&gt;.Contains</c> calls across the corpus, at 29.0 ns each, of which <b>0.20% passed</b>. Each
-    /// was a hash of a 7-15 character allele name, a bucket probe and an ordinal compare - and the pool already knew
-    /// the answer as an integer, because <c>SetFrequencies</c> is keyed by interned ids.
+    /// This is the hottest loop of the expansion: every pooled haplotype is tested at every allowed locus, and the
+    /// large majority fail. The pool already holds the answer as an integer, because <c>SetFrequencies</c> is keyed by
+    /// interned ids, so nothing here needs to hash an allele name.
     /// </para>
     ///
     /// <para>
-    /// So the subject's groups are resolved into the set's own id space once per (category, locus), into a
+    /// The subject's groups are resolved into the set's own id space once per (category, locus), into a
     /// <c>bool[]</c> indexed by allele id - dense, because <c>AlleleInterner</c> mints ids from 0 - and the per
     /// haplotype test becomes an array read. Not even a <c>HashSet&lt;int&gt;</c>: nothing is hashed at all.
     /// </para>
@@ -505,13 +511,13 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         ISet<Locus> allowedLoci,
         DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
     {
-        // The fetch happens in the caller, which needs the pool to decide which conversions to make (ATL-233 T5).
+        // The fetch happens in the caller, which needs the pool to decide which conversions to make.
         var groupsPerLocus = groupsPerPosition.Map(CombineSetsAtLoci);
         var allowedLociArray = allowedLoci.ToArray();
 
-        // Insertion order is the survivor order, which is the pairing order, which is what the truncater's
-        // tie-break reads - so the three categories are visited in the order the shipped Concat produced, and each
-        // pool array is in the order ProjectPool produced. Nothing here may reorder.
+        // Insertion order is the survivor order, which is the pairing order, which is what the truncater's tie-break
+        // reads - so the three categories are visited in a fixed order, and each pool array is in the order
+        // ProjectPool produced. Nothing here may reorder.
         var survivors = new HashSet<LociInfo<HlaAtKnownTypingCategory>>();
 
         CollectSurvivors(HaplotypeTypingCategory.GGroup, pool.GGroup);
@@ -536,9 +542,9 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
                     continue;
                 }
 
-                // Only now is a name needed, and only for a survivor: S is 55.5 on average against an H of up to
-                // 274,606. The two Maps the shipped code did per surviving haplotype - one to attach the category,
-                // one to null the excluded loci - are folded into this one.
+                // Only now is a name needed, and only for a survivor - a small fraction of a pool that can hold
+                // hundreds of thousands of haplotypes. Attaching the typing category and nulling the excluded loci
+                // are both folded into this one Map.
                 var names = interner.ReverseLookup(haplotype);
 
                 survivors.Add(names.Map((locus, hla) =>
@@ -553,10 +559,9 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     ///
     /// <para>
     /// An allele the set has never seen resolves to <see cref="AlleleInterner.NotFound"/> and is simply not marked, so
-    /// it can match nothing - which is what <c>Contains</c> did with it. A null or empty group name resolves to 0, the
-    /// id of an untyped locus, matching the shipped <c>Contains(null)</c> against an untyped pooled haplotype; the
-    /// storage layer conflated null with the empty string when it interned the set, so this cannot tell them apart
-    /// either, and neither could the frozen dictionary it is derived from.
+    /// it can match nothing. A null or empty group name resolves to 0, the id of an untyped locus, so it matches an
+    /// untyped pooled haplotype; the storage layer conflates null with the empty string when it interns a set, so
+    /// neither this nor the frozen dictionary it derives from can tell the two apart.
     /// </para>
     /// </summary>
     private static bool[][] BuildAllowedAlleleMasks(
@@ -595,7 +600,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     }
 
     /// <summary>
-    /// The 531.6M-times-per-corpus test, now one array read per allowed locus. A null mask is the subject being
+    /// The innermost test of the pool filter: one array read per allowed locus. A null mask is the subject being
     /// untyped there, which admits every haplotype.
     /// </summary>
     private static bool IsExplicableBySubject(HaplotypeKey haplotype, bool[][] allowedAlleles, Locus[] allowedLoci)
@@ -625,18 +630,17 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
             throw new Exception($"No haplotypes could be found for set id {frequencySetId}.");
         }
 
-        // ATL-233 T1: the projection this used to perform per donor now lives on the cache entry, which owns both of
-        // its inputs and has the per-set lifetime it wants. It is therefore paid by the first donor to touch a set,
-        // and is ~0 for every donor after it.
+        // The projection lives on the cache entry, which owns both of its inputs and has the per-set lifetime it
+        // wants. It is therefore paid by the first donor to touch a set, and is ~0 for every donor after it.
         //
-        // The interner travels with the pool because the pool is now ids: they are two halves of one value, and
-        // reading them off the same entry instance is what makes the ids meaningful.
+        // The interner travels with the pool because the pool is ids: they are two halves of one value, and reading
+        // them off the same entry instance is what makes the ids meaningful.
         return (haplotypeFrequencies.ProjectedPool, haplotypeFrequencies.Interner);
     }
 
     private static LociInfo<ISet<string>> CombineSetsAtLoci(PhenotypeInfo<ISet<string>> phenotypeInfo)
     {
-        // Null for a category ATL-233 T5 did not convert, which is a category the set holds no haplotypes in. Its pool
+        // Null for a category that was not converted, which is a category the set holds no haplotypes in. Its pool
         // array is empty, so CollectSurvivors returns before it would read this - the null goes nowhere.
         if (phenotypeInfo == null)
         {

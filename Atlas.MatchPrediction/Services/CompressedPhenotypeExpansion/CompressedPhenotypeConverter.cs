@@ -15,9 +15,9 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
         /// The subject's phenotype as the allele groups of one typing category.
         ///
         /// <para>
-        /// ATL-233 T5: one category per call, where this used to convert to all three on every call. Which categories
-        /// are worth converting is knowledge the caller has and this class does not - it is a property of the haplotype
-        /// frequency set, not of the phenotype - so the caller asks for what it will read. See
+        /// One category per call. Which categories are worth converting is knowledge the caller has and this class
+        /// does not - it is a property of the haplotype frequency set, not of the phenotype - so the caller asks for
+        /// what it will read. See
         /// <c>CompressedPhenotypeExpander.ExpandCompressedPhenotype</c> for which those are and why.
         /// </para>
         /// </summary>
@@ -80,9 +80,8 @@ namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion
                     return null;
                 }
 
-                // ATL-233 T5: this used to run for 3 categories x allowed loci x 2 positions - 30 lookups on the
-                // 5-locus key - for every donor. It now runs for what the caller actually asked for, which is 10
-                // while every HF set holds a single typing category.
+                // One HMD lookup per allowed locus per position, for the one category the caller asked for. A set
+                // that holds a single typing category therefore costs a third of what converting all three would.
                 return (ISet<string>)(await converter.ConvertHlaWithLoggingAndRetryOnFailure(converterInput, locus, hla)).ToHashSet();
             });
         }

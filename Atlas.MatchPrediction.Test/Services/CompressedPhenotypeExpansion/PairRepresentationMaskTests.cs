@@ -19,17 +19,17 @@ using NUnit.Framework;
 namespace Atlas.MatchPrediction.Test.Services.CompressedPhenotypeExpansion;
 
 /// <summary>
-/// ATL-233 T4's acceptance criterion 1: the integer mask keeps <b>exactly</b> the pairs the string predicate kept.
+/// The integer representation mask keeps <b>exactly</b> the pairs the string predicate keeps.
 ///
 /// <para>
-/// The expander no longer asks "is this pair representable?" per pair; it asks "which positions can this haplotype
-/// occupy?" per survivor and then ANDs two masks. Those are the same question only because the shipped predicate never
-/// read the other haplotype of the pair - a claim worth an assertion rather than a comment, because a wrong bit lane
-/// or a wrong shift silently changes which genotypes a donor gets.
+/// The expander does not ask "is this pair representable?" per pair; it asks "which positions can this haplotype
+/// occupy?" per survivor and then ANDs two masks. Those are the same question only because the predicate never reads
+/// the other haplotype of the pair - a claim worth an assertion rather than a comment, because a wrong bit lane or a
+/// wrong shift silently changes which genotypes a donor gets.
 /// </para>
 ///
 /// <para>
-/// So the expected set here is computed by brute force, in the test, in the shipped predicate's own shape: for every
+/// So the expected set here is computed by brute force, in the test, in the predicate's own shape: for every
 /// unordered pair, at every allowed locus, haplotype 1 at position 1 with haplotype 2 at position 2, or the reverse.
 /// The fixture is built so that the answer is neither "all pairs" nor "no pairs" - a mask that was always full or
 /// always empty would pass a weaker test - and so that it covers the cases most likely to break: a locus represented
@@ -140,8 +140,9 @@ internal class PairRepresentationMaskTests
     }
 
     /// <summary>
-    /// The shipped predicate, written out: at every allowed locus, one haplotype at position 1 and the other at
-    /// position 2, in either order. An untyped locus (no group set) is represented by anything.
+    /// The representation predicate, written out independently of the expander: at every allowed locus, one haplotype
+    /// at position 1 and the other at position 2, in either order. An untyped locus (no group set) is represented by
+    /// anything.
     /// </summary>
     private bool IsRepresentedPair(string[] haplotype1, string[] haplotype2)
     {

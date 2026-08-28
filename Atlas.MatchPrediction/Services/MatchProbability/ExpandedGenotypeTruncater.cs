@@ -36,13 +36,14 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         ///     It would also allow us to have more faith in the accuracy of the results - as we'd confirm that we're only ever discarding statistically insignificant values
         ///     However this would come at a cost of not being able to guarantee the necessary performance of the match prediction algorithm.
         /// </summary>
+        /// <param name="likelihoods">The likelihood of each distinct genotype, keyed by its HLA names.</param>
         /// <param name="expanded">
         /// The expansion, which carries each genotype as a pair of pool indices plus its HLA-name form, index for
-        /// index. ATL-233 T3: the pairing loop already built the name form to key <paramref name="likelihoods"/>, and
-        /// re-deriving it here cost a second <c>ToHlaNames()</c> - six <c>LocusInfo</c> objects and a hash - for every
-        /// genotype <i>before</i> truncation, of which a capped donor keeps 2,000 out of up to 1,648,833. T3's strong
-        /// form goes further: the genotype itself is built <b>here</b>, for the survivors only.
+        /// index. The pairing loop has already built that name form in order to key <paramref name="likelihoods"/>, so
+        /// membership of the kept key set is tested without re-deriving it. The genotype itself is built <b>here</b>,
+        /// for the survivors only - a capped donor keeps 2,000 of up to 1.65M.
         /// </param>
+        /// <param name="maximumExpandedGenotypesPerInput">The cap - at most this many genotypes are kept.</param>
         public static ImputedGenotypes TruncateGenotypes(
             Dictionary<PhenotypeInfo<string>, decimal> likelihoods,
             ExpandedGenotypes expanded,
@@ -76,18 +77,16 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         /// The most likely <paramref name="maximum"/> genotypes, in descending order of likelihood.
         ///
         /// <para>
-        /// ATL-233 T3. This replaces <c>likelihoods.OrderByDescending(g =&gt; g.Value).Take(maximum)</c>, which sorted up
-        /// to 1,648,833 entries to keep 2,000 - and to do it, buffered every one of them. Above the cap the work is now
-        /// O(N log maximum) with a bounded queue instead of O(N log N) with an unbounded buffer.
+        /// Above the cap this is O(N log maximum) with a bounded queue, rather than sorting all N entries - which can
+        /// reach 1.65M for 2,000 kept - and buffering every one of them.
         /// </para>
         ///
         /// <para>
-        /// <b>The selection is identical, ties included, and that is the point.</b> The shipped sort was <i>stable</i>
-        /// over a <see cref="Dictionary{TKey,TValue}"/> that never has an entry removed, i.e. over insertion order, so its
-        /// rule was <c>(likelihood descending, insertion order ascending)</c> - and insertion order is pairing order,
-        /// which is survivor order, which is the order <c>FrequencySetCacheEntry.ProjectPool</c> exists to preserve. Which
-        /// genotypes a capped donor keeps when likelihoods tie is a clinical output, so this reproduces that rule exactly
-        /// rather than leaving it to a heap's arbitrary eviction. <c>ExpandedGenotypeTruncaterTests</c> pins it.
+        /// <b>The selection rule is <c>(likelihood descending, insertion order ascending)</c>, ties included.</b>
+        /// Insertion order is pairing order, which is survivor order, which is the order
+        /// <c>FrequencySetCacheEntry.ProjectPool</c> exists to preserve. Which genotypes a capped donor keeps when
+        /// likelihoods tie is a clinical output, so the tie-break is explicit here rather than left to a heap's
+        /// arbitrary eviction. <c>ExpandedGenotypeTruncaterTests</c> pins it.
         /// </para>
         /// </summary>
         private static Dictionary<PhenotypeInfo<string>, decimal> MostLikelyFirst(
@@ -96,9 +95,9 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         {
             if (likelihoods.Count <= maximum)
             {
-                // Nothing is discarded, so there is nothing to select - and N is at most the cap here, so the shipped
-                // expression is already cheap. Kept verbatim because it also fixes the enumeration order of the result,
-                // which the bounded path below reproduces.
+                // Nothing is discarded, so there is nothing to select - and N is at most the cap here, so a plain sort
+                // is already cheap. It also fixes the enumeration order of the result, which the bounded path below
+                // reproduces.
                 return likelihoods.OrderByDescending(g => g.Value).ToDictionary();
             }
 
@@ -127,9 +126,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 insertionIndex++;
             }
 
-            // Descending by the same priority tuple gives (likelihood descending, insertion order ascending): the exact
-            // order the shipped Take(maximum) produced, so the kept dictionary enumerates - and therefore SumDecimals
-            // adds - in the same order as before.
+            // Descending by the same priority tuple gives (likelihood descending, insertion order ascending), so the
+            // kept dictionary enumerates - and therefore SumDecimals adds - in that order.
             return mostLikely.UnorderedItems
                 .OrderByDescending(item => item.Priority)
                 .ToDictionary(item => item.Element, item => item.Priority.Likelihood);

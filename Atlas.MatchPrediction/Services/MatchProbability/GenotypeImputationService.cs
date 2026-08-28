@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Public.Models.MatchPrediction;
-using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
@@ -36,9 +35,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         private readonly IAtlasLogger logger;
         private readonly GenotypeImputationSettings settings;
 
-        // ATL-233 T2 moved likelihood calculation into the expansion, where each genotype's haplotype pair is still in
-        // hand, which left IDiplotypeLikelihoodCalculator with no callers anywhere; T3 deleted it rather than leaving a
-        // second, divergent implementation of the same arithmetic registered and reachable.
         public GenotypeImputationService(
             ICompressedPhenotypeExpander compressedPhenotypeExpander,
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
@@ -54,8 +50,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         {
             var expanded = await ExpandToGenotypes(input);
 
-            // ATL-233 T3 strong form: a count of pairs, not of materialised genotypes - nothing between here and
-            // truncation reads a genotype, so nothing between here and truncation builds one.
+            // A count of pairs, not of materialised genotypes - nothing between here and truncation reads a genotype,
+            // so nothing between here and truncation builds one.
             var genotypeCount = expanded.GenotypeCount;
 
             if (genotypeCount == 0)
@@ -66,9 +62,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             logger.SendTrace($"Filtered expanded genotypes: {genotypeCount}");
 
-            // ATL-233 T2: the likelihoods were computed where the pair that produced each genotype was still in hand,
-            // at one frequency resolution per survivor instead of two awaited lookups per genotype. What is left here
-            // is the certainty rule, which never needed a frequency at all.
+            // The likelihoods are computed in the expansion, where the pair that produced each genotype is still in
+            // hand. What is left here is the certainty rule, which needs no frequency at all.
             var genotypeLikelihoods = expanded.Likelihoods;
 
             // If there is no ambiguity for an input genotype, we do not need to use haplotype frequencies to work out the likelihood of said genotype - it is already guaranteed!
@@ -77,9 +72,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 genotypeLikelihoods = new Dictionary<PhenotypeOfStrings, decimal> { [genotypeLikelihoods.Keys.Single()] = 1 };
             }
 
-            // ATL-233 T3 took the sort of up to 1.7M entries down to a bounded queue of 2,000, and the second
-            // ToHlaNames() per pre-truncation genotype down to none - the names come back from the expansion,
-            // index-aligned.
+            // The names come back from the expansion, index-aligned with the pairs, so truncation derives none of its
+            // own.
             return ExpandedGenotypeTruncater.TruncateGenotypes(
                 genotypeLikelihoods, expanded, settings.MaximumExpandedGenotypesPerInput);
         }

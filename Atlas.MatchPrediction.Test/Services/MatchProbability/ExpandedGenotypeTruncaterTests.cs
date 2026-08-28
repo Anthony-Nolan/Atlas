@@ -14,18 +14,15 @@ using NUnit.Framework;
 namespace Atlas.MatchPrediction.Test.Services.MatchProbability;
 
 /// <summary>
-/// Characterisation of <see cref="ExpandedGenotypeTruncater"/>, written before ATL-233 T3 touches it. Nothing tested
-/// this class before, and T3 replaces its <c>OrderByDescending(...).Take(N)</c> with a bounded selection - so what the
-/// shipped sort does on a TIE has to be pinned first, because the answer decides whether T3 is a performance change or
-/// a clinical one.
+/// Characterisation of <see cref="ExpandedGenotypeTruncater"/>. What the truncater does on a TIE decides which
+/// genotypes a capped donor keeps, so it is a clinical output, and any change to how the top N is selected has to
+/// keep passing these.
 ///
 /// <para>
-/// <b>The rule these tests pin: on equal likelihood, the first-inserted key wins.</b> It is not stated anywhere in the
-/// production code; it falls out of two implementation facts. LINQ's <c>OrderByDescending</c> is a <i>stable</i> sort,
-/// and a <see cref="Dictionary{TKey,TValue}"/> that has never had an entry removed enumerates in insertion order. So
-/// the shipped selection is ordered by <c>(likelihood descending, insertion order ascending)</c>, and insertion order
-/// is pairing order, which is survivor order, which is the projected pool's order - the chain
-/// <c>FrequencySetCacheEntry.ProjectPool</c> was deliberately written to preserve.
+/// <b>The rule these tests pin: on equal likelihood, the first-inserted key wins.</b> The selection is ordered by
+/// <c>(likelihood descending, insertion order ascending)</c>, and insertion order is pairing order, which is survivor
+/// order, which is the projected pool's order - the chain <c>FrequencySetCacheEntry.ProjectPool</c> is deliberately
+/// written to preserve.
 /// </para>
 ///
 /// <para>
@@ -121,8 +118,8 @@ internal class ExpandedGenotypeTruncaterTests
 
         // decimal carries scale, so the sum's scale is the widest addend's - hence 0.600, three places, from 0.200.
         // Addition itself is exact until the 96-bit mantissa overflows, which likelihood magnitudes never approach, so
-        // the order is not observable here. It is asserted below anyway, because the shipped code builds the kept
-        // dictionary in descending-likelihood order and sums it in that order, and T3 must not quietly change that.
+        // the order is not observable here. It is asserted below anyway, because the truncater builds the kept
+        // dictionary in descending-likelihood order and sums it in that order, and that must not quietly change.
         result.SumOfLikelihoods.Should().Be(0.600m);
         result.SumOfLikelihoods.ToString().Should().Be("0.600");
         result.GenotypeLikelihoods.Values.Should().BeInDescendingOrder();
@@ -132,9 +129,8 @@ internal class ExpandedGenotypeTruncaterTests
     public void TruncateGenotypes_WhenTwoGenotypesShareOneNameKey_KeepsBothGenotypes()
     {
         // The collapse case: identical HLA names at different typing categories, which ToHlaNames() cannot tell apart.
-        // Reachable only for a set holding more than one category - all 216 DEV sets are single-category SmallGGroup
-        // (T5's SQL), and A1d's DistinctGenotypes mean of 2,335.6 equals its PreTruncationGenotypes mean, so no real
-        // donor collapsed in 19,000. It stays pinned because the pairing loop's indexer assignment relies on it.
+        // Reachable only for a set holding more than one category, and every set in DEV holds SmallGGroup alone, so no
+        // real donor exercises it today. It stays pinned because the pairing loop's indexer assignment relies on it.
         var name = fixture.Create<string>();
         var smallG = GenotypeAtA(new HlaAtKnownTypingCategory(name, HaplotypeTypingCategory.SmallGGroup));
         var gGroup = GenotypeAtA(new HlaAtKnownTypingCategory(name, HaplotypeTypingCategory.GGroup));
@@ -162,8 +158,8 @@ internal class ExpandedGenotypeTruncaterTests
     /// <summary>
     /// Builds the truncater's two inputs the way <c>CompressedPhenotypeExpander</c>'s pairing loop builds them - same
     /// order, and the likelihood written through the indexer rather than <c>Add</c> so a collapsed key overwrites
-    /// instead of throwing. The single place that changes when T3 changes the signature; every assertion above is
-    /// therefore untouched by T3, which is what makes them an equivalence guard rather than a re-statement.
+    /// instead of throwing. This is the only place that has to change if the truncater's signature does, which keeps
+    /// every assertion above an equivalence guard rather than a re-statement of the implementation.
     /// </summary>
     private static ImputedGenotypes Truncate(
         int cap,
@@ -178,9 +174,9 @@ internal class ExpandedGenotypeTruncaterTests
         {
             var hlaNames = genotype.ToHlaNames();
 
-            // T3's strong form hands the truncater pool indices rather than genotypes, so a fixture genotype is split
-            // into the two haplotypes it would have been paired from. PhenotypeInfo equality is positional, so
-            // re-combining them yields the same value - which is what the assertions above compare against.
+            // The truncater is handed pool indices rather than genotypes, so a fixture genotype is split into the two
+            // haplotypes it would have been paired from. PhenotypeInfo equality is positional, so re-combining them
+            // yields the same value - which is what the assertions above compare against.
             haplotypes.Add(genotype.ToLociInfo((_, position1, _) => position1));
             haplotypes.Add(genotype.ToLociInfo((_, _, position2) => position2));
 

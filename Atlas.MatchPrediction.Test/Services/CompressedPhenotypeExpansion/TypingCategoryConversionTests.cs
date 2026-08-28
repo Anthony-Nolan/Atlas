@@ -16,12 +16,12 @@ using NUnit.Framework;
 namespace Atlas.MatchPrediction.Test.Services.CompressedPhenotypeExpansion;
 
 /// <summary>
-/// ATL-233 T5: the phenotype is converted to the typing categories that get read, and to no others. The conversion was
-/// 39.5% of imputation's measured cost (A1h) and two thirds of it was dead work, in two distinct ways - the unambiguous
-/// short circuit reads SmallGGroup alone, and a category the frequency set holds no haplotypes in can change nothing.
+/// The phenotype is converted to the typing categories that get read, and to no others. Two distinct things make a
+/// category dead work - the unambiguous short circuit reads SmallGGroup alone, and a category the frequency set holds
+/// no haplotypes in can change nothing.
 ///
 /// <para>
-/// The second of those is a change in <b>which lookups happen</b>, so it is the one that has to be pinned by test rather
+/// The second of those changes <b>which lookups happen</b>, so it is the one that has to be pinned by test rather
 /// than by argument: every set in DEV holds SmallGGroup only, and these assertions are what stops that becoming an
 /// assumption baked into the code. A set holding two categories must still convert both.
 /// </para>

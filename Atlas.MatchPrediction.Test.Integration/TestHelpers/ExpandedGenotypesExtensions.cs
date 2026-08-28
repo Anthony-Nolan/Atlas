@@ -12,10 +12,10 @@ internal static class ExpandedGenotypesExtensions
     /// Every genotype the expansion produced, built.
     ///
     /// <para>
-    /// ATL-233 T3's strong form removed the <c>Genotypes</c> collection these tests used to read: an expansion now holds
-    /// each genotype as the two pool indices it is a pair of, and builds the <see cref="PhenotypeInfo{T}"/> only for the
-    /// genotypes truncation keeps - up to 1.65M pairs of which a capped donor keeps 2,000. That is the whole point of
-    /// the ticket, so <b>production must never call this</b>; a test asserting on a handful of genotypes can.
+    /// An expansion holds each genotype as the two pool indices it is a pair of, and builds the
+    /// <see cref="PhenotypeInfo{T}"/> only for the genotypes truncation keeps - up to 1.65M pairs of which a capped
+    /// donor keeps 2,000. Materialising all of them defeats that, so <b>production must never call this</b>; a test
+    /// asserting on a handful of genotypes can.
     /// </para>
     /// </summary>
     internal static List<PhenotypeInfo<HlaAtKnownTypingCategory>> MaterialiseAll(this ExpandedGenotypes expanded) =>

@@ -17,9 +17,10 @@ using NUnit.Framework;
 namespace Atlas.MatchPrediction.Test.Services.CompressedPhenotypeExpansion;
 
 /// <summary>
-/// ATL-233's T1 follow-up replaced the pool filter's <c>ISet&lt;string&gt;.Contains</c> with a lookup in a
-/// <c>bool[]</c> indexed by interned allele id. The pass/fail answer must not move, and there are exactly three places
-/// it could have: an allele the <b>set</b> has never seen (which resolves to <c>NotFound</c>, not to an id), a
+/// The pool filter tests an allele by a lookup in a <c>bool[]</c> indexed by interned allele id, rather than by
+/// <c>ISet&lt;string&gt;.Contains</c> on its name. The pass/fail answer must be the same either way, and there are
+/// exactly three places it could differ: an allele the <b>set</b> has never seen (which resolves to
+/// <c>NotFound</c>, not to an id), a
 /// haplotype <b>untyped</b> at an allowed locus (whose id is 0, the same id an empty allele name interns to), and a
 /// subject <b>untyped</b> at an allowed locus (whose group set is null, and therefore admits everything).
 ///
@@ -77,8 +78,8 @@ internal class PoolFilterAlleleIdTests
     [Test]
     public async Task ExpandCompressedPhenotype_WhenAPooledHaplotypeIsUntypedAtAnAllowedLocus_DropsIt()
     {
-        // The untyped locus interns to id 0. A subject that names real alleles there does not admit id 0, exactly as
-        // the shipped Contains(haplotype allele) returned false against a null.
+        // The untyped locus interns to id 0. A subject that names real alleles there does not admit id 0, which is the
+        // same answer a Contains(haplotype allele) gives against a null.
         var survivors = await Survivors(
             subjectA: [a1, a2],
             pool: [(a1, b1), (a2, b1), (null, b1)],
@@ -90,7 +91,7 @@ internal class PoolFilterAlleleIdTests
     [Test]
     public async Task ExpandCompressedPhenotype_WhenTheSubjectIsUntypedAtAnAllowedLocus_AdmitsEveryHaplotypeThere()
     {
-        // No group set at B, so the mask is null and B constrains nothing - the shipped `hlaGroups == null` branch.
+        // No group set at B, so the mask is null and B constrains nothing - the `hlaGroups == null` branch.
         // A stays ambiguous so the expansion still takes the pooled path rather than the unambiguous short circuit.
         var b2 = fixture.Create<string>();
 

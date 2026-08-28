@@ -24,23 +24,22 @@ using HfSet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencyS
 namespace Atlas.MatchPrediction.Test.Services.MatchProbability;
 
 /// <summary>
-/// The equivalence guard ATL-233 Annex B rule 1 requires, for T1 (cache the projected haplotype pool) and T2 (stop
-/// resolving a frequency per genotype).
+/// The equivalence guard on imputation: caching the projected haplotype pool, and resolving a frequency per survivor
+/// rather than per genotype, must not move a clinical output.
 ///
 /// <para>
-/// It asserts at the <see cref="IGenotypeImputationService.Impute"/> boundary, whose signature neither ticket
-/// changes, and it asserts <b>exact</b> <c>decimal</c> likelihoods worked out by hand rather than snapshotted. So it
-/// is an oracle, not a record of whatever the code happened to do: it passes against the shipped implementation and
-/// must still pass afterwards.
+/// It asserts at the <see cref="IGenotypeImputationService.Impute"/> boundary, and it asserts <b>exact</b>
+/// <c>decimal</c> likelihoods worked out by hand rather than snapshotted. So it is an oracle, not a record of
+/// whatever the code happened to do, and any reimplementation of the expansion has to keep passing it unchanged.
 /// </para>
 ///
 /// <para>
-/// <b>Read <see cref="Impute_OnAReducedKey_UsesTheConsolidatedFrequencyForTheCollapsedSurvivor"/> first.</b> T2 as
-/// originally written in the ticket pack proposed carrying each pooled haplotype's own <c>SetFrequencies</c> value
-/// and multiplying. On any key with excluded loci - 74.0% of the precompute's rows - a survivor is nulled at those
-/// loci (<c>CompressedPhenotypeExpander</c>, the <c>allowedLoci.Contains(l) ? hla : null</c> map) and therefore
-/// stands for a <i>group</i> of stored haplotypes whose frequencies are summed. That test fails for any
-/// implementation that carries an individual frequency instead of asking
+/// <b>Read <see cref="Impute_OnAReducedKey_UsesTheConsolidatedFrequencyForTheCollapsedSurvivor"/> first.</b> It is
+/// tempting to carry each pooled haplotype's own <c>SetFrequencies</c> value and multiply. Do not. On any key with
+/// excluded loci - the majority of a set's rows - a survivor is nulled at those loci
+/// (<c>CompressedPhenotypeExpander</c>, the <c>allowedLoci.Contains(l) ? hla : null</c> map) and therefore stands for
+/// a <i>group</i> of stored haplotypes whose frequencies are summed. That test fails for any implementation that
+/// carries an individual frequency instead of asking
 /// <see cref="IHaplotypeFrequencyService.GetFrequencyForHla"/>.
 /// </para>
 /// </summary>
@@ -112,7 +111,7 @@ internal class ImputationEquivalenceTests
         await BuildService().Impute(AmbiguousAtAAndB(AllFiveLoci));
 
         // excludedLoci = MatchPredictionLoci \ allowedLoci. Empty here, which is what makes this the one key whose
-        // frequency lookups take the direct SetFrequencies path (ATL-233 §5b: FreqDirectHits > 0, FreqConsolidated 0).
+        // frequency lookups take the direct SetFrequencies path rather than the consolidated one.
         excludedLociAsked.Should().NotBeEmpty();
         excludedLociAsked.Should().AllSatisfy(excluded => excluded.Should().BeEmpty());
     }
@@ -124,15 +123,14 @@ internal class ImputationEquivalenceTests
 
         await BuildService().Impute(AmbiguousAtAAndB(AllFiveLoci));
 
-        // Two survivors produce three genotypes. The shipped code asked twice per genotype - six lookups, each an
-        // await re-entering LazyCache's GetOrAddAsync. A frequency depends only on (set, haplotype, excluded loci), so
-        // two answers cover every genotype. At corpus scale that ratio is 2 x 68,440 genotypes against 465.7
-        // survivors for a tail donor, and it is the whole of ATL-233 T2's prize.
+        // Two survivors produce three genotypes. A frequency depends only on (set, haplotype, excluded loci), so two
+        // answers cover every genotype - asking per genotype would be six lookups here, and grows with the square of
+        // the survivor count rather than with it.
         await haplotypeFrequencyService.Received(2).GetFrequencyForHla(
             FrequencySetId, Arg.Any<LociInfo<string>>(), Arg.Any<ISet<Locus>>());
     }
 
-    // ---- The consolidated path: the case T2's original mechanism would have broken -----------------------------
+    // ---- The consolidated path: the case a per-haplotype stored frequency would get wrong ----------------------
 
     [Test]
     public async Task Impute_OnAReducedKey_UsesTheConsolidatedFrequencyForTheCollapsedSurvivor()
@@ -180,8 +178,8 @@ internal class ImputationEquivalenceTests
 
         var result = await BuildService().Impute(AmbiguousAtAAndB(AllFiveLoci));
 
-        // A single genotype is already certain, so the shipped code short-circuits to a likelihood of 1 without
-        // consulting the frequency set at all. 59.15% of real donors take this branch.
+        // A single genotype is already certain, so imputation short-circuits to a likelihood of 1 without consulting
+        // the frequency set at all. The majority of real donors take this branch.
         result.GenotypeLikelihoods.Should().BeEquivalentTo(new Dictionary<PhenotypeInfo<string>, decimal>
         {
             [Genotype(a: ("a1", "a1"), b: ("b1", "b1"), c: ("c1", "c1"), dqb1: ("q1", "q1"), drb1: ("r1", "r1"))] = 1m
@@ -232,8 +230,8 @@ internal class ImputationEquivalenceTests
     [Test]
     public async Task Impute_WhenTheSetHoldsTwoTypingCategories_ExpandsAgainstBoth()
     {
-        // ATL-233 T5's SQL found all 216 DEV sets are single-category SmallGGroup, so nothing exercises the
-        // multi-category branch of the pool projection. T1 caches that projection, so it must be pinned.
+        // Every frequency set in DEV holds SmallGGroup only, so no real data exercises the multi-category branch of
+        // the cached pool projection. It is pinned here instead.
         var interner = new HaplotypeInterner();
         var stored = new Dictionary<HaplotypeKey, HaplotypeFrequencyValue>
         {
@@ -317,7 +315,7 @@ internal class ImputationEquivalenceTests
         result.SumOfLikelihoods.Should().Be(0.49m);
     }
 
-    // ---- T1: the projection is per set, not per donor -----------------------------------------------------------
+    // ---- The projection is per set, not per donor ---------------------------------------------------------------
 
     [Test]
     public async Task Impute_ForTwoDonorsOnTheSameSet_ProjectsThePoolOnce()
@@ -330,8 +328,8 @@ internal class ImputationEquivalenceTests
         await service.Impute(AmbiguousAtAAndB(AllFiveLoci));
         await service.Impute(AmbiguousAtAAndB(AllFiveLoci));
 
-        // T1's whole claim: neither donor re-projected. Reference identity is the assertion, because equality would
-        // pass just as happily against a pool rebuilt per donor - which is exactly what shipped before.
+        // Neither donor re-projected. Reference identity is the assertion, because equality would pass just as
+        // happily against a pool rebuilt per donor, which is the thing this rules out.
         entry.ProjectedPool.Should().BeSameAs(poolBeforeAnyDonor);
         entry.ProjectedPool.SmallGGroup.Should().BeSameAs(poolBeforeAnyDonor.SmallGGroup);
     }
@@ -393,7 +391,7 @@ internal class ImputationEquivalenceTests
     private void ArrangeSet(HaplotypeInterner interner, Dictionary<HaplotypeKey, HaplotypeFrequencyValue> stored)
     {
         // Interned exactly as HaplotypeFrequencyCache.BuildEntryFromDatabase does, so the expander's ReverseLookup
-        // round trip - the thing T1 caches - is the real one.
+        // round trip over the cached pool is the real one.
         var entry = new FrequencySetCacheEntry
         {
             SetFrequencies = stored.ToFrozenDictionary(),
@@ -437,7 +435,7 @@ internal class ImputationEquivalenceTests
         new()
         {
             // Null at GGroup/PGroup, matching a set that holds no haplotypes at those resolutions - the real shape of
-            // all 216 DEV sets per ATL-233 T5.
+            // every set in DEV.
             GGroup = new PhenotypeInfo<ISet<string>>(),
             PGroup = new PhenotypeInfo<ISet<string>>(),
             SmallGGroup = Groups(a, b, c, dqb1, drb1)

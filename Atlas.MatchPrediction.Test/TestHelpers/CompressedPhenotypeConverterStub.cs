@@ -13,10 +13,10 @@ internal static class CompressedPhenotypeConverterStub
     /// <see cref="DataByResolution{T}"/> of groups, answering each category from the matching field.
     ///
     /// <para>
-    /// ATL-233 T5 turned one call returning all three categories into one call per category, so that the expander can
-    /// convert only what it will read. Tests still say what the subject's groups are as a single object - the shape a
-    /// reader can take in - and this splits it. It also leaves NSubstitute's own record of which categories were asked
-    /// for intact, which is what the T5 tests assert on.
+    /// The converter takes one call per typing category, so that the expander can convert only what it will read.
+    /// Tests still say what the subject's groups are as a single object - the shape a reader can take in - and this
+    /// splits it. It also leaves NSubstitute's own record of which categories were asked for intact, which is what
+    /// <c>TypingCategoryConversionTests</c> asserts on.
     /// </para>
     /// </summary>
     internal static void StubGroups(

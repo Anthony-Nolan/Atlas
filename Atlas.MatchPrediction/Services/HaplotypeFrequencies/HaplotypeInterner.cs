@@ -10,8 +10,8 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 public record struct HaplotypeKey(int A, int B, int C, int Dqb1, int Drb1)
 {
     /// <summary>
-    /// The interned allele id at <paramref name="locus"/>. ATL-233 T1 follow-up: the pool filter compares ids rather
-    /// than allele names, so it reads a key positionally, once per allowed locus per pooled haplotype.
+    /// The interned allele id at <paramref name="locus"/>. The pool filter compares ids rather than allele names, so
+    /// it reads a key positionally, once per allowed locus per pooled haplotype.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">
     /// A haplotype is not typed at Dpb1, so it holds no id there. <c>LocusSettings.MatchPredictionLoci</c> excludes it,

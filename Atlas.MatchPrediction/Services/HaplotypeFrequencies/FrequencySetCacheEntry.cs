@@ -1,7 +1,6 @@
 ﻿using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 
@@ -31,23 +30,24 @@ public sealed class FrequencySetCacheEntry
         set => consolidatedFrequencies = value;
     }
 
-    // volatile, and assigned with ??= rather than under a lock: the read-test-write is not atomic, so two threads
-    // racing the first access can both project - but a FrozenDictionary enumerates in a stable order, so the two
-    // results are element-for-element identical and either may win. A reference write has release semantics, so the
-    // collection is fully built before any thread can observe it.
+    // In production this is built eagerly by HaplotypeFrequencyCache.BuildEntryFromDatabase, before the entry escapes
+    // its cache.GetOrAddAsync, so nothing races the first access. That is where the guarantee lives - the volatile and
+    // the ??= below only keep this correct for any other caller, such as a test constructing an entry directly.
+    // volatile: a reference write has release semantics, so the collection is fully built before any thread can
+    // observe it. ??= rather than a lock: the read-test-write is not atomic, so two threads racing the first access
+    // can both project - but a FrozenDictionary enumerates in a stable order, so their results are element-for-element
+    // identical and either may win.
     private volatile DataByResolution<HaplotypeKey[]> projectedPool;
 
     /// <summary>
-    /// The set's haplotypes in the string form phenotype expansion filters against, grouped by typing category.
+    /// The set's haplotypes as interned keys, grouped by typing category - the form phenotype expansion filters
+    /// against.
     ///
     /// <para>
-    /// ATL-233 T1. This projection is a pure function of <see cref="SetFrequencies"/> and <see cref="Interner"/> -
-    /// <c>CompressedPhenotypeExpander.FetchHaplotypesGroupedByTypingCategory</c> takes a set id and nothing else, not
-    /// even the allowed loci - yet it ran once per DONOR, walking up to 274,606 frozen entries and allocating one
-    /// <see cref="LociInfo{T}"/> (with its eagerly computed hash) per haplotype. Measured at 5.925 ms per donor and
-    /// <b>invariant across all four AllowedLoci keys</b>, because it projects the whole set however small the
-    /// question: 28.5% of blended Impute time, and 44.60% of the 3-locus key. Memoising it here is the largest single
-    /// item in the ticket pack, and the only large one that cannot change a clinical result.
+    /// This projection is a pure function of <see cref="SetFrequencies"/> and <see cref="Interner"/>:
+    /// <c>CompressedPhenotypeExpander</c> asks for it by set id and nothing else, not even the allowed loci. It
+    /// therefore belongs to the set rather than to a donor, and is memoised here so that only the first donor to touch
+    /// a set pays for walking its frequencies.
     /// </para>
     ///
     /// <para>
@@ -57,12 +57,10 @@ public sealed class FrequencySetCacheEntry
     /// </para>
     ///
     /// <para>
-    /// <b>ATL-233 T1 follow-up: the pool is the set's own interned keys, not their name form.</b> T1 cached this as
-    /// <c>LociInfo&lt;string&gt;</c> - ~80 bytes per haplotype against ~55 for a <see cref="SetFrequencies"/> entry, so
-    /// about 2.5x the footprint of a cached set, ~22 MB for the largest and a real claim on a 4Gi replica. A
-    /// <see cref="HaplotypeKey"/> is 20 bytes in a flat array, which hands most of that back (~5.5 MB), and building it
-    /// no longer calls <c>ReverseLookup</c> per haplotype: the keys are already what the frozen dictionary holds. The
-    /// filter then compares ids instead of hashing allele names, and only the survivors are resolved back to names.
+    /// <b>The pool is the set's own interned keys, not their name form.</b> A <see cref="HaplotypeKey"/> is 20 bytes
+    /// in a flat array, against roughly 80 for the equivalent <c>LociInfo&lt;string&gt;</c>, and building it calls no
+    /// <c>ReverseLookup</c> at all: the keys are already what the frozen dictionary holds. The filter then compares
+    /// ids instead of hashing allele names, and only the survivors are resolved back to names.
     /// </para>
     ///
     /// <para>
@@ -71,24 +69,21 @@ public sealed class FrequencySetCacheEntry
     /// the pool, the frequencies and the interner are fields of one immutable entry, exactly as the class remark above
     /// states; it is <i>not</i> safe to pass an id to anything that re-enters the cache, such as
     /// <c>HaplotypeFrequencyService.GetFrequencyForHla</c>, which fetches the entry again and may hold a different
-    /// instance. Survivors are therefore carried onwards as names, as they always were.
+    /// instance. Survivors are therefore carried onwards as names.
     /// </para>
     /// </summary>
     internal DataByResolution<HaplotypeKey[]> ProjectedPool => projectedPool ??= ProjectPool();
 
     /// <summary>
-    /// The shipped expression's <b>enumeration</b>, unchanged - same source, same grouping, same order. Only what it
-    /// yields per haplotype changed, from the <c>ReverseLookup</c>'d name form to the key the dictionary already holds.
+    /// Groups the frozen dictionary's own keys by typing category, preserving its enumeration order.
     ///
     /// <para>
     /// It is tempting to build this straight from the SQL rows in <c>BuildEntryFromDatabase</c>'s existing loop, which
-    /// would skip this pass altogether. Do not. The pool's order sets the survivor order, which sets
-    /// the pairing order, which sets the genotype set's insertion order - and
-    /// <c>ExpandedGenotypeTruncater.TruncateGenotypes</c> keeps the top N with an <c>OrderByDescending</c> that has
-    /// <b>no secondary key</b> (the only <c>OrderBy</c> in this project, with no genotype comparer anywhere). So a
-    /// different enumeration order can silently change which genotypes a capped donor keeps when likelihoods tie:
-    /// a clinical change needing HLA-expert sign-off, not a performance one. Projecting from the frozen dictionary,
-    /// exactly as before, keeps the order identical.
+    /// would skip this pass altogether. Do not. <b>The pool's order sets the survivor order, which sets the pairing
+    /// order, which sets the genotype set's insertion order - and insertion order is the tie-break
+    /// <c>ExpandedGenotypeTruncater.MostLikelyFirst</c> applies when likelihoods are equal.</b> Which genotypes a
+    /// capped donor keeps is a clinical output, so a different enumeration order here is a clinical change needing
+    /// HLA-expert sign-off, not a performance one.
     /// </para>
     /// </summary>
     private DataByResolution<HaplotypeKey[]> ProjectPool()
