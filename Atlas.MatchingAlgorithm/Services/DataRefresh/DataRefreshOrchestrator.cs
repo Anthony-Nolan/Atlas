@@ -140,12 +140,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             // Deliberately does not throw: throwing here would propagate out of the function and cause the very Service
             // Bus redelivery that this lease exists to make harmless.
-            var incumbent = await TryDescribeIncumbentLease(dataRefreshRecordId);
+            var currentOwner = await TryDescribeCurrentOwner(dataRefreshRecordId);
             logger.SendTrace(
-                $"{LoggingPrefix} Invocation {leaseOwner} could not claim data refresh record {dataRefreshRecordId}, so will not run any stage. {incumbent}");
+                $"{LoggingPrefix} Invocation {leaseOwner} could not claim data refresh record {dataRefreshRecordId}, so will not run any stage. {currentOwner}");
         }
 
-        private async Task<string> TryDescribeIncumbentLease(int dataRefreshRecordId)
+        private async Task<string> TryDescribeCurrentOwner(int dataRefreshRecordId)
         {
             try
             {
@@ -197,7 +197,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 try
                 {
                     var now = DateTime.UtcNow;
-                    if (await RenewLease(recordId, leaseOwner, now, leaseDuration))
+                    if (await RenewLease(recordId, leaseOwner, now + leaseDuration))
                     {
                         lastSuccessfulRenewal = now;
                         continue;
@@ -212,11 +212,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 catch (Exception e)
                 {
                     // Being unable to reach the database is not the same as being fenced, and must not be treated as
-                    // such. At the default timings the lease spans 30 renewal attempts, so 29 consecutive failures are
-                    // survivable - that ratio is the whole improvement over the Service Bus lock this replaces, where a
-                    // single missed renewal was permanent. So keep trying rather than abandoning a run that may be nearly
-                    // complete. Past the lease duration, though, the lease has expired and another invocation may already
-                    // have claimed the record, so we must stop rather than run on as a zombie.
+                    // such. Transient failures have already been retried with backoff inside the call, by EF's execution
+                    // strategy (see EnableRetryOnFailure in ContextFactory), so what reaches here is either non-transient
+                    // or has exhausted those retries. Deliberately no further backoff on top: the fixed tick is what
+                    // gives 30 renewal attempts per lease, so 29 consecutive failures are survivable - the whole
+                    // improvement over the Service Bus lock this replaces, where a single missed renewal was permanent.
+                    // Backing off would spend the same lease on a handful of attempts instead. Past the lease duration,
+                    // though, the lease has expired and another invocation may already have claimed the record, so we
+                    // must stop rather than run on as a zombie.
                     var timeSinceLastRenewal = DateTime.UtcNow - lastSuccessfulRenewal;
                     if (timeSinceLastRenewal < leaseDuration)
                     {
@@ -236,11 +239,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             }
         }
 
-        private async Task<bool> RenewLease(int recordId, Guid leaseOwner, DateTime nowUtc, TimeSpan leaseDuration)
+        private async Task<bool> RenewLease(int recordId, Guid leaseOwner, DateTime expiry)
         {
             using var scope = serviceScopeFactory.CreateScope();
             var historyRepository = scope.ServiceProvider.GetRequiredService<IDataRefreshHistoryRepository>();
-            return await historyRepository.TryRenewRefreshLease(recordId, leaseOwner, nowUtc, leaseDuration);
+            return await historyRepository.TryRenewRefreshLease(recordId, leaseOwner, expiry);
         }
 
         private async Task ObserveHeartbeat(Task heartbeat, int recordId)

@@ -57,13 +57,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
         public async Task TryClaimRefreshLease_WhenAnotherInvocationHoldsALiveLease_DoesNotClaimIt()
         {
             var recordId = await AnOpenRefreshRecord();
-            var incumbent = Guid.NewGuid();
-            await dataRefreshHistoryRepository.TryClaimRefreshLease(recordId, incumbent, DateTime.UtcNow, LeaseDuration);
+            var owner = Guid.NewGuid();
+            await dataRefreshHistoryRepository.TryClaimRefreshLease(recordId, owner, DateTime.UtcNow, LeaseDuration);
 
             var claimed = await dataRefreshHistoryRepository.TryClaimRefreshLease(recordId, Guid.NewGuid(), DateTime.UtcNow, LeaseDuration);
 
             claimed.Should().BeFalse();
-            (await ReadRecord(recordId)).LeaseOwner.Should().Be(incumbent);
+            (await ReadRecord(recordId)).LeaseOwner.Should().Be(owner);
         }
 
         [Test]
@@ -80,7 +80,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
         }
 
         [Test]
-        public async Task TryClaimRefreshLease_WhenTheIncumbentLeaseHasExpired_ClaimsIt()
+        public async Task TryClaimRefreshLease_WhenTheCurrentOwnersLeaseHasExpired_ClaimsIt()
         {
             // An owner that died without releasing must not block the next run indefinitely.
             var recordId = await AnOpenRefreshRecord();
@@ -119,7 +119,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
             await dataRefreshHistoryRepository.TryClaimRefreshLease(recordId, owner, DateTime.UtcNow, LeaseDuration);
             var originalExpiry = (await ReadRecord(recordId)).LeaseExpiresUtc;
 
-            var renewed = await dataRefreshHistoryRepository.TryRenewRefreshLease(recordId, owner, DateTime.UtcNow.AddMinutes(5), LeaseDuration);
+            var renewed = await dataRefreshHistoryRepository.TryRenewRefreshLease(recordId, owner, DateTime.UtcNow.AddMinutes(5) + LeaseDuration);
 
             renewed.Should().BeTrue();
             (await ReadRecord(recordId)).LeaseExpiresUtc.Should().BeAfter(originalExpiry.Value);
@@ -133,7 +133,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
             await dataRefreshHistoryRepository.TryClaimRefreshLease(recordId, displacedOwner, DateTime.UtcNow.AddHours(-2), LeaseDuration);
             await dataRefreshHistoryRepository.TryClaimRefreshLease(recordId, Guid.NewGuid(), DateTime.UtcNow, LeaseDuration);
 
-            var renewed = await dataRefreshHistoryRepository.TryRenewRefreshLease(recordId, displacedOwner, DateTime.UtcNow, LeaseDuration);
+            var renewed = await dataRefreshHistoryRepository.TryRenewRefreshLease(recordId, displacedOwner, DateTime.UtcNow + LeaseDuration);
 
             renewed.Should().BeFalse();
         }
@@ -194,7 +194,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
             using var heartbeatScope = DependencyInjection.DependencyInjection.BackingProvider.CreateScope();
             var heartbeatRepository = heartbeatScope.ServiceProvider.GetRequiredService<IDataRefreshHistoryRepository>();
             var renewalTime = DateTime.UtcNow.AddMinutes(10);
-            await heartbeatRepository.TryRenewRefreshLease(recordId, owner, renewalTime, LeaseDuration);
+            await heartbeatRepository.TryRenewRefreshLease(recordId, owner, renewalTime + LeaseDuration);
 
             await runRepository.MarkStageAsComplete(trackedRecord, DataRefreshStage.DonorImport);
 

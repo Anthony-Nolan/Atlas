@@ -43,7 +43,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         /// Extends the lease expiry, provided <paramref name="owner"/> still holds it.
         /// </summary>
         /// <returns>False if the lease has been taken over by another invocation, i.e. this owner has been fenced.</returns>
-        Task<bool> TryRenewRefreshLease(int recordId, Guid owner, DateTime nowUtc, TimeSpan ttl);
+        Task<bool> TryRenewRefreshLease(int recordId, Guid owner, DateTime expiry);
 
         /// <summary>
         /// Gives up the lease, provided <paramref name="owner"/> still holds it, so the next invocation need not wait
@@ -142,10 +142,8 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         }
 
         /// <inheritdoc />
-        public async Task<bool> TryRenewRefreshLease(int recordId, Guid owner, DateTime nowUtc, TimeSpan ttl)
+        public async Task<bool> TryRenewRefreshLease(int recordId, Guid owner, DateTime expiry)
         {
-            var expiry = nowUtc + ttl;
-
             var rowsUpdated = await Context.DataRefreshRecords
                 .Where(r => r.Id == recordId && r.LeaseOwner == owner)
                 .ExecuteUpdateAsync(s => s

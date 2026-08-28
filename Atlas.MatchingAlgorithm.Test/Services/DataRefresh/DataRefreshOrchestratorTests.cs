@@ -65,7 +65,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             // The happy path: this invocation takes the lease, holds it for the duration of the run, and gives it back.
             dataRefreshHistoryRepository.TryClaimRefreshLease(default, default, default, default).ReturnsForAnyArgs(true);
-            dataRefreshHistoryRepository.TryRenewRefreshLease(default, default, default, default).ReturnsForAnyArgs(true);
+            dataRefreshHistoryRepository.TryRenewRefreshLease(default, default, default).ReturnsForAnyArgs(true);
             dataRefreshHistoryRepository.ReleaseRefreshLease(default, default).ReturnsForAnyArgs(true);
         }
 
@@ -471,7 +471,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Build();
             dataRefreshOrchestrator = BuildDataRefreshOrchestrator(settings);
 
-            dataRefreshHistoryRepository.TryRenewRefreshLease(default, default, default, default).ReturnsForAnyArgs(false);
+            dataRefreshHistoryRepository.TryRenewRefreshLease(default, default, default).ReturnsForAnyArgs(false);
 
             dataRefreshRunner.RefreshData(Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(call =>
             {
