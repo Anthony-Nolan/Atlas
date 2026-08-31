@@ -1,4 +1,4 @@
-﻿using Atlas.Client.Models.SupportMessages;
+using Atlas.Client.Models.SupportMessages;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
@@ -12,11 +12,15 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Data.Models;
+using Atlas.MatchingAlgorithm.Exceptions;
 using AutoFixture;
+using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
@@ -186,5 +190,56 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             await donorManagementLogRepository.DidNotReceive()
                 .CreateOrUpdateDonorManagementLogBatch(Arg.Any<IEnumerable<DonorManagementInfo>>());
         }
+
+        #region Cancellation
+
+        [Test]
+        public async Task ImportDonors_WhenAlreadyCancelled_DoesNotImportAnyDonors()
+        {
+            var donor = DonorBuilder.New.With(d => d.AtlasDonorId, fixture.Create<int>()).Build();
+            donorReader.StreamAllDonors().Returns(new List<Donor> {donor});
+            var cancelled = new CancellationTokenSource();
+            await cancelled.CancelAsync();
+
+            await donorImporter.Invoking(i => i.ImportDonors(false, cancelled.Token)).Should().ThrowAsync<OperationCanceledException>();
+
+            await donorImportRepository.DidNotReceive().InsertBatchOfDonors(Arg.Any<IEnumerable<DonorInfo>>());
+        }
+
+        [Test]
+        public async Task ImportDonors_WhenCancelled_DoesNotReportCancellationAsAnImportFailure()
+        {
+            // The refresh recognises a lost lease by the exception type. Wrapping it as a DonorImportHttpException, as
+            // every other failure here is wrapped, would disguise it as an import failure and defeat the abort.
+            var donor = DonorBuilder.New.With(d => d.AtlasDonorId, fixture.Create<int>()).Build();
+            donorReader.StreamAllDonors().Returns(new List<Donor> {donor});
+            var cancelled = new CancellationTokenSource();
+            await cancelled.CancelAsync();
+
+            await donorImporter.Invoking(i => i.ImportDonors(false, cancelled.Token)).Should()
+                .ThrowAsync<OperationCanceledException>();
+            await donorImporter.Invoking(i => i.ImportDonors(false, cancelled.Token)).Should()
+                .NotThrowAsync<DonorImportHttpException>();
+        }
+
+        [Test]
+        public async Task ImportDonors_WhenCancelledMidImport_StopsOnABatchBoundary()
+        {
+            // Two batches' worth of donors, cancelled while the first is being written. The check sits at the top of the
+            // loop, so the first batch completes and the second is never started.
+            const int batchSize = 10000;
+            var donor = DonorBuilder.New.With(d => d.AtlasDonorId, fixture.Create<int>()).Build();
+            donorReader.StreamAllDonors().Returns(Enumerable.Repeat(donor, batchSize * 2));
+
+            var cancellationTokenSource = new CancellationTokenSource();
+            donorImportRepository.WhenForAnyArgs(r => r.InsertBatchOfDonors(default)).Do(_ => cancellationTokenSource.Cancel());
+
+            await donorImporter.Invoking(i => i.ImportDonors(false, cancellationTokenSource.Token)).Should()
+                .ThrowAsync<OperationCanceledException>();
+
+            await donorImportRepository.Received(1).InsertBatchOfDonors(Arg.Any<IEnumerable<DonorInfo>>());
+        }
+
+        #endregion
     }
 }
