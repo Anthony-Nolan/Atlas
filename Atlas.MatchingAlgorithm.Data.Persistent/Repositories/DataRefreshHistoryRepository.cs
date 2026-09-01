@@ -26,6 +26,31 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         Task UpdateSuccessFlag(int recordId, bool wasSuccess);
         Task UpdateLastSafelyProcessedDonor(int recordId, int donorId);
         Task MarkStageAsComplete(DataRefreshRecord record, DataRefreshStage stage);
+
+        /// <summary>
+        /// Attempts to take the run-level lease on a record, so that only one invocation processes it at a time.
+        /// The claim succeeds if the record is still open and is either unleased, leased to <paramref name="owner"/>
+        /// already, or held by an owner whose lease has expired.
+        /// </summary>
+        /// <remarks>
+        /// Re-claiming for the current <paramref name="owner"/> is deliberately permitted, so that a message redelivered
+        /// to the invocation that already holds the lease is harmless.
+        /// </remarks>
+        /// <returns>True if this owner now holds the lease. False if another invocation holds it, or the record is already finished.</returns>
+        Task<bool> TryClaimRefreshLease(int recordId, Guid owner, DateTime nowUtc, TimeSpan ttl);
+
+        /// <summary>
+        /// Extends the lease expiry, provided <paramref name="owner"/> still holds it.
+        /// </summary>
+        /// <returns>False if the lease has been taken over by another invocation, i.e. this owner has been fenced.</returns>
+        Task<bool> TryRenewRefreshLease(int recordId, Guid owner, DateTime expiry);
+
+        /// <summary>
+        /// Gives up the lease, provided <paramref name="owner"/> still holds it, so the next invocation need not wait
+        /// out the remaining lease duration.
+        /// </summary>
+        /// <returns>False if this owner had already been fenced, and so released nothing.</returns>
+        Task<bool> ReleaseRefreshLease(int recordId, Guid owner);
     }
 
     public class DataRefreshHistoryRepository : IDataRefreshHistoryRepository
@@ -98,6 +123,45 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         {
             record.SetStageCompletionTime(stage, DateTime.UtcNow);
             await Context.SaveChangesAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> TryClaimRefreshLease(int recordId, Guid owner, DateTime nowUtc, TimeSpan ttl)
+        {
+            var expiry = nowUtc + ttl;
+
+            var rowsUpdated = await Context.DataRefreshRecords
+                .Where(r => r.Id == recordId
+                            && r.RefreshEndUtc == null
+                            && (r.LeaseOwner == null || r.LeaseOwner == owner || r.LeaseExpiresUtc < nowUtc))
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(r => r.LeaseOwner, owner)
+                    .SetProperty(r => r.LeaseExpiresUtc, expiry));
+
+            return rowsUpdated == 1;
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> TryRenewRefreshLease(int recordId, Guid owner, DateTime expiry)
+        {
+            var rowsUpdated = await Context.DataRefreshRecords
+                .Where(r => r.Id == recordId && r.LeaseOwner == owner)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(r => r.LeaseExpiresUtc, expiry));
+
+            return rowsUpdated == 1;
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> ReleaseRefreshLease(int recordId, Guid owner)
+        {
+            var rowsUpdated = await Context.DataRefreshRecords
+                .Where(r => r.Id == recordId && r.LeaseOwner == owner)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(r => r.LeaseOwner, (Guid?) null)
+                    .SetProperty(r => r.LeaseExpiresUtc, (DateTime?) null));
+
+            return rowsUpdated == 1;
         }
 
         public async Task<DataRefreshRecord> GetRecord(int recordId)

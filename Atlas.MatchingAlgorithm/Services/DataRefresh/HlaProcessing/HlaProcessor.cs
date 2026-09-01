@@ -16,6 +16,7 @@ using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -28,11 +29,16 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         ///  - Fetches p-groups for all donor's hla
         ///  - Stores the pre-processed p-groups for use in matching
         /// </summary>
+        /// <param name="cancellationToken">
+        /// Cancelled if the data refresh loses its run-level lease. Observed between batches, never mid-batch, so the
+        /// last-safely-processed donor marker stays consistent with what has actually been written.
+        /// </param>
         Task UpdateDonorHla(
             string hlaNomenclatureVersion,
             Func<int, Task> updateLastSafelyProcessedDonorId,
             int? lastProcessedDonor = null,
-            bool continueExistingImport = false);
+            bool continueExistingImport = false,
+            CancellationToken cancellationToken = default);
     }
 
     public class HlaProcessor : IHlaProcessor
@@ -80,13 +86,20 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             string hlaNomenclatureVersion,
             Func<int, Task> updateLastSafelyProcessedDonorId,
             int? lastProcessedDonor,
-            bool continueExistingImport)
+            bool continueExistingImport,
+            CancellationToken cancellationToken)
         {
             await PerformUpfrontSetup(hlaNomenclatureVersion);
 
             try
             {
-                await PerformHlaUpdate(hlaNomenclatureVersion, updateLastSafelyProcessedDonorId, lastProcessedDonor, continueExistingImport);
+                await PerformHlaUpdate(
+                    hlaNomenclatureVersion, updateLastSafelyProcessedDonorId, lastProcessedDonor, continueExistingImport, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // Not an HLA processing failure: the refresh lost its lease, and that is logged where it is recognised.
+                throw;
             }
             catch (Exception e)
             {
@@ -99,7 +112,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             string hlaNomenclatureVersion,
             Func<int, Task> updateLastSafelyProcessedDonorId,
             int? lastProcessedDonor,
-            bool continueExistingProcessing)
+            bool continueExistingProcessing,
+            CancellationToken cancellationToken)
         {
             var totalDonorCount = await dataRefreshRepository.GetDonorCount();
             var batchedDonors = dataRefreshRepository.NewOrderedDonorBatchesToImport(BatchSize, lastProcessedDonor);
@@ -160,6 +174,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 
                 await foreach (var donorBatch in batchedDonors)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     if (!donorBatch.Any())
                     {
                         continue;

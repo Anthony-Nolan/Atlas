@@ -372,6 +372,18 @@ variable "MATCHING_DATA_REFRESH_DB_SIZE_REFRESH" {
   description = "Size to temporarily scale the dormant Azure Database to, whilst refreshing the matching database. Allowed values according to the Azure DTU model service tiers. Premium tier is recommended due to a large IO throughput."
 }
 
+variable "MATCHING_DATA_REFRESH_LEASE_DURATION_MINUTES" {
+  type        = number
+  default     = 30
+  description = "How long the data refresh holds its run-level lease on a refresh record without renewing it. Long enough that ordinary GC or CPU contention cannot displace a healthy run; short enough that a run which has genuinely died does not block the next one for long."
+}
+
+variable "MATCHING_DATA_REFRESH_LEASE_RENEWAL_INTERVAL_SECONDS" {
+  type        = number
+  default     = 60
+  description = "How often a running data refresh renews its lease. The lease must last at least two renewal intervals; at the defaults it lasts thirty, so a run survives 29 consecutive failed renewals."
+}
+
 variable "MATCHING_DATA_REFRESH_CRONTAB" {
   type        = string
   default     = "0 0 0 * * Monday"
