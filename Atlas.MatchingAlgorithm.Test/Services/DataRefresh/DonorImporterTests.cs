@@ -41,6 +41,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
         private Fixture fixture;
 
+        /// <summary>Mirrors <c>DonorImporter.BatchSize</c>; tests that care about batch boundaries need to match it.</summary>
+        private const int BatchSize = 10000;
+
+        /// <summary>Generous, because it is only ever reached when the pipeline is broken and the test would hang.</summary>
+        private static readonly TimeSpan PipeliningTimeout = TimeSpan.FromSeconds(10);
+
+        private const string DonorStreamFailureMessage = "the donor stream could not be read";
+
         [SetUp]
         public void SetUp()
         {
@@ -225,11 +233,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task ImportDonors_WhenCancelledMidImport_StopsOnABatchBoundary()
         {
-            // Two batches' worth of donors, cancelled while the first is being written. The check sits at the top of the
-            // loop, so the first batch completes and the second is never started.
-            const int batchSize = 10000;
+            // Two batches, cancelled while the first is being written. The write side checks the token before beginning
+            // each batch, so the second is never started - even though the read side has likely already buffered it.
             var donor = DonorBuilder.New.With(d => d.AtlasDonorId, fixture.Create<int>()).Build();
-            donorReader.StreamAllDonors().Returns(Enumerable.Repeat(donor, batchSize * 2));
+            donorReader.StreamAllDonors().Returns(Enumerable.Repeat(donor, BatchSize * 2));
 
             var cancellationTokenSource = new CancellationTokenSource();
             donorImportRepository.WhenForAnyArgs(r => r.InsertBatchOfDonors(default)).Do(_ => cancellationTokenSource.Cancel());
@@ -238,6 +245,102 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .ThrowAsync<OperationCanceledException>();
 
             await donorImportRepository.Received(1).InsertBatchOfDonors(Arg.Any<IEnumerable<DonorInfo>>());
+        }
+
+        #endregion
+
+        #region Pipelining
+
+        /// <summary>The write below blocks until the read side reaches the next batch, which run serially it never could.</summary>
+        [Test]
+        public async Task ImportDonors_ReadsTheNextBatchWhileThePreviousOneIsStillBeingWritten()
+        {
+            var secondBatchStarted = new TaskCompletionSource();
+            var donor = DonorBuilder.New.With(d => d.AtlasDonorId, fixture.Create<int>()).Build();
+
+            donorReader.StreamAllDonors().Returns(TwoBatchesSignallingWhenTheSecondIsReached(donor, secondBatchStarted));
+
+            // Captured on the first write only. By the second, the signal is set regardless and proves nothing.
+            bool? readSideRanAheadDuringTheFirstWrite = null;
+            donorImportRepository.WhenForAnyArgs(r => r.InsertBatchOfDonors(default))
+                .Do(_ => readSideRanAheadDuringTheFirstWrite ??= secondBatchStarted.Task.Wait(PipeliningTimeout));
+
+            await donorImporter.ImportDonors();
+
+            readSideRanAheadDuringTheFirstWrite.Should()
+                .BeTrue("the read side must continue fetching donors while a batch is being written, or the stage is still serial");
+        }
+
+        /// <summary>
+        /// The read side now fails on its own thread, and a failure lost there would close the channel cleanly - leaving
+        /// the stage to report success over a partial donor set, silently, for every subsequent search.
+        /// </summary>
+        [Test]
+        public async Task ImportDonors_WhenTheDonorStreamFails_FailsTheImportWithTheUnderlyingFailure()
+        {
+            var donor = DonorBuilder.New.With(d => d.AtlasDonorId, fixture.Create<int>()).Build();
+            donorReader.StreamAllDonors().Returns(DonorStreamThatFailsPartWayThrough(donor));
+
+            var thrown = await donorImporter.Invoking(i => i.ImportDonors()).Should().ThrowAsync<DonorImportHttpException>();
+
+            thrown.WithMessage($"*{DonorStreamFailureMessage}*").WithInnerException<InvalidOperationException>();
+        }
+
+        /// <summary>
+        /// Left running, the read side stays blocked on a full channel holding open the cross-database connection
+        /// <see cref="IDonorReader.StreamAllDonors"/> enumerates, outliving the stage that opened it.
+        /// </summary>
+        [Test]
+        public async Task ImportDonors_WhenAWriteFails_DoesNotReturnUntilTheDonorStreamHasBeenTornDown()
+        {
+            var donorStreamTornDown = new TaskCompletionSource();
+            var donor = DonorBuilder.New.With(d => d.AtlasDonorId, fixture.Create<int>()).Build();
+
+            donorReader.StreamAllDonors().Returns(LongDonorStreamSignallingTeardown(donor, donorStreamTornDown));
+            donorImportRepository.WhenForAnyArgs(r => r.InsertBatchOfDonors(default))
+                .Do(_ => throw new InvalidOperationException("the write failed"));
+
+            await donorImporter.Invoking(i => i.ImportDonors()).Should().ThrowAsync<DonorImportHttpException>();
+
+            donorStreamTornDown.Task.IsCompleted.Should()
+                .BeTrue("the import must not return while a thread is still enumerating the master donor store");
+        }
+
+        private static IEnumerable<Donor> TwoBatchesSignallingWhenTheSecondIsReached(Donor donor, TaskCompletionSource secondBatchStarted)
+        {
+            for (var i = 0; i < BatchSize; i++)
+            {
+                yield return donor;
+            }
+
+            secondBatchStarted.TrySetResult();
+
+            for (var i = 0; i < BatchSize; i++)
+            {
+                yield return donor;
+            }
+        }
+
+        private static IEnumerable<Donor> DonorStreamThatFailsPartWayThrough(Donor donor)
+        {
+            yield return donor;
+            throw new InvalidOperationException(DonorStreamFailureMessage);
+        }
+
+        /// <remarks>Comfortably more donors than the channel can buffer, so the read side is still going when the write fails.</remarks>
+        private static IEnumerable<Donor> LongDonorStreamSignallingTeardown(Donor donor, TaskCompletionSource tornDown)
+        {
+            try
+            {
+                for (var i = 0; i < BatchSize * 20; i++)
+                {
+                    yield return donor;
+                }
+            }
+            finally
+            {
+                tornDown.TrySetResult();
+            }
         }
 
         #endregion
