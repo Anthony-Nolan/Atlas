@@ -1,4 +1,5 @@
 using Atlas.Client.Models.SupportMessages;
+using Atlas.Common.ApplicationInsights;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
@@ -306,6 +307,32 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .BeTrue("the import must not return while a thread is still enumerating the master donor store");
         }
 
+        /// <summary>
+        /// A write failing on its own never observes the channel, so the read side's own failure reaches nobody. Without
+        /// the read side logging it where it is caught, a simultaneous failure of both would leave no trace of the read.
+        /// </summary>
+        [Test]
+        public async Task ImportDonors_WhenBothSidesFailAtOnce_StillRecordsTheReadSideFailure()
+        {
+            var readAboutToFail = new TaskCompletionSource();
+            var donor = DonorBuilder.New.With(d => d.AtlasDonorId, fixture.Create<int>()).Build();
+
+            donorReader.StreamAllDonors().Returns(OneBatchThenFailure(donor, readAboutToFail));
+            donorImportRepository.WhenForAnyArgs(r => r.InsertBatchOfDonors(default)).Do(_ =>
+            {
+                readAboutToFail.Task.Wait(PipeliningTimeout);
+                throw new InvalidOperationException("the write failed");
+            });
+
+            (await donorImporter.Invoking(i => i.ImportDonors()).Should().ThrowAsync<DonorImportHttpException>())
+                .WithMessage("*the write failed*");
+
+            logger.Received().SendTrace(
+                Arg.Is<string>(m => m.Contains(DonorStreamFailureMessage)),
+                LogLevel.Error,
+                Arg.Any<Dictionary<string, string>>());
+        }
+
         private static IEnumerable<Donor> TwoBatchesSignallingWhenTheSecondIsReached(Donor donor, TaskCompletionSource secondBatchStarted)
         {
             for (var i = 0; i < BatchSize; i++)
@@ -324,6 +351,21 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private static IEnumerable<Donor> DonorStreamThatFailsPartWayThrough(Donor donor)
         {
             yield return donor;
+            throw new InvalidOperationException(DonorStreamFailureMessage);
+        }
+
+        /// <remarks>
+        /// Yields one whole batch, so the write side gets something to fail on, then signals immediately before failing
+        /// itself - which lets the write side hold off until both failures are genuinely in flight at once.
+        /// </remarks>
+        private static IEnumerable<Donor> OneBatchThenFailure(Donor donor, TaskCompletionSource readAboutToFail)
+        {
+            for (var i = 0; i < BatchSize; i++)
+            {
+                yield return donor;
+            }
+
+            readAboutToFail.TrySetResult();
             throw new InvalidOperationException(DonorStreamFailureMessage);
         }
 

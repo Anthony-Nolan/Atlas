@@ -51,9 +51,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
 
         /// <summary>
         /// How many reified batches the read side may run ahead of the write side. Read and write cost about the same,
-        /// so one rung is enough to keep both busy and the rest only absorb variance. Each costs <see cref="BatchSize"/>
-        /// reified donors against a stage already peaking near 4.6GB of a ~14GB worker, so re-measure that headroom
-        /// before raising it.
+        /// so one rung is enough to keep both busy and the rest only absorb variance. Note the memory cost is
+        /// <c>(ChannelDepth + 2) * BatchSize</c> reified donors rather than <c>ChannelDepth * BatchSize</c>: the write
+        /// side holds the batch it is inserting, and the read side the one it has reified and is blocked writing. A
+        /// batch measures ~8MB of donor objects, nearer 16MB of heap once GC overhead is counted, so the default sits
+        /// under 100MB against a stage peaking near 4.6GB of a ~14GB worker. Only worth re-measuring in the hundreds.
         /// </summary>
         private const int ChannelDepth = 3;
 
@@ -195,10 +197,17 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             }
             catch (Exception e)
             {
-                // The channel is how a read-side failure reaches the write side, and the only way it does - rethrowing
-                // as well would fault this task with the same exception, for whichever of the two paths won. Note that
-                // ReadAllAsync surfaces it unwrapped, unlike ReadAsync, so it keeps its type: that is what lets
-                // ImportDonors still tell cancellation from failure now the exception crosses threads to get there.
+                // Logged here rather than left to whoever observes the channel. If the write side has already failed on
+                // its own it never reads the completion, so this is otherwise the only record of why the read side
+                // stopped. Cancellation is excluded - losing the lease is expected, and not a failure.
+                if (e is not OperationCanceledException)
+                {
+                    logger.SendTrace($"Donor read failed: {e}", LogLevel.Error);
+                }
+
+                // How a read-side failure reaches the write side. ReadAllAsync surfaces it unwrapped, unlike ReadAsync,
+                // so it keeps its type: that is what lets ImportDonors still tell cancellation from failure now the
+                // exception crosses threads to get there.
                 writer.TryComplete(e);
             }
         }
@@ -237,9 +246,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             }
             catch (Exception e)
             {
-                // Read-side failures reach the caller through the channel, so anything here was either already reported
-                // by that route or is the cancellation just requested. Either way it must not displace the exception
-                // already propagating out of the pipeline.
+                // Defensive only: the read side resolves its own exceptions into the channel and logs them there, so it
+                // completes even when it fails. Anything reaching here - a throwing Dispose during unwind, say - must
+                // not displace the exception already propagating out of the pipeline.
                 logger.SendTrace($"Donor read task ended with an exception: {e}", LogLevel.Verbose);
             }
         }
@@ -263,7 +272,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             bool shouldMarkDonorsAsUpdated,
             int? queueDepth)
         {
-            using (logger.RunTimed($"Import donor batch (BatchSize: {BatchSize}, QueueDepth: {queueDepth?.ToString() ?? "unknown"})",
+            using (logger.RunTimed($"Import donor batch (BatchSize: {donors.Count}, QueueDepth: {queueDepth?.ToString() ?? "unknown"})",
                        LogLevel.Verbose))
             {
                 var donorInfoConversionResult = await donorInfoConverter.ConvertDonorInfoAsync(donors, ImportFailureEventName);
