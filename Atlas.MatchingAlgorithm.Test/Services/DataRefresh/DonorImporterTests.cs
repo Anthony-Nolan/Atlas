@@ -329,7 +329,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             logger.Received().SendTrace(
                 Arg.Is<string>(m => m.Contains(DonorStreamFailureMessage)),
-                LogLevel.Error,
+                LogLevel.Warn,
                 Arg.Any<Dictionary<string, string>>());
         }
 
