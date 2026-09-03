@@ -199,10 +199,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             {
                 // Logged here rather than left to whoever observes the channel. If the write side has already failed on
                 // its own it never reads the completion, so this is otherwise the only record of why the read side
-                // stopped. Cancellation is excluded - losing the lease is expected, and not a failure.
+                // stopped. Warn rather than Error: when the write side does observe this, ImportDonors reports the
+                // stage-level Error, and one incident should not raise two. Warn still clears the configured Info
+                // threshold, so the cause survives even when nothing else reports it. Cancellation is expected, not a
+                // failure, so it is excluded.
                 if (e is not OperationCanceledException)
                 {
-                    logger.SendTrace($"Donor read failed: {e}", LogLevel.Error);
+                    logger.SendTrace($"Donor read failed: {e}", LogLevel.Warn);
                 }
 
                 // How a read-side failure reaches the write side. ReadAllAsync surfaces it unwrapped, unlike ReadAsync,
@@ -260,11 +263,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         ///     beside the write's own duration: a depth sitting at zero means the write side is starved and the
         ///     pipeline is delivering nothing, which is otherwise indistinguishable from success until the stage as a
         ///     whole fails to speed up.
-        /// </param>
-        /// <param name="batchFetchTime">
-        ///     Time at which this batch were fetched from the master donor store, to be used as the "last updated" time of these donors.
-        ///     It is slightly more correct to use the fetch time than the insert time, in the case of a race condition where a new update is published between
-        ///     fetching a batch from the donor store, and inserting it into the donor management log table.
         /// </param>
         /// <returns>Details of donors in the batch that failed import</returns>
         private async Task<IEnumerable<FailedDonorInfo>> InsertDonorBatch(
