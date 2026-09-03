@@ -123,7 +123,6 @@ internal class GenotypeSetService(
                 CompressedPhenotype = preparedSubjectData.HlaTyping,
                 AllowedLoci = parameters.AllowedLoci,
                 Genotypes = imputedGenotypes.Genotypes,
-                GenotypeLikelihoods = imputedGenotypes.GenotypeLikelihoods,
                 HfSetHlaNomenclatureVersion = preparedSubjectData.SubjectFrequencySet.FrequencySet.HlaNomenclatureVersion,
                 MatchingAlgorithmHlaNomenclatureVersion = parameters.MatchingAlgorithmHlaNomenclatureVersion,
                 SubjectLogDescription = preparedSubjectData.SubjectFrequencySet.SubjectLogDescription

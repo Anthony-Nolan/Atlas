@@ -92,7 +92,7 @@ internal class ImputationEquivalenceTests
 
         // Three pairs from two survivors - (h1,h1), (h1,h2), (h2,h2) - because the pairing loop includes self-pairs.
         // Likelihood is f(pos1 haplotype) x f(pos2 haplotype) x 2 when any allowed locus is heterozygous, else x 1.
-        result.GenotypeLikelihoods.Should().BeEquivalentTo(new Dictionary<PhenotypeInfo<string>, decimal>
+        result.LikelihoodsByName().Should().BeEquivalentTo(new Dictionary<PhenotypeInfo<string>, decimal>
         {
             [Genotype(a: ("a1", "a1"), b: ("b1", "b1"), c: ("c1", "c1"), dqb1: ("q1", "q1"), drb1: ("r1", "r1"))] = 0.16m,
             [Genotype(a: ("a1", "a2"), b: ("b1", "b2"), c: ("c1", "c1"), dqb1: ("q1", "q1"), drb1: ("r1", "r1"))] = 0.08m,
@@ -143,7 +143,7 @@ internal class ImputationEquivalenceTests
 
         // 0.6 x 0.6 x 1, 0.6 x 0.1 x 2, 0.1 x 0.1 x 1. An implementation carrying an individual haplotype frequency
         // would produce 0.16/0.08/0.01 (from 0.4) or 0.04/0.04/0.01 (from 0.2) - never these.
-        result.GenotypeLikelihoods.Should().BeEquivalentTo(new Dictionary<PhenotypeInfo<string>, decimal>
+        result.LikelihoodsByName().Should().BeEquivalentTo(new Dictionary<PhenotypeInfo<string>, decimal>
         {
             [Genotype(a: ("a1", "a1"), b: ("b1", "b1"), drb1: ("r1", "r1"))] = 0.36m,
             [Genotype(a: ("a1", "a2"), b: ("b1", "b2"), drb1: ("r1", "r1"))] = 0.12m,
@@ -180,7 +180,7 @@ internal class ImputationEquivalenceTests
 
         // A single genotype is already certain, so imputation short-circuits to a likelihood of 1 without consulting
         // the frequency set at all. The majority of real donors take this branch.
-        result.GenotypeLikelihoods.Should().BeEquivalentTo(new Dictionary<PhenotypeInfo<string>, decimal>
+        result.LikelihoodsByName().Should().BeEquivalentTo(new Dictionary<PhenotypeInfo<string>, decimal>
         {
             [Genotype(a: ("a1", "a1"), b: ("b1", "b1"), c: ("c1", "c1"), dqb1: ("q1", "q1"), drb1: ("r1", "r1"))] = 1m
         });
@@ -199,7 +199,7 @@ internal class ImputationEquivalenceTests
         var result = await BuildService().Impute(AmbiguousAtAAndB(AllFiveLoci));
 
         result.Genotypes.Should().BeEmpty();
-        result.GenotypeLikelihoods.Should().BeEmpty();
+        result.LikelihoodsByName().Should().BeEmpty();
         result.SumOfLikelihoods.Should().Be(0);
     }
 
@@ -215,7 +215,7 @@ internal class ImputationEquivalenceTests
         // The two dearest of the three, and nothing about the third. This runs the equivalence assertion THROUGH
         // ExpandedGenotypeTruncater's OrderByDescending, which has no secondary sort key - so if a change to the
         // projected pool's enumeration order altered which genotypes survive, it would surface here.
-        result.GenotypeLikelihoods.Should().BeEquivalentTo(new Dictionary<PhenotypeInfo<string>, decimal>
+        result.LikelihoodsByName().Should().BeEquivalentTo(new Dictionary<PhenotypeInfo<string>, decimal>
         {
             [Genotype(a: ("a1", "a1"), b: ("b1", "b1"), c: ("c1", "c1"), dqb1: ("q1", "q1"), drb1: ("r1", "r1"))] = 0.16m,
             [Genotype(a: ("a1", "a2"), b: ("b1", "b2"), c: ("c1", "c1"), dqb1: ("q1", "q1"), drb1: ("r1", "r1"))] = 0.08m
@@ -258,7 +258,7 @@ internal class ImputationEquivalenceTests
         // One survivor per category, so three pairs. Note the POSITION ORDER of the cross-category genotype: the pool
         // is merged GGroup, then PGroup, then SmallGGroup, and the pairing loop preserves that order - so the GGroup
         // haplotype lands at position 1. Cheap to get wrong, and a silent clinical change if the merge order moves.
-        result.GenotypeLikelihoods.Should().BeEquivalentTo(new Dictionary<PhenotypeInfo<string>, decimal>
+        result.LikelihoodsByName().Should().BeEquivalentTo(new Dictionary<PhenotypeInfo<string>, decimal>
         {
             [Genotype(a: ("gA", "gA"), b: ("gB", "gB"))] = 0.01m,
             [Genotype(a: ("gA", "a1"), b: ("gB", "b1"))] = 0.08m,
@@ -305,7 +305,7 @@ internal class ImputationEquivalenceTests
         // Three survivors give SIX pairs, but only THREE distinct string genotypes: the GGroup and SmallGGroup forms
         // of (a1,b1,·,·,r1) are interchangeable by name. Every colliding pair carries an equal likelihood.
         result.Genotypes.Should().HaveCount(6);
-        result.GenotypeLikelihoods.Should().BeEquivalentTo(new Dictionary<PhenotypeInfo<string>, decimal>
+        result.LikelihoodsByName().Should().BeEquivalentTo(new Dictionary<PhenotypeInfo<string>, decimal>
         {
             [Genotype(a: ("a1", "a1"), b: ("b1", "b1"), drb1: ("r1", "r1"))] = 0.36m,
             [Genotype(a: ("a1", "a2"), b: ("b1", "b2"), drb1: ("r1", "r1"))] = 0.12m,

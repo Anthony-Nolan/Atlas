@@ -7,6 +7,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Services.MatchProbability;
+using Atlas.MatchPrediction.Test.TestHelpers;
 using AutoFixture;
 using AwesomeAssertions;
 using NUnit.Framework;
@@ -51,8 +52,8 @@ internal class ExpandedGenotypeTruncaterTests
 
         var result = Truncate(cap: 10, (first, 0.4m), (second, 0.1m));
 
-        result.Genotypes.Should().BeEquivalentTo(new[] { first, second });
-        result.GenotypeLikelihoods.Should().BeEquivalentTo(new Dictionary<PhenotypeInfo<string>, decimal>
+        result.GenotypesOnly().Should().BeEquivalentTo(new[] { first, second });
+        result.LikelihoodsByName().Should().BeEquivalentTo(new Dictionary<PhenotypeInfo<string>, decimal>
         {
             [first.ToHlaNames()] = 0.4m,
             [second.ToHlaNames()] = 0.1m
@@ -70,8 +71,8 @@ internal class ExpandedGenotypeTruncaterTests
         // Deliberately inserted cheapest-first, so a selection that ignored the value and took the first N would fail.
         var result = Truncate(cap: 2, (cheapest, 0.01m), (dearest, 0.4m), (middle, 0.2m));
 
-        result.GenotypeLikelihoods.Keys.Should().BeEquivalentTo(new[] { dearest.ToHlaNames(), middle.ToHlaNames() });
-        result.Genotypes.Should().BeEquivalentTo(new[] { dearest, middle });
+        result.LikelihoodsByName().Keys.Should().BeEquivalentTo(new[] { dearest.ToHlaNames(), middle.ToHlaNames() });
+        result.GenotypesOnly().Should().BeEquivalentTo(new[] { dearest, middle });
 
         // The sum is over the KEPT genotypes only - truncation deliberately changes it, and MatchProbabilityService
         // divides by it, so this is the number the whole prediction is normalised against.
@@ -90,8 +91,8 @@ internal class ExpandedGenotypeTruncaterTests
         // detail: these genotypes go on to be scored against the patient.
         var result = Truncate(cap: 2, (first, 0.25m), (second, 0.25m), (third, 0.25m));
 
-        result.GenotypeLikelihoods.Keys.Should().BeEquivalentTo(new[] { first.ToHlaNames(), second.ToHlaNames() });
-        result.Genotypes.Should().BeEquivalentTo(new[] { first, second });
+        result.LikelihoodsByName().Keys.Should().BeEquivalentTo(new[] { first.ToHlaNames(), second.ToHlaNames() });
+        result.GenotypesOnly().Should().BeEquivalentTo(new[] { first, second });
     }
 
     [Test]
@@ -104,7 +105,7 @@ internal class ExpandedGenotypeTruncaterTests
         // The cap falls in the middle of the tie: value ordering decides the first slot, insertion order the second.
         var result = Truncate(cap: 2, (tiedFirst, 0.1m), (dearest, 0.9m), (tiedSecond, 0.1m));
 
-        result.GenotypeLikelihoods.Keys.Should().BeEquivalentTo(new[] { dearest.ToHlaNames(), tiedFirst.ToHlaNames() });
+        result.LikelihoodsByName().Keys.Should().BeEquivalentTo(new[] { dearest.ToHlaNames(), tiedFirst.ToHlaNames() });
     }
 
     [Test]
@@ -118,11 +119,14 @@ internal class ExpandedGenotypeTruncaterTests
 
         // decimal carries scale, so the sum's scale is the widest addend's - hence 0.600, three places, from 0.200.
         // Addition itself is exact until the 96-bit mantissa overflows, which likelihood magnitudes never approach, so
-        // the order is not observable here. It is asserted below anyway, because the truncater builds the kept
-        // dictionary in descending-likelihood order and sums it in that order, and that must not quietly change.
+        // the order is not observable here. It is asserted below anyway, because the truncater selects in
+        // descending-likelihood order and folds the sum during that same pass, and that must not quietly change.
+        // Genotypes enumerate in expansion order instead, which is a different order and deliberately so - it is the
+        // one downstream reads.
         result.SumOfLikelihoods.Should().Be(0.600m);
         result.SumOfLikelihoods.ToString().Should().Be("0.600");
-        result.GenotypeLikelihoods.Values.Should().BeInDescendingOrder();
+        result.SumOfLikelihoods.Should().Be(0.30m + 0.200m + 0.1m);
+        result.GenotypesOnly().Should().Equal(a, b, c);
     }
 
     [Test]
@@ -140,8 +144,8 @@ internal class ExpandedGenotypeTruncaterTests
 
         // ONE surviving likelihood key, but TWO genotypes under it: truncation counts distinct names, and the genotype
         // filter is membership of the kept key set.
-        result.GenotypeLikelihoods.Should().HaveCount(1);
-        result.Genotypes.Should().BeEquivalentTo(new[] { smallG, gGroup });
+        result.LikelihoodsByName().Should().HaveCount(1);
+        result.GenotypesOnly().Should().BeEquivalentTo(new[] { smallG, gGroup });
         result.SumOfLikelihoods.Should().Be(0.5m);
     }
 
@@ -151,7 +155,7 @@ internal class ExpandedGenotypeTruncaterTests
         var result = Truncate(cap: 2000);
 
         result.Genotypes.Should().BeEmpty();
-        result.GenotypeLikelihoods.Should().BeEmpty();
+        result.LikelihoodsByName().Should().BeEmpty();
         result.SumOfLikelihoods.Should().Be(0);
     }
 
@@ -167,25 +171,48 @@ internal class ExpandedGenotypeTruncaterTests
     {
         var haplotypes = new List<LociInfo<HlaAtKnownTypingCategory>>();
         var genotypePairs = new List<GenotypePair>();
-        var genotypeHlaNames = new List<PhenotypeInfo<string>>();
-        var likelihoods = new Dictionary<PhenotypeInfo<string>, decimal>();
+        var genotypeNameKeys = new List<GenotypeNameKey>();
+        var likelihoods = new Dictionary<GenotypeNameKey, decimal>();
+
+        // The interning the pairing loop does, reproduced here rather than stubbed. An id per DISTINCT haplotype name
+        // form is what makes the collapse case below land on one key without this helper arranging it.
+        var idByName = new Dictionary<LociInfo<string>, int>();
+        var haplotypeNamesById = new List<LociInfo<string>>();
+
+        int IdOf(LociInfo<HlaAtKnownTypingCategory> haplotype)
+        {
+            var names = haplotype.Map(hla => hla?.Hla);
+
+            if (!idByName.TryGetValue(names, out var id))
+            {
+                id = haplotypeNamesById.Count;
+                idByName[names] = id;
+                haplotypeNamesById.Add(names);
+            }
+
+            return id;
+        }
 
         foreach (var (genotype, likelihood) in keptPairs)
         {
-            var hlaNames = genotype.ToHlaNames();
-
             // The truncater is handed pool indices rather than genotypes, so a fixture genotype is split into the two
             // haplotypes it would have been paired from. PhenotypeInfo equality is positional, so re-combining them
             // yields the same value - which is what the assertions above compare against.
-            haplotypes.Add(genotype.ToLociInfo((_, position1, _) => position1));
-            haplotypes.Add(genotype.ToLociInfo((_, _, position2) => position2));
+            var position1 = genotype.ToLociInfo((_, p1, _) => p1);
+            var position2 = genotype.ToLociInfo((_, _, p2) => p2);
+
+            haplotypes.Add(position1);
+            haplotypes.Add(position2);
+
+            var nameKey = new GenotypeNameKey(IdOf(position1), IdOf(position2));
 
             genotypePairs.Add(new GenotypePair(haplotypes.Count - 2, haplotypes.Count - 1));
-            genotypeHlaNames.Add(hlaNames);
-            likelihoods[hlaNames] = likelihood;
+            genotypeNameKeys.Add(nameKey);
+            likelihoods[nameKey] = likelihood;
         }
 
-        var expanded = new ExpandedGenotypes(haplotypes, genotypePairs, genotypeHlaNames, likelihoods);
+        var expanded = new ExpandedGenotypes(
+            haplotypes, genotypePairs, genotypeNameKeys, likelihoods, haplotypeNamesById);
 
         return ExpandedGenotypeTruncater.TruncateGenotypes(likelihoods, expanded, cap);
     }
