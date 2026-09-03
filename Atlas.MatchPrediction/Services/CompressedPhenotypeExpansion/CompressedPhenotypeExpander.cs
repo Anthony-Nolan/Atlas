@@ -224,7 +224,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
             return BuildSingleSmallGGenotype(groupsPerPosition);
         }
 
-        var (pool, interner) = await FetchHaplotypesGroupedByTypingCategory(input.HfSetId);
+        var (pool, interner, alleleIndex) = await FetchHaplotypesGroupedByTypingCategory(input.HfSetId);
 
         // SmallGGroup is already converted whether the set holds it or not, because the short circuit above needed it.
         // The other two are converted only if some pooled haplotype is typed at that category.
@@ -238,7 +238,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
             groupsPerPosition.PGroup = await converter.ConvertPhenotype(input, HaplotypeTypingCategory.PGroup);
         }
 
-        return await ExpandToPotentialDiplotypes(input.HfSetId, allowedLoci, groupsPerPosition, pool, interner);
+        return await ExpandToPotentialDiplotypes(input.HfSetId, allowedLoci, groupsPerPosition, pool, interner, alleleIndex);
     }
 
     private static ExpandedGenotypes BuildSingleSmallGGenotype(DataByResolution<PossibleGroupsPerPosition> groupsPerPosition)
@@ -302,15 +302,17 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// </param>
     /// <param name="pool">The set's haplotypes as interned keys, grouped by typing category.</param>
     /// <param name="interner">The interner <paramref name="pool"/>'s ids belong to.</param>
+    /// <param name="alleleIndex">Per (category, locus, allele id), the ascending <paramref name="pool"/> positions of haplotypes carrying it.</param>
     /// <returns>Set of diplotypes (pairs of haplotypes) which are possible for an input phenotype</returns>
     private async Task<ExpandedGenotypes> ExpandToPotentialDiplotypes(
         int hfSetId,
         ISet<Locus> allowedLoci,
         DataByResolution<PossibleGroupsPerPosition> groupsPerPosition,
         DataByResolution<HaplotypeKey[]> pool,
-        HaplotypeInterner interner)
+        HaplotypeInterner interner,
+        DataByResolution<LociInfo<int[][]>> alleleIndex)
     {
-        var haplotypes = GetHaplotypesForAllowedLoci(pool, interner, allowedLoci, groupsPerPosition);
+        var haplotypes = GetHaplotypesForAllowedLoci(pool, interner, allowedLoci, groupsPerPosition, alleleIndex);
         var haplotypeList = haplotypes.ToList();
 
         // Materialise the allowed loci once: iterating the ISet directly inside the per-diplotype loop would box an enumerator on every pair.
@@ -584,9 +586,12 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// The pooled haplotypes the subject's own allele groups can explain, in pool order.
     ///
     /// <para>
-    /// This is the hottest loop of the expansion: every pooled haplotype is tested at every allowed locus, and the
-    /// large majority fail. The pool already holds the answer as an integer, because <c>SetFrequencies</c> is keyed by
-    /// interned ids, so nothing here needs to hash an allele name.
+    /// Every pooled haplotype used to be tested at every allowed locus, and the large majority failed. Instead, the
+    /// subject's admitted allele ids at each allowed locus are looked up in <paramref name="alleleIndex"/> - the
+    /// pool's own per-(locus, allele id) position lists - and the allowed locus with the fewest candidate positions
+    /// seeds the scan: every true survivor must appear among that locus's candidates too, since it has to pass that
+    /// locus's mask like every other allowed locus, so filtering only those candidates can never miss a survivor.
+    /// See <see cref="SelectCandidatePositions"/>.
     /// </para>
     ///
     /// <para>
@@ -605,7 +610,8 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         DataByResolution<HaplotypeKey[]> pool,
         HaplotypeInterner interner,
         ISet<Locus> allowedLoci,
-        DataByResolution<PossibleGroupsPerPosition> groupsPerPosition)
+        DataByResolution<PossibleGroupsPerPosition> groupsPerPosition,
+        DataByResolution<LociInfo<int[][]>> alleleIndex)
     {
         // The fetch happens in the caller, which needs the pool to decide which conversions to make.
         var groupsPerLocus = groupsPerPosition.Map(CombineSetsAtLoci);
@@ -616,23 +622,26 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         // ProjectPool produced. Nothing here may reorder.
         var survivors = new HashSet<LociInfo<HlaAtKnownTypingCategory>>();
 
-        CollectSurvivors(HaplotypeTypingCategory.GGroup, pool.GGroup);
-        CollectSurvivors(HaplotypeTypingCategory.PGroup, pool.PGroup);
-        CollectSurvivors(HaplotypeTypingCategory.SmallGGroup, pool.SmallGGroup);
+        CollectSurvivors(HaplotypeTypingCategory.GGroup, pool.GGroup, alleleIndex.GGroup);
+        CollectSurvivors(HaplotypeTypingCategory.PGroup, pool.PGroup, alleleIndex.PGroup);
+        CollectSurvivors(HaplotypeTypingCategory.SmallGGroup, pool.SmallGGroup, alleleIndex.SmallGGroup);
 
         return survivors;
 
-        void CollectSurvivors(HaplotypeTypingCategory category, HaplotypeKey[] haplotypes)
+        void CollectSurvivors(HaplotypeTypingCategory category, HaplotypeKey[] haplotypes, LociInfo<int[][]> indexForCategory)
         {
             if (haplotypes.Length == 0)
             {
                 return;
             }
 
-            var allowedAlleles = BuildAllowedAlleleMasks(interner, groupsPerLocus.GetByCategory(category), allowedLociArray);
+            var (allowedAlleles, admittedIds) = BuildAllowedAlleleMasks(interner, groupsPerLocus.GetByCategory(category), allowedLociArray);
+            var candidates = SelectCandidatePositions(indexForCategory, allowedLociArray, admittedIds, haplotypes.Length);
 
-            foreach (var haplotype in haplotypes)
+            foreach (var position in candidates)
             {
+                var haplotype = haplotypes[position];
+
                 if (!IsExplicableBySubject(haplotype, allowedAlleles, allowedLociArray))
                 {
                     continue;
@@ -650,8 +659,86 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     }
 
     /// <summary>
-    /// Which allele ids the subject's groups admit, per allowed locus: <c>mask[l][id]</c>, or a null mask where the
-    /// subject has no groups at that locus and therefore admits everything - the <c>hlaGroups == null</c> branch.
+    /// The pool positions <see cref="IsExplicableBySubject"/> could possibly accept, in pool order - a superset of
+    /// the true survivors, cheap to compute from <paramref name="alleleIndex"/>.
+    ///
+    /// <para>
+    /// Picks the allowed locus whose admitted allele ids cover the fewest pool positions between them, and returns
+    /// the (ascending, since each index bucket already is) merge of just those buckets. A haplotype cannot survive
+    /// <see cref="IsExplicableBySubject"/> without passing every allowed locus's mask, including this one, so every
+    /// true survivor is necessarily among these candidates - the caller still runs the full, unmodified
+    /// <see cref="IsExplicableBySubject"/> check over them, this only skips positions that check could never accept.
+    /// </para>
+    ///
+    /// <para>
+    /// A locus the subject is untyped at (<c>admittedIds[l] == null</c>) admits every haplotype and so cannot narrow
+    /// anything - it is skipped as a seed. If every allowed locus is like that, nothing can narrow the pool at all,
+    /// and this falls back to the full pool in order, exactly as before this index existed.
+    /// </para>
+    /// </summary>
+    private static IEnumerable<int> SelectCandidatePositions(
+        LociInfo<int[][]> alleleIndex, Locus[] allowedLoci, int[][] admittedIds, int poolSize)
+    {
+        var bestLocus = -1;
+        var bestCount = 0;
+
+        for (var l = 0; l < allowedLoci.Length; l++)
+        {
+            var ids = admittedIds[l];
+
+            if (ids == null)
+            {
+                continue;
+            }
+
+            var buckets = alleleIndex.GetLocus(allowedLoci[l]);
+            var count = 0;
+
+            foreach (var id in ids)
+            {
+                count += buckets[id].Length;
+            }
+
+            if (bestLocus == -1 || count < bestCount)
+            {
+                bestLocus = l;
+                bestCount = count;
+            }
+        }
+
+        if (bestLocus == -1)
+        {
+            return Enumerable.Range(0, poolSize);
+        }
+
+        var winningIds = admittedIds[bestLocus];
+        var winningBuckets = alleleIndex.GetLocus(allowedLoci[bestLocus]);
+
+        if (winningIds.Length == 1)
+        {
+            // The common case - a subject typed to a single allele group at this locus - needs no merge at all: the
+            // one bucket is already the candidate list, in pool order.
+            return winningBuckets[winningIds[0]];
+        }
+
+        // A handful of small, individually-ascending buckets (one per admitted id - and an id is admitted by at most
+        // one bucket, so they share no positions) - concatenate and sort rather than a k-way merge, since the total
+        // is already far smaller than the pool this replaced scanning in full.
+        var merged = new List<int>(bestCount);
+
+        foreach (var id in winningIds)
+        {
+            merged.AddRange(winningBuckets[id]);
+        }
+
+        merged.Sort();
+        return merged;
+    }
+
+    /// <summary>
+    /// Which allele ids the subject's groups admit, per allowed locus: <c>masks[l][id]</c> / <c>admittedIds[l]</c>,
+    /// or both null at position <c>l</c> where the subject has no groups at that locus and therefore admits
+    /// everything - the <c>hlaGroups == null</c> branch.
     ///
     /// <para>
     /// An allele the set has never seen resolves to <see cref="AlleleInterner.NotFound"/> and is simply not marked, so
@@ -659,13 +746,20 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// untyped pooled haplotype; the storage layer conflates null with the empty string when it interns a set, so
     /// neither this nor the frozen dictionary it derives from can tell the two apart.
     /// </para>
+    ///
+    /// <para>
+    /// <paramref name="allowedLoci"/>[l]'s admitted ids are collected alongside its mask, in the same pass, for
+    /// <see cref="SelectCandidatePositions"/> to look up in the pool's allele index - there are normally very few of
+    /// them (one, or a handful for an ambiguous/MAC-expanded group), well short of needing anything but a small list.
+    /// </para>
     /// </summary>
-    private static bool[][] BuildAllowedAlleleMasks(
+    private static (bool[][] Masks, int[][] AdmittedIds) BuildAllowedAlleleMasks(
         HaplotypeInterner interner,
         LociInfo<ISet<string>> groupsPerLocus,
         Locus[] allowedLoci)
     {
         var masks = new bool[allowedLoci.Length][];
+        var admittedIds = new int[allowedLoci.Length][];
 
         for (var l = 0; l < allowedLoci.Length; l++)
         {
@@ -678,6 +772,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
 
             var alleles = interner.ForLocus(allowedLoci[l]);
             var mask = new bool[alleles.IdCount];
+            var ids = new List<int>(groups.Count);
 
             foreach (var group in groups)
             {
@@ -686,13 +781,15 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
                 if (id != AlleleInterner.NotFound)
                 {
                     mask[id] = true;
+                    ids.Add(id);
                 }
             }
 
             masks[l] = mask;
+            admittedIds[l] = ids.ToArray();
         }
 
-        return masks;
+        return (masks, admittedIds);
     }
 
     /// <summary>
@@ -714,8 +811,8 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         return true;
     }
 
-    private async Task<(DataByResolution<HaplotypeKey[]> Pool, HaplotypeInterner Interner)> FetchHaplotypesGroupedByTypingCategory(
-        int frequencySetId)
+    private async Task<(DataByResolution<HaplotypeKey[]> Pool, HaplotypeInterner Interner, DataByResolution<LociInfo<int[][]>> AlleleIndex)>
+        FetchHaplotypesGroupedByTypingCategory(int frequencySetId)
     {
         // This piece of code doesn't even need dictionary, it just needs typingCategory => List<Hla> mapping from it
         // Huge on the first touch of a set (a whole set out of SQL, then interned), ~0 on every subsequent donor.
@@ -726,12 +823,12 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
             throw new Exception($"No haplotypes could be found for set id {frequencySetId}.");
         }
 
-        // The projection lives on the cache entry, which owns both of its inputs and has the per-set lifetime it
-        // wants. It is therefore paid by the first donor to touch a set, and is ~0 for every donor after it.
+        // Both projections live on the cache entry, which owns both of their inputs and has the per-set lifetime
+        // they want. They are therefore paid by the first donor to touch a set, and are ~0 for every donor after it.
         //
-        // The interner travels with the pool because the pool is ids: they are two halves of one value, and reading
-        // them off the same entry instance is what makes the ids meaningful.
-        return (haplotypeFrequencies.ProjectedPool, haplotypeFrequencies.Interner);
+        // The interner travels with the pool (and its index) because both are ids: reading them off the same entry
+        // instance is what makes the ids meaningful.
+        return (haplotypeFrequencies.ProjectedPool, haplotypeFrequencies.Interner, haplotypeFrequencies.AlleleIndex);
     }
 
     private static LociInfo<ISet<string>> CombineSetsAtLoci(PossibleGroupsPerPosition phenotypeInfo)
