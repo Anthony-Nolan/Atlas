@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Public.Models.MatchPrediction;
@@ -48,11 +47,8 @@ namespace Atlas.MatchPrediction.Functions.Functions.Debug
             });
 
             // The result carries each kept genotype together with its name form and likelihood, so the name-keyed view
-            // this debug response shows is projected here rather than held in the result. One entry per surviving name
-            // form: two genotypes differing only in typing category share one.
-            var likelihoodsByName = imputedGenotypes.Genotypes
-                .GroupBy(genotype => genotype.Names)
-                .ToDictionary(group => group.Key, group => group.First().Likelihood);
+            // this debug response shows is projected here rather than held in the result.
+            var likelihoodsByName = imputedGenotypes.LikelihoodsByName();
 
             return new JsonResult(new GenotypeImputationResponse
             {
