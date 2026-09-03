@@ -67,12 +67,14 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 
         public GenotypeAtDesiredResolutionsBuilder Default()
         {
-            genotypeAtDesiredResolutions = new GenotypeAtDesiredResolutions
-            {
-                HaplotypeResolution = new PhenotypeInfoBuilder<string>(BuilderDefaults.HlaName).Build(),
-                StringMatchableResolution = new PhenotypeInfo<string>(BuilderDefaults.HlaName),
-                GenotypeLikelihood = BuilderDefaults.Likelihood
-            };
+            // Built from an ImputedGenotype, the same way GenotypeConverter builds one, so HaplotypeResolution and
+            // GenotypeLikelihood come from one source rather than two independent literals.
+            var genotype = new ImputedGenotype(
+                new KnownTypingCategoryGenotypeBuilder(BuilderDefaults.HlaName).Build(),
+                new PhenotypeInfoBuilder<string>(BuilderDefaults.HlaName).Build(),
+                BuilderDefaults.Likelihood);
+
+            genotypeAtDesiredResolutions = new GenotypeAtDesiredResolutions(genotype, new PhenotypeInfo<string>(BuilderDefaults.HlaName));
 
             return this;
         }

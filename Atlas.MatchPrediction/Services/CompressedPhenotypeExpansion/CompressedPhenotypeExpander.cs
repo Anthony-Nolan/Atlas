@@ -76,7 +76,8 @@ internal interface ICompressedPhenotypeExpander
 /// <para>
 /// <b><see cref="Likelihoods"/> is keyed by <see cref="GenotypeNameKey"/> - the ids of the genotype's two haplotype
 /// name forms - not by the name form itself.</b> The key still <i>means</i> "this genotype's HLA names", matching
-/// <c>ImputedGenotypes.GenotypeLikelihoods</c>, so its count is the DISTINCT genotype count while
+/// <c>ImputedGenotype.Names</c> (each kept genotype's <c>ImputedGenotype.Likelihood</c> is keyed conceptually by that
+/// same name form), so its count is the DISTINCT genotype count while
 /// <see cref="GenotypePairs"/> keeps typing category and so may hold more; eight bytes carry that identity instead of
 /// seven heap objects. See <see cref="GenotypeNameKey"/> for why the two are the same equality rather than an
 /// approximation of it.
@@ -424,30 +425,21 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// Survivors that differ only in typing category, or only at a locus this key excludes, have equal name forms and
     /// therefore share an id - which is precisely the collapse <see cref="ExpandedGenotypes.Likelihoods"/> performs,
     /// moved from the genotype to the haplotype. The dictionary is over S entries, paid once, against the up-to-1.65M
-    /// kept pairs that would otherwise build a <c>PhenotypeInfo</c> each.
+    /// kept pairs that would otherwise build a <c>PhenotypeInfo</c> each. Uses the same first-seen-wins
+    /// dictionary+list idiom as <see cref="AlleleInterner"/>, via the shared <see cref="Interner{TKey}"/>.
     /// </remarks>
     private static (int[] NameIdBySurvivor, IReadOnlyList<HfSetHaplotypeNames> HaplotypeNamesById) InternHaplotypeNames(
         IReadOnlyList<LociInfo<HlaAtKnownTypingCategory>> survivors)
     {
-        var idByName = new Dictionary<HfSetHaplotypeNames, int>(survivors.Count);
+        var interner = new Interner<HfSetHaplotypeNames>();
         var nameIdBySurvivor = new int[survivors.Count];
-        var haplotypeNamesById = new List<HfSetHaplotypeNames>(survivors.Count);
 
         for (var h = 0; h < survivors.Count; h++)
         {
-            var names = survivors[h].Map(hla => hla?.Hla);
-
-            if (!idByName.TryGetValue(names, out var id))
-            {
-                id = haplotypeNamesById.Count;
-                idByName[names] = id;
-                haplotypeNamesById.Add(names);
-            }
-
-            nameIdBySurvivor[h] = id;
+            nameIdBySurvivor[h] = interner.Intern(survivors[h].Map(hla => hla?.Hla));
         }
 
-        return (nameIdBySurvivor, haplotypeNamesById);
+        return (nameIdBySurvivor, interner.KeyById);
     }
 
     /// <summary>
