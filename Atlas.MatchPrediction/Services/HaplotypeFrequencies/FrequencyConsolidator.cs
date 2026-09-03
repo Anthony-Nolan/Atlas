@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils.Extensions;
-using HaplotypeHla = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
+// ONE haplotype's names - one per locus, at the resolution the frequency set stored them. A LociInfo, not a
+// PhenotypeInfo: the genotype form (HfSetGenotypeNames) holds two names per locus, being a pair of these.
+using HfSetHaplotypeNames = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 
@@ -31,7 +33,7 @@ internal interface IFrequencyConsolidator
     /// <param name="excludedLoci">Loci to ignore when consolidating frequency values.</param>
     decimal ConsolidateFrequenciesForHaplotype(
         FrequencySetCacheEntry frequencies,
-        HaplotypeHla hla,
+        HfSetHaplotypeNames hla,
         ISet<Locus> excludedLoci);
 }
 
@@ -61,7 +63,7 @@ internal class FrequencyConsolidator : IFrequencyConsolidator
     /// <inheritdoc />
     public decimal ConsolidateFrequenciesForHaplotype(
         FrequencySetCacheEntry frequencies,
-        HaplotypeHla hla,
+        HfSetHaplotypeNames hla,
         ISet<Locus> excludedLoci)
     {
         var excluded = excludedLoci.ToArray();

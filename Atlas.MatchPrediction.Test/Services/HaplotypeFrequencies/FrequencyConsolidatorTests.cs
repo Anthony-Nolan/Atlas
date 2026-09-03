@@ -4,7 +4,7 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using AwesomeAssertions;
 using NUnit.Framework;
-using HaplotypeHla = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
+using HfSetHaplotypeNames = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies;
 
@@ -89,7 +89,7 @@ public class FrequencyConsolidatorTests
             ("d", "d", "c1", "q2", "d", 300),
             ("d", "d", "c2", "q2", "d", 4000)
         );
-        var hla = new HaplotypeHla(valueA: "d", valueB: "d", valueC: "c1", valueDqb1: "q1", valueDrb1: "d");
+        var hla = new HfSetHaplotypeNames(valueA: "d", valueB: "d", valueC: "c1", valueDqb1: "q1", valueDrb1: "d");
 
         var consolidated = frequencyConsolidator.PreConsolidateFrequenciesForCommonMissingLoci(entry);
         var directValue = frequencyConsolidator.ConsolidateFrequenciesForHaplotype(entry, hla, new HashSet<Locus>(excludedLoci));
@@ -103,7 +103,7 @@ public class FrequencyConsolidatorTests
     {
         var entry = BuildEntry(("d", "d", "c1", "q1", "d", 1));
 
-        var unrepresented = new HaplotypeHla(valueA: "x", valueB: "x", valueC: "c1", valueDqb1: "q1", valueDrb1: "d");
+        var unrepresented = new HfSetHaplotypeNames(valueA: "x", valueB: "x", valueC: "c1", valueDqb1: "q1", valueDrb1: "d");
 
         frequencyConsolidator.ConsolidateFrequenciesForHaplotype(entry, unrepresented, new HashSet<Locus> { Locus.C })
             .Should().Be(0);
@@ -118,7 +118,7 @@ public class FrequencyConsolidatorTests
         );
 
         // "cX" is unknown to the set, but as C is excluded its value must not affect the result.
-        var hla = new HaplotypeHla(valueA: "d", valueB: "d", valueC: "cX", valueDqb1: "q1", valueDrb1: "d");
+        var hla = new HfSetHaplotypeNames(valueA: "d", valueB: "d", valueC: "cX", valueDqb1: "q1", valueDrb1: "d");
 
         frequencyConsolidator.ConsolidateFrequenciesForHaplotype(entry, hla, new HashSet<Locus> { Locus.C })
             .Should().Be(21);
@@ -133,7 +133,7 @@ public class FrequencyConsolidatorTests
         );
 
         // "bX" at B (which is NOT excluded) is absent from the set, so nothing can match.
-        var hla = new HaplotypeHla(valueA: "d", valueB: "bX", valueC: "c1", valueDqb1: "q1", valueDrb1: "d");
+        var hla = new HfSetHaplotypeNames(valueA: "d", valueB: "bX", valueC: "c1", valueDqb1: "q1", valueDrb1: "d");
 
         frequencyConsolidator.ConsolidateFrequenciesForHaplotype(entry, hla, new HashSet<Locus> { Locus.C })
             .Should().Be(0);

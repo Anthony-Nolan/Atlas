@@ -11,21 +11,29 @@ using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HlaConversion;
-using Atlas.MatchPrediction.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GenotypeOfKnownTypingCategory = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<Atlas.MatchPrediction.ExternalInterface.Models.HlaAtKnownTypingCategory>;
+// This class holds two PhenotypeInfo<string> that mean different things, one field apart - the typing as submitted,
+// and the imputation output named at the resolution the frequency set stores.
+using SubmittedPhenotype = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
+using HfSetGenotypeNames = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
     internal class GenotypeConverterInput
     {
-        public PhenotypeInfo<string> CompressedPhenotype { get; set; }
+        public SubmittedPhenotype CompressedPhenotype { get; set; }
         public ISet<Locus> AllowedLoci { get; set; }
-        public ISet<GenotypeOfKnownTypingCategory> Genotypes { get; set; }
-        public IReadOnlyDictionary<PhenotypeInfo<string>, decimal> GenotypeLikelihoods { get; set; }
+
+        /// <summary>
+        /// Each kept genotype arrives with its name form and its likelihood, so this class neither rebuilds the one nor
+        /// looks the other up. <see cref="ImputedGenotype"/> says why.
+        /// </summary>
+        public IReadOnlyList<ImputedGenotype> Genotypes { get; set; }
+
         public string HfSetHlaNomenclatureVersion { get; set; }
         public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
         public string SubjectLogDescription { get; set; }
@@ -76,16 +84,169 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             using (logger.RunTimed($"{StageToLog}: {input.SubjectLogDescription}", LogLevel.Verbose))
             {
-                return (await Task.WhenAll(input.Genotypes.Select(async g => await ConvertGenotypeToPGroups(
-                    noNullAllelesInCompressedPhenotype,
-                    nullAlleleInfoByPosition, 
-                    g, 
-                    hfSetHmd, 
-                    matchingHmd, 
-                    input.GenotypeLikelihoods[g.ToHlaNames()])
-                ))).ToList();
+                // Two passes over the genotypes, not one conversion per genotype position.
+                //
+                // A P group is a pure function of (locus, group name, typing category) once the two HMDs are fixed, and
+                // the genotypes are pairs drawn from the survivor pool - so the same triple recurs across genotypes as
+                // often as its haplotype does. Converting per position instead means, at the capped shape, 2,000
+                // genotypes x 10 typed positions = 20,000 conversions, each allocating its own HlaConverterInput, a
+                // single-element array, an interpolated cache key and an async state machine.
+                //
+                // Pass 1 resolves each DISTINCT triple exactly once. The bound stops being the genotype count and
+                // becomes the SURVIVOR count: five loci per survivor rather than ten positions per genotype, and lower
+                // again because survivors share names heavily - that sharing is what makes a reduced allowed-loci key
+                // collapse the survivor count in the first place. Pass 2 is then pure dictionary reads and allocates no
+                // task at all.
+                var pGroups = await ResolveDistinctPGroups(
+                    input, noNullAllelesInCompressedPhenotype, nullAlleleInfoByPosition, hfSetHmd, matchingHmd);
+
+                // Hoisted out of the loop deliberately: this closes over `pGroups` alone, so one delegate serves every
+                // genotype. Written inline as MapByLocus's argument it would be a closure and a delegate per genotype.
+                var toPGroupsAtLocus = ToPGroupsAtLocus(pGroups);
+
+                var converted = new List<GenotypeAtDesiredResolutions>(input.Genotypes.Count);
+
+                // No ToHlaNames() and no likelihood lookup: the truncater built that name form in order to select this
+                // genotype, and hands it over with the likelihood it selected it by. A phenotype-keyed probe here would
+                // be a twelve-object hash - and on collision a twelve-position equality - per kept genotype, for a
+                // value that was never in doubt.
+                foreach (var imputed in input.Genotypes)
+                {
+                    var genotypeToConvert = noNullAllelesInCompressedPhenotype
+                        ? imputed.Genotype
+                        : AccountForNullAlleleInCompressedPhenotype(imputed.Genotype, nullAlleleInfoByPosition);
+
+                    converted.Add(new GenotypeAtDesiredResolutions
+                    {
+                        HaplotypeResolution = imputed.Names,
+                        StringMatchableResolution = genotypeToConvert.MapByLocus(toPGroupsAtLocus),
+                        GenotypeLikelihood = imputed.Likelihood
+                    });
+                }
+
+                return converted;
             }
         }
+
+        /// <summary>
+        /// The (locus, name, typing category) triples every kept genotype holds, each converted to its P group exactly
+        /// one time.
+        /// </summary>
+        /// <remarks>
+        /// The genotypes are walked twice - here and in the caller's build loop - and the null-allele adjustment is
+        /// applied on both passes rather than being carried between them. The two passes are order-independent (this one
+        /// only accumulates into a set), and the adjustment is a no-op unless the subject's own submitted typing carries
+        /// a null-expressing allele, which is the rare case. Recomputing it there costs one map on those subjects only;
+        /// carrying it would cost an array of every genotype on all of them.
+        /// </remarks>
+        private async Task<Dictionary<PGroupLookupKey, string>> ResolveDistinctPGroups(
+            GenotypeConverterInput input,
+            bool noNullAllelesInCompressedPhenotype,
+            PhenotypeInfo<(bool, IEnumerable<HlaAtKnownTypingCategory>)> nullAlleleInfoByPosition,
+            IHlaMetadataDictionary hfSetHmd,
+            IHlaMetadataDictionary matchingHmd)
+        {
+            var distinct = new HashSet<PGroupLookupKey>();
+
+            // Hoisted for the same reason as the caller's mapping delegate.
+            Action<Locus, LocusPosition, HlaAtKnownTypingCategory> collect = (locus, _, hla) =>
+            {
+                if (hla?.Hla != null)
+                {
+                    distinct.Add(new PGroupLookupKey(locus, hla));
+                }
+            };
+
+            foreach (var imputed in input.Genotypes)
+            {
+                var genotypeToConvert = noNullAllelesInCompressedPhenotype
+                    ? imputed.Genotype
+                    : AccountForNullAlleleInCompressedPhenotype(imputed.Genotype, nullAlleleInfoByPosition);
+
+                genotypeToConvert.EachPosition(collect);
+            }
+
+            // One input for the whole request rather than one per position. Nothing mutates it after this point - the
+            // target category is P group for every triple, whatever category the triple is written in.
+            var converterInput = new HlaConverterInput
+            {
+                HfSetHmd = hfSetHmd,
+                MatchingAlgorithmHmd = matchingHmd,
+                StageToLog = StageToLog,
+                TargetHlaCategory = TargetHlaCategory.PGroup
+            };
+
+            // Concurrently, not in a sequential loop: on a cold HMD cache these are table-storage round trips.
+            var keys = distinct.ToArray();
+            var pGroups = await Task.WhenAll(keys.Select(key => ConvertToPGroup(converterInput, key)));
+
+            var resolved = new Dictionary<PGroupLookupKey, string>(keys.Length);
+            for (var i = 0; i < keys.Length; i++)
+            {
+                resolved[keys[i]] = pGroups[i];
+            }
+
+            return resolved;
+        }
+
+        private async Task<string> ConvertToPGroup(HlaConverterInput converterInput, PGroupLookupKey key)
+        {
+            var (locus, hla) = key;
+
+            async Task<string> ConvertHlaToPGroup(IHlaConverter converter) =>
+                (await converter.ConvertHlaWithLoggingAndRetryOnFailure(converterInput, locus, hla.Hla)).SingleOrDefault();
+
+            return hla.TypingCategory switch
+            {
+                HaplotypeTypingCategory.PGroup => hla.Hla,
+                HaplotypeTypingCategory.GGroup => await ConvertHlaToPGroup(gGroupConverter),
+                HaplotypeTypingCategory.SmallGGroup => await ConvertHlaToPGroup(smallGGroupConverter),
+                _ => throw new ArgumentOutOfRangeException(nameof(hla.TypingCategory))
+            };
+        }
+
+        /// <summary>
+        /// Reads both positions' P groups out of <paramref name="pGroups"/> and applies the null-allele rule in the same
+        /// step.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The rule is <c>README_MatchPredictionAlgorithm.md</c>'s: a null-expressing allele expresses no protein and so
+        /// has no P group, and the position takes <i>"the P group of its paired allele … in keeping with the logic used
+        /// in the matching algorithm"</i>. A locus with no P group at either position stays absent at both and is
+        /// treated as untyped by the match calculator.
+        /// </para>
+        /// <para>
+        /// Applied here rather than in a second pass building a second <see cref="PhenotypeInfo{T}"/>, because both
+        /// positions are already in hand: <c>position1 ?? position2</c> is the paired allele's P group where this
+        /// position has none, and both being absent leaves both absent.
+        /// </para>
+        /// </remarks>
+        private static Func<Locus, LocusInfo<HlaAtKnownTypingCategory>, LocusInfo<string>> ToPGroupsAtLocus(
+            Dictionary<PGroupLookupKey, string> pGroups)
+        {
+            return (locus, locusHla) =>
+            {
+                var position1 = PGroupOrAbsent(locusHla.Position1);
+                var position2 = PGroupOrAbsent(locusHla.Position2);
+
+                return new LocusInfo<string>(position1 ?? position2, position2 ?? position1);
+
+                string PGroupOrAbsent(HlaAtKnownTypingCategory hla) =>
+                    hla?.Hla == null ? null : pGroups[new PGroupLookupKey(locus, hla)];
+            };
+        }
+
+        /// <summary>
+        /// What a P group conversion depends on, and nothing else.
+        /// </summary>
+        /// <remarks>
+        /// Keyed on the whole <see cref="HlaAtKnownTypingCategory"/> rather than on its two fields, which is the safe
+        /// direction: it already has value equality over (name, category), and a field added to it later can only
+        /// over-partition this cache - i.e. cost hits - where picking the fields out by hand could silently share one
+        /// answer between two triples that no longer convert alike.
+        /// </remarks>
+        private readonly record struct PGroupLookupKey(Locus Locus, HlaAtKnownTypingCategory Hla);
 
         private async Task<(bool isNullAllele, IEnumerable<HlaAtKnownTypingCategory> nullAlleleGGroups)> GetNullAlleleInfo(
             IHlaMetadataDictionary hfSetHmd,
@@ -119,50 +280,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var gGroup = await ConvertHla(HaplotypeTypingCategory.GGroup);
 
             return (true, new[] { smallGGroup, gGroup });
-        }
-
-        private async Task<GenotypeAtDesiredResolutions> ConvertGenotypeToPGroups(
-            bool noNullAllelesInCompressedPhenotype,
-            PhenotypeInfo<(bool, IEnumerable<HlaAtKnownTypingCategory>)> nullAlleleInfoByPosition,
-            GenotypeOfKnownTypingCategory genotype,
-            IHlaMetadataDictionary hfSetHmd,
-            IHlaMetadataDictionary matchingHmd,
-            decimal genotypeLikelihood)
-        {
-            var genotypeToConvert = noNullAllelesInCompressedPhenotype
-                ? genotype
-                : AccountForNullAlleleInCompressedPhenotype(genotype, nullAlleleInfoByPosition);
-
-            var stringMatchableGenotype = (await genotypeToConvert.MapAsync(async (locus, _, hla) =>
-            {
-                if (hla?.Hla == null)
-                {
-                    return null;
-                }
-
-                async Task<string> ConvertHlaToPGroup(IHlaConverter converter)
-                {
-                    var converterInput = new HlaConverterInput
-                    {
-                        HfSetHmd = hfSetHmd,
-                        MatchingAlgorithmHmd = matchingHmd,
-                        StageToLog = StageToLog,
-                        TargetHlaCategory = TargetHlaCategory.PGroup
-                    };
-
-                    return (await converter.ConvertHlaWithLoggingAndRetryOnFailure(converterInput, locus, hla.Hla)).SingleOrDefault();
-                }
-
-                return hla.TypingCategory switch
-                {
-                    HaplotypeTypingCategory.PGroup => hla.Hla,
-                    HaplotypeTypingCategory.GGroup => await ConvertHlaToPGroup(gGroupConverter),
-                    HaplotypeTypingCategory.SmallGGroup => await ConvertHlaToPGroup(smallGGroupConverter),
-                    _ => throw new ArgumentOutOfRangeException(nameof(hla.TypingCategory))
-                };
-            })).CopyExpressingAllelesToNullPositions();
-
-            return new GenotypeAtDesiredResolutions(genotype, stringMatchableGenotype, genotypeLikelihood);
         }
 
         /// <summary>

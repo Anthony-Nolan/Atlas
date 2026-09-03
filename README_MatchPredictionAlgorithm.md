@@ -75,7 +75,7 @@ The cost of expanding one subject is driven by two numbers: **H**, the number of
 the tail). Pairing is O(S²), so a subject in the tail can produce over a million candidate genotypes, of which
 truncation keeps 2,000 (see [ADR Phase2/006](ArchitecturalDecisionRecord/Phase2/006-MatchPredictionAmbiguousGenotypeApproximation.md)).
 
-Four choices follow from that, and each is load-bearing rather than incidental:
+Six choices follow from that, and each is load-bearing rather than incidental:
 
 1. **The projected pool is cached per frequency set, not rebuilt per subject.** Grouping a set's haplotypes by typing
    category depends only on the set, so it belongs to the set's cache entry (`FrequencySetCacheEntry.ProjectedPool`).
@@ -86,13 +86,28 @@ Four choices follow from that, and each is load-bearing rather than incidental:
 3. **A frequency is resolved once per survivor, not once per genotype.** A genotype's likelihood is the product of its
    two haplotype frequencies, and a frequency is a pure function of `(set, haplotype, excluded loci)`. Resolving per
    genotype does O(S²) awaited cache lookups where O(S) suffice.
-4. **A genotype is carried as two pool indices and built only if truncation keeps it.** A `PhenotypeInfo<T>` is seven
-   objects. Building one per candidate pair, when 2,000 of a million survive, is the bulk of the allocation.
+4. **A genotype is carried as two pool indices and an eight-byte name key, and nothing is built until truncation has
+   chosen.** A `PhenotypeInfo<T>` is seven objects. Building one per candidate pair, when 2,000 of a million survive,
+   is the bulk of the allocation. Both `GenotypePair` and `GenotypeNameKey` are eight bytes in a contiguous list.
+5. **A genotype's name identity is two interned haplotype ids, not its name form.** The likelihood dictionary is keyed
+   by `GenotypeNameKey`, which indexes one entry per *distinct* haplotype name form. There are only S of those, against
+   up to a million kept pairs, so the name forms are interned once per survivor and the pairing loop keys on integers.
+   This is the same equality as the name form, not an approximation of it — see the type's own remarks for why.
+6. **Each kept genotype is handed over with its name form and its likelihood.** `ExpandedGenotypeTruncater` builds the
+   name form once per *surviving* key, at the first point at which which-keys-survive is known, and returns
+   `ImputedGenotype` triples. `GenotypeConverter` therefore neither re-derives a name form nor probes a
+   phenotype-keyed dictionary for a likelihood the truncater already had in hand.
 
-The same reasoning applies to typing categories: the phenotype is converted only to the categories that will be read.
-A category the frequency set holds no haplotypes in cannot affect the result, and the unambiguous short circuit reads
-`SmallGGroup` alone. Today every frequency set in DEV holds `SmallGGroup` only, so most of that conversion work is
-dead — but this is read from the set rather than assumed, so a future GGroup or PGroup import still works.
+The same "resolve once, where the inputs are still in hand" reasoning applies twice more:
+
+* **Typing categories.** The phenotype is converted only to the categories that will be read. A category the frequency
+  set holds no haplotypes in cannot affect the result, and the unambiguous short circuit reads `SmallGGroup` alone.
+  Today every frequency set in DEV holds `SmallGGroup` only, so most of that conversion work is dead — but this is read
+  from the set rather than assumed, so a future GGroup or PGroup import still works.
+* **P group conversion.** A P group is a pure function of `(locus, group name, typing category)` once both HLA
+  nomenclature versions are fixed, and genotypes are pairs drawn from the survivor pool — so the same triple recurs
+  across genotypes. `GenotypeConverter` resolves each distinct triple once and then reads a dictionary per position,
+  rather than issuing a conversion per genotype position.
 
 ### Invariants
 
@@ -117,8 +132,14 @@ pinned by `ImputationEquivalenceTests`, `ExpandedGenotypeTruncaterTests`, `PairR
 * **The likelihood multiplication order is fixed:** position 1, then position 2, then the homozygosity correction.
   `decimal` multiplication carries scale, and these likelihoods are compared for exact equality.
 * **`ExpandedGenotypes.GenotypePairs` is a list, not a set, and cannot lose an entry to de-duplication.** It is kept
-  index-aligned with `GenotypeHlaNames`; anything that appends to one without the other mis-pairs a genotype with
+  index-aligned with `GenotypeNameKeys`; anything that appends to one without the other mis-pairs a genotype with
   another genotype's likelihood.
+* **`ImputedGenotypes.SumOfLikelihoods` is summed over surviving name forms, not over genotypes.** Two genotypes that
+  differ only in typing category share one name form and one likelihood, so summing `Genotypes` would double-count.
+  The sum is also folded in descending-likelihood order, because `decimal` addition is order-sensitive and this number
+  is what the whole prediction is normalised against.
+* **`ImputedGenotypes.Genotypes` is ordered, and that order is the expansion's.** It is pairing order, hence survivor
+  order, hence the projected pool's order. Downstream sums run over this sequence.
 
 ## HLA versioning
 - There are two places in the algorithm where HLA typings have to be converted to a specific HLA category:
@@ -164,4 +185,20 @@ The following settings require real values to run locally:
 }
 ```
 All other settings have safe defaults for local development (Azurite for storage, local SQL Server for the database).
+
+### `HaplotypeFrequencySetCache.AwaitConsolidatedFrequencyWarm`
+
+Loading a haplotype frequency set also runs a missing-loci pre-consolidation, which is three passes over the whole set
+(up to ~275,000 haplotypes). This setting decides whether the load **waits** for it.
+
+* `false` (the default, and what every host did before the setting existed) — the load returns as soon as the set is in
+  memory and the pre-consolidation finishes in the background. A caller arriving during the warm falls back to a direct
+  per-haplotype scan, which is roughly a thousand times the cost of a warm read but affects only the few callers that
+  lose the race. **Leave it false for anything serving a search**, where one request's latency is what matters.
+* `true` — the load returns only once the consolidated collection is ready, so no caller can reach the fallback. **Set
+  it true for a precompute**, where no single request's latency matters and the same set serves thousands of subjects.
+
+The pre-consolidation runs either way, and there is exactly one writer of `FrequencySetCacheEntry.ConsolidatedFrequencies`
+in both modes — the setting moves that work on to or off the critical path, nothing more. Note that a machine with spare
+cores will show `true` as a wall-clock regression, because the warm no longer overlaps the first subjects.
 

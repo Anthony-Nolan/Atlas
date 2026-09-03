@@ -10,6 +10,27 @@ using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 
+// Aliases, not wrapper types, and the difference is the point. This file is where three of the several meanings of
+// PhenotypeInfo<string> meet, one method apart, and nothing but these names tells them apart:
+//
+//   SubmittedPhenotype        - the subject's typing as submitted: allele, MAC, XX code or serology. Any resolution,
+//                               honestly so, which is why it gets an alias and never a wrapper type.
+//   PossibleGroupsPerPosition - that typing expanded to the set of every group name each position COULD be, one
+//                               typing category at a time. An ambiguous typing yields many per position.
+//   HfSetGenotypeNames        - a genotype's names at the resolution the haplotype frequency set stores them, which
+//                               is per row: P group, or G group where a null allele meant no P group existed. The
+//                               typing category is ERASED, so two survivors differing only in category MUST
+//                               collapse to one key.
+//   HfSetHaplotypeNames       - the same, for ONE haplotype: one name per locus rather than two.
+//
+// An alias is file-scoped and erases to string, so it buys documentation at the declaration and no type safety at
+// all. What it buys is that a reader of a declaration learns what the value is without leaving the file.
+using SubmittedPhenotype = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
+using HfSetGenotypeNames = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
+using HfSetHaplotypeNames = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
+using PossibleGroupsPerPosition =
+    Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<System.Collections.Generic.ISet<string>>;
+
 namespace Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 
 internal class CompressedPhenotypeExpanderInput
@@ -17,7 +38,7 @@ internal class CompressedPhenotypeExpanderInput
     /// <summary>
     /// Given phenotype. Can be of any supported HLA resolution.
     /// </summary>
-    public PhenotypeInfo<string> Phenotype { get; set; }
+    public SubmittedPhenotype Phenotype { get; set; }
 
     /// <summary>
     /// Haplotype Frequency Set Id - used to fetch haplotypes, if needed
@@ -53,16 +74,18 @@ internal interface ICompressedPhenotypeExpander
 /// </para>
 ///
 /// <para>
-/// <see cref="Likelihoods"/> is keyed by the genotype's HLA <i>names</i>, matching
+/// <b><see cref="Likelihoods"/> is keyed by <see cref="GenotypeNameKey"/> - the ids of the genotype's two haplotype
+/// name forms - not by the name form itself.</b> The key still <i>means</i> "this genotype's HLA names", matching
 /// <c>ImputedGenotypes.GenotypeLikelihoods</c>, so its count is the DISTINCT genotype count while
-/// <see cref="GenotypePairs"/> keeps typing category and so may hold more. Keying it here also spares one
-/// <c>ToHlaNames()</c> per pre-truncation genotype downstream.
+/// <see cref="GenotypePairs"/> keeps typing category and so may hold more; eight bytes carry that identity instead of
+/// seven heap objects. See <see cref="GenotypeNameKey"/> for why the two are the same equality rather than an
+/// approximation of it.
 /// </para>
 ///
 /// <para>
-/// <see cref="GenotypeHlaNames"/> is <see cref="GenotypePairs"/> index for index, so
-/// <c>ExpandedGenotypeTruncater</c> can test a genotype's membership of the kept key set without re-deriving its name
-/// form. The pairing loop below has to build that name form anyway, to key the likelihood.
+/// <see cref="GenotypeNameKeys"/> is <see cref="GenotypePairs"/> index for index, so
+/// <c>ExpandedGenotypeTruncater</c> can test a genotype's membership of the kept key set without re-deriving anything,
+/// and <see cref="MaterialiseNames"/> builds the name form for the survivors only.
 /// </para>
 ///
 /// <para>
@@ -73,19 +96,20 @@ internal interface ICompressedPhenotypeExpander
 /// </para>
 ///
 /// <para>
-/// <b>A genotype is carried as the two pool indices it came from, and built only if it survives truncation.</b> A
-/// <c>PhenotypeInfo&lt;T&gt;</c> is seven objects - itself and one <c>LocusInfo</c> per locus - and a capped donor
-/// keeps 2,000 genotypes out of up to 1.65M pairs. The name form has to exist, because <see cref="Likelihoods"/> is
-/// keyed by it and a collapsed key must occupy one slot rather than two; the category form does not, because nothing
-/// reads it until <c>ExpandedGenotypeTruncater</c> has decided which keys survive. A <see cref="GenotypePair"/> is
-/// eight bytes in a contiguous list and allocates nothing.
+/// <b>A genotype is carried as two pool indices plus an eight-byte name key, and <i>nothing</i> is built until
+/// truncation has chosen.</b> A <c>PhenotypeInfo&lt;T&gt;</c> is seven objects - itself and one <c>LocusInfo</c> per
+/// locus - and a capped donor keeps 2,000 genotypes out of up to 1.65M pairs. Neither the category form nor the name
+/// form is read before <c>ExpandedGenotypeTruncater</c> has decided which keys survive. Both a
+/// <see cref="GenotypePair"/> and a <see cref="GenotypeNameKey"/> are eight bytes in a contiguous list and allocate
+/// nothing.
 /// </para>
 /// </summary>
 internal readonly record struct ExpandedGenotypes(
     IReadOnlyList<LociInfo<HlaAtKnownTypingCategory>> Haplotypes,
     List<GenotypePair> GenotypePairs,
-    List<PhenotypeInfo<string>> GenotypeHlaNames,
-    Dictionary<PhenotypeInfo<string>, decimal> Likelihoods)
+    List<GenotypeNameKey> GenotypeNameKeys,
+    Dictionary<GenotypeNameKey, decimal> Likelihoods,
+    IReadOnlyList<HfSetHaplotypeNames> HaplotypeNamesById)
 {
     /// <summary>Pre-truncation genotype count - the number of pairs the expansion kept.</summary>
     public int GenotypeCount => GenotypePairs?.Count ?? 0;
@@ -100,6 +124,18 @@ internal readonly record struct ExpandedGenotypes(
 
         return new PhenotypeInfo<HlaAtKnownTypingCategory>(Haplotypes[pair.Haplotype1], Haplotypes[pair.Haplotype2]);
     }
+
+    /// <summary>
+    /// The HLA-name form <paramref name="key"/> stands for, built now. Called once per genotype <b>truncation keeps</b>
+    /// - at most the cap - rather than once per genotype the pairing loop examined.
+    /// </summary>
+    /// <remarks>
+    /// Identical to <c>Materialise(index).ToHlaNames()</c> for any index whose key this is, and that identity is what
+    /// lets <c>GenotypeConverter</c> keep looking its likelihood up by the genotype's own name form: both sides build
+    /// <c>PhenotypeInfo(names of haplotype 1, names of haplotype 2)</c> from the same two <c>LociInfo</c>.
+    /// </remarks>
+    public HfSetGenotypeNames MaterialiseNames(GenotypeNameKey key) =>
+        new(HaplotypeNamesById[key.Name1], HaplotypeNamesById[key.Name2]);
 }
 
 /// <summary>
@@ -108,6 +144,29 @@ internal readonly record struct ExpandedGenotypes(
 /// passed them to <c>PhenotypeInfo</c>'s two-source constructor.
 /// </summary>
 internal readonly record struct GenotypePair(int Haplotype1, int Haplotype2);
+
+/// <summary>
+/// A genotype's identity <i>for likelihood purposes</i>: the ids of its two haplotypes' HLA-name forms, by index into
+/// <see cref="ExpandedGenotypes.HaplotypeNamesById"/>. Distinct from <see cref="GenotypePair"/>, which indexes the
+/// survivors themselves and therefore still distinguishes typing category.
+///
+/// <para>
+/// <b>This is the same equality as the genotype's own name form, not an approximation of it.</b> Ids are handed out per
+/// <i>distinct</i> <c>LociInfo&lt;string&gt;</c>, so <c>Name1 == Name1' &amp;&amp; Name2 == Name2'</c> exactly when
+/// haplotype 1's names match and haplotype 2's do. And two genotype name forms are equal exactly when that holds,
+/// because <c>PhenotypeInfo(source1, source2)</c> puts <c>source1</c> at position 1 and <c>source2</c> at position 2 of
+/// every locus, and <c>LocusInfo</c> equality is positional. So the collapse the pairing loop depends on - two
+/// survivors differing only at an <i>excluded</i> locus share a name form, so their genotypes must occupy one
+/// dictionary slot - holds by construction here rather than by care.
+/// </para>
+///
+/// <para>
+/// Ordered, therefore, and deliberately: <c>(a, b)</c> is not <c>(b, a)</c> unless the two name forms are equal, which
+/// is what the name form itself also says. The pairing loop only ever emits <c>j &gt;= i</c>, so the transposed key is
+/// never generated in the first place.
+/// </para>
+/// </summary>
+internal readonly record struct GenotypeNameKey(int Name1, int Name2);
 
 internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
 {
@@ -154,7 +213,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     {
         var allowedLoci = input.MatchPredictionParameters.AllowedLoci;
 
-        var groupsPerPosition = new DataByResolution<PhenotypeInfo<ISet<string>>>
+        var groupsPerPosition = new DataByResolution<PossibleGroupsPerPosition>
         {
             SmallGGroup = await converter.ConvertPhenotype(input, HaplotypeTypingCategory.SmallGGroup)
         };
@@ -182,7 +241,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         return await ExpandToPotentialDiplotypes(input.HfSetId, allowedLoci, groupsPerPosition, pool, interner, alleleIndex);
     }
 
-    private static ExpandedGenotypes BuildSingleSmallGGenotype(DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
+    private static ExpandedGenotypes BuildSingleSmallGGenotype(DataByResolution<PossibleGroupsPerPosition> groupsPerPosition)
     {
         // The one certain genotype is still a pair - of the subject's own two positions rather than of two pool
         // haplotypes - so it goes down the same (haplotypes, pair) road as the expanded path, and every consumer sees
@@ -190,15 +249,20 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         var position1 = SingleGroupPerLocus(groupsPerPosition, LocusPosition.One);
         var position2 = SingleGroupPerLocus(groupsPerPosition, LocusPosition.Two);
 
-        var hlaNames = new PhenotypeInfo<string>(position1.Map(hla => hla?.Hla), position2.Map(hla => hla?.Hla));
+        // The same interning the expanded path uses, for the same reason it is safe to share: a homozygous subject's two
+        // positions have equal name forms and so collapse to one id, which is exactly what the one-entry likelihood
+        // dictionary below already said.
+        var (nameIdByPosition, haplotypeNamesById) = InternHaplotypeNames([position1, position2]);
+        var nameKey = new GenotypeNameKey(nameIdByPosition[0], nameIdByPosition[1]);
 
         // No frequency is resolved on this path and none is needed: one genotype is already certain, so
         // GenotypeImputationService replaces this placeholder with a likelihood of 1.
         return new ExpandedGenotypes(
             [position1, position2],
             [new GenotypePair(0, 1)],
-            [hlaNames],
-            new Dictionary<PhenotypeInfo<string>, decimal> { [hlaNames] = 0m });
+            [nameKey],
+            new Dictionary<GenotypeNameKey, decimal> { [nameKey] = 0m },
+            haplotypeNamesById);
     }
 
     /// <summary>
@@ -206,7 +270,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// behind <see cref="IsUnambiguousAtAllowedLoci"/>, which is what makes <c>Single()</c> safe.
     /// </summary>
     private static LociInfo<HlaAtKnownTypingCategory> SingleGroupPerLocus(
-        DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition,
+        DataByResolution<PossibleGroupsPerPosition> groupsPerPosition,
         LocusPosition position)
     {
         return groupsPerPosition.SmallGGroup.ToLociInfo((_, atPosition1, atPosition2) =>
@@ -219,7 +283,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
 
     private static bool IsUnambiguousAtAllowedLoci(
         ISet<Locus> allowedLoci,
-        DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition)
+        DataByResolution<PossibleGroupsPerPosition> groupsPerPosition)
     {
         return allowedLoci.All(l =>
         {
@@ -243,7 +307,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     private async Task<ExpandedGenotypes> ExpandToPotentialDiplotypes(
         int hfSetId,
         ISet<Locus> allowedLoci,
-        DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition,
+        DataByResolution<PossibleGroupsPerPosition> groupsPerPosition,
         DataByResolution<HaplotypeKey[]> pool,
         HaplotypeInterner interner,
         DataByResolution<LociInfo<int[][]>> alleleIndex)
@@ -271,17 +335,13 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
             return groups == null || groups.Contains(hla.Hla);
         }
 
-        // The name form of each survivor, once. The pairing loop then builds a genotype's name form - the one
-        // PhenotypeInfo it cannot avoid, because it keys the likelihood - straight from two of these, rather than
-        // building the category form first and mapping it.
-        var haplotypeNames = new LociInfo<string>[haplotypeList.Count];
-        for (var h = 0; h < haplotypeList.Count; h++)
-        {
-            haplotypeNames[h] = haplotypeList[h].Map(hla => hla?.Hla);
-        }
+        // The name form of each survivor, once, then one id per DISTINCT name form, so the pairing loop can key a
+        // genotype's likelihood on eight bytes rather than on seven heap objects. There are only S survivors, against
+        // up to 1.65M kept pairs, so this is the cheap end to pay at.
+        var (nameIdBySurvivor, haplotypeNamesById) = InternHaplotypeNames(haplotypeList);
 
         // A List, not a HashSet - see the ExpandedGenotypes remarks for why this can never de-duplicate.
-        // genotypeHlaNames is kept index-aligned with it so truncation needs no second ToHlaNames() per genotype.
+        // genotypeNameKeys is kept index-aligned with it so truncation needs no name form per pre-truncation genotype.
         //
         // These three are left to grow, deliberately. They hold one entry per KEPT pair, and no capacity available
         // here is the right one:
@@ -294,11 +354,11 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         // The last of those is the only real candidate, and whether it wins depends on the growth cost it removes
         // against the pass it adds. Neither has been measured here, so it is not being guessed at.
         //
-        // Note also that Dictionary growth does NOT re-hash these keys expensively: LociInfo precomputes its hash in
-        // its constructor and GetHashCode returns the cached value, so a resize re-reads an int per entry.
+        // Note also that Dictionary growth does NOT re-hash these keys expensively: a GenotypeNameKey is two ints, so a
+        // resize re-hashes a pair of integers per entry.
         var genotypePairs = new List<GenotypePair>();
-        var genotypeHlaNames = new List<PhenotypeInfo<string>>();
-        var likelihoods = new Dictionary<PhenotypeInfo<string>, decimal>();
+        var genotypeNameKeys = new List<GenotypeNameKey>();
+        var likelihoods = new Dictionary<GenotypeNameKey, decimal>();
 
         // Only keep diplotypes where, at every allowed locus, both haplotypes' HLA are represented within the target
         // phenotype (in either phase). This is the O(n^2) hot path, so it is written as an explicit loop to avoid the
@@ -328,16 +388,18 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
                 if ((represented & allLociRepresented) == allLociRepresented)
                 {
                     // Read only for a pair that survives - the large majority of pairs do not.
-                    var names1 = haplotypeNames[i];
-                    var names2 = haplotypeNames[j];
+                    var names1 = haplotypeNamesById[nameIdBySurvivor[i]];
+                    var names2 = haplotypeNamesById[nameIdBySurvivor[j]];
 
-                    var hlaNames = new PhenotypeInfo<string>(names1, names2);
+                    // Eight bytes, and no PhenotypeInfo: a name form here would be seven objects for every kept pair,
+                    // and truncation keeps a small fraction of them.
+                    var nameKey = new GenotypeNameKey(nameIdBySurvivor[i], nameIdBySurvivor[j]);
 
                     // Appended together, on purpose adjacent: the two lists are read by index in lockstep
                     // downstream, so anything that adds to one without the other silently mis-pairs a genotype with
                     // another genotype's likelihood.
                     genotypePairs.Add(new GenotypePair(i, j));
-                    genotypeHlaNames.Add(hlaNames);
+                    genotypeNameKeys.Add(nameKey);
 
                     // The multiplication order is fixed - position 1's frequency, then position 2's, then the
                     // correction. decimal multiplication carries scale, so re-ordering these could shift the result
@@ -346,14 +408,48 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
                     // An indexer assignment, not Add: two survivors can share HLA names while differing in typing
                     // category (they differ only at an excluded locus), so distinct genotypes can collapse to one
                     // key here. Their likelihoods are then necessarily equal, because a frequency is keyed on the
-                    // names - so which write lands does not matter, but throwing would.
-                    likelihoods[hlaNames] =
+                    // names - so which write lands does not matter, but throwing would. Keying on the name ids rather
+                    // than on the name form does not change which keys collapse: sharing a name form is sharing an id.
+                    likelihoods[nameKey] =
                         frequencies[i] * frequencies[j] * HomozygosityCorrectionFactor(names1, names2, allowedLociArray);
                 }
             }
         }
 
-        return new ExpandedGenotypes(haplotypeList, genotypePairs, genotypeHlaNames, likelihoods);
+        return new ExpandedGenotypes(haplotypeList, genotypePairs, genotypeNameKeys, likelihoods, haplotypeNamesById);
+    }
+
+    /// <summary>
+    /// One HLA-name form per survivor, then one id per <b>distinct</b> name form.
+    /// </summary>
+    /// <remarks>
+    /// Survivors that differ only in typing category, or only at a locus this key excludes, have equal name forms and
+    /// therefore share an id - which is precisely the collapse <see cref="ExpandedGenotypes.Likelihoods"/> performs,
+    /// moved from the genotype to the haplotype. The dictionary is over S entries, paid once, against the up-to-1.65M
+    /// kept pairs that would otherwise build a <c>PhenotypeInfo</c> each.
+    /// </remarks>
+    private static (int[] NameIdBySurvivor, IReadOnlyList<HfSetHaplotypeNames> HaplotypeNamesById) InternHaplotypeNames(
+        IReadOnlyList<LociInfo<HlaAtKnownTypingCategory>> survivors)
+    {
+        var idByName = new Dictionary<HfSetHaplotypeNames, int>(survivors.Count);
+        var nameIdBySurvivor = new int[survivors.Count];
+        var haplotypeNamesById = new List<HfSetHaplotypeNames>(survivors.Count);
+
+        for (var h = 0; h < survivors.Count; h++)
+        {
+            var names = survivors[h].Map(hla => hla?.Hla);
+
+            if (!idByName.TryGetValue(names, out var id))
+            {
+                id = haplotypeNamesById.Count;
+                idByName[names] = id;
+                haplotypeNamesById.Add(names);
+            }
+
+            nameIdBySurvivor[h] = id;
+        }
+
+        return (nameIdBySurvivor, haplotypeNamesById);
     }
 
     /// <summary>
@@ -471,8 +567,8 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// </para>
     /// </summary>
     private static int HomozygosityCorrectionFactor(
-        LociInfo<string> haplotype1,
-        LociInfo<string> haplotype2,
+        HfSetHaplotypeNames haplotype1,
+        HfSetHaplotypeNames haplotype2,
         Locus[] allowedLoci)
     {
         foreach (var locus in allowedLoci)
@@ -514,7 +610,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         DataByResolution<HaplotypeKey[]> pool,
         HaplotypeInterner interner,
         ISet<Locus> allowedLoci,
-        DataByResolution<PhenotypeInfo<ISet<string>>> groupsPerPosition,
+        DataByResolution<PossibleGroupsPerPosition> groupsPerPosition,
         DataByResolution<LociInfo<int[][]>> alleleIndex)
     {
         // The fetch happens in the caller, which needs the pool to decide which conversions to make.
@@ -735,7 +831,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         return (haplotypeFrequencies.ProjectedPool, haplotypeFrequencies.Interner, haplotypeFrequencies.AlleleIndex);
     }
 
-    private static LociInfo<ISet<string>> CombineSetsAtLoci(PhenotypeInfo<ISet<string>> phenotypeInfo)
+    private static LociInfo<ISet<string>> CombineSetsAtLoci(PossibleGroupsPerPosition phenotypeInfo)
     {
         // Null for a category that was not converted, which is a category the set holds no haplotypes in. Its pool
         // array is empty, so CollectSurvivors returns before it would read this - the null goes nowhere.

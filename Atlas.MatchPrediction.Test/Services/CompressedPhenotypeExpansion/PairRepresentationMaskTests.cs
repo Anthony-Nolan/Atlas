@@ -94,7 +94,9 @@ internal class PairRepresentationMaskTests
     {
         var expanded = await sut.ExpandCompressedPhenotype(Input());
 
-        var actual = expanded.GenotypeHlaNames.Select(UnorderedPairKey).ToList();
+        // The expansion carries each genotype's name identity as a key and builds the name form on demand, so a test
+        // that wants to read names asks for them. Production asks only for the survivors.
+        var actual = GenotypeNames(expanded).Select(UnorderedPairKey).ToList();
         var expected = ExpectedPairsByBruteForce();
 
         actual.Should().BeEquivalentTo(expected);
@@ -110,8 +112,8 @@ internal class PairRepresentationMaskTests
 
         var expanded = await sut.ExpandCompressedPhenotype(Input());
 
-        expanded.GenotypeHlaNames.Should().NotBeEmpty();
-        expanded.GenotypeHlaNames.Count.Should().BeLessThan(examinedPairs);
+        expanded.GenotypeNameKeys.Should().NotBeEmpty();
+        expanded.GenotypeNameKeys.Count.Should().BeLessThan(examinedPairs);
     }
 
     [Test]
@@ -123,7 +125,7 @@ internal class PairRepresentationMaskTests
 
         var expanded = await sut.ExpandCompressedPhenotype(Input());
 
-        expanded.GenotypeHlaNames.Select(UnorderedPairKey).Should().Contain(UnorderedPairKey(homozygous, homozygous));
+        GenotypeNames(expanded).Select(UnorderedPairKey).Should().Contain(UnorderedPairKey(homozygous, homozygous));
     }
 
     [Test]
@@ -195,6 +197,10 @@ internal class PairRepresentationMaskTests
     private string[] Haplotype(string a, string b, string drb1) => [a, b, drb1, dqb1Allele];
 
     private static string AlleleAt(string[] haplotype, Locus locus) => haplotype[Array.IndexOf(AllowedLoci, locus)];
+
+    /// <summary>Every kept genotype's HLA-name form, built for the test.</summary>
+    private static List<PhenotypeInfo<string>> GenotypeNames(ExpandedGenotypes expanded) =>
+        expanded.GenotypeNameKeys.Select(expanded.MaterialiseNames).ToList();
 
     /// <summary>
     /// A genotype's two haplotypes, in an order the survivor list's own (hash set) ordering cannot affect. The pair

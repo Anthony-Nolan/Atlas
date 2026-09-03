@@ -17,7 +17,9 @@ using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
-using HaplotypeHla = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
+// ONE haplotype's names - one per locus, at the resolution the frequency set stored them. A LociInfo, not a
+// PhenotypeInfo: the genotype form (HfSetGenotypeNames) holds two names per locus, being a pair of these.
+using HfSetHaplotypeNames = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 {
@@ -48,7 +50,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         /// If the given hla is unrepresented in the set, will return 0. 
         /// </returns>
         // ReSharper disable once ParameterTypeCanBeEnumerable.Global
-        Task<decimal> GetFrequencyForHla(int setId, HaplotypeHla hla, ISet<Locus> excludedLoci);
+        Task<decimal> GetFrequencyForHla(int setId, HfSetHaplotypeNames hla, ISet<Locus> excludedLoci);
     }
 
     internal class HaplotypeFrequencyService : IHaplotypeFrequencyService
@@ -164,7 +166,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         }
 
         /// <inheritdoc />
-        public async Task<decimal> GetFrequencyForHla(int setId, HaplotypeHla hla, ISet<Locus> excludedLoci)
+        public async Task<decimal> GetFrequencyForHla(int setId, HfSetHaplotypeNames hla, ISet<Locus> excludedLoci)
         {
             var entry = await haplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId);
 
