@@ -132,8 +132,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task UpdateDonorHla_ReadsAheadOfProcessing()
         {
-            // The point of the pipeline. The first batch's write blocks until the read side has pulled further pages;
-            // serial code could never satisfy that, because it does not read again until the write has returned.
+            // The point of the pipeline. The first batch's write does not complete until the read side has pulled
+            // further pages; serial code could never satisfy that, because it does not read again until the write has
+            // returned. A timeout waiting for that surfaces as the TimeoutException that fails this test.
             var readRanAhead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var batchesRead = 0;
 
@@ -149,8 +150,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             });
 
             var isFirstWrite = true;
-            donorImportRepository.WhenForAnyArgs(r => r.AddMatchingRelationsForExistingDonorBatch(default, default, default))
-                .Do(_ =>
+            donorImportRepository.AddMatchingRelationsForExistingDonorBatch(default, default, default)
+                .ReturnsForAnyArgs(async _ =>
                 {
                     if (!isFirstWrite)
                     {
@@ -158,8 +159,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                     }
 
                     isFirstWrite = false;
-                    readRanAhead.Task.Wait(TimeSpan.FromSeconds(30))
-                        .Should().BeTrue("the read side should fill the channel while the first batch is being processed");
+
+                    // Awaited rather than blocked on. The write is the processing side's own continuation, so blocking
+                    // here would hold its thread and leave the read side waiting on the pool to inject another - which
+                    // it would, but only after a delay, and only if the pool is not already saturated by the rest of
+                    // the suite. Returning a task the processing side awaits gives up the thread instead.
+                    await readRanAhead.Task.WaitAsync(TimeSpan.FromSeconds(30));
                 });
 
             await hlaProcessor.UpdateDonorHla(HlaNomenclatureVersion, _ => Task.CompletedTask);

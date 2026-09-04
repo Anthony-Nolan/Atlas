@@ -275,9 +275,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 
                 while (true)
                 {
-                    // Checked explicitly: NewOrderedDonorBatchesToImport declares no [EnumeratorCancellation]
-                    // parameter, so the token handed to GetAsyncEnumerator reaches nothing, and nothing else in this
-                    // loop observes one either.
+                    // Checked explicitly because the page read is the one thing here that cannot be cancelled:
+                    // NewOrderedDonorBatchesToImport declares no [EnumeratorCancellation] parameter, so the token
+                    // handed to GetAsyncEnumerator never reaches MoveNextAsync. WriteAsync below does observe it; this
+                    // is what stops a fresh page query being started after cancellation was requested.
                     cancellationToken.ThrowIfCancellationRequested();
 
                     // Depth as it stood while this page was being fetched, logged beside the fetch's own duration.
