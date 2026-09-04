@@ -14,7 +14,8 @@ The repo has extensive existing documentation — prefer it over re-deriving thi
 - `README_Contribution_Versioning.md` — versioning rules and commit message conventions
 - `README_MatchingAlgorithm.md`, `README_MatchPredictionAlgorithm.md`, `README_HlaMetadataDictionary.md`, `README_DonorImport.md`, `README_MultipleAlleleCodeDictionary.md`, `README_RepeatSearch.md` — per-component deep dives
 - `ArchitecturalDecisionRecord/` — ADRs explaining why past architectural decisions were made
-- `.github/skills/terraform-core-dev-plan/`, `.github/skills/azurerm-upgrade/` — Claude skills for this repo's Terraform workflows (dev plan, provider upgrades)
+- `.claude/skills/azurerm-upgrade/` — Claude Code skill for the Terraform provider upgrade workflow
+- `.claude/commands/terraform-plan.md` — Claude Code slash command (`/terraform-plan <env>`) for running `terraform plan` for the core infrastructure against any of the five environments (`dev`, `uat`, `live`, `wmda-uat`, `wmda-live`)
 
 ## Build and test commands
 
