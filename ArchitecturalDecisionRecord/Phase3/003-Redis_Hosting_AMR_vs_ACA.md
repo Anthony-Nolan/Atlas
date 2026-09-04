@@ -37,9 +37,9 @@ That scope is what this ADR sizes and evaluates against. Note that the "haplotyp
 (ATL-195), not to the small active-set lookup key (ATL-194) — the latter is a handful of bytes of control-plane data and is the fix for the one confirmed
 correctness defect, so it remains a genuine L2 consumer regardless of that row.
 
-This ADR decides the remaining, narrower question raised by ATL-345: **should Redis be consumed as an Azure-managed PaaS offering, or self-hosted as a
-container on Azure Container Apps (ACA)?** ACA is a plausible candidate precisely because Atlas already runs there — Phase3/001 adopted ACA over AKS for
-containerised workloads, and Phase3/002 placed the Match Prediction Worker on the ACA Consumption plan — so a Redis container would land on a platform the
+This ADR decides the remaining, narrower question raised by ATL-345: should Redis be consumed as an Azure-managed PaaS offering, or self-hosted as a
+container on Azure Container Apps (ACA)? ACA is a plausible candidate precisely because Atlas already runs there. Phase3/001 adopted ACA over AKS for
+containerised workloads, and Phase3/002 placed the Match Prediction Worker on the ACA Consumption plan, so a Redis container would land on a platform the
 team already owns and pays for, with no new service to learn.
 
 ### Current infrastructure, as provisioned (`terraform/core`)
@@ -56,11 +56,11 @@ These facts constrain both options and were confirmed directly against the Terra
 | Existing data services are reached over **public endpoints** with TLS and credential-based auth | `azurerm_mssql_firewall_rule.firewall_rule_allow_azure` opens `0.0.0.0` ("Allow Azure services"); storage accounts are public with `min_tls_version = "TLS1_2"`; Service Bus is reached via namespace connection strings |
 | Region is `uksouth` by default, `westeurope` for the WMDA installations | `variables.tf` (`LOCATION` default) and `wmda-live.tfvars` / `wmda-uat.tfvars` |
 
-**None of the above is treated as a hard blocker in this ADR.** The team has confirmed that the `prevent_destroy` lock can be removed, that a dedicated
-Container Apps environment with workload profiles can be created if a Redis container needs one, and that introducing a VNet is acceptable — while noting
-that Atlas infrastructure remains publicly reachable at this phase of the project, so private-only networking is not itself a requirement. These facts are
-therefore recorded as **work items and running costs attached to each option**, not as reasons an option is impossible. The comparison below is made on that
-basis: both options are assumed buildable, and the question is which is better.
+None of the above is treated as a hard blocker in this ADR. The team has confirmed that the `prevent_destroy` lock can be removed, that a dedicated
+Container Apps environment with workload profiles can be created if a Redis container needs one, and that introducing a VNet is acceptable. The team has
+also noted that Atlas infrastructure remains publicly reachable at this phase of the project, so private-only networking is not itself a requirement. These
+facts are therefore recorded as work items and running costs attached to each option, not as reasons an option is impossible. The comparison below is made
+on that basis: both options are assumed buildable, and the question is which is better.
 
 ### Who needs to reach the cache
 
@@ -75,8 +75,8 @@ This matters more than any other factor, so it is stated up front. The L2 consum
 | Matching `ScoringCache` (candidate, not yet ticketed; not listed in v2) | — | Not yet scoped | Matching Algorithm Functions, Repeat Search — **Elastic Premium plan, outside the ACA environment** |
 | MAC Dictionary `MacCacheService` | ATL-197 | **Not needed in L2** | (out of scope per v2) |
 
-The row that shapes the comparison is the first one. **The single "Must" consumer — the HLA Metadata Dictionary, which v2 calls "the primary
-distributed-cache use case" — runs entirely on the Elastic Premium plan, outside the Container Apps environment.** A cache reachable only from inside that
+The row that shapes the comparison is the first one. The single "Must" consumer, the HLA Metadata Dictionary, which v2 calls "the primary
+distributed-cache use case," runs entirely on the Elastic Premium plan, outside the Container Apps environment. A cache reachable only from inside that
 environment cannot serve it, which is what makes the networking prerequisites in §2 a real cost of the self-hosted option rather than a detail.
 
 ## Investigation
@@ -84,7 +84,7 @@ environment cannot serve it, which is what makes the networking prerequisites in
 ### 1. Working profile
 
 The profile below is derived from the datasets v2 actually puts in L2, rather than from a generic "cache sizing" template. Sizes marked *(estimate)* are
-order-of-magnitude derivations that should be replaced with measurements once ATL-190's abstraction exists and the HMD consumer is instrumented; they are
+order-of-magnitude derivations that should be replaced with measurements once ATL-190's abstraction exists and the HMD consumer is instrumented. They are
 deliberately conservative (biased high) so the SKU choice is not invalidated by being wrong in the expensive direction.
 
 | Dataset | v2 direction | Entries | Value shape | Bytes *(estimate)* | Read pattern | Write pattern | Mutability |
@@ -110,18 +110,18 @@ Aggregating that into the profile that actually drives SKU selection:
 | **HA / failover tolerance** | **A short failover window is acceptable in production; a cold cache is not a correctness problem, but a fallback storm is a load problem** | L2 sits behind an existing L1, and every miss falls back to the source of truth. What must be protected against is not the outage itself but the thundering herd of fallback reads hitting SQL/Table Storage when a cold L2 coincides with a 50-replica scale-out — a risk v2 names explicitly ("avoid uncontrolled fallback from many instances simultaneously overwhelming SQL or Table Storage"). |
 | **Compliance posture** | **Match the existing Atlas baseline as a minimum, and prefer better** | Atlas holds no cache data more sensitive than what is already in the SQL databases and Table Storage those caches read from — but HLA typing is personal health data, so encryption in transit and no anonymous access are non-negotiable regardless of tier. |
 
-**The two most important consequences of this profile:** the workload is a small number of large, immutable, version-keyed values read on cold start — a few
-hundred MB and a low operation rate, with no throughput argument for self-hosting anywhere in it; and its single "Must" consumer sits outside the Container
-Apps environment. The decision therefore turns on reachability, platform durability, and total cost of ownership rather than on performance.
+Two consequences of this profile matter most. The workload is a small number of large, immutable, version-keyed values read on cold start, a few hundred MB
+and a low operation rate, with no throughput argument for self-hosting anywhere in it. And its single "Must" consumer sits outside the Container Apps
+environment. The decision therefore turns on reachability, platform durability, and total cost of ownership rather than on performance.
 
 ### 2. Reachability — a solvable cost, not a blocker
 
-An earlier draft of this ADR treated reachability as decisive. On review that overstated it: the constraint is real and documented, but it is removable, and
-the team has confirmed the removal is acceptable. This section therefore establishes what the documentation actually says, what configuration works, and
-what that configuration costs — and the conclusion is that reachability is a **work item priced into the comparison**, not a veto.
+Reachability looks decisive at first glance, but it isn't: the constraint is real and documented, but it is removable, and the team has confirmed the
+removal is acceptable. This section sets out what the documentation actually says, what configuration works, and what that configuration costs. The
+conclusion is that reachability is a work item priced into the comparison, not a veto.
 
-**What the documentation says, verbatim.** Redis speaks a TCP protocol, not HTTP, so an ACA-hosted Redis needs TCP ingress, and TCP ingress has narrower
-rules than HTTP ingress:
+Redis speaks a TCP protocol, not HTTP, so an ACA-hosted Redis needs TCP ingress, and TCP ingress has narrower rules than HTTP ingress. Here is what the
+documentation says, verbatim:
 
 1. *"External TCP ingress is only supported for Container Apps environments that use a virtual network."* — and the CLI reference adds: *"External TCP
    ingress requires a custom VNet. If you try to create an external TCP app without a custom VNet, you receive a `ContainerAppTcpRequiresVnet` error.
@@ -131,11 +131,11 @@ rules than HTTP ingress:
 3. Environment network type is immutable: *"After you create an environment with either the default Azure network or an existing virtual network, you can't
    change the network type."*
 
-So the original claim — *Redis on ACA can only be reached by workloads inside the ACA environment, unless Atlas builds a VNet* — **is accurate as written**,
-and the "unless" clause is the operative half. Its corollary is equally true and is the more useful framing: **with a VNet, an ACA-hosted Redis is reachable
-by every Atlas consumer.**
+Redis on ACA can only be reached by workloads inside the ACA environment unless Atlas builds a VNet. That claim is accurate as written, and the "unless"
+clause is the operative half. Its corollary is equally true and is the more useful framing: with a VNet, an ACA-hosted Redis is reachable by every Atlas
+consumer.
 
-**The configuration that works**, spelled out because one part of it is counter-intuitive:
+The configuration that works is spelled out below, because one part of it is counter-intuitive:
 
 - Create the environment as **internal** (`--internal-only true`) on a custom VNet subnet (`/27` or larger for a workload profiles environment).
 - Give the Redis app **`--type external`** ingress with `transport: tcp`. This is the counter-intuitive part: on an internal environment, `external` does
@@ -151,9 +151,9 @@ by every Atlas consumer.**
 That is a working design. It is also net-new infrastructure: a VNet, at least two subnets, an ACA environment rebuilt or replaced, and VNet integration
 added to every Function App.
 
-**The asymmetry worth noticing.** The team's position is that Atlas remains publicly reachable at this phase, which removes private networking as a
-*requirement*. But the VNet here is not a privacy choice — it is a **hard platform prerequisite for external TCP ingress**. So the option that looks like
-"reuse infrastructure we already own" is the one that needs new networking, while the option that looks like "add a new Azure service" needs none:
+There is an asymmetry worth pointing out here. The team's position is that Atlas remains publicly reachable at this phase, which removes private networking
+as a requirement. But the VNet is not a privacy choice, it is a hard platform prerequisite for external TCP ingress. So the option that looks like "reuse
+infrastructure we already own" is the one that needs new networking, while the option that looks like "add a new Azure service" needs none:
 
 | | Redis on ACA | Azure Managed Redis |
 |---|---|---|
@@ -162,12 +162,12 @@ added to every Function App.
 | VNet integration on the Elastic Premium apps | **Yes** | **None** at this phase; needed only for the optional private-endpoint target state |
 | Reachable by the "Must" consumer (ATL-196, on Elastic Premium) | Only once the above is built | Immediately |
 
-**A caution on the "dedicated ACE" variant.** Standing up a *separate* environment for Redis, leaving the Match Prediction Worker in the existing
-Consumption-only environment, does not work privately: the existing environment has no VNet, so it cannot reach an internal load balancer in the new one.
-Making Redis reachable from it would require the Redis environment to be **external** with external TCP ingress — i.e. Redis published on a public IP and
-TCP port, protected only by Redis `AUTH` with a password held as a container-app secret. That is a materially weaker posture than AMR's public endpoint,
-which is a managed service with Entra ID authentication, TLS by default, and connection audit logs. If the dedicated-environment route is taken, the Worker
-should move into the new VNet-integrated environment too, rather than reaching Redis over the internet.
+One caution on the "dedicated ACE" variant: standing up a *separate* environment for Redis, leaving the Match Prediction Worker in the existing
+Consumption-only environment, does not work privately. The existing environment has no VNet, so it cannot reach an internal load balancer in the new one.
+Making Redis reachable from it would require the Redis environment to be external with external TCP ingress, i.e. Redis published on a public IP and TCP
+port, protected only by Redis `AUTH` with a password held as a container-app secret. That is a weaker posture than AMR's public endpoint, which is a managed
+service with Entra ID authentication, TLS by default, and connection audit logs. If the dedicated-environment route is taken, the Worker should move into
+the new VNet-integrated environment too, rather than reaching Redis over the internet.
 
 **AMR's network postures**, for completeness:
 
@@ -176,10 +176,10 @@ should move into the new VNet-integrated environment too, rather than reaching R
 | `public_network_access = "Enabled"`, TLS client protocol, Entra ID auth, access keys disabled | **Yes, immediately** | **Equivalent or better.** Atlas already reaches Azure SQL through an "Allow Azure services (0.0.0.0)" firewall rule and Storage over public endpoints with shared keys; AMR adds Entra-based auth in place of connection-string secrets. Note AMR supports neither VNet injection nor IP-based firewall rules, so public access is effectively all-or-nothing — confirm the state of the portal Firewall blade at provisioning, since the troubleshooting documentation does reference firewall rules. |
 | Private endpoint with `public_network_access = "Disabled"` | Needs the same VNet work the ACA option needs anyway | **Strictly better than anything in Atlas today.** The sensible target state once a VNet exists for other reasons |
 
-This still affects an existing ticket, though less sharply than the earlier draft implied: **ATL-214's acceptance criterion "Resource is provisioned behind a
-private endpoint" cannot be met without net-new networking**, and the team has confirmed private networking isn't required at this phase. It should move to a
-separate networking workstream rather than gate the first cache consumer — noting that if Atlas builds that VNet anyway, AMR should adopt the private
-endpoint at that point.
+This still affects an existing ticket: ATL-214's acceptance criterion "Resource is provisioned behind a private endpoint" cannot be met without net-new
+networking, and the team has confirmed private networking isn't required at this phase. It should move to a
+separate networking workstream rather than gate the first cache consumer. If Atlas builds that VNet anyway, AMR should adopt the private endpoint at that
+point.
 
 ### 3. Durability, HA, and operational posture
 
@@ -202,10 +202,10 @@ endpoint at that point.
 
 #### 3a. Can an ACA-hosted Redis be made highly available?
 
-An earlier draft asserted that running more than one replica "gives N independent Redis servers behind a load balancer, which is a correctness bug, not
-redundancy." That was too strong on the conclusion, and it is worth separating what is documented from what follows from it.
+Running more than one replica does give N independent Redis servers behind a load balancer, but calling that a blanket correctness bug overstates it. It's
+worth separating what is documented from what follows from it.
 
-**Documented facts:**
+Documented facts:
 
 1. **ACA load-balances traffic across the replicas of an app.** Session affinity exists to prevent this and, with it disabled, *"ingress distributes
    requests more evenly across replicas."* The platform also exposes a `tcpConnectionPool.maxConnections` setting and circuit-breaker policies that
@@ -219,31 +219,31 @@ redundancy." That was too strong on the conclusion, and it is worth separating w
 4. **Ingress addresses the app, not the replica.** TCP ingress exposes the app by *name and exposed port* (or FQDN when external); there is no per-replica
    DNS name or stable per-replica address.
 
-**What follows.** Scaling one Redis container app to N replicas gives N independent `redis-server` processes, each with its own dataset, sharing one
-load-balanced endpoint, with no way to pin a connection to one of them. The consequence for a cache is not data corruption — it is a roughly 1/N hit rate,
-and reads that non-deterministically see or miss another replica's writes. For most of Atlas's L2 datasets that is a performance regression rather than a
-correctness fault, since values are immutable per version and a miss simply falls through to the source. **The exception is ATL-194**, whose whole purpose is
-cross-instance invalidation: an invalidation applied to whichever replica the connection happened to land on, with the others still serving the old value, is
-precisely the defect that ticket exists to fix. So "correctness bug" is defensible for that one use case and overstated as a blanket claim — corrected
-accordingly.
+Here is what follows from that. Scaling one Redis container app to N replicas gives N independent `redis-server` processes, each with its own dataset,
+sharing one load-balanced endpoint, with no way to pin a connection to one of them. The consequence for a cache is not data corruption, it is a roughly 1/N
+hit rate, and reads that non-deterministically see or miss another replica's writes. For most of Atlas's L2 datasets that is a performance regression
+rather than a correctness fault, since values are immutable per version and a miss simply falls through to the source. ATL-194 is the exception, since its
+whole purpose is cross-instance invalidation: an invalidation applied to whichever replica the connection happened to land on, with the others still serving
+the old value, is precisely the defect that ticket exists to fix. So "correctness bug" is the right label for that one use case, not for the dataset as a
+whole.
 
-**Genuine HA on ACA is constructible, but you build and operate it yourself.** Because internal TCP ingress makes each *app* individually addressable by
+Genuine HA on ACA is constructible, but only if Atlas builds and operates it. Because internal TCP ingress makes each *app* individually addressable by
 name, a real topology is possible: deploy each Redis node as its own container app (`redis-0`, `redis-1`, …), each pinned to a single replica, and configure
 Redis replication with Sentinel, or Redis Cluster with the cluster bus on an additional TCP port (ACA allows up to five extra ports per app, internal ones
 may reuse port numbers across apps, and `36985` is reserved). Nothing in the documentation forbids this.
 
-What it means in practice is that Atlas would be designing, deploying, and operating a self-managed Redis cluster — quorum and failover configuration,
-Sentinel monitoring, node replacement, split-brain handling — on a platform that restarts replicas on its own schedule, offers no stable per-replica storage,
-and whose health probes have no understanding of Redis replication state. That is a substantially larger undertaking than "run a Redis container", and it
+What it means in practice is that Atlas would be designing, deploying, and operating a self-managed Redis cluster: quorum and failover configuration,
+Sentinel monitoring, node replacement, split-brain handling, on a platform that restarts replicas on its own schedule, offers no stable per-replica storage,
+and whose health probes have no understanding of Redis replication state. That is a substantially larger undertaking than "run a Redis container," and it
 lands on the single DevOps engineer whose limited capacity was the highest-weighted factor in Phase3/001's decision to choose ACA over AKS in the first
-place. The honest framing is therefore not "impossible" but **"available only by taking on exactly the class of operational ownership this team has
-previously and deliberately declined."**
+place. The honest framing is therefore not "impossible" but "available only by taking on exactly the class of operational ownership this team has previously
+and deliberately declined."
 
-**Where the ACA option genuinely wins:** it uses a platform the team already runs, with an existing deployment pipeline (`AzureContainerApps@1`), ACR, and
-managed identity wiring; a single non-clustered Redis is marginally simpler for a client library; and — for the Match Prediction Worker specifically —
+Where the ACA option genuinely wins: it uses a platform the team already runs, with an existing deployment pipeline (`AzureContainerApps@1`), ACR, and
+managed identity wiring; a single non-clustered Redis is marginally simpler for a client library; and, for the Match Prediction Worker specifically,
 internal ingress inside the current environment needs no VNet at all. These are real, and they are why the option deserved evaluation rather than dismissal.
 What they do not overcome is the combination that remains once reachability is bought and paid for: no managed HA, no SLA on the data, a flush on every
-restart and platform maintenance event, a Redis image and configuration to patch and monitor, and — as shown next — a materially higher bill.
+restart and platform maintenance event, a Redis image and configuration to patch and monitor, and, as shown next, a materially higher bill.
 
 ### 4. Cost estimate
 
@@ -293,14 +293,14 @@ month) does not materially offset any of this: Phase3/002 already records that t
 Match Prediction Worker sharing the same subscription. Azure Files storage for any persistence attempt, the VNet and subnets, and the engineering time to
 build and maintain a Redis image pipeline are all additional and are not costed here.
 
-**On the capacity question specifically:** the concern that 2 vCPU / 4 GiB won't be enough is well founded as soon as the cache holds more than the
-control-plane datasets — 4 GiB leaves roughly 3–3.5 GiB usable for Redis after container overhead, which covers the 200–500 MB-per-version HMD estimate with
+On the capacity question specifically, the concern that 2 vCPU / 4 GiB won't be enough is well founded as soon as the cache holds more than the
+control-plane datasets. 4 GiB leaves roughly 3–3.5 GiB usable for Redis after container overhead, which covers the 200–500 MB-per-version HMD estimate with
 room for two versions but leaves nothing for the "Could" candidates, and no margin if that estimate is low. The awkward part is that ACA's fixed 1:2
 vCPU:memory ratio means buying memory headroom means buying vCPU a cache does not need: going from 4 GiB to 8 GiB doubles the vCPU bill as well, which is
-why the 4 vCPU / 8 GiB row costs roughly double the 2 vCPU / 4 GiB row for memory that is the only thing actually wanted. AMR prices memory independently —
+why the 4 vCPU / 8 GiB row costs roughly double the 2 vCPU / 4 GiB row for memory that is the only thing actually wanted. AMR prices memory independently;
 that is what the `Balanced` / `MemoryOptimized` tier distinction *is*.
 
-**Comparison at the sizing this workload actually calls for:**
+Comparison at the sizing this workload actually calls for:
 
 | Option | Monthly (uksouth, PAYG, USD) | Usable for data | HA | SLA | What else |
 |---|---|---|---|---|---|
@@ -314,7 +314,7 @@ that is what the `Balanced` / `MemoryOptimized` tier distinction *is*.
 | Redis on ACA, Dedicated D4 node | ~387 | ~15 GB | **No** | **No** | No scale-to-zero; one node is still a single point of failure |
 | Redis on ACA, HA topology (2 nodes as 2 apps) | 2× the above | — | Self-built | **No** | Sentinel/Cluster designed, deployed and operated by Atlas |
 
-**At every capacity point, Azure Managed Redis *with* high availability costs less than a single non-redundant Redis container on ACA:**
+At every capacity point, Azure Managed Redis *with* high availability costs less than a single non-redundant Redis container on ACA:
 
 | Usable capacity | AMR with HA | ACA single replica, realistic | AMR advantage |
 |---|---|---|---|
@@ -333,8 +333,8 @@ confirm via the pricing calculator, as those meters are not exposed in the regio
 
 ### 5. Implementation readiness
 
-The Terraform work is smaller than ATL-214 assumes, and its open spike can be closed now. The pinned provider — `hashicorp/azurerm` `= 4.74.0`, per
-`terraform/core/versions.tf` — already ships **`azurerm_managed_redis`**, which supersedes the deprecated `azurerm_redis_enterprise_cluster` /
+The Terraform work is smaller than ATL-214 assumes, and its open spike can be closed now. The pinned provider, `hashicorp/azurerm` `= 4.74.0` per
+`terraform/core/versions.tf`, already ships `azurerm_managed_redis`, which supersedes the deprecated `azurerm_redis_enterprise_cluster` /
 `azurerm_redis_enterprise_database` pair and takes AMR's SKU names directly (`Balanced_B0` … `Balanced_B1000`, `MemoryOptimized_*`, `ComputeOptimized_*`,
 `FlashOptimized_*`). No provider upgrade is needed. Relevant arguments, with the defaults that matter:
 
@@ -353,82 +353,81 @@ The Terraform work is smaller than ATL-214 assumes, and its open spike can be cl
 
 **Adopt Azure Managed Redis (PaaS). Reject self-hosting Redis on Azure Container Apps.**
 
-**The decision is unchanged from the first draft of this ADR, but the reasoning is not.** Reachability was initially treated as decisive; on review it is a
-solvable, priced work item rather than a veto, and the multi-replica claim about Redis on ACA was overstated. With both corrected, the case rests on three
-things that survive removing every infrastructure constraint:
+Reachability is a solvable, priced work item, not a veto (§2), and a multi-replica Redis on ACA is not the free redundancy it might look like (§3a). Setting
+those points aside entirely, the case for Azure Managed Redis rests on three things that survive removing every infrastructure constraint:
 
-1. **Cost, which runs the opposite way to the usual self-hosting intuition.** At every capacity point, AMR *with* high availability is cheaper than a single
-   non-redundant Redis container on ACA — ~$55/month versus ~$142/month at ~3 GB, and ~$264/month versus ~$284/month at ~8 GB. A cache cannot scale to zero
+1. Cost runs the opposite way to the usual self-hosting intuition. At every capacity point, AMR *with* high availability is cheaper than a single
+   non-redundant Redis container on ACA: ~$55/month versus ~$142/month at ~3 GB, and ~$264/month versus ~$284/month at ~8 GB. A cache cannot scale to zero
    and cannot share compute with another workload, so it forfeits both mechanisms that normally make self-hosting cheaper, while ACA's fixed 1:2
    vCPU:memory ratio forces the purchase of vCPU the workload has no use for. Building an actually-HA Redis topology doubles the ACA figure again.
-2. **High availability and an SLA, which ACA cannot provide without Atlas building a Redis cluster by hand.** ACA load-balances TCP across replicas, offers
-   no session affinity for TCP, and replicates no application state — so multiple replicas of one app are multiple independent caches. A genuine topology is
-   constructible as one container app per Redis node with Sentinel or Cluster, but that is a self-managed Redis cluster on a platform that restarts replicas
-   on its own schedule and whose health probes know nothing about Redis replication state.
-3. **Operational ownership**, which Phase3/001 weighted highest for exactly this team: mirroring and patching a third-party Redis image, owning
-   `redis.conf` and `maxmemory` policy, building Redis metrics that AMR exposes natively, and holding a password secret where AMR uses managed identity.
+2. High availability and an SLA are not something ACA can provide without Atlas building a Redis cluster by hand. ACA load-balances TCP across replicas,
+   offers no session affinity for TCP, and replicates no application state, so multiple replicas of one app are multiple independent caches. A genuine
+   topology is constructible as one container app per Redis node with Sentinel or Cluster, but that is a self-managed Redis cluster on a platform that
+   restarts replicas on its own schedule and whose health probes know nothing about Redis replication state.
+3. Operational ownership is what Phase3/001 weighted highest for exactly this team: mirroring and patching a third-party Redis image, owning `redis.conf`
+   and `maxmemory` policy, building Redis metrics that AMR exposes natively, and holding a password secret where AMR uses managed identity.
 
-Reachability now reinforces rather than drives that conclusion, via one asymmetry: because external TCP ingress is a documented hard requirement for a VNet,
-the "reuse infrastructure we already own" option is the one needing net-new networking — a VNet, subnets, a rebuilt or additional ACA environment, and VNet
-integration across the Function Apps — while AMR needs none of it at this phase. If Atlas builds that VNet for other reasons, AMR simply gains a private
+Reachability reinforces rather than drives that conclusion, via one asymmetry: because external TCP ingress is a documented hard requirement for a VNet,
+the "reuse infrastructure we already own" option is the one needing net-new networking (a VNet, subnets, a rebuilt or additional ACA environment, and VNet
+integration across the Function Apps), while AMR needs none of it at this phase. If Atlas builds that VNet for other reasons, AMR simply gains a private
 endpoint from it; the work is not wasted, and it is not a prerequisite.
 
 ### Provisioning
 
-1. **Resource:** `azurerm_managed_redis` in `terraform/core`, on the pinned `azurerm 4.74.0` provider. No provider upgrade required.
-2. **SKU — `Balanced`, not `MemoryOptimized` or `ComputeOptimized`.** The profile is a small number of large values read at low frequency: there is no
+1. Resource: `azurerm_managed_redis` in `terraform/core`, on the pinned `azurerm 4.74.0` provider. No provider upgrade required.
+2. SKU: `Balanced`, not `MemoryOptimized` or `ComputeOptimized`. The profile is a small number of large values read at low frequency: there is no
    throughput case for Compute Optimized, and Memory Optimized starts at 12 GB (~$181/month HA), far more memory than needed. `Balanced` starts at 0.5 GB
    and covers the whole range Atlas will plausibly want.
-   - **Production (live, wmda-live):** `Balanced_B3` with `high_availability_enabled = true`. ~$55/month. 3 GB (~2.4 GB usable after AMR's ~20% system
+   - Production (live, wmda-live): `Balanced_B3` with `high_availability_enabled = true`. ~$55/month. 3 GB (~2.4 GB usable after AMR's ~20% system
      reservation) gives comfortable headroom for two nomenclature versions of HMD data coexisting across a Data Refresh rollover, on the 200–500 MB
      per-version estimate. Its 15,000-connection limit is far above the low hundreds this fleet will open.
-   - **Non-production (dev, uat):** `Balanced_B1` with `high_availability_enabled = false`. ~$14/month — non-HA is appropriate here given those instances
+   - Non-production (dev, uat): `Balanced_B1` with `high_availability_enabled = false`. ~$14/month. Non-HA is appropriate here given those instances
      carry no SLA and may lose data during maintenance, and dev/uat need not hold a full production-scale HMD dataset.
-   - **If ATL-194 ships before ATL-196**, `Balanced_B1` with HA (~$27/month) is sufficient for production in the interim, since the cache then holds only
+   - If ATL-194 ships before ATL-196, `Balanced_B1` with HA (~$27/month) is sufficient for production in the interim, since the cache then holds only
      sub-megabyte control-plane data. Scale up to B3 before ATL-196 goes live.
-   - **Revisit the size on measured `Used Memory`** once HMD data is actually resident; the 200–500 MB figure is an estimate, and memory size and
-     performance tier are both in-place scale operations. Note that `high_availability_enabled` is *not* an in-place change — it forces recreation — so
+   - Revisit the size on measured `Used Memory` once HMD data is actually resident; the 200–500 MB figure is an estimate, and memory size and
+     performance tier are both in-place scale operations. Note that `high_availability_enabled` is *not* an in-place change, it forces recreation, so
      the HA choice must be right per environment at creation time.
-3. **Authentication:** Microsoft Entra ID via managed identity. Leave `access_keys_authentication_enabled` at its `false` default and grant access with
+3. Authentication: Microsoft Entra ID via managed identity. Leave `access_keys_authentication_enabled` at its `false` default and grant access with
    `azurerm_managed_redis_access_policy_assignment`. No connection-string secret in `local.settings.template.json` or the container app's `secret` blocks.
-4. **Transport:** leave `client_protocol` at `"Encrypted"`.
-5. **Clustering:** leave `clustering_policy` at `"OSSCluster"`. `StackExchange.Redis` needs no special configuration for it.
-6. **Persistence:** none. Every cached value is reconstructible from SQL or Table Storage, and the design already requires graceful degradation to the
+4. Transport: leave `client_protocol` at `"Encrypted"`.
+5. Clustering: leave `clustering_policy` at `"OSSCluster"`. `StackExchange.Redis` needs no special configuration for it.
+6. Persistence: none. Every cached value is reconstructible from SQL or Table Storage, and the design already requires graceful degradation to the
    source. Persistence would add cost and operational surface for no correctness gain.
-7. **Eviction policy:** set `eviction_policy = "AllKeysLRU"` explicitly rather than accepting the `VolatileLRU` default. `VolatileLRU` only ever evicts keys
+7. Eviction policy: set `eviction_policy = "AllKeysLRU"` explicitly rather than accepting the `VolatileLRU` default. `VolatileLRU` only ever evicts keys
    that carry a TTL. v2's design does give HMD entries a 12-hour L2 lifetime, so in the intended steady state most keys would be evictable under either
-   policy — but the default makes correct behaviour under memory pressure *contingent on every writer remembering to set a TTL*, and a full cache holding
+   policy, but the default makes correct behaviour under memory pressure contingent on every writer remembering to set a TTL, and a full cache holding
    any TTL-less entries returns write errors instead of shedding cold data. `AllKeysLRU` costs nothing, removes that contingency, and is the right policy
    for a store that is by design a pure cache with an authoritative source behind it. Set it deliberately; don't inherit it.
 
 ### Network posture — phased, deliberately
 
-8. **Phase 1 (now):** `public_network_access = "Enabled"`, with TLS and Entra-only authentication. This is not a compromise on the existing Atlas security
-   baseline — Azure SQL is already reached through an `0.0.0.0` "Allow Azure services" firewall rule and Storage over public endpoints with shared keys —
-   and it is an improvement on it, since the cache uses managed identity rather than a secret. It unblocks ATL-190 and ATL-194 (which fixes a live
+8. Phase 1 (now): `public_network_access = "Enabled"`, with TLS and Entra-only authentication. This is not a compromise on the existing Atlas security
+   baseline. Azure SQL is already reached through an `0.0.0.0` "Allow Azure services" firewall rule and Storage over public endpoints with shared keys, and
+   this is an improvement on that, since the cache uses managed identity rather than a secret. It unblocks ATL-190 and ATL-194 (which fixes a live
    correctness defect) without waiting on a networking programme.
-9. **Phase 2 (whenever the VNet workstream happens, not before):** private endpoint with `public_network_access = "Disabled"`. This requires a VNet, a
+9. Phase 2 (whenever the VNet workstream happens, not before): private endpoint with `public_network_access = "Disabled"`. This requires a VNet, a
    private DNS zone, and regional VNet integration for the Elastic Premium apps; for the Match Prediction Worker it also requires the ACA environment to be
-   recreated with VNet integration, since network type is immutable after creation. **ATL-214's private-endpoint acceptance criterion should move out of
-   that ticket into this workstream**, rather than blocking the cache foundation on networking Atlas has never had and — per the team — does not require at
+   recreated with VNet integration, since network type is immutable after creation. ATL-214's private-endpoint acceptance criterion should move out of
+   that ticket into this workstream, rather than blocking the cache foundation on networking Atlas has never had and, per the team, does not require at
    this phase. Two notes on sequencing: this is the *same* networking work a self-hosted Redis on ACA would have needed just to be reachable, so choosing
    AMR defers it rather than avoiding it; and it is worth doing on its own merits eventually, since it would also close the `0.0.0.0` SQL firewall rule. It
    remains a networking decision, not a caching one.
 
 ### Consumer-side constraints this decision imposes
 
-10. **Keep large HMD values out of the hot read path.** ATL-196 is explicit that L2 is consulted on cold start and miss only, with L1 serving steady-state
-    hot reads. Multi-megabyte serialised tables must not be fetched per lookup — that is the difference between this decision paying for itself and it
+10. Keep large HMD values out of the hot read path. ATL-196 is explicit that L2 is consulted on cold start and miss only, with L1 serving steady-state
+    hot reads. Multi-megabyte serialised tables must not be fetched per lookup: that is the difference between this decision paying for itself and it
     making things slower.
-11. **Do not put a per-operation Redis round trip on the `ScoringCache` hot path**, if that candidate is ever scoped. Its values are a few bytes behind a
+11. Do not put a per-operation Redis round trip on the `ScoringCache` hot path, if that candidate is ever scoped. Its values are a few bytes behind a
     ~70-byte key and it is called per locus per donor per search; a network hop per lookup would cost more than the calculation it caches. If it is
     distributed at all, reads must be batched (pipelined or `MGET`) at a natural boundary, with L1 serving steady state.
-12. **Protect the sources of truth against a fallback storm.** A cold or unavailable L2 coinciding with a 0→50-replica burst turns into 50 replicas
-    simultaneously re-crawling Table Storage and SQL. Bounded concurrency or a single-flight guard on the fallback path is required — v2 names this
+12. Protect the sources of truth against a fallback storm. A cold or unavailable L2 coinciding with a 0→50-replica burst turns into 50 replicas
+    simultaneously re-crawling Table Storage and SQL. Bounded concurrency or a single-flight guard on the fallback path is required. v2 names this
     explicitly, and it becomes load-bearing the moment L2 exists.
-13. **ATL-305 (bounding `HaplotypeFrequencyCache`) is not superseded by any of this.** L2 solves staleness and redundant loads; it does not bound a
+13. ATL-305 (bounding `HaplotypeFrequencyCache`) is not superseded by any of this. L2 solves staleness and redundant loads; it does not bound a
     replica's own memory. That ticket should still land before the ATL-233 precompute consumer reaches production.
-14. **ATL-197 (MAC Dictionary L2) is out of scope per v2** ("not needed in L2") and should be closed or parked rather than built against this cache. Nothing
+14. ATL-197 (MAC Dictionary L2) is out of scope per v2 ("not needed in L2") and should be closed or parked rather than built against this cache. Nothing
     in this hosting decision depends on it, and its ~567,000 entries are the largest single dataset that will *not* be sized for.
 
 ### Revisit if
@@ -447,11 +446,11 @@ endpoint from it; the work is not wasted, and it is not a prerequisite.
 
 **Easier:**
 
-- Every L2 consumer, on either compute platform, can share one cache with **no networking prerequisite at all** — so ATL-196, the "Must" consumer, becomes
+- Every L2 consumer, on either compute platform, can share one cache with no networking prerequisite at all, so ATL-196, the "Must" consumer, becomes
   deliverable immediately rather than after a VNet, an environment rebuild, and VNet integration across the Function App fleet.
-- ATL-194's live correctness defect — replicas serving a stale active-set list after an import — is fixable now, without waiting on any networking work. It
-  is also worth noting that a naively-replicated self-hosted Redis would have *reintroduced* this defect, since ACA load-balances TCP across replicas with
-  no affinity option and no state replication between them.
+- ATL-194's live correctness defect, replicas serving a stale active-set list after an import, is fixable now, without waiting on any networking work. A
+  naively-replicated self-hosted Redis would also have *reintroduced* this defect, since ACA load-balances TCP across replicas with no affinity option and
+  no state replication between them.
 - The VNet workstream stays optional and independently prioritised, rather than becoming a blocker on the caching epic. If and when it happens, AMR gains a
   private endpoint from it.
 - ATL-214's open spike is closed: the resource is `azurerm_managed_redis`, available on the currently pinned provider, and its defaults already satisfy the
