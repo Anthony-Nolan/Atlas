@@ -247,26 +247,27 @@ restart and platform maintenance event, a Redis image and configuration to patch
 
 ### 4. Cost estimate
 
-Rates below were retrieved from the **Azure Retail Prices API on 4 September 2026** for `armRegionName = uksouth`, pay-as-you-go, USD. They exclude any
-enterprise agreement discount. Monthly figures use 730 hours.
+Rates below were retrieved from the **Azure Retail Prices API on 4 September 2026** for `armRegionName = uksouth`, pay-as-you-go, GBP (queried directly in
+GBP rather than converted from USD, so these are the actual Azure list prices for the region, ex VAT). They exclude any enterprise agreement discount.
+Monthly figures use 730 hours.
 
 **Azure Managed Redis (`Balanced` tier — memory sizes 0.5 / 1 / 3 / 6 / 12 GB):**
 
-| SKU | Memory | Usable (~80%) | $/hour | $/month | $/month, HA disabled (~50%) |
+| SKU | Memory | Usable (~80%) | £/hour | £/month | £/month, HA disabled (~50%) |
 |---|---|---|---|---|---|
-| `Balanced_B0` | 0.5 GB | ~0.4 GB | 0.018 | **13.14** | ~6.57 |
-| `Balanced_B1` | 1 GB | ~0.8 GB | 0.037 | **27.01** | ~13.50 |
-| `Balanced_B3` | 3 GB | ~2.4 GB | 0.075 | **54.75** | ~27.38 |
-| `Balanced_B5` | 6 GB | ~4.8 GB | 0.179 | **130.67** | ~65.34 |
-| `Balanced_B10` | 12 GB | ~9.6 GB | 0.362 | **264.26** | ~132.13 |
-| `MemoryOptimized_M10` | 12 GB | ~9.6 GB | 0.248 | **181.04** | ~90.52 |
+| `Balanced_B0` | 0.5 GB | ~0.4 GB | 0.013 | **9.67** | ~4.84 |
+| `Balanced_B1` | 1 GB | ~0.8 GB | 0.027 | **19.89** | ~9.94 |
+| `Balanced_B3` | 3 GB | ~2.4 GB | 0.055 | **40.31** | ~20.15 |
+| `Balanced_B5` | 6 GB | ~4.8 GB | 0.132 | **96.20** | ~48.10 |
+| `Balanced_B10` | 12 GB | ~9.6 GB | 0.267 | **194.56** | ~97.28 |
+| `MemoryOptimized_M10` | 12 GB | ~9.6 GB | 0.183 | **133.29** | ~66.64 |
 
 AMR reserves roughly 20% of memory for system operations, hence the usable column. The HA-disabled column applies Microsoft's documented "disabling high
 availability … halves the cost" guidance to the API rate; the retail API exposes a single meter per SKU, so **confirm the non-HA rate on the first invoice**
 rather than treating that column as quoted. Reservations (1- and 3-year) are also available and would reduce steady-state cost further once usage is proven;
 they are deliberately not assumed here.
 
-**Redis self-hosted on ACA (Consumption plan, uksouth):** billed at $0.000034 per vCPU-second active, $0.000004 per vCPU-second idle, and $0.000004 per
+**Redis self-hosted on ACA (Consumption plan, uksouth):** billed at £0.000025 per vCPU-second active, £0.000003 per vCPU-second idle, and £0.000003 per
 GiB-second. A cache must be running whenever anything might read it, so `min_replicas` cannot be 0 — **scale-to-zero, the Consumption plan's entire economic
 advantage and the reason Phase3/002 chose it for the Worker, is unavailable to this workload by definition.** ACA's idle rate additionally requires a replica
 to use less than 0.01 vCPU and receive less than 1,000 bytes per second, so a Redis actually serving traffic is billed at the active rate during working
@@ -274,18 +275,18 @@ hours. The three columns below bracket that: an always-idle floor, a 12h-active/
 
 | Replica size | Environment needed | Always idle (floor) | 12h/12h (realistic) | Always active (ceiling) |
 |---|---|---|---|---|
-| 1 vCPU / 2 GiB | Either | 31.53 | **70.96** | 110.38 |
-| 2 vCPU / 4 GiB | Either (Consumption-only max) | 63.07 | **141.91** | 220.75 |
-| 4 vCPU / 8 GiB | **Workload profiles only** | 126.14 | **283.82** | 441.50 |
+| 1 vCPU / 2 GiB | Either | 23.65 | **52.56** | 81.47 |
+| 2 vCPU / 4 GiB | Either (Consumption-only max) | 47.30 | **105.12** | 162.94 |
+| 4 vCPU / 8 GiB | **Workload profiles only** | 94.61 | **210.24** | 325.87 |
 
-If the Consumption profile's 8 GiB ceiling is still not enough, the next step is a Dedicated workload profile, which is billed per node at $0.080859 per
-vCPU-hour plus $0.006638 per GiB-hour, with no scale-to-zero, plus a $0.10/hour Dedicated Plan Management charge once any Dedicated profile exists in the
-environment:
+If the Consumption profile's 8 GiB ceiling is still not enough, the next step is a Dedicated workload profile, which is billed per node at £0.059532 per
+vCPU-hour plus £0.004887 per GiB-hour, with no scale-to-zero, plus a £0.073624/hour Dedicated Plan Management charge once any Dedicated profile exists in
+the environment:
 
 | Dedicated profile | Node spec | Node cost | + plan management | **Monthly total, one node** |
 |---|---|---|---|---|
-| D4 (general purpose) | 4 vCPU / 16 GiB | 313.64 | 73.00 | **386.64** |
-| E4 (memory optimized) | 4 vCPU / 32 GiB | 391.17 | 73.00 | **464.17** |
+| D4 (general purpose) | 4 vCPU / 16 GiB | 230.91 | 53.75 | **284.66** |
+| E4 (memory optimized) | 4 vCPU / 32 GiB | 287.99 | 53.75 | **341.74** |
 
 A workload profiles environment that uses *only* the Consumption profile incurs no plan management charge — that fee applies once a Dedicated profile,
 environment private endpoint, or planned maintenance is in use. The Consumption free grant (180,000 vCPU-seconds and 360,000 GiB-seconds per subscription per
@@ -302,33 +303,33 @@ that is what the `Balanced` / `MemoryOptimized` tier distinction *is*.
 
 Comparison at the sizing this workload actually calls for:
 
-| Option | Monthly (uksouth, PAYG, USD) | Usable for data | HA | SLA | What else |
+| Option | Monthly (uksouth, PAYG, GBP) | Usable for data | HA | SLA | What else |
 |---|---|---|---|---|---|
-| **AMR `Balanced_B3`, HA — recommended for production** | **~55** | ~2.4 GB | **Yes**, ≥2 nodes, zone-distributed | **Yes** | Patched, Entra auth, 15,000 connections, reachable by every consumer with no new networking |
-| AMR `Balanced_B5`, HA | ~131 | ~4.8 GB | Yes | Yes | The step up if the HMD estimate proves low |
-| AMR `Balanced_B10`, HA | ~264 | ~9.6 GB | Yes | Yes | 12 GB; `MemoryOptimized_M10` is the same 12 GB for ~181 with fewer vCPUs |
-| AMR `Balanced_B1`, HA | ~27 | ~0.8 GB | Yes | Yes | Enough only while the cache holds control-plane data (ATL-194/195) |
-| AMR `Balanced_B1`, non-HA (dev/uat) | ~14 | ~0.8 GB | No | No | Non-production only |
-| Redis on ACA, 2 vCPU / 4 GiB | ~142 (63–221) | ~3–3.5 GB | **No** | **No** | Flushed on every restart and maintenance event; needs VNet + environment work first |
-| Redis on ACA, 4 vCPU / 8 GiB | ~284 (126–442) | ~7 GB | **No** | **No** | Requires a workload profiles environment |
-| Redis on ACA, Dedicated D4 node | ~387 | ~15 GB | **No** | **No** | No scale-to-zero; one node is still a single point of failure |
+| **AMR `Balanced_B3`, HA — recommended for production** | **~40** | ~2.4 GB | **Yes**, ≥2 nodes, zone-distributed | **Yes** | Patched, Entra auth, 15,000 connections, reachable by every consumer with no new networking |
+| AMR `Balanced_B5`, HA | ~96 | ~4.8 GB | Yes | Yes | The step up if the HMD estimate proves low |
+| AMR `Balanced_B10`, HA | ~195 | ~9.6 GB | Yes | Yes | 12 GB; `MemoryOptimized_M10` is the same 12 GB for ~133 with fewer vCPUs |
+| AMR `Balanced_B1`, HA | ~20 | ~0.8 GB | Yes | Yes | Enough only while the cache holds control-plane data (ATL-194/195) |
+| AMR `Balanced_B1`, non-HA (dev/uat) | ~10 | ~0.8 GB | No | No | Non-production only |
+| Redis on ACA, 2 vCPU / 4 GiB | ~105 (47–163) | ~3–3.5 GB | **No** | **No** | Flushed on every restart and maintenance event; needs VNet + environment work first |
+| Redis on ACA, 4 vCPU / 8 GiB | ~210 (95–326) | ~7 GB | **No** | **No** | Requires a workload profiles environment |
+| Redis on ACA, Dedicated D4 node | ~285 | ~15 GB | **No** | **No** | No scale-to-zero; one node is still a single point of failure |
 | Redis on ACA, HA topology (2 nodes as 2 apps) | 2× the above | — | Self-built | **No** | Sentinel/Cluster designed, deployed and operated by Atlas |
 
 At every capacity point, Azure Managed Redis *with* high availability costs less than a single non-redundant Redis container on ACA:
 
 | Usable capacity | AMR with HA | ACA single replica, realistic | AMR advantage |
 |---|---|---|---|
-| ~2.4–3.5 GB | `Balanced_B3` — **~$55** | 2 vCPU / 4 GiB — ~$142 | **2.6× cheaper, and HA** |
-| ~4.8 GB | `Balanced_B5` — **~$131** | (between ACA rows) | — |
-| ~7–9.6 GB | `Balanced_B10` — **~$264** | 4 vCPU / 8 GiB — ~$284 | **Cheaper, and HA** |
-| ~15 GB | `MemoryOptimized_M10` (12 GB) — **~$181** | Dedicated D4 — ~$387 | **2.1× cheaper, and HA** |
+| ~2.4–3.5 GB | `Balanced_B3` — **~£40** | 2 vCPU / 4 GiB — ~£105 | **2.6× cheaper, and HA** |
+| ~4.8 GB | `Balanced_B5` — **~£96** | (between ACA rows) | — |
+| ~7–9.6 GB | `Balanced_B10` — **~£195** | 4 vCPU / 8 GiB — ~£210 | **Cheaper, and HA** |
+| ~15 GB | `MemoryOptimized_M10` (12 GB) — **~£133** | Dedicated D4 — ~£285 | **2.1× cheaper, and HA** |
 
-The reason is structural rather than incidental: ACA Consumption memory works out at roughly $10.51 per GiB-month, but the fixed 1:2 vCPU:memory ratio drags
-an active-rate vCPU bill (~$89 per vCPU-month) along with it, so 8 GiB of container memory costs $284–442/month. AMR B10 supplies 12 GB across two
-replicated nodes — 24 GB of provisioned RAM — for $264. Self-hosting is only cheaper than a managed service when you can scale it to zero or pack it
+The reason is structural rather than incidental: ACA Consumption memory works out at roughly £7.88 per GiB-month, but the fixed 1:2 vCPU:memory ratio drags
+an active-rate vCPU bill (~£66 per vCPU-month) along with it, so 8 GiB of container memory costs £95–326/month. AMR B10 supplies 12 GB across two
+replicated nodes — 24 GB of provisioned RAM — for £195. Self-hosting is only cheaper than a managed service when you can scale it to zero or pack it
 alongside other workloads, and a cache can do neither.
 
-Adding a private endpoint later adds a small per-endpoint hourly charge plus per-GB data processing to the AMR figures (order of $10/month at list rates —
+Adding a private endpoint later adds a small per-endpoint hourly charge plus per-GB data processing to the AMR figures (order of £8/month at list rates —
 confirm via the pricing calculator, as those meters are not exposed in the region query used above); that does not change the ranking.
 
 ### 5. Implementation readiness
@@ -357,7 +358,7 @@ Reachability is a solvable, priced work item, not a veto (§2), and a multi-repl
 those points aside entirely, the case for Azure Managed Redis rests on three things that survive removing every infrastructure constraint:
 
 1. Cost runs the opposite way to the usual self-hosting intuition. At every capacity point, AMR *with* high availability is cheaper than a single
-   non-redundant Redis container on ACA: ~$55/month versus ~$142/month at ~3 GB, and ~$264/month versus ~$284/month at ~8 GB. A cache cannot scale to zero
+   non-redundant Redis container on ACA: ~£40/month versus ~£105/month at ~3 GB, and ~£195/month versus ~£210/month at ~8 GB. A cache cannot scale to zero
    and cannot share compute with another workload, so it forfeits both mechanisms that normally make self-hosting cheaper, while ACA's fixed 1:2
    vCPU:memory ratio forces the purchase of vCPU the workload has no use for. Building an actually-HA Redis topology doubles the ACA figure again.
 2. High availability and an SLA are not something ACA can provide without Atlas building a Redis cluster by hand. ACA load-balances TCP across replicas,
@@ -376,14 +377,14 @@ endpoint from it; the work is not wasted, and it is not a prerequisite.
 
 1. Resource: `azurerm_managed_redis` in `terraform/core`, on the pinned `azurerm 4.74.0` provider. No provider upgrade required.
 2. SKU: `Balanced`, not `MemoryOptimized` or `ComputeOptimized`. The profile is a small number of large values read at low frequency: there is no
-   throughput case for Compute Optimized, and Memory Optimized starts at 12 GB (~$181/month HA), far more memory than needed. `Balanced` starts at 0.5 GB
+   throughput case for Compute Optimized, and Memory Optimized starts at 12 GB (~£133/month HA), far more memory than needed. `Balanced` starts at 0.5 GB
    and covers the whole range Atlas will plausibly want.
-   - Production (live, wmda-live): `Balanced_B3` with `high_availability_enabled = true`. ~$55/month. 3 GB (~2.4 GB usable after AMR's ~20% system
+   - Production (live, wmda-live): `Balanced_B3` with `high_availability_enabled = true`. ~£40/month. 3 GB (~2.4 GB usable after AMR's ~20% system
      reservation) gives comfortable headroom for two nomenclature versions of HMD data coexisting across a Data Refresh rollover, on the 200–500 MB
      per-version estimate. Its 15,000-connection limit is far above the low hundreds this fleet will open.
-   - Non-production (dev, uat): `Balanced_B1` with `high_availability_enabled = false`. ~$14/month. Non-HA is appropriate here given those instances
+   - Non-production (dev, uat): `Balanced_B1` with `high_availability_enabled = false`. ~£10/month. Non-HA is appropriate here given those instances
      carry no SLA and may lose data during maintenance, and dev/uat need not hold a full production-scale HMD dataset.
-   - If ATL-194 ships before ATL-196, `Balanced_B1` with HA (~$27/month) is sufficient for production in the interim, since the cache then holds only
+   - If ATL-194 ships before ATL-196, `Balanced_B1` with HA (~£20/month) is sufficient for production in the interim, since the cache then holds only
      sub-megabyte control-plane data. Scale up to B3 before ATL-196 goes live.
    - Revisit the size on measured `Used Memory` once HMD data is actually resident; the 200–500 MB figure is an estimate, and memory size and
      performance tier are both in-place scale operations. Note that `high_availability_enabled` is *not* an in-place change, it forces recreation, so
@@ -457,8 +458,8 @@ endpoint from it; the work is not wasted, and it is not a prerequisite.
   ticket's Entra-ID/no-access-keys requirement.
 - No new Redis operational surface: patching, version upgrades, node replacement, failover and zone distribution are Microsoft's responsibility — consistent
   with the reasoning that chose ACA over AKS in Phase3/001.
-- Cost is low, predictable, and scales with a supported in-place operation rather than a re-provisioning: ~$14/month per non-production environment and
-  ~$55/month for production, with memory size adjustable on measured usage.
+- Cost is low, predictable, and scales with a supported in-place operation rather than a re-provisioning: ~£10/month per non-production environment and
+  ~£40/month for production, with memory size adjustable on measured usage.
 - The Container Apps environment is untouched. The team has confirmed the `prevent_destroy` lock could be removed and a new environment created if needed —
   this decision simply means neither is necessary for caching, and the legacy Consumption-only environment can be migrated on its own merits and timeline
   rather than as a caching prerequisite. (Migrating it is still worth doing eventually: Microsoft describes that environment type as legacy, and it caps
@@ -469,7 +470,7 @@ endpoint from it; the work is not wasted, and it is not a prerequisite.
 | Risk | Severity | Mitigation |
 |---|---|---|
 | The cache is publicly addressable in Phase 1, protected by TLS and Entra ID but with no IP-level restriction (AMR supports neither VNet injection nor IP firewall rules) | **Low** — consistent with the team's position that Atlas infrastructure remains publicly reachable at this phase | Entra-only auth with access keys disabled; enable connection audit logs via diagnostic settings; adopt the private endpoint whenever the VNet workstream lands. Confirm at provisioning whether the portal Firewall blade offers usable IP rules, as documentation is inconsistent on this point. Note the alternative was *worse*: an ACA Redis reachable across environments would be published on a public TCP port behind only a Redis `AUTH` password |
-| A new paid Azure resource requires cost sign-off before provisioning | **Medium** | Figures above are from the Azure Retail Prices API for uksouth; the production line item is ~$55/month (`Balanced_B3`, HA) and ~$14/month per non-production environment (`Balanced_B1`, non-HA). ATL-214 already carries the sign-off acceptance criterion |
+| A new paid Azure resource requires cost sign-off before provisioning | **Medium** | Figures above are from the Azure Retail Prices API for uksouth; the production line item is ~£40/month (`Balanced_B3`, HA) and ~£10/month per non-production environment (`Balanced_B1`, non-HA). ATL-214 already carries the sign-off acceptance criterion |
 | The 200–500 MB HMD-per-version estimate is unmeasured, so `Balanced_B3` could prove under- or over-sized | **Medium** | Memory size is an in-place scale operation in both directions (with documented restrictions on scaling down), so this is recoverable. Instrument `Used Memory` from the first ATL-196 deployment and right-size before HMD goes live in production |
 | `eviction_policy` left at the `VolatileLRU` default causes write failures on a full cache under versioned keys | **Medium** | Set `AllKeysLRU` explicitly in Terraform and assert it in the review of ATL-214's PR |
 | A cold or unavailable L2 during a 50-replica burst produces a fallback storm against SQL/Table Storage | **Medium** | Bounded-concurrency or single-flight guard on the fallback path (design decision D3), specified as part of ATL-190's abstraction rather than left to each consumer |
