@@ -85,7 +85,7 @@ namespace Atlas.MatchingAlgorithm.Data.Context
                 .IsUnique();
 
             modelBuilder.Entity<SubjectGenotypeSetValue>()
-                .HasIndex(x => new { x.HlaTypingKey, x.HaplotypeFrequencySetId, x.AllowedLociKey })
+                .HasIndex(x => new { x.HlaTypingKey, x.HaplotypeFrequencySetId, x.MatchingAlgorithmHlaNomenclatureVersion, x.AllowedLociKey })
                 .IsUnique();
 
             base.OnModelCreating(modelBuilder);
