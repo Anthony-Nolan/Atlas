@@ -19,7 +19,8 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                 table: "SubjectGenotypeSetValues",
                 type: "nvarchar(32)",
                 maxLength: 32,
-                nullable: false);
+                nullable: false,
+                defaultValue: "");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SubjectGenotypeSetValues_HlaTypingKey_HaplotypeFrequencySetId_MatchingAlgorithmHlaNomenclatureVersion_AllowedLociKey",
