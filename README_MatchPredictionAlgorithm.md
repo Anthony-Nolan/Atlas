@@ -202,3 +202,22 @@ The pre-consolidation runs either way, and there is exactly one writer of `Frequ
 in both modes — the setting moves that work on to or off the critical path, nothing more. Note that a machine with spare
 cores will show `true` as a wall-clock regression, because the warm no longer overlaps the first subjects.
 
+### `HaplotypeFrequencySetCache.MaxCachedFrequencySets` / `HaplotypeFrequencySetCache.SetCacheExpiryMinutes`
+
+Bound the size of `HaplotypeFrequencyCache`'s dedicated cache of per-set frequency data (`FrequencySetCacheEntry`),
+which otherwise grows unbounded: every distinct haplotype frequency set (registry/ethnicity) touched within a rolling
+window stays fully resident, forever, per replica.
+
+* `MaxCachedFrequencySets` — the maximum number of distinct sets allowed to stay resident at once. Each set counts as
+  one unit regardless of its own row count (a set can hold up to ~275,000 haplotypes). Enforced as a true
+  least-recently-used eviction by `FrequencySetResidencyTracker`: once the limit is reached, admitting a new distinct
+  set evicts the least-recently-used tracked set to make room, so the fresh one is always the one kept. This is
+  driven explicitly rather than left to `MemoryCache`'s own `SizeLimit`, which doesn't evict on overflow — it rejects
+  the new insert outright instead.
+* `SetCacheExpiryMinutes` — the absolute TTL, in minutes, for a cached set.
+
+Both are ops-tunable via config without a code change. Start conservative and observe via the
+`Get All Frequencies from HF set - from SQL database` timed log line — a higher-than-expected rate of that line firing
+means more distinct sets are active within `SetCacheExpiryMinutes` than `MaxCachedFrequencySets` allows, so sets are
+churning out of the cache before they'd naturally expire.
+

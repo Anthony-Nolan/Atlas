@@ -61,9 +61,10 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
 {
     private const string ActiveHaplotypeFrequencySetsCacheKey = "hf-active-sets";
 
-    private static string AllFrequenciesCacheKey(int setId) => $"hf-set-{setId}";
+    internal static string AllFrequenciesCacheKey(int setId) => $"hf-set-{setId}";
 
     private readonly IAppCache cache;
+    private readonly IFrequencySetResidencyTracker residencyTracker;
     private readonly IHaplotypeFrequenciesRepository frequencyRepository;
     private readonly IHaplotypeFrequencySetRepository frequencySetRepository;
     private readonly IFrequencyConsolidator frequencyConsolidator;
@@ -71,14 +72,16 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
     private readonly HaplotypeFrequencySetCacheSettings cacheSettings;
 
     public HaplotypeFrequencyCache(
-        IPersistentCacheProvider persistentCacheProvider,
+        IHaplotypeFrequencySetCacheProvider cacheProvider,
+        IFrequencySetResidencyTracker residencyTracker,
         IHaplotypeFrequenciesRepository frequencyRepository,
         IHaplotypeFrequencySetRepository frequencySetRepository,
         IFrequencyConsolidator frequencyConsolidator,
         IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
         IOptions<HaplotypeFrequencySetCacheSettings> cacheSettings)
     {
-        cache = persistentCacheProvider.Cache;
+        cache = cacheProvider.Cache;
+        this.residencyTracker = residencyTracker;
         this.frequencyRepository = frequencyRepository;
         this.frequencySetRepository = frequencySetRepository;
         this.frequencyConsolidator = frequencyConsolidator;
@@ -115,6 +118,11 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
     /// <inheritdoc />
     public async Task<FrequencySetCacheEntry> GetAllHaplotypeFrequencies(int setId)
     {
+        // Before the cache is even asked to store anything: marks setId most-recently-used, evicting the least-
+        // recently-used tracked set first if admitting a not-yet-tracked setId would exceed MaxCachedFrequencySets.
+        // See FrequencySetResidencyTracker's doc comment for why eviction has to be driven explicitly like this.
+        residencyTracker.RecordAccess(setId);
+
         return await cache.GetOrAddAsync(AllFrequenciesCacheKey(setId), async () =>
             {
                 var entry = await BuildEntryFromDatabase(setId);
@@ -139,6 +147,10 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
                 }
 
                 return entry;
+            },
+            new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(cacheSettings.SetCacheExpiryMinutes)
             }
         );
     }
