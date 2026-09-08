@@ -83,6 +83,23 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
+        public async Task ImportDonors_OpensOneBulkWriteSessionForTheWholeStage()
+        {
+            var session = Substitute.For<IDisposable>();
+            donorImportRepository.OpenBulkWriteSession().Returns(session);
+            donorReader.StreamAllDonors().Returns(new List<Donor>
+            {
+                DonorBuilder.New.With(d => d.AtlasDonorId, 1).Build(),
+                DonorBuilder.New.With(d => d.AtlasDonorId, 2).Build()
+            });
+
+            await donorImporter.ImportDonors();
+
+            donorImportRepository.Received(1).OpenBulkWriteSession();
+            session.Received(1).Dispose();
+        }
+
+        [Test]
         public async Task ImportDonors_ConvertsDonorInfo()
         {
             var donor = DonorBuilder.New.With(d => d.AtlasDonorId, 123).Build();

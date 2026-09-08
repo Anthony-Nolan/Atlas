@@ -2,11 +2,15 @@
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
+using Atlas.Common.Utils;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -26,6 +30,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         private IDonorImportRepository donorImportRepository;
         private IDonorUpdateRepository donorUpdateRepository;
         private IDonorInspectionRepository inspectionRepo;
+        private IHlaImportRepository hlaImportRepository;
+        private TestDonorInspectionRepository testInspectionRepo;
 
         private readonly DonorInfoWithExpandedHla donorInfoWithAllelesAtThreeLoci = new DonorInfoWithExpandedHla
         {
@@ -95,6 +101,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             donorUpdateRepository = repositoryFactory.GetDonorUpdateRepository();
             inspectionRepo = repositoryFactory.GetDonorInspectionRepository();
+            hlaImportRepository = repositoryFactory.GetHlaImportRepository();
+
+            var dormantConnectionStringProvider = DependencyInjection.DependencyInjection.Provider
+                .GetService<DormantTransientSqlConnectionStringProvider>();
+            testInspectionRepo = new TestDonorInspectionRepository(dormantConnectionStringProvider);
         }
 
         [Test]
@@ -260,5 +271,126 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             actualDonorInfo.IsAvailableForSearch.Should().Be(expectedDonorInfo.IsAvailableForSearch);
             actualDonorInfo.HlaNames.Should().BeEquivalentTo(expectedDonorInfo.HlaNames);
         }
+
+        #region Bulk write sessions
+
+        // A session's bulk copies are reused across every write in it, and hold a connection open for its whole
+        // length - so these cover that successive writes over one session all land, and that reuse is declined while a
+        // transaction is ambient, which is the only part of this that would otherwise fail silently.
+
+        [Test]
+        public async Task InsertBatchOfDonors_WithinOneBulkWriteSession_InsertsEveryBatch()
+        {
+            var firstDonor = new DonorInfoBuilder().Build();
+            var secondDonor = new DonorInfoBuilder().Build();
+
+            using (donorImportRepository.OpenBulkWriteSession())
+            {
+                await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> {firstDonor});
+                await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> {secondDonor});
+            }
+
+            (await inspectionRepo.GetDonor(firstDonor.DonorId)).Should().NotBeNull();
+            (await inspectionRepo.GetDonor(secondDonor.DonorId)).Should().NotBeNull();
+        }
+
+        [Test]
+        public async Task AddMatchingRelationsForExistingDonorBatch_WithinOneBulkWriteSession_InsertsRelationsForEveryBatch()
+        {
+            var firstDonor = BuildDonorWithRequiredHla();
+            var secondDonor = BuildDonorWithRequiredHla();
+            await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> {firstDonor, secondDonor});
+
+            using (donorImportRepository.OpenBulkWriteSession())
+            {
+                await AddMatchingRelationsFor(firstDonor);
+                await AddMatchingRelationsFor(secondDonor);
+            }
+
+            testInspectionRepo.GetMatchingHlaRowCount(Locus.A, firstDonor.DonorId).Should().Be(2);
+            testInspectionRepo.GetMatchingHlaRowCount(Locus.A, secondDonor.DonorId).Should().Be(2);
+        }
+
+        [Test]
+        public void OpenBulkWriteSession_WhenASessionIsAlreadyOpen_ThrowsException()
+        {
+            using (donorImportRepository.OpenBulkWriteSession())
+            {
+                Assert.Throws<InvalidOperationException>(() => donorImportRepository.OpenBulkWriteSession());
+            }
+        }
+
+        [Test]
+        public async Task InsertBatchOfDonors_AfterABulkWriteSessionIsClosed_StillInsertsDonors()
+        {
+            // The session's bulk copies, and the connections they held, are disposed with it; writes after it has to
+            // fall back to building their own again.
+            using (donorImportRepository.OpenBulkWriteSession())
+            {
+                await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> {new DonorInfoBuilder().Build()});
+            }
+
+            var donorAfterSession = new DonorInfoBuilder().Build();
+            await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> {donorAfterSession});
+
+            (await inspectionRepo.GetDonor(donorAfterSession.DonorId)).Should().NotBeNull();
+        }
+
+        [Test]
+        public async Task InsertBatchOfDonors_WithinOneBulkWriteSession_UnderATransactionThatRollsBack_WritesNothing()
+        {
+            // A bulk copy enlists in the ambient transaction once, when its connection is opened, and takes part in no
+            // scope after that - so a session's bulk copy, whose connection an earlier write already opened, would
+            // write straight past this rollback. Declining to reuse one while a transaction is ambient is what makes
+            // the second write below undoable, and this is the only test that fails if that decision is removed.
+            //
+            // Donors, rather than the matching HLA tables, because this write has to put exactly one connection into
+            // the transaction: AddMatchingRelationsForExistingDonorBatch writes at all five matching loci whether or
+            // not a donor has HLA at them, and five connections in one transaction would promote it to a distributed
+            // transaction, which is unsupported off Windows.
+            var warmUpDonor = new DonorInfoBuilder().Build();
+            var rolledBackDonor = new DonorInfoBuilder().Build();
+
+            using (donorImportRepository.OpenBulkWriteSession())
+            {
+                // Written with no transaction ambient, so the session's bulk copy for Donors opens its connection here.
+                await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> {warmUpDonor});
+
+                using (new AsyncTransactionScope())
+                {
+                    await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> {rolledBackDonor});
+                    // Deliberately not completed, so disposing the scope rolls this write back.
+                }
+            }
+
+            (await inspectionRepo.GetDonor(warmUpDonor.DonorId)).Should().NotBeNull();
+            (await inspectionRepo.GetDonor(rolledBackDonor.DonorId)).Should().BeNull();
+        }
+
+        private static DonorInfoWithExpandedHla BuildDonorWithRequiredHla() =>
+            new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
+                .WithDefaultRequiredHla(new TestHlaMetadata
+                {
+                    LookupName = "01:01",
+                    MatchingPGroups = new List<string> {"01:01P"}
+                })
+                .Build();
+
+        /// <summary>
+        /// Imports a donor's HLA and then writes its matching relations, which is what the HLA processing stage of the
+        /// data refresh does for every batch.
+        /// </summary>
+        private async Task AddMatchingRelationsFor(DonorInfoWithExpandedHla donor)
+        {
+            var hlaLookup = await hlaImportRepository.ImportHla(new List<DonorInfoWithExpandedHla> {donor});
+            var donorEntry = donor.ToDonorInfoForPreProcessing(hla => hlaLookup[hla]);
+
+            await donorImportRepository.AddMatchingRelationsForExistingDonorBatch(
+                new List<DonorInfoForHlaPreProcessing> {donorEntry},
+                false);
+        }
+
+        #endregion
+
     }
 }
