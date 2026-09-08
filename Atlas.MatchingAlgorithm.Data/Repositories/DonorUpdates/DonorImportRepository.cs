@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -46,6 +47,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// This does _not_ refresh or create the hla matches.
         /// </summary>
         Task InsertBatchOfDonors(IEnumerable<DonorInfo> donors);
+
+        /// <summary>
+        /// Opens a session over which this repository's bulk copies are reused across writes, rather than rebuilt for
+        /// each one. Intended to be held for the length of a data refresh stage, and disposed when the stage is done.
+        /// </summary>
+        IDisposable OpenBulkWriteSession();
 
         /// <summary>
         /// Adds pre-processed matching p-groups for a batch of donors

@@ -77,12 +77,17 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             {
                 var allFailedDonors = new List<FailedDonorInfo>();
                 var donorsStream = donorReader.StreamAllDonors().Select(d => d.MapImportDonorToMatchingUpdateDonor());
-                foreach (var streamedDonorBatch in donorsStream.Batch(BatchSize))
+
+                // One session for the whole stage, not one per batch - see IDonorImportRepository.OpenBulkWriteSession.
+                using (matchingDonorImportRepository.OpenBulkWriteSession())
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    var reifiedDonorBatch = streamedDonorBatch.ToList();
-                    var failedDonors = await InsertDonorBatch(reifiedDonorBatch, shouldMarkDonorsAsUpdated);
-                    allFailedDonors.AddRange(failedDonors);
+                    foreach (var streamedDonorBatch in donorsStream.Batch(BatchSize))
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        var reifiedDonorBatch = streamedDonorBatch.ToList();
+                        var failedDonors = await InsertDonorBatch(reifiedDonorBatch, shouldMarkDonorsAsUpdated);
+                        allFailedDonors.AddRange(failedDonors);
+                    }
                 }
 
                 await failedDonorsNotificationSender.SendFailedDonorsAlert(allFailedDonors, ImportFailureEventName, Priority.Medium);

@@ -124,6 +124,38 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             await donorImportRepository.ReceivedWithAnyArgs(4).AddMatchingRelationsForExistingDonorBatch(default, default, default);
         }
 
+        [Test]
+        public async Task UpdateDonorHla_OpensOneBulkWriteSessionForTheWholeStage()
+        {
+            var session = Substitute.For<IDisposable>();
+            donorImportRepository.OpenBulkWriteSession().Returns(session);
+            GivenDonorBatches(4);
+
+            await hlaProcessor.UpdateDonorHla(HlaNomenclatureVersion, _ => Task.CompletedTask);
+
+            donorImportRepository.Received(1).OpenBulkWriteSession();
+            session.Received(1).Dispose();
+        }
+
+        [Test]
+        public async Task UpdateDonorHla_WhenCancelledMidProcessing_StillClosesTheBulkWriteSession()
+        {
+            // The session holds a connection per matching HLA table open for as long as it is open, so an abort that
+            // left it undisposed would leak them for the lifetime of the process.
+            var session = Substitute.For<IDisposable>();
+            donorImportRepository.OpenBulkWriteSession().Returns(session);
+            var cancellationTokenSource = new CancellationTokenSource();
+            GivenDonorBatches(4);
+            donorImportRepository.WhenForAnyArgs(r => r.AddMatchingRelationsForExistingDonorBatch(default, default, default))
+                .Do(_ => cancellationTokenSource.Cancel());
+
+            await hlaProcessor.Invoking(p => p.UpdateDonorHla(
+                    HlaNomenclatureVersion, _ => Task.CompletedTask, null, false, cancellationTokenSource.Token))
+                .Should().ThrowAsync<OperationCanceledException>();
+
+            session.Received(1).Dispose();
+        }
+
         private void GivenDonorBatches(int batchCount)
         {
             dataRefreshRepository.NewOrderedDonorBatchesToImport(default, default).ReturnsForAnyArgs(

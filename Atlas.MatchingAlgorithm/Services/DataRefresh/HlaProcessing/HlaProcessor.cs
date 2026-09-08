@@ -168,6 +168,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BlockingWait_TimerKey, " * * Time spent in `Task.WhenAll`, JUST waiting on HlaInsert tasks to Complete, during HlaProcessing") )
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_DtWriteExecution_TimerKey, " * * * Total Time spent across all threads, writing BulkInserts during HlaInsert operation, during HlaProcessing", null, summaryReportWithThreadingCount))
                 // @formatter:on
+            // One session for the whole stage, not one per batch - see IDonorImportRepository.OpenBulkWriteSession.
+            using (donorImportRepository.OpenBulkWriteSession())
             {
                 // We only store the last Id in each batch so we only need to keep one Id per batch.
                 var completedDonors = new FixedSizedQueue<int>(NumberOfBatchesOverlapOnRestart);
