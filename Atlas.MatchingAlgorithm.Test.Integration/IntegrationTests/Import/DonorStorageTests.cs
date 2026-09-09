@@ -3,6 +3,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Repositories;
+using Atlas.MatchingAlgorithm.Data.Services;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
@@ -10,9 +11,11 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -32,6 +35,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         private IDonorInspectionRepository inspectionRepo;
         private IHlaImportRepository hlaImportRepository;
         private TestDonorInspectionRepository testInspectionRepo;
+        private IConnectionStringProvider dormantConnectionStringProvider;
 
         private readonly DonorInfoWithExpandedHla donorInfoWithAllelesAtThreeLoci = new DonorInfoWithExpandedHla
         {
@@ -103,7 +107,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             inspectionRepo = repositoryFactory.GetDonorInspectionRepository();
             hlaImportRepository = repositoryFactory.GetHlaImportRepository();
 
-            var dormantConnectionStringProvider = DependencyInjection.DependencyInjection.Provider
+            dormantConnectionStringProvider = DependencyInjection.DependencyInjection.Provider
                 .GetService<DormantTransientSqlConnectionStringProvider>();
             testInspectionRepo = new TestDonorInspectionRepository(dormantConnectionStringProvider);
         }
@@ -365,6 +369,27 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 
             (await inspectionRepo.GetDonor(warmUpDonor.DonorId)).Should().NotBeNull();
             (await inspectionRepo.GetDonor(rolledBackDonor.DonorId)).Should().BeNull();
+        }
+
+        [Test]
+        public async Task InsertBatchOfDonors_WithinOneBulkWriteSession_TracesHowManyWritesReusedABulkCopy()
+        {
+            // Guards the count itself: a trace that always reported zero would satisfy the unit test covering a session
+            // that reused nothing, and would then be silently useless for the case it exists to reveal.
+            var logger = Substitute.For<IAtlasLogger>();
+            var repository = new DonorImportRepository(
+                Substitute.For<IHlaNamesRepository>(), dormantConnectionStringProvider, logger);
+
+            using (repository.OpenBulkWriteSession())
+            {
+                await repository.InsertBatchOfDonors(new List<DonorInfo> {new DonorInfoBuilder().Build()});
+                await repository.InsertBatchOfDonors(new List<DonorInfo> {new DonorInfoBuilder().Build()});
+            }
+
+            logger.Received(1).SendTrace(
+                Arg.Any<string>(),
+                Arg.Any<LogLevel>(),
+                Arg.Is<Dictionary<string, string>>(p => p["ReusedWrites"] == "2"));
         }
 
         private static DonorInfoWithExpandedHla BuildDonorWithRequiredHla() =>
