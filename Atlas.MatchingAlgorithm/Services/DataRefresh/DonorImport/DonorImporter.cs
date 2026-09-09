@@ -228,9 +228,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             await foreach (var reifiedDonorBatch in reader.ReadAllAsync(cancellationToken))
             {
                 // Checked here as well as by ReadAllAsync, and this is the check that matters: reading an
-                // already-buffered batch completes without ever consulting the token. Batches behind it are discarded
-                // rather than drained - the stage keeps no checkpoint, and once the lease is lost the matching database
-                // belongs to another invocation.
+                // already-buffered batch completes without ever consulting the token. On cancellation the batches
+                // behind it are then discarded rather than drained - the stage keeps no checkpoint, and once the lease
+                // is lost the matching database belongs to another invocation. A read side that fails rather than
+                // cancelling behaves the opposite way: ReadAllAsync hands over everything already buffered before it
+                // surfaces the stored exception, so up to ChannelDepth further batches are written after the read has
+                // already died. Harmless - those donors were read legitimately, and a failed stage restarts anyway.
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var failedDonors = await InsertDonorBatch(
