@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils;
+using Atlas.Common.Utils.Disposable;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Data.Helpers;
@@ -29,6 +31,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         private const string DonorsTableName = "Donors";
 
         private const int DefaultBulkInsertTimeoutInSeconds = 3600;
+
+        /// <summary>
+        /// Rows per bulk-copy batch. With <see cref="SqlBulkCopyOptions.UseInternalTransaction"/> this is also the unit
+        /// of atomicity, which is why <see cref="UpsertMatchingPGroupsAtLocus"/> checks a write against it.
+        /// </summary>
+        private const int BulkCopyBatchSize = 10000;
 
         /// <summary>
         /// The matching HLA tables are the largest writes in the system, hence a far longer timeout than
@@ -91,6 +99,13 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         ///
         /// Not every write can take part - see <see cref="GetReusableBulkCopy"/> - so this is an optimisation that a
         /// caller opts into for a whole stage, not a change to how any individual write behaves.
+        ///
+        /// Which writes those are is worth knowing before measuring anything. Donor creation is the only path that
+        /// benefits: the update path holds a real transaction throughout, for DELETE and insert atomicity, so its
+        /// writes always build their own instance. And with DataRefreshDonorUpdatesShouldBeFullyTransactional set, the
+        /// outer scope wraps every write in the batch, creates included, so reuse becomes a no-op for the whole
+        /// refresh while a session is still opened and closed per stage. Closing a session traces how many writes
+        /// actually reused a bulk copy, so neither case has to be inferred from this class.
         /// </remarks>
         public IDisposable OpenBulkWriteSession()
         {
@@ -100,7 +115,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             }
 
             activeBulkCopySession = new BulkCopySession(this);
-            return activeBulkCopySession;
+
+            // Wrapped, rather than returned directly, so that closing is idempotent: DisposableAction already tracks
+            // that for the codebase. A second disposal that ran Close again would clear whatever session is registered
+            // by then - orphaning a newer session's bulk copies, and the connections they hold, rather than nothing.
+            return new DisposableAction(activeBulkCopySession.Close);
         }
 
         public async Task InsertBatchOfDonors(IEnumerable<DonorInfo> donors)
@@ -226,14 +245,17 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             buildDataTableTimer?.Dispose();
 
             // The scope is here to make the DELETE below and the insert that follows it one atomic unit. On the create
-            // path there is no DELETE to be atomic with, and the insert is already atomic in its own right: the
-            // UseInternalTransaction option commits per bulk-copy batch, and one donor batch's rows at one locus
-            // (2 * HlaProcessor.BatchSize at the very most) never reach the 10,000 row batch size.
+            // path there is no DELETE to be atomic with, and a write that fits in a single bulk-copy batch is already
+            // atomic in its own right, because UseInternalTransaction commits per batch. So the scope is skipped only
+            // when both hold - and the second is checked against the rows in hand rather than assumed from the batch
+            // size a caller happens to use, so that raising that batch size costs reuse here instead of atomicity.
             //
-            // Skipping it there is also what leaves the reusable bulk copies usable - see GetReusableBulkCopy. Where a
+            // Skipping it is also what leaves the reusable bulk copies usable - see GetReusableBulkCopy. Where a
             // caller asked for the whole upsert to be transactional, the outer scope opened by
             // UpsertMatchingPGroupsAtSpecifiedLoci is ambient regardless, and this scope only ever joined it.
-            using (var transactionScope = new OptionalAsyncTransactionScope(!isKnownToBeCreate))
+            var writeIsAtomicWithoutAScope = isKnownToBeCreate && dataTable.Rows.Count <= BulkCopyBatchSize;
+
+            using (var transactionScope = new OptionalAsyncTransactionScope(!writeIsAtomicWithoutAScope))
             {
                 using (timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_DeleteExistingRecords_TimerKey))
                 {
@@ -414,7 +436,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
             var bulkCopy = new SqlBulkCopy(ConnectionStringProvider.GetConnectionString(), options)
             {
-                BatchSize = 10000,
+                BatchSize = BulkCopyBatchSize,
                 DestinationTableName = tableName,
                 BulkCopyTimeout = timeout
             };
@@ -438,6 +460,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// they go to one table each, and a <see cref="SqlBulkCopy"/> rejects a second concurrent write on the same
         /// instance. Nor do successive batches overlap, since <see cref="UpsertMatchingPGroupsAtSpecifiedLoci"/> awaits
         /// every locus' write before it returns.
+        ///
+        /// Every table this class writes, rather than the subset the calling stage writes to - donor import only writes
+        /// Donors, HLA processing only the locus tables - because an unused instance costs an allocation and a disposal
+        /// and never reaches the database, which is not worth splitting this method, or its caller's API, in two for.
         /// </remarks>
         private IReadOnlyDictionary<string, SqlBulkCopy> BuildReusableBulkCopies()
         {
@@ -459,12 +485,17 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         }
 
         /// <summary>
-        /// The bulk copies of one <see cref="OpenBulkWriteSession"/>, and their disposal.
+        /// The bulk copies of one <see cref="OpenBulkWriteSession"/>, and their closing.
         /// </summary>
-        private sealed class BulkCopySession : IDisposable
+        private sealed class BulkCopySession
         {
             private readonly DonorUpdateRepositoryBase repository;
             private readonly IReadOnlyDictionary<string, SqlBulkCopy> bulkCopiesByTableName;
+
+            /// <summary>
+            /// Written to from the concurrent per-locus writes, hence interlocked.
+            /// </summary>
+            private int reusedWriteCount;
 
             internal BulkCopySession(DonorUpdateRepositoryBase repository)
             {
@@ -473,10 +504,20 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             }
 
             /// <returns>This session's bulk copy for the table, or null if the session does not cover that table.</returns>
-            internal SqlBulkCopy BulkCopyFor(string tableName) =>
-                bulkCopiesByTableName.TryGetValue(tableName, out var bulkCopy) ? bulkCopy : null;
+            internal SqlBulkCopy BulkCopyFor(string tableName)
+            {
+                if (!bulkCopiesByTableName.TryGetValue(tableName, out var bulkCopy))
+                {
+                    return null;
+                }
 
-            public void Dispose()
+                // Only reached once the caller has decided to reuse - see GetReusableBulkCopy - so this counts writes
+                // that were actually spared building an instance, not writes that asked.
+                Interlocked.Increment(ref reusedWriteCount);
+                return bulkCopy;
+            }
+
+            internal void Close()
             {
                 foreach (var bulkCopy in bulkCopiesByTableName.Values)
                 {
@@ -486,6 +527,24 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 }
 
                 repository.activeBulkCopySession = null;
+                ReportReuse();
+            }
+
+            /// <summary>
+            /// One trace per session, so that a session which reused nothing - and therefore saved nothing - can be
+            /// seen in the logs of a run rather than deduced from the code.
+            /// </summary>
+            private void ReportReuse()
+            {
+                var reusedWrites = reusedWriteCount;
+                var message = reusedWrites == 0
+                    ? "Bulk write session closed without reusing any bulk copy - every write ran under an ambient transaction."
+                    : $"Bulk write session closed. {reusedWrites} writes reused a bulk copy instead of building one.";
+
+                repository.logger.SendTrace(message, props: new Dictionary<string, string>
+                {
+                    {"ReusedWrites", reusedWrites.ToString()}
+                });
             }
         }
 
