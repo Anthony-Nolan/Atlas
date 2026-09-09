@@ -356,6 +356,12 @@ module "search_tracking" {
 module "support" {
   source = "./modules/support"
 
+  general = {
+    environment = local.environment
+    location    = local.location
+    common_tags = local.common_tags
+  }
+
   default_servicebus_settings = local.service-bus
 
   resource_group       = azurerm_resource_group.atlas_resource_group
