@@ -57,6 +57,20 @@ namespace Atlas.Client.Models.Search.Results.ResultSet
         public IEnumerable<TResult> Results { get; set; }
 
         /// <summary>
+        /// This method is used to control serialization of Results property
+        /// When this method returns true - <see cref="Results" /> will be serialized, when it's false - <see cref="Results" /> won't be serialized
+        /// https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm
+        /// </summary>
+        public bool ShouldSerializeResults() => !BatchedResult;
+
+        /// <summary>
+        /// This property is used to be able to control if <see cref="Results" /> should be serialized or not.
+        /// All results are batched in production, but we need to be able to serialize the results for validation testing.
+        /// </summary>
+        [JsonIgnore]
+        public bool BatchedResult { get; set; } = false;
+
+        /// <summary>
         /// The <see cref="SearchRequest"/> that this result set is for. Not strictly necessary for consuming results, but can be very useful for
         /// debugging / support purposes, removing the need to cross reference result sets to request details.  
         /// </summary>

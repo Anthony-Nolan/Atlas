@@ -177,7 +177,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                         ? new Guid(matchingResultsNotification.RepeatSearchRequestId)
                         : null,
                     ResultsFileName: matchingResultsNotification.ResultsFileName,
-                    ResultsBatched: matchingResultsNotification.ResultsBatched,
+                    ResultsBatched: true,
                     BatchFolderName: matchingResultsNotification.BatchFolderName,
                     MatchingAlgorithmElapsedTime: matchingResultsNotification.ElapsedTime,
                     SearchInitiatedTimeUtc: parameters.SearchInitiatedTimeUtc,
@@ -241,13 +241,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                     matchingResultsNotification.BatchFolderName,
                     resultSet.BlobStorageContainerName)
             );
-
-            if (resultSet.Results == null && string.IsNullOrEmpty(matchingResultsNotification.BatchFolderName))
-            {
-                throw new InvalidOperationException(
-                    $"Search {resultSet.SearchRequestId}: ProcessBatchedSearchResults returned null " +
-                    "but BatchFolderName is not set — consumers cannot re-hydrate results.");
-            }
 
             await searchResultsBlobUploader.UploadResults(resultSet, resultSet.BlobStorageContainerName, resultSet.ResultsFileName);
             await matchPredictionSearchTrackingDispatcher.ProcessPersistingResultsEnded(trackingSearchIdentifier, originalSearchIdentifier);
@@ -321,22 +314,23 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             string batchFolder,
             string blobStorageContainerName)
         {
-            if (batchFolder == null)
-            {
-                return Enumerable.Empty<SearchResult>();
-            }
-
             var batchNumber = 0;
+            var allSearchResults = new List<SearchResult>();
 
             await foreach (var matchingResults in matchingResultsDownloader.DownloadResults(isRepeatSearch, batchFolder))
             {
                 var donorIds = matchingResults.Select(r => r.AtlasDonorId).ToList();
-                var matchPredictionResultLocationsForCurrentDonors = matchPredictionResultLocations.Where(l => donorIds.Contains(l.Key)).ToDictionary();
-                var currentSearchResults = await ProcessSearchResults(searchRequestId, matchingResults, matchPredictionResultLocationsForCurrentDonors);
-                await searchResultsBlobUploader.UploadResults(currentSearchResults, blobStorageContainerName, $"{batchFolder}/{++batchNumber}.json");
+                var matchPredictionResultLocationsForCurrentDonors = matchPredictionResultLocations
+                    .Where(l => donorIds.Contains(l.Key))
+                    .ToDictionary();
+
+                var upLoadedResults = await ProcessSearchResults(searchRequestId, matchingResults, matchPredictionResultLocationsForCurrentDonors);
+                await searchResultsBlobUploader.UploadResults(upLoadedResults, blobStorageContainerName, $"{batchFolder}/{++batchNumber}.json");
+
+                allSearchResults.AddRange(upLoadedResults);
             }
 
-            return null;
+            return allSearchResults;
         }
 
         private async Task<IEnumerable<SearchResult>> ProcessSearchResults(string searchRequestId, IEnumerable<MatchingAlgorithmResult> matchingResults, IReadOnlyDictionary<int, string> matchPredictionResultLocations) =>

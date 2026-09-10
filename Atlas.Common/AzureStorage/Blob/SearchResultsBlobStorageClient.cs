@@ -20,13 +20,12 @@ namespace Atlas.Common.AzureStorage.Blob
 
         public async Task UploadResults<T>(ResultSet<T> searchResultSet, int searchResultsBatchSize, string batchFolder) where T : Result
         {
-            var results = searchResultSet.Results;
-            searchResultSet.Results = [];
+            searchResultSet.BatchedResult = true;
+
             await UploadResults(searchResultSet, searchResultSet.BlobStorageContainerName, searchResultSet.ResultsFileName);
 
             if (searchResultsBatchSize > 0)
             {
-                searchResultSet.Results = results;
                 await ChunkAndUpload(searchResultSet.Results, searchResultsBatchSize, searchResultSet.BlobStorageContainerName, batchFolder);
             }
         }

@@ -35,14 +35,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
         private ISearchServiceBusClient searchServiceBusClient;
         private ISearchService searchService;
-        private ISearchService batchedResultsSearchService;
         private ISearchResultsBlobStorageClient resultsBlobStorageClient;
         private IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
         private IMatchingFailureNotificationSender matchingFailureNotificationSender;
         private ISearchTrackingEventPublisher searchTrackingEventPublisher;
 
         private ISearchRunner searchRunner;
-        private ISearchRunner batchedResultsSearchRunner;
 
         [SetUp]
         public void SetUp()
@@ -55,29 +53,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             matchingFailureNotificationSender = Substitute.For<IMatchingFailureNotificationSender>();
             searchTrackingEventPublisher = Substitute.For<ISearchTrackingEventPublisher>();
 
-            batchedResultsSearchService = Substitute.For<ISearchService>();
-            batchedResultsSearchService.Search(Arg.Any<SearchRequest>(), Arg.Any<DateTimeOffset?>())
-                .Returns(new List<MatchingAlgorithmResult> { new MatchingAlgorithmResult() });
-
             searchService.Search(Arg.Any<SearchRequest>(), Arg.Any<DateTimeOffset?>())
                 .Returns(new List<MatchingAlgorithmResult> { new MatchingAlgorithmResult() });
 
             searchRunner = new SearchRunner(
                 searchServiceBusClient,
                 searchService,
-                resultsBlobStorageClient,
-                logger,
-                new MatchingAlgorithmSearchLoggingContext(),
-                hlaNomenclatureVersionAccessor,
-                new MessagingServiceBusSettings { SearchRequestsMaxDeliveryCount = MaxRetryCount },
-                matchingFailureNotificationSender,
-                new Settings.Azure.AzureStorageSettings(),
-                new MatchingAlgorithmSearchTrackingContext(),
-                searchTrackingEventPublisher);
-
-            batchedResultsSearchRunner = new SearchRunner(
-                searchServiceBusClient,
-                batchedResultsSearchService,
                 resultsBlobStorageClient,
                 logger,
                 new MatchingAlgorithmSearchLoggingContext(),
