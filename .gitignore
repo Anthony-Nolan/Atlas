@@ -2,6 +2,12 @@
 [Oo]bj/
 [Ll]og/
 
+# macOS
+.DS_Store
+
+# Local temp directory
+/temp/
+
 # Generated Reqnroll feature code-behind
 *.feature.cs
 
