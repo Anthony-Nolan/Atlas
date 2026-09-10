@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### 4.0.0
-* BREAKING CHANGE: Removed option for `BatchedResult` from `ResultSet` model
+* BREAKING CHANGE: Set default for `BatchedResult` in `ResultSet` model to false so validation tests pass although all results will be batched in production.
 
 ### 3.0.0
 * Updated .NET version from 6.0 to 8.0
