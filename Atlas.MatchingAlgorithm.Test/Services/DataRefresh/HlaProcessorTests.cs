@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
@@ -265,14 +266,64 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             await donorImportRepository.ReceivedWithAnyArgs(4).AddMatchingRelationsForExistingDonorBatch(default, default, default);
         }
 
+        [Test]
+        public async Task UpdateDonorHla_WhenReadFails_SurfacesTheFailureWithItsOwnType()
+        {
+            // The read side runs on its own task now, so its failure has to cross into the processing side through the
+            // queue. It must arrive as itself: UpdateDonorHla tells cancellation from failure by exception type, and a
+            // wrapped read failure would be misreported as an HLA processing failure.
+            GivenDonorBatches(8, onBatchRead: FailOnBatch(3, () => new TimeoutException("page query timed out")));
+
+            await hlaProcessor.Invoking(p => p.UpdateDonorHla(HlaNomenclatureVersion, _ => Task.CompletedTask))
+                .Should().ThrowAsync<TimeoutException>();
+        }
+
+        [Test]
+        public async Task UpdateDonorHla_WhenReadFails_RaisesOneErrorForTheIncident()
+        {
+            // The failure reaches the processing side and propagates out of UpdateDonorHla, which reports the
+            // stage-level failure as an exception. The read side records where it started below that severity, so one
+            // incident does not raise two errors in App Insights.
+            GivenDonorBatches(8, onBatchRead: FailOnBatch(3, () => new TimeoutException("page query timed out")));
+
+            await hlaProcessor.Invoking(p => p.UpdateDonorHla(HlaNomenclatureVersion, _ => Task.CompletedTask))
+                .Should().ThrowAsync<TimeoutException>();
+
+            logger.ReceivedWithAnyArgs(1).SendException(default, default, default);
+            logger.Received(1).SendTrace(
+                Arg.Is<string>(m => m.Contains("Donor read during HLA processing failed")),
+                LogLevel.Warn,
+                Arg.Any<Dictionary<string, string>>());
+            logger.DidNotReceive().SendTrace(
+                Arg.Any<string>(), Arg.Is<LogLevel>(level => level >= LogLevel.Error), Arg.Any<Dictionary<string, string>>());
+        }
+
+        /// <summary>
+        /// Throws on the given page, so a read-side failure lands partway through the stream rather than at its start.
+        /// </summary>
+        private static Action FailOnBatch(int failOnBatchIndex, Func<Exception> exception)
+        {
+            var batchesRead = 0;
+            return () =>
+            {
+                if (Interlocked.Increment(ref batchesRead) == failOnBatchIndex)
+                {
+                    throw exception();
+                }
+            };
+        }
+
         private void GivenDonorBatches(int batchCount, Action onBatchRead = null, bool includeTerminalEmptyBatch = false)
         {
             // Built afresh per call, rather than handed a single pre-built sequence, so the stream can be enumerated
             // again if a test ever drives the processor twice.
-            dataRefreshRepository.NewOrderedDonorBatchesToImport(default, default)
+            dataRefreshRepository.NewOrderedDonorBatchesToImport(default, default, default)
                 .ReturnsForAnyArgs(_ => BuildBatches(batchCount, onBatchRead, includeTerminalEmptyBatch));
         }
 
+        /// <summary>
+        /// Stands in for the paged donor query, failing partway through if <paramref name="onBatchRead"/> throws.
+        /// </summary>
         private static async IAsyncEnumerable<List<DonorInfo>> BuildBatches(int batchCount, Action onBatchRead, bool includeTerminalEmptyBatch)
         {
             for (var batchIndex = 0; batchIndex < batchCount; batchIndex++)

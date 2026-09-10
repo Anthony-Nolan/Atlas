@@ -32,7 +32,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         /// </summary>
         /// <param name="cancellationToken">
         /// Cancelled if the data refresh loses its run-level lease. Observed between batches, never mid-batch, so the
-        /// last-safely-processed donor marker stays consistent with what has actually been written.
+        /// last-safely-processed donor marker stays consistent with what has actually been written. That guarantee
+        /// rests on an explicit check in the processing loop, not on the enumeration's own token: donor pages are
+        /// prefetched into a queue, and reading an already-queued page completes without ever consulting a token.
         /// </param>
         Task UpdateDonorHla(
             string hlaNomenclatureVersion,
@@ -62,15 +64,15 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         public const int NumberOfBatchesOverlapOnRestart = 3;
 
         /// <summary>
-        /// How many reified donor pages the read side may run ahead of the processing side. Processing is much the
-        /// slower of the two, so the read side spends most of the stage blocked on a full channel and a single rung
-        /// would very nearly do; the second only absorbs variance in page read times.
+        /// How many donor pages the read side may run ahead of the processing side.
         /// </summary>
         /// <remarks>
-        /// Kept deliberately shallow because this is the memory-critical stage - see <see cref="BatchSize"/>, capped at
-        /// 2000 because 4000 has been seen to OOM. The prefetched pages hold raw <see cref="DonorInfo"/>, far smaller
-        /// than the expanded HLA that drives that ceiling, and the cost is bounded at (ChannelDepth + 2) * BatchSize of
-        /// them: the processing side holds the page it is working on, and the read side the one it is blocked writing.
+        /// Processing measured roughly twice the read, so in steady state the read side is always waiting and a depth
+        /// of 1 would recover nearly all of the available time. The second rung is there only to absorb variance in
+        /// individual page read times, and is cheap: a page is raw <see cref="DonorInfo"/>, an order of magnitude
+        /// smaller than the expanded HLA the processing side builds from it, so a rung costs far less than the
+        /// <see cref="BatchSize"/> of 2000 rows suggests. Deeper buys nothing while processing remains the slower side
+        /// - it would only let the read side finish further ahead and then idle.
         /// </remarks>
         private const int ChannelDepth = 2;
 
@@ -79,6 +81,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         /// clock, give the stage's occupancy: ~1 when fully serial, ~2 when the pipeline is working. One trace per page
         /// is ~20k of them across a full refresh, five times what the donor import stage emits - hence Verbose.
         /// </summary>
+        /// <remarks>
+        /// Because it is Verbose, this does NOT reach App Insights on a default deployment: traces are filtered by
+        /// <c>messageLogLevel >= configuredLogLevel</c> and every Functions app ships
+        /// <c>ApplicationInsights:LogLevel = Info</c>. Taking the occupancy measurement therefore means raising that
+        /// setting for the duration of the refresh being measured. That is deliberate - it keeps ~20k traces per
+        /// refresh out of normal operation - but it does mean the numbers are opt-in rather than always available.
+        /// </remarks>
         private const string ReadBatchTimingMessage = "Read donor batch from the transient database";
 
         public HlaProcessor(
@@ -137,7 +146,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             CancellationToken cancellationToken)
         {
             var totalDonorCount = await dataRefreshRepository.GetDonorCount();
-            var batchedDonors = dataRefreshRepository.NewOrderedDonorBatchesToImport(BatchSize, lastProcessedDonor);
+            var batchedDonors = dataRefreshRepository.NewOrderedDonorBatchesToImport(BatchSize, lastProcessedDonor, cancellationToken);
 
             var overlapBatches = continueExistingProcessing
                 ? await dataRefreshRepository.GetOrderedDonorBatches(NumberOfBatchesOverlapOnRestart, BatchSize, lastProcessedDonor ?? 0)
@@ -205,119 +214,71 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         /// written, rather than alternating between the two.
         /// </summary>
         /// <remarks>
-        /// The two contend for nothing - the read is a keyset-paged query against the Donors table, the processing is
-        /// HLA expansion plus bulk inserts into the matching HLA tables - so serially the stage costs read +
-        /// processing, and overlapped roughly max(read, processing). Processing is much the larger of the two, so the
-        /// read is expected to disappear behind it almost entirely.
+        /// In the application the two contend for nothing - the read is a keyset-paged query against the Donors table,
+        /// the processing is HLA expansion plus bulk inserts into the matching HLA tables - so serially the stage costs
+        /// read + processing, and overlapped roughly max(read, processing). Processing is much the larger of the two, so
+        /// the read is expected to disappear behind it almost entirely.
+        /// <para>
+        /// They do share one thing they did not before: the transient database instance itself. The page query and the
+        /// bulk insert can now run against it concurrently, so the read is no longer guaranteed to have it to itself.
+        /// The read is much the lighter of the two and hits a different, indexed access path, so contention is expected
+        /// to be slight - but that is a prediction, and no unit test here settles it, because none of them touch a real
+        /// database. It is the read durations traced by <see cref="ReadBatchTimingMessage"/> that would show it: if the
+        /// instance is the constraint, they rise once the pipeline fills instead of staying flat.
+        /// </para>
         /// </remarks>
-        private async Task<List<FailedDonorInfo>> RunHlaProcessingPipeline(
+        private Task<List<FailedDonorInfo>> RunHlaProcessingPipeline(
             IAsyncEnumerable<List<DonorInfo>> batchedDonors,
             string hlaNomenclatureVersion,
             Func<int, Task> updateLastSafelyProcessedDonorId,
             LongStopwatchCollection timerCollection,
-            CancellationToken cancellationToken)
-        {
-            var batches = Channel.CreateBounded<List<DonorInfo>>(
-                new BoundedChannelOptions(ChannelDepth)
-                {
-                    SingleReader = true,
-                    SingleWriter = true,
-                    FullMode = BoundedChannelFullMode.Wait
-                });
-
-            // Linked, so a processing-side failure tears the read side down too. Otherwise it would block forever on a
-            // full channel that nothing is draining any more.
-            using var readCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
-            // Started without a Task.Run, unlike DonorImporter's equivalent. That one drives a synchronous, blocking
-            // IEnumerable and so needs a thread of its own; NewOrderedDonorBatchesToImport is genuinely async - it
-            // awaits each page's query - so it occupies a pool thread only while a query is actually running. It does
-            // hold that page's connection open across the yield, and so for as long as the read side then sits blocked
-            // on a full channel, but that is no worse than before: serially the same connection was held open across
-            // the processing of every page.
-            var readTask = ReadDonorBatches(batchedDonors, batches, readCancellation.Token);
-
-            try
-            {
-                return await ProcessDonorBatches(
-                    batches.Reader, hlaNomenclatureVersion, updateLastSafelyProcessedDonorId, timerCollection, cancellationToken);
-            }
-            finally
-            {
-                // Cancel before awaiting: a read side blocked on a full channel has to be released before it can
-                // terminate. Awaiting at all is what stops this method returning, by any path, while a page query is
-                // still in flight - otherwise an abandoned read task would go on querying the transient database, and
-                // holding a connection to it, after the stage that owns it has unwound.
-                await readCancellation.CancelAsync();
-                await AwaitReadTaskQuietly(readTask);
-            }
-        }
+            CancellationToken cancellationToken) =>
+            PrefetchPipeline.Run<List<DonorInfo>, List<FailedDonorInfo>>(
+                ChannelDepth,
+                (writer, queueDepth, token) => ReadDonorBatches(batchedDonors, writer, queueDepth, token),
+                (reader, token) => ProcessDonorBatches(
+                    reader, hlaNomenclatureVersion, updateLastSafelyProcessedDonorId, timerCollection, token),
+                logger,
+                "Donor read during HLA processing",
+                cancellationToken);
 
         /// <summary>
         /// Drives the paged donor query and hands each page to the processing side.
         /// </summary>
         private async Task ReadDonorBatches(
             IAsyncEnumerable<List<DonorInfo>> batchedDonors,
-            Channel<List<DonorInfo>> batches,
+            ChannelWriter<List<DonorInfo>> writer,
+            Func<int> queueDepth,
             CancellationToken cancellationToken)
         {
-            var writer = batches.Writer;
+            // An explicit enumerator rather than a foreach, so that MoveNextAsync can be timed - it is where each
+            // page's query runs and its rows are reified, and a foreach would bury that in its own hidden
+            // MoveNextAsync. Now that read and processing overlap, the read cost can no longer be inferred by
+            // subtracting the batchProgress inner timings from the stage's wall clock, so it has to be measured
+            // directly. Each page is already reified by the repository, one query per page, so there is no lazy work
+            // left here to accidentally push back onto the processing side either.
+            await using var donorBatches = batchedDonors.GetAsyncEnumerator(cancellationToken);
 
-            try
+            while (true)
             {
-                // An explicit enumerator rather than a foreach, so that MoveNextAsync can be timed - it is where each
-                // page's query runs and its rows are reified, and a foreach would bury that in its own hidden
-                // MoveNextAsync. Now that read and processing overlap, the read cost can no longer be inferred by
-                // subtracting the batchProgress inner timings from the stage's wall clock, so it has to be measured
-                // directly. Each page is already reified by the repository, one query per page, so there is no lazy
-                // work left here to accidentally push back onto the processing side either.
-                await using var donorBatches = batchedDonors.GetAsyncEnumerator(cancellationToken);
+                // Depth as it stood before this page was fetched, logged beside the fetch's own duration. Sitting at
+                // zero means the processing side consumed the previous page the instant it arrived, so the pipeline is
+                // delivering nothing - which is otherwise indistinguishable from success until the stage as a whole
+                // fails to speed up. A healthy read side finds it at capacity.
+                var depthBeforeRead = queueDepth();
 
-                while (true)
+                bool hasNextBatch;
+                using (logger.RunTimed($"{ReadBatchTimingMessage} (QueueDepth: {depthBeforeRead})", LogLevel.Verbose))
                 {
-                    // Checked explicitly because the page read is the one thing here that cannot be cancelled:
-                    // NewOrderedDonorBatchesToImport declares no [EnumeratorCancellation] parameter, so the token
-                    // handed to GetAsyncEnumerator never reaches MoveNextAsync. WriteAsync below does observe it; this
-                    // is what stops a fresh page query being started after cancellation was requested.
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    // Depth as it stood while this page was being fetched, logged beside the fetch's own duration.
-                    // Sitting at zero means the processing side consumed the previous page the instant it arrived, so
-                    // the pipeline is delivering nothing - which is otherwise indistinguishable from success until the
-                    // stage as a whole fails to speed up. A healthy read side finds it at capacity.
-                    var queueDepth = batches.Reader.CanCount ? batches.Reader.Count : (int?) null;
-
-                    bool hasNextBatch;
-                    using (logger.RunTimed(
-                        $"{ReadBatchTimingMessage} (QueueDepth: {queueDepth?.ToString() ?? "unknown"})", LogLevel.Verbose))
-                    {
-                        hasNextBatch = await donorBatches.MoveNextAsync();
-                    }
-
-                    if (!hasNextBatch)
-                    {
-                        break;
-                    }
-
-                    await writer.WriteAsync(donorBatches.Current, cancellationToken);
+                    hasNextBatch = await donorBatches.MoveNextAsync();
                 }
 
-                writer.TryComplete();
-            }
-            catch (Exception e)
-            {
-                // Logged here rather than left to whoever observes the channel. If the processing side has already
-                // failed on its own it never reads the completion, so this is otherwise the only record of why the read
-                // side stopped. Cancellation is excluded - losing the lease is expected, and not a failure.
-                if (e is not OperationCanceledException)
+                if (!hasNextBatch)
                 {
-                    logger.SendTrace($"Donor read failed during HLA processing: {e}", LogLevel.Error);
+                    return;
                 }
 
-                // How a read-side failure reaches the processing side. ReadAllAsync surfaces it unwrapped, unlike
-                // ReadAsync, so it keeps its type: that is what lets UpdateDonorHla still tell cancellation from
-                // failure now the exception crosses threads to get there.
-                writer.TryComplete(e);
+                await writer.WriteAsync(donorBatches.Current, cancellationToken);
             }
         }
 
@@ -339,9 +300,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             await foreach (var donorBatch in reader.ReadAllAsync(cancellationToken))
             {
                 // Checked here as well as by ReadAllAsync, and this is the check that matters: reading an
-                // already-buffered batch completes without ever consulting the token. Prefetched batches behind it are
-                // discarded rather than drained, which is safe precisely because this stage does keep a checkpoint - it
-                // simply stays where it is, and those donors are read again when the refresh resumes.
+                // already-queued batch completes without ever consulting the token, so this is the only thing standing
+                // between a cancelled refresh and another batch being written. Do not remove it as redundant.
+                // Prefetched batches behind it are discarded rather than drained, which is safe precisely because this
+                // stage keeps a checkpoint - it simply stays where it is, and those donors are read again on resume.
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // The paging enumerator signals exhaustion by yielding one final empty batch, so this is the normal
@@ -378,21 +340,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             }
 
             return failedDonors;
-        }
-
-        private async Task AwaitReadTaskQuietly(Task readTask)
-        {
-            try
-            {
-                await readTask;
-            }
-            catch (Exception e)
-            {
-                // Defensive only: the read side resolves its own exceptions into the channel and logs them there, so it
-                // completes even when it fails. Anything reaching here - a throwing Dispose during unwind, say - must
-                // not displace the exception already propagating out of the pipeline.
-                logger.SendTrace($"Donor read task ended with an exception: {e}", LogLevel.Verbose);
-            }
         }
 
         private async Task<(int, int)> DetermineProgressAndReprocessingBoundaries(IReadOnlyCollection<List<DonorInfo>> overlapBatches)
