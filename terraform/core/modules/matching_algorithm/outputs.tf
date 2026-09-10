@@ -10,6 +10,7 @@ output "function_app" {
     base_url                = "https://${azurerm_windows_function_app.atlas_matching_algorithm_function.default_hostname}"
     app_name                = local.matching_algorithm_function_app_name
     donor_matching_app_name = local.donor_management_function_app_name
+    data_refresh_app_name   = local.data_refresh_function_app_name
   }
 }
 

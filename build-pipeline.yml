@@ -52,6 +52,7 @@ jobs:
             Atlas.MatchingAlgorithm.Client.Models
             Atlas.MatchingAlgorithm.Functions
             Atlas.MatchingAlgorithm.Functions.DonorManagement
+            Atlas.MatchingAlgorithm.Functions.DataRefresh
             Atlas.MatchingAlgorithm.Test
             Atlas.MatchingAlgorithm.Data
             Atlas.MatchingAlgorithm.Data.Persistent
@@ -250,6 +251,26 @@ jobs:
         displayName: 'Publish Artifact: DonorManagement Functions'
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/MatchingDonorFunctions-$(Build.BuildId).zip'
+          ArtifactName: functions
+
+      - task: CopyFiles@2
+        displayName: 'Copy DataRefresh Functions Build'
+        inputs:
+          SourceFolder: 'Atlas.MatchingAlgorithm.Functions.DataRefresh'
+          Contents: |
+            bin/**
+            *.config
+          TargetFolder: 'matchingDataRefreshFunctionsBuild'
+      - task: ArchiveFiles@2
+        displayName: 'Archive Matching Algorithm DataRefresh Functions Build'
+        inputs:
+          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/matchingDataRefreshFunctionsBuild/bin'
+          includeRootFolder: false
+          archiveFile: '$(Build.ArtifactStagingDirectory)/MatchingDataRefreshFunctions-$(Build.BuildId).zip'
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: DataRefresh Functions'
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/MatchingDataRefreshFunctions-$(Build.BuildId).zip'
           ArtifactName: functions
 
       - task: CopyFiles@2
