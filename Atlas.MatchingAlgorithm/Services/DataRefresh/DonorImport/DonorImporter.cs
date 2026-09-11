@@ -1,6 +1,7 @@
 ﻿using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.Common.Utils;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
@@ -120,35 +121,16 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         /// different database - so serially the stage costs read + write, and overlapped roughly max(read, write). On a
         /// 43.9M donor refresh, ~254 minutes against ~128.
         /// </remarks>
-        private async Task<List<FailedDonorInfo>> RunImportPipeline(bool shouldMarkDonorsAsUpdated, CancellationToken cancellationToken)
-        {
-            var batches = Channel.CreateBounded<List<SearchableDonorInformation>>(
-                new BoundedChannelOptions(ChannelDepth)
-                {
-                    SingleReader = true,
-                    SingleWriter = true,
-                    FullMode = BoundedChannelFullMode.Wait
-                });
-
-            // Linked, so a write-side failure tears the read side down too. Otherwise it would block forever on a full
-            // channel, holding open the cross-database connection it enumerates.
-            using var readCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
-            var readTask = Task.Run(() => ReadDonorBatches(batches.Writer, readCancellation.Token), CancellationToken.None);
-
-            try
-            {
-                return await WriteDonorBatches(batches.Reader, shouldMarkDonorsAsUpdated, cancellationToken);
-            }
-            finally
-            {
-                // Cancel before awaiting: a read side blocked on a full channel has to be released before it can
-                // terminate. Awaiting at all is what stops this method returning, by any path, while a thread is still
-                // enumerating the master donor store.
-                await readCancellation.CancelAsync();
-                await AwaitReadTaskQuietly(readTask);
-            }
-        }
+        private Task<List<FailedDonorInfo>> RunImportPipeline(bool shouldMarkDonorsAsUpdated, CancellationToken cancellationToken) =>
+            PrefetchPipeline.Run<List<SearchableDonorInformation>, List<FailedDonorInfo>>(
+                ChannelDepth,
+                // Pushed onto the pool rather than forcing the enumerable to be async - see ReadDonorBatches. The depth
+                // probe goes unused: this stage logs queue depth from the write side, which has the reader to hand.
+                (writer, _, token) => Task.Run(() => ReadDonorBatches(writer, token), CancellationToken.None),
+                (reader, token) => WriteDonorBatches(reader, shouldMarkDonorsAsUpdated, token),
+                logger,
+                "Donor read",
+                cancellationToken);
 
         /// <summary>
         /// Drives the donor enumerator and hands reified batches to the write side.
@@ -163,55 +145,32 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         /// </remarks>
         private async Task ReadDonorBatches(ChannelWriter<List<SearchableDonorInformation>> writer, CancellationToken cancellationToken)
         {
-            try
+            var donorsStream = donorReader.StreamAllDonors().Select(d => d.MapImportDonorToMatchingUpdateDonor());
+
+            // An explicit enumerator rather than a foreach, so that MoveNext can be timed - it is where donors are
+            // pulled out of SQL and the projection above is evaluated, and a foreach would bury that in its own
+            // hidden MoveNext. Now that read and write overlap, the read cost can no longer be inferred by
+            // subtracting write timings from the stage's wall clock, so it has to be measured directly.
+            using var donorBatches = donorsStream.Batch(BatchSize).GetEnumerator();
+
+            while (true)
             {
-                var donorsStream = donorReader.StreamAllDonors().Select(d => d.MapImportDonorToMatchingUpdateDonor());
+                cancellationToken.ThrowIfCancellationRequested();
 
-                // An explicit enumerator rather than a foreach, so that MoveNext can be timed - it is where donors are
-                // pulled out of SQL and the projection above is evaluated, and a foreach would bury that in its own
-                // hidden MoveNext. Now that read and write overlap, the read cost can no longer be inferred by
-                // subtracting write timings from the stage's wall clock, so it has to be measured directly.
-                using var donorBatches = donorsStream.Batch(BatchSize).GetEnumerator();
-
-                while (true)
+                bool hasNextBatch;
+                using (logger.RunTimed(ReadBatchTimingMessage, LogLevel.Verbose))
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    bool hasNextBatch;
-                    using (logger.RunTimed(ReadBatchTimingMessage, LogLevel.Verbose))
-                    {
-                        hasNextBatch = donorBatches.MoveNext();
-                    }
-
-                    if (!hasNextBatch)
-                    {
-                        break;
-                    }
-
-                    // Reified on this thread deliberately: handing over a lazy sequence would move the cost of reading
-                    // those donors onto the write side, which is the serialisation this pipeline exists to remove.
-                    await writer.WriteAsync(donorBatches.Current.ToList(), cancellationToken);
+                    hasNextBatch = donorBatches.MoveNext();
                 }
 
-                writer.TryComplete();
-            }
-            catch (Exception e)
-            {
-                // Logged here rather than left to whoever observes the channel. If the write side has already failed on
-                // its own it never reads the completion, so this is otherwise the only record of why the read side
-                // stopped. Warn rather than Error: when the write side does observe this, ImportDonors reports the
-                // stage-level Error, and one incident should not raise two. Warn still clears the configured Info
-                // threshold, so the cause survives even when nothing else reports it. Cancellation is expected, not a
-                // failure, so it is excluded.
-                if (e is not OperationCanceledException)
+                if (!hasNextBatch)
                 {
-                    logger.SendTrace($"Donor read failed: {e}", LogLevel.Warn);
+                    return;
                 }
 
-                // How a read-side failure reaches the write side. ReadAllAsync surfaces it unwrapped, unlike ReadAsync,
-                // so it keeps its type: that is what lets ImportDonors still tell cancellation from failure now the
-                // exception crosses threads to get there.
-                writer.TryComplete(e);
+                // Reified on this thread deliberately: handing over a lazy sequence would move the cost of reading
+                // those donors onto the write side, which is the serialisation this pipeline exists to remove.
+                await writer.WriteAsync(donorBatches.Current.ToList(), cancellationToken);
             }
         }
 
@@ -237,32 +196,17 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var failedDonors = await InsertDonorBatch(
-                    reifiedDonorBatch, shouldMarkDonorsAsUpdated, reader.CanCount ? reader.Count : null);
+                    reifiedDonorBatch, shouldMarkDonorsAsUpdated, reader.Count);
                 allFailedDonors.AddRange(failedDonors);
             }
 
             return allFailedDonors;
         }
 
-        private async Task AwaitReadTaskQuietly(Task readTask)
-        {
-            try
-            {
-                await readTask;
-            }
-            catch (Exception e)
-            {
-                // Defensive only: the read side resolves its own exceptions into the channel and logs them there, so it
-                // completes even when it fails. Anything reaching here - a throwing Dispose during unwind, say - must
-                // not displace the exception already propagating out of the pipeline.
-                logger.SendTrace($"Donor read task ended with an exception: {e}", LogLevel.Verbose);
-            }
-        }
-
         /// <param name="donors">Batch of donors to insert into the matching database.</param>
         /// <param name="shouldMarkDonorsAsUpdated"></param>
         /// <param name="queueDepth">
-        ///     Batches the read side had ready when this write began, or null if the channel cannot report it. Logged
+        ///     Batches the read side had ready when this write began. Logged
         ///     beside the write's own duration: a depth sitting at zero means the write side is starved and the
         ///     pipeline is delivering nothing, which is otherwise indistinguishable from success until the stage as a
         ///     whole fails to speed up.
@@ -271,10 +215,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         private async Task<IEnumerable<FailedDonorInfo>> InsertDonorBatch(
             List<SearchableDonorInformation> donors,
             bool shouldMarkDonorsAsUpdated,
-            int? queueDepth)
+            int queueDepth)
         {
-            using (logger.RunTimed($"Import donor batch (BatchSize: {donors.Count}, QueueDepth: {queueDepth?.ToString() ?? "unknown"})",
-                       LogLevel.Verbose))
+            using (logger.RunTimed($"Import donor batch (BatchSize: {donors.Count}, QueueDepth: {queueDepth})", LogLevel.Verbose))
             {
                 var donorInfoConversionResult = await donorInfoConverter.ConvertDonorInfoAsync(donors, ImportFailureEventName);
                 await matchingDonorImportRepository.InsertBatchOfDonors(donorInfoConversionResult.ProcessingResults);
