@@ -7,22 +7,15 @@ using Atlas.MatchPrediction.Models;
 namespace Atlas.MatchPrediction.Test.TestHelpers;
 
 /// <summary>
-/// Two views of <see cref="ImputedGenotypes"/> that the result no longer carries itself: a set of genotypes, and a
-/// likelihood dictionary keyed by name form. Kept here so that assertions can be written against the values a caller
-/// cares about, rather than against the shape the result is carried in.
+/// A view of <see cref="ImputedGenotypes"/> that the result no longer carries itself: a set of genotypes, without
+/// their name forms or likelihoods. Kept here so that assertions can be written against the values a caller cares
+/// about, rather than against the shape the result is carried in. The name-keyed likelihood view,
+/// <c>LikelihoodsByName</c>, lives in production code (<see cref="ImputedGenotypesExtensions"/> in
+/// <c>Atlas.MatchPrediction.Models</c>) since <c>GenotypeImputationFunctions</c> needs the same projection.
 /// </summary>
-internal static class ImputedGenotypesExtensions
+internal static class ImputedGenotypesTestExtensions
 {
     /// <summary>The kept genotypes alone, in the order the expansion produced them.</summary>
     public static IReadOnlyList<PhenotypeInfo<HlaAtKnownTypingCategory>> GenotypesOnly(this ImputedGenotypes imputed) =>
         imputed.Genotypes.Select(genotype => genotype.Genotype).ToList();
-
-    /// <summary>
-    /// One entry per surviving name form. Grouped rather than <c>ToDictionary</c> because two genotypes can share a
-    /// name form - the collapse case - and they carry one likelihood between them.
-    /// </summary>
-    public static Dictionary<PhenotypeInfo<string>, decimal> LikelihoodsByName(this ImputedGenotypes imputed) =>
-        imputed.Genotypes
-            .GroupBy(genotype => genotype.Names)
-            .ToDictionary(group => group.Key, group => group.First().Likelihood);
 }

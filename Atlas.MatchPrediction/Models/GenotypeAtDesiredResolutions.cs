@@ -10,12 +10,23 @@ using PGroupGenotype = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.Phen
 namespace Atlas.MatchPrediction.Models;
 
 /// <remarks>
-/// Built through an object initialiser rather than a constructor. <see cref="HaplotypeResolution"/> and
-/// <see cref="StringMatchableResolution"/> are both <c>PhenotypeInfo&lt;string&gt;</c>, so as constructor arguments a
-/// caller could transpose them and the compiler would not notice. Named at the initialiser, it cannot happen silently.
+/// Built through a constructor taking an <see cref="ImputedGenotype"/> rather than its <see cref="HaplotypeResolution"/>
+/// and <see cref="GenotypeLikelihood"/> as independent arguments: both come from the one <c>ImputedGenotype</c>, whose
+/// <c>Names</c>/<c>Genotype</c> pairing is already guaranteed correct upstream (see
+/// <c>ExpandedGenotypes.MaterialiseNames</c>), so the two cannot be set from unrelated sources here. Re-deriving
+/// <c>HaplotypeResolution</c> via <c>ToHlaNames()</c> on every call, as an earlier version of this type did, would
+/// reintroduce the per-genotype cost <c>GenotypeConverter</c> exists to avoid - <c>ImputedGenotype.Names</c> is already
+/// that derivation, computed once upstream.
 /// </remarks>
 public class GenotypeAtDesiredResolutions
 {
+    public GenotypeAtDesiredResolutions(ImputedGenotype genotype, PGroupGenotype stringMatchableResolution)
+    {
+        HaplotypeResolution = genotype.Names;
+        GenotypeLikelihood = genotype.Likelihood;
+        StringMatchableResolution = stringMatchableResolution;
+    }
+
     /// <summary>
     /// HLA at the resolution at which they were stored.
     /// I.e. P group, or G group where a null allele meant no P group existed.
@@ -28,7 +39,7 @@ public class GenotypeAtDesiredResolutions
     /// a per-row column and one set can hold both resolutions.
     /// </para>
     /// </summary>
-    public HfSetGenotypeNames HaplotypeResolution { get; init; }
+    public HfSetGenotypeNames HaplotypeResolution { get; }
 
     /// <summary>
     /// HLA at a resolution at which it is possible to calculate match counts using string comparison only, no expansion.
@@ -39,13 +50,13 @@ public class GenotypeAtDesiredResolutions
     /// says what it holds. <c>IMatchCalculationService.CalculateMatchCounts_Fast</c> carries the evidence.
     /// </para>
     /// </summary>
-    public PGroupGenotype StringMatchableResolution { get; init; }
+    public PGroupGenotype StringMatchableResolution { get; }
 
     /// <summary>
     /// Likelihood of this genotype.
     ///
     /// Stored with the genotype to avoid dictionary lookups when calculating final likelihoods, as looking up the same genotype multiple times
-    /// for different patient/donor pairs is inefficient 
+    /// for different patient/donor pairs is inefficient
     /// </summary>
-    public decimal GenotypeLikelihood { get; init; }
+    public decimal GenotypeLikelihood { get; }
 }

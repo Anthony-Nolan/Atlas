@@ -3,6 +3,7 @@ using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
@@ -15,6 +16,7 @@ using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using HfSetHaplotypeNames = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>;
 
@@ -243,6 +245,37 @@ internal class HaplotypeFrequencyCacheTests
         // The standing hazard is a second writer of ConsolidatedFrequencies. Awaiting inside the GetOrAddAsync
         // factory is what prevents it: concurrent callers share one lazy task rather than each starting a warm.
         frequencyConsolidator.Received(1).PreConsolidateFrequenciesForCommonMissingLoci(Arg.Any<FrequencySetCacheEntry>());
+    }
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenAwaitingTheWarm_AndPreConsolidationThrows_PropagatesTheFailure()
+    {
+        const int setId = 9;
+        var awaitingSut = BuildSut(awaitConsolidatedFrequencyWarm: true);
+        frequencyRepository.GetAllHaplotypeFrequencies(setId).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.5m)]);
+        frequencyConsolidator.PreConsolidateFrequenciesForCommonMissingLoci(Arg.Any<FrequencySetCacheEntry>())
+            .Throws(new InvalidOperationException("boom"));
+
+        // Awaiting the warm exists precisely so a caller never gets back an entry whose ConsolidatedFrequencies is
+        // silently stuck null - a failed pre-consolidation must surface here, not be swallowed.
+        await awaitingSut.Invoking(c => c.GetAllHaplotypeFrequencies(setId)).Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenNotAwaitingTheWarm_AndPreConsolidationThrows_LogsAndReturnsUnwarmedEntry()
+    {
+        const int setId = 10;
+        frequencyRepository.GetAllHaplotypeFrequencies(setId).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.5m)]);
+        frequencyConsolidator.PreConsolidateFrequenciesForCommonMissingLoci(Arg.Any<FrequencySetCacheEntry>())
+            .Throws(new InvalidOperationException("boom"));
+
+        // The background path has no awaiter to propagate to, so the failure must be caught and logged rather than
+        // faulting an unobserved task - the caller still gets an entry back, just an unwarmed one.
+        var entry = await sut.GetAllHaplotypeFrequencies(setId);
+        await WaitUntil(() => logger.ReceivedCalls().Any());
+
+        entry.ConsolidatedFrequencies.Should().BeNull();
+        logger.Received(1).SendTrace(Arg.Is<string>(msg => msg.Contains("Failed to warm consolidated frequency cache")), LogLevel.Error);
     }
 
     private async Task WaitForConsolidation(int setId) =>

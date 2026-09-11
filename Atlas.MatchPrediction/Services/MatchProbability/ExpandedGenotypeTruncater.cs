@@ -128,7 +128,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         /// arbitrary eviction. <c>ExpandedGenotypeTruncaterTests</c> pins it.
         /// </para>
         /// </summary>
-        private static Dictionary<GenotypeNameKey, decimal> MostLikelyFirst(
+        /// <remarks>
+        /// Internal, not private: <c>ExpandedGenotypeTruncaterTests</c> asserts directly on this method's output order,
+        /// since <see cref="ImputedGenotypes.Genotypes"/> is deliberately in expansion order rather than this method's
+        /// descending-likelihood order, so nothing else exposes the order this method - and the summation in
+        /// <see cref="TruncateGenotypes"/> above - actually runs in.
+        /// </remarks>
+        internal static Dictionary<GenotypeNameKey, decimal> MostLikelyFirst(
             Dictionary<GenotypeNameKey, decimal> likelihoods,
             int maximum)
         {

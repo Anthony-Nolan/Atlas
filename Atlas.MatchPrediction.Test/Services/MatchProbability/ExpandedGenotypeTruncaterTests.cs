@@ -29,8 +29,10 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability;
 /// <para>
 /// Two consequences worth stating, because a bounded heap gets them wrong unless it is told not to:
 /// <see cref="TruncateGenotypes_WhenLikelihoodsTie_KeepsTheEarliestInserted"/> (which of the tied keys survive) and
-/// <see cref="TruncateGenotypes_SumsTheKeptLikelihoodsInDescendingLikelihoodOrder"/> (the ORDER the kept likelihoods
-/// are summed in, which <c>decimal</c> addition can see).
+/// <see cref="MostLikelyFirst_OrdersByDescendingLikelihood"/> (the ORDER the kept likelihoods are summed in, which
+/// <c>decimal</c> addition can see). <see cref="ImputedGenotypes.Genotypes"/> is in expansion order, not this order,
+/// so that second invariant is pinned directly against <c>MostLikelyFirst</c> rather than through
+/// <c>TruncateGenotypes</c>'s result.
 /// </para>
 /// </summary>
 [TestFixture]
@@ -119,14 +121,31 @@ internal class ExpandedGenotypeTruncaterTests
 
         // decimal carries scale, so the sum's scale is the widest addend's - hence 0.600, three places, from 0.200.
         // Addition itself is exact until the 96-bit mantissa overflows, which likelihood magnitudes never approach, so
-        // the order is not observable here. It is asserted below anyway, because the truncater selects in
-        // descending-likelihood order and folds the sum during that same pass, and that must not quietly change.
-        // Genotypes enumerate in expansion order instead, which is a different order and deliberately so - it is the
-        // one downstream reads.
+        // the summation order is not observable in this value - MostLikelyFirst_OrdersByDescendingLikelihood pins that
+        // order directly instead. Genotypes enumerate in expansion order here, which is a different order and
+        // deliberately so - it is the one downstream reads.
         result.SumOfLikelihoods.Should().Be(0.600m);
         result.SumOfLikelihoods.ToString().Should().Be("0.600");
         result.SumOfLikelihoods.Should().Be(0.30m + 0.200m + 0.1m);
         result.GenotypesOnly().Should().Equal(a, b, c);
+    }
+
+    [Test]
+    public void MostLikelyFirst_OrdersByDescendingLikelihood()
+    {
+        // TruncateGenotypes enumerates MostLikelyFirst's result once, to both select survivors and fold
+        // sumOfLikelihoods - so this is the order that folding actually runs in. ImputedGenotypes.Genotypes doesn't
+        // expose it (it's in expansion order, for downstream consumers), so it's pinned here directly.
+        var likelihoods = new Dictionary<GenotypeNameKey, decimal>
+        {
+            [new GenotypeNameKey(0, 1)] = 0.1m,
+            [new GenotypeNameKey(2, 3)] = 0.30m,
+            [new GenotypeNameKey(4, 5)] = 0.200m
+        };
+
+        var result = ExpandedGenotypeTruncater.MostLikelyFirst(likelihoods, maximum: 3);
+
+        result.Values.Should().BeInDescendingOrder();
     }
 
     [Test]
