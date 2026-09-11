@@ -46,15 +46,24 @@ internal class HaplotypeFrequencyCacheTests
         sut = BuildSut(awaitConsolidatedFrequencyWarm: false);
     }
 
-    private HaplotypeFrequencyCache BuildSut(bool awaitConsolidatedFrequencyWarm)
+    private HaplotypeFrequencyCache BuildSut(bool awaitConsolidatedFrequencyWarm, int maxCachedFrequencySets = 1000)
     {
         var cacheSettings = fixture.Build<HaplotypeFrequencySetCacheSettings>()
             .With(x => x.ActiveSetCacheExpiryMinutes, 5)
+            .With(x => x.MaxCachedFrequencySets, maxCachedFrequencySets)
+            .With(x => x.SetCacheExpiryMinutes, 60)
             .With(x => x.AwaitConsolidatedFrequencyWarm, awaitConsolidatedFrequencyWarm)
             .Create();
 
+        var cacheProvider = new HaplotypeFrequencySetCacheProvider(AppCacheBuilder.NewDefaultCache());
+        var residencyTracker = new FrequencySetResidencyTracker(
+            maxCachedFrequencySets,
+            evictedSetId => cacheProvider.Cache.Remove(HaplotypeFrequencyCache.AllFrequenciesCacheKey(evictedSetId))
+        );
+
         return new HaplotypeFrequencyCache(
-            AppCacheBuilder.NewPersistentCacheProvider(),
+            cacheProvider,
+            residencyTracker,
             frequencyRepository,
             frequencySetRepository,
             frequencyConsolidator,
@@ -112,6 +121,54 @@ internal class HaplotypeFrequencyCacheTests
         entry.SetFrequencies.Should().HaveCount(1);
         entry.Interner.TryResolve("a", "b", "c", "dqb1", "drb1", out var key).Should().BeTrue();
         entry.SetFrequencies[key].Frequency.Should().Be(0.25m);
+    }
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenCapacityIsReached_EvictsTheLeastRecentlyUsedSet()
+    {
+        const int setIdA = 100;
+        const int setIdB = 101;
+        var limitedSut = BuildSut(awaitConsolidatedFrequencyWarm: false, maxCachedFrequencySets: 1);
+        frequencyRepository.GetAllHaplotypeFrequencies(setIdA).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.5m)]);
+        frequencyRepository.GetAllHaplotypeFrequencies(setIdB).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.6m)]);
+
+        await limitedSut.GetAllHaplotypeFrequencies(setIdA);
+        // Admitting B at capacity 1 evicts A, the only (and so least-recently-used) tracked set.
+        await limitedSut.GetAllHaplotypeFrequencies(setIdB);
+        await limitedSut.GetAllHaplotypeFrequencies(setIdB);
+
+        // B never had to be rebuilt a second time - it stayed resident.
+        await frequencyRepository.Received(1).GetAllHaplotypeFrequencies(setIdB);
+
+        // A had to be rebuilt from the database again, proving it was evicted rather than staying resident
+        // indefinitely alongside every other set ever touched.
+        await limitedSut.GetAllHaplotypeFrequencies(setIdA);
+        await frequencyRepository.Received(2).GetAllHaplotypeFrequencies(setIdA);
+    }
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_ReAccessingAResidentSet_ProtectsItFromEviction()
+    {
+        const int setIdA = 200;
+        const int setIdB = 201;
+        const int setIdC = 202;
+        var limitedSut = BuildSut(awaitConsolidatedFrequencyWarm: false, maxCachedFrequencySets: 2);
+        frequencyRepository.GetAllHaplotypeFrequencies(setIdA).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.5m)]);
+        frequencyRepository.GetAllHaplotypeFrequencies(setIdB).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.6m)]);
+        frequencyRepository.GetAllHaplotypeFrequencies(setIdC).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.7m)]);
+
+        await limitedSut.GetAllHaplotypeFrequencies(setIdA);
+        await limitedSut.GetAllHaplotypeFrequencies(setIdB);
+        // Touching A again makes B the least-recently-used of the two, not A.
+        await limitedSut.GetAllHaplotypeFrequencies(setIdA);
+        // Admitting C at capacity 2 must therefore evict B, not A.
+        await limitedSut.GetAllHaplotypeFrequencies(setIdC);
+
+        await limitedSut.GetAllHaplotypeFrequencies(setIdA);
+        await frequencyRepository.Received(1).GetAllHaplotypeFrequencies(setIdA);
+
+        await limitedSut.GetAllHaplotypeFrequencies(setIdB);
+        await frequencyRepository.Received(2).GetAllHaplotypeFrequencies(setIdB);
     }
 
     [Test]
