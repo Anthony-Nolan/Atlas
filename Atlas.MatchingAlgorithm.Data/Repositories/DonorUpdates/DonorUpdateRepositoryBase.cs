@@ -1,11 +1,15 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Utils;
+using Atlas.Common.Utils.Disposable;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Data.Helpers;
@@ -23,6 +27,28 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
     public abstract class DonorUpdateRepositoryBase : Repository
     {
         protected readonly IAtlasLogger logger;
+
+        private const string DonorsTableName = "Donors";
+
+        private const int DefaultBulkInsertTimeoutInSeconds = 3600;
+
+        /// <summary>
+        /// Rows per bulk-copy batch. With <see cref="SqlBulkCopyOptions.UseInternalTransaction"/> this is also the unit
+        /// of atomicity, which is why <see cref="UpsertMatchingPGroupsAtLocus"/> checks a write against it.
+        /// </summary>
+        private const int BulkCopyBatchSize = 10000;
+
+        /// <summary>
+        /// The matching HLA tables are the largest writes in the system, hence a far longer timeout than
+        /// <see cref="DefaultBulkInsertTimeoutInSeconds"/>. Shared with <see cref="BuildReusableBulkCopies"/>, which
+        /// pre-builds those tables' bulk copies, so that the two cannot drift apart.
+        /// </summary>
+        private const int MatchingHlaBulkInsertTimeoutInSeconds = 14400;
+
+        /// <summary>
+        /// Non-null only between <see cref="OpenBulkWriteSession"/> and the disposal of what it returned.
+        /// </summary>
+        private BulkCopySession activeBulkCopySession;
 
         // The order of these matters when setting up the datatable - if re-ordering, also re-order datatable contents
         private readonly string[] donorInsertDataTableColumnNames =
@@ -61,6 +87,41 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             this.logger = logger;
         }
 
+        /// <summary>
+        /// Opens a session over which this repository's bulk copies are reused, rather than rebuilt per write.
+        /// Dispose the returned handle to close it.
+        /// </summary>
+        /// <remarks>
+        /// A <see cref="SqlBulkCopy"/> asks the server to describe its destination table before sending any rows, and
+        /// that description is cached per instance, so rebuilding one per write pays for a round trip that only ever
+        /// returns the same answer. Over a full data refresh that came to over an hour of waiting on the destination
+        /// metadata catalogue queries for a few minutes of server time.
+        ///
+        /// Not every write can take part - see <see cref="GetReusableBulkCopy"/> - so this is an optimisation that a
+        /// caller opts into for a whole stage, not a change to how any individual write behaves.
+        ///
+        /// Which writes those are is worth knowing before measuring anything. Donor creation is the only path that
+        /// benefits: the update path holds a real transaction throughout, for DELETE and insert atomicity, so its
+        /// writes always build their own instance. And with DataRefreshDonorUpdatesShouldBeFullyTransactional set, the
+        /// outer scope wraps every write in the batch, creates included, so reuse becomes a no-op for the whole
+        /// refresh while a session is still opened and closed per stage. Closing a session traces how many writes
+        /// actually reused a bulk copy, so neither case has to be inferred from this class.
+        /// </remarks>
+        public IDisposable OpenBulkWriteSession()
+        {
+            if (activeBulkCopySession != null)
+            {
+                throw new InvalidOperationException($"A bulk write session is already open on this {GetType().Name}.");
+            }
+
+            activeBulkCopySession = new BulkCopySession(this);
+
+            // Wrapped, rather than returned directly, so that closing is idempotent: DisposableAction already tracks
+            // that for the codebase. A second disposal that ran Close again would clear whatever session is registered
+            // by then - orphaning a newer session's bulk copies, and the connections they hold, rather than nothing.
+            return new DisposableAction(activeBulkCopySession.Close);
+        }
+
         public async Task InsertBatchOfDonors(IEnumerable<DonorInfo> donors)
         {
             var donorInfos = donors.ToList();
@@ -72,7 +133,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
             var dataTable = BuildDonorInsertDataTable(donorInfos);
 
-            await BulkInsertDataTable("Donors", dataTable, donorInsertDataTableColumnNames);
+            await BulkInsertDataTable(DonorsTableName, dataTable, donorInsertDataTableColumnNames);
         }
 
         public async Task AddMatchingRelationsForExistingDonorBatch(
@@ -183,7 +244,18 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             var dataTable = BuildPerLocusPGroupDataTable(donors, locus, timerCollection);
             buildDataTableTimer?.Dispose();
 
-            using (var transactionScope = new AsyncTransactionScope())
+            // The scope is here to make the DELETE below and the insert that follows it one atomic unit. On the create
+            // path there is no DELETE to be atomic with, and a write that fits in a single bulk-copy batch is already
+            // atomic in its own right, because UseInternalTransaction commits per batch. So the scope is skipped only
+            // when both hold - and the second is checked against the rows in hand rather than assumed from the batch
+            // size a caller happens to use, so that raising that batch size costs reuse here instead of atomicity.
+            //
+            // Skipping it is also what leaves the reusable bulk copies usable - see GetReusableBulkCopy. Where a
+            // caller asked for the whole upsert to be transactional, the outer scope opened by
+            // UpsertMatchingPGroupsAtSpecifiedLoci is ambient regardless, and this scope only ever joined it.
+            var writeIsAtomicWithoutAScope = isKnownToBeCreate && dataTable.Rows.Count <= BulkCopyBatchSize;
+
+            using (var transactionScope = new OptionalAsyncTransactionScope(!writeIsAtomicWithoutAScope))
             {
                 using (timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_DeleteExistingRecords_TimerKey))
                 {
@@ -204,7 +276,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     matchingTableName,
                     dataTable,
                     donorPGroupDataTableColumnNames,
-                    timeout: 14400,
+                    timeout: MatchingHlaBulkInsertTimeoutInSeconds,
                     timerCollection?.GetStopwatch(DataRefreshTimingKeys.HlaUpsert_DtWriteExecution_TimerKey));
 
                 transactionScope.Complete();
@@ -303,28 +375,68 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         #region BulkInsertDataTable
 
         /// <summary>
-        /// Opens a new connection and performs a bulk insert wrapped in a transaction.
+        /// Performs a bulk insert wrapped in a transaction, over the session's bulk copy for this table where there is
+        /// one it can use, and otherwise over a newly built one on a new connection.
         /// If columnNames provided, sets up a map from dataTable to SQL, assuming a 1:1 mapping between dataTable and SQL column names  
         /// </summary>
         private async Task BulkInsertDataTable(
             string tableName,
             DataTable dataTable,
             string[] columnNames,
-            int timeout = 3600,
+            int timeout = DefaultBulkInsertTimeoutInSeconds,
             ILongOperationLoggingStopwatch longLoopDbWriteTimer = null)
         {
             using (longLoopDbWriteTimer?.TimeInnerOperation())
-            using (var sqlBulk = BuildSqlBulkCopy(tableName, columnNames, timeout))
             {
-                await sqlBulk.WriteToServerAsync(dataTable);
+                var reusableBulkCopy = GetReusableBulkCopy(tableName);
+                if (reusableBulkCopy != null)
+                {
+                    await reusableBulkCopy.WriteToServerAsync(dataTable);
+                    return;
+                }
+
+                using (var sqlBulk = BuildSqlBulkCopy(tableName, columnNames, timeout))
+                {
+                    await sqlBulk.WriteToServerAsync(dataTable);
+                }
             }
         }
 
-        private SqlBulkCopy BuildSqlBulkCopy(string tableName, string[] columnNames, int timeout = 3600)
+        /// <summary>
+        /// The open session's bulk copy for <paramref name="tableName"/>, or null if this write has to build its own.
+        /// </summary>
+        /// <remarks>
+        /// A reused bulk copy holds its connection open until it is disposed: <see cref="SqlBulkCopy"/> opens an owned
+        /// connection before its first write and has no path that closes one again. A connection enlists in the
+        /// ambient transaction when it is opened, and never again - so a reused instance takes part in whichever
+        /// <see cref="TransactionScope"/> its first write happened to run under, and in none of the scopes after it.
+        /// Once that first transaction ends, SqlClient's default "Implicit Unbind" binding detaches the connection
+        /// from it silently, or throws "The transaction associated with the current connection has completed but has
+        /// not been disposed" if the write lands before the transaction object itself is disposed. So writes made under
+        /// an ambient transaction keep building an instance of their own, and behave as they did before sessions existed.
+        ///
+        /// The silent path is the dangerous one, and it was measured rather than assumed: reusing an instance
+        /// regardless of the ambient transaction, and then rolling that transaction back, leaves the rows written - so
+        /// a run with DataRefreshDonorUpdatesShouldBeFullyTransactional set would lose transactionality from its
+        /// second batch onwards, with nothing in the logs to say so. That is what
+        /// InsertBatchOfDonors_WithinOneBulkWriteSession_UnderATransactionThatRollsBack_WritesNothing pins down, and
+        /// it is the only test that fails if the check below is dropped.
+        /// </remarks>
+        private SqlBulkCopy GetReusableBulkCopy(string tableName) =>
+            Transaction.Current == null ? activeBulkCopySession?.BulkCopyFor(tableName) : null;
+
+        private SqlBulkCopy BuildSqlBulkCopy(string tableName, string[] columnNames, int timeout = DefaultBulkInsertTimeoutInSeconds)
         {
-            var bulkCopy = new SqlBulkCopy(ConnectionStringProvider.GetConnectionString(), SqlBulkCopyOptions.UseInternalTransaction)
+            // CacheMetadata is what makes reuse worth anything: without it a bulk copy re-describes its destination
+            // table on every write, whether or not the instance is the same one as last time. It is safe here because
+            // these tables' schemas are fixed for the life of a session - the data refresh drops and recreates their
+            // indexes, which the cached column metadata does not describe - and because a session never outlives the
+            // connection string it was opened against, so it cannot survive a swap of the transient database.
+            const SqlBulkCopyOptions options = SqlBulkCopyOptions.UseInternalTransaction | SqlBulkCopyOptions.CacheMetadata;
+
+            var bulkCopy = new SqlBulkCopy(ConnectionStringProvider.GetConnectionString(), options)
             {
-                BatchSize = 10000,
+                BatchSize = BulkCopyBatchSize,
                 DestinationTableName = tableName,
                 BulkCopyTimeout = timeout
             };
@@ -336,6 +448,104 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             }
 
             return bulkCopy;
+        }
+
+        /// <summary>
+        /// One <see cref="SqlBulkCopy"/> per table this repository writes, built up front.
+        /// </summary>
+        /// <remarks>
+        /// Eagerly, because a <see cref="SqlBulkCopy"/> costs nothing until its first write - it does not even open its
+        /// connection - and because a cache populated up front needs no synchronising against the per-locus writes,
+        /// which run concurrently. One instance per table also means no instance is ever shared between those writes:
+        /// they go to one table each, and a <see cref="SqlBulkCopy"/> rejects a second concurrent write on the same
+        /// instance. Nor do successive batches overlap, since <see cref="UpsertMatchingPGroupsAtSpecifiedLoci"/> awaits
+        /// every locus' write before it returns.
+        ///
+        /// Every table this class writes, rather than the subset the calling stage writes to - donor import only writes
+        /// Donors, HLA processing only the locus tables - because an unused instance costs an allocation and a disposal
+        /// and never reaches the database, which is not worth splitting this method, or its caller's API, in two for.
+        /// </remarks>
+        private IReadOnlyDictionary<string, SqlBulkCopy> BuildReusableBulkCopies()
+        {
+            var bulkCopies = new Dictionary<string, SqlBulkCopy>
+            {
+                [DonorsTableName] = BuildSqlBulkCopy(DonorsTableName, donorInsertDataTableColumnNames)
+            };
+
+            foreach (var locus in LocusSettings.MatchingOnlyLoci)
+            {
+                var tableName = MatchingHla.TableName(locus);
+                bulkCopies[tableName] = BuildSqlBulkCopy(
+                    tableName,
+                    donorPGroupDataTableColumnNames,
+                    MatchingHlaBulkInsertTimeoutInSeconds);
+            }
+
+            return bulkCopies;
+        }
+
+        /// <summary>
+        /// The bulk copies of one <see cref="OpenBulkWriteSession"/>, and their closing.
+        /// </summary>
+        private sealed class BulkCopySession
+        {
+            private readonly DonorUpdateRepositoryBase repository;
+            private readonly IReadOnlyDictionary<string, SqlBulkCopy> bulkCopiesByTableName;
+
+            /// <summary>
+            /// Written to from the concurrent per-locus writes, hence interlocked.
+            /// </summary>
+            private int reusedWriteCount;
+
+            internal BulkCopySession(DonorUpdateRepositoryBase repository)
+            {
+                this.repository = repository;
+                bulkCopiesByTableName = repository.BuildReusableBulkCopies();
+            }
+
+            /// <returns>This session's bulk copy for the table, or null if the session does not cover that table.</returns>
+            internal SqlBulkCopy BulkCopyFor(string tableName)
+            {
+                if (!bulkCopiesByTableName.TryGetValue(tableName, out var bulkCopy))
+                {
+                    return null;
+                }
+
+                // Only reached once the caller has decided to reuse - see GetReusableBulkCopy - so this counts writes
+                // that were actually spared building an instance, not writes that asked.
+                Interlocked.Increment(ref reusedWriteCount);
+                return bulkCopy;
+            }
+
+            internal void Close()
+            {
+                foreach (var bulkCopy in bulkCopiesByTableName.Values)
+                {
+                    // SqlBulkCopy implements IDisposable explicitly, so this cast is the only way to reach Dispose
+                    // other than a `using`. Disposing is what closes the connection the bulk copy has held open.
+                    ((IDisposable) bulkCopy).Dispose();
+                }
+
+                repository.activeBulkCopySession = null;
+                ReportReuse();
+            }
+
+            /// <summary>
+            /// One trace per session, so that a session which reused nothing - and therefore saved nothing - can be
+            /// seen in the logs of a run rather than deduced from the code.
+            /// </summary>
+            private void ReportReuse()
+            {
+                var reusedWrites = reusedWriteCount;
+                var message = reusedWrites == 0
+                    ? "Bulk write session closed without reusing any bulk copy - every write ran under an ambient transaction."
+                    : $"Bulk write session closed. {reusedWrites} writes reused a bulk copy instead of building one.";
+
+                repository.logger.SendTrace(message, props: new Dictionary<string, string>
+                {
+                    {"ReusedWrites", reusedWrites.ToString()}
+                });
+            }
         }
 
         #endregion

@@ -198,6 +198,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BlockingWait_TimerKey, " * * Time spent in `Task.WhenAll`, JUST waiting on HlaInsert tasks to Complete, during HlaProcessing") )
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_DtWriteExecution_TimerKey, " * * * Total Time spent across all threads, writing BulkInserts during HlaInsert operation, during HlaProcessing", null, summaryReportWithThreadingCount))
                 // @formatter:on
+            // One session for the whole stage, not one per batch - see IDonorImportRepository.OpenBulkWriteSession.
+            // Wraps the whole pipeline rather than the processing side alone: every write happens on that side, so the
+            // session is still opened and closed exactly once, and is never touched by the concurrent read side.
+            using (donorImportRepository.OpenBulkWriteSession())
             {
                 failedDonors.AddRange(await RunHlaProcessingPipeline(
                     batchedDonors, hlaNomenclatureVersion, updateLastSafelyProcessedDonorId, timerCollection, cancellationToken));
