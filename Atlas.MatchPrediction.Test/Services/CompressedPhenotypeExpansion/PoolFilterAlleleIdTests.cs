@@ -103,6 +103,36 @@ internal class PoolFilterAlleleIdTests
         survivors.Should().Be(2);
     }
 
+    [Test]
+    public async Task ExpandCompressedPhenotype_WhenTheSubjectIsUntypedAtEveryAllowedLocus_FallsBackToTheWholePool()
+    {
+        // Every allowed locus's mask is null, so no locus can seed a restricted candidate set from the allele index -
+        // SelectCandidatePositions has nothing to narrow with and falls back to the full pool, in pool order, exactly
+        // as the loop always did before the index existed.
+        var survivors = await Survivors(
+            subjectA: null,
+            pool: [(a1, b1), (a2, b1)],
+            subjectB: null);
+
+        survivors.Should().Be(2);
+    }
+
+    [Test]
+    public async Task ExpandCompressedPhenotype_WhenTheSubjectsGroupResolvesToMultipleAllowedIds_MergesTheirIndexBuckets()
+    {
+        // Both a1 and a2 are admitted at A - an ambiguous/MAC-expanded typing group - so the seed locus's admitted
+        // ids span more than one index bucket, and SelectCandidatePositions must merge them (in pool order) rather
+        // than reading a single bucket straight through.
+        var a3 = fixture.Create<string>();
+
+        var survivors = await Survivors(
+            subjectA: [a1, a2],
+            pool: [(a1, b1), (a3, b1), (a2, b1)],
+            subjectB: [b1]);
+
+        survivors.Should().Be(2);
+    }
+
     /// <summary>
     /// Survivor count (S) for a subject and pool - the size of the pool the pairing loop is quadratic in. A null
     /// <paramref name="subjectB"/> means untyped at B - passed explicitly by every caller, because defaulting it would
@@ -126,13 +156,23 @@ internal class PoolFilterAlleleIdTests
 
     private static DataByResolution<PhenotypeInfo<ISet<string>>> SubjectGroups(string[] atA, string[] atB)
     {
-        var smallGGroup = new PhenotypeInfo<ISet<string>>().SetLocus(Locus.A, new HashSet<string>(atA));
+        var smallGGroup = new PhenotypeInfo<ISet<string>>();
+
+        if (atA != null)
+        {
+            smallGGroup = smallGGroup.SetLocus(Locus.A, new HashSet<string>(atA));
+        }
+
+        if (atB != null)
+        {
+            smallGGroup = smallGGroup.SetLocus(Locus.B, new HashSet<string>(atB));
+        }
 
         return new DataByResolution<PhenotypeInfo<ISet<string>>>
         {
             GGroup = new PhenotypeInfo<ISet<string>>(),
             PGroup = new PhenotypeInfo<ISet<string>>(),
-            SmallGGroup = atB == null ? smallGGroup : smallGGroup.SetLocus(Locus.B, new HashSet<string>(atB))
+            SmallGGroup = smallGGroup
         };
     }
 
