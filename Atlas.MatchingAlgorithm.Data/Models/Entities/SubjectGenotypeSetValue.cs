@@ -5,8 +5,9 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
 {
     /// <summary>
     /// De-duplicated, pre-computed subject-genotype-set payload, stored once per distinct
-    /// (<see cref="HlaTypingKey"/>, <see cref="HaplotypeFrequencySetId"/>, <see cref="AllowedLociKey"/>) — no matter
-    /// how many donors share it. Referenced by <see cref="DonorSubjectGenotypeSet"/>. Populated by the precompute
+    /// (<see cref="HlaTypingKey"/>, <see cref="HaplotypeFrequencySetId"/>,
+    /// <see cref="MatchingAlgorithmHlaNomenclatureVersion"/>, <see cref="AllowedLociKey"/>) — no matter how many
+    /// donors share it. Referenced by <see cref="DonorSubjectGenotypeSet"/>. Populated by the precompute
     /// service; no caller reads it yet.
     /// </summary>
     public class SubjectGenotypeSetValue
@@ -30,6 +31,18 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
         /// in the Match Prediction database) — not a DB-level FK.
         /// </summary>
         public int HaplotypeFrequencySetId { get; set; }
+
+        /// <summary>
+        /// The matching-algorithm HLA nomenclature version active when the payload was computed. Part of the row
+        /// identity because the version is an input to the conversion that neither <see cref="HlaTypingKey"/> nor
+        /// <see cref="HaplotypeFrequencySetId"/> captures: it gates locus-value replacements applied to the typing
+        /// before imputation, and it decides whether a typing the HF set cannot explain gets a second lookup or is
+        /// recorded as unrepresented. Two computations of the same typing and HF set under different versions are
+        /// therefore different payloads, and must not collide on one row.
+        /// </summary>
+        [Required]
+        [MaxLength(32)]
+        public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
 
         /// <summary>
         /// True when this typing has zero matching haplotypes in the HF set for this <see cref="AllowedLociKey"/>;

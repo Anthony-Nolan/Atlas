@@ -59,7 +59,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         {
             await Insert(NewValue());
 
-            // Same (HlaTypingKey, HaplotypeFrequencySetId, AllowedLociKey).
+            // Same (HlaTypingKey, HaplotypeFrequencySetId, MatchingAlgorithmHlaNomenclatureVersion, AllowedLociKey).
             Func<Task> act = () => Insert(NewValue());
 
             await act.Should().ThrowAsync<DbUpdateException>();
@@ -75,11 +75,29 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             await act.Should().NotThrowAsync();
         }
 
-        private static SubjectGenotypeSetValue NewValue(AllowedLociKey allowedLociKey = AllowedLociKey.ABCDrb1Dqb1) =>
+        /// <summary>
+        /// The nomenclature version is an input to the payload that <see cref="SubjectGenotypeSetValue.HlaTypingKey"/>
+        /// does not capture, so the same typing computed under two versions must be able to occupy two rows rather
+        /// than one computation being served for the other.
+        /// </summary>
+        [Test]
+        public async Task SubjectGenotypeSetValues_SameKeyDifferentNomenclatureVersion_IsAllowed()
+        {
+            await Insert(NewValue(nomenclatureVersion: "3640"));
+
+            Func<Task> act = () => Insert(NewValue(nomenclatureVersion: "3650"));
+
+            await act.Should().NotThrowAsync();
+        }
+
+        private static SubjectGenotypeSetValue NewValue(
+            AllowedLociKey allowedLociKey = AllowedLociKey.ABCDrb1Dqb1,
+            string nomenclatureVersion = "3650") =>
             new()
             {
                 HlaTypingKey = "typing-key",
                 HaplotypeFrequencySetId = 1,
+                MatchingAlgorithmHlaNomenclatureVersion = nomenclatureVersion,
                 AllowedLociKey = allowedLociKey,
                 IsUnrepresented = true,
                 SubjectGenotypeSetData = null
