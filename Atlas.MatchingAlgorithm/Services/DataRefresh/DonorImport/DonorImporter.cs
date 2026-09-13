@@ -94,7 +94,16 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         {
             try
             {
-                var allFailedDonors = await RunImportPipeline(shouldMarkDonorsAsUpdated, cancellationToken);
+                List<FailedDonorInfo> allFailedDonors;
+
+                // One session for the whole stage, not one per batch - see IDonorImportRepository.OpenBulkWriteSession.
+                // Wraps the whole pipeline rather than the write side alone: every write happens on the pipeline's
+                // processing side, so this still opens and closes exactly once per stage, and the using still closes it
+                // when the stage is cancelled or fails.
+                using (matchingDonorImportRepository.OpenBulkWriteSession())
+                {
+                    allFailedDonors = await RunImportPipeline(shouldMarkDonorsAsUpdated, cancellationToken);
+                }
 
                 await failedDonorsNotificationSender.SendFailedDonorsAlert(allFailedDonors, ImportFailureEventName, Priority.Medium);
                 logger.SendTrace("Donor import is complete");

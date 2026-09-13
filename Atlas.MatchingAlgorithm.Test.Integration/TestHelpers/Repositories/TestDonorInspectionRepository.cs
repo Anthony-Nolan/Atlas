@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
@@ -24,6 +25,20 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 return conn.ExecuteScalar<int>($"SELECT COUNT(*) FROM Donors", commandTimeout: 1);
+            }
+        }
+
+        /// <summary>
+        /// The number of pre-processed matching HLA rows stored for one donor at one locus - one per typed position.
+        /// </summary>
+        public int GetMatchingHlaRowCount(Locus locus, int donorId)
+        {
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            {
+                return conn.ExecuteScalar<int>(
+                    $"SELECT COUNT(*) FROM {MatchingHla.TableName(locus)} WHERE DonorId = @donorId",
+                    new {donorId},
+                    commandTimeout: 5);
             }
         }
 
