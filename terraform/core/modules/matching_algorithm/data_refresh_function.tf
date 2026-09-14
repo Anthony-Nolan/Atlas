@@ -155,8 +155,3 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_data_refresh_f
     }
   }
 }
-
-data "azurerm_function_app_host_keys" "atlas_matching_algorithm_data_refresh_function_keys" {
-  name                = azurerm_windows_function_app.atlas_matching_algorithm_data_refresh_function.name
-  resource_group_name = var.elastic_app_service_plan.resource_group_name
-}
