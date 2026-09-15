@@ -11,11 +11,6 @@ locals {
     "AzureManagement:Authentication:OAuthBaseUrl" = var.AZURE_OAUTH_BASEURL
     "AzureManagement:Authentication:TenantId"     = var.AZURE_TENANT_ID
 
-    "AzureManagement:Database:ServerName"                       = var.sql_server.name
-    "AzureManagement:Database:PollingRetryIntervalMilliseconds" = var.DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS
-    "AzureManagement:Database:ResourceGroupName"                = var.resource_group.name
-    "AzureManagement:Database:SubscriptionId"                   = var.general.subscription_id
-
     "AzureManagement:Monitoring:WorkspaceId" = var.application_insights_workspace.workspace_id
 
     "AzureAppConfiguration:ConnectionString" = var.azure_app_configuration.primary_read_key[0].connection_string
@@ -25,30 +20,6 @@ locals {
     "AzureStorage:SearchResultsBatchSize"     = var.RESULTS_BATCH_SIZE
 
     "AzureWebJobs.GCCollect.Disabled" = var.MAINTENANCE_GCCOLLECT_DISABLED
-
-    "DataRefresh:ActiveDatabaseAutoPauseTimeout"                                            = var.DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE
-    "DataRefresh:ActiveDatabaseSize"                                                        = var.DATA_REFRESH_DB_SIZE_ACTIVE
-    "DataRefresh:AutoRunDataRefresh"                                                        = var.DATA_REFRESH_AUTO_RUN
-    "DataRefresh:RequestsTopic"                                                             = azurerm_servicebus_topic.data-refresh-requests.name
-    "DataRefresh:RequestsTopicSubscription"                                                 = azurerm_servicebus_subscription.matching-algorithm-data-refresh-requests.name
-    "DataRefresh:CompletionTopic"                                                           = azurerm_servicebus_topic.completed-data-refresh-jobs.name
-    "DataRefresh:CronTab"                                                                   = var.DATA_REFRESH_CRONTAB
-    "DataRefresh:DatabaseAName"                                                             = azurerm_mssql_database.atlas-matching-transient-a.name
-    "DataRefresh:DatabaseBName"                                                             = azurerm_mssql_database.atlas-matching-transient-b.name
-    "DataRefresh:DataRefreshDonorUpdatesShouldBeFullyTransactional"                         = var.DONOR_WRITE_TRANSACTIONALITY__DATA_REFRESH
-    "DataRefresh:DonorManagement:BatchSize"                                                 = var.MESSAGING_BUS_DONOR_BATCH_SIZE
-    "DataRefresh:DonorManagement:CronSchedule"                                              = "NotActuallyUsedInThisFunction"
-    "DataRefresh:DonorManagement:OngoingDifferentialDonorUpdatesShouldBeFullyTransactional" = var.DONOR_WRITE_TRANSACTIONALITY__DONOR_UPDATES
-    "DataRefresh:DonorManagement:SubscriptionForDbA"                                        = azurerm_servicebus_subscription.matching_transient_a.name
-    "DataRefresh:DonorManagement:SubscriptionForDbB"                                        = azurerm_servicebus_subscription.matching_transient_b.name
-    "DataRefresh:DonorManagement:Topic"                                                     = var.servicebus_topics.updated-searchable-donors.name
-    "DataRefresh:DormantDatabaseAutoPauseTimeout"                                           = var.DATA_REFRESH_DB_AUTO_PAUSE_DORMANT
-    "DataRefresh:DormantDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_DORMANT
-    "DataRefresh:LeaseDurationMinutes"                                                      = var.DATA_REFRESH_LEASE_DURATION_MINUTES
-    "DataRefresh:LeaseRenewalIntervalSeconds"                                               = var.DATA_REFRESH_LEASE_RENEWAL_INTERVAL_SECONDS
-    "DataRefresh:RefreshDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_REFRESH
-    "DataRefresh:SendRetryCount"                                                            = var.SERVICE_BUS_SEND_RETRY_COUNT
-    "DataRefresh:SendRetryCooldownSeconds"                                                  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
     "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.azure_storage.primary_connection_string,
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"                              = var.WMDA_FILE_URL,

@@ -730,3 +730,15 @@ variable "EXTERNAL_SQL_SERVER_ADMIN_LOGIN" {
   type        = string
   default     = ""
 }
+
+variable "EXTERNAL_SQL_RESOURCE_GROUP" {
+  description = "Resource group of the external Azure SQL server. Consumed via TF_VAR_EXTERNAL_SQL_RESOURCE_GROUP."
+  type        = string
+  default     = ""
+}
+
+variable "EXTERNAL_SQL_SUBSCRIPTION_ID" {
+  description = "Subscription ID of the external Azure SQL server. Falls back to the main subscription when empty. Consumed via TF_VAR_EXTERNAL_SQL_SUBSCRIPTION_ID."
+  type        = string
+  default     = ""
+}

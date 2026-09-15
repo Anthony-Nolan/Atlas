@@ -184,3 +184,13 @@ variable "EXTERNAL_SQL_DB_MATCHING_B" {
   type    = string
   default = ""
 }
+
+variable "EXTERNAL_SQL_RESOURCE_GROUP" {
+  type    = string
+  default = ""
+}
+
+variable "EXTERNAL_SQL_SUBSCRIPTION_ID" {
+  type    = string
+  default = ""
+}
