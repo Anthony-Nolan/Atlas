@@ -69,7 +69,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh.Functions
 
         /// <summary>
         /// Re-requests every data refresh that has stalled, i.e. that is still open but that nothing is working on.
-        /// Such a record blocks all subsequent refreshes until it is completed, so left alone it needs clearing by hand.
+/// Such a record blocks all subsequent refreshes until it is completed; the watchdog re-requests it automatically.
         /// </summary>
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(RecoverStalledDataRefreshes))]
