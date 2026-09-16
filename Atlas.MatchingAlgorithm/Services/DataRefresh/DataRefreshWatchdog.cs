@@ -26,9 +26,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// the record is what decides which invocation actually runs it, and re-requesting a record that has since been
         /// claimed, or completed, is refused there and costs nothing. Nor does it go through
         /// <see cref="IDataRefreshRequester"/>, which would create a second record rather than resume the stalled one.
-        ///
-        /// Per-record failures are logged and skipped so that one record cannot strand the rest of the sweep, then
-        /// rethrown together, so that the invocation is still recorded as failed for alerting.
         /// </remarks>
         Task RecoverStalledRefreshes();
     }
@@ -38,9 +35,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private const string LoggingPrefix = "DATA REFRESH WATCHDOG:";
 
         /// <summary>
-        /// Deliberately distinct from anything the ordinary request path emits, so that a stall which healed itself can
-        /// be counted and alerted on separately from a refresh that was requested normally. A stall is invisible
-        /// otherwise: the record it leaves behind looks exactly like one that is legitimately still running.
+        /// Distinct from anything the ordinary request path emits, because a stall is otherwise invisible: the record it
+        /// leaves behind looks exactly like one that is legitimately still running.
         /// </summary>
         private const string StallRecoveredEventName = "Data refresh stall auto-recovered";
 
@@ -111,10 +107,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             });
         }
 
-        /// <summary>
-        /// The grace period must outlast the lease, so that an expired lease is never the only thing separating a dead
-        /// owner from a live one. <see cref="DataRefreshSettings.WatchdogGraceDurationMinutes"/> records why.
-        /// </summary>
         private TimeSpan ValidatedGraceDuration()
         {
             var graceDuration = TimeSpan.FromMinutes(dataRefreshSettings.WatchdogGraceDurationMinutes);
