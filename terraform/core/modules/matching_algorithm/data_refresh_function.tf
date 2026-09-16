@@ -47,6 +47,8 @@ locals {
     "DataRefresh:RefreshDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_REFRESH
     "DataRefresh:SendRetryCount"                                                            = var.SERVICE_BUS_SEND_RETRY_COUNT
     "DataRefresh:SendRetryCooldownSeconds"                                                  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+    "DataRefresh:WatchdogCronSchedule"                                                      = var.DATA_REFRESH_WATCHDOG_CRON_SCHEDULE
+    "DataRefresh:WatchdogGraceDurationMinutes"                                              = var.DATA_REFRESH_WATCHDOG_GRACE_DURATION_MINUTES
 
     "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.azure_storage.primary_connection_string
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"                              = var.WMDA_FILE_URL

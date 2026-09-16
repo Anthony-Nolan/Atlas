@@ -27,6 +27,8 @@
     "DataRefresh:RefreshDatabaseSize": "S4",
     "DataRefresh:SendRetryCount": 5,
     "DataRefresh:SendRetryCooldownSeconds": 20,
+    "DataRefresh:WatchdogCronSchedule": "0 */15 * * * *",
+    "DataRefresh:WatchdogGraceDurationMinutes": 60,
     "DataRefresh:DataRefreshDonorUpdatesShouldBeFullyTransactional": false,
     "DataRefresh:DonorManagement:BatchSize": 1000,
     "DataRefresh:DonorManagement:CronSchedule": "not-used",
