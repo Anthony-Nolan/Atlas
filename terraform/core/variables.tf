@@ -402,6 +402,18 @@ variable "MATCHING_DATA_REFRESH_CRONTAB" {
   description = "A crontab determining when the matching data refresh will be auto-attempted. It will only run to completion if new HLA nomenclature is detected."
 }
 
+variable "MATCHING_DATA_REFRESH_WATCHDOG_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */15 * * * *"
+  description = "CRON schedule (six-field NCrontab) for the sweep that re-requests stalled data refreshes. Must be set: the Functions host resolves it at start-up, so the Data Refresh app will not start without it."
+}
+
+variable "MATCHING_DATA_REFRESH_WATCHDOG_GRACE_DURATION_MINUTES" {
+  type        = number
+  default     = 60
+  description = "How long a refresh record must show no sign of life before the watchdog re-requests it. Must exceed MATCHING_DATA_REFRESH_LEASE_DURATION_MINUTES, so that a run between lease renewals is never mistaken for a stalled one."
+}
+
 variable "MATCHING_DATABASE_MAX_SIZE_GB" {
   type        = string
   default     = "250"
