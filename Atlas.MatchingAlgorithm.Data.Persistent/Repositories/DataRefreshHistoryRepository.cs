@@ -51,6 +51,30 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         /// </summary>
         /// <returns>False if this owner had already been fenced, and so released nothing.</returns>
         Task<bool> ReleaseRefreshLease(int recordId, Guid owner);
+
+        /// <summary>
+        /// Finds refresh records that are still open but that nothing is working on, i.e. that have stalled and will
+        /// never complete unless they are re-requested.
+        /// </summary>
+        /// <remarks>
+        /// A record qualifies only if all three of the following hold.
+        /// <list type="bullet">
+        /// <item>It is still open. A completed record needs nothing, whatever state its lease was left in.</item>
+        /// <item>No live lease is held on it. An unexpired lease means an invocation is actively running the record.</item>
+        /// <item>Nothing has touched it since the cutoff. An absent <see cref="DataRefreshRecord.LeaseOwner"/> is not by
+        /// itself evidence of a stall: a record created moments ago, whose request message is still in flight, has yet to
+        /// be leased, and so has one whose run has just failed and released its lease while Service Bus redelivers the
+        /// request. Both recover unaided, and re-requesting them would be indistinguishable in telemetry from recovering
+        /// a record that genuinely was stuck. Requiring the record to have been idle for the whole grace period as well
+        /// excludes both, and additionally catches the one stall no lease can reveal - a request message that was never
+        /// delivered at all, and so left a record that has never been leased and never will be.</item>
+        /// </list>
+        /// </remarks>
+        /// <param name="graceCutoffUtc">
+        /// A record counts as stalled only if it has been idle since before this time. Derived from a grace period longer
+        /// than the lease duration, so that an owner merely between renewals is never mistaken for a dead one.
+        /// </param>
+        Task<IReadOnlyCollection<int>> GetStalledRefreshRecordIds(DateTime graceCutoffUtc);
     }
 
     public class DataRefreshHistoryRepository : IDataRefreshHistoryRepository
@@ -162,6 +186,17 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
                     .SetProperty(r => r.LeaseExpiresUtc, (DateTime?) null));
 
             return rowsUpdated == 1;
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyCollection<int>> GetStalledRefreshRecordIds(DateTime graceCutoffUtc)
+        {
+            return await Context.DataRefreshRecords
+                .Where(r => r.RefreshEndUtc == null
+                            && (r.LeaseExpiresUtc == null || r.LeaseExpiresUtc < graceCutoffUtc)
+                            && (r.RefreshLastContinuedUtc ?? r.RefreshRequestedUtc) < graceCutoffUtc)
+                .Select(r => r.Id)
+                .ToListAsync();
         }
 
         public async Task<DataRefreshRecord> GetRecord(int recordId)
