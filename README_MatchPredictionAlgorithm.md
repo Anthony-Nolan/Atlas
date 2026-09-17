@@ -205,8 +205,11 @@ cores will show `true` as a wall-clock regression, because the warm no longer ov
 ### `HaplotypeFrequencySetCache.MaxCachedFrequencySets` / `HaplotypeFrequencySetCache.SetCacheExpiryMinutes`
 
 Bound the size of `HaplotypeFrequencyCache`'s dedicated cache of per-set frequency data (`FrequencySetCacheEntry`),
-which otherwise grows unbounded: every distinct haplotype frequency set (registry/ethnicity) touched within a rolling
-window stays fully resident, forever, per replica.
+which otherwise grows with every distinct haplotype frequency set (registry/ethnicity) touched within a rolling
+window, since each stays fully resident, forever, per replica, until this bounds it. That's not literally unbounded —
+it tops out at the number of active sets (currently 208, totalling roughly 3,200 MiB) — but it's still a process-wide
+memory floor that grows independently of concurrency or request volume, and one no host should have to pay for sets
+it isn't actively using.
 
 * `MaxCachedFrequencySets` — the maximum number of distinct sets allowed to stay resident at once. Each set counts as
   one unit regardless of its own row count (a set can hold up to ~275,000 haplotypes). Enforced as a true

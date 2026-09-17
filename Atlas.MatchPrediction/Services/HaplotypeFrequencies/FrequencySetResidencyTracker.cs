@@ -1,5 +1,6 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 
@@ -21,19 +22,35 @@ internal interface IFrequencySetResidencyTracker
     /// <summary>
     /// Records that <paramref name="setId"/> was just accessed: marks it most-recently-used if already tracked, or
     /// admits it - evicting the least-recently-used tracked set first, if at capacity - if not.
+    ///
+    /// <para>
+    /// Called on every <see cref="HaplotypeFrequencyCache.GetAllHaplotypeFrequencies"/> invocation, which is a hot
+    /// path (once per surviving pooled haplotype during genotype expansion, potentially millions of times across a
+    /// search) - so this has to stay lock-free for the common "already tracked" case.
+    /// </para>
     /// </summary>
     void RecordAccess(int setId);
+
+    /// <summary>
+    /// Stops tracking <paramref name="setId"/> without evicting anything, i.e. without calling the eviction callback
+    /// passed to the constructor. For when the cache entry has already gone away for a reason this tracker didn't
+    /// drive itself (TTL expiry, or an explicit removal elsewhere) - keeps residency in sync with what the cache
+    /// actually holds, rather than continuing to count a phantom slot against <c>capacity</c>. A no-op if
+    /// <paramref name="setId"/> isn't tracked (including because this tracker's own eviction already removed it).
+    /// </summary>
+    void Forget(int setId);
 }
 
 internal sealed class FrequencySetResidencyTracker : IFrequencySetResidencyTracker
 {
     private readonly int capacity;
     private readonly Action<int> onEvict;
-    private readonly object lockObject = new();
 
-    // Front = least recently used, back = most recently used.
-    private readonly LinkedList<int> setIdsByRecency = new();
-    private readonly Dictionary<int, LinkedListNode<int>> nodesBySetId = new();
+    // Only taken around the (rare) eviction scan below, never around RecordAccess's common "already tracked" path.
+    private readonly object evictionLock = new();
+
+    private readonly ConcurrentDictionary<int, long> lastAccessTickBySetId = new();
+    private long tickCounter;
 
     public FrequencySetResidencyTracker(int capacity, Action<int> onEvict)
     {
@@ -43,24 +60,53 @@ internal sealed class FrequencySetResidencyTracker : IFrequencySetResidencyTrack
 
     public void RecordAccess(int setId)
     {
-        lock (lockObject)
+        var tick = Interlocked.Increment(ref tickCounter);
+        lastAccessTickBySetId.AddOrUpdate(setId, tick, (_, _) => tick);
+
+        if (lastAccessTickBySetId.Count <= capacity)
         {
-            if (nodesBySetId.TryGetValue(setId, out var existingNode))
-            {
-                setIdsByRecency.Remove(existingNode);
-                setIdsByRecency.AddLast(existingNode);
-                return;
-            }
-
-            while (nodesBySetId.Count >= capacity)
-            {
-                var leastRecentlyUsed = setIdsByRecency.First!;
-                setIdsByRecency.RemoveFirst();
-                nodesBySetId.Remove(leastRecentlyUsed.Value);
-                onEvict(leastRecentlyUsed.Value);
-            }
-
-            nodesBySetId[setId] = setIdsByRecency.AddLast(setId);
+            return;
         }
+
+        EvictDownToCapacity();
+    }
+
+    public void Forget(int setId) => lastAccessTickBySetId.TryRemove(setId, out _);
+
+    private void EvictDownToCapacity()
+    {
+        lock (evictionLock)
+        {
+            while (lastAccessTickBySetId.Count > capacity)
+            {
+                var leastRecentlyUsedSetId = FindLeastRecentlyUsedSetId();
+
+                if (leastRecentlyUsedSetId == null || !lastAccessTickBySetId.TryRemove(leastRecentlyUsedSetId.Value, out _))
+                {
+                    // Someone else already removed it (e.g. via Forget) between the scan and the removal - the
+                    // count will reflect that on the next loop check, nothing further to do for this iteration.
+                    continue;
+                }
+
+                onEvict(leastRecentlyUsedSetId.Value);
+            }
+        }
+    }
+
+    private int? FindLeastRecentlyUsedSetId()
+    {
+        int? leastRecentlyUsedSetId = null;
+        var oldestTick = long.MaxValue;
+
+        foreach (var (setId, tick) in lastAccessTickBySetId)
+        {
+            if (tick < oldestTick)
+            {
+                oldestTick = tick;
+                leastRecentlyUsedSetId = setId;
+            }
+        }
+
+        return leastRecentlyUsedSetId;
     }
 }

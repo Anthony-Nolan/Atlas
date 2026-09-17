@@ -77,4 +77,44 @@ internal class FrequencySetResidencyTrackerTests
 
         evictedSetIds.Should().Equal(1, 2);
     }
+
+    [Test]
+    public void Forget_ANotTrackedSet_IsANoOp()
+    {
+        BuildSut(capacity: 2);
+
+        sut.Forget(1);
+
+        evictedSetIds.Should().BeEmpty();
+    }
+
+    [Test]
+    public void Forget_ATrackedSet_FreesItsSlotWithoutEvictingAnything()
+    {
+        BuildSut(capacity: 2);
+        sut.RecordAccess(1);
+        sut.RecordAccess(2);
+
+        // Simulates the cache TTL-expiring set 1's entry independently of any tracker-driven eviction.
+        sut.Forget(1);
+        // Admitting 3 must not evict 2: forgetting 1 already freed the slot it was occupying.
+        sut.RecordAccess(3);
+
+        evictedSetIds.Should().BeEmpty();
+    }
+
+    [Test]
+    public void Forget_AForgottenSetReAccessedLater_IsTrackedAsANewEntry()
+    {
+        BuildSut(capacity: 1);
+        sut.RecordAccess(1);
+        sut.Forget(1);
+
+        // 1 was forgotten, so re-accessing it is exactly like admitting a brand new set - it must not immediately
+        // evict itself, and re-accessing 2 next now correctly targets 1 as the least-recently-used.
+        sut.RecordAccess(1);
+        sut.RecordAccess(2);
+
+        evictedSetIds.Should().Equal(1);
+    }
 }

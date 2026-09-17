@@ -151,7 +151,13 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
             new MemoryCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(cacheSettings.SetCacheExpiryMinutes)
-            }
+            }.RegisterPostEvictionCallback((_, _, _, _) =>
+                // Fires for every removal reason - TTL expiry, or an explicit Remove, including the tracker's own
+                // onEvict → cache.Remove call below. In that last case this is a harmless no-op, since the tracker
+                // already removed setId from its own bookkeeping before calling onEvict. Without this, a TTL expiry
+                // would leave the tracker still counting setId as resident, occupying a slot for an entry the cache
+                // no longer holds - see FrequencySetResidencyTracker.Forget's doc comment.
+                residencyTracker.Forget(setId))
         );
     }
 
