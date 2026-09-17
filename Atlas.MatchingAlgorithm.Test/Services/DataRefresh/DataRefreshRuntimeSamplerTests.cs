@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         public void SetUp()
         {
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
-            sampler = new DataRefreshRuntimeSampler(logger);
+            sampler = new DataRefreshRuntimeSampler(logger, new DataRefreshPipelineGauges());
         }
 
         [Test]

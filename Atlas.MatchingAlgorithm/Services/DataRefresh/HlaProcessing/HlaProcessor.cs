@@ -69,6 +69,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         private readonly IPGroupRepository pGroupRepository;
         private readonly IHlaImportRepository hlaImportRepository;
         private readonly IMacDictionary macDictionary;
+        private readonly IDataRefreshPipelineGauges pipelineGauges;
         private readonly int batchSize;
         private readonly int batchProgressReportingPeriod;
 
@@ -108,7 +109,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             IFailedDonorsNotificationSender failedDonorsNotificationSender,
             IDormantRepositoryFactory repositoryFactory,
             DataRefreshSettings settings,
-            IMacDictionary macDictionary)
+            IMacDictionary macDictionary,
+            IDataRefreshPipelineGauges pipelineGauges)
         {
             this.logger = logger;
             this.donorHlaExpanderFactory = donorHlaExpanderFactory;
@@ -122,6 +124,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             hlaImportRepository = repositoryFactory.GetHlaImportRepository();
             batchSize = settings?.HlaProcessingBatchSize ?? DefaultBatchSize;
             batchProgressReportingPeriod = settings?.BatchProgressReportingPeriod ?? DefaultBatchProgressReportingPeriod;
+
+            // Defaulted rather than required - see DonorImporter for why an instrument must not be able to stop a run.
+            this.pipelineGauges = pipelineGauges ?? new DataRefreshPipelineGauges();
         }
 
         public async Task UpdateDonorHla(
@@ -322,6 +327,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 // Prefetched batches behind it are discarded rather than drained, which is safe precisely because this
                 // stage keeps a checkpoint - it simply stays where it is, and those donors are read again on resume.
                 cancellationToken.ThrowIfCancellationRequested();
+
+                // How much the read side had ready behind this batch. Read by the runtime sampler on its own interval,
+                // and the only thing that distinguishes a prefetch that is keeping up from one that is starving this
+                // loop - the two are identical in the stage's wall clock.
+                pipelineGauges.HlaBatchPrefetch.RecordDepthOnTake(reader.Count);
 
                 // The paging enumerator signals exhaustion by yielding one final empty batch, so this is the normal
                 // end-of-stream path rather than an anomaly.

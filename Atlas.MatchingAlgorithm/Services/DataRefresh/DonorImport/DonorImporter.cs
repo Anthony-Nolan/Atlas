@@ -79,6 +79,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
         private readonly IMatchingAlgorithmImportLogger logger;
         private readonly IDonorReader donorReader;
+        private readonly IDataRefreshPipelineGauges pipelineGauges;
         private readonly int batchSize;
 
         public DonorImporter(
@@ -87,7 +88,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             IFailedDonorsNotificationSender failedDonorsNotificationSender,
             IMatchingAlgorithmImportLogger logger,
             IDonorReader donorReader,
-            DataRefreshSettings dataRefreshSettings)
+            DataRefreshSettings dataRefreshSettings,
+            IDataRefreshPipelineGauges pipelineGauges)
         {
             matchingDonorImportRepository = repositoryFactory.GetDonorImportRepository();
             donorManagementLogRepository = repositoryFactory.GetDonorManagementLogRepository();
@@ -96,6 +98,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             this.logger = logger;
             this.donorReader = donorReader;
             batchSize = dataRefreshSettings?.DonorImportBatchSize ?? DefaultBatchSize;
+
+            // Defaulted rather than required: the gauges are a measurement, and a refresh that runs unmeasured is
+            // better than one that will not start because an instrument was not registered.
+            this.pipelineGauges = pipelineGauges ?? new DataRefreshPipelineGauges();
         }
 
         public async Task ImportDonors(bool shouldMarkDonorsAsUpdated, CancellationToken cancellationToken)
@@ -235,8 +241,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
                 // already died. Harmless - those donors were read legitimately, and a failed stage restarts anyway.
                 cancellationToken.ThrowIfCancellationRequested();
 
+                // Read once and used for both, so the trace on this write and the gauge the runtime sampler reads can
+                // never disagree about the same batch.
+                var queueDepth = reader.Count;
+                pipelineGauges.DonorImport.RecordDepthOnTake(queueDepth);
+
                 var failedDonors = await InsertDonorBatch(
-                    reifiedDonorBatch, shouldMarkDonorsAsUpdated, reader.Count);
+                    reifiedDonorBatch, shouldMarkDonorsAsUpdated, queueDepth);
                 allFailedDonors.AddRange(failedDonors);
             }
 

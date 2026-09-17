@@ -11,6 +11,7 @@ using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
@@ -43,6 +44,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IFailedDonorsNotificationSender failedDonorsNotificationSender;
         private IMatchingAlgorithmImportLogger logger;
         private IDonorReader donorReader;
+        private DataRefreshPipelineGauges pipelineGauges;
         private Fixture fixture;
 
         /// <summary>Mirrors <c>DonorImporter.BatchSize</c>; tests that care about batch boundaries need to match it.</summary>
@@ -74,13 +76,16 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             donorReader = Substitute.For<IDonorReader>();
 
+            pipelineGauges = new DataRefreshPipelineGauges();
+
             donorImporter = new DonorImporter(
                 repositoryFactory,
                 donorInfoConverter,
                 failedDonorsNotificationSender,
                 logger,
                 donorReader,
-                DataRefreshSettingsBuilder.New.Build());
+                DataRefreshSettingsBuilder.New.Build(),
+                pipelineGauges);
         }
 
         [Test]
@@ -452,7 +457,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             donorReader.StreamAllDonors().Returns(fixture.CreateMany<Donor>(5));
 
             IDonorImporter importer = new DonorImporter(
-                repositoryFactory, donorInfoConverter, failedDonorsNotificationSender, logger, donorReader, settings);
+                repositoryFactory, donorInfoConverter, failedDonorsNotificationSender, logger, donorReader, settings, pipelineGauges);
 
             await importer.ImportDonors();
 
@@ -477,7 +482,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             donorReader.StreamAllDonors().Returns(fixture.CreateMany<Donor>(configuredBatchSize * 3));
 
             IDonorImporter importer = new DonorImporter(
-                repositoryFactory, donorInfoConverter, failedDonorsNotificationSender, logger, donorReader, settings);
+                repositoryFactory, donorInfoConverter, failedDonorsNotificationSender, logger, donorReader, settings, pipelineGauges);
 
             await importer.ImportDonors(true);
 

@@ -41,13 +41,15 @@ public class DataRefreshRuntimeSampler : IDataRefreshRuntimeSampler
     private const double BytesPerMb = 1024d * 1024d;
 
     private readonly IMatchingAlgorithmImportLogger logger;
+    private readonly IDataRefreshPipelineGauges pipelineGauges;
 
-    public DataRefreshRuntimeSampler(IMatchingAlgorithmImportLogger logger)
+    public DataRefreshRuntimeSampler(IMatchingAlgorithmImportLogger logger, IDataRefreshPipelineGauges pipelineGauges)
     {
         this.logger = logger;
+        this.pipelineGauges = pipelineGauges;
     }
 
-    public IAsyncDisposable StartSampling() => new SamplingSession(logger);
+    public IAsyncDisposable StartSampling() => new SamplingSession(logger, pipelineGauges);
 
     /// <summary>
     /// Owns the sampling loop. The loop is a real, retained <see cref="Task"/> rather than an <c>async void</c> or a
@@ -57,6 +59,7 @@ public class DataRefreshRuntimeSampler : IDataRefreshRuntimeSampler
     private sealed class SamplingSession : IAsyncDisposable
     {
         private readonly IMatchingAlgorithmImportLogger logger;
+        private readonly IDataRefreshPipelineGauges pipelineGauges;
         private readonly CancellationTokenSource cancellation = new();
         private readonly Task samplingLoop;
         private readonly SqlClientCounterListener sqlClientCounters;
@@ -66,9 +69,10 @@ public class DataRefreshRuntimeSampler : IDataRefreshRuntimeSampler
         private int previousGen2Collections;
         private TimeSpan previousGcPauseDuration;
 
-        public SamplingSession(IMatchingAlgorithmImportLogger logger)
+        public SamplingSession(IMatchingAlgorithmImportLogger logger, IDataRefreshPipelineGauges pipelineGauges)
         {
             this.logger = logger;
+            this.pipelineGauges = pipelineGauges;
             CaptureBaseline();
             sqlClientCounters = StartSqlClientCounterListener(logger);
             samplingLoop = RunSamplingLoop(cancellation.Token);
@@ -186,9 +190,34 @@ public class DataRefreshRuntimeSampler : IDataRefreshRuntimeSampler
             SendCounter(DataRefreshMetrics.Counter_ThreadPoolQueueLength, ThreadPool.PendingWorkItemCount);
             SendCounter(DataRefreshMetrics.Counter_ThreadPoolThreadCount, ThreadPool.ThreadCount);
 
+            EmitPipelineDepths();
+
             previousProcessorTime = processorTime;
             previousGen2Collections = gen2Collections;
             previousGcPauseDuration = gcPauseDuration;
+        }
+
+        /// <summary>
+        /// The two prefetch pipelines' queue state. Emitted unconditionally, including while the stage that owns a
+        /// queue is not running: a depth of 0 with no starvation is how a dormant pipeline reads, and suppressing it
+        /// would make "the stage was not running" and "the sampler was not watching" indistinguishable.
+        /// </summary>
+        private void EmitPipelineDepths()
+        {
+            if (pipelineGauges == null)
+            {
+                return;
+            }
+
+            SendCounter(DataRefreshMetrics.Counter_DonorImportQueueDepth, pipelineGauges.DonorImport.Depth);
+            SendCounter(
+                DataRefreshMetrics.Counter_DonorImportConsumerStarved,
+                pipelineGauges.DonorImport.ReadStarvationsSinceLastRead());
+
+            SendCounter(DataRefreshMetrics.Counter_HlaBatchPrefetchDepth, pipelineGauges.HlaBatchPrefetch.Depth);
+            SendCounter(
+                DataRefreshMetrics.Counter_HlaBatchPrefetchStarved,
+                pipelineGauges.HlaBatchPrefetch.ReadStarvationsSinceLastRead());
         }
 
         private void SendCounter(string counter, double value) =>

@@ -12,6 +12,7 @@ using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
@@ -45,6 +46,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IHlaImportRepository hlaImportRepository;
         private IDonorHlaExpander donorHlaExpander;
         private IMatchingAlgorithmImportLogger logger;
+        private DataRefreshPipelineGauges pipelineGauges;
 
         private IHlaProcessor hlaProcessor;
 
@@ -70,6 +72,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(default).ReturnsForAnyArgs(donorHlaExpander);
 
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
+            pipelineGauges = new DataRefreshPipelineGauges();
 
             hlaProcessor = new HlaProcessor(
                 logger,
@@ -78,7 +81,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 Substitute.For<IFailedDonorsNotificationSender>(),
                 repositoryFactory,
                 DataRefreshSettingsBuilder.New.Build(),
-                Substitute.For<IMacDictionary>());
+                Substitute.For<IMacDictionary>(),
+                pipelineGauges);
         }
 
         [Test]

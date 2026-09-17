@@ -315,6 +315,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IDataRefreshServiceBusClient, DataRefreshServiceBusClient>();
             services.AddScoped<IDataRefreshRuntimeSampler, DataRefreshRuntimeSampler>();
 
+            // Scoped, so that the sampler, the importer and the HLA processor of one refresh share one set of gauges,
+            // and a depth left behind by a previous refresh cannot be sampled into this one's series.
+            services.AddScoped<IDataRefreshPipelineGauges, DataRefreshPipelineGauges>();
+
             services.AddScoped<IHlaProcessor, HlaProcessor>();
             services.AddScoped<IDonorImporter, DonorImporter>();
         }
