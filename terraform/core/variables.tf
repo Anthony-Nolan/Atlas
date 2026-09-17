@@ -393,7 +393,7 @@ variable "MATCHING_DATA_REFRESH_CRONTAB" {
 variable "MATCHING_DATA_REFRESH_WATCHDOG_CRON_SCHEDULE" {
   type        = string
   default     = "0 */15 * * * *"
-  description = "CRON schedule (six-field NCrontab) for the sweep that re-requests stalled data refreshes. Must be set: the Functions host resolves it at start-up, so the Data Refresh app will not start without it."
+  description = "CRON schedule (six-field NCrontab) for the sweep that re-requests stalled data refreshes. Must be set: without it the watchdog function fails to index and never fires, while the rest of the Data Refresh app starts normally - so the gap is silent."
 }
 
 variable "MATCHING_DATA_REFRESH_WATCHDOG_GRACE_DURATION_MINUTES" {

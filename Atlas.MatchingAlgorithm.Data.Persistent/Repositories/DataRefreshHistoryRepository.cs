@@ -57,7 +57,12 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         /// never complete unless they are re-requested.
         /// </summary>
         /// <remarks>
-        /// The idle check is the non-obvious clause. An absent <see cref="DataRefreshRecord.LeaseOwner"/> is not by
+        /// The lease clause is deliberately phrased the way <see cref="TryClaimRefreshLease"/> decides claimability,
+        /// rather than in terms of the expiry alone. That call reads a set owner with no expiry as still held, since
+        /// SQL makes the expiry comparison UNKNOWN; keying off the expiry here instead would re-request such a record
+        /// on every sweep, forever, while no invocation could ever claim it.
+        ///
+        /// The idle check is the other non-obvious clause. An absent <see cref="DataRefreshRecord.LeaseOwner"/> is not by
         /// itself evidence of a stall: a record created moments ago, whose request message is still in flight, has yet
         /// to be leased, and so has one whose run has just failed and released its lease while Service Bus redelivers
         /// the request. Both recover unaided. Requiring the record to have been idle for the whole grace period as well
@@ -183,7 +188,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         {
             return await Context.DataRefreshRecords
                 .Where(r => r.RefreshEndUtc == null
-                            && (r.LeaseExpiresUtc == null || r.LeaseExpiresUtc < graceCutoffUtc)
+                            && (r.LeaseOwner == null || r.LeaseExpiresUtc < graceCutoffUtc)
                             && (r.RefreshLastContinuedUtc ?? r.RefreshRequestedUtc) < graceCutoffUtc)
                 .Select(r => r.Id)
                 .ToListAsync();

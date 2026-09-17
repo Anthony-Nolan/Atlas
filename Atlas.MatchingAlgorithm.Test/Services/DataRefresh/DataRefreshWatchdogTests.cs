@@ -64,19 +64,26 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             dataRefreshHistoryRepository.GetStalledRefreshRecordIds(default).ReturnsForAnyArgs(recordIds);
         }
 
-        [Test]
-        public async Task RecoverStalledRefreshes_ReRequestsEachStalledRecord()
+        private void ReceivedRecoveryEventFor(int recordId)
         {
-            GivenStalledRecords(StalledRecordId);
+            logger.Received(1).SendEvent(
+                Arg.Any<string>(),
+                Arg.Any<LogLevel>(),
+                Arg.Is<Dictionary<string, string>>(p => p["DataRefreshRecordId"] == recordId.ToString()),
+                Arg.Any<Dictionary<string, double>>());
+        }
 
-            await dataRefreshWatchdog.RecoverStalledRefreshes();
-
-            await serviceBusClient.Received(1).PublishToRequestTopic(
-                Arg.Is<ValidatedDataRefreshRequest>(r => r.DataRefreshRecordId == StalledRecordId));
+        private void DidNotReceiveRecoveryEventFor(int recordId)
+        {
+            logger.DidNotReceive().SendEvent(
+                Arg.Any<string>(),
+                Arg.Any<LogLevel>(),
+                Arg.Is<Dictionary<string, string>>(p => p["DataRefreshRecordId"] == recordId.ToString()),
+                Arg.Any<Dictionary<string, double>>());
         }
 
         [Test]
-        public async Task RecoverStalledRefreshes_WithMultipleStalledRecords_ReRequestsAllOfThem()
+        public async Task RecoverStalledRefreshes_ReRequestsEveryStalledRecord()
         {
             GivenStalledRecords(1, 2, 3);
 
@@ -161,20 +168,27 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshWatchdog.Invoking(w => w.RecoverStalledRefreshes()).Should().ThrowAsync<AggregateException>();
 
-            await serviceBusClient.Received(1).PublishToRequestTopic(Arg.Is<ValidatedDataRefreshRequest>(r => r.DataRefreshRecordId == 1));
-            await serviceBusClient.Received(1).PublishToRequestTopic(Arg.Is<ValidatedDataRefreshRequest>(r => r.DataRefreshRecordId == 3));
+            // Asserted on the event rather than on Received(): a substitute records a call even when it threw, so
+            // Received() cannot tell a publish that succeeded from one that did not. The event is only sent once the
+            // publish has returned, so it is what actually establishes that the other records got through.
+            ReceivedRecoveryEventFor(1);
+            ReceivedRecoveryEventFor(3);
+            DidNotReceiveRecoveryEventFor(2);
         }
 
         [Test]
-        public async Task RecoverStalledRefreshes_WhenOneRecordFails_ThrowsOnlyOnceTheSweepIsComplete()
+        public async Task RecoverStalledRefreshes_WhenSeveralRecordsFail_ThrowsOnceCarryingEveryFailure()
         {
-            GivenStalledRecords(1, 2);
-            serviceBusClient.PublishToRequestTopic(Arg.Is<ValidatedDataRefreshRequest>(r => r.DataRefreshRecordId == 1))
+            // Two failures either side of a success, so that throwing on the first failure, or on each one, is
+            // distinguishable from collecting them all and throwing once at the end.
+            GivenStalledRecords(1, 2, 3);
+            serviceBusClient.PublishToRequestTopic(Arg.Is<ValidatedDataRefreshRequest>(r => r.DataRefreshRecordId != 2))
                 .ThrowsAsync(new Exception("bus is down"));
 
             var thrown = await dataRefreshWatchdog.Invoking(w => w.RecoverStalledRefreshes()).Should().ThrowAsync<AggregateException>();
 
-            thrown.Which.InnerExceptions.Should().HaveCount(1);
+            thrown.Which.InnerExceptions.Should().HaveCount(2);
+            ReceivedRecoveryEventFor(2);
         }
 
         [Test]

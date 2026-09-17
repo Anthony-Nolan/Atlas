@@ -75,12 +75,15 @@ namespace Atlas.MatchingAlgorithm.Settings
         public int WatchdogGraceDurationMinutes { get; set; } = 60;
 
         /// <summary>
-        /// A crontab determining how often the watchdog sweeps for stalled refresh records. Recovering any one record
-        /// therefore takes up to <see cref="WatchdogGraceDurationMinutes"/> plus one sweep interval.
+        /// A crontab determining how often the watchdog sweeps for stalled refresh records. Recovering a leased record
+        /// therefore takes up to <see cref="LeaseDurationMinutes"/> - the lease has to lapse before the grace period
+        /// starts counting - plus <see cref="WatchdogGraceDurationMinutes"/>, plus one sweep interval.
         /// </summary>
         /// <remarks>
-        /// Unlike the other lease and watchdog settings, this one cannot be defaulted here: it is read by the Functions
-        /// host to resolve the TimerTrigger binding, so the app setting must exist or the function will not start.
+        /// Unlike the other lease and watchdog settings, this one cannot be defaulted here: the Functions host reads it
+        /// to resolve the TimerTrigger binding. Without the app setting the host still starts and every other function
+        /// in the app runs normally - only this one fails to index, and then never fires. A missing value therefore
+        /// presents as a healthy app whose stalled refreshes are silently never recovered.
         /// </remarks>
         // ReSharper disable once UnusedMember.Global This property is only used in the Function TimerTrigger binding. Listed here for increased discoverability.
         public string WatchdogCronSchedule { get; set; }
