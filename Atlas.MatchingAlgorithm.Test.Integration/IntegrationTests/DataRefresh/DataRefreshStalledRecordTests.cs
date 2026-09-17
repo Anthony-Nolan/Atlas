@@ -95,10 +95,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
         }
 
         [Test]
-        public async Task GetStalledRefreshRecordIds_WhenNeverLeasedAndIdleBeyondTheGracePeriod_ReturnsRecord()
+        public async Task GetStalledRefreshRecordIds_WhenARunWasAbandonedBeyondTheGracePeriod_ReturnsRecord()
         {
-            // The one stall no lease can reveal: a request message that was never delivered at all, leaving a record
-            // that has never been leased and never will be.
+            // A run that started, stamped RefreshLastContinuedUtc, and was then abandoned without its lease ever
+            // being recorded - a host killed between claiming and its first renewal write.
             var recordId = await AnOpenRecordLastActive(TimeSpan.FromHours(3));
 
             var stalled = await dataRefreshHistoryRepository.GetStalledRefreshRecordIds(GraceCutoff);
@@ -107,11 +107,40 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
         }
 
         [Test]
+        public async Task GetStalledRefreshRecordIds_WhenRequestedButNeverRunBeyondTheGracePeriod_ReturnsRecord()
+        {
+            // The one stall no lease can reveal: a request message that was never delivered, so the record has never
+            // been leased, never will be, and never had RefreshLastContinuedUtc stamped. Only the fall back to
+            // RefreshRequestedUtc can age it, which makes this the test that holds that fall back in place.
+            var recordId = await ARecordRequestedButNeverRun(TimeSpan.FromHours(3));
+
+            var stalled = await dataRefreshHistoryRepository.GetStalledRefreshRecordIds(GraceCutoff);
+
+            stalled.Should().Contain(recordId);
+        }
+
+        [Test]
+        public async Task GetStalledRefreshRecordIds_WhenLeaseOwnerIsSetButTheExpiryIsMissing_DoesNotReturnRecord()
+        {
+            // TryClaimRefreshLease reads this as still held - the expiry comparison is UNKNOWN in SQL - so no
+            // invocation could ever claim it. Returning it here would re-request it on every sweep, forever.
+            var recordId = await dataRefreshHistoryRepository.Create(DataRefreshRecordBuilder.New
+                .With(r => r.RefreshRequestedUtc, DateTime.UtcNow.AddHours(-3))
+                .With(r => r.RefreshLastContinuedUtc, DateTime.UtcNow.AddHours(-3))
+                .With(r => r.LeaseOwner, Guid.NewGuid())
+                .Build());
+
+            var stalled = await dataRefreshHistoryRepository.GetStalledRefreshRecordIds(GraceCutoff);
+
+            stalled.Should().NotContain(recordId);
+        }
+
+        [Test]
         public async Task GetStalledRefreshRecordIds_WhenNeverLeasedButRequestedWithinTheGracePeriod_DoesNotReturnRecord()
         {
             // Just requested, with its message still in flight. Treating an absent lease as proof of a stall would
             // re-request this one, and make an auto-recovery indistinguishable from an ordinary request.
-            var recordId = await dataRefreshHistoryRepository.Create(DataRefreshRecordBuilder.New.Build());
+            var recordId = await ARecordRequestedButNeverRun(TimeSpan.FromSeconds(1));
 
             var stalled = await dataRefreshHistoryRepository.GetStalledRefreshRecordIds(GraceCutoff);
 
@@ -152,7 +181,18 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
         }
 
         /// <summary>
-        /// An open record whose last sign of life was <paramref name="ago"/> in the past, and which has never been leased.
+        /// An open record requested <paramref name="ago"/> in the past that was never picked up, so it carries no
+        /// RefreshLastContinuedUtc. This is the shape a request message that was never delivered leaves behind.
+        /// </summary>
+        private async Task<int> ARecordRequestedButNeverRun(TimeSpan ago)
+        {
+            return await dataRefreshHistoryRepository.Create(DataRefreshRecordBuilder.New
+                .With(r => r.RefreshRequestedUtc, DateTime.UtcNow - ago)
+                .Build());
+        }
+
+        /// <summary>
+        /// An open record that ran, and whose last sign of life was <paramref name="ago"/> in the past.
         /// </summary>
         private async Task<int> AnOpenRecordLastActive(TimeSpan ago)
         {
