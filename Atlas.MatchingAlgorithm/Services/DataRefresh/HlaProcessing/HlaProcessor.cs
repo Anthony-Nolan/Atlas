@@ -1,5 +1,6 @@
 ﻿using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Utils;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;

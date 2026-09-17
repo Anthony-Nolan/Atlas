@@ -6,6 +6,7 @@ using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
+using Atlas.MatchingAlgorithm.Data.Settings;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
@@ -378,7 +379,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             // that reused nothing, and would then be silently useless for the case it exists to reveal.
             var logger = Substitute.For<IAtlasLogger>();
             var repository = new DonorImportRepository(
-                Substitute.For<IHlaNamesRepository>(), dormantConnectionStringProvider, logger);
+                Substitute.For<IHlaNamesRepository>(), dormantConnectionStringProvider, logger, new DataRefreshRepositorySettings());
 
             using (repository.OpenBulkWriteSession())
             {

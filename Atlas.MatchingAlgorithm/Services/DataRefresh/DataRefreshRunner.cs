@@ -361,7 +361,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                        DataRefreshMetrics.StageDurationMsMetric,
                        DataRefreshMetrics.StageDims(dataRefreshStage.ToString())))
             {
-                await RunDataRefreshStage(dataRefreshStage, executionMode, refreshRecord);
+                await RunDataRefreshStage(dataRefreshStage, executionMode, refreshRecord, cancellationToken);
                 await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecord, dataRefreshStage);
             }
         }
@@ -369,7 +369,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private async Task RunDataRefreshStage(
             DataRefreshStage dataRefreshStage,
             DataRefreshStageExecutionMode executionMode,
-            DataRefreshRecord refreshRecord)
+            DataRefreshRecord refreshRecord,
+            CancellationToken cancellationToken)
         {
             switch (dataRefreshStage)
             {

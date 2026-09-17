@@ -3,6 +3,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Data.Services;
+using Atlas.MatchingAlgorithm.Data.Settings;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -26,7 +27,8 @@ public class DonorUpdateRepositoryBaseTests
         var connectionStringProvider = Substitute.For<IConnectionStringProvider>();
         connectionStringProvider.GetConnectionString().Returns("Server=not-connected-to;Database=none;");
 
-        repository = new DonorImportRepository(Substitute.For<IHlaNamesRepository>(), connectionStringProvider, logger);
+        repository = new DonorImportRepository(
+            Substitute.For<IHlaNamesRepository>(), connectionStringProvider, logger, new DataRefreshRepositorySettings());
     }
 
     [Test]

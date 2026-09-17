@@ -88,14 +88,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             // of the loop, so the first batch finishes and the second is never started.
             var cancellationTokenSource = new CancellationTokenSource();
             GivenDonorBatches(4);
-            donorImportRepository.WhenForAnyArgs(r => r.AddMatchingRelationsForExistingDonorBatch(default, default, default))
+            donorImportRepository.WhenForAnyArgs(r => r.AddMatchingRelationsForExistingDonorBatch(default, default))
                 .Do(_ => cancellationTokenSource.Cancel());
 
             await hlaProcessor.Invoking(p => p.UpdateDonorHla(
                     HlaNomenclatureVersion, _ => Task.CompletedTask, null, false, cancellationTokenSource.Token))
                 .Should().ThrowAsync<OperationCanceledException>();
 
-            await donorImportRepository.ReceivedWithAnyArgs(1).AddMatchingRelationsForExistingDonorBatch(default, default, default);
+            await donorImportRepository.ReceivedWithAnyArgs(1).AddMatchingRelationsForExistingDonorBatch(default, default);
         }
 
         [Test]
@@ -105,7 +105,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             // silently skip those donors on the next attempt.
             var cancellationTokenSource = new CancellationTokenSource();
             GivenDonorBatches(4);
-            donorImportRepository.WhenForAnyArgs(r => r.AddMatchingRelationsForExistingDonorBatch(default, default, default))
+            donorImportRepository.WhenForAnyArgs(r => r.AddMatchingRelationsForExistingDonorBatch(default, default))
                 .Do(_ => cancellationTokenSource.Cancel());
             var recordedDonorIds = new List<int>();
 
@@ -132,7 +132,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await hlaProcessor.UpdateDonorHla(HlaNomenclatureVersion, _ => Task.CompletedTask);
 
-            await donorImportRepository.ReceivedWithAnyArgs(4).AddMatchingRelationsForExistingDonorBatch(default, default, default);
+            await donorImportRepository.ReceivedWithAnyArgs(4).AddMatchingRelationsForExistingDonorBatch(default, default);
         }
 
         [Test]
@@ -156,7 +156,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             });
 
             var isFirstWrite = true;
-            donorImportRepository.AddMatchingRelationsForExistingDonorBatch(default, default, default)
+            donorImportRepository.AddMatchingRelationsForExistingDonorBatch(default, default)
                 .ReturnsForAnyArgs(async _ =>
                 {
                     if (!isFirstWrite)
@@ -175,7 +175,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await hlaProcessor.UpdateDonorHla(HlaNomenclatureVersion, _ => Task.CompletedTask);
 
-            await donorImportRepository.ReceivedWithAnyArgs(8).AddMatchingRelationsForExistingDonorBatch(default, default, default);
+            await donorImportRepository.ReceivedWithAnyArgs(8).AddMatchingRelationsForExistingDonorBatch(default, default);
         }
 
         [Test]
@@ -219,7 +219,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             GivenDonorBatches(batchCount);
 
             var batchesWritten = 0;
-            donorImportRepository.WhenForAnyArgs(r => r.AddMatchingRelationsForExistingDonorBatch(default, default, default))
+            donorImportRepository.WhenForAnyArgs(r => r.AddMatchingRelationsForExistingDonorBatch(default, default))
                 .Do(_ => batchesWritten++);
 
             var checkpoints = new List<(int DonorId, int BatchesWritten)>();
@@ -250,7 +250,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             var batchesRead = 0;
             GivenDonorBatches(batchCount, onBatchRead: () => Interlocked.Increment(ref batchesRead));
 
-            donorImportRepository.WhenForAnyArgs(r => r.AddMatchingRelationsForExistingDonorBatch(default, default, default))
+            donorImportRepository.WhenForAnyArgs(r => r.AddMatchingRelationsForExistingDonorBatch(default, default))
                 .Do(_ => throw new InvalidOperationException("Processing failed"));
 
             await hlaProcessor.Invoking(p => p.UpdateDonorHla(HlaNomenclatureVersion, _ => Task.CompletedTask))
@@ -268,7 +268,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await hlaProcessor.UpdateDonorHla(HlaNomenclatureVersion, _ => Task.CompletedTask);
 
-            await donorImportRepository.ReceivedWithAnyArgs(4).AddMatchingRelationsForExistingDonorBatch(default, default, default);
+            await donorImportRepository.ReceivedWithAnyArgs(4).AddMatchingRelationsForExistingDonorBatch(default, default);
         }
 
         [Test]
@@ -325,7 +325,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             donorImportRepository.OpenBulkWriteSession().Returns(session);
             var cancellationTokenSource = new CancellationTokenSource();
             GivenDonorBatches(4);
-            donorImportRepository.WhenForAnyArgs(r => r.AddMatchingRelationsForExistingDonorBatch(default, default, default))
+            donorImportRepository.WhenForAnyArgs(r => r.AddMatchingRelationsForExistingDonorBatch(default, default))
                 .Do(_ => cancellationTokenSource.Cancel());
 
             await hlaProcessor.Invoking(p => p.UpdateDonorHla(
@@ -414,7 +414,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             await hlaProcessor.UpdateDonorHla(HlaNomenclatureVersion, _ => Task.CompletedTask);
 
             await donorImportRepository.DidNotReceiveWithAnyArgs()
-                .AddMatchingRelationsForExistingDonorBatch(default, default, default);
+                .AddMatchingRelationsForExistingDonorBatch(default, default);
             logger.Received(1).SendMetric(
                 DataRefreshMetrics.DurationMsMetric,
                 Arg.Any<double>(),
