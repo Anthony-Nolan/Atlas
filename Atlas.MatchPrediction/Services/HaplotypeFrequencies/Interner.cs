@@ -30,6 +30,10 @@ internal sealed class Interner<TKey> where TKey : notnull
     /// <summary>Query time: never mints new ids. Miss => key not seen by this interner.</summary>
     public bool TryGetId(TKey key, out int id) => idByKey.TryGetValue(key, out id);
 
-    /// <summary>Dense ids from 0, one entry per distinct key interned, in first-seen order.</summary>
-    public IReadOnlyList<TKey> KeyById => keyById;
+    /// <summary>
+    /// Dense ids from 0, one entry per distinct key interned, in first-seen order. Typed as <see cref="List{T}"/>
+    /// rather than <see cref="IReadOnlyList{T}"/> so callers' indexer/<c>Count</c> access (e.g.
+    /// <c>AlleleInterner.GetName</c>, called per allele) resolves directly instead of through an interface.
+    /// </summary>
+    public List<TKey> KeyById => keyById;
 }

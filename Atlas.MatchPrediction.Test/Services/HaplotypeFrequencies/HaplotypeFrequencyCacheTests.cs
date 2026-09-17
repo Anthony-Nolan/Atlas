@@ -258,7 +258,8 @@ internal class HaplotypeFrequencyCacheTests
 
         // Awaiting the warm exists precisely so a caller never gets back an entry whose ConsolidatedFrequencies is
         // silently stuck null - a failed pre-consolidation must surface here, not be swallowed.
-        await awaitingSut.Invoking(c => c.GetAllHaplotypeFrequencies(setId)).Should().ThrowAsync<InvalidOperationException>();
+        var act = () => awaitingSut.GetAllHaplotypeFrequencies(setId);
+        await act.Should().ThrowAsync<InvalidOperationException>();
     }
 
     [Test]
