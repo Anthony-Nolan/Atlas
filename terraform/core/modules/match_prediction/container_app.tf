@@ -122,6 +122,14 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         value = tostring(var.MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT)
       }
       env {
+        name  = "HaplotypeFrequencySetCache__MaxCachedFrequencySets"
+        value = tostring(var.MAX_CACHED_FREQUENCY_SETS)
+      }
+      env {
+        name  = "HaplotypeFrequencySetCache__SetCacheExpiryMinutes"
+        value = tostring(var.SET_CACHE_EXPIRY_MINUTES)
+      }
+      env {
         name  = "MatchPredictionWorker__MaxConcurrentCalls"
         value = tostring(var.MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS)
       }

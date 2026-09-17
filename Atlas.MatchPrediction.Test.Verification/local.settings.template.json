@@ -14,6 +14,8 @@
     "DataRefresh:CompletionTopicSubscription": "override-this",
 
     "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 5,
+    "HaplotypeFrequencySetCache:MaxCachedFrequencySets": 10,
+    "HaplotypeFrequencySetCache:SetCacheExpiryMinutes": 60,
 
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
 

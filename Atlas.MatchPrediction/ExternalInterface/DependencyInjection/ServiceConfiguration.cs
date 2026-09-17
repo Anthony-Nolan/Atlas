@@ -20,7 +20,11 @@ using Atlas.MatchPrediction.Services.HlaConversion;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using LazyCache;
+using LazyCache.Providers;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
@@ -190,6 +194,22 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.AddScoped<IHaplotypeFrequencyService, HaplotypeFrequencyService>();
             services.AddScoped<IFrequencyConsolidator, FrequencyConsolidator>();
             services.AddScoped<IHaplotypeFrequencyCache, HaplotypeFrequencyCache>();
+            services.AddSingleton<IHaplotypeFrequencySetCacheProvider>(_ =>
+                new HaplotypeFrequencySetCacheProvider(new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))));
+
+            // Singleton, not scoped like IHaplotypeFrequencyCache above: eviction has to be tracked once for the
+            // whole process, since IHaplotypeFrequencySetCacheProvider's underlying cache is itself a singleton
+            // shared by every scope. A tracker constructed per-scope would start empty each time and let residency
+            // grow unboundedly across scopes - exactly the bug this fix exists to close.
+            services.AddSingleton<IFrequencySetResidencyTracker>(sp =>
+            {
+                var cacheSettings = sp.GetRequiredService<IOptions<HaplotypeFrequencySetCacheSettings>>().Value;
+                var cacheProvider = sp.GetRequiredService<IHaplotypeFrequencySetCacheProvider>();
+                return new FrequencySetResidencyTracker(
+                    cacheSettings.MaxCachedFrequencySets,
+                    evictedSetId => cacheProvider.Cache.Remove(HaplotypeFrequencyCache.AllFrequenciesCacheKey(evictedSetId))
+                );
+            });
 
             services.AddScoped<IGenotypeLikelihoodService, GenotypeLikelihoodService>();
             services.AddScoped<IUnambiguousGenotypeExpander, UnambiguousGenotypeExpander>();

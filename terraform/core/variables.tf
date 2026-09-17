@@ -257,6 +257,18 @@ variable "MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES" {
   description = "Absolute cache TTL, in minutes, for the active HaplotypeFrequencySets lookup used by the match prediction service."
 }
 
+variable "MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS" {
+  type        = number
+  default     = 10
+  description = "Maximum number of distinct haplotype frequency sets allowed to stay resident at once in the match prediction service's per-set cache, evicting least-recently-used sets beyond this limit."
+}
+
+variable "MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES" {
+  type        = number
+  default     = 60
+  description = "Absolute cache TTL, in minutes, for a cached haplotype frequency set's full per-haplotype frequency collection used by the match prediction service."
+}
+
 variable "MATCH_PREDICTION_DOWNLOAD_BATCH_SIZE" {
   type        = number
   default     = 10

@@ -25,6 +25,14 @@ variable "ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES" {
   type = number
 }
 
+variable "MAX_CACHED_FREQUENCY_SETS" {
+  type = number
+}
+
+variable "SET_CACHE_EXPIRY_MINUTES" {
+  type = number
+}
+
 variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
   type = number
 }

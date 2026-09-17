@@ -226,6 +226,8 @@ module "match_prediction" {
   // Release variables
   APPLICATION_INSIGHTS_LOG_LEVEL                           = var.APPLICATION_INSIGHTS_LOG_LEVEL
   ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES                       = var.MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES
+  MAX_CACHED_FREQUENCY_SETS                                = var.MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS
+  SET_CACHE_EXPIRY_MINUTES                                 = var.MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES
   DATABASE_PASSWORD                                        = var.MATCH_PREDICTION_DATABASE_PASSWORD
   DATABASE_USERNAME                                        = var.MATCH_PREDICTION_DATABASE_USERNAME
   IP_RESTRICTION_SETTINGS                                  = var.IP_RESTRICTION_SETTINGS

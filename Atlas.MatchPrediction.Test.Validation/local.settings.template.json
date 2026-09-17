@@ -14,6 +14,8 @@
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
 
     "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 5,
+    "HaplotypeFrequencySetCache:MaxCachedFrequencySets": 10,
+    "HaplotypeFrequencySetCache:SetCacheExpiryMinutes": 60,
 
     "Homework:ImputationRequestUrl": "override-this",
     "Homework:MatchingGenotypesRequestUrl": "override-this",

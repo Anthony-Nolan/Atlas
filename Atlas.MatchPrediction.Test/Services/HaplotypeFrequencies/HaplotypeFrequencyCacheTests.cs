@@ -46,21 +46,36 @@ internal class HaplotypeFrequencyCacheTests
         sut = BuildSut(awaitConsolidatedFrequencyWarm: false);
     }
 
-    private HaplotypeFrequencyCache BuildSut(bool awaitConsolidatedFrequencyWarm)
+    private HaplotypeFrequencyCache BuildSut(bool awaitConsolidatedFrequencyWarm, int maxCachedFrequencySets = 1000) =>
+        BuildSutWithCacheProvider(awaitConsolidatedFrequencyWarm, maxCachedFrequencySets).Sut;
+
+    private (HaplotypeFrequencyCache Sut, IHaplotypeFrequencySetCacheProvider CacheProvider) BuildSutWithCacheProvider(
+        bool awaitConsolidatedFrequencyWarm = false, int maxCachedFrequencySets = 1000)
     {
         var cacheSettings = fixture.Build<HaplotypeFrequencySetCacheSettings>()
             .With(x => x.ActiveSetCacheExpiryMinutes, 5)
+            .With(x => x.MaxCachedFrequencySets, maxCachedFrequencySets)
+            .With(x => x.SetCacheExpiryMinutes, 60)
             .With(x => x.AwaitConsolidatedFrequencyWarm, awaitConsolidatedFrequencyWarm)
             .Create();
 
-        return new HaplotypeFrequencyCache(
-            AppCacheBuilder.NewPersistentCacheProvider(),
+        var cacheProvider = new HaplotypeFrequencySetCacheProvider(AppCacheBuilder.NewDefaultCache());
+        var residencyTracker = new FrequencySetResidencyTracker(
+            maxCachedFrequencySets,
+            evictedSetId => cacheProvider.Cache.Remove(HaplotypeFrequencyCache.AllFrequenciesCacheKey(evictedSetId))
+        );
+
+        var sut = new HaplotypeFrequencyCache(
+            cacheProvider,
+            residencyTracker,
             frequencyRepository,
             frequencySetRepository,
             frequencyConsolidator,
             logger,
             Options.Create(cacheSettings)
         );
+
+        return (sut, cacheProvider);
     }
 
     [Test]
@@ -112,6 +127,87 @@ internal class HaplotypeFrequencyCacheTests
         entry.SetFrequencies.Should().HaveCount(1);
         entry.Interner.TryResolve("a", "b", "c", "dqb1", "drb1", out var key).Should().BeTrue();
         entry.SetFrequencies[key].Frequency.Should().Be(0.25m);
+    }
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenCapacityIsReached_EvictsTheLeastRecentlyUsedSet()
+    {
+        const int setIdA = 100;
+        const int setIdB = 101;
+        var limitedSut = BuildSut(awaitConsolidatedFrequencyWarm: false, maxCachedFrequencySets: 1);
+        frequencyRepository.GetAllHaplotypeFrequencies(setIdA).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.5m)]);
+        frequencyRepository.GetAllHaplotypeFrequencies(setIdB).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.6m)]);
+
+        await limitedSut.GetAllHaplotypeFrequencies(setIdA);
+        // Admitting B at capacity 1 evicts A, the only (and so least-recently-used) tracked set.
+        await limitedSut.GetAllHaplotypeFrequencies(setIdB);
+        await limitedSut.GetAllHaplotypeFrequencies(setIdB);
+
+        // B never had to be rebuilt a second time - it stayed resident.
+        await frequencyRepository.Received(1).GetAllHaplotypeFrequencies(setIdB);
+
+        // A had to be rebuilt from the database again, proving it was evicted rather than staying resident
+        // indefinitely alongside every other set ever touched.
+        await limitedSut.GetAllHaplotypeFrequencies(setIdA);
+        await frequencyRepository.Received(2).GetAllHaplotypeFrequencies(setIdA);
+    }
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_ReAccessingAResidentSet_ProtectsItFromEviction()
+    {
+        const int setIdA = 200;
+        const int setIdB = 201;
+        const int setIdC = 202;
+        var limitedSut = BuildSut(awaitConsolidatedFrequencyWarm: false, maxCachedFrequencySets: 2);
+        frequencyRepository.GetAllHaplotypeFrequencies(setIdA).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.5m)]);
+        frequencyRepository.GetAllHaplotypeFrequencies(setIdB).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.6m)]);
+        frequencyRepository.GetAllHaplotypeFrequencies(setIdC).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.7m)]);
+
+        await limitedSut.GetAllHaplotypeFrequencies(setIdA);
+        await limitedSut.GetAllHaplotypeFrequencies(setIdB);
+        // Touching A again makes B the least-recently-used of the two, not A.
+        await limitedSut.GetAllHaplotypeFrequencies(setIdA);
+        // Admitting C at capacity 2 must therefore evict B, not A.
+        await limitedSut.GetAllHaplotypeFrequencies(setIdC);
+
+        await limitedSut.GetAllHaplotypeFrequencies(setIdA);
+        await frequencyRepository.Received(1).GetAllHaplotypeFrequencies(setIdA);
+
+        await limitedSut.GetAllHaplotypeFrequencies(setIdB);
+        await frequencyRepository.Received(2).GetAllHaplotypeFrequencies(setIdB);
+    }
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_AfterCacheEntryExpiresIndependently_DoesNotEvictAStillResidentSetInItsPlace()
+    {
+        const int setIdA = 300;
+        const int setIdB = 301;
+        const int setIdC = 302;
+        var (limitedSut, cacheProvider) = BuildSutWithCacheProvider(maxCachedFrequencySets: 2);
+        frequencyRepository.GetAllHaplotypeFrequencies(setIdA).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.5m)]);
+        frequencyRepository.GetAllHaplotypeFrequencies(setIdB).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.6m)]);
+        frequencyRepository.GetAllHaplotypeFrequencies(setIdC).Returns([Record("a", "b", "c", "dqb1", "drb1", 0.7m)]);
+
+        await limitedSut.GetAllHaplotypeFrequencies(setIdA);
+        await limitedSut.GetAllHaplotypeFrequencies(setIdB);
+        // A is now more-recently-used than B, so B alone is the tracker's least-recently-used entry.
+        await limitedSut.GetAllHaplotypeFrequencies(setIdA);
+
+        // Simulates the cache's own TTL expiring A independently of the tracker - which can happen to any entry
+        // regardless of LRU order, since expiry is absolute-time-based, not usage-based. The PostEvictionCallback
+        // registered on A's entry must tell the tracker to forget it, freeing its slot.
+        cacheProvider.Cache.Remove(HaplotypeFrequencyCache.AllFrequenciesCacheKey(setIdA));
+        // MemoryCache dispatches post-eviction callbacks on the thread pool rather than inline with Remove, so give
+        // it a moment to actually run before relying on its effect below.
+        await Task.Delay(200);
+
+        // Admitting C at capacity 2 must not evict B, the only genuinely-resident set left. Without the
+        // PostEvictionCallback fix, the tracker would still believe A occupies a slot and - being (mistakenly) more
+        // recently used than B in its own bookkeeping - would evict B here, a set that was never actually expired.
+        await limitedSut.GetAllHaplotypeFrequencies(setIdC);
+
+        await limitedSut.GetAllHaplotypeFrequencies(setIdB);
+        await frequencyRepository.Received(1).GetAllHaplotypeFrequencies(setIdB);
     }
 
     [Test]
