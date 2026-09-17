@@ -168,9 +168,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshWatchdog.Invoking(w => w.RecoverStalledRefreshes()).Should().ThrowAsync<AggregateException>();
 
-            // Asserted on the event rather than on Received(): a substitute records a call even when it threw, so
-            // Received() cannot tell a publish that succeeded from one that did not. The event is only sent once the
-            // publish has returned, so it is what actually establishes that the other records got through.
+            await serviceBusClient.Received(1).PublishToRequestTopic(Arg.Is<ValidatedDataRefreshRequest>(r => r.DataRefreshRecordId == 1));
+            await serviceBusClient.Received(1).PublishToRequestTopic(Arg.Is<ValidatedDataRefreshRequest>(r => r.DataRefreshRecordId == 3));
+
+            // Received() above records a call even when it threw, so on its own it cannot tell a publish that
+            // succeeded from one that did not. The event is only sent once the publish has returned, so it is what
+            // actually establishes that these records got through.
             ReceivedRecoveryEventFor(1);
             ReceivedRecoveryEventFor(3);
             DidNotReceiveRecoveryEventFor(2);
