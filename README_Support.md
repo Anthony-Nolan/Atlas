@@ -109,8 +109,10 @@ reason the retry cannot fix, and wants investigating rather than leaving to the 
 
 ##### Intervening before the watchdog does
 
-Only needed if you cannot wait out the grace period, or if the watchdog itself is not running - check
-Application Insights for the event above before assuming the latter.
+Only needed if you cannot wait out the grace period, or if the watchdog itself is not running. To check the
+latter, look at the `RecoverStalledDataRefreshes` function's own invocation and exception telemetry in
+Application Insights. Do not go by the recovery event above: it fires only when a stall is actually found, so
+its absence is the ordinary healthy state and says nothing about whether the sweep is running.
 
 Publish a request to the `data-refresh-requests` topic yourself:
 
