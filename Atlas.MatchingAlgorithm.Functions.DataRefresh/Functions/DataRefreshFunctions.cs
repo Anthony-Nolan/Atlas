@@ -19,17 +19,20 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh.Functions
         private readonly IDataRefreshRequester dataRefreshRequester;
         private readonly IDataRefreshOrchestrator dataRefreshOrchestrator;
         private readonly IDataRefreshCleanupService dataRefreshCleanupService;
+        private readonly IDataRefreshWatchdog dataRefreshWatchdog;
         private readonly IMatchingAlgorithmImportLogger logger;
 
         public DataRefreshFunctions(
             IDataRefreshRequester dataRefreshRequester,
             IDataRefreshOrchestrator dataRefreshOrchestrator,
             IDataRefreshCleanupService dataRefreshCleanupService,
+            IDataRefreshWatchdog dataRefreshWatchdog,
             IMatchingAlgorithmImportLogger logger)
         {
             this.dataRefreshRequester = dataRefreshRequester;
             this.dataRefreshOrchestrator = dataRefreshOrchestrator;
             this.dataRefreshCleanupService = dataRefreshCleanupService;
+            this.dataRefreshWatchdog = dataRefreshWatchdog;
             this.logger = logger;
         }
 
@@ -62,6 +65,17 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh.Functions
         {
             var request = new DataRefreshRequest { ForceDataRefresh = false };
             await dataRefreshRequester.RequestDataRefresh(request, false);
+        }
+
+        /// <summary>
+        /// Re-requests every data refresh that has stalled, i.e. that is still open but that nothing is working on.
+        /// Such a record blocks all subsequent refreshes until it is completed; the watchdog re-requests it automatically.
+        /// </summary>
+        [Function(nameof(RecoverStalledDataRefreshes))]
+        public async Task RecoverStalledDataRefreshes(
+            [TimerTrigger("%DataRefresh:WatchdogCronSchedule%")] TimerInfo _)
+        {
+            await dataRefreshWatchdog.RecoverStalledRefreshes();
         }
 
         [Function(nameof(RunDataRefresh))]

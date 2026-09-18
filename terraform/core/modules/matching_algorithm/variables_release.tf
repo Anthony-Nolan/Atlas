@@ -101,6 +101,14 @@ variable "DATA_REFRESH_LEASE_RENEWAL_INTERVAL_SECONDS" {
   type = number
 }
 
+variable "DATA_REFRESH_WATCHDOG_CRON_SCHEDULE" {
+  type = string
+}
+
+variable "DATA_REFRESH_WATCHDOG_GRACE_DURATION_MINUTES" {
+  type = number
+}
+
 variable "IP_RESTRICTION_SETTINGS" {
   type    = list(string)
   default = []
