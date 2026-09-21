@@ -4,6 +4,8 @@ using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
 using Microsoft.Data.SqlClient;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using MoreLinq;
 using DonorBatch = System.Collections.Generic.List<Atlas.MatchingAlgorithm.Data.Models.DonorInfo.DonorInfo>;
@@ -17,7 +19,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
     {
         Task<int> GetDonorCount();
         Task<int> GetDonorCountLessThan(int initialDonorId);
-        IAsyncEnumerable<DonorBatch> NewOrderedDonorBatchesToImport(int batchSize, int? lastProcessedDonor);
+        /// <param name="cancellationToken">
+        /// Observed before each page's query is issued, and by the query itself. Consumers prefetch pages ahead of
+        /// their own processing, so an abandoned enumeration would otherwise go on querying - and holding a connection
+        /// to - a database its caller has already stopped caring about.
+        /// </param>
+        IAsyncEnumerable<DonorBatch> NewOrderedDonorBatchesToImport(
+            int batchSize,
+            int? lastProcessedDonor,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Unlike <see cref="NewOrderedDonorBatchesToImport"/>, fetches all donors in memory rather than lazily evaluating.
@@ -54,9 +64,16 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             }
         }
 
+        /// <inheritdoc />
+        /// <remarks>
+        /// <see cref="EnumeratorCancellationAttribute"/> is what makes the token reach this body at all: without it the
+        /// token handed to <c>GetAsyncEnumerator</c> is silently dropped, and a caller that stopped enumerating still
+        /// paid for one more page query to run to completion before its result was discarded.
+        /// </remarks>
         public async IAsyncEnumerable<DonorBatch> NewOrderedDonorBatchesToImport(
             int batchSize,
-            int? lastProcessedDonor)
+            int? lastProcessedDonor,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             const string sql = "SELECT top(@batchSize) * FROM Donors WHERE DonorId > @lastProcessedDonor ORDER BY DonorId ASC";
             lastProcessedDonor ??= 0;
@@ -64,9 +81,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
             do
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
                 {
-                    var orderedDbDonorBatch = await conn.QueryAsync<Donor>(sql, new {batchSize, lastProcessedDonor});
+                    var pageQuery = new CommandDefinition(
+                        sql,
+                        parameters: new {batchSize, lastProcessedDonor},
+                        cancellationToken: cancellationToken);
+                    var orderedDbDonorBatch = await conn.QueryAsync<Donor>(pageQuery);
                     var donorInfoBatch = orderedDbDonorBatch.Select(donor => donor.ToDonorInfo()).ToList();
                     lastProcessedDonor = donorInfoBatch.LastOrDefault()?.DonorId;
                     hasFoundAllDonors = !donorInfoBatch.Any();

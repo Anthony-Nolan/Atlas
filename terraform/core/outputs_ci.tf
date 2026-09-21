@@ -17,6 +17,10 @@ output "donor-matching-function-name" {
   value = module.matching_algorithm.function_app.donor_matching_app_name
 }
 
+output "data-refresh-function-name" {
+  value = module.matching_algorithm.function_app.data_refresh_app_name
+}
+
 output "function-app-name" {
   value = local.atlas_function_app_name
 }

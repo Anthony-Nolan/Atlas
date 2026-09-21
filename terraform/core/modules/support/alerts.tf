@@ -1,3 +1,15 @@
+resource "azurerm_monitor_action_group" "atlas_team" {
+  name                = "${var.general.environment}-ATLAS-AG"
+  resource_group_name = var.resource_group.name
+  short_name          = "AtlasAlerts"
+  tags                = var.general.common_tags
+
+  email_receiver {
+    name          = "AtlasTeam"
+    email_address = "atlasteam@anthonynolan.org"
+  }
+}
+
 resource "azurerm_monitor_metric_alert" "service_bus_dead_letter_alert" {
   for_each = var.SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID != null ? var.service_bus_topics_with_alerts : {}
 

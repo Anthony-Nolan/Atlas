@@ -135,15 +135,17 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
                     // Inside the GetOrAddAsync factory, so the wait happens once per set and every concurrent caller
                     // for the same set awaits the same lazy task rather than racing it. When this returns,
                     // ConsolidatedFrequencies is populated and no caller can reach the direct-scan fallback, which is
-                    // the whole point - a scan costs roughly a thousand times a warm read.
-                    WarmConsolidatedFrequencies(setId, entry);
+                    // the whole point - a scan costs roughly a thousand times a warm read. A failure here propagates
+                    // out of this factory instead of being swallowed, so GetOrAddAsync does not cache a half-warmed
+                    // entry and the next caller for this set retries from scratch.
+                    WarmConsolidatedFrequencies(setId, entry, rethrowOnFailure: true);
                 }
                 else
                 {
                     // The right behaviour where a request is waiting: the full pre-consolidation is slow and must not
                     // delay the first lookup, which falls back to a direct calculation while ConsolidatedFrequencies
                     // is null.
-                    _ = Task.Run(() => WarmConsolidatedFrequencies(setId, entry));
+                    _ = Task.Run(() => WarmConsolidatedFrequencies(setId, entry, rethrowOnFailure: false));
                 }
 
                 return entry;
@@ -201,10 +203,12 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
                 Interner = haplotypeInterner
             };
 
-            // Project the pool here, on the one thread that builds the set, rather than leaving the first donor to
-            // touch this set to pay for it. Inside the timed region because it is part of the cost of making a set
-            // usable, and before the entry escapes, so no reader can race the first access.
+            // Project the pool - and the allele index derived from it - here, on the one thread that builds the set,
+            // rather than leaving the first donor to touch this set to pay for it. Inside the timed region because
+            // both are part of the cost of making a set usable, and before the entry escapes, so no reader can race
+            // the first access.
             _ = entry.ProjectedPool;
+            _ = entry.AlleleIndex;
 
             return entry;
         }
@@ -218,7 +222,14 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
         return result;
     }
 
-    private void WarmConsolidatedFrequencies(int setId, FrequencySetCacheEntry entry)
+    /// <param name="rethrowOnFailure">
+    /// True when called on the awaited path: a caller of <see cref="GetAllHaplotypeFrequencies"/> asked to wait for
+    /// the warm precisely so it wouldn't get back an entry whose <see cref="FrequencySetCacheEntry.ConsolidatedFrequencies"/>
+    /// stays null forever. Swallowing here would leave every subsequent lookup silently falling back to the slow
+    /// per-haplotype scan with no retry. False on the background (non-awaited) path, where there is no awaiter to
+    /// propagate to and an unobserved task exception would be worse than a logged one.
+    /// </param>
+    private void WarmConsolidatedFrequencies(int setId, FrequencySetCacheEntry entry, bool rethrowOnFailure)
     {
         try
         {
@@ -232,6 +243,11 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
         catch (Exception e)
         {
             logger.SendTrace($"Failed to warm consolidated frequency cache for set {setId}: {e.Message}", LogLevel.Error);
+
+            if (rethrowOnFailure)
+            {
+                throw;
+            }
         }
     }
 

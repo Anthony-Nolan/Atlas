@@ -15,7 +15,8 @@ using AutoFixture;
 using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using GenotypeOfKnownTypingCategory = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<Atlas.MatchPrediction.ExternalInterface.Models.HlaAtKnownTypingCategory>;
+using GenotypeOfKnownTypingCategory =
+    Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<Atlas.MatchPrediction.ExternalInterface.Models.HlaAtKnownTypingCategory>;
 using HfSetGenotypeNames = Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
 
 namespace Atlas.MatchPrediction.Test.Services.MatchProbability;
