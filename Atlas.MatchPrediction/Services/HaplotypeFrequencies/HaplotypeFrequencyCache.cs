@@ -183,10 +183,12 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
                 Interner = haplotypeInterner
             };
 
-            // Project the pool here, on the one thread that builds the set, rather than leaving the first donor to
-            // touch this set to pay for it. Inside the timed region because it is part of the cost of making a set
-            // usable, and before the entry escapes, so no reader can race the first access.
+            // Project the pool - and the allele index derived from it - here, on the one thread that builds the set,
+            // rather than leaving the first donor to touch this set to pay for it. Inside the timed region because
+            // both are part of the cost of making a set usable, and before the entry escapes, so no reader can race
+            // the first access.
             _ = entry.ProjectedPool;
+            _ = entry.AlleleIndex;
 
             return entry;
         }
