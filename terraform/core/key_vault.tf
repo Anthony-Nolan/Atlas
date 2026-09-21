@@ -4,9 +4,10 @@
 data "azurerm_client_config" "current" {}
 
 locals {
-  // Key Vault names are globally unique and capped at 24 characters.
-  // The longest environment is "LIVE-WMDA", giving "live-wmda-atlas-kv" (18).
-  key_vault_name = lower("${local.environment}-atlas-kv")
+  // Key Vault names are globally unique across ALL of Azure, not just this tenant, and capped at 24 characters.
+  // "<env>-atlas-kv" collided with a vault in an unrelated tenant, so names carry an "an-" (Anthony Nolan) prefix.
+  // The longest environment is "LIVE-WMDA", giving "an-live-wmda-atlas-kv" (21).
+  key_vault_name = lower("an-${local.environment}-atlas-kv")
 }
 
 resource "azurerm_key_vault" "atlas" {

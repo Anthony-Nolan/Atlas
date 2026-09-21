@@ -104,7 +104,9 @@ a fork of the repository - changing them manually in Azure will lead to the chan
 ### Key Vault bootstrap
 
 Secrets shared by more than one Atlas component are held in an Azure Key Vault, one per environment, named
-`<environment>-atlas-kv` (e.g. `dev-atlas-kv`). The function apps read them through
+`an-<environment>-atlas-kv` (e.g. `an-dev-atlas-kv`) — the "an-" prefix is needed because Key Vault names are unique
+across all of Azure, not just this tenant, and `<environment>-atlas-kv` alone collided with an unrelated tenant's
+vault. The function apps read them through
 `@Microsoft.KeyVault(...)` app settings, authenticating with a shared user-assigned identity
 (`<environment>-atlas-id-functions`) that is granted **Key Vault Secrets User** on the vault.
 
@@ -128,7 +130,7 @@ seeded once per environment, after the first apply that creates the vault:
 
 ```bash
 az keyvault secret set \
-  --vault-name <environment>-atlas-kv \
+  --vault-name an-<environment>-atlas-kv \
   --name azure-client-secret \
   --value "<the AZURE_CLIENT_SECRET release variable for that environment>"
 ```
