@@ -14,6 +14,14 @@ resource "azurerm_windows_function_app" "atlas_function" {
   storage_account_access_key  = azurerm_storage_account.atlas_durable_function_storage.primary_access_key
   storage_account_name        = azurerm_storage_account.atlas_durable_function_storage.name
 
+  // Used to resolve the @Microsoft.KeyVault app settings below.
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.function_apps_identity.id]
+  }
+
+  key_vault_reference_identity_id = azurerm_user_assigned_identity.function_apps_identity.id
+
   tags = local.common_tags
 
   site_config {
@@ -46,19 +54,19 @@ resource "azurerm_windows_function_app" "atlas_function" {
 
     "AzureFunctionsJobHost__extensions__durableTask__maxConcurrentActivityFunctions" = var.MAX_CONCURRENT_ACTIVITY_FUNCTIONS
 
-    "AtlasFunction:AzureStorage:MatchingConnectionString"                 = azurerm_storage_account.azure_storage.primary_connection_string
+    "AtlasFunction:AzureStorage:MatchingConnectionString"                 = local.kv_ref["azure-storage-connection-string"]
     "AtlasFunction:AzureStorage:MatchingResultsBlobContainer"             = module.matching_algorithm.azure_storage.search_results_container
     "AtlasFunction:AzureStorage:RepeatSearchMatchingResultsBlobContainer" = module.repeat_search.storage.repeat_search_matching_results_container_name
     "AtlasFunction:AzureStorage:RepeatSearchResultsBlobContainer"         = module.repeat_search.storage.repeat_search_results_container_name
     "AtlasFunction:AzureStorage:SearchResultsBlobContainer"               = azurerm_storage_container.search_results_blob_container.name
-    "AtlasFunction:AzureStorage:MatchPredictionConnectionString"          = azurerm_storage_account.azure_storage.primary_connection_string
+    "AtlasFunction:AzureStorage:MatchPredictionConnectionString"          = local.kv_ref["azure-storage-connection-string"]
     "AtlasFunction:AzureStorage:MatchPredictionRequestsBlobContainer"     = module.match_prediction.storage.match_prediction_requests_container_name
     "AtlasFunction:AzureStorage:MatchPredictionResultsBlobContainer"      = module.match_prediction.storage.match_prediction_results_container_name
     "AtlasFunction:AzureStorage:MatchPredictionDownloadBatchSize"         = var.MATCH_PREDICTION_DOWNLOAD_BATCH_SIZE
     "AtlasFunction:AzureStorage:MatchPredictionProcessingBatchSize"       = var.MATCHING_PREDICTION_PROCESSING_BATCH_SIZE
     "AtlasFunction:AzureStorage:ShouldBatchResults"                       = var.SHOULD_BATCH_RESULTS
 
-    "AtlasFunction:MessagingServiceBus:ConnectionString"                           = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "AtlasFunction:MessagingServiceBus:ConnectionString"                           = local.kv_ref["servicebus-read-write-connection-string"]
     "AtlasFunction:MessagingServiceBus:MatchingResultsSubscription"                = azurerm_servicebus_subscription.match-prediction-orchestration-search-results-ready.name
     "AtlasFunction:MessagingServiceBus:MatchingResultsTopic"                       = module.matching_algorithm.service_bus.matching_results_topic.name
     "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsSubscription"    = module.repeat_search.service_bus.repeat_search_matching_results_subscription.name
@@ -80,18 +88,18 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "AtlasFunction:Orchestration:AbandonBatchAfterMinutes"                         = var.ORCHESTRATION_PARALLEL_ABANDON_BATCH_AFTER_MINUTES
     "AtlasFunction:Orchestration:ParallelBatchAbandonmentCronSchedule"             = var.ORCHESTRATION_PARALLEL_ABANDONMENT_CRON_SCHEDULE
 
-    "HlaMetadataDictionary:AzureStorageConnectionString"                          = azurerm_storage_account.azure_storage.primary_connection_string
+    "HlaMetadataDictionary:AzureStorageConnectionString"                          = local.kv_ref["azure-storage-connection-string"]
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"                              = var.WMDA_FILE_URL
     "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds" = var.ATLAS_FUNCTION_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
 
-    "MacDictionary:AzureStorageConnectionString" = azurerm_storage_account.azure_storage.primary_connection_string
+    "MacDictionary:AzureStorageConnectionString" = local.kv_ref["azure-storage-connection-string"]
     "MacDictionary:Import:CronSchedule"          = var.MAC_IMPORT_CRON_SCHEDULE
     "MacDictionary:Download:MacSourceUrl"        = var.MAC_SOURCE
     "MacDictionary:TableName"                    = module.multiple_allele_code_lookup.storage_table.name
 
-    "Matching:AzureStorage:ConnectionString"           = azurerm_storage_account.azure_storage.primary_connection_string
+    "Matching:AzureStorage:ConnectionString"           = local.kv_ref["azure-storage-connection-string"]
     "Matching:AzureStorage:SearchResultsBlobContainer" = module.matching_algorithm.azure_storage.search_results_container
-    "Matching:MessagingServiceBus:ConnectionString"    = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "Matching:MessagingServiceBus:ConnectionString"    = local.kv_ref["servicebus-read-write-connection-string"]
     "Matching:MessagingServiceBus:SearchRequestsTopic" = module.matching_algorithm.service_bus.matching_requests_topic.name
     "Matching:MessagingServiceBus:SearchResultsTopic"  = module.matching_algorithm.service_bus.matching_results_topic.name
 
@@ -101,17 +109,17 @@ resource "azurerm_windows_function_app" "atlas_function" {
 
     "MatchPrediction:GenotypeImputation:MaximumExpandedGenotypesPerInput" = var.MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT
 
-    "MatchPrediction:AzureStorage:ConnectionString"                    = azurerm_storage_account.azure_storage.primary_connection_string
+    "MatchPrediction:AzureStorage:ConnectionString"                    = local.kv_ref["azure-storage-connection-string"]
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer" = module.match_prediction.storage.match_prediction_results_container_name
 
     "NotificationsServiceBus:AlertsTopic"                     = module.support.general.alerts_servicebus_topic.name
-    "NotificationsServiceBus:ConnectionString"                = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "NotificationsServiceBus:ConnectionString"                = local.kv_ref["servicebus-read-write-connection-string"]
     "NotificationsServiceBus:Debug:AlertsSubscription"        = module.support.general.alerts_servicebus_debug_subscription
     "NotificationsServiceBus:Debug:NotificationsSubscription" = module.support.general.notifications_servicebus_debug_subscription
     "NotificationsServiceBus:NotificationsTopic"              = module.support.general.notifications_servicebus_topic.name
     "NotificationsServiceBus:SendRetryCount"                  = var.SERVICE_BUS_SEND_RETRY_COUNT
     "NotificationsServiceBus:SendRetryCooldownSeconds"        = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
-    "SearchTrackingServiceBus:ConnectionString"               = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "SearchTrackingServiceBus:ConnectionString"               = local.kv_ref["servicebus-read-write-connection-string"]
     "SearchTrackingServiceBus:SearchTrackingTopic"            = module.search_tracking.service_bus.search_tracking_topic.name
     "SearchTrackingServiceBus:SendRetryCount"                 = var.SERVICE_BUS_SEND_RETRY_COUNT
     "SearchTrackingServiceBus:SendRetryCooldownSeconds"       = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
@@ -125,6 +133,10 @@ resource "azurerm_windows_function_app" "atlas_function" {
       tags["hidden-link: /app-insights-resource-id"],
     ]
   }
+
+  // Terraform cannot infer this: without it the app can be created before its identity is allowed to read the vault,
+  // in which case the Key Vault references resolve to their literal "@Microsoft.KeyVault(...)" string.
+  depends_on = [azurerm_role_assignment.function_apps_identity_kv_secrets_user]
 
   connection_string {
     name  = "Matching:Sql:Persistent"
@@ -162,6 +174,14 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
   storage_account_access_key  = azurerm_storage_account.function_storage.primary_access_key
   storage_account_name        = azurerm_storage_account.function_storage.name
 
+  // Used to resolve the @Microsoft.KeyVault app settings below.
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.function_apps_identity.id]
+  }
+
+  key_vault_reference_identity_id = azurerm_user_assigned_identity.function_apps_identity.id
+
   tags = local.common_tags
 
   site_config {
@@ -196,24 +216,24 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
     "MatchingAlgorithmFunction:BaseUrl" = module.matching_algorithm.function_app.base_url
     "MatchingAlgorithmFunction:ApiKey"  = module.matching_algorithm.function_app.api_key
 
-    "Matching:MessagingServiceBus:ConnectionString"         = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "Matching:MessagingServiceBus:ConnectionString"         = local.kv_ref["servicebus-read-write-connection-string"]
     "Matching:MessagingServiceBus:SearchRequestsTopic"      = module.matching_algorithm.service_bus.matching_requests_topic.name
     "Matching:MessagingServiceBus:SearchResultsTopic"       = module.matching_algorithm.service_bus.matching_results_topic.name
     "Matching:MessagingServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
     "Matching:MessagingServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "RepeatSearch:MessagingServiceBus:ConnectionString"          = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "RepeatSearch:MessagingServiceBus:ConnectionString"          = local.kv_ref["servicebus-read-write-connection-string"]
     "RepeatSearch:MessagingServiceBus:RepeatSearchRequestsTopic" = module.repeat_search.service_bus.repeat_search_requests_topic.name
     "RepeatSearch:MessagingServiceBus:SendRetryCount"            = var.SERVICE_BUS_SEND_RETRY_COUNT
     "RepeatSearch:MessagingServiceBus:SendRetryCooldownSeconds"  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "SearchTracking:SearchTrackingServiceBus:ConnectionString"         = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "SearchTracking:SearchTrackingServiceBus:ConnectionString"         = local.kv_ref["servicebus-read-write-connection-string"]
     "SearchTracking:SearchTrackingServiceBus:SearchTrackingTopic"      = module.search_tracking.service_bus.search_tracking_topic.name
     "SearchTracking:SearchTrackingServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
     "SearchTracking:SearchTrackingServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
     "NotificationsServiceBus:AlertsTopic"              = module.support.general.alerts_servicebus_topic.name
-    "NotificationsServiceBus:ConnectionString"         = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
+    "NotificationsServiceBus:ConnectionString"         = local.kv_ref["servicebus-write-only-connection-string"]
     "NotificationsServiceBus:NotificationsTopic"       = module.support.general.notifications_servicebus_topic.name
     "NotificationsServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
     "NotificationsServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
@@ -237,6 +257,10 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
       terraform_data.elastic_service_plan_for_public_api
     ]
   }
+
+  // Terraform cannot infer this: without it the app can be created before its identity is allowed to read the vault,
+  // in which case the Key Vault references resolve to their literal "@Microsoft.KeyVault(...)" string.
+  depends_on = [azurerm_role_assignment.function_apps_identity_kv_secrets_user]
 }
 
 resource "terraform_data" "elastic_service_plan_for_public_api" {

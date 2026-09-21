@@ -25,6 +25,11 @@ configuration options, and when you may want to use them.
 **FORMATTING NOTE**: All Terraform settings use `_` as a delimiter. Functions app setting names use `:`, and `__`. In this document both have been replaced with `-`, to allow Github's markdown renderer to display these tables in a 
 readable manner.
 
+**SECRETS NOTE**: Settings that carry a shared secret - the storage account connection string and the Service Bus
+connection strings - are not set to a literal value. Their value is an `@Microsoft.KeyVault(...)` reference, resolved at
+runtime from the environment's Key Vault. To change one of these, change the secret in the vault rather than the app
+setting; see [Key Vault bootstrap](./README_Deployment.md#key-vault-bootstrap).
+
 ## Feature functionality
 
 | Terraform Setting          | Functions App Name | Functions App Setting Name | Description |

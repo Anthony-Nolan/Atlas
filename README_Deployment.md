@@ -101,6 +101,48 @@ would require a manual weekly update of the `IP_RESTRICTION_SETTINGS` variable, 
 - All Atlas infrastructure is controlled via terraform scripts. If any specific naming or configuration changes are required for your installation, such changes should be made to the terraform scripts in 
 a fork of the repository - changing them manually in Azure will lead to the changes being reverted on the next deployment to that environment.
 
+### Key Vault bootstrap
+
+Secrets shared by more than one Atlas component are held in an Azure Key Vault, one per environment, named
+`<environment>-atlas-kv` (e.g. `dev-atlas-kv`). The function apps read them through
+`@Microsoft.KeyVault(...)` app settings, authenticating with a shared user-assigned identity
+(`<environment>-atlas-id-functions`) that is granted **Key Vault Secrets User** on the vault.
+
+The vault uses Azure RBAC rather than access policies, which means nobody - including the principal that created the
+vault - has data-plane access unless it has been granted. Terraform grants itself **Key Vault Secrets Officer** so that
+it can manage the secrets it owns.
+
+Split of responsibility:
+
+| Secret | Managed by |
+| --- | --- |
+| `azure-storage-connection-string` | Terraform (derived from the storage account it owns) |
+| `servicebus-read-write-connection-string` | Terraform (derived from the Service Bus authorization rule it owns) |
+| `servicebus-read-only-connection-string` | Terraform |
+| `servicebus-write-only-connection-string` | Terraform |
+| `azure-client-secret` | **Seeded by hand** - see below |
+
+`azure-client-secret` is the client secret of the app registration used by Atlas at runtime. Terraform never reads it,
+so that its value stays out of Terraform state; app settings reference it by vault and secret name instead. It must be
+seeded once per environment, after the first apply that creates the vault:
+
+```bash
+az keyvault secret set \
+  --vault-name <environment>-atlas-kv \
+  --name azure-client-secret \
+  --value "<the AZURE_CLIENT_SECRET release variable for that environment>"
+```
+
+To be able to run this you must be a member of the AD group whose object ID is set in the
+`KEY_VAULT_ADMINISTRATOR_OBJECTID` terraform variable; that group is granted Key Vault Secrets Officer on the vault. If
+the variable is left unset, no such role assignment is created and only the Terraform service principal can write
+secrets.
+
+Rotating a hand-seeded secret is a matter of running the command above again. The platform caches resolved Key Vault
+references for up to 24 hours, so restart the function apps if the new value is needed immediately. Secrets that
+Terraform manages are rotated by the next apply, which updates the app setting to the new secret version and restarts
+the app automatically.
+
 ### Manual Azure Configuration (Post-terraform)
 
 Once terraform has created ATLAS resources for the first time, certain actions must be performed manually on these resources, as they are either not available or not recommended as part of the terraform scripting.
