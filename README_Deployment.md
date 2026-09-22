@@ -156,16 +156,40 @@ Once terraform has created ATLAS resources for the first time, certain actions m
 - Azure SQL Permissions
   - Service Accounts
     - Each service (e.g. matching) within ATLAS should have a service account created on the appropriate databases. The username and password for such accounts should then be set as a variable in the release pipeline.
-    - Passwords should be created by a Password Generator, such as <https://passwordsgenerator.net/>.Sensible generation settings might be:
-      - 16+ characters
-      - Upper, Lower, Numbers.
-      - Special characters should not be used.
-      - Exclude ambiguous letters.
-      - Exclude ambiguous Symbols (if using).
+    - Passwords should be generated locally with a cryptographically secure random number generator, not by a third-party password-generator
+      website — these are production database credentials, and a website has the value before you do. Either of the following produces a
+      compliant password:
+
+      ```bash
+      # bash / Git Bash
+      openssl rand -base64 64 | tr -dc 'A-Za-z0-9' | head -c 16; echo
+      ```
+
+      ```powershell
+      # PowerShell (works in both Windows PowerShell 5.1 and PowerShell 7+)
+      $bytes = [byte[]]::new(64)
+      [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+      ([Convert]::ToBase64String($bytes) -replace '[^A-Za-z0-9]', '').Substring(0, 16)
+      ```
+
+      Both reduce the base64 alphabet to `A-Za-z0-9`, so every surviving character stays uniformly distributed (no modulo bias), and take the
+      first 16. The constraints they satisfy, and why those constraints exist:
+
+      - **16+ characters.** 16 characters drawn from a 62-character alphabet is ~95 bits of entropy.
+      - **Upper, lower and numbers only — no special characters.** The password is interpolated through three layers before it reaches SQL
+        Server, and each is broken by a different character:
+        - the ADO.NET connection string assembled by terraform (`;`, `=`, `"`);
+        - the single-quoted SQL literal in `terraform/core/sql/createUsers/*.sql`, e.g. `WITH PASSWORD = '$(donorImportPassword)'` (`'`);
+        - PowerShell `$env:` expansion and `sqlcmd` `$(...)` variable substitution in `terraform/core/scripts/migrate_users.ps1` (`$`).
+      - **Check the generated value contains at least one digit, and re-run if it does not.** Azure SQL enforces password complexity: characters
+        from at least three of upper / lower / digits / symbols, and the password must not contain the account name
+        (see [Password policy](https://learn.microsoft.com/sql/relational-databases/security/password-policy#password-complexity)). With symbols
+        ruled out, all three of upper, lower and digits are required, and a random 16-character alphanumeric string happens to contain no digit
+        roughly one time in seventeen.
     - By default, `db_datareader` and `db_datawriter` will be necessary for a given component to access its corresponding database(s)  
     - Note that the user for the matching component to access the *transient matching databases* (a and b) will need to be granted `db_owner` permission, as a `truncate table` command is used in the full data refresh, which requires elevated permissions
 
-    - To ensure this happens add a Powershell task to your azure release pipeline. This should run `/terraform-atlas-core/scripts/migrate_users.ps1`, passing in the relevant variables as environment variables.
+    - To ensure this happens add a Powershell task to your azure release pipeline. This should run `/terraform-atlas-core/scripts/migrate_users.ps1`, passing in the relevant variables as environment variables. Note that `terraform-atlas-core` is the name of the build artifact that `build-pipeline.yml` publishes `terraform/core` as, so that is the path on the release agent; in this repository the script itself lives at `terraform/core/scripts/migrate_users.ps1`.
     - This script will add appropriate roles to all accounts as listed in the table below. Note that it will not remove roles if they later should be revoked, so this should be done manually.
 
     Access Requirements:
