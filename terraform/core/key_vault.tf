@@ -49,15 +49,24 @@ resource "azurerm_role_assignment" "terraform_kv_secrets_officer" {
   scope                = azurerm_key_vault.atlas.id
   role_definition_name = "Key Vault Secrets Officer"
   principal_id         = data.azurerm_client_config.current.object_id
+
+  lifecycle {
+    // This resolves to whoever is running Terraform, so without this a plan run by a human shows it being replaced,
+    // and an apply would move the role off the deploy service principal and break the next pipeline run. The grant is
+    // only ever needed by the principal that created it, so pinning it to that principal is the correct behaviour.
+    // Grant anyone else through KEY_VAULT_SECRETS_OFFICER_OBJECTIDS instead.
+    ignore_changes = [principal_id]
+  }
 }
 
-// Allows an ops group to seed and rotate the secrets that are deliberately not managed by Terraform.
-// See "Key Vault bootstrap" in README_Deployment.md.
-resource "azurerm_role_assignment" "ops_kv_secrets_officer" {
-  count                = var.KEY_VAULT_ADMINISTRATOR_OBJECTID != null && var.KEY_VAULT_ADMINISTRATOR_OBJECTID != "" ? 1 : 0
+// Allows named principals - typically an ops AD group - to seed and rotate the secrets that are deliberately not
+// managed by Terraform. See "Key Vault bootstrap" in README_Deployment.md.
+resource "azurerm_role_assignment" "kv_secrets_officers" {
+  for_each = toset(var.KEY_VAULT_SECRETS_OFFICER_OBJECTIDS)
+
   scope                = azurerm_key_vault.atlas.id
   role_definition_name = "Key Vault Secrets Officer"
-  principal_id         = var.KEY_VAULT_ADMINISTRATOR_OBJECTID
+  principal_id         = each.value
 }
 
 // Data-plane role assignments take up to a minute to propagate. Without this pause the first apply in a new

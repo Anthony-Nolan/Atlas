@@ -216,10 +216,10 @@ variable "IP_RESTRICTION_SETTINGS" {
   description = "List of IP addresses that are whitelisted for functions app access. If none are provided the resources will publicly available. Note that if using this feature, Azure Devops build agents will need to be whitelisted for setting up webhooks - follow the Azure documentation on how to find said IP ranges. Warning that they change weekly - as such a lot of maintenance would be necessary to use whitelisted function apps, and as such using this feature is not recommended."
 }
 
-variable "KEY_VAULT_ADMINISTRATOR_OBJECTID" {
-  type        = string
-  default     = null
-  description = "Object ID of the AD group granted 'Key Vault Secrets Officer' on the Atlas Key Vault, so that secrets which are deliberately not managed by Terraform can be seeded and rotated by hand. Leave unset to skip the role assignment."
+variable "KEY_VAULT_SECRETS_OFFICER_OBJECTIDS" {
+  type        = list(string)
+  default     = []
+  description = "Object IDs granted 'Key Vault Secrets Officer' on the Atlas Key Vault, so that secrets which are deliberately not managed by Terraform can be seeded and rotated by hand - typically an ops AD group, plus anyone who needs to run a plan that reads existing secrets. The principal running Terraform is granted the role separately and does not need listing here. Leave empty to grant nobody."
 }
 
 variable "KEY_VAULT_PURGE_PROTECTION_ENABLED" {
